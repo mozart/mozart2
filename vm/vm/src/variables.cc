@@ -22,37 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "store.hh"
 #include "variables.hh"
 
-void Node::reset(VM vm) {
-  type = nullptr;
-  value.set<char*>(vm, nullptr);
-}
+// Reference
 
-void StableNode::init(UnstableNode& from) {
-  node = from.node;
-}
+const Type Reference::rawType("Reference", nullptr, true);
+const Type* const Reference::type = &Reference::rawType;
 
-void UnstableNode::copy(VM vm, StableNode& from) {
-  if (from.node.type->isCopiable())
-    node = from.node;
-  else
-    make<Reference::Repr>(vm, Reference::type, &from);
-}
+// Unbound
 
-void UnstableNode::copy(VM vm, UnstableNode& from) {
-  if (!from.node.type->isCopiable())
-    Reference::makeFor(vm, from);
-  node = from.node;
-}
+const Type Unbound::rawType("Unbound", nullptr);
+const Type* const Unbound::type = &Unbound::rawType;
 
-void UnstableNode::reset(VM vm) {
-  node.reset(vm);
-}
-
-void UnstableNode::swap(UnstableNode& from) {
-  Node temp = node;
-  node = from.node;
-  from.node = temp;
+void Unbound::bind(VM vm, Node& self, Node& src) {
+  if (!src.type->isCopiable())
+    Reference::makeFor(vm, src);
+  self = src;
 }

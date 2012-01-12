@@ -22,22 +22,71 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SMALLINT_H
-#define __SMALLINT_H
+#ifndef __VARIABLES_H
+#define __VARIABLES_H
 
 #include "type.hh"
-#include "store.hh"
+#include "smallint.hh"
+#include "vm.hh"
 
-class SmallInt {
+/**
+ * Type of a reference
+ */
+class Reference {
 public:
-  typedef nativeint Repr;
+  typedef StableNode* Repr;
 
   static const Type* const type;
 
-  static BuiltinResult add(VM vm, Node& self,
-    UnstableNode& b, UnstableNode& result);
+  // This is optimized for the 0- and 1-dereference paths
+  // Normally it would have been only a while loop
+  static Node& dereference(Node& node) {
+    if (node.type != type)
+      return node;
+    else {
+      Node* result = &(node.value.get<Repr>()->node);
+      if (result->type != type)
+        return *result;
+      else
+        return dereferenceLoop(result);
+    }
+  }
+
+  static void makeFor(VM vm, UnstableNode& node) {
+    StableNode* stable = vm.alloc<StableNode>();
+    stable->init(node);
+    node.make<Repr>(vm, type, stable);
+  }
+
+  static void makeFor(VM vm, Node& node) {
+    UnstableNode temp;
+    temp.node = node;
+    makeFor(vm, temp);
+    node = temp.node;
+  }
+private:
+  static Node& dereferenceLoop(Node* node) {
+    while (node->type == type)
+      node = &(node->value.get<Repr>()->node);
+    return *node;
+  }
+
+  static const Type rawType;
+};
+
+/**
+ * Type of an unbound variable (optimized for the no-wait case)
+ */
+class Unbound {
+public:
+  typedef void* Repr;
+
+  static const Type* const type;
+  static constexpr Repr value = nullptr;
+
+  static void bind(VM vm, Node& self, Node& src);
 private:
   static const Type rawType;
 };
 
-#endif // __SMALLINT_H
+#endif // __VARIABLES_H

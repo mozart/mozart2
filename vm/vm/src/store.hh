@@ -86,8 +86,8 @@ public: // TODO make it private once the development has been bootstrapped
  */
 class UnstableNode {
 public:
-  void copy(StableNode& from);
-  void copy(UnstableNode& from);
+  void copy(VM vm, StableNode& from);
+  void copy(VM vm, UnstableNode& from);
   void swap(UnstableNode& from);
   void reset(VM vm);
 
@@ -108,5 +108,16 @@ public:
   H* operator->() { return static_cast<H*>(p); }
   E& operator[](size_t i) { return static_cast<E*>(p+sizeof(H))[i]; }
 };
+
+/**
+ * Result of the call to a builtin.
+ * It always represents a node that must be waited upon. The value 'nullptr' is
+ * valid, and denotes that no value must be waited upon, i.e., the execution can
+ * continue.
+ * Throwing an exception is achieved by pointing to a failed value.
+ */
+typedef StableNode* BuiltinResult;
+
+const BuiltinResult BuiltinResultContinue = nullptr;
 
 #endif // __STORE_H

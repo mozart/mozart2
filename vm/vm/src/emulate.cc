@@ -28,6 +28,8 @@
 
 #include "smallint.hh"
 #include "corebuiltins.hh"
+#include "vm.hh"
+#include "variables.hh"
 
 using namespace std;
 
@@ -56,35 +58,35 @@ void Thread::run() {
       // MOVES
 
       case OpMoveXX:
-        XPC(2).copy(XPC(1));
+        XPC(2).copy(vm, XPC(1));
         advancePC(2); break;
 
       case OpMoveXY:
-        YPC(2).copy(XPC(1));
+        YPC(2).copy(vm, XPC(1));
         advancePC(2); break;
 
       case OpMoveYX:
-        XPC(2).copy(YPC(1));
+        XPC(2).copy(vm, YPC(1));
         advancePC(2); break;
 
       case OpMoveYY:
-        YPC(2).copy(YPC(1));
+        YPC(2).copy(vm, YPC(1));
         advancePC(2); break;
 
       case OpMoveGX:
-        XPC(2).copy(GPC(1));
+        XPC(2).copy(vm, GPC(1));
         advancePC(2); break;
 
       case OpMoveGY:
-        YPC(2).copy(GPC(1));
+        YPC(2).copy(vm, GPC(1));
         advancePC(2); break;
 
       case OpMoveKX:
-        XPC(2).copy(KPC(1));
+        XPC(2).copy(vm, KPC(1));
         advancePC(2); break;
 
       case OpMoveKY:
-        YPC(2).copy(KPC(1));
+        YPC(2).copy(vm, KPC(1));
         advancePC(2); break;
 
       // Y allocations
@@ -102,6 +104,13 @@ void Thread::run() {
         delete yregs;
         yregs = nullptr;
         advancePC(0); break;
+      }
+
+      // Variable allocation
+
+      case OpCreateVar: {
+        XPC(1).make<Unbound::Repr>(vm, Unbound::type, Unbound::value);
+        advancePC(1); break;
       }
 
       // Control
@@ -168,16 +177,34 @@ void Thread::run() {
         break;
       }
 
+      // Unification
+
+      case OpUnifyXX:
+        unify(XPC(1).node, XPC(2).node);
+        advancePC(2); break;
+
+      case OpUnifyXY:
+        unify(XPC(1).node, YPC(2).node);
+        advancePC(2); break;
+
+      case OpUnifyXK:
+        unify(XPC(1).node, KPC(2).node);
+        advancePC(2); break;
+
+      case OpUnifyXG:
+        unify(XPC(1).node, GPC(2).node);
+        advancePC(2); break;
+
       // Hard-coded stuff
 
       case OpPrintInt: {
-        UnstableNode& arg = XPC(1);
-        if (arg.node.type == SmallInt::type) {
-          nativeint value = arg.node.value.get<nativeint>();
+        Node& arg = Reference::dereference(XPC(1).node);
+        if (arg.type == SmallInt::type) {
+          nativeint value = arg.value.get<nativeint>();
           printf("%ld\n", value);
         } else {
-          const string& typeName = arg.node.type->getName();
-          printf("SmallInt expected but %s found\n", typeName.c_str());
+          const string typeName = arg.type->getName();
+          cout << "SmallInt expected but " << typeName << " found\n";
         }
         advancePC(1); break;
       }

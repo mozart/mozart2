@@ -26,8 +26,8 @@
 #define __CALLABLES_H
 
 #include "type.hh"
-#include "emulate.hh"
 #include "smallint.hh"
+#include "codearea.hh"
 
 /**
  * Type of a builtin function
@@ -84,7 +84,7 @@ public:
 
   static const Type* const type;
 
-  static BuiltinResult callBuiltin(VM vm, UnstableNode& self,
+  static BuiltinResult callBuiltin(VM vm, Node& self,
     int argc, UnstableNode* args[]);
 private:
   static const Type rawType;
@@ -137,7 +137,7 @@ public:
 
   static const Type* const type;
 
-  static BuiltinResult getCallInfo(VM vm, UnstableNode& self,
+  static BuiltinResult getCallInfo(VM vm, Node& self,
     int& arity, CodeArea*& body, StaticArray<StableNode>*& Gs);
 private:
   static const Type rawType;

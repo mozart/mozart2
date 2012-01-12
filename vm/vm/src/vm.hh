@@ -30,7 +30,10 @@
 
 class VirtualMachine {
 public:
-  UnstableNode* newVariable();
+  StableNode* newVariable();
+
+  template <class T>
+  T* alloc(int count = 1);
 };
 
 #endif // __VM_H

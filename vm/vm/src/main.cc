@@ -39,22 +39,23 @@ int main(int argc, char **argv) {
 
   BuiltinProcedureValue builtinAdd(3, &builtins::add);
 
-  // Define PrintAdd procedure
+  // Define PrintAdd function
 
   ByteCode printAddCodeBlock[] = {
     OpMoveGX, 0, 3,
-    OpCallBuiltin, 3, 3, 0, 1, 2,
+    OpCallBuiltin, 3, 3, 0, 1, 4,
+    OpUnifyXX, 2, 4,
     OpPrintInt, 2,
     OpReturn
   };
 
   CodeArea printAddCodeArea(printAddCodeBlock, sizeof(printAddCodeBlock),
-    4, 0, nullptr);
+    5, 0, nullptr);
 
   temp.make(vm, BuiltinProcedure::type, &builtinAdd);
   UnstableNode* printAddGs[1] = { &temp };
 
-  AbstractionValue printAdd(2, &printAddCodeArea, 1, printAddGs);
+  AbstractionValue printAdd(3, &printAddCodeArea, 1, printAddGs);
 
   // Define Main procedure
 
@@ -62,12 +63,16 @@ int main(int argc, char **argv) {
     OpMoveKX, 0, 0,
     OpMoveXX, 0, 1,
     OpPrintInt, 1,
-    OpAllocateY, 1,
+    OpAllocateY, 2,
     OpMoveXY, 1, 0,
     OpMoveKX, 1, 0,
+    OpCreateVar, 2,
+    OpMoveXY, 2, 1,
     OpMoveGX, 0, 3,
-    OpCall, 3, 2,
+    OpCall, 3, 3,
     OpMoveYX, 0, 0,
+    OpPrintInt, 0,
+    OpMoveYX, 1, 0,
     OpPrintInt, 0,
     OpDeallocateY,
     OpReturn
@@ -78,7 +83,7 @@ int main(int argc, char **argv) {
   two.make<nativeint>(vm, SmallInt::type, 2);
 
   UnstableNode* mainKs[] = { &five, &two };
-  CodeArea mainCodeArea(mainCodeBlock, sizeof(mainCodeBlock), 4, 2, mainKs);
+  CodeArea mainCodeArea(mainCodeBlock, sizeof(mainCodeBlock), 5, 2, mainKs);
 
   StaticArray<StableNode> mainGs(1);
   temp.make<Abstraction::Repr>(vm, Abstraction::type, &printAdd);

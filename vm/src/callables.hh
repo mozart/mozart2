@@ -29,17 +29,23 @@
 #include "smallint.hh"
 #include "codearea.hh"
 
+#include <iostream>
+
+//////////////////////
+// BuiltinProcedure //
+//////////////////////
+
 /**
  * Type of a builtin function
  */
 typedef BuiltinResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
 
-/**
- * A value that represents an Oz builtin
- */
-class BuiltinProcedureValue {
+class BuiltinProcedure;
+
+template <>
+class Implementation<BuiltinProcedure> {
 public:
-  BuiltinProcedureValue(int arity, OzBuiltin builtin) :
+  Implementation<BuiltinProcedure>(int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
 
   /**
@@ -53,7 +59,7 @@ public:
    * @param argc   Actual number of parameters
    * @param args   Actual parameters
    */
-  BuiltinResult callBuiltin(VM vm, int argc, UnstableNode* args[]) {
+  BuiltinResult callBuiltin(Node* self, VM vm, int argc, UnstableNode* args[]) {
     if (argc == _arity)
       return _builtin(vm, args);
     else
@@ -63,8 +69,8 @@ public:
   /**
    * Get the arity of the builtin in a node
    */
-  BuiltinResult arity(VM vm, UnstableNode& result) {
-    result.make<nativeint>(vm, SmallInt::type, _arity);
+  BuiltinResult arity(Node* self, VM vm, UnstableNode* result) {
+    result->make<SmallInt>(vm, (nativeint) _arity);
     return BuiltinResultContinue;
   }
 private:
@@ -79,31 +85,35 @@ private:
  */
 class BuiltinProcedure {
 public:
-  typedef BuiltinProcedureValue Value;
-  typedef Value* Repr;
+  typedef Node* Self;
 
   static const Type* const type;
-
-  static BuiltinResult callBuiltin(VM vm, Node& self,
-    int argc, UnstableNode* args[]);
 private:
   static const Type rawType;
 };
 
+/////////////////
+// Abstraction //
+/////////////////
+
+class Abstraction;
+
 /**
  * Abstraction value, i.e., user-defined procedure
  */
-class AbstractionValue {
+template <>
+class Implementation<Abstraction> {
 public:
-  AbstractionValue(int arity, CodeArea* body, int Gc, UnstableNode* Gs[]);
+  Implementation<Abstraction>(VM vm, int arity, CodeArea* body,
+    int Gc, UnstableNode* Gs[]);
 
   int getArity() { return _arity; }
 
   /**
    * Get the arity of the abstraction in a node
    */
-  BuiltinResult arity(VM vm, UnstableNode& result) {
-    result.make<nativeint>(vm, SmallInt::type, _arity);
+  BuiltinResult arity(Node* self, VM vm, UnstableNode* result) {
+    result->make<SmallInt>(vm, (nativeint) _arity);
     return BuiltinResultContinue;
   }
 
@@ -114,11 +124,11 @@ public:
    * @param body    Output: code area which is the body
    * @param Gs      Output: G registers
    */
-  BuiltinResult getCallInfo(VM vm, int& arity, CodeArea*& body,
-    StaticArray<StableNode>*& Gs) {
-    arity = _arity;
-    body = _body;
-    Gs = &_Gs;
+  BuiltinResult getCallInfo(Node* self, VM vm, int* arity, CodeArea** body,
+    StaticArray<StableNode>** Gs) {
+    *arity = _arity;
+    *body = _body;
+    *Gs = &_Gs;
     return BuiltinResultContinue;
   }
 private:
@@ -132,13 +142,9 @@ private:
  */
 class Abstraction {
 public:
-  typedef AbstractionValue Value;
-  typedef Value* Repr;
+  typedef Node* Self;
 
   static const Type* const type;
-
-  static BuiltinResult getCallInfo(VM vm, Node& self,
-    int& arity, CodeArea*& body, StaticArray<StableNode>*& Gs);
 private:
   static const Type rawType;
 };

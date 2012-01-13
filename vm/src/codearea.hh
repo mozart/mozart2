@@ -31,7 +31,7 @@
 
 class CodeArea {
 public:
-  CodeArea(ByteCode* codeBlock, int size, int Xcount,
+  CodeArea(VM vm, ByteCode* codeBlock, int size, int Xcount,
     int Kc, UnstableNode* Ks[]);
 
   ProgramCounter getStart() {

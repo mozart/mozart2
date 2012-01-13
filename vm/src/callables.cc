@@ -24,42 +24,30 @@
 
 #include "callables.hh"
 
-// BuiltinProcedure
+//////////////////////
+// BuiltinProcedure //
+//////////////////////
 
 const Type BuiltinProcedure::rawType("BuiltinProcedure", nullptr);
 const Type* const BuiltinProcedure::type = &BuiltinProcedure::rawType;
 
-BuiltinResult BuiltinProcedure::callBuiltin(VM vm, Node& self,
-  int argc, UnstableNode* args[]) {
-  Value* value = self.value.get<Value*>();
-  return value->callBuiltin(vm, argc, args);
-}
-
-BuiltinResult BuiltinProcedureValue::raiseIllegalArity(int argc) {
+BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
   // TODO raiseIllegalArity
   return BuiltinResultContinue;
 }
 
 
-// AbstractionValue
-
-AbstractionValue::AbstractionValue(int arity, CodeArea* body,
-  int Gc, UnstableNode* Gs[]) :
-  _arity(arity), _body(body), _Gs(Gc) {
-
-  for (int i = 0; i < Gc; i++)
-    _Gs[i].init(*Gs[i]);
-}
-
-
-// Abstraction
+/////////////////
+// Abstraction //
+/////////////////
 
 const Type Abstraction::rawType("Abstraction", nullptr);
 const Type* const Abstraction::type = &Abstraction::rawType;
 
-BuiltinResult Abstraction::getCallInfo(VM vm, Node& self, int& arity,
-  CodeArea*& body, StaticArray<StableNode>*& Gs) {
+Implementation<Abstraction>::Implementation(VM vm, int arity, CodeArea* body,
+                                            int Gc, UnstableNode* Gs[]) :
+  _arity(arity), _body(body), _Gs(Gc) {
 
-  Value* value = self.value.get<Value*>();
-  return value->getCallInfo(vm, arity, body, Gs);
+  for (int i = 0; i < Gc; i++)
+    _Gs[i].init(vm, *Gs[i]);
 }

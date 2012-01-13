@@ -24,18 +24,22 @@
 
 #include "variables.hh"
 
-// Reference
+///////////////
+// Reference //
+///////////////
 
 const Type Reference::rawType("Reference", nullptr, true);
 const Type* const Reference::type = &Reference::rawType;
 
-// Unbound
+/////////////
+// Unbound //
+/////////////
 
 const Type Unbound::rawType("Unbound", nullptr);
 const Type* const Unbound::type = &Unbound::rawType;
 
-void Unbound::bind(VM vm, Node& self, Node& src) {
-  if (!src.type->isCopiable())
-    Reference::makeFor(vm, src);
-  self = src;
+void Implementation<Unbound>::bind(Node* self, VM vm, Node* src) {
+  if (!src->type->isCopiable())
+    Reference::makeFor(vm, *src);
+  *self = *src;
 }

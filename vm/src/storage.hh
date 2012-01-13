@@ -22,12 +22,58 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "codearea.hh"
+#ifndef __STORAGE_H
+#define __STORAGE_H
 
-CodeArea::CodeArea(VM vm, ByteCode* codeBlock, int size, int Xcount,
-  int Kc, UnstableNode* Ks[]) :
-  _codeBlock(codeBlock), _size(size), _Xcount(Xcount), _Ks(Kc) {
+#include "memword.hh"
+#include "type.hh"
 
-  for (int i = 0; i < Kc; i++)
-    _Ks[i].init(vm, *Ks[i]);
-}
+template <class T>
+class Implementation {
+};
+
+
+// Marker class that specifies to use the default storage (pointer to value)
+template<class T>
+class DefaultStorage {
+};
+
+// Meta-function from Type to its storage
+template<class T>
+class Storage {
+public:
+  typedef DefaultStorage<T> Type;
+};
+
+template<class T, class U>
+class Accessor {
+public:
+  template<class... Args>
+  static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
+    type = T::type;
+    value.init(vm, T::build(args...));
+  }
+
+  static Implementation<T> get(MemWord value) {
+    return Implementation<T>(value.get<U>());
+  }
+};
+
+template<class T>
+class Accessor<T, DefaultStorage<T>> {
+public:
+  typedef Implementation<T> Impl;
+
+  template<class... Args>
+  static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
+    type = T::type;
+    Impl* val = new (vm) Impl(args...);
+    value.init<Impl*>(vm, val);
+  }
+
+  static Impl& get(MemWord value) {
+    return *(value.get<Impl*>());
+  }
+};
+
+#endif // __STORAGE_H

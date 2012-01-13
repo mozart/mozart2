@@ -25,15 +25,19 @@
 #ifndef __VM_H
 #define __VM_H
 
+#include <stdlib.h>
+
 #include "memword.hh"
 #include "store.hh"
 
 class VirtualMachine {
 public:
   StableNode* newVariable();
-
-  template <class T>
-  T* alloc(int count = 1);
+private:
+  friend void* operator new (size_t size, VM vm);
+  void* malloc(size_t size) {
+    return ::malloc(size);
+  }
 };
 
 #endif // __VM_H

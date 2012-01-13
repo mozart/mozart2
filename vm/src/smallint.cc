@@ -27,12 +27,13 @@
 const Type SmallInt::rawType("SmallInt", nullptr, true);
 const Type* const SmallInt::type = &SmallInt::rawType;
 
-BuiltinResult SmallInt::add(VM vm, Node& self,
-  UnstableNode& b, UnstableNode& result) {
-  if (b.node.type == type) {
-    nativeint r = self.value.get<nativeint>() +
-      b.node.value.get<nativeint>();
-    result.make<nativeint>(vm, type, r);
+BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
+  if (right->node.type == SmallInt::type) {
+    nativeint r = value() +
+      IMPLNOSELF(nativeint, SmallInt, value, &right->node);
+    result->make<SmallInt>(vm, r);
     return BuiltinResultContinue;
   } else {
     // TODO SmallInt + non-SmallInt

@@ -1,2 +1,17 @@
 This is a clean reimplementation of the Mozart virtual machine.
-For the moment it's just bits and pieces that don't all fit together.
+
+
+Build instructions
+==================
+
+mozart$ mkdir build
+mozart$ cd build/
+build$ cmake ..
+build$ make
+
+
+Run the VM with its hardcoded program
+=====================================
+
+build$ cd vm/src/
+src$ ./vm

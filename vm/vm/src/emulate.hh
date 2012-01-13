@@ -95,9 +95,9 @@ private:
     Node& right = Reference::dereference(r);
 
     if (left.type == Unbound::type)
-      Unbound::bind(vm, left, right);
+      IMPL(void, Unbound, bind, &left, vm, &right);
     else if (right.type == Unbound::type)
-      Unbound::bind(vm, right, left);
+      IMPL(void, Unbound, bind, &right, vm, &left);
     else {
       // TODO Non-trivial unify
     }

@@ -26,6 +26,7 @@
 #define __STORE_H
 
 #include "memword.hh"
+#include "storage.hh"
 #include "type.hh"
 
 class UnstableNode;
@@ -47,9 +48,9 @@ private:
   friend class UnstableNode;
 
   template<class T, class... Args>
-  void make(VM vm, const Type* type, T value) {
-    this->type = type;
-    this->value.set(vm, value);
+  void make(VM vm, Args... args) {
+    typedef Accessor<T, typename Storage<T>::Type> Access;
+    Access::init(type, value, vm, args...);
   }
 
   void reset(VM vm);
@@ -74,7 +75,7 @@ private:
  */
 class StableNode {
 public:
-  void init(UnstableNode& from);
+  void init(VM vm, UnstableNode& from);
 private:
   friend class UnstableNode;
 public: // TODO make it private once the development has been bootstrapped
@@ -92,8 +93,8 @@ public:
   void reset(VM vm);
 
   template<class T, class... Args>
-  void make(VM vm, const Type* type, T value) {
-    node.make(vm, type, value);
+  void make(VM vm, Args... args) {
+    node.make<T>(vm, args...);
   }
 private:
   friend class StableNode;
@@ -119,5 +120,41 @@ public:
 typedef StableNode* BuiltinResult;
 
 const BuiltinResult BuiltinResultContinue = nullptr;
+
+/**
+ * Strange and magical class that allows to call methods on storage-typed nodes
+ */
+template<class T, class R, class M, M m>
+class Impl {
+public:
+  typedef Accessor<T, typename Storage<T>::Type> Type;
+
+  template<class... Args>
+  static R f(Node* it, Args... args) {
+    return (Type::get(it->value).*m)(typename T::Self(it), args...);
+  }
+};
+
+#define IMPL(ResType, Type, method, args...) \
+  (Impl<Type, ResType, decltype(&Implementation<Type>::method), \
+    &Implementation<Type>::method>::f(args))
+
+/**
+ * Strange and magical class that allows to call methods on storage-typed nodes
+ */
+template<class T, class R, class M, M m>
+class ImplNoSelf {
+public:
+  typedef Accessor<T, typename Storage<T>::Type> Type;
+
+  template<class... Args>
+  static R f(Node* it, Args... args) {
+    return (Type::get(it->value).*m)(args...);
+  }
+};
+
+#define IMPLNOSELF(ResType, Type, method, args...) \
+  (ImplNoSelf<Type, ResType, decltype(&Implementation<Type>::method), \
+    &Implementation<Type>::method>::f(args))
 
 #endif // __STORE_H

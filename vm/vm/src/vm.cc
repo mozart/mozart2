@@ -3,14 +3,13 @@
 #include "variables.hh"
 
 StableNode* VirtualMachine::newVariable() {
-  StableNode* result = alloc<StableNode>();
+  StableNode* result = new (*this) StableNode;
   UnstableNode temp;
-  temp.make<Unbound::Repr>(*this, Unbound::type, Unbound::value);
-  result->init(temp);
+  temp.make<Unbound>(*this);
+  result->init(*this, temp);
   return result;
 }
 
-template <class T>
-T* VirtualMachine::alloc(int count) {
-  return static_cast<T*>(malloc(count * sizeof(T)));
+void* operator new (size_t size, VM vm) {
+  return vm.malloc(size);
 }

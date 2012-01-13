@@ -26,16 +26,39 @@
 #define __SMALLINT_H
 
 #include "type.hh"
+#include "storage.hh"
 #include "store.hh"
+
+class SmallInt;
+
+template <>
+class Storage<SmallInt> {
+public:
+  typedef nativeint Type;
+};
+
+template <>
+class Implementation<SmallInt> {
+public:
+  Implementation<SmallInt>(const Implementation<SmallInt>& src) :
+    _value(src.value()) {}
+  Implementation<SmallInt>(nativeint value) : _value(value) {}
+
+  nativeint value() const { return _value; }
+
+  BuiltinResult add(Node* self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+private:
+  const nativeint _value;
+};
 
 class SmallInt {
 public:
-  typedef nativeint Repr;
+  typedef Node* Self;
 
   static const Type* const type;
 
-  static BuiltinResult add(VM vm, Node& self,
-    UnstableNode& b, UnstableNode& result);
+  static nativeint build(nativeint value) { return value; }
 private:
   static const Type rawType;
 };

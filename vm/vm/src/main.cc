@@ -28,16 +28,12 @@
 #include "vm.hh"
 #include "smallint.hh"
 #include "callables.hh"
+#include "variables.hh"
 #include "corebuiltins.hh"
 #include "stdint.h"
 
 int main(int argc, char **argv) {
   VirtualMachine vm;
-  UnstableNode temp;
-
-  // Define the Add builtin
-
-  BuiltinProcedureValue builtinAdd(3, &builtins::add);
 
   // Define PrintAdd function
 
@@ -49,13 +45,12 @@ int main(int argc, char **argv) {
     OpReturn
   };
 
-  CodeArea printAddCodeArea(printAddCodeBlock, sizeof(printAddCodeBlock),
+  CodeArea printAddCodeArea(vm, printAddCodeBlock, sizeof(printAddCodeBlock),
     5, 0, nullptr);
 
-  temp.make(vm, BuiltinProcedure::type, &builtinAdd);
-  UnstableNode* printAddGs[1] = { &temp };
-
-  AbstractionValue printAdd(3, &printAddCodeArea, 1, printAddGs);
+  UnstableNode builtinAdd;
+  builtinAdd.make<BuiltinProcedure>(vm, 3, (OzBuiltin) &builtins::add);
+  UnstableNode* printAddGs[1] = { &builtinAdd };
 
   // Define Main procedure
 
@@ -79,15 +74,16 @@ int main(int argc, char **argv) {
   };
 
   UnstableNode five, two;
-  five.make<nativeint>(vm, SmallInt::type, 5);
-  two.make<nativeint>(vm, SmallInt::type, 2);
+  five.make<SmallInt>(vm, 5);
+  two.make<SmallInt>(vm, 2);
 
   UnstableNode* mainKs[] = { &five, &two };
-  CodeArea mainCodeArea(mainCodeBlock, sizeof(mainCodeBlock), 5, 2, mainKs);
+  CodeArea mainCodeArea(vm, mainCodeBlock, sizeof(mainCodeBlock), 5, 2, mainKs);
 
   StaticArray<StableNode> mainGs(1);
-  temp.make<Abstraction::Repr>(vm, Abstraction::type, &printAdd);
-  mainGs[0].init(temp);
+  UnstableNode abstractionPrintAdd;
+  abstractionPrintAdd.make<Abstraction>(vm, vm, 3, &printAddCodeArea, 1, printAddGs);
+  mainGs[0].init(vm, abstractionPrintAdd);
 
   Thread thread(vm, &mainCodeArea, mainGs);
 

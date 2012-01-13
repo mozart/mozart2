@@ -39,13 +39,16 @@
 #ifndef __MEMWORD_H
 #define __MEMWORD_H
 
-#include "stdint.h"
+#include <stdlib.h>
+#include <stdint.h>
 
 typedef intptr_t nativeint;
 
 // We need the VM class to allocate memory for "big" types.
 class VirtualMachine;
 typedef VirtualMachine& VM;
+
+void* operator new (size_t size, VM vm);
 
 // MWTest is a metafunction that returns T if i!=0 and a type guaranteed to be
 // smaller or equal to char* if i==0
@@ -71,7 +74,7 @@ template<class U, class T, class R>
 class MWUAccessor{
 public:
   static T& get(U *u){return (u->next).template get<T>();}
-  static void set(VM vm, U *u, T v){u->next.template set<T>(vm,v);}
+  static void init(VM vm, U *u, T v){u->next.template init<T>(vm,v);}
 };
 
 // The bottom case of the MWUnion contains just a char* as it can be cast to
@@ -82,7 +85,7 @@ union MWUnion<>{
   template<class T>
   T& get(){return MWUAccessor<MWUnion,T,T>::get(this);}
   template<class T>
-  void set(VM vm,T v){MWUAccessor<MWUnion,T,T>::set(vm,this,v);}
+  void init(VM vm,T v){MWUAccessor<MWUnion,T,T>::init(vm,this,v);}
 };
 
 // The easy case of accessing what we have in the first member of the union.
@@ -90,7 +93,7 @@ template<class U, class T>
 class MWUAccessor<U,T,T>{
 public:
   static T& get(U *u){return u->it;}
-  static void set(VM vm, U *u, T v){u->it=v;}
+  static void init(VM vm, U *u, T v){u->it=v;}
 };
 
 // Accessing something that wasn't there, if a pointer type, we just get away
@@ -99,7 +102,7 @@ template<class T>
 class MWUAccessor<MWUnion<>,T*,T*>{
 public:
   static T*& get(MWUnion<>* u){return reinterpret_cast<T*&>(u->it);}
-  static void set(VM vm, MWUnion<> *u, T *v){u->it=reinterpret_cast<char*>(v);}
+  static void init(VM vm, MWUnion<> *u, T *v){u->it=reinterpret_cast<char*>(v);}
 };
 // It isn't there and isn't a pointer so we store a pointer to it. We need new
 // memory on setting too.
@@ -107,7 +110,7 @@ template<class T>
 class MWUAccessor<MWUnion<>,T,T>{
 public:
   static T& get(MWUnion<>* u){return *reinterpret_cast<T*>(u->it);}
-  static void set(VM vm, MWUnion<> *u, T *v){
+  static void init(VM vm, MWUnion<> *u, T *v){
     u->it=reinterpret_cast<char*>(new(vm)T(v));
   }
 };
@@ -121,7 +124,7 @@ union MWUnion<T,args...>{
   template<class Q>
   Q& get(){return MWUAccessor<MWUnion,Q,Tred>::get(this);}
   template<class Q>
-  void set(VM vm,Q v){MWUAccessor<MWUnion,Q,Tred>::set(vm,this,v);}
+  void init(VM vm,Q v){MWUAccessor<MWUnion,Q,Tred>::init(vm,this,v);}
 };
 
 // Finally, here comes the list of potentially small types that we want to

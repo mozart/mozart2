@@ -27,18 +27,20 @@
 
 void Node::reset(VM vm) {
   type = nullptr;
-  value.set<char*>(vm, nullptr);
+  value.init<void*>(vm, nullptr);
 }
 
-void StableNode::init(UnstableNode& from) {
+void StableNode::init(VM vm, UnstableNode& from) {
   node = from.node;
+  if (!node.type->isCopiable())
+    from.make<Reference>(vm, this);
 }
 
 void UnstableNode::copy(VM vm, StableNode& from) {
   if (from.node.type->isCopiable())
     node = from.node;
   else
-    make<Reference::Repr>(vm, Reference::type, &from);
+    make<Reference>(vm, &from);
 }
 
 void UnstableNode::copy(VM vm, UnstableNode& from) {

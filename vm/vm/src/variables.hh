@@ -29,14 +29,38 @@
 #include "smallint.hh"
 #include "vm.hh"
 
+///////////////
+// Reference //
+///////////////
+
+class Reference;
+
+template <>
+class Storage<Reference> {
+public:
+  typedef StableNode* Type;
+};
+
+template <>
+class Implementation<Reference> {
+public:
+  Implementation<Reference>(StableNode* dest) : _dest(dest) {}
+
+  StableNode* dest() const { return _dest; }
+private:
+  StableNode* _dest;
+};
+
 /**
  * Type of a reference
  */
 class Reference {
 public:
-  typedef StableNode* Repr;
+  typedef Node* Self;
 
   static const Type* const type;
+
+  static StableNode* build(StableNode* dest) { return dest; }
 
   // This is optimized for the 0- and 1-dereference paths
   // Normally it would have been only a while loop
@@ -44,7 +68,7 @@ public:
     if (node.type != type)
       return node;
     else {
-      Node* result = &(node.value.get<Repr>()->node);
+      Node* result = &IMPLNOSELF(StableNode*, Reference, dest, &node)->node;
       if (result->type != type)
         return *result;
       else
@@ -53,9 +77,8 @@ public:
   }
 
   static void makeFor(VM vm, UnstableNode& node) {
-    StableNode* stable = vm.alloc<StableNode>();
-    stable->init(node);
-    node.make<Repr>(vm, type, stable);
+    StableNode* stable = new (vm) StableNode;
+    stable->init(vm, node);
   }
 
   static void makeFor(VM vm, Node& node) {
@@ -67,11 +90,32 @@ public:
 private:
   static Node& dereferenceLoop(Node* node) {
     while (node->type == type)
-      node = &(node->value.get<Repr>()->node);
+      node = &(IMPLNOSELF(StableNode*, Reference, dest, node)->node);
     return *node;
   }
 
   static const Type rawType;
+};
+
+/////////////
+// Unbound //
+/////////////
+
+class Unbound;
+
+template <>
+class Storage<Unbound> {
+public:
+  typedef void* Type;
+};
+
+template <>
+class Implementation<Unbound> {
+public:
+  Implementation<Unbound>() {}
+  Implementation<Unbound>(void* dummy) {}
+
+  void bind(Node* self, VM vm, Node* src);
 };
 
 /**
@@ -79,12 +123,11 @@ private:
  */
 class Unbound {
 public:
-  typedef void* Repr;
+  typedef Node* Self;
 
   static const Type* const type;
-  static constexpr Repr value = nullptr;
 
-  static void bind(VM vm, Node& self, Node& src);
+  static void* build() { return nullptr; }
 private:
   static const Type rawType;
 };

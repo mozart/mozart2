@@ -31,14 +31,19 @@
 #include "callables.hh"
 #include "variables.hh"
 
+#include <iostream>
+
 struct BuiltinCallable {
   BuiltinCallable(Node& self) : self(Reference::dereference(self)) {};
 
   BuiltinResult callBuiltin(VM vm, int argc, UnstableNode* args[]) {
     if (self.type == BuiltinProcedure::type) {
-      return BuiltinProcedure::callBuiltin(vm, self, argc, args);
+      return IMPL(BuiltinResult, BuiltinProcedure, callBuiltin,
+                  &self, vm, argc, args);
     } else {
       // TODO call non-builtin
+      cout << "BuiltinProcedure expected but " << self.type->getName();
+      cout << " found" << endl;
       return BuiltinResultContinue;
     }
   }
@@ -49,12 +54,15 @@ private:
 struct Callable {
   Callable(Node& self) : self(Reference::dereference(self)) {};
 
-  BuiltinResult getCallInfo(VM vm, int& arity, CodeArea*& body,
-    StaticArray<StableNode>*& Gs) {
+  BuiltinResult getCallInfo(VM vm, int* arity, CodeArea** body,
+    StaticArray<StableNode>** Gs) {
     if (self.type == Abstraction::type) {
-      return Abstraction::getCallInfo(vm, self, arity, body, Gs);
+      return IMPL(BuiltinResult, Abstraction, getCallInfo,
+                  &self, vm, arity, body, Gs);
     } else {
       // TODO call non-abstraction
+      cout << "Abstraction expected but " << self.type->getName();
+      cout << " found" << endl;
       return BuiltinResultContinue;
     }
   }
@@ -65,11 +73,14 @@ private:
 struct Addable {
   Addable(Node& self) : self(Reference::dereference(self)) {};
 
-  BuiltinResult add(VM vm, UnstableNode& b, UnstableNode& result) {
+  BuiltinResult add(VM vm, UnstableNode* right, UnstableNode* result) {
     if (self.type == SmallInt::type) {
-      return SmallInt::add(vm, self, b, result);
+      return IMPL(BuiltinResult, SmallInt, add,
+                  &self, vm, right, result);
     } else {
       // TODO add non-SmallInt
+      cout << "SmallInt expected but " << self.type->getName();
+      cout << " found" << endl;
       return BuiltinResultContinue;
     }
   }

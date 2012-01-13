@@ -109,7 +109,7 @@ void Thread::run() {
       // Variable allocation
 
       case OpCreateVar: {
-        XPC(1).make<Unbound::Repr>(vm, Unbound::type, Unbound::value);
+        XPC(1).make<Unbound>(vm);
         advancePC(1); break;
       }
 
@@ -144,10 +144,12 @@ void Thread::run() {
         StaticArray<StableNode>* Gs;
 
         BuiltinResult result = builtins::getCallInfo(vm, callable,
-          formalArity, body, Gs);
+          &formalArity, &body, &Gs);
 
         if (result == BuiltinResultContinue) {
           if (actualArity != formalArity) {
+            cout << "Illegal arity: " << formalArity << " expected but ";
+            cout << actualArity << " found" << endl;
             // TODO Raise illegal arity exception
           }
 
@@ -200,7 +202,7 @@ void Thread::run() {
       case OpPrintInt: {
         Node& arg = Reference::dereference(XPC(1).node);
         if (arg.type == SmallInt::type) {
-          nativeint value = arg.value.get<nativeint>();
+          nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
           printf("%ld\n", value);
         } else {
           const string typeName = arg.type->getName();

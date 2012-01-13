@@ -25,6 +25,8 @@
 #include "corebuiltins.hh"
 #include "coreinterfaces.hh"
 
+#include <iostream>
+
 namespace builtins {
 
 BuiltinResult callBuiltin(VM vm, UnstableNode& callable,
@@ -34,15 +36,14 @@ BuiltinResult callBuiltin(VM vm, UnstableNode& callable,
 }
 
 BuiltinResult getCallInfo(VM vm, UnstableNode& callable,
-  int& arity, CodeArea*& body, StaticArray<StableNode>*& Gs) {
-
+  int* arity, CodeArea** body, StaticArray<StableNode>** Gs) {
   Callable x = callable.node;
   return x.getCallInfo(vm, arity, body, Gs);
 }
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {
   Addable x = args[0]->node;
-  return x.add(vm, *args[1], *args[2]);
+  return x.add(vm, args[1], args[2]);
 }
 
 }

@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
   // Arguments of the program
 
-  const nativeint N = sizeof(nativeint) == 8 ? 92 : 46; // max without overflow
+  const nativeint N = 35; // time of the order of seconds on a 2-3 GHz CPU
 
   // Define the builtins
 
@@ -51,81 +51,119 @@ int main(int argc, char **argv) {
 
   // Define immediate constants
 
-  UnstableNode zero, minusOne, one, nnode;
+  UnstableNode zero, one, minusOne, minusTwo, nnode;
   zero.make<SmallInt>(vm, 0);
-  minusOne.make<SmallInt>(vm, -1);
   one.make<SmallInt>(vm, 1);
+  minusOne.make<SmallInt>(vm, -1);
+  minusTwo.make<SmallInt>(vm, -2);
   nnode.make<SmallInt>(vm, N);
 
   // Define Fibonacci function
 
   /*
-   * proc {Fibonacci N Acc1 Acc2 Res}
+   * proc {Fibonacci N Res}
    *    if N == 0 then
-   *       Res = Acc1
+   *       Res = 0
+   *    elseif N == 1 then
+   *       Res = 1
    *    else
-   *       NewN = N - 1
-   *       NewAcc1 = Acc2
-   *       NewAcc2 = Acc1 + Acc2
-   *       {Fibonacci NewN NewAcc1 NewAcc2}
+   *       {Fibonacci N-1 Left}
+   *       {Fibonacci N-2 Right}
+   *       Res = Left + Right
    *    end
    * end
    */
 
   /*
    * X0 = N
-   * X1 = Acc1
-   * X2 = Acc2
-   * X3 = Res
+   * X1 = Res
    *
    * K0 = 0
-   * K1 = -1
-   * K2 = builtin ==
-   * K3 = builtin +
+   * K1 = 1
+   * K2 = -1
+   * K3 = -2
+   * K4 = builtin ==
+   * K5 = builtin +
    *
    * G0 = Fibonacci
    *
-   * X4 = N == 0
-   * X5 = NewN
-   * X6 = NewAcc1
-   * X7 = NewAcc2
+   * X2 = condition of the test
+   * X3 = temp
    *
-   * X8 = Temp
+   * Y0 = N
+   * Y1 = Res
+   * Y2 = Left
+   * Y3 = Right
    */
 
   ByteCode fibonacciCodeBlock[] = {
     // if N == 0
-    OpMoveKX, 0, 8,
-    OpCallBuiltin, 2, 3, 0, 8, 4,
-    OpCondBranch, 4, 9, 5, 0,
+    OpMoveKX, 0, 3,
+    OpCallBuiltin, 4, 3, 0, 3, 2,
+    OpCondBranch, 2, 9, 5, 0,
 
     // error
-    OpMoveKX, 1, 8,
-    OpPrint, 8,
+    OpMoveKX, 2, 3,
+    OpPrint, 3,
 
     // then
-    //    Res = Acc1
-    OpUnifyXX, 3, 1,
+    //    Res = 0
+    OpUnifyXK, 1, 0,
+    OpReturn,
+
+    // elseif N == 1
+    OpMoveKX, 1, 3,
+    OpCallBuiltin, 4, 3, 0, 3, 2,
+    OpCondBranch, 2, 9, 5, 0,
+
+    // error
+    OpMoveKX, 2, 3,
+    OpPrint, 3,
+
+    // then
+    //    Res = 1
+    OpUnifyXK, 1, 1,
     OpReturn,
 
     // else
-    OpMoveKX, 1, 8,
-    OpCallBuiltin, 3, 3, 0, 8, 5, // NewN = N - 1
-    OpMoveXX, 2, 6,               // NewAcc1 = Acc2
-    OpCallBuiltin, 3, 3, 1, 2, 7, // NewAcc2 = Acc1 + Acc2
 
-    // {Fibonacci NewN NewAcc1 NewAcc2 Res}
-    OpMoveXX, 5, 0,
-    OpMoveXX, 6, 1,
-    OpMoveXX, 7, 2,
-    OpMoveGX, 0, 8,
-    OpTailCall, 8, 4
+    // Save N and Res
+    OpAllocateY, 4,
+    OpMoveXY, 0, 0,
+    OpMoveXY, 1, 1,
+
+    // {Fibonacci N-1 Left}
+    OpCreateVar, 1,
+    OpMoveXY, 1, 2,
+    OpMoveXX, 0, 2,
+    OpMoveKX, 2, 3,
+    OpCallBuiltin, 5, 3, 2, 3, 0,
+    OpMoveGX, 0, 2,
+    OpCall, 2, 2,
+
+    // {Fibonacci N-2 Right}
+    OpCreateVar, 1,
+    OpMoveXY, 1, 3,
+    OpMoveYX, 0, 2,
+    OpMoveKX, 3, 3,
+    OpCallBuiltin, 5, 3, 2, 3, 0,
+    OpMoveGX, 0, 2,
+    OpCall, 2, 2,
+
+    // Res = Left + Right
+    OpMoveYX, 2, 0,
+    OpMoveYX, 3, 1,
+    OpCallBuiltin, 5, 3, 0, 1, 2,
+    OpUnifyXY, 2, 1,
+
+    OpDeallocateY,
+    OpReturn
   };
 
   UnstableNode* fibonacciKs[] =
-    { &zero, &minusOne, &builtinEquals, &builtinAdd };
+    { &zero, &one, &minusOne, &minusTwo, &builtinEquals, &builtinAdd };
   CodeArea fibonacciCodeArea(vm, fibonacciCodeBlock, sizeof(fibonacciCodeBlock),
-    9, 4, fibonacciKs);
+    4, 6, fibonacciKs);
 
   UnstableNode recursiveFibonacci;
   recursiveFibonacci.make<Unbound>(vm);
@@ -133,7 +171,7 @@ int main(int argc, char **argv) {
   UnstableNode* fibonacciGs[1] = { &recursiveFibonacci };
 
   UnstableNode abstractionFibonacci;
-  abstractionFibonacci.make<Abstraction>(vm, vm, 4, &fibonacciCodeArea,
+  abstractionFibonacci.make<Abstraction>(vm, vm, 2, &fibonacciCodeArea,
                                          1, fibonacciGs);
   Reference::makeFor(vm, abstractionFibonacci);
   IMPL(void, Unbound, bind, &Reference::dereference(recursiveFibonacci.node),
@@ -159,15 +197,13 @@ int main(int argc, char **argv) {
   ByteCode mainCodeBlock[] = {
     // Allocate Y0 and create R
     OpAllocateY, 1,
-    OpCreateVar, 3,
-    OpMoveXY, 3, 0,
+    OpCreateVar, 1,
+    OpMoveXY, 1, 0,
 
-    // {Fibonacci N 0 1 R}
+    // {Fibonacci N R}
     OpMoveKX, 0, 0,
-    OpMoveKX, 1, 1,
-    OpMoveKX, 2, 2,
-    OpMoveGX, 0, 4,
-    OpCall, 4, 4,
+    OpMoveGX, 0, 2,
+    OpCall, 2, 2,
 
     // {Print R}
     OpMoveYX, 0, 0,

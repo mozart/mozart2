@@ -64,31 +64,7 @@ public:
 
   void run();
 private:
-  void advancePC(int argCount) { PC += argCount + 1; } // 1 for opcode
-
-  ByteCode IntPC(int offset) { return PC[offset]; }
-  UnstableNode &XPC(int offset) { return xregs[PC[offset]]; }
-  UnstableNode &YPC(int offset) { return (*yregs)[PC[offset]]; }
-  StableNode &GPC(int offset) { return (*gregs)[PC[offset]]; }
-  StableNode &KPC(int offset) { return (*kregs)[PC[offset]]; }
-
   void waitFor(Node& node);
-
-  void pushFrame() {
-    StackEntry entry(area, PC, yregs, gregs);
-    stack.push(entry);
-  }
-
-  void popFrame() {
-    assert(!stack.empty());
-    StackEntry& entry = stack.top();
-    area = entry.area;
-    PC = entry.PC;
-    yregs = entry.yregs;
-    gregs = entry.gregs;
-    kregs = area ? &area->getKs() : nullptr;
-    stack.pop();
-  }
 
   // To be inlined in run()
   void unify(Node& l, Node& r) {

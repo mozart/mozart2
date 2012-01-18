@@ -86,6 +86,7 @@ private:
     PC = entry.PC;
     yregs = entry.yregs;
     gregs = entry.gregs;
+    kregs = area ? &area->getKs() : nullptr;
     stack.pop();
   }
 

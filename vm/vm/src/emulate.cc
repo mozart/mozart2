@@ -134,9 +134,6 @@ void Thread::run() {
 
       // Control
 
-      case OpStop:
-        return;
-
       case OpCallBuiltin: {
         int argc = PC[2];
         UnstableNode* args[argc];

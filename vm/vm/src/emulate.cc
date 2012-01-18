@@ -230,14 +230,17 @@ void Thread::run() {
 
       // Hard-coded stuff
 
-      case OpPrintInt: {
+      case OpPrint: {
         Node& arg = Reference::dereference(XPC(1).node);
         if (arg.type == SmallInt::type) {
           nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
           printf("%ld\n", value);
+        } else if (arg.type == Boolean::type) {
+          bool value = IMPLNOSELF(bool, Boolean, value, &arg);
+          printf("%s\n", value ? "True" : "False");
         } else {
           const string typeName = arg.type->getName();
-          cout << "SmallInt expected but " << typeName << " found\n";
+          cout << "SmallInt or Boolean expected but " << typeName << " found\n";
         }
         advancePC(1); break;
       }

@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 
     // error
     OpMoveKX, 1, 8,
-    OpPrintInt, 8,
+    OpPrint, 8,
 
     // then
     //    Res = Acc1
@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
 
     // {Print R}
     OpMoveYX, 0, 0,
-    OpPrintInt, 0,
+    OpPrint, 0,
 
     // end
     OpDeallocateY,

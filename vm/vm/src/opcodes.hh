@@ -61,6 +61,6 @@ const OpCode OpUnifyXK = 0x22;
 const OpCode OpUnifyXG = 0x23;
 
 // Hard-coded stuff for bootstrapping the development
-const OpCode OpPrintInt = 0x18;
+const OpCode OpPrint = 0x18;
 
 #endif // __OPCODES_H

@@ -38,19 +38,18 @@ int main(int argc, char **argv) {
   // Define PrintAdd function
 
   ByteCode printAddCodeBlock[] = {
-    OpMoveGX, 0, 3,
-    OpCallBuiltin, 3, 3, 0, 1, 4,
+    OpCallBuiltin, 0, 3, 0, 1, 4,
     OpUnifyXX, 2, 4,
     OpPrintInt, 2,
     OpReturn
   };
 
-  CodeArea printAddCodeArea(vm, printAddCodeBlock, sizeof(printAddCodeBlock),
-    5, 0, nullptr);
-
   UnstableNode builtinAdd;
   builtinAdd.make<BuiltinProcedure>(vm, 3, (OzBuiltin) &builtins::add);
-  UnstableNode* printAddGs[1] = { &builtinAdd };
+
+  UnstableNode* printAddKs[1] = { &builtinAdd };
+  CodeArea printAddCodeArea(vm, printAddCodeBlock, sizeof(printAddCodeBlock),
+    5, 1, printAddKs);
 
   // Define Main procedure
 
@@ -82,7 +81,7 @@ int main(int argc, char **argv) {
 
   StaticArray<StableNode> mainGs(1);
   UnstableNode abstractionPrintAdd;
-  abstractionPrintAdd.make<Abstraction>(vm, vm, 3, &printAddCodeArea, 1, printAddGs);
+  abstractionPrintAdd.make<Abstraction>(vm, vm, 3, &printAddCodeArea, 0, nullptr);
   mainGs[0].init(vm, abstractionPrintAdd);
 
   Thread thread(vm, &mainCodeArea, mainGs);

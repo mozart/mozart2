@@ -119,7 +119,8 @@ void Thread::run() {
         return;
 
       case OpCallBuiltin: {
-        UnstableNode& callable = XPC(1);
+        UnstableNode callable;
+        callable.copy(vm, KPC(1));
         int argc = PC[2];
         UnstableNode* args[argc];
         for (int i = 0; i < argc; i++)

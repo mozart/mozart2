@@ -47,6 +47,24 @@ Thread::Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs) :
 }
 
 void Thread::run() {
+  VM vm = this->vm;
+
+  EnlargeableArray<UnstableNode>* xregs = &this->xregs;
+  StaticArray<UnstableNode>* yregs = this->yregs;
+  StaticArray<StableNode>* gregs = this->gregs;
+  StaticArray<StableNode>* kregs = this->kregs;
+
+  ProgramCounter PC = this->PC;
+
+#define advancePC(argCount) do { PC += (argCount) + 1; } while (0)
+
+#define IntPC(offset) PC[offset]
+
+#define XPC(offset) (*xregs)[PC[offset]]
+#define YPC(offset) (*yregs)[PC[offset]]
+#define GPC(offset) (*gregs)[PC[offset]]
+#define KPC(offset) (*kregs)[PC[offset]]
+
   while (true) {
     OpCode op = *PC;
 
@@ -156,12 +174,15 @@ void Thread::run() {
 
           advancePC(2);
 
-          if (op != OpTailCall)
-            pushFrame();
+          if (op != OpTailCall) {
+            // push frame
+            StackEntry entry(area, PC, yregs, gregs);
+            stack.push(entry);
+          }
 
           area = body;
           PC = body->getStart();
-          xregs.ensureSize(body->getXCount());
+          xregs->ensureSize(body->getXCount());
           yregs = nullptr;
           kregs = &body->getKs();
           gregs = Gs;
@@ -173,7 +194,16 @@ void Thread::run() {
       }
 
       case OpReturn: {
-        popFrame();
+        // pop frame
+        assert(!stack.empty());
+        StackEntry& entry = stack.top();
+        area = entry.area;
+        PC = entry.PC;
+        yregs = entry.yregs;
+        gregs = entry.gregs;
+        kregs = area ? &area->getKs() : nullptr;
+        stack.pop();
+
         if (PC == NullPC)
           return;
 
@@ -246,6 +276,13 @@ void Thread::run() {
       }
     }
   }
+
+#undef advancePC
+#undef IntPC
+#undef XPC
+#undef YPC
+#undef GPC
+#undef KPC
 }
 
 void Thread::waitFor(Node& node) {

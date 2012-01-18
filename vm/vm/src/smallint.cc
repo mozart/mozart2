@@ -23,11 +23,26 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "smallint.hh"
+#include "boolean.hh"
 
 #include <limits>
 
 const Type SmallInt::rawType("SmallInt", nullptr, true);
 const Type* const SmallInt::type = &SmallInt::rawType;
+
+BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
+                                               UnstableNode* right,
+                                               UnstableNode* result) {
+  if (right->node.type == SmallInt::type) {
+    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, &right->node);
+    result->make<Boolean>(vm, value() == r);
+    return BuiltinResultContinue;
+  } else {
+    // TODO SmallInt == non-SmallInt
+    result->make<Boolean>(vm, false);
+    return BuiltinResultContinue;
+  }
+}
 
 BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
                                             UnstableNode* right,

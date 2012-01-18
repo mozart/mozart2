@@ -35,54 +35,154 @@
 int main(int argc, char **argv) {
   VirtualMachine vm;
 
-  // Define PrintAdd function
+  // Arguments of the program
 
-  ByteCode printAddCodeBlock[] = {
-    OpCallBuiltin, 0, 3, 0, 1, 4,
-    OpUnifyXX, 2, 4,
-    OpPrintInt, 2,
-    OpReturn
-  };
+  const nativeint N = sizeof(nativeint) == 8 ? 92 : 46; // max without overflow
+
+  // Define the builtins
+
+  UnstableNode builtinEquals;
+  builtinEquals.make<BuiltinProcedure>(vm, 3, (OzBuiltin) &builtins::equals);
+  Reference::makeFor(vm, builtinEquals);
 
   UnstableNode builtinAdd;
   builtinAdd.make<BuiltinProcedure>(vm, 3, (OzBuiltin) &builtins::add);
+  Reference::makeFor(vm, builtinAdd);
 
-  UnstableNode* printAddKs[1] = { &builtinAdd };
-  CodeArea printAddCodeArea(vm, printAddCodeBlock, sizeof(printAddCodeBlock),
-    5, 1, printAddKs);
+  // Define immediate constants
+
+  UnstableNode zero, minusOne, one, nnode;
+  zero.make<SmallInt>(vm, 0);
+  minusOne.make<SmallInt>(vm, -1);
+  one.make<SmallInt>(vm, 1);
+  nnode.make<SmallInt>(vm, N);
+
+  // Define Fibonacci function
+
+  /*
+   * proc {Fibonacci N Acc1 Acc2 Res}
+   *    if N == 0 then
+   *       Res = Acc1
+   *    else
+   *       NewN = N - 1
+   *       NewAcc1 = Acc2
+   *       NewAcc2 = Acc1 + Acc2
+   *       {Fibonacci NewN NewAcc1 NewAcc2}
+   *    end
+   * end
+   */
+
+  /*
+   * X0 = N
+   * X1 = Acc1
+   * X2 = Acc2
+   * X3 = Res
+   *
+   * K0 = 0
+   * K1 = -1
+   * K2 = builtin ==
+   * K3 = builtin +
+   *
+   * G0 = Fibonacci
+   *
+   * X4 = N == 0
+   * X5 = NewN
+   * X6 = NewAcc1
+   * X7 = NewAcc2
+   *
+   * X8 = Temp
+   */
+
+  ByteCode fibonacciCodeBlock[] = {
+    // if N == 0
+    OpMoveKX, 0, 8,
+    OpCallBuiltin, 2, 3, 0, 8, 4,
+    OpCondBranch, 4, 9, 5, 0,
+
+    // error
+    OpMoveKX, 1, 8,
+    OpPrintInt, 8,
+
+    // then
+    //    Res = Acc1
+    OpUnifyXX, 3, 1,
+    OpReturn,
+
+    // else
+    OpMoveKX, 1, 8,
+    OpCallBuiltin, 3, 3, 0, 8, 5, // NewN = N - 1
+    OpMoveXX, 2, 6,               // NewAcc1 = Acc2
+    OpCallBuiltin, 3, 3, 1, 2, 7, // NewAcc2 = Acc1 + Acc2
+
+    // {Fibonacci NewN NewAcc1 NewAcc2 Res}
+    OpMoveXX, 5, 0,
+    OpMoveXX, 6, 1,
+    OpMoveXX, 7, 2,
+    OpMoveGX, 0, 8,
+    OpTailCall, 8, 4
+  };
+
+  UnstableNode* fibonacciKs[] =
+    { &zero, &minusOne, &builtinEquals, &builtinAdd };
+  CodeArea fibonacciCodeArea(vm, fibonacciCodeBlock, sizeof(fibonacciCodeBlock),
+    9, 4, fibonacciKs);
+
+  UnstableNode recursiveFibonacci;
+  recursiveFibonacci.make<Unbound>(vm);
+
+  UnstableNode* fibonacciGs[1] = { &recursiveFibonacci };
+
+  UnstableNode abstractionFibonacci;
+  abstractionFibonacci.make<Abstraction>(vm, vm, 4, &fibonacciCodeArea,
+                                         1, fibonacciGs);
+  Reference::makeFor(vm, abstractionFibonacci);
+  IMPL(void, Unbound, bind, &Reference::dereference(recursiveFibonacci.node),
+       vm, &Reference::dereference(abstractionFibonacci.node));
 
   // Define Main procedure
 
+  /*
+   * {Fibonacci N 0 1 R}
+   * {Print R}
+   */
+
+  /*
+   * K0 = N
+   * K1 = 0
+   * K2 = 1
+   *
+   * G0 = Fibonacci
+   *
+   * Y0 = R
+   */
+
   ByteCode mainCodeBlock[] = {
+    // Allocate Y0 and create R
+    OpAllocateY, 1,
+    OpCreateVar, 3,
+    OpMoveXY, 3, 0,
+
+    // {Fibonacci N 0 1 R}
     OpMoveKX, 0, 0,
-    OpMoveXX, 0, 1,
-    OpPrintInt, 1,
-    OpAllocateY, 2,
-    OpMoveXY, 1, 0,
-    OpMoveKX, 1, 0,
-    OpCreateVar, 2,
-    OpMoveXY, 2, 1,
-    OpMoveGX, 0, 3,
-    OpCall, 3, 3,
+    OpMoveKX, 1, 1,
+    OpMoveKX, 2, 2,
+    OpMoveGX, 0, 4,
+    OpCall, 4, 4,
+
+    // {Print R}
     OpMoveYX, 0, 0,
     OpPrintInt, 0,
-    OpMoveYX, 1, 0,
-    OpPrintInt, 0,
+
+    // end
     OpDeallocateY,
-    OpReturn
+    OpReturn,
   };
 
-  UnstableNode five, two;
-  five.make<SmallInt>(vm, 5);
-  two.make<SmallInt>(vm, 2);
-
-  UnstableNode* mainKs[] = { &five, &two };
-  CodeArea mainCodeArea(vm, mainCodeBlock, sizeof(mainCodeBlock), 5, 2, mainKs);
+  UnstableNode* mainKs[] = { &nnode, &zero, &one };
+  CodeArea mainCodeArea(vm, mainCodeBlock, sizeof(mainCodeBlock), 5, 3, mainKs);
 
   StaticArray<StableNode> mainGs(1);
-  UnstableNode abstractionPrintAdd;
-  abstractionPrintAdd.make<Abstraction>(vm, vm, 3, &printAddCodeArea, 0, nullptr);
-  mainGs[0].init(vm, abstractionPrintAdd);
+  mainGs[0].init(vm, abstractionFibonacci);
 
   Thread thread(vm, &mainCodeArea, mainGs);
 

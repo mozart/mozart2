@@ -52,6 +52,8 @@ const OpCode OpCallBuiltin = 0x11;
 const OpCode OpCall = 0x12;
 const OpCode OpTailCall = 0x13;
 const OpCode OpReturn = 0x14;
+const OpCode OpBranch = 0x15;
+const OpCode OpCondBranch = 0x16;
 
 const OpCode OpUnifyXX = 0x20;
 const OpCode OpUnifyXY = 0x21;

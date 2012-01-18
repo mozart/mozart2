@@ -23,38 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "store.hh"
-#include "variables.hh"
 
-void Node::reset(VM vm) {
-  type = nullptr;
-  value.init<void*>(vm, nullptr);
-}
+///////////////
+// Reference //
+///////////////
 
-void StableNode::init(VM vm, UnstableNode& from) {
-  node = from.node;
-  if (!node.type->isCopiable())
-    from.make<Reference>(vm, this);
-}
-
-void UnstableNode::copy(VM vm, StableNode& from) {
-  if (from.node.type->isCopiable())
-    node = from.node;
-  else
-    make<Reference>(vm, &from);
-}
-
-void UnstableNode::copy(VM vm, UnstableNode& from) {
-  if (!from.node.type->isCopiable())
-    Reference::makeFor(vm, from);
-  node = from.node;
-}
-
-void UnstableNode::reset(VM vm) {
-  node.reset(vm);
-}
-
-void UnstableNode::swap(UnstableNode& from) {
-  Node temp = node;
-  node = from.node;
-  from.node = temp;
-}
+const Type Reference::rawType("Reference", nullptr, true);
+const Type* const Reference::type = &Reference::rawType;

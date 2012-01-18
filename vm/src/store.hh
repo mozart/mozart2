@@ -53,7 +53,7 @@ private:
     Access::init(type, value, vm, args...);
   }
 
-  void reset(VM vm);
+  inline void reset(VM vm);
 
   union {
     // Regular structure of a node
@@ -75,7 +75,7 @@ private:
  */
 class StableNode {
 public:
-  void init(VM vm, UnstableNode& from);
+  inline void init(VM vm, UnstableNode& from);
 private:
   friend class UnstableNode;
 public: // TODO make it private once the development has been bootstrapped
@@ -87,10 +87,10 @@ public: // TODO make it private once the development has been bootstrapped
  */
 class UnstableNode {
 public:
-  void copy(VM vm, StableNode& from);
-  void copy(VM vm, UnstableNode& from);
-  void swap(UnstableNode& from);
-  void reset(VM vm);
+  inline void copy(VM vm, StableNode& from);
+  inline void copy(VM vm, UnstableNode& from);
+  inline void swap(UnstableNode& from);
+  inline void reset(VM vm);
 
   template<class T, class... Args>
   void make(VM vm, Args... args) {
@@ -156,5 +156,111 @@ public:
 #define IMPLNOSELF(ResType, Type, method, args...) \
   (ImplNoSelf<Type, ResType, decltype(&Implementation<Type>::method), \
     &Implementation<Type>::method>::f(args))
+
+///////////////
+// Reference //
+///////////////
+
+class Reference;
+
+template <>
+class Storage<Reference> {
+public:
+  typedef StableNode* Type;
+};
+
+template <>
+class Implementation<Reference> {
+public:
+  Implementation<Reference>(StableNode* dest) : _dest(dest) {}
+
+  StableNode* dest() const { return _dest; }
+private:
+  StableNode* _dest;
+};
+
+/**
+ * Type of a reference
+ */
+class Reference {
+public:
+  typedef Node* Self;
+
+  static const Type* const type;
+
+  static StableNode* build(StableNode* dest) { return dest; }
+
+  // This is optimized for the 0- and 1-dereference paths
+  // Normally it would have been only a while loop
+  static Node& dereference(Node& node) {
+    if (node.type != type)
+      return node;
+    else {
+      Node* result = &IMPLNOSELF(StableNode*, Reference, dest, &node)->node;
+      if (result->type != type)
+        return *result;
+      else
+        return dereferenceLoop(result);
+    }
+  }
+
+  static void makeFor(VM vm, UnstableNode& node) {
+    StableNode* stable = new (vm) StableNode;
+    stable->init(vm, node);
+  }
+
+  static void makeFor(VM vm, Node& node) {
+    UnstableNode temp;
+    temp.node = node;
+    makeFor(vm, temp);
+    node = temp.node;
+  }
+private:
+  static Node& dereferenceLoop(Node* node) {
+    while (node->type == type)
+      node = &(IMPLNOSELF(StableNode*, Reference, dest, node)->node);
+    return *node;
+  }
+
+  static const Type rawType;
+};
+
+/////////////////////////
+// Node implementation //
+/////////////////////////
+
+void Node::reset(VM vm) {
+  type = nullptr;
+  value.init<void*>(vm, nullptr);
+}
+
+void StableNode::init(VM vm, UnstableNode& from) {
+  node = from.node;
+  if (!node.type->isCopiable())
+    from.make<Reference>(vm, this);
+}
+
+void UnstableNode::copy(VM vm, StableNode& from) {
+  if (from.node.type->isCopiable())
+    node = from.node;
+  else
+    make<Reference>(vm, &from);
+}
+
+void UnstableNode::copy(VM vm, UnstableNode& from) {
+  if (!from.node.type->isCopiable())
+    Reference::makeFor(vm, from);
+  node = from.node;
+}
+
+void UnstableNode::reset(VM vm) {
+  node.reset(vm);
+}
+
+void UnstableNode::swap(UnstableNode& from) {
+  Node temp = node;
+  node = from.node;
+  from.node = temp;
+}
 
 #endif // __STORE_H

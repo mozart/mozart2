@@ -29,18 +29,6 @@
 
 namespace builtins {
 
-BuiltinResult callBuiltin(VM vm, UnstableNode& callable,
-  int argc, UnstableNode* args[]) {
-  BuiltinCallable x = callable.node;
-  return x.callBuiltin(vm, argc, args);
-}
-
-BuiltinResult getCallInfo(VM vm, UnstableNode& callable,
-  int* arity, CodeArea** body, StaticArray<StableNode>** Gs) {
-  Callable x = callable.node;
-  return x.getCallInfo(vm, arity, body, Gs);
-}
-
 BuiltinResult equals(VM vm, UnstableNode* args[]) {
   Equatable x = args[0]->node;
   return x.equals(vm, args[1], args[2]);

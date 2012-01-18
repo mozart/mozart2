@@ -120,14 +120,14 @@ void Thread::run() {
         return;
 
       case OpCallBuiltin: {
-        UnstableNode callable;
-        callable.copy(vm, KPC(1));
         int argc = PC[2];
         UnstableNode* args[argc];
         for (int i = 0; i < argc; i++)
           args[i] = &XPC(3 + i);
 
-        BuiltinResult result = builtins::callBuiltin(vm, callable, argc, args);
+        BuiltinCallable x = KPC(1).node;
+        BuiltinResult result = x.callBuiltin(vm, argc, args);
+
         if (result == BuiltinResultContinue)
           advancePC(2 + argc);
         else
@@ -138,17 +138,16 @@ void Thread::run() {
 
       case OpCall:
       case OpTailCall: {
-        UnstableNode& callable = XPC(1);
-        int actualArity = IntPC(2);
-
         int formalArity;
         CodeArea* body;
         StaticArray<StableNode>* Gs;
 
-        BuiltinResult result = builtins::getCallInfo(vm, callable,
-          &formalArity, &body, &Gs);
+        Callable x = XPC(1).node;
+        BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &Gs);
 
         if (result == BuiltinResultContinue) {
+          int actualArity = IntPC(2);
+
           if (actualArity != formalArity) {
             cout << "Illegal arity: " << formalArity << " expected but ";
             cout << actualArity << " found" << endl;

@@ -82,6 +82,9 @@ struct Callable {
       // TODO call non-abstraction
       cout << "Abstraction expected but " << self.type->getName();
       cout << " found" << endl;
+      *arity = 0;
+      *body = nullptr;
+      *Gs = nullptr;
       return BuiltinResultContinue;
     }
   }

@@ -24,8 +24,10 @@
 
 #include "smallint.hh"
 #include "boolean.hh"
+#include "variables.hh"
 
 #include <limits>
+#include <iostream>
 
 const Type SmallInt::rawType("SmallInt", nullptr, true);
 const Type* const SmallInt::type = &SmallInt::rawType;
@@ -47,9 +49,11 @@ BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
 BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
-  if (right->node.type == SmallInt::type) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == SmallInt::type) {
     nativeint a = value();
-    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &right->node);
+    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     nativeint c = a + b;
 
     // Detecting overflow - platform dependent (2's complement)
@@ -64,6 +68,8 @@ BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
     return BuiltinResultContinue;
   } else {
     // TODO SmallInt + non-SmallInt
+    std::cout << "SmallInt expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 }

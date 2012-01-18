@@ -24,6 +24,8 @@
 
 #include "smallint.hh"
 
+#include <limits>
+
 const Type SmallInt::rawType("SmallInt", nullptr, true);
 const Type* const SmallInt::type = &SmallInt::rawType;
 
@@ -31,9 +33,19 @@ BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   if (right->node.type == SmallInt::type) {
-    nativeint r = value() +
-      IMPLNOSELF(nativeint, SmallInt, value, &right->node);
-    result->make<SmallInt>(vm, r);
+    nativeint a = value();
+    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &right->node);
+    nativeint c = a + b;
+
+    // Detecting overflow - platform dependent (2's complement)
+    if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+      // No overflow
+      result->make<SmallInt>(vm, c);
+    } else {
+      // Overflow - TODO: create a BigInt
+      result->make<SmallInt>(vm, 0);
+    }
+
     return BuiltinResultContinue;
   } else {
     // TODO SmallInt + non-SmallInt

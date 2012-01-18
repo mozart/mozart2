@@ -30,8 +30,27 @@
 #include "emulate.hh"
 #include "callables.hh"
 #include "variables.hh"
+#include "boolean.hh"
 
 #include <iostream>
+
+struct Equatable {
+  Equatable(Node& self) : self(Reference::dereference(self)) {}
+
+  BuiltinResult equals(VM vm, UnstableNode* right, UnstableNode* result) {
+    if (self.type == SmallInt::type) {
+      return IMPL(BuiltinResult, SmallInt, equals,
+                  &self, vm, right, result);
+    } else {
+      // TODO == of non-SmallInt
+      cout << self.type->getName() << " == (right) not implemented yet" << endl;
+      result->make<Boolean>(vm, false);
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  Node& self;
+};
 
 struct BuiltinCallable {
   BuiltinCallable(Node& self) : self(Reference::dereference(self)) {};
@@ -81,6 +100,23 @@ struct Addable {
       // TODO add non-SmallInt
       cout << "SmallInt expected but " << self.type->getName();
       cout << " found" << endl;
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  Node& self;
+};
+
+struct BooleanValue {
+  BooleanValue(Node& self) : self(Reference::dereference(self)) {}
+
+  BuiltinResult valueOrNotBool(VM vm, BoolOrNotBool* result) {
+    if (self.type == Boolean::type) {
+      return IMPL(BuiltinResult, Boolean, valueOrNotBool,
+                  &self, vm, result);
+    } else {
+      // TODO valueOrNotBool on a non-Boolean
+      *result = bNotBool;
       return BuiltinResultContinue;
     }
   }

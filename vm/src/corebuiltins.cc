@@ -41,6 +41,11 @@ BuiltinResult getCallInfo(VM vm, UnstableNode& callable,
   return x.getCallInfo(vm, arity, body, Gs);
 }
 
+BuiltinResult equals(VM vm, UnstableNode* args[]) {
+  Equatable x = args[0]->node;
+  return x.equals(vm, args[1], args[2]);
+}
+
 BuiltinResult add(VM vm, UnstableNode* args[]) {
   Addable x = args[0]->node;
   return x.add(vm, args[1], args[2]);

@@ -27,6 +27,7 @@
 #include <assert.h>
 
 #include "smallint.hh"
+#include "coreinterfaces.hh"
 #include "corebuiltins.hh"
 #include "vm.hh"
 #include "variables.hh"
@@ -176,6 +177,36 @@ void Thread::run() {
         popFrame();
         if (PC == NullPC)
           return;
+
+        break;
+      }
+
+      case OpBranch: {
+        int distance = IntPC(1);
+        advancePC(1 + distance);
+        break;
+      }
+
+      case OpCondBranch: {
+        UnstableNode& test = XPC(1);
+        BoolOrNotBool testValue;
+
+        BooleanValue testBoolValue = test.node;
+        BuiltinResult result = testBoolValue.valueOrNotBool(vm, &testValue);
+
+        if (result == BuiltinResultContinue) {
+          int distance;
+
+          switch (testValue) {
+            case bFalse: distance = IntPC(2); break;
+            case bTrue:  distance = IntPC(3); break;
+            default:     distance = IntPC(4);
+          }
+
+          advancePC(4 + distance);
+        } else {
+          waitFor(result->node);
+        }
 
         break;
       }

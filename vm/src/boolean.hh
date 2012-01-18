@@ -22,48 +22,51 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SMALLINT_H
-#define __SMALLINT_H
+#ifndef __BOOLEAN_H
+#define __BOOLEAN_H
 
 #include "type.hh"
 #include "storage.hh"
 #include "store.hh"
 
-class SmallInt;
+class Boolean;
+
+typedef enum BOOL_OR_NOT_BOOL {
+  bFalse, bTrue, bNotBool
+} BoolOrNotBool;
 
 template <>
-class Storage<SmallInt> {
+class Storage<Boolean> {
 public:
-  typedef nativeint Type;
+  typedef bool Type;
 };
 
 template <>
-class Implementation<SmallInt> {
+class Implementation<Boolean> {
 public:
-  Implementation<SmallInt>(const Implementation<SmallInt>& src) :
+  Implementation<Boolean>(const Implementation<Boolean>& src) :
     _value(src.value()) {}
-  Implementation<SmallInt>(nativeint value) : _value(value) {}
+  Implementation<Boolean>(bool value) : _value(value) {}
 
-  nativeint value() const { return _value; }
+  bool value() const { return _value; }
 
-  BuiltinResult equals(Node* self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
-
-  BuiltinResult add(Node* self, VM vm, UnstableNode* right,
-                    UnstableNode* result);
+  BuiltinResult valueOrNotBool(Node* self, VM vm, BoolOrNotBool* result) {
+    *result = value() ? bTrue : bFalse;
+    return BuiltinResultContinue;
+  }
 private:
-  const nativeint _value;
+  const bool _value;
 };
 
-class SmallInt {
+class Boolean {
 public:
   typedef Node* Self;
 
   static const Type* const type;
 
-  static nativeint build(nativeint value) { return value; }
+  static bool build(bool value) { return value; }
 private:
   static const Type rawType;
 };
 
-#endif // __SMALLINT_H
+#endif // __BOOLEAN_H

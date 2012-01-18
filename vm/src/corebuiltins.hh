@@ -36,6 +36,8 @@ BuiltinResult callBuiltin(VM vm, UnstableNode& callable,
 BuiltinResult getCallInfo(VM vm, UnstableNode& callable,
   int* arity, CodeArea** body, StaticArray<StableNode>** Gs);
 
+BuiltinResult equals(VM vm, UnstableNode* args[]);
+
 BuiltinResult add(VM vm, UnstableNode* args[]);
 
 }

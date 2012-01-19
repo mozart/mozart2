@@ -75,6 +75,10 @@ int main(int argc, char **argv) {
    */
 
   /*
+   * The bytecode below is equivalent to the one produced by the old compiler,
+   * with the exception that AllocateY is done only in the recursive case
+   * (our allocation for Y registers is still a standard malloc/free).
+   *
    * X0 = N
    * X1 = Res
    *
@@ -87,13 +91,9 @@ int main(int argc, char **argv) {
    *
    * G0 = Fibonacci
    *
-   * X2 = condition of the test
-   * X3 = temp
-   *
-   * Y0 = N
+   * Y0 = N then Right
    * Y1 = Res
    * Y2 = Left
-   * Y3 = Right
    */
 
   ByteCode fibonacciCodeBlock[] = {
@@ -115,29 +115,22 @@ int main(int argc, char **argv) {
 
     // else
 
-    // Save N and Res
-    OpAllocateY, 4,
-    OpMoveXY, 0, 0,
-    OpMoveXY, 1, 1,
+    OpAllocateY, 3,
 
-    // {Fibonacci N-1 Left}
-    OpCreateVar, 1,
-    OpMoveXY, 1, 2,
     OpInlineMinus1, 0, 2,
+    OpMoveMoveXYXY, 0, 0, 1, 1,
     OpMoveXX, 2, 0,
+    OpCreateVarMoveY, 2, 1,
     OpCallG, 0, 2,
 
-    // {Fibonacci N-2 Right}
-    OpCreateVar, 1,
-    OpMoveXY, 1, 3,
-    OpMoveYX, 0, 2,
-    OpMoveKX, 3, 3,
-    OpInlineAdd, 2, 3, 0,
+    OpMoveYX, 0, 0,
+    OpMoveKX, 3, 2,
+    OpInlineAdd, 0, 2, 3,
+    OpMoveXX, 3, 0,
+    OpCreateVarMoveY, 0, 1,
     OpCallG, 0, 2,
 
-    // Res = Left + Right
-    OpMoveYX, 2, 0,
-    OpMoveYX, 3, 1,
+    OpMoveMoveYXYX, 2, 0, 0, 1,
     OpInlineAdd, 0, 1, 2,
     OpUnifyXY, 2, 1,
 
@@ -182,7 +175,7 @@ int main(int argc, char **argv) {
   ByteCode mainCodeBlock[] = {
     // Allocate Y0 and create R
     OpAllocateY, 1,
-    OpCreateVar, 1,
+    OpCreateVarX, 1,
     OpMoveXY, 1, 0,
 
     // {Fibonacci N R}

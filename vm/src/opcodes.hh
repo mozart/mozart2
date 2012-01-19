@@ -43,30 +43,39 @@ const OpCode OpMoveGY = 0x06;
 const OpCode OpMoveKX = 0x07;
 const OpCode OpMoveKY = 0x08;
 
-const OpCode OpAllocateY = 0x0A;
-const OpCode OpDeallocateY = 0x0B;
-const OpCode OpCreateVar = 0x0C;
+const OpCode OpMoveMoveXYXY = 0x09;
+const OpCode OpMoveMoveYXYX = 0x0A;
+const OpCode OpMoveMoveYXXY = 0x0B;
+const OpCode OpMoveMoveXYYX = 0x0C;
 
-const OpCode OpCallBuiltin = 0x10;
-const OpCode OpCallX = 0x11;
-const OpCode OpCallG = 0x12;
-const OpCode OpTailCallX = 0x13;
-const OpCode OpTailCallG = 0x14;
-const OpCode OpReturn = 0x15;
-const OpCode OpBranch = 0x16;
-const OpCode OpCondBranch = 0x17;
+const OpCode OpAllocateY = 0x0D;
+const OpCode OpDeallocateY = 0x0E;
 
-const OpCode OpUnifyXX = 0x20;
-const OpCode OpUnifyXY = 0x21;
-const OpCode OpUnifyXK = 0x22;
-const OpCode OpUnifyXG = 0x23;
+const OpCode OpCreateVarX = 0x0F;
+const OpCode OpCreateVarY = 0x10;
+const OpCode OpCreateVarMoveX = 0x11;
+const OpCode OpCreateVarMoveY = 0x12;
+
+const OpCode OpCallBuiltin = 0x20;
+const OpCode OpCallX = 0x21;
+const OpCode OpCallG = 0x22;
+const OpCode OpTailCallX = 0x23;
+const OpCode OpTailCallG = 0x24;
+const OpCode OpReturn = 0x25;
+const OpCode OpBranch = 0x26;
+const OpCode OpCondBranch = 0x27;
+
+const OpCode OpUnifyXX = 0x30;
+const OpCode OpUnifyXY = 0x31;
+const OpCode OpUnifyXK = 0x32;
+const OpCode OpUnifyXG = 0x33;
 
 // Hard-coded stuff for bootstrapping the development
-const OpCode OpPrint = 0x18;
+const OpCode OpPrint = 0x38;
 
 // Inlines for some builtins
-const OpCode OpInlineEqualsInteger = 0x30;
-const OpCode OpInlineAdd = 0x31;
-const OpCode OpInlineMinus1 = 0x32;
+const OpCode OpInlineEqualsInteger = 0x40;
+const OpCode OpInlineAdd = 0x41;
+const OpCode OpInlineMinus1 = 0x42;
 
 #endif // __OPCODES_H

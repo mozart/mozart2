@@ -48,11 +48,13 @@ const OpCode OpDeallocateY = 0x0B;
 const OpCode OpCreateVar = 0x0C;
 
 const OpCode OpCallBuiltin = 0x10;
-const OpCode OpCall = 0x11;
-const OpCode OpTailCall = 0x12;
-const OpCode OpReturn = 0x13;
-const OpCode OpBranch = 0x14;
-const OpCode OpCondBranch = 0x15;
+const OpCode OpCallX = 0x11;
+const OpCode OpCallG = 0x12;
+const OpCode OpTailCallX = 0x13;
+const OpCode OpTailCallG = 0x14;
+const OpCode OpReturn = 0x15;
+const OpCode OpBranch = 0x16;
+const OpCode OpCondBranch = 0x17;
 
 const OpCode OpUnifyXX = 0x20;
 const OpCode OpUnifyXY = 0x21;

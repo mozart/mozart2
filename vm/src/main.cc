@@ -138,8 +138,7 @@ int main(int argc, char **argv) {
     OpMoveXX, 0, 2,
     OpMoveKX, 2, 3,
     OpCallBuiltin, 5, 3, 2, 3, 0,
-    OpMoveGX, 0, 2,
-    OpCall, 2, 2,
+    OpCallG, 0, 2,
 
     // {Fibonacci N-2 Right}
     OpCreateVar, 1,
@@ -147,8 +146,7 @@ int main(int argc, char **argv) {
     OpMoveYX, 0, 2,
     OpMoveKX, 3, 3,
     OpCallBuiltin, 5, 3, 2, 3, 0,
-    OpMoveGX, 0, 2,
-    OpCall, 2, 2,
+    OpCallG, 0, 2,
 
     // Res = Left + Right
     OpMoveYX, 2, 0,
@@ -202,8 +200,7 @@ int main(int argc, char **argv) {
 
     // {Fibonacci N R}
     OpMoveKX, 0, 0,
-    OpMoveGX, 0, 2,
-    OpCall, 2, 2,
+    OpCallG, 0, 2,
 
     // {Print R}
     OpMoveYX, 0, 0,

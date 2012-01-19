@@ -108,6 +108,28 @@ void Thread::run() {
         YPC(2).copy(vm, KPC(1));
         advancePC(2); break;
 
+      // Double moves
+
+      case OpMoveMoveXYXY:
+        YPC(2).copy(vm, XPC(1));
+        YPC(4).copy(vm, XPC(3));
+        advancePC(4); break;
+
+      case OpMoveMoveYXYX:
+        XPC(2).copy(vm, YPC(1));
+        XPC(4).copy(vm, YPC(3));
+        advancePC(4); break;
+
+      case OpMoveMoveYXXY:
+        XPC(2).copy(vm, YPC(1));
+        YPC(4).copy(vm, XPC(3));
+        advancePC(4); break;
+
+      case OpMoveMoveXYYX:
+        YPC(2).copy(vm, XPC(1));
+        XPC(4).copy(vm, YPC(3));
+        advancePC(4); break;
+
       // Y allocations
 
       case OpAllocateY: {
@@ -127,9 +149,32 @@ void Thread::run() {
 
       // Variable allocation
 
-      case OpCreateVar: {
+      case OpCreateVarX: {
         XPC(1).make<Unbound>(vm);
         advancePC(1); break;
+      }
+
+      case OpCreateVarY: {
+        YPC(1).make<Unbound>(vm);
+        advancePC(1); break;
+      }
+
+      case OpCreateVarMoveX: {
+        UnstableNode ref;
+        ref.make<Unbound>(vm);
+        Reference::makeFor(vm, ref);
+        XPC(1) = ref;
+        XPC(2) = ref;
+        advancePC(2); break;
+      }
+
+      case OpCreateVarMoveY: {
+        UnstableNode ref;
+        ref.make<Unbound>(vm);
+        Reference::makeFor(vm, ref);
+        YPC(1) = ref;
+        XPC(2) = ref;
+        advancePC(2); break;
       }
 
       // Control

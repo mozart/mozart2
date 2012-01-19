@@ -263,4 +263,6 @@ void UnstableNode::swap(UnstableNode& from) {
   from.node = temp;
 }
 
+#include "vm.hh"
+
 #endif // __STORE_H

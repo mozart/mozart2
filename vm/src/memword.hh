@@ -46,8 +46,9 @@ typedef intptr_t nativeint;
 
 // We need the VM class to allocate memory for "big" types.
 class VirtualMachine;
-typedef VirtualMachine& VM;
+typedef VirtualMachine* VM;
 
+inline
 void* operator new (size_t size, VM vm);
 
 // MWTest is a metafunction that returns T if i!=0 and a type guaranteed to be

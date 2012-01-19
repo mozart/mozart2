@@ -32,12 +32,21 @@
 
 class VirtualMachine {
 public:
+  VirtualMachine() {}
+
   StableNode* newVariable();
 private:
+  VirtualMachine(const VirtualMachine& src) {}
+
   friend void* operator new (size_t size, VM vm);
+
   void* malloc(size_t size) {
     return ::malloc(size);
   }
 };
+
+void* operator new (size_t size, VM vm) {
+  return vm->malloc(size);
+}
 
 #endif // __VM_H

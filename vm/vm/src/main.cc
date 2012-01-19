@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
     OpMoveXY, 1, 2,
     OpMoveXX, 0, 2,
     OpMoveKX, 2, 3,
-    OpCallBuiltin, 5, 3, 2, 3, 0,
+    OpInlineAdd, 2, 3, 0,
     OpCallG, 0, 2,
 
     // {Fibonacci N-2 Right}
@@ -145,13 +145,13 @@ int main(int argc, char **argv) {
     OpMoveXY, 1, 3,
     OpMoveYX, 0, 2,
     OpMoveKX, 3, 3,
-    OpCallBuiltin, 5, 3, 2, 3, 0,
+    OpInlineAdd, 2, 3, 0,
     OpCallG, 0, 2,
 
     // Res = Left + Right
     OpMoveYX, 2, 0,
     OpMoveYX, 3, 1,
-    OpCallBuiltin, 5, 3, 0, 1, 2,
+    OpInlineAdd, 0, 1, 2,
     OpUnifyXY, 2, 1,
 
     OpDeallocateY,

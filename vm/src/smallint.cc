@@ -46,6 +46,13 @@ BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
   }
 }
 
+BuiltinResult Implementation<SmallInt>::equalsInteger(Node* self, VM vm,
+                                                      nativeint right,
+                                                      bool* result) {
+  *result = value() == right;
+  return BuiltinResultContinue;
+}
+
 BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {

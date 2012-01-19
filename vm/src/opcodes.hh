@@ -65,6 +65,7 @@ const OpCode OpUnifyXG = 0x23;
 const OpCode OpPrint = 0x18;
 
 // Inlines for some builtins
-const OpCode OpInlineAdd = 0x30;
+const OpCode OpInlineEqualsInteger = 0x30;
+const OpCode OpInlineAdd = 0x31;
 
 #endif // __OPCODES_H

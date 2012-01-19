@@ -255,6 +255,25 @@ void Thread::run() {
 
       // Inlines for some builtins
 
+      case OpInlineEqualsInteger: {
+        IntegerValue x = XPC(1).node;
+        nativeint right = IntPC(2);
+        bool resultValue;
+
+        BuiltinResult result = x.equalsInteger(vm, right, &resultValue);
+
+        if (result == BuiltinResultContinue) {
+          if (resultValue)
+            advancePC(3);
+          else
+            advancePC(3 + IntPC(3));
+        } else {
+          waitFor(result->node);
+        }
+
+        break;
+      }
+
       case OpInlineAdd: {
         Addable x = XPC(1).node;
         BuiltinResult result = x.add(vm, &XPC(2), &XPC(3));
@@ -263,6 +282,8 @@ void Thread::run() {
           advancePC(3);
         else
           waitFor(result->node);
+
+        break;
       }
     }
   }

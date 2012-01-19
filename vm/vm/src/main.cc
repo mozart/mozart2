@@ -33,7 +33,8 @@
 #include "stdint.h"
 
 int main(int argc, char **argv) {
-  VirtualMachine vm;
+  VirtualMachine virtualMachine;
+  VM vm = &virtualMachine;
 
   // Arguments of the program
 

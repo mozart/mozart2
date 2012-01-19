@@ -23,60 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "smallint.hh"
-#include "boolean.hh"
-#include "variables.hh"
-
-#include <limits>
-#include <iostream>
 
 const Type SmallInt::rawType("SmallInt", nullptr, true);
 const Type* const SmallInt::type = &SmallInt::rawType;
-
-BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
-                                               UnstableNode* right,
-                                               UnstableNode* result) {
-  if (right->node.type == SmallInt::type) {
-    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, &right->node);
-    result->make<Boolean>(vm, value() == r);
-    return BuiltinResultContinue;
-  } else {
-    // TODO SmallInt == non-SmallInt
-    result->make<Boolean>(vm, false);
-    return BuiltinResultContinue;
-  }
-}
-
-BuiltinResult Implementation<SmallInt>::equalsInteger(Node* self, VM vm,
-                                                      nativeint right,
-                                                      bool* result) {
-  *result = value() == right;
-  return BuiltinResultContinue;
-}
-
-BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
-
-  if (rightNode.type == SmallInt::type) {
-    nativeint a = value();
-    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
-    nativeint c = a + b;
-
-    // Detecting overflow - platform dependent (2's complement)
-    if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
-      // No overflow
-      result->make<SmallInt>(vm, c);
-    } else {
-      // Overflow - TODO: create a BigInt
-      result->make<SmallInt>(vm, 0);
-    }
-
-    return BuiltinResultContinue;
-  } else {
-    // TODO SmallInt + non-SmallInt
-    std::cout << "SmallInt expected but " << rightNode.type->getName();
-    std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
-  }
-}

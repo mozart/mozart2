@@ -110,6 +110,23 @@ private:
   Node& self;
 };
 
+struct IntegerValue {
+  IntegerValue(Node& self) : self(Reference::dereference(self)) {}
+
+  BuiltinResult equalsInteger(VM vm, nativeint right, bool* result) {
+    if (self.type == SmallInt::type) {
+      return IMPL(BuiltinResult, SmallInt, equalsInteger,
+                  &self, vm, right, result);
+    } else {
+      // TODO equalsInteger on a non-SmallInt
+      *result = false;
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  Node& self;
+};
+
 struct BooleanValue {
   BooleanValue(Node& self) : self(Reference::dereference(self)) {}
 

@@ -49,6 +49,8 @@ public:
   BuiltinResult equals(Node* self, VM vm, UnstableNode* right,
                        UnstableNode* result);
 
+  BuiltinResult equalsInteger(Node* self, VM vm, nativeint right, bool* result);
+
   BuiltinResult add(Node* self, VM vm, UnstableNode* right,
                     UnstableNode* result);
 private:

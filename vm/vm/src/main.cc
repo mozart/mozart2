@@ -98,13 +98,7 @@ int main(int argc, char **argv) {
 
   ByteCode fibonacciCodeBlock[] = {
     // if N == 0
-    OpMoveKX, 0, 3,
-    OpCallBuiltin, 4, 3, 0, 3, 2,
-    OpCondBranch, 2, 9, 5, 0,
-
-    // error
-    OpMoveKX, 2, 3,
-    OpPrint, 3,
+    OpInlineEqualsInteger, 0, 0, 4,
 
     // then
     //    Res = 0
@@ -112,13 +106,7 @@ int main(int argc, char **argv) {
     OpReturn,
 
     // elseif N == 1
-    OpMoveKX, 1, 3,
-    OpCallBuiltin, 4, 3, 0, 3, 2,
-    OpCondBranch, 2, 9, 5, 0,
-
-    // error
-    OpMoveKX, 2, 3,
-    OpPrint, 3,
+    OpInlineEqualsInteger, 0, 1, 4,
 
     // then
     //    Res = 1

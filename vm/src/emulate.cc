@@ -285,6 +285,18 @@ void Thread::run() {
 
         break;
       }
+
+      case OpInlineMinus1: {
+        IntegerValue x = XPC(1).node;
+        BuiltinResult result = x.addValue(vm, -1, &XPC(2));
+
+        if (result == BuiltinResultContinue)
+          advancePC(2);
+        else
+          waitFor(result->node);
+
+        break;
+      }
     }
   }
 

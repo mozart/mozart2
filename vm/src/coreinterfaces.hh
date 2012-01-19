@@ -123,6 +123,17 @@ struct IntegerValue {
       return BuiltinResultContinue;
     }
   }
+
+  BuiltinResult addValue(VM vm, nativeint b, UnstableNode* result) {
+    if (self.type == SmallInt::type) {
+      return IMPL(BuiltinResult, SmallInt, addValue,
+                  &self, vm, b, result);
+    } else {
+      // TODO addValue on a non-SmallInt
+      result->make<SmallInt>(vm, 0);
+      return BuiltinResultContinue;
+    }
+  }
 private:
   Node& self;
 };

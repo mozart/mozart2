@@ -151,44 +151,25 @@ void Thread::run() {
         break;
       }
 
-      case OpCall:
-      case OpTailCall: {
-        int formalArity;
-        CodeArea* body;
-        StaticArray<StableNode>* Gs;
-
-        Callable x = XPC(1).node;
-        BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &Gs);
-
-        if (result == BuiltinResultContinue) {
-          int actualArity = IntPC(2);
-
-          if (actualArity != formalArity) {
-            cout << "Illegal arity: " << formalArity << " expected but ";
-            cout << actualArity << " found" << endl;
-            // TODO Raise illegal arity exception
-          }
-
-          advancePC(2);
-
-          if (op != OpTailCall) {
-            // push frame
-            StackEntry entry(area, PC, yregs, gregs);
-            stack.push(entry);
-          }
-
-          area = body;
-          PC = body->getStart();
-          xregs->ensureSize(body->getXCount());
-          yregs = nullptr;
-          kregs = &body->getKs();
-          gregs = Gs;
-        } else {
-          waitFor(result->node);
-        }
-
+      case OpCallX:
+        call(XPC(1).node, IntPC(2), false,
+             vm, PC, xregs, yregs, gregs, kregs);
         break;
-      }
+
+      case OpCallG:
+        call(GPC(1).node, IntPC(2), false,
+             vm, PC, xregs, yregs, gregs, kregs);
+        break;
+
+      case OpTailCallX:
+        call(XPC(1).node, IntPC(2), true,
+             vm, PC, xregs, yregs, gregs, kregs);
+        break;
+
+      case OpTailCallG:
+        call(GPC(1).node, IntPC(2), true,
+             vm, PC, xregs, yregs, gregs, kregs);
+        break;
 
       case OpReturn: {
         // pop frame
@@ -280,6 +261,46 @@ void Thread::run() {
 #undef YPC
 #undef GPC
 #undef KPC
+}
+
+void Thread::call(Node& target, int actualArity, bool isTailCall,
+                  VM vm, ProgramCounter& PC,
+                  EnlargeableArray<UnstableNode>* xregs,
+                  StaticArray<UnstableNode>*& yregs,
+                  StaticArray<StableNode>*& gregs,
+                  StaticArray<StableNode>*& kregs) {
+  int formalArity;
+  CodeArea* body;
+  StaticArray<StableNode>* Gs;
+
+  Callable x = target;
+  BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &Gs);
+
+  if (result == BuiltinResultContinue) {
+    if (actualArity != formalArity) {
+      cout << "Illegal arity: " << formalArity << " expected but ";
+      cout << actualArity << " found" << endl;
+      // TODO Raise illegal arity exception
+    }
+
+    // advancePC(2);
+    PC += (2 + 1); // 1 for opcode
+
+    if (!isTailCall) {
+      // push frame
+      StackEntry entry(area, PC, yregs, gregs);
+      stack.push(entry);
+    }
+
+    area = body;
+    PC = body->getStart();
+    xregs->ensureSize(body->getXCount());
+    yregs = nullptr;
+    kregs = &body->getKs();
+    gregs = Gs;
+  } else {
+    waitFor(result->node);
+  }
 }
 
 void Thread::unify(Node& l, Node& r) {

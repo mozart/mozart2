@@ -64,6 +64,13 @@ public:
 
   void run();
 private:
+  inline void call(Node& target, int actualArity, bool isTailCall,
+                   VM vm, ProgramCounter& PC,
+                   EnlargeableArray<UnstableNode>* xregs,
+                   StaticArray<UnstableNode>*& yregs,
+                   StaticArray<StableNode>*& gregs,
+                   StaticArray<StableNode>*& kregs);
+
   inline void unify(Node& l, Node& r);
 
   void waitFor(Node& node);

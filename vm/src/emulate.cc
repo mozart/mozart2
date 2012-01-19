@@ -282,6 +282,19 @@ void Thread::run() {
 #undef KPC
 }
 
+void Thread::unify(Node& l, Node& r) {
+  Node& left = Reference::dereference(l);
+  Node& right = Reference::dereference(r);
+
+  if (left.type == Unbound::type)
+    IMPL(void, Unbound, bind, &left, vm, &right);
+  else if (right.type == Unbound::type)
+    IMPL(void, Unbound, bind, &right, vm, &left);
+  else {
+    // TODO Non-trivial unify
+  }
+}
+
 void Thread::waitFor(Node& node) {
   // TODO
 }

@@ -123,9 +123,8 @@ int main(int argc, char **argv) {
     // {Fibonacci N-1 Left}
     OpCreateVar, 1,
     OpMoveXY, 1, 2,
-    OpMoveXX, 0, 2,
-    OpMoveKX, 2, 3,
-    OpInlineAdd, 2, 3, 0,
+    OpInlineMinus1, 0, 2,
+    OpMoveXX, 2, 0,
     OpCallG, 0, 2,
 
     // {Fibonacci N-2 Right}

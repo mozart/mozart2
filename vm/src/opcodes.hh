@@ -64,4 +64,7 @@ const OpCode OpUnifyXG = 0x23;
 // Hard-coded stuff for bootstrapping the development
 const OpCode OpPrint = 0x18;
 
+// Inlines for some builtins
+const OpCode OpInlineAdd = 0x30;
+
 #endif // __OPCODES_H

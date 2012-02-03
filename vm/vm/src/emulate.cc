@@ -44,9 +44,13 @@ Thread::Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs) :
 
   StackEntry stopEntry(nullptr, NullPC, nullptr, nullptr);
   stack.push(stopEntry);
+
+  vm->scheduleThread(this);
 }
 
 void Thread::run() {
+  // Local variable cache of fields
+
   VM vm = this->vm;
 
   EnlargeableArray<UnstableNode>* xregs = &this->xregs;
@@ -56,6 +60,8 @@ void Thread::run() {
 
   ProgramCounter PC = this->PC;
 
+  // Some helpers
+
 #define advancePC(argCount) do { PC += (argCount) + 1; } while (0)
 
 #define IntPC(offset) PC[offset]
@@ -64,6 +70,8 @@ void Thread::run() {
 #define YPC(offset) (*yregs)[PC[offset]]
 #define GPC(offset) (*gregs)[PC[offset]]
 #define KPC(offset) (*kregs)[PC[offset]]
+
+  // The big loop
 
   while (true) {
     OpCode op = *PC;
@@ -227,8 +235,10 @@ void Thread::run() {
         kregs = area ? &area->getKs() : nullptr;
         stack.pop();
 
-        if (PC == NullPC)
+        if (PC == NullPC) {
+          terminate();
           return;
+        }
 
         break;
       }
@@ -408,4 +418,14 @@ void Thread::unify(Node& l, Node& r) {
 
 void Thread::waitFor(Node& node) {
   // TODO
+}
+
+void Thread::suspend(ProgramCounter PC,
+                     StaticArray<UnstableNode>* yregs,
+                     StaticArray<StableNode>* gregs,
+                     StaticArray<StableNode>* kregs) {
+  this->PC = PC;
+  this->yregs = yregs;
+  this->gregs = gregs;
+  this->kregs = kregs;
 }

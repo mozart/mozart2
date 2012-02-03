@@ -22,40 +22,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_H
-#define __VM_H
+#ifndef __SUSPENDABLE_HH
+#define __SUSPENDABLE_HH
 
-#include <stdlib.h>
-
-#include "store.hh"
-#include "threadpool.hh"
-
-class VirtualMachine {
-public:
-  VirtualMachine() {}
-
-  StableNode* newVariable();
-
-  void run();
-private:
-  friend class Thread;
-
-  VirtualMachine(const VirtualMachine& src) {}
-
-  friend void* operator new (size_t size, VM vm);
-
-  void* malloc(size_t size) {
-    return ::malloc(size);
-  }
-
-  // Called from the constructor of Thread
-  void scheduleThread(Thread* thread);
-
-  ThreadPool threadPool;
+// This enum is often used for indexing in arrays
+// tpCount reflects the number of valid ThreadPriority's
+// And you probably don't want to add or remove existing ThreadPriority's
+enum ThreadPriority {
+  tpLow, tpMiddle, tpHi,
+  tpCount
 };
 
-void* operator new (size_t size, VM vm) {
-  return vm->malloc(size);
-}
+class Thread;
 
-#endif // __VM_H
+class Suspendable {
+public:
+  Suspendable(ThreadPriority priority = tpMiddle) :
+    _priority(priority), _runnable(true), _terminated(false) {}
+
+  ThreadPriority getPriority() { return _priority; }
+
+  virtual void run() = 0;
+
+  bool isTerminated() { return _terminated; }
+  bool isRunnable() { return _runnable; }
+
+  void setRunnable() { _runnable = true; }
+  void unsetRunnable() { _runnable = false; }
+protected:
+  void terminate() {
+    _runnable = false;
+    _terminated = true;
+  }
+private:
+  ThreadPriority _priority;
+
+  bool _runnable;
+  bool _terminated;
+};
+
+#endif /* __SUSPENDABLE_HH */

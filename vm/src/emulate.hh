@@ -30,11 +30,10 @@
 
 #include "arrays.hh"
 #include "opcodes.hh"
-#include "memword.hh"
 #include "store.hh"
 #include "ozlimits.hh"
 #include "codearea.hh"
-#include "variables.hh"
+#include "suspendable.hh"
 
 /**
  * Entry of a thread stack
@@ -58,7 +57,7 @@ typedef stack<StackEntry> ThreadStack;
  * The Thread class contains the information about the execution of a
  * lightweight thread. It contains the main emulator loop.
  */
-class Thread {
+class Thread : public Suspendable {
 public:
   Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs);
 
@@ -74,6 +73,11 @@ private:
   inline void unify(Node& l, Node& r);
 
   void waitFor(Node& node);
+
+  inline void suspend(ProgramCounter PC,
+                      StaticArray<UnstableNode>* yregs,
+                      StaticArray<StableNode>* gregs,
+                      StaticArray<StableNode>* kregs);
 
   VM vm;
   CodeArea* area;

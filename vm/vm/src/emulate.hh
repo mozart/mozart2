@@ -68,16 +68,12 @@ private:
                    EnlargeableArray<UnstableNode>* xregs,
                    StaticArray<UnstableNode>*& yregs,
                    StaticArray<StableNode>*& gregs,
-                   StaticArray<StableNode>*& kregs);
+                   StaticArray<StableNode>*& kregs,
+                   bool& preempted);
 
   inline void unify(Node& l, Node& r);
 
   void waitFor(Node& node);
-
-  inline void suspend(ProgramCounter PC,
-                      StaticArray<UnstableNode>* yregs,
-                      StaticArray<StableNode>* gregs,
-                      StaticArray<StableNode>* kregs);
 
   VM vm;
   CodeArea* area;

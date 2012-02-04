@@ -30,13 +30,20 @@
 #include "store.hh"
 #include "threadpool.hh"
 
+typedef bool (*PreemptionTest)(void* data);
+
 class VirtualMachine {
 public:
-  VirtualMachine() {}
+  VirtualMachine(PreemptionTest preemptionTest,
+                 void* preemptionTestData = nullptr) :
+    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData) {}
 
   StableNode* newVariable();
 
   void run();
+
+  inline
+  bool testPreemption();
 private:
   friend class Thread;
 
@@ -52,10 +59,21 @@ private:
   void scheduleThread(Thread* thread);
 
   ThreadPool threadPool;
+
+  PreemptionTest _preemptionTest;
+  void* _preemptionTestData;
 };
 
 void* operator new (size_t size, VM vm) {
   return vm->malloc(size);
+}
+
+///////////////////////////
+// Inline VirtualMachine //
+///////////////////////////
+
+bool VirtualMachine::testPreemption() {
+  return _preemptionTest(_preemptionTestData);
 }
 
 #endif // __VM_H

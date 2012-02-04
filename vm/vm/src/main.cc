@@ -32,8 +32,19 @@
 #include "corebuiltins.hh"
 #include "stdint.h"
 
+bool simplePreemption(void* data) {
+  static int count = 3;
+
+  if (--count == 0) {
+    count = 3;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 int main(int argc, char **argv) {
-  VirtualMachine virtualMachine;
+  VirtualMachine virtualMachine(simplePreemption);
   VM vm = &virtualMachine;
 
   // Arguments of the program

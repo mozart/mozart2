@@ -71,9 +71,13 @@ void Thread::run() {
 #define GPC(offset) (*gregs)[PC[offset]]
 #define KPC(offset) (*kregs)[PC[offset]]
 
+  // Preemption
+
+  bool preempted = false;
+
   // The big loop
 
-  while (true) {
+  while (!preempted) {
     OpCode op = *PC;
 
     switch (op) {
@@ -206,22 +210,22 @@ void Thread::run() {
 
       case OpCallX:
         call(XPC(1).node, IntPC(2), false,
-             vm, PC, xregs, yregs, gregs, kregs);
+             vm, PC, xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpCallG:
         call(GPC(1).node, IntPC(2), false,
-             vm, PC, xregs, yregs, gregs, kregs);
+             vm, PC, xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpTailCallX:
         call(XPC(1).node, IntPC(2), true,
-             vm, PC, xregs, yregs, gregs, kregs);
+             vm, PC, xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpTailCallG:
         call(GPC(1).node, IntPC(2), true,
-             vm, PC, xregs, yregs, gregs, kregs);
+             vm, PC, xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpReturn: {
@@ -361,6 +365,13 @@ void Thread::run() {
 #undef YPC
 #undef GPC
 #undef KPC
+
+  // Write back the cache
+
+  this->PC = PC;
+  this->yregs = yregs;
+  this->gregs = gregs;
+  this->kregs = kregs;
 }
 
 void Thread::call(Node& target, int actualArity, bool isTailCall,
@@ -368,7 +379,8 @@ void Thread::call(Node& target, int actualArity, bool isTailCall,
                   EnlargeableArray<UnstableNode>* xregs,
                   StaticArray<UnstableNode>*& yregs,
                   StaticArray<StableNode>*& gregs,
-                  StaticArray<StableNode>*& kregs) {
+                  StaticArray<StableNode>*& kregs,
+                  bool& preempted) {
   int formalArity;
   CodeArea* body;
   StaticArray<StableNode>* Gs;
@@ -398,6 +410,9 @@ void Thread::call(Node& target, int actualArity, bool isTailCall,
     yregs = nullptr;
     kregs = &body->getKs();
     gregs = Gs;
+
+    if (vm->testPreemption())
+      preempted = true;
   } else {
     waitFor(result->node);
   }
@@ -418,14 +433,4 @@ void Thread::unify(Node& l, Node& r) {
 
 void Thread::waitFor(Node& node) {
   // TODO
-}
-
-void Thread::suspend(ProgramCounter PC,
-                     StaticArray<UnstableNode>* yregs,
-                     StaticArray<StableNode>* gregs,
-                     StaticArray<StableNode>* kregs) {
-  this->PC = PC;
-  this->yregs = yregs;
-  this->gregs = gregs;
-  this->kregs = kregs;
 }

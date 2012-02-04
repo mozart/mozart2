@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
   StaticArray<StableNode> mainGs(1);
   mainGs[0].init(vm, abstractionFibonacci);
 
-  new (vm) Thread(vm, &mainCodeArea, mainGs);
+  new (vm) Thread(vm, &mainCodeArea, &mainGs);
 
   std::cout << "Initialized" << std::endl;
 

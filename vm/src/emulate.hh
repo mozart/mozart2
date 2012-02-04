@@ -59,32 +59,39 @@ typedef stack<StackEntry> ThreadStack;
  */
 class Thread : public Suspendable {
 public:
-  Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs);
+  Thread(VM vm, CodeArea* area, StaticArray<StableNode>* Gs);
 
   void run();
 private:
-  inline void call(Node& target, int actualArity, bool isTailCall,
-                   VM vm, ProgramCounter& PC,
-                   EnlargeableArray<UnstableNode>* xregs,
-                   StaticArray<UnstableNode>*& yregs,
-                   StaticArray<StableNode>*& gregs,
-                   StaticArray<StableNode>*& kregs,
-                   bool& preempted);
+  inline
+  void pushFrame(CodeArea* area, ProgramCounter PC,
+                 StaticArray<UnstableNode>* yregs,
+                 StaticArray<StableNode>* gregs,
+                 StaticArray<StableNode>* kregs);
 
-  inline void unify(Node& l, Node& r);
+  inline
+  void popFrame(CodeArea*& area, ProgramCounter& PC,
+                StaticArray<UnstableNode>*& yregs,
+                StaticArray<StableNode>*& gregs,
+                StaticArray<StableNode>*& kregs);
+
+  inline
+  void call(Node& target, int actualArity, bool isTailCall,
+            VM vm, CodeArea*& area, ProgramCounter& PC,
+            EnlargeableArray<UnstableNode>* xregs,
+            StaticArray<UnstableNode>*& yregs,
+            StaticArray<StableNode>*& gregs,
+            StaticArray<StableNode>*& kregs,
+            bool& preempted);
+
+  inline
+  void unify(Node& l, Node& r);
 
   void waitFor(Node& node);
 
   VM vm;
-  CodeArea* area;
 
   EnlargeableArray<UnstableNode> xregs;
-  StaticArray<UnstableNode> *yregs;
-  StaticArray<StableNode> *gregs;
-  StaticArray<StableNode> *kregs;
-
-  ProgramCounter PC;
-
   ThreadStack stack;
 };
 

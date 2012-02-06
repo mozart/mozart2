@@ -104,7 +104,7 @@ class Abstraction;
 template <>
 class Implementation<Abstraction> {
 public:
-  Implementation<Abstraction>(VM vm, int arity, CodeArea* body,
+  Implementation<Abstraction>(VM vm, int arity, UnstableNode* body,
     int Gc, UnstableNode* Gs[]);
 
   int getArity() { return _arity; }
@@ -124,16 +124,17 @@ public:
    * @param body    Output: code area which is the body
    * @param Gs      Output: G registers
    */
-  BuiltinResult getCallInfo(Node* self, VM vm, int* arity, CodeArea** body,
+  BuiltinResult getCallInfo(Node* self, VM vm, int* arity,
+                            UnstableNode* body,
     StaticArray<StableNode>** Gs) {
     *arity = _arity;
-    *body = _body;
+    body->copy(vm, _body);
     *Gs = &_Gs;
     return BuiltinResultContinue;
   }
 private:
   int _arity;
-  CodeArea* _body;
+  StableNode _body;
   StaticArray<StableNode> _Gs;
 };
 

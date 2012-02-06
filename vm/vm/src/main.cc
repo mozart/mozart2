@@ -152,8 +152,10 @@ int main(int argc, char **argv) {
 
   UnstableNode* fibonacciKs[] =
     { &zero, &one, &minusOne, &minusTwo, &builtinEquals, &builtinAdd };
-  CodeArea fibonacciCodeArea(vm, fibonacciCodeBlock, sizeof(fibonacciCodeBlock),
-    4, 6, fibonacciKs);
+  UnstableNode fibonacciCodeArea;
+  fibonacciCodeArea.make<CodeArea>(vm, vm, fibonacciCodeBlock,
+                                   sizeof(fibonacciCodeBlock),
+                                   4, 6, fibonacciKs);
 
   UnstableNode recursiveFibonacci;
   recursiveFibonacci.make<Unbound>(vm);
@@ -204,12 +206,14 @@ int main(int argc, char **argv) {
   };
 
   UnstableNode* mainKs[] = { &nnode, &zero, &one };
-  CodeArea mainCodeArea(vm, mainCodeBlock, sizeof(mainCodeBlock), 5, 3, mainKs);
+  UnstableNode mainCodeArea;
+  mainCodeArea.make<CodeArea>(vm, vm, mainCodeBlock, sizeof(mainCodeBlock),
+                              5, 3, mainKs);
 
   StaticArray<StableNode> mainGs(1);
   mainGs[0].init(vm, abstractionFibonacci);
 
-  new (vm) Thread(vm, &mainCodeArea, &mainGs);
+  new (vm) Thread(vm, mainCodeArea, &mainGs);
 
   std::cout << "Initialized" << std::endl;
 

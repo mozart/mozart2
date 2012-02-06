@@ -24,8 +24,16 @@
 
 #include "codearea.hh"
 
-CodeArea::CodeArea(VM vm, ByteCode* codeBlock, int size, int Xcount,
-  int Kc, UnstableNode* Ks[]) :
+//////////////
+// CodeArea //
+//////////////
+
+const Type CodeArea::rawType("CodeArea", nullptr);
+const Type* const CodeArea::type = &CodeArea::rawType;
+
+Implementation<CodeArea>::Implementation(VM vm, ByteCode* codeBlock, int size,
+                                         int Xcount,
+                                         int Kc, UnstableNode* Ks[]) :
   _codeBlock(codeBlock), _size(size), _Xcount(Xcount), _Ks(Kc) {
 
   for (int i = 0; i < Kc; i++)

@@ -73,7 +73,7 @@ private:
 struct Callable {
   Callable(Node& self) : self(Reference::dereference(self)) {};
 
-  BuiltinResult getCallInfo(VM vm, int* arity, CodeArea** body,
+  BuiltinResult getCallInfo(VM vm, int* arity, UnstableNode* body,
     StaticArray<StableNode>** Gs) {
     if (self.type == Abstraction::type) {
       return IMPL(BuiltinResult, Abstraction, getCallInfo,
@@ -83,8 +83,30 @@ struct Callable {
       cout << "Abstraction expected but " << self.type->getName();
       cout << " found" << endl;
       *arity = 0;
-      *body = nullptr;
+      body->make<Unbound>(vm);
       *Gs = nullptr;
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  Node& self;
+};
+
+struct CodeAreaProvider {
+  CodeAreaProvider(Node& self) : self(Reference::dereference(self)) {};
+
+  BuiltinResult getCodeAreaInfo(VM vm, ProgramCounter* start, int* Xcount,
+                                StaticArray<StableNode>** Ks) {
+    if (self.type == CodeArea::type) {
+      return IMPL(BuiltinResult, CodeArea, getCodeAreaInfo,
+                  &self, vm, start, Xcount, Ks);
+    } else {
+      // TODO code area info of a non-CodeArea
+      cout << "CodeArea expected but " << self.type->getName();
+      cout << " found" << endl;
+      *start = nullptr;
+      *Xcount = 0;
+      *Ks = nullptr;
       return BuiltinResultContinue;
     }
   }

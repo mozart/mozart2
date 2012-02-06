@@ -36,12 +36,20 @@ using namespace std;
 
 const ProgramCounter NullPC = nullptr;
 
-Thread::Thread(VM vm, CodeArea* area, StaticArray<StableNode>* Gs) :
+Thread::Thread(VM vm, UnstableNode& area,
+               StaticArray<StableNode>* Gs) :
   vm(vm), xregs(InitXRegisters) {
 
-  xregs.ensureSize(area->getXCount());
+  ProgramCounter start;
+  int Xcount;
+  StaticArray<StableNode>* Ks;
 
-  StackEntry startEntry(area, area->getStart(), nullptr, Gs);
+  CodeAreaProvider provider = area.node;
+  provider.getCodeAreaInfo(vm, &start, &Xcount, &Ks);
+
+  xregs.ensureSize(Xcount);
+
+  StackEntry startEntry(area, start, nullptr, Gs);
   stack.push(startEntry);
 
   vm->scheduleThread(this);
@@ -55,13 +63,13 @@ void Thread::run() {
 
   // Where were we left?
 
-  CodeArea* area;
+  UnstableNode area;
   ProgramCounter PC;
   StaticArray<UnstableNode>* yregs;
   StaticArray<StableNode>* gregs;
   StaticArray<StableNode>* kregs;
 
-  popFrame(area, PC, yregs, gregs, kregs);
+  popFrame(vm, area, PC, yregs, gregs, kregs);
 
   // Some helpers
 
@@ -237,7 +245,7 @@ void Thread::run() {
           return;
         }
 
-        popFrame(area, PC, yregs, gregs, kregs);
+        popFrame(vm, area, PC, yregs, gregs, kregs);
 
         // Do NOT advancePC() here!
         break;
@@ -363,10 +371,10 @@ void Thread::run() {
 #undef KPC
 
   // Store the current state in the stack frame, for next invocation of run()
-  pushFrame(area, PC, yregs, gregs, kregs);
+  pushFrame(vm, area, PC, yregs, gregs, kregs);
 }
 
-void Thread::pushFrame(CodeArea* area, ProgramCounter PC,
+void Thread::pushFrame(VM vm, UnstableNode& area, ProgramCounter PC,
                        StaticArray<UnstableNode>* yregs,
                        StaticArray<StableNode>* gregs,
                        StaticArray<StableNode>* kregs) {
@@ -374,7 +382,7 @@ void Thread::pushFrame(CodeArea* area, ProgramCounter PC,
   stack.push(entry);
 }
 
-void Thread::popFrame(CodeArea*& area, ProgramCounter& PC,
+void Thread::popFrame(VM vm, UnstableNode& area, ProgramCounter& PC,
                       StaticArray<UnstableNode>*& yregs,
                       StaticArray<StableNode>*& gregs,
                       StaticArray<StableNode>*& kregs) {
@@ -384,24 +392,38 @@ void Thread::popFrame(CodeArea*& area, ProgramCounter& PC,
   PC = entry.PC;
   yregs = entry.yregs;
   gregs = entry.gregs;
-  kregs = &area->getKs();
+
+  ProgramCounter start;
+  int Xcount;
+
+  CodeAreaProvider provider = area.node;
+  provider.getCodeAreaInfo(vm, &start, &Xcount, &kregs);
 
   stack.pop();
 }
 
 void Thread::call(Node& target, int actualArity, bool isTailCall,
-                  VM vm, CodeArea*& area, ProgramCounter& PC,
+                  VM vm, UnstableNode& area, ProgramCounter& PC,
                   EnlargeableArray<UnstableNode>* xregs,
                   StaticArray<UnstableNode>*& yregs,
                   StaticArray<StableNode>*& gregs,
                   StaticArray<StableNode>*& kregs,
                   bool& preempted) {
   int formalArity;
-  CodeArea* body;
+  UnstableNode body;
   StaticArray<StableNode>* Gs;
+
+  ProgramCounter start;
+  int Xcount;
+  StaticArray<StableNode>* Ks;
 
   Callable x = target;
   BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &Gs);
+
+  if (result == BuiltinResultContinue) {
+    CodeAreaProvider provider = body.node;
+    result = provider.getCodeAreaInfo(vm, &start, &Xcount, &Ks);
+  }
 
   if (result == BuiltinResultContinue) {
     if (actualArity != formalArity) {
@@ -414,16 +436,17 @@ void Thread::call(Node& target, int actualArity, bool isTailCall,
     PC += (2 + 1); // 1 for opcode
 
     if (!isTailCall) {
-      pushFrame(area, PC, yregs, gregs, kregs);
+      pushFrame(vm, area, PC, yregs, gregs, kregs);
     }
 
     // Setup new frame
+    assert(body.node.type->isCopiable());
     area = body;
-    PC = body->getStart();
-    xregs->ensureSize(body->getXCount());
+    PC = start;
+    xregs->ensureSize(Xcount);
     yregs = nullptr;
-    kregs = &body->getKs();
     gregs = Gs;
+    kregs = Ks;
 
     // Test for preemption
     // (there is no infinite execution path that does not traverse a call)

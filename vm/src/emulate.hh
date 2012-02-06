@@ -39,11 +39,15 @@
  * Entry of a thread stack
  */
 struct StackEntry {
-  StackEntry(CodeArea* area, ProgramCounter PC,
+  StackEntry(UnstableNode& area, ProgramCounter PC,
     StaticArray<UnstableNode>* yregs, StaticArray<StableNode>* gregs) :
-    area(area), PC(PC), yregs(yregs), gregs(gregs) {}
+    PC(PC), yregs(yregs), gregs(gregs) {
 
-  CodeArea* area;
+    assert(area.node.type->isCopiable());
+    this->area.copy(nullptr, area);
+  }
+
+  UnstableNode area;
   ProgramCounter PC;
   StaticArray<UnstableNode>* yregs;
   StaticArray<StableNode>* gregs;
@@ -59,25 +63,25 @@ typedef stack<StackEntry> ThreadStack;
  */
 class Thread : public Suspendable {
 public:
-  Thread(VM vm, CodeArea* area, StaticArray<StableNode>* Gs);
+  Thread(VM vm, UnstableNode& area, StaticArray<StableNode>* Gs);
 
   void run();
 private:
   inline
-  void pushFrame(CodeArea* area, ProgramCounter PC,
+  void pushFrame(VM vm, UnstableNode& area, ProgramCounter PC,
                  StaticArray<UnstableNode>* yregs,
                  StaticArray<StableNode>* gregs,
                  StaticArray<StableNode>* kregs);
 
   inline
-  void popFrame(CodeArea*& area, ProgramCounter& PC,
+  void popFrame(VM vm, UnstableNode& area, ProgramCounter& PC,
                 StaticArray<UnstableNode>*& yregs,
                 StaticArray<StableNode>*& gregs,
                 StaticArray<StableNode>*& kregs);
 
   inline
   void call(Node& target, int actualArity, bool isTailCall,
-            VM vm, CodeArea*& area, ProgramCounter& PC,
+            VM vm, UnstableNode& area, ProgramCounter& PC,
             EnlargeableArray<UnstableNode>* xregs,
             StaticArray<UnstableNode>*& yregs,
             StaticArray<StableNode>*& gregs,

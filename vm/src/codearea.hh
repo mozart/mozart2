@@ -29,10 +29,17 @@
 #include "arrays.hh"
 #include "store.hh"
 
-class CodeArea {
+//////////////
+// CodeArea //
+//////////////
+
+class CodeArea;
+
+template <>
+class Implementation<CodeArea> {
 public:
-  CodeArea(VM vm, ByteCode* codeBlock, int size, int Xcount,
-    int Kc, UnstableNode* Ks[]);
+  Implementation(VM vm, ByteCode* codeBlock, int size, int Xcount,
+                 int Kc, UnstableNode* Ks[]);
 
   ProgramCounter getStart() {
     return _codeBlock;
@@ -40,13 +47,34 @@ public:
 
   int getXCount() { return _Xcount; }
 
-  StaticArray<StableNode>& getKs() { return _Ks; }
+  StaticArray<StableNode>* getKs() { return &_Ks; }
+
+  BuiltinResult getCodeAreaInfo(Node* self, VM vm,
+                                ProgramCounter* start, int* Xcount,
+                                StaticArray<StableNode>** Ks) {
+    *start = getStart();
+    *Xcount = getXCount();
+    *Ks = getKs();
+    return BuiltinResultContinue;
+  }
 private:
   ByteCode* _codeBlock; // actual byte-code in this code area
   int _size;            // size of the codeBlock
 
   int _Xcount;                 // number of X registers used in this area
   StaticArray<StableNode> _Ks; // K registers
+};
+
+/**
+ * Type of a code area
+ */
+class CodeArea {
+public:
+  typedef Node* Self;
+
+  static const Type* const type;
+private:
+  static const Type rawType;
 };
 
 #endif // __CODEAREA_H

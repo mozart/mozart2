@@ -29,6 +29,49 @@
 #include "smallint.hh"
 #include "vm.hh"
 
+#include <list>
+
+using namespace std;
+
+//////////////
+// Variable //
+//////////////
+
+class Variable;
+
+template <>
+class Implementation<Variable> {
+public:
+  Implementation<Variable>() {}
+
+  inline
+  BuiltinResult wait(Node* self, VM vm, Suspendable* thread);
+
+  inline
+  BuiltinResult bind(Node* self, VM vm, Node* src);
+private:
+  inline
+  void resumePendingThreads(VM vm);
+
+  void transferPendingThreads(VM vm, list<Suspendable*>& source) {
+    pendingThreads.splice(pendingThreads.end(), source);
+  }
+
+  list<Suspendable*> pendingThreads;
+};
+
+/**
+ * Type of a dataflow variable
+ */
+class Variable {
+public:
+  typedef Node* Self;
+
+  static const Type* const type;
+private:
+  static const Type rawType;
+};
+
 /////////////
 // Unbound //
 /////////////
@@ -47,11 +90,11 @@ public:
   Implementation<Unbound>() {}
   Implementation<Unbound>(void* dummy) {}
 
-  void bind(Node* self, VM vm, Node* src) {
-    if (!src->type->isCopiable())
-      Reference::makeFor(vm, *src);
-    *self = *src;
-  }
+  inline
+  BuiltinResult wait(Node* self, VM vm, Suspendable* thread);
+
+  inline
+  BuiltinResult bind(Node* self, VM vm, Node* src);
 };
 
 /**
@@ -67,5 +110,72 @@ public:
 private:
   static const Type rawType;
 };
+
+#include "coreinterfaces.hh"
+
+//////////////////////
+// Inline Variable ///
+//////////////////////
+
+BuiltinResult Implementation<Variable>::wait(Node* self, VM vm,
+                                             Suspendable* thread) {
+  thread->unsetRunnable();
+  pendingThreads.push_back(thread);
+
+  return self;
+}
+
+BuiltinResult Implementation<Variable>::bind(Node* self, VM vm, Node* src) {
+  // Actual binding
+  if (!src->type->isCopiable())
+    Reference::makeFor(vm, *src);
+  *self = *src;
+
+  // If the value we were bound to is a Variable too, we have to transfer the
+  // threads waiting for this so that they wait for the other Variable.
+  // Otherwise, we wake up the threads.
+  Node& node = Reference::dereference(*self);
+  if (node.type == Variable::type) {
+    IMPLNOSELF(void, Variable, transferPendingThreads, &node,
+               vm, pendingThreads);
+  } else {
+    resumePendingThreads(vm);
+  }
+
+  return BuiltinResultContinue;
+}
+
+void Implementation<Variable>::resumePendingThreads(VM vm) {
+  ThreadPool& threadPool = vm->getThreadPool();
+
+  for (auto iter = pendingThreads.cbegin();
+       iter != pendingThreads.cend(); iter++) {
+
+    (*iter)->setRunnable();
+    threadPool.schedule(*iter);
+  }
+
+  pendingThreads.clear();
+}
+
+/////////////////////
+// Inline Unbound ///
+/////////////////////
+
+BuiltinResult Implementation<Unbound>::wait(Node* self, VM vm,
+                                            Suspendable* thread) {
+  self->make<Variable>(vm);
+
+  DataflowVariable var = *self;
+  return var.wait(vm, thread);
+}
+
+BuiltinResult Implementation<Unbound>::bind(Node* self, VM vm, Node* src) {
+  if (!src->type->isCopiable())
+    Reference::makeFor(vm, *src);
+  *self = *src;
+
+  return BuiltinResultContinue;
+}
 
 #endif // __VARIABLES_H

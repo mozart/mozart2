@@ -44,9 +44,7 @@ class Node;
  * inherently mutable data (such as the contents of a cell).
  */
 class Node {
-private:
-  friend class UnstableNode;
-
+public:
   template<class T, class... Args>
   void make(VM vm, Args... args) {
     typedef Accessor<T, typename Storage<T>::Type> Access;
@@ -117,7 +115,7 @@ public:
  * continue.
  * Throwing an exception is achieved by pointing to a failed value.
  */
-typedef StableNode* BuiltinResult;
+typedef Node* BuiltinResult;
 
 const BuiltinResult BuiltinResultContinue = nullptr;
 

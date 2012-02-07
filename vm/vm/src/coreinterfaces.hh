@@ -36,6 +36,37 @@
 
 #include <iostream>
 
+struct DataflowVariable {
+  DataflowVariable(Node& self) : self(Reference::dereference(self)) {}
+
+  BuiltinResult wait(VM vm, Suspendable* thread) {
+    if (self.type == Variable::type) {
+      return IMPL(BuiltinResult, Variable, wait, &self, vm, thread);
+    } else if (self.type == Unbound::type) {
+      return IMPL(BuiltinResult, Unbound, wait, &self, vm, thread);
+    } else if (self.type->isTransient()) {
+      return &self;
+    } else {
+      return BuiltinResultContinue;
+    }
+  }
+
+  BuiltinResult bind(VM vm, Node* src) {
+    if (self.type == Unbound::type) {
+      return IMPL(BuiltinResult, Unbound, bind, &self, vm, src);
+    } else if (self.type == Variable::type) {
+      return IMPL(BuiltinResult, Variable, bind, &self, vm, src);
+    } else if (self.type->isTransient()) {
+      return &self;
+    } else {
+      // TODO bind a bound value
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  Node& self;
+};
+
 struct Equatable {
   Equatable(Node& self) : self(Reference::dereference(self)) {}
 
@@ -43,6 +74,9 @@ struct Equatable {
     if (self.type == SmallInt::type) {
       return IMPL(BuiltinResult, SmallInt, equals,
                   &self, vm, right, result);
+    } else if (self.type->isTransient()) {
+      // TODO A == B when A and B are aliased transients should return true
+      return &self;
     } else {
       // TODO == of non-SmallInt
       cout << self.type->getName() << " == (right) not implemented yet" << endl;
@@ -61,6 +95,8 @@ struct BuiltinCallable {
     if (self.type == BuiltinProcedure::type) {
       return IMPL(BuiltinResult, BuiltinProcedure, callBuiltin,
                   &self, vm, argc, args);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO call non-builtin
       cout << "BuiltinProcedure expected but " << self.type->getName();
@@ -82,6 +118,8 @@ struct Callable {
     if (self.type == Abstraction::type) {
       return IMPL(BuiltinResult, Abstraction, getCallInfo,
                   &self, vm, arity, body, start, Xcount, Gs, Ks);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO call non-abstraction
       cout << "Abstraction expected but " << self.type->getName();
@@ -107,6 +145,8 @@ struct CodeAreaProvider {
     if (self.type == CodeArea::type) {
       return IMPL(BuiltinResult, CodeArea, getCodeAreaInfo,
                   &self, vm, start, Xcount, Ks);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO code area info of a non-CodeArea
       cout << "CodeArea expected but " << self.type->getName();
@@ -128,6 +168,8 @@ struct Addable {
     if (self.type == SmallInt::type) {
       return IMPL(BuiltinResult, SmallInt, add,
                   &self, vm, right, result);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO add non-SmallInt
       cout << "SmallInt expected but " << self.type->getName();
@@ -146,6 +188,8 @@ struct IntegerValue {
     if (self.type == SmallInt::type) {
       return IMPL(BuiltinResult, SmallInt, equalsInteger,
                   &self, vm, right, result);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO equalsInteger on a non-SmallInt
       *result = false;
@@ -157,6 +201,8 @@ struct IntegerValue {
     if (self.type == SmallInt::type) {
       return IMPL(BuiltinResult, SmallInt, addValue,
                   &self, vm, b, result);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO addValue on a non-SmallInt
       result->make<SmallInt>(vm, 0);
@@ -174,6 +220,8 @@ struct BooleanValue {
     if (self.type == Boolean::type) {
       return IMPL(BuiltinResult, Boolean, valueOrNotBool,
                   &self, vm, result);
+    } else if (self.type->isTransient()) {
+      return &self;
     } else {
       // TODO valueOrNotBool on a non-Boolean
       *result = bNotBool;

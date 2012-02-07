@@ -222,7 +222,7 @@ void Thread::run() {
         if (result == BuiltinResultContinue)
           advancePC(2 + argc);
         else
-          waitFor(result->node);
+          waitFor(vm, result, preempted);
 
         break;
       }
@@ -283,7 +283,7 @@ void Thread::run() {
 
           advancePC(4 + distance);
         } else {
-          waitFor(result->node);
+          waitFor(vm, result, preempted);
         }
 
         break;
@@ -291,21 +291,41 @@ void Thread::run() {
 
       // Unification
 
-      case OpUnifyXX:
-        unify(XPC(1).node, XPC(2).node);
-        advancePC(2); break;
+      case OpUnifyXX: {
+        BuiltinResult result = unify(vm, XPC(1).node, XPC(2).node);
+        if (result == BuiltinResultContinue)
+          advancePC(2);
+        else
+          waitFor(vm, result, preempted);
+        break;
+      }
 
-      case OpUnifyXY:
-        unify(XPC(1).node, YPC(2).node);
-        advancePC(2); break;
+      case OpUnifyXY: {
+        BuiltinResult result = unify(vm, XPC(1).node, YPC(2).node);
+        if (result == BuiltinResultContinue)
+          advancePC(2);
+        else
+          waitFor(vm, result, preempted);
+        break;
+      }
 
-      case OpUnifyXK:
-        unify(XPC(1).node, KPC(2).node);
-        advancePC(2); break;
+      case OpUnifyXK: {
+        BuiltinResult result = unify(vm, XPC(1).node, KPC(2).node);
+        if (result == BuiltinResultContinue)
+          advancePC(2);
+        else
+          waitFor(vm, result, preempted);
+        break;
+      }
 
-      case OpUnifyXG:
-        unify(XPC(1).node, GPC(2).node);
-        advancePC(2); break;
+      case OpUnifyXG: {
+        BuiltinResult result = unify(vm, XPC(1).node, GPC(2).node);
+        if (result == BuiltinResultContinue)
+          advancePC(2);
+        else
+          waitFor(vm, result, preempted);
+        break;
+      }
 
       // Hard-coded stuff
 
@@ -317,6 +337,9 @@ void Thread::run() {
         } else if (arg.type == Boolean::type) {
           bool value = IMPLNOSELF(bool, Boolean, value, &arg);
           printf("%s\n", value ? "True" : "False");
+        } else if (arg.type->isTransient()) {
+          waitFor(vm, &arg, preempted);
+          break;
         } else {
           const string typeName = arg.type->getName();
           cout << "SmallInt or Boolean expected but " << typeName << " found\n";
@@ -339,7 +362,7 @@ void Thread::run() {
           else
             advancePC(3 + IntPC(3));
         } else {
-          waitFor(result->node);
+          waitFor(vm, result, preempted);
         }
 
         break;
@@ -352,7 +375,7 @@ void Thread::run() {
         if (result == BuiltinResultContinue)
           advancePC(3);
         else
-          waitFor(result->node);
+          waitFor(vm, result, preempted);
 
         break;
       }
@@ -364,7 +387,7 @@ void Thread::run() {
         if (result == BuiltinResultContinue)
           advancePC(2);
         else
-          waitFor(result->node);
+          waitFor(vm, result, preempted);
 
         break;
       }
@@ -453,23 +476,32 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
     if (vm->testPreemption())
       preempted = true;
   } else {
-    waitFor(result->node);
+    waitFor(vm, result, preempted);
   }
 }
 
-void Thread::unify(Node& l, Node& r) {
+BuiltinResult Thread::unify(VM vm, Node& l, Node& r) {
   Node& left = Reference::dereference(l);
   Node& right = Reference::dereference(r);
 
   if (left.type == Unbound::type)
-    IMPL(void, Unbound, bind, &left, vm, &right);
+    return IMPL(BuiltinResult, Unbound, bind, &left, vm, &right);
   else if (right.type == Unbound::type)
-    IMPL(void, Unbound, bind, &right, vm, &left);
+    return IMPL(BuiltinResult, Unbound, bind, &right, vm, &left);
+  else if (left.type == Variable::type)
+    return IMPL(BuiltinResult, Variable, bind, &left, vm, &right);
+  else if (right.type == Variable::type)
+    return IMPL(BuiltinResult, Variable, bind, &right, vm, &left);
   else {
     // TODO Non-trivial unify
+    return BuiltinResultContinue;
   }
 }
 
-void Thread::waitFor(Node& node) {
-  // TODO
+void Thread::waitFor(VM vm, Node* node, bool& preempted) {
+  DataflowVariable var = *node;
+  var.wait(vm, this);
+
+  if (!isRunnable())
+    preempted = true;
 }

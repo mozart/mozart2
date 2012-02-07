@@ -86,10 +86,14 @@ private:
 BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
                                                UnstableNode* right,
                                                UnstableNode* result) {
-  if (right->node.type == SmallInt::type) {
-    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, &right->node);
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == SmallInt::type) {
+    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     result->make<Boolean>(vm, value() == r);
     return BuiltinResultContinue;
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
   } else {
     // TODO SmallInt == non-SmallInt
     result->make<Boolean>(vm, false);
@@ -112,6 +116,8 @@ BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
   if (rightNode.type == SmallInt::type) {
     nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     return addValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
   } else {
     // TODO SmallInt + non-SmallInt
     std::cout << "SmallInt expected but " << rightNode.type->getName();

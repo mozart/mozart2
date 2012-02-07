@@ -91,9 +91,9 @@ private:
             bool& preempted);
 
   inline
-  void unify(Node& l, Node& r);
+  BuiltinResult unify(VM vm, Node& l, Node& r);
 
-  void waitFor(Node& node);
+  void waitFor(VM vm, Node* node, bool& preempted);
 
   VM vm;
 

@@ -49,7 +49,8 @@ int main(int argc, char **argv) {
 
   // Arguments of the program
 
-  const nativeint N = 35; // time of the order of seconds on a 2-3 GHz CPU
+  const nativeint N1 = 30; // time of the order of seconds on a 2-3 GHz CPU
+  const nativeint N2 = 35;
 
   // Define the builtins
 
@@ -63,12 +64,13 @@ int main(int argc, char **argv) {
 
   // Define immediate constants
 
-  UnstableNode zero, one, minusOne, minusTwo, nnode;
+  UnstableNode zero, one, minusOne, minusTwo, n1node, n2node;
   zero.make<SmallInt>(vm, 0);
   one.make<SmallInt>(vm, 1);
   minusOne.make<SmallInt>(vm, -1);
   minusTwo.make<SmallInt>(vm, -2);
-  nnode.make<SmallInt>(vm, N);
+  n1node.make<SmallInt>(vm, N1);
+  n2node.make<SmallInt>(vm, N2);
 
   // Define Fibonacci function
 
@@ -166,27 +168,36 @@ int main(int argc, char **argv) {
   abstractionFibonacci.make<Abstraction>(vm, vm, 2, &fibonacciCodeArea,
                                          1, fibonacciGs);
   Reference::makeFor(vm, abstractionFibonacci);
-  IMPL(void, Unbound, bind, &Reference::dereference(recursiveFibonacci.node),
+  IMPL(BuiltinResult, Unbound, bind,
+       &Reference::dereference(recursiveFibonacci.node),
        vm, &Reference::dereference(abstractionFibonacci.node));
 
-  // Define Main procedure
+  // The dataflows
+
+  UnstableNode dataflow1, dataflow2;
+  dataflow1.make<Unbound>(vm);
+  dataflow2.make<Unbound>(vm);
+
+  // Define Main1 procedure
 
   /*
-   * {Fibonacci N 0 1 R}
+   * {Fibonacci N1 0 1 R}
    * {Print R}
+   * Dataflow1 = R
    */
 
   /*
-   * K0 = N
+   * K0 = N1
    * K1 = 0
    * K2 = 1
    *
    * G0 = Fibonacci
+   * G1 = Dataflow1
    *
    * Y0 = R
    */
 
-  ByteCode mainCodeBlock[] = {
+  ByteCode main1CodeBlock[] = {
     // Allocate Y0 and create R
     OpAllocateY, 1,
     OpCreateVarX, 1,
@@ -200,22 +211,113 @@ int main(int argc, char **argv) {
     OpMoveYX, 0, 0,
     OpPrint, 0,
 
+    // Dataflow1 = R
+    OpUnifyXG, 0, 1,
+
     // end
     OpDeallocateY,
     OpReturn,
   };
 
-  UnstableNode* mainKs[] = { &nnode, &zero, &one };
-  UnstableNode mainCodeArea;
-  mainCodeArea.make<CodeArea>(vm, vm, mainCodeBlock, sizeof(mainCodeBlock),
-                              5, 3, mainKs);
+  UnstableNode* main1Ks[] = { &n1node, &zero, &one };
+  UnstableNode main1CodeArea;
+  main1CodeArea.make<CodeArea>(vm, vm, main1CodeBlock, sizeof(main1CodeBlock),
+                               5, 3, main1Ks);
 
-  UnstableNode* mainGs[] = { &abstractionFibonacci };
+  UnstableNode* main1Gs[] = { &abstractionFibonacci, &dataflow1 };
 
-  UnstableNode abstractionMain;
-  abstractionMain.make<Abstraction>(vm, vm, 2, &mainCodeArea, 1, mainGs);
+  UnstableNode abstractionMain1;
+  abstractionMain1.make<Abstraction>(vm, vm, 0, &main1CodeArea, 2, main1Gs);
 
-  new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain));
+  new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain1));
+
+  // Define Main2 procedure
+
+  /*
+   * {Fibonacci N2 0 1 R}
+   * {Print R}
+   * Dataflow2 = R
+   */
+
+  /*
+   * K0 = N2
+   * K1 = 0
+   * K2 = 1
+   *
+   * G0 = Fibonacci
+   * G1 = Dataflow2
+   *
+   * Y0 = R
+   */
+
+  ByteCode main2CodeBlock[] = {
+    // Allocate Y0 and create R
+    OpAllocateY, 1,
+    OpCreateVarX, 1,
+    OpMoveXY, 1, 0,
+
+    // {Fibonacci N R}
+    OpMoveKX, 0, 0,
+    OpCallG, 0, 2,
+
+    // {Print R}
+    OpMoveYX, 0, 0,
+    OpPrint, 0,
+
+    // Dataflow2 = R
+    OpUnifyXG, 0, 1,
+
+    // end
+    OpDeallocateY,
+    OpReturn,
+  };
+
+  UnstableNode* main2Ks[] = { &n2node, &zero, &one };
+  UnstableNode main2CodeArea;
+  main2CodeArea.make<CodeArea>(vm, vm, main2CodeBlock, sizeof(main2CodeBlock),
+                               5, 3, main2Ks);
+
+  UnstableNode* main2Gs[] = { &abstractionFibonacci, &dataflow2 };
+
+  UnstableNode abstractionMain2;
+  abstractionMain2.make<Abstraction>(vm, vm, 0, &main2CodeArea, 2, main2Gs);
+
+  new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain2));
+
+  // Define Main3 procedure
+
+  /*
+   * R = Dataflow1 + Dataflow2
+   * {Print R}
+   */
+
+  /*
+   * G0 = Dataflow1
+   * G1 = Dataflow2
+   *
+   * X0 = R
+   */
+
+  ByteCode main3CodeBlock[] = {
+    OpMoveGX, 0, 1,
+    OpMoveGX, 1, 2,
+    OpInlineAdd, 1, 2, 0,
+    OpPrint, 0,
+
+    OpReturn,
+  };
+
+  UnstableNode* main3Ks[] = { };
+  UnstableNode main3CodeArea;
+  main3CodeArea.make<CodeArea>(vm, vm, main3CodeBlock, sizeof(main3CodeBlock),
+                               3, 0, main3Ks);
+
+  UnstableNode* main3Gs[] = { &dataflow1, &dataflow2 };
+
+  UnstableNode abstractionMain3;
+  abstractionMain3.make<Abstraction>(vm, vm, 0, &main3CodeArea, 2, main3Gs);
+
+  new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain3));
 
   std::cout << "Initialized" << std::endl;
 

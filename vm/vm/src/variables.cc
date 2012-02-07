@@ -24,9 +24,16 @@
 
 #include "variables.hh"
 
+//////////////
+// Variable //
+//////////////
+
+const Type Variable::rawType("Variable", nullptr, false, true);
+const Type* const Variable::type = &Variable::rawType;
+
 /////////////
 // Unbound //
 /////////////
 
-const Type Unbound::rawType("Unbound", nullptr);
+const Type Unbound::rawType("Unbound", nullptr, false, true);
 const Type* const Unbound::type = &Unbound::rawType;

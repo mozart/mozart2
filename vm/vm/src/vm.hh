@@ -44,6 +44,8 @@ public:
 
   inline
   bool testPreemption();
+
+  ThreadPool& getThreadPool() { return threadPool; }
 private:
   friend class Thread;
 

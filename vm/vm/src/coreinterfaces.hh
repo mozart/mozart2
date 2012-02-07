@@ -22,15 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREINTERFACES_H
-#define __COREINTERFACES_H
-
+// Yes, we need those to be before the ifndef __COREINTERFACES_H test
+// (because of circular includes)
 #include "store.hh"
 #include "smallint.hh"
 #include "emulate.hh"
 #include "callables.hh"
 #include "variables.hh"
 #include "boolean.hh"
+
+#ifndef __COREINTERFACES_H
+#define __COREINTERFACES_H
 
 #include <iostream>
 
@@ -74,17 +76,22 @@ struct Callable {
   Callable(Node& self) : self(Reference::dereference(self)) {};
 
   BuiltinResult getCallInfo(VM vm, int* arity, StableNode** body,
-    StaticArray<StableNode>** Gs) {
+                            ProgramCounter* start, int* Xcount,
+                            StaticArray<StableNode>** Gs,
+                            StaticArray<StableNode>** Ks) {
     if (self.type == Abstraction::type) {
       return IMPL(BuiltinResult, Abstraction, getCallInfo,
-                  &self, vm, arity, body, Gs);
+                  &self, vm, arity, body, start, Xcount, Gs, Ks);
     } else {
       // TODO call non-abstraction
       cout << "Abstraction expected but " << self.type->getName();
       cout << " found" << endl;
       *arity = 0;
       *body = nullptr;
+      *start = nullptr;
+      *Xcount = 0;
       *Gs = nullptr;
+      *Ks = nullptr;
       return BuiltinResultContinue;
     }
   }

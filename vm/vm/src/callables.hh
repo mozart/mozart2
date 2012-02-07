@@ -119,23 +119,29 @@ public:
 
   /**
    * Get the information needed to call this abstraction
-   * @param vm      Contextual VM
-   * @param arity   Output: arity of this abstraction
-   * @param body    Output: code area which is the body
-   * @param Gs      Output: G registers
+   * @param vm       Contextual VM
+   * @param arity    Output: arity of this abstraction
+   * @param body     Output: code area which is the body
+   * @param start    Output: start of the code area
+   * @param Xcount   Output: number of X registers used by the code area
+   * @param Gs       Output: G registers
+   * @param Ks       Output: K registers
    */
-  BuiltinResult getCallInfo(Node* self, VM vm, int* arity,
-                            StableNode** body,
-    StaticArray<StableNode>** Gs) {
-    *arity = _arity;
-    *body = &_body;
-    *Gs = &_Gs;
-    return BuiltinResultContinue;
-  }
+  inline
+  BuiltinResult getCallInfo(Node* self, VM vm, int* arity, StableNode** body,
+                            ProgramCounter* start, int* Xcount,
+                            StaticArray<StableNode>** Gs,
+                            StaticArray<StableNode>** Ks);
 private:
   int _arity;
   StableNode _body;
   StaticArray<StableNode> _Gs;
+
+  // cache for information of the code area
+  bool _codeAreaCacheValid;
+  ProgramCounter _start;
+  int _Xcount;
+  StaticArray<StableNode>* _Ks;
 };
 
 /**
@@ -149,5 +155,36 @@ public:
 private:
   static const Type rawType;
 };
+
+////////////////////////
+// Inline Abstraction //
+////////////////////////
+
+#include "coreinterfaces.hh"
+
+BuiltinResult Implementation<Abstraction>::getCallInfo(
+  Node* self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
+  int* Xcount, StaticArray<StableNode>** Gs, StaticArray<StableNode>** Ks) {
+
+  if (!_codeAreaCacheValid) {
+    CodeAreaProvider provider = _body.node;
+    BuiltinResult result = provider.getCodeAreaInfo(
+      vm,&_start, &_Xcount, &_Ks);
+
+    if (result != BuiltinResultContinue)
+      return result;
+
+    _codeAreaCacheValid = true;
+  }
+
+  *arity = _arity;
+  *body = &_body;
+  *start = _start;
+  *Xcount = _Xcount;
+  *Gs = &_Gs;
+  *Ks = _Ks;
+
+  return BuiltinResultContinue;
+}
 
 #endif // __CALLABLES_H

@@ -43,21 +43,15 @@ Thread::Thread(VM vm, StableNode* abstraction) :
 
   int arity;
   StableNode* body;
-  StaticArray<StableNode>* Gs;
-
-  Callable callable = abstraction->node;
-  BuiltinResult result = callable.getCallInfo(vm, &arity, &body, &Gs);
-  assert(result == BuiltinResultContinue && arity == 0);
-
-  // getCodeAreaInfo
-
   ProgramCounter start;
   int Xcount;
+  StaticArray<StableNode>* Gs;
   StaticArray<StableNode>* Ks;
 
-  CodeAreaProvider provider = body->node;
-  result = provider.getCodeAreaInfo(vm, &start, &Xcount, &Ks);
-  assert(result == BuiltinResultContinue);
+  Callable callable = abstraction->node;
+  BuiltinResult result = callable.getCallInfo(vm, &arity, &body, &start,
+                                              &Xcount, &Gs, &Ks);
+  assert(result == BuiltinResultContinue && arity == 0);
 
   // Set up
 
@@ -423,19 +417,14 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
                   bool& preempted) {
   int formalArity;
   StableNode* body;
-  StaticArray<StableNode>* Gs;
-
   ProgramCounter start;
   int Xcount;
+  StaticArray<StableNode>* Gs;
   StaticArray<StableNode>* Ks;
 
   Callable x = target->node;
-  BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &Gs);
-
-  if (result == BuiltinResultContinue) {
-    CodeAreaProvider provider = body->node;
-    result = provider.getCodeAreaInfo(vm, &start, &Xcount, &Ks);
-  }
+  BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &start,
+                                       &Xcount, &Gs, &Ks);
 
   if (result == BuiltinResultContinue) {
     if (actualArity != formalArity) {

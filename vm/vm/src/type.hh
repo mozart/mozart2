@@ -52,4 +52,13 @@ private:
   const bool _transient;
 };
 
+template<class T>
+struct Interface;
+template<class...>
+struct ImplementedBy{};
+
+template <class T>
+class Implementation {
+};
+
 #endif // __TYPE_H

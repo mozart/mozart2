@@ -53,4 +53,6 @@ Implementation<Abstraction>::Implementation(VM vm, int arity,
 
   for (int i = 0; i < Gc; i++)
     _Gs[i].init(vm, *Gs[i]);
+
+  _codeAreaCacheValid = false;
 }

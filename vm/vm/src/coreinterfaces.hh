@@ -73,7 +73,7 @@ private:
 struct Callable {
   Callable(Node& self) : self(Reference::dereference(self)) {};
 
-  BuiltinResult getCallInfo(VM vm, int* arity, UnstableNode* body,
+  BuiltinResult getCallInfo(VM vm, int* arity, StableNode** body,
     StaticArray<StableNode>** Gs) {
     if (self.type == Abstraction::type) {
       return IMPL(BuiltinResult, Abstraction, getCallInfo,
@@ -83,7 +83,7 @@ struct Callable {
       cout << "Abstraction expected but " << self.type->getName();
       cout << " found" << endl;
       *arity = 0;
-      body->make<Unbound>(vm);
+      *body = nullptr;
       *Gs = nullptr;
       return BuiltinResultContinue;
     }

@@ -125,10 +125,10 @@ public:
    * @param Gs      Output: G registers
    */
   BuiltinResult getCallInfo(Node* self, VM vm, int* arity,
-                            UnstableNode* body,
+                            StableNode** body,
     StaticArray<StableNode>** Gs) {
     *arity = _arity;
-    body->copy(vm, _body);
+    *body = &_body;
     *Gs = &_Gs;
     return BuiltinResultContinue;
   }

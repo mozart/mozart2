@@ -39,18 +39,17 @@
  * Entry of a thread stack
  */
 struct StackEntry {
-  StackEntry(UnstableNode& area, ProgramCounter PC,
-    StaticArray<UnstableNode>* yregs, StaticArray<StableNode>* gregs) :
-    PC(PC), yregs(yregs), gregs(gregs) {
+  StackEntry(StableNode* abstraction, ProgramCounter PC,
+    StaticArray<UnstableNode>* yregs, StaticArray<StableNode>* gregs,
+    StaticArray<StableNode>* kregs) :
+    abstraction(abstraction),  PC(PC),
+    yregs(yregs), gregs(gregs), kregs(kregs) {}
 
-    assert(area.node.type->isCopiable());
-    this->area.copy(nullptr, area);
-  }
-
-  UnstableNode area;
+  StableNode* abstraction;
   ProgramCounter PC;
   StaticArray<UnstableNode>* yregs;
   StaticArray<StableNode>* gregs;
+  StaticArray<StableNode>* kregs;
 };
 
 /** Thread stack */
@@ -63,25 +62,28 @@ typedef stack<StackEntry> ThreadStack;
  */
 class Thread : public Suspendable {
 public:
-  Thread(VM vm, UnstableNode& area, StaticArray<StableNode>* Gs);
+  Thread(VM vm, StableNode* abstraction);
 
   void run();
 private:
   inline
-  void pushFrame(VM vm, UnstableNode& area, ProgramCounter PC,
+  void pushFrame(VM vm, StableNode* abstraction,
+                 ProgramCounter PC,
                  StaticArray<UnstableNode>* yregs,
                  StaticArray<StableNode>* gregs,
                  StaticArray<StableNode>* kregs);
 
   inline
-  void popFrame(VM vm, UnstableNode& area, ProgramCounter& PC,
+  void popFrame(VM vm, StableNode*& abstraction,
+                ProgramCounter& PC,
                 StaticArray<UnstableNode>*& yregs,
                 StaticArray<StableNode>*& gregs,
                 StaticArray<StableNode>*& kregs);
 
   inline
-  void call(Node& target, int actualArity, bool isTailCall,
-            VM vm, UnstableNode& area, ProgramCounter& PC,
+  void call(StableNode* target, int actualArity, bool isTailCall,
+            VM vm, StableNode*& abstraction,
+            ProgramCounter& PC,
             EnlargeableArray<UnstableNode>* xregs,
             StaticArray<UnstableNode>*& yregs,
             StaticArray<StableNode>*& gregs,

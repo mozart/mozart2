@@ -210,10 +210,12 @@ int main(int argc, char **argv) {
   mainCodeArea.make<CodeArea>(vm, vm, mainCodeBlock, sizeof(mainCodeBlock),
                               5, 3, mainKs);
 
-  StaticArray<StableNode> mainGs(1);
-  mainGs[0].init(vm, abstractionFibonacci);
+  UnstableNode* mainGs[] = { &abstractionFibonacci };
 
-  new (vm) Thread(vm, mainCodeArea, &mainGs);
+  UnstableNode abstractionMain;
+  abstractionMain.make<Abstraction>(vm, vm, 2, &mainCodeArea, 1, mainGs);
+
+  new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain));
 
   std::cout << "Initialized" << std::endl;
 

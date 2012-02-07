@@ -28,11 +28,6 @@
 #include "memword.hh"
 #include "type.hh"
 
-template <class T>
-class Implementation {
-};
-
-
 // Marker class that specifies to use the default storage (pointer to value)
 template<class T>
 class DefaultStorage {

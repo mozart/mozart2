@@ -36,45 +36,32 @@
 
 #include <iostream>
 
-struct DataflowVariable {
-  DataflowVariable(Node& self) : self(Reference::dereference(self)) {}
-
-  BuiltinResult wait(VM vm, Suspendable* thread) {
-    if (self.type == Variable::type) {
-      return IMPL(BuiltinResult, Variable, wait, &self, vm, thread);
-    } else if (self.type == Unbound::type) {
-      return IMPL(BuiltinResult, Unbound, wait, &self, vm, thread);
-    } else if (self.type->isTransient()) {
+struct DataflowVariable;
+template<>
+struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable> {
+  BuiltinResult wait(Node& self, VM vm, Suspendable* thread) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       return BuiltinResultContinue;
     }
   }
 
-  BuiltinResult bind(VM vm, Node* src) {
-    if (self.type == Unbound::type) {
-      return IMPL(BuiltinResult, Unbound, bind, &self, vm, src);
-    } else if (self.type == Variable::type) {
-      return IMPL(BuiltinResult, Variable, bind, &self, vm, src);
-    } else if (self.type->isTransient()) {
+  BuiltinResult bind(Node& self, VM vm, Node* src) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO bind a bound value
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
 
-struct Equatable {
-  Equatable(Node& self) : self(Reference::dereference(self)) {}
-
-  BuiltinResult equals(VM vm, UnstableNode* right, UnstableNode* result) {
-    if (self.type == SmallInt::type) {
-      return IMPL(BuiltinResult, SmallInt, equals,
-                  &self, vm, right, result);
-    } else if (self.type->isTransient()) {
+struct Equatable;
+template<>
+struct Interface<Equatable>: ImplementedBy<SmallInt> {
+  BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
+    if (self.type->isTransient()) {
       // TODO A == B when A and B are aliased transients should return true
       return &self;
     } else {
@@ -84,18 +71,13 @@ struct Equatable {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
 
-struct BuiltinCallable {
-  BuiltinCallable(Node& self) : self(Reference::dereference(self)) {};
-
-  BuiltinResult callBuiltin(VM vm, int argc, UnstableNode* args[]) {
-    if (self.type == BuiltinProcedure::type) {
-      return IMPL(BuiltinResult, BuiltinProcedure, callBuiltin,
-                  &self, vm, argc, args);
-    } else if (self.type->isTransient()) {
+struct BuiltinCallable;
+template<>
+struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
+  BuiltinResult callBuiltin(Node& self, VM vm, int argc, UnstableNode* args[]) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO call non-builtin
@@ -104,21 +86,16 @@ struct BuiltinCallable {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
 
-struct Callable {
-  Callable(Node& self) : self(Reference::dereference(self)) {};
-
-  BuiltinResult getCallInfo(VM vm, int* arity, StableNode** body,
+struct Callable;
+template<>
+struct Interface<Callable>: ImplementedBy<Abstraction> {
+  BuiltinResult getCallInfo(Node& self, VM vm, int* arity, StableNode** body,
                             ProgramCounter* start, int* Xcount,
                             StaticArray<StableNode>** Gs,
                             StaticArray<StableNode>** Ks) {
-    if (self.type == Abstraction::type) {
-      return IMPL(BuiltinResult, Abstraction, getCallInfo,
-                  &self, vm, arity, body, start, Xcount, Gs, Ks);
-    } else if (self.type->isTransient()) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO call non-abstraction
@@ -133,19 +110,14 @@ struct Callable {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
 
-struct CodeAreaProvider {
-  CodeAreaProvider(Node& self) : self(Reference::dereference(self)) {};
-
-  BuiltinResult getCodeAreaInfo(VM vm, ProgramCounter* start, int* Xcount,
-                                StaticArray<StableNode>** Ks) {
-    if (self.type == CodeArea::type) {
-      return IMPL(BuiltinResult, CodeArea, getCodeAreaInfo,
-                  &self, vm, start, Xcount, Ks);
-    } else if (self.type->isTransient()) {
+struct CodeAreaProvider;
+template<>
+struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
+  BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
+				int* Xcount, StaticArray<StableNode>** Ks) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO code area info of a non-CodeArea
@@ -157,18 +129,13 @@ struct CodeAreaProvider {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
 
-struct Addable {
-  Addable(Node& self) : self(Reference::dereference(self)) {};
-
-  BuiltinResult add(VM vm, UnstableNode* right, UnstableNode* result) {
-    if (self.type == SmallInt::type) {
-      return IMPL(BuiltinResult, SmallInt, add,
-                  &self, vm, right, result);
-    } else if (self.type->isTransient()) {
+struct Addable;
+template<>
+struct Interface<Addable>: ImplementedBy<SmallInt> {
+  BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO add non-SmallInt
@@ -177,18 +144,13 @@ struct Addable {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
-
-struct IntegerValue {
-  IntegerValue(Node& self) : self(Reference::dereference(self)) {}
-
-  BuiltinResult equalsInteger(VM vm, nativeint right, bool* result) {
-    if (self.type == SmallInt::type) {
-      return IMPL(BuiltinResult, SmallInt, equalsInteger,
-                  &self, vm, right, result);
-    } else if (self.type->isTransient()) {
+  
+struct IntegerValue;
+template<>
+struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
+  BuiltinResult equalsInteger(Node& self, VM vm, nativeint right, bool* result) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO equalsInteger on a non-SmallInt
@@ -197,11 +159,8 @@ struct IntegerValue {
     }
   }
 
-  BuiltinResult addValue(VM vm, nativeint b, UnstableNode* result) {
-    if (self.type == SmallInt::type) {
-      return IMPL(BuiltinResult, SmallInt, addValue,
-                  &self, vm, b, result);
-    } else if (self.type->isTransient()) {
+  BuiltinResult addValue(Node& self, VM vm, nativeint b, UnstableNode* result) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO addValue on a non-SmallInt
@@ -209,18 +168,13 @@ struct IntegerValue {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
 
-struct BooleanValue {
-  BooleanValue(Node& self) : self(Reference::dereference(self)) {}
-
-  BuiltinResult valueOrNotBool(VM vm, BoolOrNotBool* result) {
-    if (self.type == Boolean::type) {
-      return IMPL(BuiltinResult, Boolean, valueOrNotBool,
-                  &self, vm, result);
-    } else if (self.type->isTransient()) {
+struct BooleanValue;
+template<>
+struct Interface<BooleanValue>: ImplementedBy<Boolean> {
+  BuiltinResult valueOrNotBool(Node& self, VM vm, BoolOrNotBool* result) {
+    if (self.type->isTransient()) {
       return &self;
     } else {
       // TODO valueOrNotBool on a non-Boolean
@@ -228,8 +182,26 @@ struct BooleanValue {
       return BuiltinResultContinue;
     }
   }
-private:
-  Node& self;
 };
+
+#ifndef MOZART_GENERATOR
+#include "DataflowVariable-interf.hh"
+#include "Equatable-interf.hh"
+#include "BuiltinCallable-interf.hh"
+#include "Callable-interf.hh"
+#include "CodeAreaProvider-interf.hh"
+#include "Addable-interf.hh"
+#include "IntegerValue-interf.hh"
+#include "BooleanValue-interf.hh"
+#else
+struct CodeAreaProvider{
+  CodeAreaProvider(...){}
+  BuiltinResult getCodeAreaInfo(...){return BuiltinResultContinue;}
+};
+struct DataflowVariable{
+  DataflowVariable(...){}
+  BuiltinResult wait(...){return BuiltinResultContinue;}
+};
+#endif
 
 #endif // __COREINTERFACES_H

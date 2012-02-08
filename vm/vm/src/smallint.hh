@@ -25,63 +25,16 @@
 #ifndef __SMALLINT_H
 #define __SMALLINT_H
 
-#include "type.hh"
-#include "storage.hh"
-#include "store.hh"
-
-class SmallInt;
-
-template <>
-class Storage<SmallInt> {
-public:
-  typedef nativeint Type;
-};
-
-template <>
-class Implementation<SmallInt> {
-public:
-  Implementation<SmallInt>(const Implementation<SmallInt>& src) :
-    _value(src.value()) {}
-  Implementation<SmallInt>(nativeint value) : _value(value) {}
-
-  nativeint value() const { return _value; }
-
-  inline
-  BuiltinResult equals(Node* self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
-
-  inline
-  BuiltinResult equalsInteger(Node* self, VM vm, nativeint right, bool* result);
-
-  inline
-  BuiltinResult add(Node* self, VM vm, UnstableNode* right,
-                    UnstableNode* result);
-
-  inline
-  BuiltinResult addValue(Node* self, VM vm, nativeint b, UnstableNode* result);
-private:
-  const nativeint _value;
-};
-
-class SmallInt {
-public:
-  typedef Node* Self;
-
-  static const Type* const type;
-
-  static nativeint build(nativeint value) { return value; }
-private:
-  static const Type rawType;
-};
-
-/////////////////////
-// Inline SmallInt //
-/////////////////////
+#include "smallint-decl.hh"
 
 #include "boolean.hh"
 
 #include <limits>
 #include <iostream>
+
+/////////////////////
+// Inline SmallInt //
+/////////////////////
 
 BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
                                                UnstableNode* right,

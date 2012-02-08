@@ -22,9 +22,59 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_H
-#define __BOOLEAN_H
+#ifndef __CODEAREA_DECL_H
+#define __CODEAREA_DECL_H
 
-#include "boolean-decl.hh"
+#include "store.hh"
+#include "opcodes.hh"
+#include "arrays.hh"
 
-#endif // __BOOLEAN_H
+//////////////
+// CodeArea //
+//////////////
+
+class CodeArea;
+
+template <>
+class Implementation<CodeArea> {
+public:
+  Implementation(VM vm, ByteCode* codeBlock, int size, int Xcount,
+                 int Kc, UnstableNode* Ks[]);
+
+  ProgramCounter getStart() {
+    return _codeBlock;
+  }
+
+  int getXCount() { return _Xcount; }
+
+  StaticArray<StableNode>* getKs() { return &_Ks; }
+
+  BuiltinResult getCodeAreaInfo(Node* self, VM vm,
+                                ProgramCounter* start, int* Xcount,
+                                StaticArray<StableNode>** Ks) {
+    *start = getStart();
+    *Xcount = getXCount();
+    *Ks = getKs();
+    return BuiltinResultContinue;
+  }
+private:
+  ByteCode* _codeBlock; // actual byte-code in this code area
+  int _size;            // size of the codeBlock
+
+  int _Xcount;                 // number of X registers used in this area
+  StaticArray<StableNode> _Ks; // K registers
+};
+
+/**
+ * Type of a code area
+ */
+class CodeArea {
+public:
+  typedef Node* Self;
+
+  static const Type* const type;
+private:
+  static const Type rawType;
+};
+
+#endif // __CODEAREA_DECL_H

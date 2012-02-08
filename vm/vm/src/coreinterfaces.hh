@@ -22,17 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Yes, we need those to be before the ifndef __COREINTERFACES_H test
-// (because of circular includes)
-#include "store.hh"
-#include "smallint.hh"
-#include "emulate.hh"
-#include "callables.hh"
-#include "variables.hh"
-#include "boolean.hh"
-
 #ifndef __COREINTERFACES_H
 #define __COREINTERFACES_H
+
+#include "store.hh"
+#include "suspendable.hh"
+
+#include "variables-decl.hh"
+#include "boolean-decl.hh"
+#include "smallint-decl.hh"
+#include "codearea-decl.hh"
+#include "callables-decl.hh"
 
 #include <iostream>
 
@@ -145,7 +145,7 @@ struct Interface<Addable>: ImplementedBy<SmallInt> {
     }
   }
 };
-  
+
 struct IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
@@ -185,6 +185,7 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 };
 
 #ifndef MOZART_GENERATOR
+
 #include "DataflowVariable-interf.hh"
 #include "Equatable-interf.hh"
 #include "BuiltinCallable-interf.hh"
@@ -193,15 +194,13 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 #include "Addable-interf.hh"
 #include "IntegerValue-interf.hh"
 #include "BooleanValue-interf.hh"
-#else
-struct CodeAreaProvider{
-  CodeAreaProvider(...){}
-  BuiltinResult getCodeAreaInfo(...){return BuiltinResultContinue;}
-};
-struct DataflowVariable{
-  DataflowVariable(...){}
-  BuiltinResult wait(...){return BuiltinResultContinue;}
-};
-#endif
+
+#include "variables.hh"
+#include "boolean.hh"
+#include "smallint.hh"
+#include "codearea.hh"
+#include "callables.hh"
+
+#endif // MOZART_GENERATOR
 
 #endif // __COREINTERFACES_H

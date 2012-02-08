@@ -25,142 +25,32 @@
 #ifndef __CALLABLES_H
 #define __CALLABLES_H
 
-#include "type.hh"
-#include "smallint.hh"
-#include "codearea.hh"
+#include "callables-decl.hh"
 
 #include <iostream>
 
-//////////////////////
-// BuiltinProcedure //
-//////////////////////
+#include "coreinterfaces.hh"
+#include "smallint-decl.hh"
 
-/**
- * Type of a builtin function
- */
-typedef BuiltinResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
+/////////////////////////////
+// Inline BuiltinProcedure //
+/////////////////////////////
 
-class BuiltinProcedure;
-
-template <>
-class Implementation<BuiltinProcedure> {
-public:
-  Implementation<BuiltinProcedure>(int arity, OzBuiltin builtin) :
-    _arity(arity), _builtin(builtin) {}
-
-  /**
-   * Arity of this builtin
-   */
-  int getArity() const { return _arity; }
-
-  /**
-   * Call the builtin
-   * @param vm     Contextual VM
-   * @param argc   Actual number of parameters
-   * @param args   Actual parameters
-   */
-  BuiltinResult callBuiltin(Node* self, VM vm, int argc, UnstableNode* args[]) {
-    if (argc == _arity)
-      return _builtin(vm, args);
-    else
-      return raiseIllegalArity(argc);
-  }
-
-  /**
-   * Get the arity of the builtin in a node
-   */
-  BuiltinResult arity(Node* self, VM vm, UnstableNode* result) {
-    result->make<SmallInt>(vm, (nativeint) _arity);
-    return BuiltinResultContinue;
-  }
-private:
-  BuiltinResult raiseIllegalArity(int argc);
-
-  const int _arity;
-  const OzBuiltin _builtin;
-};
-
-/**
- * Type of a builtin procedure
- */
-class BuiltinProcedure {
-public:
-  typedef Node* Self;
-
-  static const Type* const type;
-private:
-  static const Type rawType;
-};
-
-/////////////////
-// Abstraction //
-/////////////////
-
-class Abstraction;
-
-/**
- * Abstraction value, i.e., user-defined procedure
- */
-template <>
-class Implementation<Abstraction> {
-public:
-  Implementation<Abstraction>(VM vm, int arity, UnstableNode* body,
-    int Gc, UnstableNode* Gs[]);
-
-  int getArity() { return _arity; }
-
-  /**
-   * Get the arity of the abstraction in a node
-   */
-  BuiltinResult arity(Node* self, VM vm, UnstableNode* result) {
-    result->make<SmallInt>(vm, (nativeint) _arity);
-    return BuiltinResultContinue;
-  }
-
-  /**
-   * Get the information needed to call this abstraction
-   * @param vm       Contextual VM
-   * @param arity    Output: arity of this abstraction
-   * @param body     Output: code area which is the body
-   * @param start    Output: start of the code area
-   * @param Xcount   Output: number of X registers used by the code area
-   * @param Gs       Output: G registers
-   * @param Ks       Output: K registers
-   */
-  inline
-  BuiltinResult getCallInfo(Node* self, VM vm, int* arity, StableNode** body,
-                            ProgramCounter* start, int* Xcount,
-                            StaticArray<StableNode>** Gs,
-                            StaticArray<StableNode>** Ks);
-private:
-  int _arity;
-  StableNode _body;
-  StaticArray<StableNode> _Gs;
-
-  // cache for information of the code area
-  bool _codeAreaCacheValid;
-  ProgramCounter _start;
-  int _Xcount;
-  StaticArray<StableNode>* _Ks;
-};
-
-/**
- * Type of an abstraction
- */
-class Abstraction {
-public:
-  typedef Node* Self;
-
-  static const Type* const type;
-private:
-  static const Type rawType;
-};
+BuiltinResult Implementation<BuiltinProcedure>::arity(Node* self, VM vm,
+                                                      UnstableNode* result) {
+  result->make<SmallInt>(vm, _arity);
+  return BuiltinResultContinue;
+}
 
 ////////////////////////
 // Inline Abstraction //
 ////////////////////////
 
-#include "coreinterfaces.hh"
+BuiltinResult Implementation<Abstraction>::arity(Node* self, VM vm,
+                                                 UnstableNode* result) {
+  result->make<SmallInt>(vm, _arity);
+  return BuiltinResultContinue;
+}
 
 BuiltinResult Implementation<Abstraction>::getCallInfo(
   Node* self, VM vm, int* arity, StableNode** body, ProgramCounter* start,

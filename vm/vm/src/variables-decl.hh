@@ -40,13 +40,15 @@ class Variable;
 template <>
 class Implementation<Variable> {
 public:
+  typedef SelfType<Variable>::Self Self;
+public:
   Implementation<Variable>() {}
 
   inline
-  BuiltinResult wait(Node* self, VM vm, Suspendable* thread);
+  BuiltinResult wait(Self self, VM vm, Suspendable* thread);
 
   inline
-  BuiltinResult bind(Node* self, VM vm, Node* src);
+  BuiltinResult bind(Self self, VM vm, Node* src);
 private:
   inline
   void resumePendingThreads(VM vm);
@@ -83,14 +85,16 @@ public:
 template <>
 class Implementation<Unbound> {
 public:
+  typedef SelfType<Unbound>::Self Self;
+public:
   Implementation<Unbound>() {}
   Implementation<Unbound>(void* dummy) {}
 
   inline
-  BuiltinResult wait(Node* self, VM vm, Suspendable* thread);
+  BuiltinResult wait(Self self, VM vm, Suspendable* thread);
 
   inline
-  BuiltinResult bind(Node* self, VM vm, Node* src);
+  BuiltinResult bind(Self self, VM vm, Node* src);
 };
 
 /**

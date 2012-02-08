@@ -42,13 +42,15 @@ public:
 template <>
 class Implementation<Boolean> {
 public:
+  typedef SelfType<Boolean>::Self Self;
+public:
   Implementation<Boolean>(const Implementation<Boolean>& src) :
     _value(src.value()) {}
   Implementation<Boolean>(bool value) : _value(value) {}
 
   bool value() const { return _value; }
 
-  BuiltinResult valueOrNotBool(Node* self, VM vm, BoolOrNotBool* result) {
+  BuiltinResult valueOrNotBool(Self self, VM vm, BoolOrNotBool* result) {
     *result = value() ? bTrue : bFalse;
     return BuiltinResultContinue;
   }

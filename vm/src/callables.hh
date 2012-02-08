@@ -36,7 +36,7 @@
 // Inline BuiltinProcedure //
 /////////////////////////////
 
-BuiltinResult Implementation<BuiltinProcedure>::arity(Node* self, VM vm,
+BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                       UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
   return BuiltinResultContinue;
@@ -46,14 +46,14 @@ BuiltinResult Implementation<BuiltinProcedure>::arity(Node* self, VM vm,
 // Inline Abstraction //
 ////////////////////////
 
-BuiltinResult Implementation<Abstraction>::arity(Node* self, VM vm,
+BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
                                                  UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
   return BuiltinResultContinue;
 }
 
 BuiltinResult Implementation<Abstraction>::getCallInfo(
-  Node* self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
+  Self self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
   int* Xcount, StaticArray<StableNode>** Gs, StaticArray<StableNode>** Ks) {
 
   if (!_codeAreaCacheValid) {

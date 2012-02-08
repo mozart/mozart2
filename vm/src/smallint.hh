@@ -36,7 +36,7 @@
 // Inline SmallInt //
 /////////////////////
 
-BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
+BuiltinResult Implementation<SmallInt>::equals(Self self, VM vm,
                                                UnstableNode* right,
                                                UnstableNode* result) {
   Node& rightNode = Reference::dereference(right->node);
@@ -54,14 +54,14 @@ BuiltinResult Implementation<SmallInt>::equals(Node* self, VM vm,
   }
 }
 
-BuiltinResult Implementation<SmallInt>::equalsInteger(Node* self, VM vm,
+BuiltinResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                       nativeint right,
                                                       bool* result) {
   *result = value() == right;
   return BuiltinResultContinue;
 }
 
-BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
+BuiltinResult Implementation<SmallInt>::add(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   Node& rightNode = Reference::dereference(right->node);
@@ -79,7 +79,7 @@ BuiltinResult Implementation<SmallInt>::add(Node* self, VM vm,
   }
 }
 
-BuiltinResult Implementation<SmallInt>::addValue(Node* self, VM vm,
+BuiltinResult Implementation<SmallInt>::addValue(Self self, VM vm,
                                                  nativeint b,
                                                  UnstableNode* result) {
   nativeint a = value();

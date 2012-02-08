@@ -38,6 +38,8 @@ public:
 template <>
 class Implementation<SmallInt> {
 public:
+  typedef SelfType<SmallInt>::Self Self;
+public:
   Implementation<SmallInt>(const Implementation<SmallInt>& src) :
     _value(src.value()) {}
   Implementation<SmallInt>(nativeint value) : _value(value) {}
@@ -45,18 +47,18 @@ public:
   nativeint value() const { return _value; }
 
   inline
-  BuiltinResult equals(Node* self, VM vm, UnstableNode* right,
+  BuiltinResult equals(Self self, VM vm, UnstableNode* right,
                        UnstableNode* result);
 
   inline
-  BuiltinResult equalsInteger(Node* self, VM vm, nativeint right, bool* result);
+  BuiltinResult equalsInteger(Self self, VM vm, nativeint right, bool* result);
 
   inline
-  BuiltinResult add(Node* self, VM vm, UnstableNode* right,
+  BuiltinResult add(Self self, VM vm, UnstableNode* right,
                     UnstableNode* result);
 
   inline
-  BuiltinResult addValue(Node* self, VM vm, nativeint b, UnstableNode* result);
+  BuiltinResult addValue(Self self, VM vm, nativeint b, UnstableNode* result);
 private:
   const nativeint _value;
 };

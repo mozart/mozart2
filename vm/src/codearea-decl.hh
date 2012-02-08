@@ -38,6 +38,8 @@ class CodeArea;
 template <>
 class Implementation<CodeArea> {
 public:
+  typedef SelfType<CodeArea>::Self Self;
+public:
   Implementation(VM vm, ByteCode* codeBlock, int size, int Xcount,
                  int Kc, UnstableNode* Ks[]);
 
@@ -49,7 +51,7 @@ public:
 
   StaticArray<StableNode>* getKs() { return &_Ks; }
 
-  BuiltinResult getCodeAreaInfo(Node* self, VM vm,
+  BuiltinResult getCodeAreaInfo(Self self, VM vm,
                                 ProgramCounter* start, int* Xcount,
                                 StaticArray<StableNode>** Ks) {
     *start = getStart();

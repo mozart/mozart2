@@ -33,7 +33,7 @@
 // Inline Variable ///
 //////////////////////
 
-BuiltinResult Implementation<Variable>::wait(Node* self, VM vm,
+BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
                                              Suspendable* thread) {
   thread->unsetRunnable();
   pendingThreads.push_back(thread);
@@ -41,7 +41,7 @@ BuiltinResult Implementation<Variable>::wait(Node* self, VM vm,
   return self;
 }
 
-BuiltinResult Implementation<Variable>::bind(Node* self, VM vm, Node* src) {
+BuiltinResult Implementation<Variable>::bind(Self self, VM vm, Node* src) {
   // Actual binding
   if (!src->type->isCopiable())
     Reference::makeFor(vm, *src);
@@ -78,7 +78,7 @@ void Implementation<Variable>::resumePendingThreads(VM vm) {
 // Inline Unbound ///
 /////////////////////
 
-BuiltinResult Implementation<Unbound>::wait(Node* self, VM vm,
+BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
                                             Suspendable* thread) {
   self->make<Variable>(vm);
 
@@ -86,7 +86,7 @@ BuiltinResult Implementation<Unbound>::wait(Node* self, VM vm,
   return var.wait(vm, thread);
 }
 
-BuiltinResult Implementation<Unbound>::bind(Node* self, VM vm, Node* src) {
+BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, Node* src) {
   if (!src->type->isCopiable())
     Reference::makeFor(vm, *src);
   *self = *src;

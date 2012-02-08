@@ -43,6 +43,8 @@ class BuiltinProcedure;
 template <>
 class Implementation<BuiltinProcedure> {
 public:
+  typedef SelfType<BuiltinProcedure>::Self Self;
+public:
   Implementation<BuiltinProcedure>(int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
 
@@ -57,7 +59,7 @@ public:
    * @param argc   Actual number of parameters
    * @param args   Actual parameters
    */
-  BuiltinResult callBuiltin(Node* self, VM vm, int argc, UnstableNode* args[]) {
+  BuiltinResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]) {
     if (argc == _arity)
       return _builtin(vm, args);
     else
@@ -68,7 +70,7 @@ public:
    * Get the arity of the builtin in a node
    */
   inline
-  BuiltinResult arity(Node* self, VM vm, UnstableNode* result);
+  BuiltinResult arity(Self self, VM vm, UnstableNode* result);
 private:
   BuiltinResult raiseIllegalArity(int argc);
 
@@ -98,6 +100,8 @@ class Abstraction;
 template <>
 class Implementation<Abstraction> {
 public:
+  typedef SelfType<Abstraction>::Self Self;
+public:
   Implementation<Abstraction>(VM vm, int arity, UnstableNode* body,
     int Gc, UnstableNode* Gs[]);
 
@@ -107,7 +111,7 @@ public:
    * Get the arity of the abstraction in a node
    */
   inline
-  BuiltinResult arity(Node* self, VM vm, UnstableNode* result);
+  BuiltinResult arity(Self self, VM vm, UnstableNode* result);
 
   /**
    * Get the information needed to call this abstraction
@@ -120,7 +124,7 @@ public:
    * @param Ks       Output: K registers
    */
   inline
-  BuiltinResult getCallInfo(Node* self, VM vm, int* arity, StableNode** body,
+  BuiltinResult getCallInfo(Self self, VM vm, int* arity, StableNode** body,
                             ProgramCounter* start, int* Xcount,
                             StaticArray<StableNode>** Gs,
                             StaticArray<StableNode>** Ks);

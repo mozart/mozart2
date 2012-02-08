@@ -26,32 +26,35 @@
 #define __ARRAYS_H
 
 #include <stdlib.h>
+#include <assert.h>
 
 /**
- * Abstract base class for simple arrays
+ * A simple wrapper for an array and its size (only in debug mode)
  * @param <T> Type of the elements in the array
  */
 template <class T>
-class Array {
-protected:
-  int _size;
+class StaticArray {
+private:
   T *_array;
+
+#ifndef NDEBUG
+  int _size;
+#endif // NDEBUG
+
 public:
   /** Create an array with s elements */
-  Array(int s) : _size(s), _array((T *) malloc(s * sizeof(T))) {}
-
-  ~Array() { free(_array); }
-
-  /** Number of elements in the array */
-  inline
-  int size() {
-    return _size;
+  StaticArray(int s) : _array(new T[s]) {
+#ifndef NDEBUG
+    _size = s;
+#endif // NDEBUG
   }
+
+  ~StaticArray() { delete[] _array; }
 
   /** Zero-based access to elements (read-write) */
   inline
-  T &operator [](int i) {
-    //Assert(0 <= i && i < _size);
+  T& operator[](int i) {
+    assert(0 <= i && i < _size);
     return _array[i];
   }
 
@@ -60,15 +63,6 @@ public:
   operator T*() {
     return _array;
   }
-};
-
-/**
- * A simple static array, whose size cannot change
- */
-template <class T>
-class StaticArray : public Array<T> {
-public:
-  StaticArray(int s) : Array<T>(s) {}
 };
 
 #endif // __ARRAYS_H

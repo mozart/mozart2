@@ -56,6 +56,7 @@ template<class T>
 struct Interface;
 template<class...>
 struct ImplementedBy{};
+struct NoAutoWait{};
 
 template <class T>
 class Implementation {

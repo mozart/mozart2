@@ -71,22 +71,4 @@ public:
   StaticArray(int s) : Array<T>(s) {}
 };
 
-/**
- * A simple array with a dynamic capacity
- */
-template <class T>
-class EnlargeableArray : public Array<T> {
-public:
-  EnlargeableArray(int s) : Array<T>(s) {}
-
-  /** Ensure that the array has a given capacity */
-  inline
-  void ensureSize(int s, int m = 100) { // margin of 100
-    if (s >= this->_size) {
-      this->_size = s + m;
-      this->_array = (T *) realloc(this->_array, this->_size * sizeof(T));
-    }
-  }
-};
-
 #endif // __ARRAYS_H

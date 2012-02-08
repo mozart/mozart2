@@ -22,9 +22,49 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_H
-#define __BOOLEAN_H
+#ifndef __BOOLEAN_DECL_H
+#define __BOOLEAN_DECL_H
 
-#include "boolean-decl.hh"
+#include "store.hh"
 
-#endif // __BOOLEAN_H
+class Boolean;
+
+typedef enum BOOL_OR_NOT_BOOL {
+  bFalse, bTrue, bNotBool
+} BoolOrNotBool;
+
+template <>
+class Storage<Boolean> {
+public:
+  typedef bool Type;
+};
+
+template <>
+class Implementation<Boolean> {
+public:
+  Implementation<Boolean>(const Implementation<Boolean>& src) :
+    _value(src.value()) {}
+  Implementation<Boolean>(bool value) : _value(value) {}
+
+  bool value() const { return _value; }
+
+  BuiltinResult valueOrNotBool(Node* self, VM vm, BoolOrNotBool* result) {
+    *result = value() ? bTrue : bFalse;
+    return BuiltinResultContinue;
+  }
+private:
+  const bool _value;
+};
+
+class Boolean {
+public:
+  typedef Node* Self;
+
+  static const Type* const type;
+
+  static bool build(bool value) { return value; }
+private:
+  static const Type rawType;
+};
+
+#endif // __BOOLEAN_DECL_H

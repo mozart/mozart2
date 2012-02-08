@@ -22,9 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_H
-#define __BOOLEAN_H
+#ifndef __SMALLINT_DECL_H
+#define __SMALLINT_DECL_H
 
-#include "boolean-decl.hh"
+#include "store.hh"
 
-#endif // __BOOLEAN_H
+class SmallInt;
+
+template <>
+class Storage<SmallInt> {
+public:
+  typedef nativeint Type;
+};
+
+template <>
+class Implementation<SmallInt> {
+public:
+  Implementation<SmallInt>(const Implementation<SmallInt>& src) :
+    _value(src.value()) {}
+  Implementation<SmallInt>(nativeint value) : _value(value) {}
+
+  nativeint value() const { return _value; }
+
+  inline
+  BuiltinResult equals(Node* self, VM vm, UnstableNode* right,
+                       UnstableNode* result);
+
+  inline
+  BuiltinResult equalsInteger(Node* self, VM vm, nativeint right, bool* result);
+
+  inline
+  BuiltinResult add(Node* self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult addValue(Node* self, VM vm, nativeint b, UnstableNode* result);
+private:
+  const nativeint _value;
+};
+
+class SmallInt {
+public:
+  typedef Node* Self;
+
+  static const Type* const type;
+
+  static nativeint build(nativeint value) { return value; }
+private:
+  static const Type rawType;
+};
+
+#endif // __SMALLINT_DECL_H

@@ -58,8 +58,6 @@ private:
 
 class Boolean {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 
   static bool build(bool value) { return value; }

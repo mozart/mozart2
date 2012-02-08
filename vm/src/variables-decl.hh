@@ -63,8 +63,6 @@ private:
  */
 class Variable {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 private:
   static const Type rawType;
@@ -100,8 +98,6 @@ public:
  */
 class Unbound {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 
   static void* build() { return nullptr; }

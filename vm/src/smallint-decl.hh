@@ -63,8 +63,6 @@ private:
 
 class SmallInt {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 
   static nativeint build(nativeint value) { return value; }

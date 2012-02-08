@@ -109,6 +109,23 @@ public:
 };
 
 /**
+ * Default Self type
+ */
+template <class T, class S>
+struct SelfTypeInner {
+  typedef Node* Self;
+};
+
+/**
+ * Metafunction from type to its Self type
+ * Use as SelfType<T>::Self
+ */
+template <class T>
+struct SelfType {
+  typedef typename SelfTypeInner<T, typename Storage<T>::Type>::Self Self;
+};
+
+/**
  * Result of the call to a builtin.
  * It always represents a node that must be waited upon. The value 'nullptr' is
  * valid, and denotes that no value must be waited upon, i.e., the execution can
@@ -129,7 +146,7 @@ public:
 
   template<class... Args>
   static R f(Node* it, Args... args) {
-    return (Type::get(it->value).*m)(typename T::Self(it), args...);
+    return (Type::get(it->value).*m)(typename SelfType<T>::Self(it), args...);
   }
 };
 

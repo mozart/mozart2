@@ -49,19 +49,30 @@ public:
       const std::string name=
 	dyn_cast<TagType>(L[0].getAsType().getTypePtr())
 	->getDecl()->getNameAsString();
-      const TemplateSpecializationType& implems=
-	*dyn_cast<TemplateSpecializationType>(ND->bases_begin()
-					      ->getType().getTypePtr());
+      const TemplateSpecializationType* implems=0;
+      bool autoWait=true;
+      for(CXXRecordDecl::base_class_const_iterator i=ND->bases_begin(), e=ND->bases_end();
+	  i!=e;
+	  ++i) {
+	CXXRecordDecl* arg=i->getType()->getAsCXXRecordDecl();
+	std::string argLabel=arg->getNameAsString();
+	if(argLabel=="ImplementedBy"){
+	  implems=dyn_cast<TemplateSpecializationType>(i->getType().getTypePtr());
+	} else if(argLabel=="NoAutoWait"){
+	  autoWait=false;
+	} else {}
+      }
       std::string err;
       llvm::raw_fd_ostream to((name+"-interf.hh").c_str(),err);
       assert(err=="");
-      makeInterface(ND, name, implems, to);
+      makeInterface(ND, name, *implems, autoWait, to);
     }
   }
 private:
   void makeInterface(const SpecDecl* ND,
 		     std::string name,
 		     const TemplateSpecializationType& implems,
+		     bool autoWait,
 		     llvm::raw_fd_ostream& to){
     to << "class "<< name << " {\n";
     to << "public:\n";
@@ -95,6 +106,11 @@ private:
 	  to << ", " << p->getNameAsString(); 
 	}
 	to << ");\n";
+	to << "    } else ";
+      }
+      if(autoWait && (m->getResultType().getAsString(context->getPrintingPolicy())=="BuiltinResult")){
+	to << "if (_self.type->isTransient()) {\n";
+	to << "      return &_self;\n";
 	to << "    } else ";
       }
       to << "{\n";

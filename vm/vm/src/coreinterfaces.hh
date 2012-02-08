@@ -38,7 +38,7 @@
 
 struct DataflowVariable;
 template<>
-struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable> {
+struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
   BuiltinResult wait(Node& self, VM vm, Suspendable* thread) {
     if (self.type->isTransient()) {
       return &self;
@@ -59,7 +59,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable> {
 
 struct Equatable;
 template<>
-struct Interface<Equatable>: ImplementedBy<SmallInt> {
+struct Interface<Equatable>: ImplementedBy<SmallInt>, NoAutoWait {
   BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     if (self.type->isTransient()) {
       // TODO A == B when A and B are aliased transients should return true
@@ -77,14 +77,10 @@ struct BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
   BuiltinResult callBuiltin(Node& self, VM vm, int argc, UnstableNode* args[]) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO call non-builtin
-      cout << "BuiltinProcedure expected but " << self.type->getName();
-      cout << " found" << endl;
-      return BuiltinResultContinue;
-    }
+    // TODO call non-builtin
+    cout << "BuiltinProcedure expected but " << self.type->getName();
+    cout << " found" << endl;
+    return BuiltinResultContinue;
   }
 };
 
@@ -95,20 +91,16 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
                             ProgramCounter* start, int* Xcount,
                             StaticArray<StableNode>** Gs,
                             StaticArray<StableNode>** Ks) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO call non-abstraction
-      cout << "Abstraction expected but " << self.type->getName();
-      cout << " found" << endl;
-      *arity = 0;
-      *body = nullptr;
-      *start = nullptr;
-      *Xcount = 0;
-      *Gs = nullptr;
-      *Ks = nullptr;
-      return BuiltinResultContinue;
-    }
+    // TODO call non-abstraction
+    cout << "Abstraction expected but " << self.type->getName();
+    cout << " found" << endl;
+    *arity = 0;
+    *body = nullptr;
+    *start = nullptr;
+    *Xcount = 0;
+    *Gs = nullptr;
+    *Ks = nullptr;
+    return BuiltinResultContinue;
   }
 };
 
@@ -117,17 +109,13 @@ template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
 				int* Xcount, StaticArray<StableNode>** Ks) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO code area info of a non-CodeArea
-      cout << "CodeArea expected but " << self.type->getName();
-      cout << " found" << endl;
-      *start = nullptr;
-      *Xcount = 0;
-      *Ks = nullptr;
-      return BuiltinResultContinue;
-    }
+    // TODO code area info of a non-CodeArea
+    cout << "CodeArea expected but " << self.type->getName();
+    cout << " found" << endl;
+    *start = nullptr;
+    *Xcount = 0;
+    *Ks = nullptr;
+    return BuiltinResultContinue;
   }
 };
 
@@ -135,14 +123,10 @@ struct Addable;
 template<>
 struct Interface<Addable>: ImplementedBy<SmallInt> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO add non-SmallInt
-      cout << "SmallInt expected but " << self.type->getName();
-      cout << " found" << endl;
-      return BuiltinResultContinue;
-    }
+    // TODO add non-SmallInt
+    cout << "SmallInt expected but " << self.type->getName();
+    cout << " found" << endl;
+    return BuiltinResultContinue;
   }
 };
 
@@ -150,23 +134,15 @@ struct IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
   BuiltinResult equalsInteger(Node& self, VM vm, nativeint right, bool* result) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO equalsInteger on a non-SmallInt
-      *result = false;
-      return BuiltinResultContinue;
-    }
+    // TODO equalsInteger on a non-SmallInt
+    *result = false;
+    return BuiltinResultContinue;
   }
 
   BuiltinResult addValue(Node& self, VM vm, nativeint b, UnstableNode* result) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO addValue on a non-SmallInt
-      result->make<SmallInt>(vm, 0);
-      return BuiltinResultContinue;
-    }
+    // TODO addValue on a non-SmallInt
+    result->make<SmallInt>(vm, 0);
+    return BuiltinResultContinue;
   }
 };
 
@@ -174,13 +150,9 @@ struct BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
   BuiltinResult valueOrNotBool(Node& self, VM vm, BoolOrNotBool* result) {
-    if (self.type->isTransient()) {
-      return &self;
-    } else {
-      // TODO valueOrNotBool on a non-Boolean
-      *result = bNotBool;
-      return BuiltinResultContinue;
-    }
+    // TODO valueOrNotBool on a non-Boolean
+    *result = bNotBool;
+    return BuiltinResultContinue;
   }
 };
 

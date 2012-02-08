@@ -70,8 +70,6 @@ private:
  */
 class CodeArea {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 private:
   static const Type rawType;

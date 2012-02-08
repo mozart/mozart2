@@ -81,8 +81,6 @@ private:
  */
 class BuiltinProcedure {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 private:
   static const Type rawType;
@@ -143,8 +141,6 @@ private:
  */
 class Abstraction {
 public:
-  typedef Node* Self;
-
   static const Type* const type;
 private:
   static const Type rawType;

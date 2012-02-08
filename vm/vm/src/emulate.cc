@@ -37,7 +37,7 @@ using namespace std;
 const ProgramCounter NullPC = nullptr;
 
 Thread::Thread(VM vm, StableNode* abstraction) :
-  vm(vm), xregs(InitXRegisters) {
+  vm(vm) {
 
   // getCallInfo
 
@@ -55,7 +55,7 @@ Thread::Thread(VM vm, StableNode* abstraction) :
 
   // Set up
 
-  xregs.ensureSize(Xcount);
+  xregs.ensureSize(max(Xcount, InitXRegisters));
 
   StackEntry startEntry(abstraction, start, nullptr, Gs, Ks);
   stack.push(startEntry);

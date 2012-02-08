@@ -55,6 +55,15 @@ struct StackEntry {
 /** Thread stack */
 typedef stack<StackEntry> ThreadStack;
 
+template <class T>
+class EnlargeableArray : public vector<T> {
+public:
+  void ensureSize(size_t s) {
+    if (s > this->size())
+      this->resize(s);
+  }
+};
+
 /**
  * Lightweight thread.
  * The Thread class contains the information about the execution of a

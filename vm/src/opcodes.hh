@@ -70,12 +70,20 @@ const OpCode OpUnifyXY = 0x31;
 const OpCode OpUnifyXK = 0x32;
 const OpCode OpUnifyXG = 0x33;
 
+const OpCode OpArrayInitElementX = 0x40;
+const OpCode OpArrayInitElementY = 0x41;
+const OpCode OpArrayInitElementG = 0x42;
+const OpCode OpArrayInitElementK = 0x43;
+
+const OpCode OpCreateAbstractionX = 0x44;
+const OpCode OpCreateAbstractionK = 0x45;
+
 // Hard-coded stuff for bootstrapping the development
-const OpCode OpPrint = 0x38;
+const OpCode OpPrint = 0x48;
 
 // Inlines for some builtins
-const OpCode OpInlineEqualsInteger = 0x40;
-const OpCode OpInlineAdd = 0x41;
-const OpCode OpInlineMinus1 = 0x42;
+const OpCode OpInlineEqualsInteger = 0x50;
+const OpCode OpInlineAdd = 0x51;
+const OpCode OpInlineMinus1 = 0x52;
 
 #endif // __OPCODES_H

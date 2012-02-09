@@ -102,6 +102,10 @@ private:
   inline
   BuiltinResult unify(VM vm, Node& l, Node& r);
 
+  inline
+  void arrayInitElement(Node& node, size_t index, UnstableNode* value,
+                        VM vm, ProgramCounter& PC, bool& preempted);
+
   void waitFor(VM vm, Node* node, bool& preempted);
 
   VM vm;

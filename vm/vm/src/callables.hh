@@ -52,6 +52,17 @@ BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
   return BuiltinResultContinue;
 }
 
+/////////////////////
+// Inline CodeArea //
+/////////////////////
+
+BuiltinResult Implementation<Abstraction>::initElement(Self self, VM vm,
+                                                       size_t index,
+                                                       UnstableNode* value) {
+  self[index].init(vm, *value);
+  return BuiltinResultContinue;
+}
+
 BuiltinResult Implementation<Abstraction>::getCallInfo(
   Self self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
   int* Xcount, StaticArray<StableNode>* Gs, StaticArray<StableNode>* Ks) {

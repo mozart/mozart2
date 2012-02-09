@@ -47,7 +47,11 @@ public:
   typedef SelfType<CodeArea>::Self Self;
 public:
   Implementation(size_t Kc, StaticArray<StableNode> _Ks, VM vm,
-                 ByteCode* codeBlock, int size, int Xcount, UnstableNode* Ks[]);
+                 ByteCode* codeBlock, int size, int Xcount);
+
+  inline
+  BuiltinResult initElement(Self self, VM vm, size_t index,
+                            UnstableNode* value);
 
   BuiltinResult getCodeAreaInfo(Self self, VM vm,
                                 ProgramCounter* start, int* Xcount,

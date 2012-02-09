@@ -47,14 +47,10 @@ const Type* const Abstraction::type = &Abstraction::rawType;
 Implementation<Abstraction>::Implementation(size_t Gc,
                                             StaticArray<StableNode> _Gs,
                                             VM vm, int arity,
-                                            UnstableNode* body,
-                                            UnstableNode* Gs[]) :
+                                            UnstableNode* body) :
   _arity(arity), _Gc(Gc) {
 
   _body.init(vm, *body);
-
-  for (size_t i = 0; i < Gc; i++)
-    _Gs[i].init(vm, *Gs[i]);
 
   _codeAreaCacheValid = false;
 }

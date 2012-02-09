@@ -156,6 +156,16 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
   }
 };
 
+class ArrayInitializer;
+template<>
+struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
+  BuiltinResult initElement(Node& self, VM vm, size_t index,
+                            UnstableNode* value) {
+    // TODO initElement on a non-ArrayInitializer
+    return BuiltinResultContinue;
+  }
+};
+
 #ifndef MOZART_GENERATOR
 
 #include "DataflowVariable-interf.hh"
@@ -166,6 +176,7 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 #include "Addable-interf.hh"
 #include "IntegerValue-interf.hh"
 #include "BooleanValue-interf.hh"
+#include "ArrayInitializer-interf.hh"
 
 #include "variables.hh"
 #include "boolean.hh"

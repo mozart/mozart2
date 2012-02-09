@@ -36,35 +36,34 @@
 class CodeArea;
 
 template <>
+class Storage<CodeArea> {
+public:
+  typedef ImplWithArray<Implementation<CodeArea>, StableNode> Type;
+};
+
+template <>
 class Implementation<CodeArea> {
 public:
   typedef SelfType<CodeArea>::Self Self;
 public:
-  Implementation(VM vm, ByteCode* codeBlock, int size, int Xcount,
-                 int Kc, UnstableNode* Ks[]);
-
-  ProgramCounter getStart() {
-    return _codeBlock;
-  }
-
-  int getXCount() { return _Xcount; }
-
-  StaticArray<StableNode> getKs() { return _Ks; }
+  Implementation(size_t Kc, StaticArray<StableNode> _Ks, VM vm,
+                 ByteCode* codeBlock, int size, int Xcount, UnstableNode* Ks[]);
 
   BuiltinResult getCodeAreaInfo(Self self, VM vm,
                                 ProgramCounter* start, int* Xcount,
                                 StaticArray<StableNode>* Ks) {
-    *start = getStart();
-    *Xcount = getXCount();
-    *Ks = getKs();
+    *start = _codeBlock;
+    *Xcount = _Xcount;
+    *Ks = self.getArray(_Kc);
+
     return BuiltinResultContinue;
   }
 private:
   ByteCode* _codeBlock; // actual byte-code in this code area
   int _size;            // size of the codeBlock
 
-  int _Xcount;                 // number of X registers used in this area
-  StaticArray<StableNode> _Ks; // K registers
+  int _Xcount; // number of X registers used in this area
+  size_t _Kc;  // number of K registers
 };
 
 /**

@@ -94,6 +94,12 @@ private:
 
 class Abstraction;
 
+template <>
+class Storage<Abstraction> {
+public:
+  typedef ImplWithArray<Implementation<Abstraction>, StableNode> Type;
+};
+
 /**
  * Abstraction value, i.e., user-defined procedure
  */
@@ -102,8 +108,9 @@ class Implementation<Abstraction> {
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
-  Implementation<Abstraction>(VM vm, int arity, UnstableNode* body,
-    int Gc, UnstableNode* Gs[]);
+  Implementation<Abstraction>(size_t Gc, StaticArray<StableNode> _Gs, VM vm,
+                              int arity, UnstableNode* body,
+                              UnstableNode* Gs[]);
 
   int getArity() { return _arity; }
 
@@ -131,7 +138,7 @@ public:
 private:
   int _arity;
   StableNode _body;
-  StaticArray<StableNode> _Gs;
+  size_t _Gc;
 
   // cache for information of the code area
   bool _codeAreaCacheValid;

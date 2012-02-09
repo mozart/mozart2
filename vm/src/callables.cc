@@ -44,15 +44,16 @@ BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
 const Type Abstraction::rawType("Abstraction", nullptr);
 const Type* const Abstraction::type = &Abstraction::rawType;
 
-Implementation<Abstraction>::Implementation(VM vm, int arity,
+Implementation<Abstraction>::Implementation(size_t Gc,
+                                            StaticArray<StableNode> _Gs,
+                                            VM vm, int arity,
                                             UnstableNode* body,
-                                            int Gc, UnstableNode* Gs[]) :
-  _arity(arity),
-  _Gs(new (vm) StableNode[Gc], Gc) {
+                                            UnstableNode* Gs[]) :
+  _arity(arity), _Gc(Gc) {
 
   _body.init(vm, *body);
 
-  for (int i = 0; i < Gc; i++)
+  for (size_t i = 0; i < Gc; i++)
     _Gs[i].init(vm, *Gs[i]);
 
   _codeAreaCacheValid = false;

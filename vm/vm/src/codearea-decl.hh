@@ -49,11 +49,11 @@ public:
 
   int getXCount() { return _Xcount; }
 
-  StaticArray<StableNode>* getKs() { return &_Ks; }
+  StaticArray<StableNode> getKs() { return _Ks; }
 
   BuiltinResult getCodeAreaInfo(Self self, VM vm,
                                 ProgramCounter* start, int* Xcount,
-                                StaticArray<StableNode>** Ks) {
+                                StaticArray<StableNode>* Ks) {
     *start = getStart();
     *Xcount = getXCount();
     *Ks = getKs();

@@ -89,8 +89,8 @@ template<>
 struct Interface<Callable>: ImplementedBy<Abstraction> {
   BuiltinResult getCallInfo(Node& self, VM vm, int* arity, StableNode** body,
                             ProgramCounter* start, int* Xcount,
-                            StaticArray<StableNode>** Gs,
-                            StaticArray<StableNode>** Ks) {
+                            StaticArray<StableNode>* Gs,
+                            StaticArray<StableNode>* Ks) {
     // TODO call non-abstraction
     cout << "Abstraction expected but " << self.type->getName();
     cout << " found" << endl;
@@ -108,7 +108,7 @@ class CodeAreaProvider;
 template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
-				int* Xcount, StaticArray<StableNode>** Ks) {
+                                int* Xcount, StaticArray<StableNode>* Ks) {
     // TODO code area info of a non-CodeArea
     cout << "CodeArea expected but " << self.type->getName();
     cout << " found" << endl;

@@ -51,6 +51,9 @@ typedef VirtualMachine* VM;
 inline
 void* operator new (size_t size, VM vm);
 
+inline
+void* operator new[] (size_t size, VM vm);
+
 // MWTest is a metafunction that returns T if i!=0 and a type guaranteed to be
 // smaller or equal to char* if i==0
 template<class T, int i>

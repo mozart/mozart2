@@ -52,6 +52,7 @@ private:
   VirtualMachine(const VirtualMachine& src) {}
 
   friend void* operator new (size_t size, VM vm);
+  friend void* operator new[] (size_t size, VM vm);
 
   void* malloc(size_t size) {
     return ::malloc(size);
@@ -67,6 +68,10 @@ private:
 };
 
 void* operator new (size_t size, VM vm) {
+  return vm->malloc(size);
+}
+
+void* operator new[] (size_t size, VM vm) {
   return vm->malloc(size);
 }
 

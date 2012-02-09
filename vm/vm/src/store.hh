@@ -100,12 +100,58 @@ public: // TODO make it private once the development has been bootstrapped
   Node node;
 };
 
-template<class H, class E>
-class ArrayWithHeader{
-  char* p;
+/**
+ * Extractor function for the template parameters of ImplWithArray
+ * Given
+ *   typedef ImplWithArray<I, E> T;
+ * this provides
+ *   ExtractImplWithArray<T>::Impl === I
+ *   ExtractImplWithArray<T>::Elem === E
+ */
+template <class S>
+struct ExtractImplWithArray {};
+
+template <class I, class E>
+struct ExtractImplWithArray<ImplWithArray<I, E>> {
+  typedef I Impl;
+  typedef E Elem;
+};
+
+/**
+ * A Self type for ImplWithArray storages
+ */
+template <class T>
+class ImplWithArraySelf {
+private:
+  typedef typename Storage<T>::Type StorageType;
+  typedef typename ExtractImplWithArray<StorageType>::Impl Impl;
+  typedef typename ExtractImplWithArray<StorageType>::Elem Elem;
+  typedef Accessor<T, StorageType> Access;
 public:
-  H* operator->() { return static_cast<H*>(p); }
-  E& operator[](size_t i) { return static_cast<E*>(p+sizeof(H))[i]; }
+  ImplWithArraySelf(Node* node) : _node(node) {}
+
+  template<class U, class... Args>
+  void make(VM vm, Args... args) {
+    _node->make<U>(vm, args...);
+  }
+
+  Impl* operator->() {
+    return get().operator->();
+  }
+
+  Elem& operator[](size_t i) {
+    return get().operator[](i);
+  }
+
+  StaticArray<Elem> getArray(size_t size) {
+    return get().getArray(size);
+  }
+private:
+  ImplWithArray<Impl, Elem> get() {
+    return ImplWithArray<Impl, Elem>(&Access::get(_node->value));
+  }
+
+  Node* _node;
 };
 
 /**
@@ -114,6 +160,14 @@ public:
 template <class T, class S>
 struct SelfTypeInner {
   typedef Node* Self;
+};
+
+/**
+ * Specialized Self type for types stored as an ImplWithArray
+ */
+template <class T, class I, class E>
+struct SelfTypeInner<T, ImplWithArray<I, E>> {
+  typedef ImplWithArraySelf<T> Self;
 };
 
 /**

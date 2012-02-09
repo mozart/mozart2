@@ -27,6 +27,34 @@
 
 #include "memword.hh"
 #include "type.hh"
+#include "arrays.hh"
+
+template<class I, class E>
+class ImplWithArray {
+  I* p;
+public:
+  ImplWithArray(I* p) : p(p) {}
+
+  I* operator->() {
+    return p;
+  }
+
+  E& operator[](size_t i) {
+    return getRawArray()[i];
+  }
+
+  StaticArray<E> getArray(size_t size) {
+    return StaticArray<E>(getRawArray(), size);
+  }
+private:
+  template <class T, class U>
+  friend class Accessor;
+
+  E* getRawArray() {
+    return static_cast<E*>(static_cast<void*>(
+      static_cast<char*>(static_cast<void*>(p)) + sizeof(I)));
+  }
+};
 
 // Marker class that specifies to use the default storage (pointer to value)
 template<class T>
@@ -64,6 +92,36 @@ public:
     type = T::type;
     Impl* val = new (vm) Impl(args...);
     value.init<Impl*>(vm, val);
+  }
+
+  static Impl& get(MemWord value) {
+    return *(value.get<Impl*>());
+  }
+};
+
+template<class T, class E>
+class Accessor<T, ImplWithArray<Implementation<T>, E>> {
+public:
+  typedef Implementation<T> Impl;
+
+  template<class... Args>
+  static void init(const Type*& type, MemWord& value, VM vm,
+                   size_t elemCount, Args... args) {
+    // Allocate memory
+    void* memory = operator new (sizeof(Impl) + elemCount*sizeof(E), vm);
+    ImplWithArray<Impl, E> implWithArray(static_cast<Impl*>(memory));
+
+    // Initialize the array
+    E* array = implWithArray.getRawArray();
+    new (array) E[elemCount];
+
+    // Initialize the impl
+    Impl* impl = implWithArray.operator->();
+    new (impl) Impl(elemCount, implWithArray.getArray(elemCount), args...);
+
+    // Fill in output parameters
+    type = T::type;
+    value.init<Impl*>(vm, impl);
   }
 
   static Impl& get(MemWord value) {

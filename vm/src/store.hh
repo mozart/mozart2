@@ -85,6 +85,16 @@ public: // TODO make it private once the development has been bootstrapped
  */
 class UnstableNode {
 public:
+  UnstableNode() {}
+
+  UnstableNode(VM vm, StableNode& from) {
+    copy(vm, from);
+  }
+
+  UnstableNode(VM vm, UnstableNode& from) {
+    copy(vm, from);
+  }
+
   inline void copy(VM vm, StableNode& from);
   inline void copy(VM vm, UnstableNode& from);
   inline void swap(UnstableNode& from);

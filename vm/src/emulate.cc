@@ -45,8 +45,8 @@ Thread::Thread(VM vm, StableNode* abstraction) :
   StableNode* body;
   ProgramCounter start;
   int Xcount;
-  StaticArray<StableNode>* Gs;
-  StaticArray<StableNode>* Ks;
+  StaticArray<StableNode> Gs;
+  StaticArray<StableNode> Ks;
 
   Callable callable = abstraction->node;
   BuiltinResult result = callable.getCallInfo(vm, &arity, &body, &start,
@@ -73,9 +73,9 @@ void Thread::run() {
 
   StableNode* abstraction;
   ProgramCounter PC;
-  StaticArray<UnstableNode>* yregs;
-  StaticArray<StableNode>* gregs;
-  StaticArray<StableNode>* kregs;
+  StaticArray<UnstableNode> yregs;
+  StaticArray<StableNode> gregs;
+  StaticArray<StableNode> kregs;
 
   popFrame(vm, abstraction, PC, yregs, gregs, kregs);
 
@@ -86,9 +86,9 @@ void Thread::run() {
 #define IntPC(offset) PC[offset]
 
 #define XPC(offset) (*xregs)[PC[offset]]
-#define YPC(offset) (*yregs)[PC[offset]]
-#define GPC(offset) (*gregs)[PC[offset]]
-#define KPC(offset) (*kregs)[PC[offset]]
+#define YPC(offset) (yregs)[PC[offset]]
+#define GPC(offset) (gregs)[PC[offset]]
+#define KPC(offset) (kregs)[PC[offset]]
 
   // Preemption
 
@@ -167,13 +167,13 @@ void Thread::run() {
         int count = IntPC(1);
         assert(count > 0);
         assert(yregs == nullptr); // Duplicate AllocateY
-        yregs = new StaticArray<UnstableNode>(count);
+        yregs = StaticArray<UnstableNode>(new UnstableNode[count], count);
         advancePC(1); break;
       }
 
       case OpDeallocateY: {
         assert(yregs != nullptr); // Duplicate DeallocateY
-        delete yregs;
+        delete[] (UnstableNode*) yregs;
         yregs = nullptr;
         advancePC(0); break;
       }
@@ -407,18 +407,18 @@ void Thread::run() {
 
 void Thread::pushFrame(VM vm, StableNode* abstraction,
                        ProgramCounter PC,
-                       StaticArray<UnstableNode>* yregs,
-                       StaticArray<StableNode>* gregs,
-                       StaticArray<StableNode>* kregs) {
+                       StaticArray<UnstableNode> yregs,
+                       StaticArray<StableNode> gregs,
+                       StaticArray<StableNode> kregs) {
   StackEntry entry(abstraction, PC, yregs, gregs, kregs);
   stack.push(entry);
 }
 
 void Thread::popFrame(VM vm, StableNode*& abstraction,
                       ProgramCounter& PC,
-                      StaticArray<UnstableNode>*& yregs,
-                      StaticArray<StableNode>*& gregs,
-                      StaticArray<StableNode>*& kregs) {
+                      StaticArray<UnstableNode>& yregs,
+                      StaticArray<StableNode>& gregs,
+                      StaticArray<StableNode>& kregs) {
   StackEntry& entry = stack.top();
 
   abstraction = entry.abstraction;
@@ -434,16 +434,16 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
                   ProgramCounter& PC,
                   EnlargeableArray<UnstableNode>* xregs,
-                  StaticArray<UnstableNode>*& yregs,
-                  StaticArray<StableNode>*& gregs,
-                  StaticArray<StableNode>*& kregs,
+                  StaticArray<UnstableNode>& yregs,
+                  StaticArray<StableNode>& gregs,
+                  StaticArray<StableNode>& kregs,
                   bool& preempted) {
   int formalArity;
   StableNode* body;
   ProgramCounter start;
   int Xcount;
-  StaticArray<StableNode>* Gs;
-  StaticArray<StableNode>* Ks;
+  StaticArray<StableNode> Gs;
+  StaticArray<StableNode> Ks;
 
   Callable x = target->node;
   BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &start,

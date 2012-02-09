@@ -126,8 +126,8 @@ public:
   inline
   BuiltinResult getCallInfo(Self self, VM vm, int* arity, StableNode** body,
                             ProgramCounter* start, int* Xcount,
-                            StaticArray<StableNode>** Gs,
-                            StaticArray<StableNode>** Ks);
+                            StaticArray<StableNode>* Gs,
+                            StaticArray<StableNode>* Ks);
 private:
   int _arity;
   StableNode _body;
@@ -137,7 +137,7 @@ private:
   bool _codeAreaCacheValid;
   ProgramCounter _start;
   int _Xcount;
-  StaticArray<StableNode>* _Ks;
+  StaticArray<StableNode> _Ks;
 };
 
 /**

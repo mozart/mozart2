@@ -47,7 +47,8 @@ const Type* const Abstraction::type = &Abstraction::rawType;
 Implementation<Abstraction>::Implementation(VM vm, int arity,
                                             UnstableNode* body,
                                             int Gc, UnstableNode* Gs[]) :
-  _arity(arity), _Gs(Gc) {
+  _arity(arity),
+  _Gs(new (vm) StableNode[Gc], Gc) {
 
   _body.init(vm, *body);
 

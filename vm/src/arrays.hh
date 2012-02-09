@@ -35,21 +35,33 @@
 template <class T>
 class StaticArray {
 private:
-  T *_array;
+  T* _array;
 
 #ifndef NDEBUG
   int _size;
-#endif // NDEBUG
+#endif
 
 public:
   /** Create an array with s elements */
-  StaticArray(int s) : _array(new T[s]) {
+  StaticArray(T* array, int s) : _array(array) {
 #ifndef NDEBUG
     _size = s;
-#endif // NDEBUG
+#endif
   }
 
-  ~StaticArray() { delete[] _array; }
+  /** Create an array with no element */
+  StaticArray() : _array(nullptr) {
+#ifndef NDEBUG
+    _size = 0;
+#endif
+  }
+
+  /** Convert from nullptr */
+  StaticArray(std::nullptr_t nullp) : _array(nullptr) {
+#ifndef NDEBUG
+    _size = 0;
+#endif
+  }
 
   /** Zero-based access to elements (read-write) */
   inline
@@ -62,6 +74,15 @@ public:
   inline
   operator T*() {
     return _array;
+  }
+
+  /** Assign from nullptr */
+  inline
+  void operator=(std::nullptr_t nullp) {
+    _array = nullptr;
+#ifndef NDEBUG
+    _size = 0;
+#endif
   }
 };
 

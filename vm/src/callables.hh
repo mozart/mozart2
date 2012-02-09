@@ -54,12 +54,12 @@ BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
 
 BuiltinResult Implementation<Abstraction>::getCallInfo(
   Self self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
-  int* Xcount, StaticArray<StableNode>** Gs, StaticArray<StableNode>** Ks) {
+  int* Xcount, StaticArray<StableNode>* Gs, StaticArray<StableNode>* Ks) {
 
   if (!_codeAreaCacheValid) {
     CodeAreaProvider provider = _body.node;
     BuiltinResult result = provider.getCodeAreaInfo(
-      vm,&_start, &_Xcount, &_Ks);
+      vm, &_start, &_Xcount, &_Ks);
 
     if (result != BuiltinResultContinue)
       return result;
@@ -71,7 +71,7 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
   *body = &_body;
   *start = _start;
   *Xcount = _Xcount;
-  *Gs = &_Gs;
+  *Gs = _Gs;
   *Ks = _Ks;
 
   return BuiltinResultContinue;

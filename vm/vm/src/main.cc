@@ -81,7 +81,11 @@ int main(int argc, char **argv) {
    *    elseif N == 1 then
    *       Res = 1
    *    else
-   *       {Fibonacci N-1 Left}
+   *       proc {P}
+   *          {Fibonacci N-1 Left}
+   *       end
+   *
+   *       {P}
    *       {Fibonacci N-2 Right}
    *       Res = Left + Right
    *    end
@@ -98,10 +102,8 @@ int main(int argc, char **argv) {
    *
    * K0 = 0
    * K1 = 1
-   * K2 = -1
-   * K3 = -2
-   * K4 = builtin ==
-   * K5 = builtin +
+   * K2 = -2
+   * K3 = <CodeArea P>
    *
    * G0 = Fibonacci
    *
@@ -109,6 +111,18 @@ int main(int argc, char **argv) {
    * Y1 = Res
    * Y2 = Left
    */
+
+  ByteCode fibonacciInnerCodeBlock[] = {
+    OpMoveGX, 0, 0,
+    OpInlineMinus1, 0, 2,
+    OpMoveXX, 2, 0,
+    OpMoveGX, 2, 1,
+    OpTailCallG, 1, 2
+  };
+
+  UnstableNode fibonacciInnerCodeArea;
+  fibonacciInnerCodeArea.make<CodeArea>(vm, 0, vm, fibonacciInnerCodeBlock,
+                                        sizeof(fibonacciInnerCodeBlock), 3);
 
   ByteCode fibonacciCodeBlock[] = {
     // if N == 0
@@ -131,38 +145,40 @@ int main(int argc, char **argv) {
 
     OpAllocateY, 3,
 
-    OpInlineMinus1, 0, 2,
-    OpMoveMoveXYXY, 0, 0, 1, 1,
-    OpMoveXX, 2, 0,
-    OpCreateVarMoveY, 2, 1,
-    OpCallG, 0, 2,
+    OpCreateVarY, 0,
 
-    OpMoveYX, 0, 0,
-    OpMoveKX, 3, 2,
+    OpCreateAbstractionK, 0, 3, 3, 2,
+    OpArrayInitElementX, 2, 0, 0,
+    OpArrayInitElementG, 2, 1, 0,
+    OpArrayInitElementY, 2, 2, 0,
+
+    OpMoveMoveXYXY, 0, 1, 1, 2,
+    OpCallX, 2, 0,
+
+    OpMoveYX, 1, 0,
+    OpMoveKX, 2, 2,
     OpInlineAdd, 0, 2, 3,
     OpMoveXX, 3, 0,
-    OpCreateVarMoveY, 0, 1,
+    OpCreateVarMoveY, 1, 1,
     OpCallG, 0, 2,
 
-    OpMoveMoveYXYX, 2, 0, 0, 1,
+    OpMoveMoveYXYX, 0, 0, 1, 1,
     OpInlineAdd, 0, 1, 2,
-    OpUnifyXY, 2, 1,
+    OpUnifyXY, 2, 2,
 
     OpDeallocateY,
     OpReturn
   };
 
   UnstableNode fibonacciCodeArea;
-  fibonacciCodeArea.make<CodeArea>(vm, 6, vm, fibonacciCodeBlock,
+  fibonacciCodeArea.make<CodeArea>(vm, 4, vm, fibonacciCodeBlock,
                                    sizeof(fibonacciCodeBlock), 4);
 
   ArrayInitializer initFibonacciCodeArea = fibonacciCodeArea.node;
   initFibonacciCodeArea.initElement(vm, 0, &zero);
   initFibonacciCodeArea.initElement(vm, 1, &one);
-  initFibonacciCodeArea.initElement(vm, 2, &minusOne);
-  initFibonacciCodeArea.initElement(vm, 3, &minusTwo);
-  initFibonacciCodeArea.initElement(vm, 4, &builtinEquals);
-  initFibonacciCodeArea.initElement(vm, 5, &builtinAdd);
+  initFibonacciCodeArea.initElement(vm, 2, &minusTwo);
+  initFibonacciCodeArea.initElement(vm, 3, &fibonacciInnerCodeArea);
 
   UnstableNode abstractionFibonacci;
   abstractionFibonacci.make<Abstraction>(vm, 1, vm, 2, &fibonacciCodeArea);

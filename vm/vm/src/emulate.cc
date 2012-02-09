@@ -327,6 +327,56 @@ void Thread::run() {
         break;
       }
 
+      // Creation of data structures
+
+      case OpArrayInitElementX: {
+        arrayInitElement(XPC(1).node, IntPC(2), &XPC(3),
+                         vm, PC, preempted);
+        break;
+      }
+
+      case OpArrayInitElementY: {
+        arrayInitElement(XPC(1).node, IntPC(2), &YPC(3),
+                         vm, PC, preempted);
+        break;
+      }
+
+      case OpArrayInitElementG: {
+        UnstableNode value(vm, GPC(3));
+        arrayInitElement(XPC(1).node, IntPC(2), &value,
+                         vm, PC, preempted);
+        break;
+      }
+
+      case OpArrayInitElementK: {
+        UnstableNode value(vm, KPC(3));
+        arrayInitElement(XPC(1).node, IntPC(2), &value,
+                         vm, PC, preempted);
+        break;
+      }
+
+      case OpCreateAbstractionX: {
+        int arity = IntPC(1);
+        UnstableNode& body = XPC(2);
+        size_t Gc = IntPC(3);
+
+        XPC(4).make<Abstraction>(vm, Gc, vm, arity, &body);
+
+        advancePC(4);
+        break;
+      }
+
+      case OpCreateAbstractionK: {
+        int arity = IntPC(1);
+        UnstableNode body(vm, KPC(2));
+        size_t Gc = IntPC(3);
+
+        XPC(4).make<Abstraction>(vm, Gc, vm, arity, &body);
+
+        advancePC(4);
+        break;
+      }
+
       // Hard-coded stuff
 
       case OpPrint: {
@@ -394,7 +444,6 @@ void Thread::run() {
     }
   }
 
-#undef advancePC
 #undef IntPC
 #undef XPC
 #undef YPC
@@ -456,8 +505,7 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
       // TODO Raise illegal arity exception
     }
 
-    // advancePC(2);
-    PC += (2 + 1); // 1 for opcode
+    advancePC(2);
 
     if (!isTailCall) {
       pushFrame(vm, abstraction, PC, yregs, gregs, kregs);
@@ -498,6 +546,17 @@ BuiltinResult Thread::unify(VM vm, Node& l, Node& r) {
   }
 }
 
+void Thread::arrayInitElement(Node& node, size_t index, UnstableNode* value,
+                              VM vm, ProgramCounter& PC, bool& preempted) {
+  ArrayInitializer x = node;
+  BuiltinResult result = x.initElement(vm, index, value);
+
+  if (result == BuiltinResultContinue)
+    advancePC(3);
+  else
+    waitFor(vm, result, preempted);
+}
+
 void Thread::waitFor(VM vm, Node* node, bool& preempted) {
   DataflowVariable var = *node;
   var.wait(vm, this);
@@ -505,3 +564,5 @@ void Thread::waitFor(VM vm, Node* node, bool& preempted) {
   if (!isRunnable())
     preempted = true;
 }
+
+#undef advancePC

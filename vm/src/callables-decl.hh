@@ -109,8 +109,7 @@ public:
   typedef SelfType<Abstraction>::Self Self;
 public:
   Implementation<Abstraction>(size_t Gc, StaticArray<StableNode> _Gs, VM vm,
-                              int arity, UnstableNode* body,
-                              UnstableNode* Gs[]);
+                              int arity, UnstableNode* body);
 
   int getArity() { return _arity; }
 
@@ -119,6 +118,10 @@ public:
    */
   inline
   BuiltinResult arity(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult initElement(Self self, VM vm, size_t index,
+                            UnstableNode* value);
 
   /**
    * Get the information needed to call this abstraction

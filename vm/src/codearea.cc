@@ -33,9 +33,6 @@ const Type* const CodeArea::type = &CodeArea::rawType;
 
 Implementation<CodeArea>::Implementation(size_t Kc, StaticArray<StableNode> _Ks,
                                          VM vm, ByteCode* codeBlock, int size,
-                                         int Xcount, UnstableNode* Ks[]) :
+                                         int Xcount) :
   _codeBlock(codeBlock), _size(size), _Xcount(Xcount), _Kc(Kc) {
-
-  for (size_t i = 0; i < Kc; i++)
-    _Ks[i].init(vm, *Ks[i]);
 }

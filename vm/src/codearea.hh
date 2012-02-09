@@ -27,4 +27,15 @@
 
 #include "codearea-decl.hh"
 
+/////////////////////
+// Inline CodeArea //
+/////////////////////
+
+BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
+                                                    size_t index,
+                                                    UnstableNode* value) {
+  self[index].init(vm, *value);
+  return BuiltinResultContinue;
+}
+
 #endif // __CODEAREA_H

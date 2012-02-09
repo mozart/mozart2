@@ -152,25 +152,23 @@ int main(int argc, char **argv) {
     OpReturn
   };
 
-  UnstableNode* fibonacciKs[] =
-    { &zero, &one, &minusOne, &minusTwo, &builtinEquals, &builtinAdd };
   UnstableNode fibonacciCodeArea;
   fibonacciCodeArea.make<CodeArea>(vm, 6, vm, fibonacciCodeBlock,
-                                   sizeof(fibonacciCodeBlock),
-                                   4, fibonacciKs);
+                                   sizeof(fibonacciCodeBlock), 4);
 
-  UnstableNode recursiveFibonacci;
-  recursiveFibonacci.make<Unbound>(vm);
-
-  UnstableNode* fibonacciGs[1] = { &recursiveFibonacci };
+  ArrayInitializer initFibonacciCodeArea = fibonacciCodeArea.node;
+  initFibonacciCodeArea.initElement(vm, 0, &zero);
+  initFibonacciCodeArea.initElement(vm, 1, &one);
+  initFibonacciCodeArea.initElement(vm, 2, &minusOne);
+  initFibonacciCodeArea.initElement(vm, 3, &minusTwo);
+  initFibonacciCodeArea.initElement(vm, 4, &builtinEquals);
+  initFibonacciCodeArea.initElement(vm, 5, &builtinAdd);
 
   UnstableNode abstractionFibonacci;
-  abstractionFibonacci.make<Abstraction>(vm, 1, vm, 2, &fibonacciCodeArea,
-                                         fibonacciGs);
-  Reference::makeFor(vm, abstractionFibonacci);
-  IMPL(BuiltinResult, Unbound, bind,
-       &Reference::dereference(recursiveFibonacci.node),
-       vm, &Reference::dereference(abstractionFibonacci.node));
+  abstractionFibonacci.make<Abstraction>(vm, 1, vm, 2, &fibonacciCodeArea);
+
+  ArrayInitializer initAbstractionFibonacci = abstractionFibonacci.node;
+  initAbstractionFibonacci.initElement(vm, 0, &abstractionFibonacci);
 
   // The dataflows
 
@@ -219,15 +217,21 @@ int main(int argc, char **argv) {
     OpReturn,
   };
 
-  UnstableNode* main1Ks[] = { &n1node, &zero, &one };
   UnstableNode main1CodeArea;
   main1CodeArea.make<CodeArea>(vm, 3, vm, main1CodeBlock,
-                               sizeof(main1CodeBlock), 5, main1Ks);
+                               sizeof(main1CodeBlock), 5);
 
-  UnstableNode* main1Gs[] = { &abstractionFibonacci, &dataflow1 };
+  ArrayInitializer initMain1CodeArea = main1CodeArea.node;
+  initMain1CodeArea.initElement(vm, 0, &n1node);
+  initMain1CodeArea.initElement(vm, 1, &zero);
+  initMain1CodeArea.initElement(vm, 2, &one);
 
   UnstableNode abstractionMain1;
-  abstractionMain1.make<Abstraction>(vm, 2, vm, 0, &main1CodeArea, main1Gs);
+  abstractionMain1.make<Abstraction>(vm, 2, vm, 0, &main1CodeArea);
+
+  ArrayInitializer initAbstractionMain1 = abstractionMain1.node;
+  initAbstractionMain1.initElement(vm, 0, &abstractionFibonacci);
+  initAbstractionMain1.initElement(vm, 1, &dataflow1);
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain1));
 
@@ -272,15 +276,21 @@ int main(int argc, char **argv) {
     OpReturn,
   };
 
-  UnstableNode* main2Ks[] = { &n2node, &zero, &one };
   UnstableNode main2CodeArea;
   main2CodeArea.make<CodeArea>(vm, 3, vm, main2CodeBlock,
-                               sizeof(main2CodeBlock), 5, main2Ks);
+                               sizeof(main2CodeBlock), 5);
 
-  UnstableNode* main2Gs[] = { &abstractionFibonacci, &dataflow2 };
+  ArrayInitializer initMain2CodeArea = main2CodeArea.node;
+  initMain2CodeArea.initElement(vm, 0, &n2node);
+  initMain2CodeArea.initElement(vm, 1, &zero);
+  initMain2CodeArea.initElement(vm, 2, &one);
 
   UnstableNode abstractionMain2;
-  abstractionMain2.make<Abstraction>(vm, 2, vm, 0, &main2CodeArea, main2Gs);
+  abstractionMain2.make<Abstraction>(vm, 2, vm, 0, &main2CodeArea);
+
+  ArrayInitializer initAbstractionMain2 = abstractionMain2.node;
+  initAbstractionMain2.initElement(vm, 0, &abstractionFibonacci);
+  initAbstractionMain2.initElement(vm, 1, &dataflow2);
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain2));
 
@@ -307,15 +317,16 @@ int main(int argc, char **argv) {
     OpReturn,
   };
 
-  UnstableNode* main3Ks[] = { };
   UnstableNode main3CodeArea;
   main3CodeArea.make<CodeArea>(vm, 0, vm, main3CodeBlock,
-                               sizeof(main3CodeBlock), 3, main3Ks);
-
-  UnstableNode* main3Gs[] = { &dataflow1, &dataflow2 };
+                               sizeof(main3CodeBlock), 3);
 
   UnstableNode abstractionMain3;
-  abstractionMain3.make<Abstraction>(vm, 2, vm, 0, &main3CodeArea, main3Gs);
+  abstractionMain3.make<Abstraction>(vm, 2, vm, 0, &main3CodeArea);
+
+  ArrayInitializer initAbstractionMain3 = abstractionMain3.node;
+  initAbstractionMain3.initElement(vm, 0, &dataflow1);
+  initAbstractionMain3.initElement(vm, 1, &dataflow2);
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain3));
 

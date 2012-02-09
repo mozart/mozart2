@@ -155,9 +155,9 @@ int main(int argc, char **argv) {
   UnstableNode* fibonacciKs[] =
     { &zero, &one, &minusOne, &minusTwo, &builtinEquals, &builtinAdd };
   UnstableNode fibonacciCodeArea;
-  fibonacciCodeArea.make<CodeArea>(vm, vm, fibonacciCodeBlock,
+  fibonacciCodeArea.make<CodeArea>(vm, 6, vm, fibonacciCodeBlock,
                                    sizeof(fibonacciCodeBlock),
-                                   4, 6, fibonacciKs);
+                                   4, fibonacciKs);
 
   UnstableNode recursiveFibonacci;
   recursiveFibonacci.make<Unbound>(vm);
@@ -165,8 +165,8 @@ int main(int argc, char **argv) {
   UnstableNode* fibonacciGs[1] = { &recursiveFibonacci };
 
   UnstableNode abstractionFibonacci;
-  abstractionFibonacci.make<Abstraction>(vm, vm, 2, &fibonacciCodeArea,
-                                         1, fibonacciGs);
+  abstractionFibonacci.make<Abstraction>(vm, 1, vm, 2, &fibonacciCodeArea,
+                                         fibonacciGs);
   Reference::makeFor(vm, abstractionFibonacci);
   IMPL(BuiltinResult, Unbound, bind,
        &Reference::dereference(recursiveFibonacci.node),
@@ -221,13 +221,13 @@ int main(int argc, char **argv) {
 
   UnstableNode* main1Ks[] = { &n1node, &zero, &one };
   UnstableNode main1CodeArea;
-  main1CodeArea.make<CodeArea>(vm, vm, main1CodeBlock, sizeof(main1CodeBlock),
-                               5, 3, main1Ks);
+  main1CodeArea.make<CodeArea>(vm, 3, vm, main1CodeBlock,
+                               sizeof(main1CodeBlock), 5, main1Ks);
 
   UnstableNode* main1Gs[] = { &abstractionFibonacci, &dataflow1 };
 
   UnstableNode abstractionMain1;
-  abstractionMain1.make<Abstraction>(vm, vm, 0, &main1CodeArea, 2, main1Gs);
+  abstractionMain1.make<Abstraction>(vm, 2, vm, 0, &main1CodeArea, main1Gs);
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain1));
 
@@ -274,13 +274,13 @@ int main(int argc, char **argv) {
 
   UnstableNode* main2Ks[] = { &n2node, &zero, &one };
   UnstableNode main2CodeArea;
-  main2CodeArea.make<CodeArea>(vm, vm, main2CodeBlock, sizeof(main2CodeBlock),
-                               5, 3, main2Ks);
+  main2CodeArea.make<CodeArea>(vm, 3, vm, main2CodeBlock,
+                               sizeof(main2CodeBlock), 5, main2Ks);
 
   UnstableNode* main2Gs[] = { &abstractionFibonacci, &dataflow2 };
 
   UnstableNode abstractionMain2;
-  abstractionMain2.make<Abstraction>(vm, vm, 0, &main2CodeArea, 2, main2Gs);
+  abstractionMain2.make<Abstraction>(vm, 2, vm, 0, &main2CodeArea, main2Gs);
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain2));
 
@@ -309,13 +309,13 @@ int main(int argc, char **argv) {
 
   UnstableNode* main3Ks[] = { };
   UnstableNode main3CodeArea;
-  main3CodeArea.make<CodeArea>(vm, vm, main3CodeBlock, sizeof(main3CodeBlock),
-                               3, 0, main3Ks);
+  main3CodeArea.make<CodeArea>(vm, 0, vm, main3CodeBlock,
+                               sizeof(main3CodeBlock), 3, main3Ks);
 
   UnstableNode* main3Gs[] = { &dataflow1, &dataflow2 };
 
   UnstableNode abstractionMain3;
-  abstractionMain3.make<Abstraction>(vm, vm, 0, &main3CodeArea, 2, main3Gs);
+  abstractionMain3.make<Abstraction>(vm, 2, vm, 0, &main3CodeArea, main3Gs);
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, abstractionMain3));
 

@@ -36,7 +36,7 @@
 
 #include <iostream>
 
-struct DataflowVariable;
+class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
   BuiltinResult wait(Node& self, VM vm, Suspendable* thread) {
@@ -57,7 +57,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
   }
 };
 
-struct Equatable;
+class Equatable;
 template<>
 struct Interface<Equatable>: ImplementedBy<SmallInt>, NoAutoWait {
   BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
@@ -73,7 +73,7 @@ struct Interface<Equatable>: ImplementedBy<SmallInt>, NoAutoWait {
   }
 };
 
-struct BuiltinCallable;
+class BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
   BuiltinResult callBuiltin(Node& self, VM vm, int argc, UnstableNode* args[]) {
@@ -84,7 +84,7 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
   }
 };
 
-struct Callable;
+class Callable;
 template<>
 struct Interface<Callable>: ImplementedBy<Abstraction> {
   BuiltinResult getCallInfo(Node& self, VM vm, int* arity, StableNode** body,
@@ -104,7 +104,7 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
   }
 };
 
-struct CodeAreaProvider;
+class CodeAreaProvider;
 template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
@@ -119,7 +119,7 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   }
 };
 
-struct Addable;
+class Addable;
 template<>
 struct Interface<Addable>: ImplementedBy<SmallInt> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
@@ -130,7 +130,7 @@ struct Interface<Addable>: ImplementedBy<SmallInt> {
   }
 };
 
-struct IntegerValue;
+class IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
   BuiltinResult equalsInteger(Node& self, VM vm, nativeint right, bool* result) {
@@ -146,7 +146,7 @@ struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
   }
 };
 
-struct BooleanValue;
+class BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
   BuiltinResult valueOrNotBool(Node& self, VM vm, BoolOrNotBool* result) {

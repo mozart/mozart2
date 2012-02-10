@@ -360,7 +360,7 @@ void Thread::run() {
         UnstableNode& body = XPC(2);
         size_t Gc = IntPC(3);
 
-        XPC(4).make<Abstraction>(vm, Gc, vm, arity, &body);
+        XPC(4).make<Abstraction>(vm, Gc, arity, &body);
 
         advancePC(4);
         break;
@@ -371,7 +371,7 @@ void Thread::run() {
         UnstableNode body(vm, KPC(2));
         size_t Gc = IntPC(3);
 
-        XPC(4).make<Abstraction>(vm, Gc, vm, arity, &body);
+        XPC(4).make<Abstraction>(vm, Gc, arity, &body);
 
         advancePC(4);
         break;

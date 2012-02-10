@@ -40,8 +40,6 @@ class Implementation<SmallInt> {
 public:
   typedef SelfType<SmallInt>::Self Self;
 public:
-  Implementation<SmallInt>(const Implementation<SmallInt>& src) :
-    _value(src.value()) {}
   Implementation<SmallInt>(nativeint value) : _value(value) {}
 
   nativeint value() const { return _value; }
@@ -67,7 +65,7 @@ class SmallInt {
 public:
   static const Type* const type;
 
-  static nativeint build(nativeint value) { return value; }
+  static nativeint build(VM, nativeint value) { return value; }
 private:
   static const Type rawType;
 };

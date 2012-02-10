@@ -24,5 +24,5 @@
 
 #include "boolean.hh"
 
-const Type Boolean::rawType("Boolean", nullptr, true);
-const Type* const Boolean::type = &Boolean::rawType;
+const Boolean Boolean::rawType;
+const Boolean* const Boolean::type = &Boolean::rawType;

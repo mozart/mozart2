@@ -61,13 +61,15 @@ private:
   const nativeint _value;
 };
 
-class SmallInt {
+class SmallInt: public Type {
 public:
-  static const Type* const type;
+  SmallInt() : Type("SmallInt", true) {}
+
+  static const SmallInt* const type;
 
   static nativeint build(VM, nativeint value) { return value; }
 private:
-  static const Type rawType;
+  static const SmallInt rawType;
 };
 
 #endif // __SMALLINT_DECL_H

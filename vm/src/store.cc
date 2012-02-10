@@ -28,5 +28,5 @@
 // Reference //
 ///////////////
 
-const Type Reference::rawType("Reference", nullptr, true);
-const Type* const Reference::type = &Reference::rawType;
+const Reference Reference::rawType;
+const Reference* const Reference::type = &Reference::rawType;

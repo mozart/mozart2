@@ -24,5 +24,5 @@
 
 #include "atom.hh"
 
-const Type Atom::rawType("Atom", nullptr, true);
-const Type* const Atom::type = &Atom::rawType;
+const Atom Atom::rawType;
+const Atom* const Atom::type = &Atom::rawType;

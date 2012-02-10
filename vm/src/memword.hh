@@ -39,20 +39,7 @@
 #ifndef __MEMWORD_H
 #define __MEMWORD_H
 
-#include <stdlib.h>
-#include <stdint.h>
-
-typedef intptr_t nativeint;
-
-// We need the VM class to allocate memory for "big" types.
-class VirtualMachine;
-typedef VirtualMachine* VM;
-
-inline
-void* operator new (size_t size, VM vm);
-
-inline
-void* operator new[] (size_t size, VM vm);
+#include "core-forward-decl.hh"
 
 // MWTest is a metafunction that returns T if i!=0 and a type guaranteed to be
 // smaller or equal to char* if i==0

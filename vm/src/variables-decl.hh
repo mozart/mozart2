@@ -42,7 +42,7 @@ class Implementation<Variable> {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
-  Implementation<Variable>() {}
+  Implementation<Variable>(VM) {}
 
   inline
   BuiltinResult wait(Self self, VM vm, Suspendable* thread);
@@ -104,7 +104,7 @@ class Unbound {
 public:
   static const Type* const type;
 
-  static void* build() { return nullptr; }
+  static void* build(VM) { return nullptr; }
 private:
   static const Type rawType;
 };

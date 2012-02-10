@@ -74,7 +74,7 @@ public:
   template<class... Args>
   static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
     type = T::type;
-    value.init(vm, T::build(args...));
+    value.init(vm, T::build(vm, args...));
   }
 
   static Implementation<T> get(MemWord value) {
@@ -90,7 +90,7 @@ public:
   template<class... Args>
   static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
     type = T::type;
-    Impl* val = new (vm) Impl(args...);
+    Impl* val = new (vm) Impl(vm, args...);
     value.init<Impl*>(vm, val);
   }
 
@@ -117,7 +117,7 @@ public:
 
     // Initialize the impl
     Impl* impl = implWithArray.operator->();
-    new (impl) Impl(elemCount, implWithArray.getArray(elemCount), args...);
+    new (impl) Impl(vm, elemCount, implWithArray.getArray(elemCount), args...);
 
     // Fill in output parameters
     type = T::type;

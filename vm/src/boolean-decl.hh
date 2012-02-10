@@ -62,7 +62,7 @@ class Boolean {
 public:
   static const Type* const type;
 
-  static bool build(bool value) { return value; }
+  static bool build(VM, bool value) { return value; }
 private:
   static const Type rawType;
 };

@@ -45,7 +45,7 @@ class Implementation<BuiltinProcedure> {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
 public:
-  Implementation<BuiltinProcedure>(int arity, OzBuiltin builtin) :
+  Implementation<BuiltinProcedure>(VM, int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
 
   /**
@@ -108,7 +108,7 @@ class Implementation<Abstraction> {
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
-  Implementation<Abstraction>(size_t Gc, StaticArray<StableNode> _Gs, VM vm,
+  Implementation<Abstraction>(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
                               int arity, UnstableNode* body);
 
   int getArity() { return _arity; }

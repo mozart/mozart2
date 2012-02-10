@@ -46,7 +46,7 @@ class Implementation<CodeArea> {
 public:
   typedef SelfType<CodeArea>::Self Self;
 public:
-  Implementation(size_t Kc, StaticArray<StableNode> _Ks, VM vm,
+  Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
                  ByteCode* codeBlock, int size, int Xcount);
 
   inline

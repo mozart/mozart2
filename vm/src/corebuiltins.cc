@@ -27,6 +27,8 @@
 
 #include <iostream>
 
+#include "emulate.hh"
+
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]) {
@@ -37,6 +39,32 @@ BuiltinResult equals(VM vm, UnstableNode* args[]) {
 BuiltinResult add(VM vm, UnstableNode* args[]) {
   Addable x = args[0]->node;
   return x.add(vm, args[1], args[2]);
+}
+
+BuiltinResult createThread(VM vm, UnstableNode* args[]) {
+  int arity;
+  StableNode* body;
+  ProgramCounter start;
+  int Xcount;
+  StaticArray<StableNode> Gs;
+  StaticArray<StableNode> Ks;
+
+  Callable x = args[0]->node;
+  BuiltinResult result = x.getCallInfo(vm, &arity, &body, &start,
+                                       &Xcount, &Gs, &Ks);
+
+  if (result != BuiltinResultContinue)
+    return result;
+
+  if (arity != 0) {
+    cout << "Illegal arity: " << 0 << " expected but ";
+    cout << arity << " found" << endl;
+    // TODO Raise illegal arity exception
+  }
+
+  new Thread(vm, Reference::getStableRefFor(vm, *args[0]));
+
+  return BuiltinResultContinue;
 }
 
 }

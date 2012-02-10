@@ -34,6 +34,8 @@ BuiltinResult equals(VM vm, UnstableNode* args[]);
 
 BuiltinResult add(VM vm, UnstableNode* args[]);
 
+BuiltinResult createThread(VM vm, UnstableNode* args[]);
+
 }
 
 #endif // __COREBUILTINS_H

@@ -33,6 +33,7 @@
 #include "smallint-decl.hh"
 #include "codearea-decl.hh"
 #include "callables-decl.hh"
+#include "atom-decl.hh"
 
 #include <iostream>
 
@@ -59,7 +60,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
 
 class Equatable;
 template<>
-struct Interface<Equatable>: ImplementedBy<SmallInt>, NoAutoWait {
+struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
   BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     if (self.type->isTransient()) {
       // TODO A == B when A and B are aliased transients should return true
@@ -183,6 +184,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "smallint.hh"
 #include "codearea.hh"
 #include "callables.hh"
+#include "atom.hh"
 
 #endif // MOZART_GENERATOR
 

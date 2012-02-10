@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,68 +22,61 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_H
-#define __VM_H
-
-#include <stdlib.h>
+#ifndef __ATOM_DECL_H
+#define __ATOM_DECL_H
 
 #include "store.hh"
-#include "threadpool.hh"
 #include "atomtable.hh"
 
-typedef bool (*PreemptionTest)(void* data);
+class Atom;
 
-class VirtualMachine {
+template <>
+class Storage<Atom> {
 public:
-  VirtualMachine(PreemptionTest preemptionTest,
-                 void* preemptionTestData = nullptr) :
-    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData) {}
-
-  StableNode* newVariable();
-
-  void run();
-
-  inline
-  bool testPreemption();
-
-  ThreadPool& getThreadPool() { return threadPool; }
-private:
-  friend class Thread;
-  friend class Atom;
-
-  VirtualMachine(const VirtualMachine& src) {}
-
-  friend void* operator new (size_t size, VM vm);
-  friend void* operator new[] (size_t size, VM vm);
-
-  void* malloc(size_t size) {
-    return ::malloc(size);
-  }
-
-  // Called from the constructor of Thread
-  void scheduleThread(Thread* thread);
-
-  ThreadPool threadPool;
-  AtomTable atomTable;
-
-  PreemptionTest _preemptionTest;
-  void* _preemptionTestData;
+  typedef AtomImpl* Type;
 };
 
-void* operator new (size_t size, VM vm) {
-  return vm->malloc(size);
-}
+template <>
+class Implementation<Atom> {
+public:
+  typedef SelfType<Atom>::Self Self;
 
-void* operator new[] (size_t size, VM vm) {
-  return vm->malloc(size);
-}
+  Implementation<Atom>(const AtomImpl* value) : _value(value) {}
+  
+  inline 
+  BuiltinResult equals(Self self, VM vm, UnstableNode* right, UnstableNode* result);
+  
+  const AtomImpl* value() const { return _value; }
 
-///////////////////////////
-// Inline VirtualMachine //
-///////////////////////////
+private:
+  const AtomImpl* _value;
+};
 
-bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData);
-}
+class Atom {
+public:
+  typedef Node* Self;
 
-#endif // __VM_H
+  static const Type* const type;
+
+  static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
+    assert(size == (size << 5) >> 5);
+    return vm->atomTable.get(vm, size, data);
+  }
+private:
+  static const Type rawType;
+};
+/*
+template<>
+class Accessor<Atom, AtomImpl*> {
+public:
+  template<class... Args>
+  static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
+    type = Atom::type;
+    value.init(vm, Atom::build(vm, args...));
+  }
+  static Implementation<Atom> get(MemWord value) {
+    return Implementation<Atom>(value.get<AtomImpl*>());
+  }
+};
+*/
+#endif // __ATOM_DECL_H

@@ -25,12 +25,10 @@
 #ifndef __STORE_H
 #define __STORE_H
 
+#include "core-forward-decl.hh"
 #include "memword.hh"
 #include "storage.hh"
 #include "type.hh"
-
-class UnstableNode;
-class Node;
 
 /**
  * A value node in the store.

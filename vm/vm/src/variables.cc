@@ -28,12 +28,12 @@
 // Variable //
 //////////////
 
-const Type Variable::rawType("Variable", nullptr, false, true);
-const Type* const Variable::type = &Variable::rawType;
+const Variable Variable::rawType;
+const Variable* const Variable::type = &Variable::rawType;
 
 /////////////
 // Unbound //
 /////////////
 
-const Type Unbound::rawType("Unbound", nullptr, false, true);
-const Type* const Unbound::type = &Unbound::rawType;
+const Unbound Unbound::rawType;
+const Unbound* const Unbound::type = &Unbound::rawType;

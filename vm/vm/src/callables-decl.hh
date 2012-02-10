@@ -81,11 +81,13 @@ private:
 /**
  * Type of a builtin procedure
  */
-class BuiltinProcedure {
+class BuiltinProcedure: public Type {
 public:
-  static const Type* const type;
+  BuiltinProcedure() : Type("BuiltinProcedure") {}
+
+  static const BuiltinProcedure* const type;
 private:
-  static const Type rawType;
+  static const BuiltinProcedure rawType;
 };
 
 /////////////////
@@ -153,11 +155,13 @@ private:
 /**
  * Type of an abstraction
  */
-class Abstraction {
+class Abstraction: public Type {
 public:
-  static const Type* const type;
+  Abstraction() : Type("Abstraction") {}
+
+  static const Abstraction* const type;
 private:
-  static const Type rawType;
+  static const Abstraction rawType;
 };
 
 #endif // __CALLABLES_DECL_H

@@ -259,11 +259,13 @@ private:
 /**
  * Type of a reference
  */
-class Reference {
+class Reference: public Type {
 public:
+  Reference() : Type("Reference", true) {}
+
   typedef Node* Self;
 
-  static const Type* const type;
+  static const Reference* const type;
 
   static StableNode* build(VM, StableNode* dest) { return dest; }
 
@@ -333,7 +335,7 @@ private:
     return node;
   }
 
-  static const Type rawType;
+  static const Reference rawType;
 };
 
 /////////////////////////

@@ -73,11 +73,13 @@ private:
 /**
  * Type of a code area
  */
-class CodeArea {
+class CodeArea: public Type {
 public:
-  static const Type* const type;
+  CodeArea() : Type("CodeArea") {}
+
+  static const CodeArea* const type;
 private:
-  static const Type rawType;
+  static const CodeArea rawType;
 };
 
 #endif // __CODEAREA_DECL_H

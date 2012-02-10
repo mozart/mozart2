@@ -42,28 +42,30 @@ public:
   typedef SelfType<Atom>::Self Self;
 
   Implementation<Atom>(const AtomImpl* value) : _value(value) {}
-  
-  inline 
+
+  inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right, UnstableNode* result);
-  
+
   const AtomImpl* value() const { return _value; }
 
 private:
   const AtomImpl* _value;
 };
 
-class Atom {
+class Atom: public Type {
 public:
+  Atom() : Type("Atom", true) {}
+
   typedef Node* Self;
 
-  static const Type* const type;
+  static const Atom* const type;
 
   static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
     assert(size == (size << 5) >> 5);
     return vm->atomTable.get(vm, size, data);
   }
 private:
-  static const Type rawType;
+  static const Atom rawType;
 };
 /*
 template<>

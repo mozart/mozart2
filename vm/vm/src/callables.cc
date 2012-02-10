@@ -28,8 +28,9 @@
 // BuiltinProcedure //
 //////////////////////
 
-const Type BuiltinProcedure::rawType("BuiltinProcedure", nullptr);
-const Type* const BuiltinProcedure::type = &BuiltinProcedure::rawType;
+const BuiltinProcedure BuiltinProcedure::rawType;
+const BuiltinProcedure* const BuiltinProcedure::type =
+  &BuiltinProcedure::rawType;
 
 BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
   // TODO raiseIllegalArity
@@ -41,8 +42,8 @@ BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
 // Abstraction //
 /////////////////
 
-const Type Abstraction::rawType("Abstraction", nullptr);
-const Type* const Abstraction::type = &Abstraction::rawType;
+const Abstraction Abstraction::rawType;
+const Abstraction* const Abstraction::type = &Abstraction::rawType;
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,

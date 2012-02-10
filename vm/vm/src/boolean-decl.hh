@@ -58,13 +58,15 @@ private:
   const bool _value;
 };
 
-class Boolean {
+class Boolean: public Type {
 public:
-  static const Type* const type;
+  Boolean() : Type("Boolean", true) {}
+
+  static const Boolean* const type;
 
   static bool build(VM, bool value) { return value; }
 private:
-  static const Type rawType;
+  static const Boolean rawType;
 };
 
 #endif // __BOOLEAN_DECL_H

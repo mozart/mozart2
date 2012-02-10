@@ -31,23 +31,22 @@ using namespace std;
 
 class Type {
 public:
-  typedef void* (*GetInterfaceProc)(void*);
-
-  Type(string name, GetInterfaceProc getInterface, bool copiable = false,
-       bool transient = false) :
-    _name(name), _getInterface(getInterface), _copiable(copiable),
-    _transient(transient) {
+  Type(string name, bool copiable = false, bool transient = false) :
+    _name(name), _copiable(copiable), _transient(transient) {
   }
 
   const string& getName() const { return _name; }
 
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
+  virtual void* getInterface(void* intfID) {
+    // TODO
+    return nullptr;
+  }
 
   bool isCopiable() const { return _copiable; }
   bool isTransient() const { return _transient; }
 private:
   const string _name;
-  const GetInterfaceProc _getInterface;
+
   const bool _copiable;
   const bool _transient;
 };

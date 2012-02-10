@@ -63,11 +63,13 @@ private:
 /**
  * Type of a dataflow variable
  */
-class Variable {
+class Variable: public Type {
 public:
-  static const Type* const type;
+  Variable() : Type("Variable", false, true) {}
+
+  static const Variable* const type;
 private:
-  static const Type rawType;
+  static const Variable rawType;
 };
 
 /////////////
@@ -100,13 +102,15 @@ public:
 /**
  * Type of an unbound variable (optimized for the no-wait case)
  */
-class Unbound {
+class Unbound: public Type {
 public:
-  static const Type* const type;
+  Unbound() : Type("Unbound", false, true) {}
+
+  static const Unbound* const type;
 
   static void* build(VM) { return nullptr; }
 private:
-  static const Type rawType;
+  static const Unbound rawType;
 };
 
 #endif // __VARIABLES_DECL_H

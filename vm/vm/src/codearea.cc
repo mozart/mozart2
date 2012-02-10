@@ -28,8 +28,8 @@
 // CodeArea //
 //////////////
 
-const Type CodeArea::rawType("CodeArea", nullptr);
-const Type* const CodeArea::type = &CodeArea::rawType;
+const CodeArea CodeArea::rawType;
+const CodeArea* const CodeArea::type = &CodeArea::rawType;
 
 Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
 					 StaticArray<StableNode> _Ks,

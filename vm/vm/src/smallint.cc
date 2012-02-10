@@ -24,5 +24,5 @@
 
 #include "smallint.hh"
 
-const Type SmallInt::rawType("SmallInt", nullptr, true);
-const Type* const SmallInt::type = &SmallInt::rawType;
+const SmallInt SmallInt::rawType;
+const SmallInt* const SmallInt::type = &SmallInt::rawType;

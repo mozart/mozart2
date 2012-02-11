@@ -49,6 +49,10 @@ public:
   inline
   MemoryManager& getMemoryManager();
 
+  bool isGCRequired() {
+    return getMemoryManager().isGCRequired();
+  }
+
   void doGC();
 
   inline

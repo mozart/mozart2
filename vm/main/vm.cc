@@ -13,6 +13,9 @@ StableNode* VirtualMachine::newVariable() {
 
 void VirtualMachine::run() {
   while (true) {
+    if (gc.isGCRequired())
+      gc.doGC();
+
     Thread* currentThread;
 
     // Select a thread

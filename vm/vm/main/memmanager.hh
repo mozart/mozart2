@@ -34,6 +34,7 @@ using namespace std;
 const size_t MegaBytes = 1024*1024;
 
 const size_t MAX_MEMORY = 512 * MegaBytes;
+const size_t MemoryRoom = 10 * MegaBytes;
 
 class MemoryManager {
 public:
@@ -120,6 +121,10 @@ public:
 
   size_t getAllocated() {
     return _allocated;
+  }
+
+  bool isGCRequired() {
+    return (_allocated + MemoryRoom > _maxMemory);
   }
 private:
   size_t bucketFor(size_t size) {

@@ -172,7 +172,7 @@ public:
 ///////////////////////////
 
 bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData);
+  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
 }
 
 #endif // __VM_H

@@ -51,19 +51,8 @@ public:
 
   inline void reset(VM vm);
 
-  union {
-    // Regular structure of a node
-    struct {
-      const Type* type;
-      MemWord value;
-    };
-
-    // Garbage collector hack
-    struct {
-      Node* gcNext;
-      Node* gcFrom;
-    };
-  };
+  const Type* type;
+  MemWord value;
 };
 
 /**
@@ -75,7 +64,15 @@ public:
 private:
   friend class UnstableNode;
 public: // TODO make it private once the development has been bootstrapped
-  Node node;
+  union {
+    Node node;
+
+    // Garbage collector hack
+    struct {
+      StableNode* gcNext;
+      Node* gcFrom;
+    };
+  };
 };
 
 /**
@@ -105,7 +102,15 @@ public:
 private:
   friend class StableNode;
 public: // TODO make it private once the development has been bootstrapped
-  Node node;
+  union {
+    Node node;
+
+    // Garbage collector hack
+    struct {
+      UnstableNode* gcNext;
+      Node* gcFrom;
+    };
+  };
 };
 
 /**

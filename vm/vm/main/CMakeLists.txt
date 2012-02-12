@@ -3,7 +3,7 @@ set(interface_headers coreinterfaces.hh)
 foreach(header ${interface_headers})
 add_custom_target(${header}.gen
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -DMOZART_GENERATOR
-  -Xclang -load -Xclang ${CMAKE_CURRENT_BINARY_DIR}/../../generator/src/Generator.so
+  -Xclang -load -Xclang ${CMAKE_CURRENT_BINARY_DIR}/../../generator/main/Generator.so
   -Xclang -plugin -Xclang ext-inf ${CMAKE_CURRENT_SOURCE_DIR}/${header}
   DEPENDS ${header}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

@@ -9,11 +9,11 @@ if("${LLVM_SRC_DIR}" STREQUAL "${DEFAULT_LLVM_SRC_DIR}")
     COMMAND svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_30/final ${ep_base}/Source/llvm/tools/clang
     DEPENDEES download
     DEPENDERS update
-    ) 
+    )
   ExternalProject_Add_Step(llvm update_clang
     COMMAND svn update ${ep_base}/Source/llvm/tools/clang
     DEPENDEES update
     DEPENDERS build
-    ) 
+    )
 endif()
-add_subdirectory(src)
+add_subdirectory(main)

@@ -109,6 +109,67 @@ public: // TODO make it private once the development has been bootstrapped
 };
 
 /**
+ * Base class for Self types
+ */
+template <class T>
+class BaseSelf {
+protected:
+  typedef typename Storage<T>::Type StorageType;
+  typedef Accessor<T, StorageType> Access;
+public:
+  BaseSelf(Node* node) : _node(node) {}
+
+  template<class U, class... Args>
+  void make(VM vm, Args... args) {
+    _node->make<U>(vm, args...);
+  }
+
+  operator Node*() {
+    return _node;
+  }
+
+  Node& operator*() {
+    return *_node;
+  }
+protected:
+  auto getBase() -> decltype(Access::get(MemWord())) {
+    return Access::get(_node->value);
+  }
+
+  Node* _node;
+};
+
+/**
+ * Self type for custom storage-based types
+ */
+template <class T>
+class CustomStorageSelf: public BaseSelf<T> {
+private:
+  typedef Implementation<T> Impl;
+public:
+  CustomStorageSelf(Node* node) : BaseSelf<T>(node) {}
+
+  Impl get() {
+    return this->getBase();
+  }
+};
+
+/**
+ * Self type for default storage-based types
+ */
+template <class T>
+class DefaultStorageSelf: public BaseSelf<T> {
+private:
+  typedef Implementation<T> Impl;
+public:
+  DefaultStorageSelf(Node* node) : BaseSelf<T>(node) {}
+
+  Impl* operator->() {
+    return &this->getBase();
+  }
+};
+
+/**
  * Extractor function for the template parameters of ImplWithArray
  * Given
  *   typedef ImplWithArray<I, E> T;
@@ -126,22 +187,16 @@ struct ExtractImplWithArray<ImplWithArray<I, E>> {
 };
 
 /**
- * A Self type for ImplWithArray storages
+ * Self type for ImplWithArray-based types
  */
 template <class T>
-class ImplWithArraySelf {
+class ImplWithArraySelf: public BaseSelf<T> {
 private:
-  typedef typename Storage<T>::Type StorageType;
+  typedef typename BaseSelf<T>::StorageType StorageType;
   typedef typename ExtractImplWithArray<StorageType>::Impl Impl;
   typedef typename ExtractImplWithArray<StorageType>::Elem Elem;
-  typedef Accessor<T, StorageType> Access;
 public:
-  ImplWithArraySelf(Node* node) : _node(node) {}
-
-  template<class U, class... Args>
-  void make(VM vm, Args... args) {
-    _node->make<U>(vm, args...);
-  }
+  ImplWithArraySelf(Node* node) : BaseSelf<T>(node) {}
 
   Impl* operator->() {
     return get().operator->();
@@ -156,22 +211,28 @@ public:
   }
 private:
   ImplWithArray<Impl, Elem> get() {
-    return ImplWithArray<Impl, Elem>(&Access::get(_node->value));
+    return ImplWithArray<Impl, Elem>(&this->getBase());
   }
-
-  Node* _node;
 };
 
 /**
- * Default Self type
+ * Helper for the metafunction SelfType
  */
 template <class T, class S>
 struct SelfTypeInner {
-  typedef Node* Self;
+  typedef CustomStorageSelf<T> Self;
 };
 
 /**
- * Specialized Self type for types stored as an ImplWithArray
+ * Helper for the metafunction SelfType
+ */
+template <class T>
+struct SelfTypeInner<T, DefaultStorage<T>> {
+  typedef DefaultStorageSelf<T> Self;
+};
+
+/**
+ * Helper for the metafunction SelfType
  */
 template <class T, class I, class E>
 struct SelfTypeInner<T, ImplWithArray<I, E>> {

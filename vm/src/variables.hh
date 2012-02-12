@@ -80,7 +80,7 @@ void Implementation<Variable>::resumePendingThreads(VM vm) {
 
 BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
                                             Suspendable* thread) {
-  self->make<Variable>(vm);
+  self.make<Variable>(vm);
 
   DataflowVariable var = *self;
   return var.wait(vm, thread);

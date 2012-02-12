@@ -13,5 +13,5 @@ build$ make
 Run the VM with its hardcoded program
 =====================================
 
-build$ cd vm/src/
-src$ ./vm
+build$ cd vm/main/
+main$ ./vm

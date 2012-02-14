@@ -56,13 +56,55 @@ struct StackEntry {
 /** Thread stack */
 typedef stack<StackEntry> ThreadStack;
 
-template <class T>
-class EnlargeableArray : public vector<T> {
+class XRegArray {
 public:
-  void ensureSize(size_t s) {
-    if (s > this->size())
-      this->resize(s);
+  XRegArray() : _array(nullptr, 0), _size(0) {}
+
+  void init(VM vm, size_t initialSize) {
+    assert(_array == nullptr);
+    allocArray(vm, initialSize);
   }
+
+  void grow(VM vm, size_t newSize, size_t elemsToKeep) {
+    if (newSize <= _size)
+      return;
+
+    StaticArray<UnstableNode> oldArray = _array;
+    size_t oldSize = _size;
+
+    allocArray(vm, newSize);
+
+    for (size_t i = 0; i < elemsToKeep; i++)
+      _array[i] = oldArray[i];
+
+    freeArray(vm, oldArray, oldSize);
+  }
+
+  void release(VM vm) {
+    freeArray(vm, _array, _size);
+    _array = nullptr;
+    _size = 0;
+  }
+
+  size_t size() {
+    return _size;
+  }
+
+  UnstableNode& operator[](size_t index) {
+    return _array[index];
+  }
+private:
+  void allocArray(VM vm, size_t size) {
+    _array = vm->newStaticArray<UnstableNode>(size);
+    _size = size;
+  }
+
+  void freeArray(VM vm, StaticArray<UnstableNode> array, size_t size) {
+    vm->deleteStaticArray<UnstableNode>(array, size);
+  }
+
+  StaticArray<UnstableNode> _array;
+  size_t _size;
 };
 
 /**
@@ -75,6 +117,11 @@ public:
   Thread(VM vm, StableNode* abstraction);
 
   void run();
+protected:
+  void terminate() {
+    Suspendable::terminate();
+    xregs.release(vm);
+  }
 private:
   inline
   void pushFrame(VM vm, StableNode* abstraction,
@@ -94,7 +141,7 @@ private:
   void call(StableNode* target, int actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
             ProgramCounter& PC, size_t& yregCount,
-            EnlargeableArray<UnstableNode>* xregs,
+            XRegArray* xregs,
             StaticArray<UnstableNode>& yregs,
             StaticArray<StableNode>& gregs,
             StaticArray<StableNode>& kregs,
@@ -111,7 +158,7 @@ private:
 
   VM vm;
 
-  EnlargeableArray<UnstableNode> xregs;
+  XRegArray xregs;
   ThreadStack stack;
 };
 

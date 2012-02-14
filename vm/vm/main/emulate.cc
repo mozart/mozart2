@@ -57,8 +57,7 @@ Thread::Thread(VM vm, StableNode* abstraction) :
 
   xregs.init(vm, max(Xcount, InitXRegisters));
 
-  StackEntry startEntry(abstraction, start, 0, nullptr, Gs, Ks);
-  stack.push(startEntry);
+  pushFrame(vm, abstraction, start, 0, nullptr, Gs, Ks);
 
   vm->scheduleThread(this);
 }
@@ -466,8 +465,7 @@ void Thread::pushFrame(VM vm, StableNode* abstraction,
                        StaticArray<UnstableNode> yregs,
                        StaticArray<StableNode> gregs,
                        StaticArray<StableNode> kregs) {
-  StackEntry entry(abstraction, PC, yregCount, yregs, gregs, kregs);
-  stack.push(entry);
+  stack.push_front_new(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 }
 
 void Thread::popFrame(VM vm, StableNode*& abstraction,
@@ -475,7 +473,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
                       StaticArray<UnstableNode>& yregs,
                       StaticArray<StableNode>& gregs,
                       StaticArray<StableNode>& kregs) {
-  StackEntry& entry = stack.top();
+  StackEntry& entry = stack.front();
 
   abstraction = entry.abstraction;
   PC = entry.PC;
@@ -484,7 +482,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
   gregs = entry.gregs;
   kregs = entry.kregs;
 
-  stack.pop();
+  stack.remove_front(vm);
 }
 
 void Thread::call(StableNode* target, int actualArity, bool isTailCall,

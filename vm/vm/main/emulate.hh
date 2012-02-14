@@ -39,14 +39,15 @@
  * Entry of a thread stack
  */
 struct StackEntry {
-  StackEntry(StableNode* abstraction, ProgramCounter PC,
+  StackEntry(StableNode* abstraction, ProgramCounter PC, size_t yregCount,
     StaticArray<UnstableNode> yregs, StaticArray<StableNode> gregs,
     StaticArray<StableNode> kregs) :
-    abstraction(abstraction),  PC(PC),
+    abstraction(abstraction), PC(PC), yregCount(yregCount),
     yregs(yregs), gregs(gregs), kregs(kregs) {}
 
   StableNode* abstraction;
   ProgramCounter PC;
+  size_t yregCount;
   StaticArray<UnstableNode> yregs;
   StaticArray<StableNode> gregs;
   StaticArray<StableNode> kregs;
@@ -77,14 +78,14 @@ public:
 private:
   inline
   void pushFrame(VM vm, StableNode* abstraction,
-                 ProgramCounter PC,
+                 ProgramCounter PC, size_t yregCount,
                  StaticArray<UnstableNode> yregs,
                  StaticArray<StableNode> gregs,
                  StaticArray<StableNode> kregs);
 
   inline
   void popFrame(VM vm, StableNode*& abstraction,
-                ProgramCounter& PC,
+                ProgramCounter& PC, size_t& yregCount,
                 StaticArray<UnstableNode>& yregs,
                 StaticArray<StableNode>& gregs,
                 StaticArray<StableNode>& kregs);
@@ -92,7 +93,7 @@ private:
   inline
   void call(StableNode* target, int actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
-            ProgramCounter& PC,
+            ProgramCounter& PC, size_t& yregCount,
             EnlargeableArray<UnstableNode>* xregs,
             StaticArray<UnstableNode>& yregs,
             StaticArray<StableNode>& gregs,

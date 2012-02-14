@@ -57,7 +57,7 @@ Thread::Thread(VM vm, StableNode* abstraction) :
 
   xregs.ensureSize(max(Xcount, InitXRegisters));
 
-  StackEntry startEntry(abstraction, start, nullptr, Gs, Ks);
+  StackEntry startEntry(abstraction, start, 0, nullptr, Gs, Ks);
   stack.push(startEntry);
 
   vm->scheduleThread(this);
@@ -73,11 +73,12 @@ void Thread::run() {
 
   StableNode* abstraction;
   ProgramCounter PC;
+  size_t yregCount;
   StaticArray<UnstableNode> yregs;
   StaticArray<StableNode> gregs;
   StaticArray<StableNode> kregs;
 
-  popFrame(vm, abstraction, PC, yregs, gregs, kregs);
+  popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
   // Some helpers
 
@@ -164,16 +165,18 @@ void Thread::run() {
       // Y allocations
 
       case OpAllocateY: {
-        int count = IntPC(1);
-        assert(count > 0);
+        size_t count = IntPC(1);
+        assert(count != 0);
         assert(yregs == nullptr); // Duplicate AllocateY
-        yregs = StaticArray<UnstableNode>(new UnstableNode[count], count);
+        yregCount = count;
+        yregs = vm->newStaticArray<UnstableNode>(count);
         advancePC(1); break;
       }
 
       case OpDeallocateY: {
         assert(yregs != nullptr); // Duplicate DeallocateY
-        delete[] (UnstableNode*) yregs;
+        vm->deleteStaticArray<UnstableNode>(yregs, yregCount);
+        yregCount = 0;
         yregs = nullptr;
         advancePC(0); break;
       }
@@ -229,22 +232,26 @@ void Thread::run() {
 
       case OpCallX:
         call(Reference::getStableRefFor(vm, XPC(1)), IntPC(2), false,
-             vm, abstraction, PC, xregs, yregs, gregs, kregs, preempted);
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpCallG:
         call(Reference::getStableRefFor(vm, GPC(1)), IntPC(2), false,
-             vm, abstraction, PC, xregs, yregs, gregs, kregs, preempted);
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpTailCallX:
         call(Reference::getStableRefFor(vm, XPC(1)), IntPC(2), true,
-             vm, abstraction, PC, xregs, yregs, gregs, kregs, preempted);
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpTailCallG:
         call(Reference::getStableRefFor(vm, GPC(1)), IntPC(2), true,
-             vm, abstraction, PC, xregs, yregs, gregs, kregs, preempted);
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
         break;
 
       case OpReturn: {
@@ -253,7 +260,7 @@ void Thread::run() {
           return;
         }
 
-        popFrame(vm, abstraction, PC, yregs, gregs, kregs);
+        popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
         // Do NOT advancePC() here!
         break;
@@ -451,20 +458,20 @@ void Thread::run() {
 #undef KPC
 
   // Store the current state in the stack frame, for next invocation of run()
-  pushFrame(vm, abstraction, PC, yregs, gregs, kregs);
+  pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 }
 
 void Thread::pushFrame(VM vm, StableNode* abstraction,
-                       ProgramCounter PC,
+                       ProgramCounter PC, size_t yregCount,
                        StaticArray<UnstableNode> yregs,
                        StaticArray<StableNode> gregs,
                        StaticArray<StableNode> kregs) {
-  StackEntry entry(abstraction, PC, yregs, gregs, kregs);
+  StackEntry entry(abstraction, PC, yregCount, yregs, gregs, kregs);
   stack.push(entry);
 }
 
 void Thread::popFrame(VM vm, StableNode*& abstraction,
-                      ProgramCounter& PC,
+                      ProgramCounter& PC, size_t& yregCount,
                       StaticArray<UnstableNode>& yregs,
                       StaticArray<StableNode>& gregs,
                       StaticArray<StableNode>& kregs) {
@@ -472,6 +479,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
 
   abstraction = entry.abstraction;
   PC = entry.PC;
+  yregCount = entry.yregCount;
   yregs = entry.yregs;
   gregs = entry.gregs;
   kregs = entry.kregs;
@@ -481,7 +489,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
 
 void Thread::call(StableNode* target, int actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
-                  ProgramCounter& PC,
+                  ProgramCounter& PC, size_t& yregCount,
                   EnlargeableArray<UnstableNode>* xregs,
                   StaticArray<UnstableNode>& yregs,
                   StaticArray<StableNode>& gregs,
@@ -508,13 +516,14 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
     advancePC(2);
 
     if (!isTailCall) {
-      pushFrame(vm, abstraction, PC, yregs, gregs, kregs);
+      pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
     }
 
     // Setup new frame
     abstraction = target;
     PC = start;
     xregs->ensureSize(Xcount);
+    yregCount = 0;
     yregs = nullptr;
     gregs = Gs;
     kregs = Ks;

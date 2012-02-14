@@ -51,7 +51,7 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, Node* src) {
   // threads waiting for this so that they wait for the other Variable.
   // Otherwise, we wake up the threads.
   Node& node = Reference::dereference(*self);
-  if (node.type == Variable::type) {
+  if (node.type == Variable::type()) {
     IMPLNOSELF(void, Variable, transferPendingThreads, &node,
                vm, pendingThreads);
   } else {

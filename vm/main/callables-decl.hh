@@ -85,9 +85,10 @@ class BuiltinProcedure: public Type {
 public:
   BuiltinProcedure() : Type("BuiltinProcedure") {}
 
-  static const BuiltinProcedure* const type;
-private:
-  static const BuiltinProcedure rawType;
+  static const BuiltinProcedure* const type() {
+    static const BuiltinProcedure rawType;
+    return &rawType;
+  }
 };
 
 /////////////////
@@ -159,9 +160,10 @@ class Abstraction: public Type {
 public:
   Abstraction() : Type("Abstraction") {}
 
-  static const Abstraction* const type;
-private:
-  static const Abstraction rawType;
+  static const Abstraction* const type() {
+    static const Abstraction rawType;
+    return &rawType;
+  }
 };
 
 #endif // __CALLABLES_DECL_H

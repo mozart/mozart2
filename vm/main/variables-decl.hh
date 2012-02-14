@@ -67,9 +67,10 @@ class Variable: public Type {
 public:
   Variable() : Type("Variable", false, true) {}
 
-  static const Variable* const type;
-private:
-  static const Variable rawType;
+  static const Variable* const type() {
+    static const Variable rawType;
+    return &rawType;
+  }
 };
 
 /////////////
@@ -106,11 +107,12 @@ class Unbound: public Type {
 public:
   Unbound() : Type("Unbound", false, true) {}
 
-  static const Unbound* const type;
+  static const Unbound* const type() {
+    static const Unbound rawType;
+    return &rawType;
+  }
 
   static void* build(VM) { return nullptr; }
-private:
-  static const Unbound rawType;
 };
 
 #endif // __VARIABLES_DECL_H

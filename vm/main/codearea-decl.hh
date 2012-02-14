@@ -77,9 +77,10 @@ class CodeArea: public Type {
 public:
   CodeArea() : Type("CodeArea") {}
 
-  static const CodeArea* const type;
-private:
-  static const CodeArea rawType;
+  static const CodeArea* const type() {
+    static const CodeArea rawType;
+    return &rawType;
+  }
 };
 
 #endif // __CODEAREA_DECL_H

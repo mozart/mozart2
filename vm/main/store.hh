@@ -326,18 +326,21 @@ public:
 
   typedef Node* Self;
 
-  static const Reference* const type;
+  static const Reference* const type() {
+    static const Reference rawType;
+    return &rawType;
+  }
 
   static StableNode* build(VM, StableNode* dest) { return dest; }
 
   // This is optimized for the 0- and 1-dereference paths
   // Normally it would have been only a while loop
   static Node& dereference(Node& node) {
-    if (node.type != type)
+    if (node.type != type())
       return node;
     else {
       Node* result = &IMPLNOSELF(StableNode*, Reference, dest, &node)->node;
-      if (result->type != type)
+      if (result->type != type())
         return *result;
       else
         return dereferenceLoop(result);
@@ -359,12 +362,12 @@ public:
   // This is optimized for the 0- and 1-dereference paths
   // Normally the else case would have been only a while loop
   static StableNode* getStableRefFor(VM vm, Node& node) {
-    if (node.type != type) {
+    if (node.type != type()) {
       makeFor(vm, node);
       return IMPLNOSELF(StableNode*, Reference, dest, &node);
     } else {
       StableNode* result = IMPLNOSELF(StableNode*, Reference, dest, &node);
-      if (result->node.type != type)
+      if (result->node.type != type())
         return result;
       else
         return getStableRefForLoop(result);
@@ -376,14 +379,14 @@ public:
   }
 
   static StableNode* getStableRefFor(VM vm, StableNode& node) {
-    if (node.node.type != type)
+    if (node.node.type != type())
       return &node;
     else
       return getStableRefFor(vm, node.node);
   }
 private:
   static Node& dereferenceLoop(Node* node) {
-    while (node->type == type)
+    while (node->type == type())
       node = &(IMPLNOSELF(StableNode*, Reference, dest, node)->node);
     return *node;
   }
@@ -391,12 +394,11 @@ private:
   static StableNode* getStableRefForLoop(StableNode* node) {
     do {
       node = IMPLNOSELF(StableNode*, Reference, dest, &node->node);
-    } while (node->node.type == type);
+    } while (node->node.type == type());
 
     return node;
   }
 
-  static const Reference rawType;
 };
 
 /////////////////////////

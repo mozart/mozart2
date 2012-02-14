@@ -84,7 +84,7 @@ void makeInterface(const SpecDecl* ND,
     for(int j=0; j<(int)implems.getNumArgs(); ++j) {
       std::string imp=
 	implems.getArg(j).getAsType()->getAsCXXRecordDecl()->getNameAsString();
-      to << "if (_self.type == " << imp << "::type) {\n";
+      to << "if (_self.type == " << imp << "::type()) {\n";
       to << "      return IMPL(" 
 	 << m->getResultType().getAsString(context->getPrintingPolicy())
 	 << ", " << imp << ", " << m->getNameAsString() << ", " << "&_self";

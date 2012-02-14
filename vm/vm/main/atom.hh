@@ -34,7 +34,7 @@ BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
 					   UnstableNode* result) {
   Node& rightNode = Reference::dereference(right->node);
 
-  if (rightNode.type == Atom::type) {
+  if (rightNode.type == Atom::type()) {
     const AtomImpl* r = IMPLNOSELF(const AtomImpl*, Atom, value, &rightNode);
     result->make<Boolean>(vm, value()==r);
     return BuiltinResultContinue;

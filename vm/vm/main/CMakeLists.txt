@@ -1,4 +1,4 @@
-set(interface_headers coreinterfaces.hh)
+set(interface_headers coreinterfaces.hh atom-decl.hh boolean-decl.hh)
 
 foreach(header ${interface_headers})
 add_custom_target(${header}.gen
@@ -9,11 +9,10 @@ add_custom_target(${header}.gen
   COMMENT Generating Interfaces for ${header}
   VERBATIM)
 endforeach(header)
-string(REPLACE ".hh" ".hh.gen" interface_headers_gen ${interface_headers})
+string(REPLACE ".hh" ".hh.gen" interface_headers_gen "${interface_headers}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(vm main.cc smallint.cc codearea.cc emulate.cc type.cc vm.cc
-               store.cc corebuiltins.cc coreinterfaces.cc
-               callables.cc variables.cc boolean.cc atom.cc)
+add_executable(vm main.cc emulate.cc vm.cc
+               callables.cc codearea.cc corebuiltins.cc)
 add_dependencies(vm ${interface_headers_gen})

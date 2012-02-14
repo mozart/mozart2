@@ -58,27 +58,15 @@ public:
 
   typedef Node* Self;
 
-  static const Atom* const type;
+  static const Atom* const type() {
+    static const Atom rawType;
+    return &rawType;
+  }
 
   static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
     assert(size == (size << 5) >> 5);
     return vm->atomTable.get(vm, size, data);
   }
-private:
-  static const Atom rawType;
 };
-/*
-template<>
-class Accessor<Atom, AtomImpl*> {
-public:
-  template<class... Args>
-  static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
-    type = Atom::type;
-    value.init(vm, Atom::build(vm, args...));
-  }
-  static Implementation<Atom> get(MemWord value) {
-    return Implementation<Atom>(value.get<AtomImpl*>());
-  }
-};
-*/
+
 #endif // __ATOM_DECL_H

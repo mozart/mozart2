@@ -73,7 +73,7 @@ class Accessor {
 public:
   template<class... Args>
   static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
-    type = T::type;
+    type = T::type();
     value.init(vm, T::build(vm, args...));
   }
 
@@ -89,7 +89,7 @@ public:
 
   template<class... Args>
   static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
-    type = T::type;
+    type = T::type();
     Impl* val = new (vm) Impl(vm, args...);
     value.init<Impl*>(vm, val);
   }
@@ -120,7 +120,7 @@ public:
     new (impl) Impl(vm, elemCount, implWithArray.getArray(elemCount), args...);
 
     // Fill in output parameters
-    type = T::type;
+    type = T::type();
     value.init<Impl*>(vm, impl);
   }
 

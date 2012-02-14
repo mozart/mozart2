@@ -381,10 +381,10 @@ void Thread::run() {
 
       case OpPrint: {
         Node& arg = Reference::dereference(XPC(1).node);
-        if (arg.type == SmallInt::type) {
+        if (arg.type == SmallInt::type()) {
           nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
           printf("%ld\n", value);
-        } else if (arg.type == Boolean::type) {
+        } else if (arg.type == Boolean::type()) {
           bool value = IMPLNOSELF(bool, Boolean, value, &arg);
           printf("%s\n", value ? "True" : "False");
         } else if (arg.type->isTransient()) {
@@ -532,13 +532,13 @@ BuiltinResult Thread::unify(VM vm, Node& l, Node& r) {
   Node& left = Reference::dereference(l);
   Node& right = Reference::dereference(r);
 
-  if (left.type == Unbound::type)
+  if (left.type == Unbound::type())
     return IMPL(BuiltinResult, Unbound, bind, &left, vm, &right);
-  else if (right.type == Unbound::type)
+  else if (right.type == Unbound::type())
     return IMPL(BuiltinResult, Unbound, bind, &right, vm, &left);
-  else if (left.type == Variable::type)
+  else if (left.type == Variable::type())
     return IMPL(BuiltinResult, Variable, bind, &left, vm, &right);
-  else if (right.type == Variable::type)
+  else if (right.type == Variable::type())
     return IMPL(BuiltinResult, Variable, bind, &right, vm, &left);
   else {
     // TODO Non-trivial unify

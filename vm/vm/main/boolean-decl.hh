@@ -62,11 +62,12 @@ class Boolean: public Type {
 public:
   Boolean() : Type("Boolean", true) {}
 
-  static const Boolean* const type;
+  static const Boolean* const type() {
+    static const Boolean rawType;
+    return &rawType;
+  }
 
   static bool build(VM, bool value) { return value; }
-private:
-  static const Boolean rawType;
 };
 
 #endif // __BOOLEAN_DECL_H

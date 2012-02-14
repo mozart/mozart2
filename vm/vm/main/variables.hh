@@ -36,7 +36,7 @@
 BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
                                              Suspendable* thread) {
   thread->unsetRunnable();
-  pendingThreads.push_back(thread);
+  pendingThreads.push_back(vm, thread);
 
   return self;
 }
@@ -64,14 +64,14 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, Node* src) {
 void Implementation<Variable>::resumePendingThreads(VM vm) {
   ThreadPool& threadPool = vm->getThreadPool();
 
-  for (auto iter = pendingThreads.cbegin();
-       iter != pendingThreads.cend(); iter++) {
+  for (auto iter = pendingThreads.begin();
+       iter != pendingThreads.end(); iter++) {
 
     (*iter)->setRunnable();
     threadPool.schedule(*iter);
   }
 
-  pendingThreads.clear();
+  pendingThreads.clear(vm);
 }
 
 /////////////////////

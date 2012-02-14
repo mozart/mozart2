@@ -1,4 +1,4 @@
-set(interface_headers coreinterfaces.hh atom-decl.hh boolean-decl.hh)
+set(interface_headers coreinterfaces.hh)
 
 foreach(header ${interface_headers})
 add_custom_target(${header}.gen

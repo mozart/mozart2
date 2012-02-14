@@ -29,18 +29,18 @@
 
 class SmallInt;
 
-template <>
-class Storage<SmallInt> {
-public:
-  typedef nativeint Type;
-};
+#ifndef MOZART_GENERATOR
+#include "SmallInt-implem.hh"
+#endif
 
 template <>
-class Implementation<SmallInt> {
+class Implementation<SmallInt>: Copiable, StoredAs<nativeint> {
 public:
   typedef SelfType<SmallInt>::Self Self;
 public:
   Implementation<SmallInt>(nativeint value) : _value(value) {}
+
+  static nativeint build(VM, nativeint value) { return value; }
 
   nativeint value() const { return _value; }
 
@@ -59,18 +59,6 @@ public:
   BuiltinResult addValue(Self self, VM vm, nativeint b, UnstableNode* result);
 private:
   const nativeint _value;
-};
-
-class SmallInt: public Type {
-public:
-  SmallInt() : Type("SmallInt", true) {}
-
-  static const SmallInt* const type() {
-    static const SmallInt rawType;
-    return &rawType;
-  }
-
-  static nativeint build(VM, nativeint value) { return value; }
 };
 
 #endif // __SMALLINT_DECL_H

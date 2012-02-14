@@ -311,6 +311,7 @@ template <>
 class Implementation<Reference> {
 public:
   Implementation<Reference>(StableNode* dest) : _dest(dest) {}
+  static StableNode* build(VM, StableNode* dest) { return dest; }
 
   StableNode* dest() const { return _dest; }
 private:
@@ -330,8 +331,6 @@ public:
     static const Reference rawType;
     return &rawType;
   }
-
-  static StableNode* build(VM, StableNode* dest) { return dest; }
 
   // This is optimized for the 0- and 1-dereference paths
   // Normally it would have been only a while loop

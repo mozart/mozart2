@@ -38,4 +38,16 @@ BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
   return BuiltinResultContinue;
 }
 
+BuiltinResult 
+Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
+					  ProgramCounter* start,
+					  int* Xcount,
+					  StaticArray<StableNode>* Ks) {
+  *start = _codeBlock;
+  *Xcount = _Xcount;
+  *Ks = self.getArray(_Kc);
+  
+  return BuiltinResultContinue;
+}
+
 #endif // __CODEAREA_H

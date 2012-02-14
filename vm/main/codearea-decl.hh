@@ -35,14 +35,12 @@
 
 class CodeArea;
 
-template <>
-class Storage<CodeArea> {
-public:
-  typedef ImplWithArray<Implementation<CodeArea>, StableNode> Type;
-};
+#ifndef MOZART_GENERATOR
+#include "CodeArea-implem.hh"
+#endif
 
 template <>
-class Implementation<CodeArea> {
+class Implementation<CodeArea>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<CodeArea>::Self Self;
 public:
@@ -53,34 +51,16 @@ public:
   BuiltinResult initElement(Self self, VM vm, size_t index,
                             UnstableNode* value);
 
+  inline
   BuiltinResult getCodeAreaInfo(Self self, VM vm,
                                 ProgramCounter* start, int* Xcount,
-                                StaticArray<StableNode>* Ks) {
-    *start = _codeBlock;
-    *Xcount = _Xcount;
-    *Ks = self.getArray(_Kc);
-
-    return BuiltinResultContinue;
-  }
+                                StaticArray<StableNode>* Ks);
 private:
   ByteCode* _codeBlock; // actual byte-code in this code area
   int _size;            // size of the codeBlock
 
   int _Xcount; // number of X registers used in this area
   size_t _Kc;  // number of K registers
-};
-
-/**
- * Type of a code area
- */
-class CodeArea: public Type {
-public:
-  CodeArea() : Type("CodeArea") {}
-
-  static const CodeArea* const type() {
-    static const CodeArea rawType;
-    return &rawType;
-  }
 };
 
 #endif // __CODEAREA_DECL_H

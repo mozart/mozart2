@@ -27,7 +27,8 @@
 
 #include <queue>
 
-#include "suspendable.hh"
+#include "core-forward-decl.hh"
+#include "suspendable-decl.hh"
 
 class ThreadQueue : public std::queue<Suspendable*> {
 public:

@@ -25,40 +25,20 @@
 #ifndef __SUSPENDABLE_HH
 #define __SUSPENDABLE_HH
 
-// This enum is often used for indexing in arrays
-// tpCount reflects the number of valid ThreadPriority's
-// And you probably don't want to add or remove existing ThreadPriority's
-enum ThreadPriority {
-  tpLow, tpMiddle, tpHi,
-  tpCount
-};
+#include "suspendable-decl.hh"
+#include "vm.hh"
 
-class Thread;
+Suspendable::Suspendable(VM vm, ThreadPriority priority) :
+  vm(vm), _priority(priority), _runnable(true), _terminated(false) {
 
-class Suspendable {
-public:
-  Suspendable(ThreadPriority priority = tpMiddle) :
-    _priority(priority), _runnable(true), _terminated(false) {}
+  vm->aliveThreads.insert(this);
+}
 
-  ThreadPriority getPriority() { return _priority; }
+void Suspendable::terminate() {
+  _runnable = false;
+  _terminated = true;
 
-  virtual void run() = 0;
-
-  bool isTerminated() { return _terminated; }
-  bool isRunnable() { return _runnable; }
-
-  void setRunnable() { _runnable = true; }
-  void unsetRunnable() { _runnable = false; }
-protected:
-  void terminate() {
-    _runnable = false;
-    _terminated = true;
-  }
-private:
-  ThreadPriority _priority;
-
-  bool _runnable;
-  bool _terminated;
-};
+  vm->aliveThreads.remove(this);
+}
 
 #endif /* __SUSPENDABLE_HH */

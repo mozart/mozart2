@@ -153,8 +153,6 @@ private:
 
   void waitFor(VM vm, Node* node, bool& preempted);
 
-  VM vm;
-
   XRegArray xregs;
   VMAllocatedList<StackEntry> stack;
 };

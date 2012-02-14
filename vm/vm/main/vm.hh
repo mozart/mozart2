@@ -81,6 +81,7 @@ public:
     return memoryManager;
   }
 private:
+  friend class Suspendable;
   friend class Thread;
   friend class Implementation<Atom>;
 
@@ -103,6 +104,8 @@ private:
   void* _preemptionTestData;
 
   MemoryManager memoryManager;
+
+  SuspendableList aliveThreads;
 };
 
 void* operator new (size_t size, VM vm) {
@@ -154,6 +157,8 @@ public:
     MemManagedList<T>::splice(vm->getMemoryManager(), source);
   }
 };
+
+#include "suspendable.hh"
 
 ///////////////////////////
 // Inline VirtualMachine //

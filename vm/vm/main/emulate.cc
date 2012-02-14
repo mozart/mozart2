@@ -36,9 +36,7 @@ using namespace std;
 
 const ProgramCounter NullPC = nullptr;
 
-Thread::Thread(VM vm, StableNode* abstraction) :
-  vm(vm) {
-
+Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
   // getCallInfo
 
   int arity;

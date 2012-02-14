@@ -45,8 +45,9 @@ public:
   typedef SelfType<CodeArea>::Self Self;
 public:
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 ByteCode* codeBlock, int size, int Xcount);
-
+                 ByteCode* codeBlock, int size, int Xcount)
+    : _codeBlock(codeBlock), _size(size), _Xcount(Xcount), _Kc(Kc) {}
+  
   inline
   BuiltinResult initElement(Self self, VM vm, size_t index,
                             UnstableNode* value);

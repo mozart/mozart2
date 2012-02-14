@@ -55,7 +55,7 @@ Thread::Thread(VM vm, StableNode* abstraction) :
 
   // Set up
 
-  xregs.ensureSize(max(Xcount, InitXRegisters));
+  xregs.init(vm, max(Xcount, InitXRegisters));
 
   StackEntry startEntry(abstraction, start, 0, nullptr, Gs, Ks);
   stack.push(startEntry);
@@ -67,7 +67,7 @@ void Thread::run() {
   // Local variable cache of fields
 
   VM const vm = this->vm;
-  EnlargeableArray<UnstableNode>* const xregs = &this->xregs;
+  XRegArray* const xregs = &this->xregs;
 
   // Where were we left?
 
@@ -490,7 +490,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
 void Thread::call(StableNode* target, int actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
                   ProgramCounter& PC, size_t& yregCount,
-                  EnlargeableArray<UnstableNode>* xregs,
+                  XRegArray* xregs,
                   StaticArray<UnstableNode>& yregs,
                   StaticArray<StableNode>& gregs,
                   StaticArray<StableNode>& kregs,
@@ -522,7 +522,7 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
     // Setup new frame
     abstraction = target;
     PC = start;
-    xregs->ensureSize(Xcount);
+    xregs->grow(vm, Xcount, formalArity);
     yregCount = 0;
     yregs = nullptr;
     gregs = Gs;

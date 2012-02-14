@@ -53,9 +53,6 @@ struct StackEntry {
   StaticArray<StableNode> kregs;
 };
 
-/** Thread stack */
-typedef stack<StackEntry> ThreadStack;
-
 class XRegArray {
 public:
   XRegArray() : _array(nullptr, 0), _size(0) {}
@@ -159,7 +156,7 @@ private:
   VM vm;
 
   XRegArray xregs;
-  ThreadStack stack;
+  VMAllocatedList<StackEntry> stack;
 };
 
 #endif // __EMULATE_H

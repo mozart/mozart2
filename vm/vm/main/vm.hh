@@ -53,6 +53,18 @@ public:
     memoryManager.free(ptr, size);
   }
 
+  template <class T>
+  StaticArray<T> newStaticArray(size_t size) {
+    void* memory = malloc(size * sizeof(T));
+    return StaticArray<T>(static_cast<T*>(memory), size);
+  }
+
+  template <class T>
+  void deleteStaticArray(StaticArray<T> array, size_t size) {
+    void* memory = static_cast<void*>((T*) array);
+    free(memory, size * sizeof(T));
+  }
+
   void run();
 
   inline

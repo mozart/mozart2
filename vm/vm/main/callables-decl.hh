@@ -76,6 +76,7 @@ public:
   inline
   BuiltinResult arity(Self self, VM vm, UnstableNode* result);
 private:
+  inline
   BuiltinResult raiseIllegalArity(int argc);
 
   const int _arity;
@@ -101,7 +102,12 @@ public:
   typedef SelfType<Abstraction>::Self Self;
 public:
   Implementation<Abstraction>(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                              int arity, UnstableNode* body);
+                              int arity, UnstableNode* body)
+  : _arity(arity), _Gc(Gc) {
+    _body.init(vm, *body);
+    _codeAreaCacheValid = false;
+  }
+
 
   int getArity() { return _arity; }
 

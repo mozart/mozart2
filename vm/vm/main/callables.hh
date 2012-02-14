@@ -42,6 +42,11 @@ BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
   return BuiltinResultContinue;
 }
 
+BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
+  // TODO raiseIllegalArity
+  return BuiltinResultContinue;
+}
+
 ////////////////////////
 // Inline Abstraction //
 ////////////////////////

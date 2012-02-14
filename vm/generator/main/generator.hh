@@ -27,4 +27,5 @@
 
 typedef clang::ClassTemplateSpecializationDecl SpecDecl;
 void handleInterface(const SpecDecl* ND);
+void handleImplementation(const SpecDecl* ND);
 extern clang::ASTContext* context;

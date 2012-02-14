@@ -33,20 +33,18 @@ typedef enum BOOL_OR_NOT_BOOL {
   bFalse, bTrue, bNotBool
 } BoolOrNotBool;
 
-template <>
-class Storage<Boolean> {
-public:
-  typedef bool Type;
-};
+#ifndef MOZART_GENERATOR
+#include "Boolean-implem.hh"
+#endif
 
 template <>
-class Implementation<Boolean> {
+class Implementation<Boolean>: Copiable, StoredAs<bool> {
 public:
   typedef SelfType<Boolean>::Self Self;
 public:
-  Implementation<Boolean>(const Implementation<Boolean>& src) :
-    _value(src.value()) {}
   Implementation<Boolean>(bool value) : _value(value) {}
+
+  static bool build(VM, bool value) { return value; }
 
   bool value() const { return _value; }
 
@@ -56,18 +54,6 @@ public:
   }
 private:
   const bool _value;
-};
-
-class Boolean: public Type {
-public:
-  Boolean() : Type("Boolean", true) {}
-
-  static const Boolean* const type() {
-    static const Boolean rawType;
-    return &rawType;
-  }
-
-  static bool build(VM, bool value) { return value; }
 };
 
 #endif // __BOOLEAN_DECL_H

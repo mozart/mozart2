@@ -50,5 +50,9 @@ int main(int argc, char* argv[]) {
       handleInterface(ND);
       continue;
     }
+    if(ND->getNameAsString()=="Implementation"){
+      handleImplementation(ND);
+      continue;
+    }
   }
 }

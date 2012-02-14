@@ -30,18 +30,21 @@
 
 class Atom;
 
-template <>
-class Storage<Atom> {
-public:
-  typedef AtomImpl* Type;
-};
+#ifndef MOZART_GENERATOR
+#include "Atom-implem.hh"
+#endif
 
 template <>
-class Implementation<Atom> {
+class Implementation<Atom>: Copiable, StoredAs<AtomImpl*> {
 public:
   typedef SelfType<Atom>::Self Self;
 
   Implementation<Atom>(const AtomImpl* value) : _value(value) {}
+
+  static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
+    assert(size == (size << 5) >> 5);
+    return vm->atomTable.get(vm, size, data);
+  }
 
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right, UnstableNode* result);
@@ -50,23 +53,6 @@ public:
 
 private:
   const AtomImpl* _value;
-};
-
-class Atom: public Type {
-public:
-  Atom() : Type("Atom", true) {}
-
-  typedef Node* Self;
-
-  static const Atom* const type() {
-    static const Atom rawType;
-    return &rawType;
-  }
-
-  static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
-    assert(size == (size << 5) >> 5);
-    return vm->atomTable.get(vm, size, data);
-  }
 };
 
 #endif // __ATOM_DECL_H

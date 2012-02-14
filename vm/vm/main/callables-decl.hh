@@ -40,6 +40,10 @@ typedef BuiltinResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
 
 class BuiltinProcedure;
 
+#ifndef MOZART_GENERATOR
+#include "BuiltinProcedure-implem.hh"
+#endif
+
 template <>
 class Implementation<BuiltinProcedure> {
 public:
@@ -78,36 +82,21 @@ private:
   const OzBuiltin _builtin;
 };
 
-/**
- * Type of a builtin procedure
- */
-class BuiltinProcedure: public Type {
-public:
-  BuiltinProcedure() : Type("BuiltinProcedure") {}
-
-  static const BuiltinProcedure* const type() {
-    static const BuiltinProcedure rawType;
-    return &rawType;
-  }
-};
-
 /////////////////
 // Abstraction //
 /////////////////
 
 class Abstraction;
 
-template <>
-class Storage<Abstraction> {
-public:
-  typedef ImplWithArray<Implementation<Abstraction>, StableNode> Type;
-};
+#ifndef MOZART_GENERATOR
+#include "Abstraction-implem.hh"
+#endif
 
 /**
  * Abstraction value, i.e., user-defined procedure
  */
 template <>
-class Implementation<Abstraction> {
+class Implementation<Abstraction>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
@@ -151,19 +140,6 @@ private:
   ProgramCounter _start;
   int _Xcount;
   StaticArray<StableNode> _Ks;
-};
-
-/**
- * Type of an abstraction
- */
-class Abstraction: public Type {
-public:
-  Abstraction() : Type("Abstraction") {}
-
-  static const Abstraction* const type() {
-    static const Abstraction rawType;
-    return &rawType;
-  }
 };
 
 #endif // __CALLABLES_DECL_H

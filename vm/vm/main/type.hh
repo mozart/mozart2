@@ -60,5 +60,11 @@ struct NoAutoWait{};
 template <class T>
 class Implementation {
 };
+struct Copiable{};
+struct Transient{};
+template<class>
+struct StoredAs{};
+template<class>
+struct StoredWithArrayOf{};
 
 #endif // __TYPE_H

@@ -49,7 +49,7 @@ public:
   ThreadPool& getThreadPool() { return threadPool; }
 private:
   friend class Thread;
-  friend class Atom;
+  friend class Implementation<Atom>;
 
   VirtualMachine(const VirtualMachine& src) {}
 

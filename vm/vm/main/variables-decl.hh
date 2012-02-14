@@ -37,8 +37,12 @@ using namespace std;
 
 class Variable;
 
+#ifndef MOZART_GENERATOR
+#include "Variable-implem.hh"
+#endif
+
 template <>
-class Implementation<Variable> {
+class Implementation<Variable>: Transient {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
@@ -60,59 +64,31 @@ private:
   list<Suspendable*> pendingThreads;
 };
 
-/**
- * Type of a dataflow variable
- */
-class Variable: public Type {
-public:
-  Variable() : Type("Variable", false, true) {}
-
-  static const Variable* const type() {
-    static const Variable rawType;
-    return &rawType;
-  }
-};
-
 /////////////
 // Unbound //
 /////////////
 
 class Unbound;
 
-template <>
-class Storage<Unbound> {
-public:
-  typedef void* Type;
-};
+#ifndef MOZART_GENERATOR
+#include "Unbound-implem.hh"
+#endif
 
 template <>
-class Implementation<Unbound> {
+class Implementation<Unbound>: Transient, StoredAs<void*> {
 public:
   typedef SelfType<Unbound>::Self Self;
 public:
   Implementation<Unbound>() {}
   Implementation<Unbound>(void* dummy) {}
 
+  static void* build(VM) { return nullptr; }
+
   inline
   BuiltinResult wait(Self self, VM vm, Suspendable* thread);
 
   inline
   BuiltinResult bind(Self self, VM vm, Node* src);
-};
-
-/**
- * Type of an unbound variable (optimized for the no-wait case)
- */
-class Unbound: public Type {
-public:
-  Unbound() : Type("Unbound", false, true) {}
-
-  static const Unbound* const type() {
-    static const Unbound rawType;
-    return &rawType;
-  }
-
-  static void* build(VM) { return nullptr; }
 };
 
 #endif // __VARIABLES_DECL_H

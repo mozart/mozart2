@@ -27,10 +27,6 @@
 
 #include "store.hh"
 
-#include <list>
-
-using namespace std;
-
 //////////////
 // Variable //
 //////////////
@@ -57,11 +53,11 @@ private:
   inline
   void resumePendingThreads(VM vm);
 
-  void transferPendingThreads(VM vm, list<Suspendable*>& source) {
-    pendingThreads.splice(pendingThreads.end(), source);
+  void transferPendingThreads(VM vm, VMAllocatedList<Suspendable*>& source) {
+    pendingThreads.splice(vm, source);
   }
 
-  list<Suspendable*> pendingThreads;
+  VMAllocatedList<Suspendable*> pendingThreads;
 };
 
 /////////////

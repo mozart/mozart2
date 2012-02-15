@@ -22,18 +22,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "gcollect.hh"
+#ifndef __GCTYPES_H
+#define __GCTYPES_H
 
-#include "gctypes.hh"
+#include "gctypes-decl.hh"
 
-//////////////////////
-// GarbageCollector //
-//////////////////////
+#ifndef MOZART_GENERATOR
+#include "GCedToStable-implem.hh"
+#endif
 
-void GarbageCollector::doGC() {
-  // Swap spaces
-  getMemoryManager().swapWith(secondMemManager);
-  getMemoryManager().init();
+//////////////////
+// GCedToStable //
+//////////////////
 
-  // TODO Actual GC algorithm
+void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
+  StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+  to.init(gc->vm, *dest);
 }
+
+void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
+  StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+  to.copy(gc->vm, *dest);
+}
+
+//////////////////
+// GCedToStable //
+//////////////////
+
+void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
+  UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+  to.init(gc->vm, *dest);
+}
+
+void GCedToUnstableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
+  UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+  to.copy(gc->vm, *dest);
+}
+
+#endif // __GCTYPES_H

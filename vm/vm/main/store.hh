@@ -60,6 +60,7 @@ public:
  */
 class StableNode {
 public:
+  inline void init(VM vm, StableNode& from);
   inline void init(VM vm, UnstableNode& from);
 private:
   friend class UnstableNode;
@@ -423,6 +424,13 @@ private:
 void Node::reset(VM vm) {
   type = nullptr;
   value.init<void*>(vm, nullptr);
+}
+
+void StableNode::init(VM vm, StableNode& from) {
+  if (from.node.type->isCopiable())
+    node = from.node;
+  else
+    node.make<Reference>(vm, &from);
 }
 
 void StableNode::init(VM vm, UnstableNode& from) {

@@ -45,12 +45,27 @@ struct StackEntry {
     abstraction(abstraction), PC(PC), yregCount(yregCount),
     yregs(yregs), gregs(gregs), kregs(kregs) {}
 
+  inline
+  StackEntry(GC gc, StackEntry& from);
+
+  inline
+  void beforeGC(VM vm);
+
+  inline
+  void afterGC(VM vm);
+
   StableNode* abstraction;
-  ProgramCounter PC;
+
+  union {
+    ProgramCounter PC;  // Normal
+    ptrdiff_t PCOffset; // During GC
+  };
+
   size_t yregCount;
   StaticArray<UnstableNode> yregs;
-  StaticArray<StableNode> gregs;
-  StaticArray<StableNode> kregs;
+
+  StaticArray<StableNode> gregs; // Irrelevant during GC
+  StaticArray<StableNode> kregs; // Irrelevant during GC
 };
 
 class XRegArray {
@@ -117,6 +132,9 @@ public:
   Thread(GC gc, Thread& from);
 
   void run();
+
+  void beforeGC();
+  void afterGC();
 
   Suspendable* gCollect(GC gc);
 protected:

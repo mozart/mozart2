@@ -55,6 +55,9 @@ public:
   void setRunnable() { _runnable = true; }
   void unsetRunnable() { _runnable = false; }
 
+  virtual void beforeGC() {}
+  virtual void afterGC() {}
+
   virtual Suspendable* gCollect(GC gc) = 0;
 protected:
   inline

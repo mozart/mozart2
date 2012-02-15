@@ -31,9 +31,21 @@
 //////////////////////
 
 void GarbageCollector::doGC() {
+  // Before GC
+  for (auto iterator = vm->aliveThreads.begin();
+       iterator != vm->aliveThreads.end(); iterator++) {
+    (*iterator)->beforeGC();
+  }
+
   // Swap spaces
   getMemoryManager().swapWith(secondMemManager);
   getMemoryManager().init();
 
   // TODO Actual GC algorithm
+
+  // After GC
+  for (auto iterator = vm->aliveThreads.begin();
+       iterator != vm->aliveThreads.end(); iterator++) {
+    (*iterator)->afterGC();
+  }
 }

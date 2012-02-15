@@ -31,6 +31,7 @@ void makeImplementation(std::string name,
 			bool copiable,
 			bool transient,
 			std::string storage,
+			std::string base,
 			llvm::raw_fd_ostream& to);
 
 void handleImplementation(const SpecDecl* ND) {
@@ -43,6 +44,7 @@ void handleImplementation(const SpecDecl* ND) {
   bool copiable=false;
   bool transient=false;
   std::string storage="";
+  std::string base="Type";
   for(CXXRecordDecl::base_class_const_iterator i=ND->bases_begin(), e=ND->bases_end();
       i!=e;
       ++i) {
@@ -57,18 +59,21 @@ void handleImplementation(const SpecDecl* ND) {
     } else if(argLabel=="StoredWithArrayOf"){
       storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
       storage="ImplWithArray<Implementation<" + name + ">, " + storage + ">";
+    } else if(argLabel=="BasedOn"){
+      base=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
     } else {}
   }
   std::string err;
   llvm::raw_fd_ostream to((name+"-implem.hh").c_str(),err);
   assert(err=="");
-  makeImplementation(name, copiable, transient, storage, to);
+  makeImplementation(name, copiable, transient, storage, base, to);
 }
 
 void makeImplementation(std::string name,
 			bool copiable,
 			bool transient,
 			std::string storage,
+			std::string base,
 			llvm::raw_fd_ostream& to){
   if(storage != ""){
     to << "template <>\n";
@@ -77,9 +82,9 @@ void makeImplementation(std::string name,
     to << "  typedef " << storage << " Type;\n";
     to << "};\n\n";
   }
-  to << "class "<< name << ": public Type {\n";
+  to << "class "<< name << ": public " << base << " {\n";
   to << "public:\n";
-  to << "  " << name << "() : Type(\"" << name << "\", " << copiable << ", " << transient <<") {}\n";
+  to << "  " << name << "() : " << base << "(\"" << name << "\", " << copiable << ", " << transient <<") {}\n";
   to << "  static const " << name << "* const type() {\n";
   to << "    static const " << name << " rawType;\n";
   to << "    return &rawType;\n";

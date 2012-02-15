@@ -237,6 +237,8 @@ void Thread::run() {
         assert(yregs == nullptr); // Duplicate AllocateY
         yregCount = count;
         yregs = vm->newStaticArray<UnstableNode>(count);
+        for (size_t i = 0; i < count; i++)
+          yregs[i].make<SmallInt>(vm, 0);
         advancePC(1); break;
       }
 

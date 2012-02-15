@@ -60,6 +60,17 @@ Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
   vm->scheduleThread(this);
 }
 
+Thread::Thread(GC gc, Thread& from) : Suspendable(gc, from) {
+  // X registers
+
+  size_t Xcount = from.xregs.size();
+  xregs.init(vm, Xcount);
+  for (size_t i = 0; i < Xcount; i++)
+    gc->gcUnstableNode(from.xregs[i], xregs[i]);
+
+  // TODO Stack frame
+}
+
 void Thread::run() {
   // Local variable cache of fields
 
@@ -568,6 +579,10 @@ void Thread::waitFor(VM vm, Node* node, bool& preempted) {
 
   if (!isRunnable())
     preempted = true;
+}
+
+Suspendable* Thread::gCollect(GC gc) {
+  return new (gc->vm) Thread(gc, *this);
 }
 
 #undef advancePC

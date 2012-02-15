@@ -34,6 +34,16 @@ Suspendable::Suspendable(VM vm, ThreadPriority priority) :
   vm->aliveThreads.insert(this);
 }
 
+Suspendable::Suspendable(GC gc, Suspendable& from) :
+  vm(gc->vm) {
+
+  _priority = from._priority;
+  _runnable = from._runnable;
+  _terminated = from._terminated;
+
+  vm->aliveThreads.insert(this);
+}
+
 void Suspendable::terminate() {
   _runnable = false;
   _terminated = true;

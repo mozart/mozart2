@@ -26,11 +26,18 @@
 
 #include "gctypes.hh"
 
+#include <iostream>
+
 //////////////////////
 // GarbageCollector //
 //////////////////////
 
 void GarbageCollector::doGC() {
+  if (OzDebugGC) {
+    cerr << "Before GC: " << getMemoryManager().getAllocated();
+    cerr << " bytes used." << endl;
+  }
+
   // Before GC
   for (auto iterator = vm->aliveThreads.begin();
        iterator != vm->aliveThreads.end(); iterator++) {
@@ -69,6 +76,11 @@ void GarbageCollector::doGC() {
        iterator != vm->aliveThreads.end(); iterator++) {
     (*iterator)->afterGC();
   }
+
+  if (OzDebugGC) {
+    cerr << "After GC: " << getMemoryManager().getAllocated();
+    cerr << " bytes used." << endl;
+  }
 }
 
 void GarbageCollector::gcOneThread(Suspendable*& thread) {
@@ -82,11 +94,19 @@ void GarbageCollector::gcOneNode(NodeType*& list) {
 
   Node* from = node->gcFrom;
 
+  if (OzDebugGC) {
+    cerr << "gc node " << from << " of type " << from->type->getName();
+    cerr << "   \tto node " << node << endl;
+  }
+
   from->type->gCollect(this, *from, *node);
   from->make<GCedType>(vm, node);
 }
 
 void GarbageCollector::gcOneStableRef(StableNode*& ref) {
+  if (OzDebugGC)
+    cerr << "gc stable ref from " << ref << " to " << &ref << endl;
+
   Node& from = Reference::dereference(ref->node);
 
   if (from.type == GCedToStable::type()) {

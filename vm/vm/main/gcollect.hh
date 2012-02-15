@@ -28,6 +28,14 @@
 #include "gcollect-decl.hh"
 #include "vm.hh"
 #include "store.hh"
+#include "suspendable.hh"
+
+void ThreadQueue::gCollect(GC gc) {
+  for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
+    Suspendable*& thread = *iterator;
+    gc->gcThread(thread, thread);
+  }
+}
 
 //////////////////////
 // GarbageCollector //

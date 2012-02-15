@@ -113,7 +113,12 @@ class Thread : public Suspendable {
 public:
   Thread(VM vm, StableNode* abstraction);
 
+  inline
+  Thread(GC gc, Thread& from);
+
   void run();
+
+  Suspendable* gCollect(GC gc);
 protected:
   void terminate() {
     Suspendable::terminate();

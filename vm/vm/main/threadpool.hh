@@ -40,6 +40,10 @@ public:
       }
     }
   }
+
+  // Implemented in gcollect.hh
+  inline
+  void gCollect(GC gc);
 };
 
 const int HiToMiddlePriorityRatio = 10;
@@ -71,6 +75,12 @@ public:
   void reschedule(Suspendable* thread) {
     unschedule(thread);
     schedule(thread);
+  }
+
+  void gCollect(GC gc) {
+    queues[tpLow].gCollect(gc);
+    queues[tpMiddle].gCollect(gc);
+    queues[tpHi].gCollect(gc);
   }
 
   inline

@@ -42,6 +42,9 @@ public:
   inline
   Suspendable(VM vm, ThreadPriority priority = tpMiddle);
 
+  inline
+  Suspendable(GC gc, Suspendable& from);
+
   ThreadPriority getPriority() { return _priority; }
 
   virtual void run() = 0;
@@ -51,6 +54,8 @@ public:
 
   void setRunnable() { _runnable = true; }
   void unsetRunnable() { _runnable = false; }
+
+  virtual Suspendable* gCollect(GC gc) = 0;
 protected:
   inline
   void terminate();

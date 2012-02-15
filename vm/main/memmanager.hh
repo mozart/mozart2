@@ -117,6 +117,10 @@ public:
       ::free(ptr);
     }
   }
+
+  size_t getAllocated() {
+    return _allocated;
+  }
 private:
   size_t bucketFor(size_t size) {
     return (size + (AllocGranularity-1)) / AllocGranularity;

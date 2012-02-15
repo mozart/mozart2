@@ -31,17 +31,31 @@
 #include "GCedToStable-implem.hh"
 #endif
 
+#include <iostream>
+
 //////////////////
 // GCedToStable //
 //////////////////
 
 void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
   StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+
+  if (OzDebugGC) {
+    cerr << "  (dest = " << dest << " with type ";
+    cerr << dest->node.type->getName() << ")" << endl;
+  }
+
   to.init(gc->vm, *dest);
 }
 
 void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
   StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+
+  if (OzDebugGC) {
+    cerr << "  (dest = " << dest << " with type ";
+    cerr << dest->node.type->getName() << ")" << endl;
+  }
+
   to.copy(gc->vm, *dest);
 }
 
@@ -51,11 +65,23 @@ void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
 
 void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
   UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+
+  if (OzDebugGC) {
+    cerr << "  (dest = " << dest << " with type ";
+    cerr << dest->node.type->getName() << ")" << endl;
+  }
+
   to.init(gc->vm, *dest);
 }
 
 void GCedToUnstableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
   UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+
+  if (OzDebugGC) {
+    cerr << "  (dest = " << dest << " with type ";
+    cerr << dest->node.type->getName() << ")" << endl;
+  }
+
   to.copy(gc->vm, *dest);
 }
 

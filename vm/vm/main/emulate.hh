@@ -34,6 +34,7 @@
 #include "ozlimits.hh"
 #include "codearea.hh"
 #include "suspendable.hh"
+#include "smallint-decl.hh"
 
 /**
  * Entry of a thread stack
@@ -75,6 +76,9 @@ public:
   void init(VM vm, size_t initialSize) {
     assert(_array == nullptr);
     allocArray(vm, initialSize);
+
+    for (size_t i = 0; i < initialSize; i++)
+      _array[i].make<SmallInt>(vm, 0);
   }
 
   void grow(VM vm, size_t newSize, size_t elemsToKeep) {
@@ -90,6 +94,9 @@ public:
       _array[i] = oldArray[i];
 
     freeArray(vm, oldArray, oldSize);
+
+    for (size_t i = elemsToKeep; i < newSize; i++)
+      _array[i].make<SmallInt>(vm, 0);
   }
 
   void release(VM vm) {

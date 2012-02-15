@@ -66,5 +66,7 @@ template<class>
 struct StoredAs{};
 template<class>
 struct StoredWithArrayOf{};
+template<class>
+struct BasedOn{};
 
 #endif // __TYPE_H

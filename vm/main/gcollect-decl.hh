@@ -65,6 +65,16 @@ public:
 
   VM vm;
 private:
+  inline
+  void gcOneThread(Suspendable*& thread);
+
+  template <class NodeType, class GCedType>
+  inline
+  void gcOneNode(NodeType*& list);
+
+  inline
+  void gcOneStableRef(StableNode*& ref);
+
   MemoryManager secondMemManager;
 
   MemManagedList<Suspendable**> threadsToGC;

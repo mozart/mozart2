@@ -41,11 +41,62 @@ void GarbageCollector::doGC() {
   getMemoryManager().swapWith(secondMemManager);
   getMemoryManager().init();
 
-  // TODO Actual GC algorithm
+  // Forget the list of alive threads
+  vm->aliveThreads = SuspendableList();
+
+  // Root of GC are runnable threads
+  vm->getThreadPool().gCollect(this);
+
+  // GC loop
+  while (!threadsToGC.empty() ||
+         stableNodesToGC != nullptr ||
+         unstableNodesToGC != nullptr ||
+         !stableRefsToGC.empty()) {
+
+    if (!threadsToGC.empty()) {
+      gcOneThread(*threadsToGC.pop_front(secondMemManager));
+    } else if (stableNodesToGC != nullptr) {
+      gcOneNode<StableNode, GCedToStable>(stableNodesToGC);
+    } else if (unstableNodesToGC != nullptr) {
+      gcOneNode<UnstableNode, GCedToUnstable>(unstableNodesToGC);
+    } else {
+      gcOneStableRef(*stableRefsToGC.pop_front(secondMemManager));
+    }
+  }
 
   // After GC
   for (auto iterator = vm->aliveThreads.begin();
        iterator != vm->aliveThreads.end(); iterator++) {
     (*iterator)->afterGC();
+  }
+}
+
+void GarbageCollector::gcOneThread(Suspendable*& thread) {
+  thread = thread->gCollect(this);
+}
+
+template <class NodeType, class GCedType>
+void GarbageCollector::gcOneNode(NodeType*& list) {
+  NodeType* node = list;
+  list = node->gcNext;
+
+  Node* from = node->gcFrom;
+
+  from->type->gCollect(this, *from, *node);
+  from->make<GCedType>(vm, node);
+}
+
+void GarbageCollector::gcOneStableRef(StableNode*& ref) {
+  Node& from = Reference::dereference(ref->node);
+
+  if (from.type == GCedToStable::type()) {
+    StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+    ref = Reference::getStableRefFor(vm, *dest);
+  } else if (from.type == GCedToUnstable::type()) {
+    UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+    ref = Reference::getStableRefFor(vm, *dest);
+  } else {
+    ref = new (vm) StableNode;
+    from.type->gCollect(this, from, *ref);
   }
 }

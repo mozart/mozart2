@@ -71,5 +71,6 @@ template<class>
 struct StoredWithArrayOf{};
 template<class>
 struct BasedOn{};
+struct NoAutoGCollect{};
 
 #endif // __TYPE_H

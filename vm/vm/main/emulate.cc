@@ -36,6 +36,60 @@ using namespace std;
 
 const ProgramCounter NullPC = nullptr;
 
+////////////////
+// StackEntry //
+////////////////
+
+StackEntry::StackEntry(GC gc, StackEntry& from) {
+  gc->gcStableRef(from.abstraction, abstraction);
+  PCOffset = from.PCOffset;
+  yregCount = from.yregCount;
+
+  if (yregCount == 0)
+    yregs = nullptr;
+  else {
+    yregs = gc->vm->newStaticArray<UnstableNode>(yregCount);
+    for (size_t i = 0; i < yregCount; i++)
+      gc->gcUnstableNode(from.yregs[i], yregs[i]);
+  }
+
+  // gregs and kregs are irrelevant
+}
+
+void StackEntry::beforeGC(VM vm) {
+  int arity;
+  StableNode* body;
+  ProgramCounter start = nullptr;
+  int Xcount;
+  StaticArray<StableNode> Gs;
+  StaticArray<StableNode> Ks;
+
+  Callable callable = abstraction->node;
+  callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+
+  PCOffset = PC - start;
+}
+
+void StackEntry::afterGC(VM vm) {
+  int arity;
+  StableNode* body;
+  ProgramCounter start = nullptr;
+  int Xcount;
+  StaticArray<StableNode> Gs;
+  StaticArray<StableNode> Ks;
+
+  Callable callable = abstraction->node;
+  callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+
+  PC = start + PCOffset;
+  gregs = Gs;
+  kregs = Ks;
+}
+
+////////////
+// Thread //
+////////////
+
 Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
   // getCallInfo
 
@@ -68,7 +122,12 @@ Thread::Thread(GC gc, Thread& from) : Suspendable(gc, from) {
   for (size_t i = 0; i < Xcount; i++)
     gc->gcUnstableNode(from.xregs[i], xregs[i]);
 
-  // TODO Stack frame
+  // Stack frame
+
+  for (auto iterator = from.stack.begin();
+       iterator != from.stack.end(); iterator++) {
+    stack.push_back_new(vm, gc, *iterator);
+  }
 }
 
 void Thread::run() {
@@ -579,6 +638,20 @@ void Thread::waitFor(VM vm, Node* node, bool& preempted) {
 
   if (!isRunnable())
     preempted = true;
+}
+
+void Thread::beforeGC()
+{
+  VM vm = this->vm;
+  for (auto iterator = stack.begin(); iterator != stack.end(); iterator++)
+    (*iterator).beforeGC(vm);
+}
+
+void Thread::afterGC()
+{
+  VM vm = this->vm;
+  for (auto iterator = stack.begin(); iterator != stack.end(); iterator++)
+    (*iterator).afterGC(vm);
 }
 
 Suspendable* Thread::gCollect(GC gc) {

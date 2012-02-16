@@ -22,74 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_H
-#define __VM_H
-
-#include <stdlib.h>
-
 #include "memmanager.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "atomtable.hh"
 
-typedef bool (*PreemptionTest)(void* data);
+#include <new>
+#include <iostream>
 
-class VirtualMachine {
-public:
-  VirtualMachine(PreemptionTest preemptionTest,
-                 void* preemptionTestData = nullptr) :
-    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData) {
+using namespace std;
 
-    memoryManager.init();
-  }
+///////////////////
+// MemoryManager //
+///////////////////
 
-  StableNode* newVariable();
+void* MemoryManager::getMoreMemory(size_t size) {
+  // TODO  Get more memory a memory manager is running short
 
-  void run();
+  cerr << "FATAL: Failed to allocate " << size << " bytes" << endl;
+  cerr << " (already allocated ";
+  cerr << (_allocated / MegaBytes) << " MB)" << endl;
 
-  inline
-  bool testPreemption();
-
-  ThreadPool& getThreadPool() { return threadPool; }
-private:
-  friend class Thread;
-  friend class Implementation<Atom>;
-
-  VirtualMachine(const VirtualMachine& src) {}
-
-  friend void* operator new (size_t size, VM vm);
-  friend void* operator new[] (size_t size, VM vm);
-
-  void* getMemory(size_t size) {
-    return memoryManager.getMemory(size);
-  }
-
-  // Called from the constructor of Thread
-  void scheduleThread(Thread* thread);
-
-  ThreadPool threadPool;
-  AtomTable atomTable;
-
-  PreemptionTest _preemptionTest;
-  void* _preemptionTestData;
-
-  MemoryManager memoryManager;
-};
-
-void* operator new (size_t size, VM vm) {
-  return vm->getMemory(size);
+  bad_alloc ba;
+  throw ba;
 }
-
-void* operator new[] (size_t size, VM vm) {
-  return vm->getMemory(size);
-}
-
-///////////////////////////
-// Inline VirtualMachine //
-///////////////////////////
-
-bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData);
-}
-
-#endif // __VM_H

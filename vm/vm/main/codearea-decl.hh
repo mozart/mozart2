@@ -29,6 +29,8 @@
 #include "opcodes.hh"
 #include "arrays.hh"
 
+#include <cstring>
+
 //////////////
 // CodeArea //
 //////////////
@@ -46,8 +48,11 @@ public:
 public:
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
                  ByteCode* codeBlock, int size, int Xcount)
-    : _codeBlock(codeBlock), _size(size), _Xcount(Xcount), _Kc(Kc) {}
-  
+    : _size(size), _Xcount(Xcount), _Kc(Kc) {
+
+    _setCodeBlock(vm, codeBlock, size);
+  }
+
   inline
   BuiltinResult initElement(Self self, VM vm, size_t index,
                             UnstableNode* value);
@@ -57,6 +62,11 @@ public:
                                 ProgramCounter* start, int* Xcount,
                                 StaticArray<StableNode>* Ks);
 private:
+  void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {
+    _codeBlock = new (vm) ByteCode[size / sizeof(ByteCode)];
+    std::memcpy(_codeBlock, codeBlock, size);
+  }
+
   ByteCode* _codeBlock; // actual byte-code in this code area
   int _size;            // size of the codeBlock
 

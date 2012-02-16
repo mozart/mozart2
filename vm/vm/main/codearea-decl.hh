@@ -53,6 +53,10 @@ public:
     _setCodeBlock(vm, codeBlock, size);
   }
 
+  size_t getArraySize() {
+    return _Kc;
+  }
+
   inline
   BuiltinResult initElement(Self self, VM vm, size_t index,
                             UnstableNode* value);

@@ -211,8 +211,12 @@ public:
     return get().operator[](i);
   }
 
-  StaticArray<Elem> getArray(size_t size) {
-    return get().getArray(size);
+  size_t getArraySize() {
+    return get()->getArraySize();
+  }
+
+  StaticArray<Elem> getArray() {
+    return get().getArray(getArraySize());
   }
 private:
   ImplWithArray<Impl, Elem> get() {

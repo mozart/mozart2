@@ -108,6 +108,9 @@ public:
     _codeAreaCacheValid = false;
   }
 
+  size_t getArraySize() {
+    return _Gc;
+  }
 
   int getArity() { return _arity; }
 

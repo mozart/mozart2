@@ -95,7 +95,7 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
   *body = &_body;
   *start = _start;
   *Xcount = _Xcount;
-  *Gs = self.getArray(_Gc);
+  *Gs = self.getArray();
   *Ks = _Ks;
 
   return BuiltinResultContinue;

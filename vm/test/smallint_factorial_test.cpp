@@ -25,9 +25,6 @@ class SmallIntFactorialTest : public ::testing::Test {
 
   VM vm;
 
-  // Define immediate constants
-  UnstableNode zero, one, minusOne, minusTwo, nnode;
-
   SmallIntFactorialTest() {
 
     VirtualMachine virtualMachine(simplePreemption);
@@ -35,13 +32,13 @@ class SmallIntFactorialTest : public ::testing::Test {
 
     const nativeint N = 25; // time of the order of seconds on a 2-3 GHz CPU
 
-    //init the builtin
     // Define the builtins
     UnstableNode builtinCreateThread;
     builtinCreateThread.make<BuiltinProcedure>(
-     vm, 1, (OzBuiltin) &builtins::createThread);
+					       vm, 1, (OzBuiltin) &builtins::createThread);
 
-    //init constants
+    // Define immediate constants
+    UnstableNode zero, one, minusOne, minusTwo, nnode;
     zero.make<SmallInt>(vm, 0);
     one.make<SmallInt>(vm, 1);
     minusOne.make<SmallInt>(vm, -1);

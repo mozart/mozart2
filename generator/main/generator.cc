@@ -26,33 +26,36 @@
 
 using namespace clang;
 
-typedef ClassTemplateSpecializationDecl SpecDecl;
-
 clang::ASTContext* context;
 
 int main(int argc, char* argv[]) {
-  llvm::IntrusiveRefCntPtr< DiagnosticsEngine > Diags;
+  llvm::IntrusiveRefCntPtr<DiagnosticsEngine> Diags;
   FileSystemOptions FileSystemOpts;
-  ASTUnit *u = ASTUnit::LoadFromASTFile(std::string(argv[1]),
-					Diags, FileSystemOpts,
-					false, 0, 0, true);
-  context = &(u->getASTContext());
-  PrintingPolicy p = context->getPrintingPolicy();
-  p.Bool=1;
-  context->setPrintingPolicy(p);
+
+  // Parse source file
+  ASTUnit *unit = ASTUnit::LoadFromASTFile(std::string(argv[1]),
+                                           Diags, FileSystemOpts,
+                                           false, 0, 0, true);
+
+  // Setup printing policy
+  // We want the bool type to be printed as "bool"
+  context = &(unit->getASTContext());
+  PrintingPolicy policy = context->getPrintingPolicy();
+  policy.Bool=1;
+  context->setPrintingPolicy(policy);
+
+  // Loop over Interface<T> and Implementation<T>
   DeclContext* ds=context->getTranslationUnitDecl();
-  for(DeclContext::decl_iterator i=ds->decls_begin(), e=ds->decls_end();
-      i!=e; ++i) {
-    Decl* D=*i;
+  for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
+    Decl* D = *iter;
     const SpecDecl* ND = dyn_cast<SpecDecl>(D);
-    if(!ND) continue;
-    if(ND->getNameAsString()=="Interface"){
+
+    if (!ND) {
+      // Do nothing
+    } else if (ND->getNameAsString() == "Interface") {
       handleInterface(ND);
-      continue;
-    }
-    if(ND->getNameAsString()=="Implementation"){
+    } else if (ND->getNameAsString() == "Implementation") {
       handleImplementation(ND);
-      continue;
     }
   }
 }

@@ -49,8 +49,13 @@ class Implementation<BuiltinProcedure> {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
 public:
-  Implementation<BuiltinProcedure>(VM, int arity, OzBuiltin builtin) :
+  Implementation(VM, int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
+
+  Implementation(VM vm, GC gc, Self from) {
+    _arity = from->_arity;
+    _builtin = from->_builtin;
+  }
 
   /**
    * Arity of this builtin
@@ -79,8 +84,8 @@ private:
   inline
   BuiltinResult raiseIllegalArity(int argc);
 
-  const int _arity;
-  const OzBuiltin _builtin;
+  int _arity;
+  OzBuiltin _builtin;
 };
 
 /////////////////
@@ -101,12 +106,16 @@ class Implementation<Abstraction>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
-  Implementation<Abstraction>(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                              int arity, UnstableNode* body)
-  : _arity(arity), _Gc(Gc) {
+  Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
+                 int arity, UnstableNode* body)
+    : _arity(arity), _Gc(Gc) {
     _body.init(vm, *body);
     _codeAreaCacheValid = false;
   }
+
+  inline
+  Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
+                 GC gc, Self from);
 
   size_t getArraySize() {
     return _Gc;

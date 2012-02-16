@@ -59,15 +59,24 @@ BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
 #include "Abstraction-implem.hh"
 #endif
 
+Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
+                                            StaticArray<StableNode> _Gs,
+                                            GC gc, Self from) {
+  _arity = from->_arity;
+  gc->gcStableNode(from->_body, _body);
+  _Gc = Gc;
+
+  _codeAreaCacheValid = false;
+
+  for (size_t i = 0; i < Gc; i++)
+    gc->gcStableNode(from[i], _Gs[i]);
+}
+
 BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
                                                  UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
   return BuiltinResultContinue;
 }
-
-/////////////////////
-// Inline CodeArea //
-/////////////////////
 
 BuiltinResult Implementation<Abstraction>::initElement(Self self, VM vm,
                                                        size_t index,

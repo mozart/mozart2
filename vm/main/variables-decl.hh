@@ -42,7 +42,10 @@ class Implementation<Variable>: Transient {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
-  Implementation<Variable>(VM) {}
+  Implementation(VM) {}
+
+  inline
+  Implementation(VM vm, GC gc, Self from);
 
   inline
   BuiltinResult wait(Self self, VM vm, Suspendable* thread);
@@ -75,10 +78,13 @@ class Implementation<Unbound>: Transient, StoredAs<void*> {
 public:
   typedef SelfType<Unbound>::Self Self;
 public:
-  Implementation<Unbound>() {}
-  Implementation<Unbound>(void* dummy) {}
+  Implementation() {}
+  Implementation(void* dummy) {}
 
   static void* build(VM) { return nullptr; }
+
+  inline
+  static void* build(VM vm, GC gc, Self from);
 
   inline
   BuiltinResult wait(Self self, VM vm, Suspendable* thread);

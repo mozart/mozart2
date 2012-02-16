@@ -42,9 +42,12 @@ class Implementation<Boolean>: Copiable, StoredAs<bool> {
 public:
   typedef SelfType<Boolean>::Self Self;
 public:
-  Implementation<Boolean>(bool value) : _value(value) {}
+  Implementation(bool value) : _value(value) {}
 
   static bool build(VM, bool value) { return value; }
+
+  inline
+  static bool build(VM vm, GC gc, Self from);
 
   bool value() const { return _value; }
 

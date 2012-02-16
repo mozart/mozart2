@@ -38,9 +38,12 @@ class Implementation<SmallInt>: Copiable, StoredAs<nativeint> {
 public:
   typedef SelfType<SmallInt>::Self Self;
 public:
-  Implementation<SmallInt>(nativeint value) : _value(value) {}
+  Implementation(nativeint value) : _value(value) {}
 
   static nativeint build(VM, nativeint value) { return value; }
+
+  inline
+  static nativeint build(VM vm, GC gc, Self from);
 
   nativeint value() const { return _value; }
 

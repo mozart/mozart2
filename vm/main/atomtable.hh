@@ -32,6 +32,7 @@ class AtomTable;
 
 class AtomImpl {
   friend class AtomTable;
+  friend class Implementation<Atom>;
   AtomImpl(size_t size, char16_t* data, size_t critBit, int d, AtomImpl* other)
     : size(size), data(data),critBit(critBit) {
     side[d]=this;

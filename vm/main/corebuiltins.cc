@@ -62,7 +62,7 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
     // TODO Raise illegal arity exception
   }
 
-  new Thread(vm, Reference::getStableRefFor(vm, *args[0]));
+  new (vm) Thread(vm, Reference::getStableRefFor(vm, *args[0]));
 
   return BuiltinResultContinue;
 }

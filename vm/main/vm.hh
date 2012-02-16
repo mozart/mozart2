@@ -45,6 +45,14 @@ public:
 
   StableNode* newVariable();
 
+  void* malloc(size_t size) {
+    return memoryManager.malloc(size);
+  }
+
+  void free(void* ptr, size_t size) {
+    memoryManager.free(ptr, size);
+  }
+
   void run();
 
   inline

@@ -34,6 +34,7 @@ struct ImplementationDef {
     transient = false;
     storage = "";
     base = "Type";
+    autoGCollect = true;
   }
 
   void makeOutputDecl(llvm::raw_fd_ostream& to);
@@ -44,6 +45,9 @@ struct ImplementationDef {
   bool transient;
   std::string storage;
   std::string base;
+  bool autoGCollect;
+private:
+  void makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to);
 };
 
 void handleImplementation(const SpecDecl* ND) {
@@ -68,6 +72,8 @@ void handleImplementation(const SpecDecl* ND) {
         getTypeParamAsString(marker) + ">";
     } else if (markerLabel == "BasedOn") {
       definition.base = getTypeParamAsString(marker);
+    } else if (markerLabel == "NoAutoGCollect") {
+      definition.autoGCollect = false;
     } else {}
   }
 
@@ -96,6 +102,8 @@ void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
   }
 
   to << "class " << name << ": public " << base << " {\n";
+  to << "private:\n";
+  to << "  typedef SelfType<" << name << ">::Self Self;\n";
   to << "public:\n";
   to << "  " << name << "() : " << base << "(\"" << name << "\", "
      << b2s(copiable) << ", " << b2s(transient) <<") {}\n";
@@ -104,8 +112,34 @@ void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
   to << "    static const " << name << " rawType;\n";
   to << "    return &rawType;\n";
   to << "  }\n";
+
+  if (autoGCollect) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  void gCollect(GC gc, Node& from, StableNode& to) const;\n";
+    to << "\n";
+    to << "  inline\n";
+    to << "  void gCollect(GC gc, Node& from, UnstableNode& to) const;\n";
+  }
+
   to << "};\n";
 }
 
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
+  if (autoGCollect) {
+    to << "void " << name
+       << "::gCollect(GC gc, Node& from, StableNode& to) const {\n";
+    makeContentsOfAutoGCollect(to);
+    to << "}\n\n";
+
+    to << "void " << name
+       << "::gCollect(GC gc, Node& from, UnstableNode& to) const {\n";
+    makeContentsOfAutoGCollect(to);
+    to << "}\n";
+  }
+}
+
+void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
+  // TODO
+  to << "  // TODO\n";
 }

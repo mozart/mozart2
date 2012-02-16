@@ -44,6 +44,9 @@ public:
 
   bool isCopiable() const { return _copiable; }
   bool isTransient() const { return _transient; }
+
+  virtual void gCollect(GC gc, Node& from, StableNode& to) const = 0;
+  virtual void gCollect(GC gc, Node& from, UnstableNode& to) const = 0;
 private:
   const string _name;
 

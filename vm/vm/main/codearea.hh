@@ -35,6 +35,19 @@
 #include "CodeArea-implem.hh"
 #endif
 
+Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
+                                         StaticArray<StableNode> _Ks,
+                                         GC gc, Self from) {
+  _size = from->_size;
+  _Xcount = from->_Xcount;
+  _Kc = Kc;
+
+  _setCodeBlock(vm, from->_codeBlock, _size);
+
+  for (size_t i = 0; i < Kc; i++)
+    gc->gcStableNode(from[i], _Ks[i]);
+}
+
 BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
                                                     size_t index,
                                                     UnstableNode* value) {

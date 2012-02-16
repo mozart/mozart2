@@ -37,6 +37,15 @@
 #include "Variable-implem.hh"
 #endif
 
+Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
+  for (auto iterator = from->pendingThreads.begin();
+       iterator != from->pendingThreads.end();
+       iterator++) {
+    pendingThreads.push_back(vm, *iterator);
+    gc->gcThread(pendingThreads.back(), pendingThreads.back());
+  }
+}
+
 BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
                                              Suspendable* thread) {
   thread->unsetRunnable();
@@ -85,6 +94,10 @@ void Implementation<Variable>::resumePendingThreads(VM vm) {
 #ifndef MOZART_GENERATOR
 #include "Unbound-implem.hh"
 #endif
+
+void* Implementation<Unbound>::build(VM vm, GC gc, Self from) {
+  return nullptr;
+}
 
 BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
                                             Suspendable* thread) {

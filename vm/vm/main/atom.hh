@@ -33,6 +33,10 @@
 #include "Atom-implem.hh"
 #endif
 
+AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
+  return build(vm, from.get().value()->size, from.get().value()->data);
+}
+
 BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
 					   UnstableNode* right,
 					   UnstableNode* result) {

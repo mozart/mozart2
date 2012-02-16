@@ -53,6 +53,10 @@ public:
     _setCodeBlock(vm, codeBlock, size);
   }
 
+  inline
+  Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
+                 GC gc, Self from);
+
   size_t getArraySize() {
     return _Kc;
   }

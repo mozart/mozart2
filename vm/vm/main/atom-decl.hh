@@ -39,12 +39,15 @@ class Implementation<Atom>: Copiable, StoredAs<AtomImpl*> {
 public:
   typedef SelfType<Atom>::Self Self;
 
-  Implementation<Atom>(const AtomImpl* value) : _value(value) {}
+  Implementation(const AtomImpl* value) : _value(value) {}
 
   static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
     assert(size == (size << 5) >> 5);
     return vm->atomTable.get(vm, size, data);
   }
+
+  inline
+  static AtomImpl* build(VM vm, GC gc, Self from);
 
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right, UnstableNode* result);

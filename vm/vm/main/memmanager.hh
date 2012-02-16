@@ -50,6 +50,9 @@ public:
 
     _nextBlock = _baseBlock;
     _allocated = 0;
+
+    for (size_t i = 0; i < MaxBuckets; i++)
+      freeListBuckets[i] = nullptr;
   }
 
   void* getMemory(size_t size) {
@@ -62,14 +65,61 @@ public:
       return result;
     }
   }
+
+  void* malloc(size_t size) {
+    if (size == 0)
+      return nullptr;
+
+    size_t bucket = bucketFor(size);
+
+    if (bucket < MaxBuckets) {
+      // Small block - use free list
+      void* list = freeListBuckets[bucket];
+      if (list != nullptr) {
+        freeListBuckets[bucket] = *static_cast<void**>(list);
+        return list;
+      } else {
+        return getMemory(bucket * AllocGranularity);
+      }
+    } else {
+      // Big block - for now use regular malloc/free
+      // TODO Allocate a new big block instead
+      return ::malloc(size);
+    }
+  }
+
+  void free(void* ptr, size_t size) {
+    if (size == 0)
+      return;
+
+    size_t bucket = bucketFor(size);
+
+    if (bucket < MaxBuckets) {
+      // Small block - put back in free list
+      *static_cast<void**>(ptr) = freeListBuckets[bucket];
+      freeListBuckets[bucket] = ptr;
+    } else {
+      // Big block - for now use regular malloc/free
+      ::free(ptr);
+    }
+  }
 private:
+  size_t bucketFor(size_t size) {
+    return (size + (AllocGranularity-1)) / AllocGranularity;
+  }
+
   void* getMoreMemory(size_t size);
+
+  static const size_t AllocGranularity = 2 * sizeof(char*);
+  static const size_t MaxBuckets = 64 + 1;
 
   char* _nextBlock;
   char* _baseBlock;
 
   size_t _maxMemory;
   size_t _allocated;
+
+  void* freeListBuckets[MaxBuckets];
 };
 
 #endif // __MEMMANAGER_H

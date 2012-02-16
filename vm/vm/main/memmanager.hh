@@ -22,74 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_H
-#define __VM_H
+#ifndef __MEMMANAGER_H
+#define __MEMMANAGER_H
 
-#include <stdlib.h>
+#include "core-forward-decl.hh"
 
-#include "memmanager.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "atomtable.hh"
+const size_t MegaBytes = 1024*1024;
 
-typedef bool (*PreemptionTest)(void* data);
+const size_t MAX_MEMORY = 512 * MegaBytes;
 
-class VirtualMachine {
+class MemoryManager {
 public:
-  VirtualMachine(PreemptionTest preemptionTest,
-                 void* preemptionTestData = nullptr) :
-    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData) {
+  MemoryManager(size_t maxMemory) :
+    _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(maxMemory) {}
 
-    memoryManager.init();
+  MemoryManager() :
+    _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(MAX_MEMORY) {}
+
+  ~MemoryManager() {
+    if (_baseBlock != nullptr)
+      ::free(_baseBlock);
   }
 
-  StableNode* newVariable();
+  void init() {
+    if (_baseBlock == nullptr)
+      _baseBlock = static_cast<char*>(::malloc(_maxMemory));
 
-  void run();
-
-  inline
-  bool testPreemption();
-
-  ThreadPool& getThreadPool() { return threadPool; }
-private:
-  friend class Thread;
-  friend class Implementation<Atom>;
-
-  VirtualMachine(const VirtualMachine& src) {}
-
-  friend void* operator new (size_t size, VM vm);
-  friend void* operator new[] (size_t size, VM vm);
+    _nextBlock = _baseBlock;
+    _allocated = 0;
+  }
 
   void* getMemory(size_t size) {
-    return memoryManager.getMemory(size);
+    if (_allocated + size > _maxMemory) {
+      return getMoreMemory(size);
+    } else {
+      void* result = static_cast<void*>(_nextBlock);
+      _nextBlock += size;
+      _allocated += size;
+      return result;
+    }
   }
+private:
+  void* getMoreMemory(size_t size);
 
-  // Called from the constructor of Thread
-  void scheduleThread(Thread* thread);
+  char* _nextBlock;
+  char* _baseBlock;
 
-  ThreadPool threadPool;
-  AtomTable atomTable;
-
-  PreemptionTest _preemptionTest;
-  void* _preemptionTestData;
-
-  MemoryManager memoryManager;
+  size_t _maxMemory;
+  size_t _allocated;
 };
 
-void* operator new (size_t size, VM vm) {
-  return vm->getMemory(size);
-}
-
-void* operator new[] (size_t size, VM vm) {
-  return vm->getMemory(size);
-}
-
-///////////////////////////
-// Inline VirtualMachine //
-///////////////////////////
-
-bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData);
-}
-
-#endif // __VM_H
+#endif // __MEMMANAGER_H

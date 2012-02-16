@@ -27,6 +27,7 @@
 
 #include "gcollect-decl.hh"
 #include "vm.hh"
+#include "store.hh"
 
 //////////////////////
 // GarbageCollector //
@@ -34,6 +35,28 @@
 
 MemoryManager& GarbageCollector::getMemoryManager() {
   return vm->getMemoryManager();
+}
+
+void GarbageCollector::gcThread(Suspendable* from, Suspendable*& to) {
+  to = from;
+  threadsToGC.push_front(secondMemManager, &to);
+}
+
+void GarbageCollector::gcStableNode(StableNode& from, StableNode& to) {
+  to.gcNext = stableNodesToGC;
+  to.gcFrom = &from.node;
+  stableNodesToGC = &to;
+}
+
+void GarbageCollector::gcUnstableNode(UnstableNode& from, UnstableNode& to) {
+  to.gcNext = unstableNodesToGC;
+  to.gcFrom = &from.node;
+  unstableNodesToGC = &to;
+}
+
+void GarbageCollector::gcStableRef(StableNode* from, StableNode*& to) {
+  to = from;
+  stableRefsToGC.push_front(secondMemManager, &to);
 }
 
 #endif // __GCOLLECT_H

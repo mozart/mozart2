@@ -49,7 +49,7 @@ Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
 					  StaticArray<StableNode>* Ks) {
   *start = _codeBlock;
   *Xcount = _Xcount;
-  *Ks = self.getArray(_Kc);
+  *Ks = self.getArray();
 
   return BuiltinResultContinue;
 }

@@ -29,6 +29,10 @@
 
 #include "boolean.hh"
 
+#ifndef MOZART_GENERATOR
+#include "Atom-implem.hh"
+#endif
+
 BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
 					   UnstableNode* right,
 					   UnstableNode* result) {

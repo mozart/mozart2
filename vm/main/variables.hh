@@ -33,6 +33,10 @@
 // Inline Variable ///
 //////////////////////
 
+#ifndef MOZART_GENERATOR
+#include "Variable-implem.hh"
+#endif
+
 BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
                                              Suspendable* thread) {
   thread->unsetRunnable();
@@ -77,6 +81,10 @@ void Implementation<Variable>::resumePendingThreads(VM vm) {
 /////////////////////
 // Inline Unbound ///
 /////////////////////
+
+#ifndef MOZART_GENERATOR
+#include "Unbound-implem.hh"
+#endif
 
 BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
                                             Suspendable* thread) {

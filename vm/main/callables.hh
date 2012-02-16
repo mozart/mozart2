@@ -36,6 +36,10 @@
 // Inline BuiltinProcedure //
 /////////////////////////////
 
+#ifndef MOZART_GENERATOR
+#include "BuiltinProcedure-implem.hh"
+#endif
+
 BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                       UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
@@ -50,6 +54,10 @@ BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
 ////////////////////////
 // Inline Abstraction //
 ////////////////////////
+
+#ifndef MOZART_GENERATOR
+#include "Abstraction-implem.hh"
+#endif
 
 BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
                                                  UnstableNode* result) {

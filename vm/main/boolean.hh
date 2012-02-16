@@ -27,4 +27,8 @@
 
 #include "boolean-decl.hh"
 
+#ifndef MOZART_GENERATOR
+#include "Boolean-implem.hh"
+#endif
+
 #endif // __BOOLEAN_H

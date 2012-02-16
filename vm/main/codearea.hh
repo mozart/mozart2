@@ -31,6 +31,10 @@
 // Inline CodeArea //
 /////////////////////
 
+#ifndef MOZART_GENERATOR
+#include "CodeArea-implem.hh"
+#endif
+
 BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
                                                     size_t index,
                                                     UnstableNode* value) {
@@ -38,7 +42,7 @@ BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
   return BuiltinResultContinue;
 }
 
-BuiltinResult 
+BuiltinResult
 Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
 					  ProgramCounter* start,
 					  int* Xcount,
@@ -46,7 +50,7 @@ Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
   *start = _codeBlock;
   *Xcount = _Xcount;
   *Ks = self.getArray(_Kc);
-  
+
   return BuiltinResultContinue;
 }
 

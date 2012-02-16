@@ -36,6 +36,10 @@
 // Inline SmallInt //
 /////////////////////
 
+#ifndef MOZART_GENERATOR
+#include "SmallInt-implem.hh"
+#endif
+
 BuiltinResult Implementation<SmallInt>::equals(Self self, VM vm,
                                                UnstableNode* right,
                                                UnstableNode* result) {

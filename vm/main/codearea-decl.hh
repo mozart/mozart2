@@ -38,7 +38,7 @@
 class CodeArea;
 
 #ifndef MOZART_GENERATOR
-#include "CodeArea-implem.hh"
+#include "CodeArea-implem-decl.hh"
 #endif
 
 template <>

@@ -34,7 +34,7 @@ typedef enum BOOL_OR_NOT_BOOL {
 } BoolOrNotBool;
 
 #ifndef MOZART_GENERATOR
-#include "Boolean-implem.hh"
+#include "Boolean-implem-decl.hh"
 #endif
 
 template <>

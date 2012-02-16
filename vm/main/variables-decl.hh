@@ -34,7 +34,7 @@
 class Variable;
 
 #ifndef MOZART_GENERATOR
-#include "Variable-implem.hh"
+#include "Variable-implem-decl.hh"
 #endif
 
 template <>
@@ -67,7 +67,7 @@ private:
 class Unbound;
 
 #ifndef MOZART_GENERATOR
-#include "Unbound-implem.hh"
+#include "Unbound-implem-decl.hh"
 #endif
 
 template <>

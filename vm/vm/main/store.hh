@@ -337,6 +337,14 @@ public:
     return &rawType;
   }
 
+  void gCollect(GC gc, Node& from, StableNode& to) const {
+    // TODO
+  }
+
+  void gCollect(GC gc, Node& from, UnstableNode& to) const {
+    // TODO
+  }
+
   // This is optimized for the 0- and 1-dereference paths
   // Normally it would have been only a while loop
   static Node& dereference(Node& node) {
@@ -402,7 +410,6 @@ private:
 
     return node;
   }
-
 };
 
 /////////////////////////

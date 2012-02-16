@@ -37,6 +37,9 @@ class UnstableNode;
 class VirtualMachine;
 typedef VirtualMachine* VM;
 
+class GarbageCollector;
+typedef GarbageCollector* GC;
+
 inline
 void* operator new (size_t size, VM vm);
 

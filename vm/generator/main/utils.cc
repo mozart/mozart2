@@ -22,22 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <clang/Frontend/ASTUnit.h>
-#include <clang/AST/DeclTemplate.h>
+#include "generator.hh"
 
-typedef clang::ClassTemplateSpecializationDecl SpecDecl;
+using namespace clang;
 
-std::string typeToString(clang::QualType type);
-
-std::string getTypeParamAsString(const SpecDecl* specDecl);
-std::string getTypeParamAsString(clang::CXXRecordDecl* arg);
-
-inline
-std::string b2s(bool value) {
-  return value ? "true" : "false";
+std::string typeToString(QualType type) {
+  if (isa<TagType>(type.getTypePtr()))
+    return dyn_cast<TagType>(type.getTypePtr())->getDecl()->getNameAsString();
+  else
+    return type.getAsString(context->getPrintingPolicy());
 }
 
-void handleInterface(const SpecDecl* ND);
-void handleImplementation(const SpecDecl* ND);
+std::string getTypeParamAsString(const SpecDecl* specDecl) {
+  const TemplateArgumentList& templateArgs = specDecl->getTemplateArgs();
 
-extern clang::ASTContext* context;
+  assert(templateArgs.size() == 1);
+  assert(templateArgs[0].getKind() == TemplateArgument::Type);
+
+  return typeToString(templateArgs[0].getAsType());
+}
+
+std::string getTypeParamAsString(CXXRecordDecl* arg) {
+  return getTypeParamAsString(dyn_cast<SpecDecl>(arg));
+}

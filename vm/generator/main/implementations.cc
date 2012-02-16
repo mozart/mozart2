@@ -46,39 +46,33 @@ struct ImplementationDef {
 };
 
 void handleImplementation(const SpecDecl* ND) {
-  const TemplateArgumentList& L=ND->getTemplateArgs();
-  assert(L.size()==1);
-  assert(L[0].getKind()==TemplateArgument::Type);
-
-  const std::string name =
-    dyn_cast<TagType>(L[0].getAsType().getTypePtr())
-    ->getDecl()->getNameAsString();
+  const std::string name = getTypeParamAsString(ND);
 
   ImplementationDef definition;
   definition.name = name;
 
-  for(CXXRecordDecl::base_class_const_iterator i=ND->bases_begin(), e=ND->bases_end();
-      i!=e;
-      ++i) {
-    CXXRecordDecl* arg=i->getType()->getAsCXXRecordDecl();
-    std::string argLabel=arg->getNameAsString();
-    if(argLabel=="Copiable"){
-      definition.copiable=true;
-    } else if(argLabel=="Transient"){
-      definition.transient=true;
-    } else if(argLabel=="StoredAs"){
-      definition.storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
-    } else if(argLabel=="StoredWithArrayOf"){
-      definition.storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
-      definition.storage="ImplWithArray<Implementation<" + name + ">, " + definition.storage + ">";
-    } else if(argLabel=="BasedOn"){
-      definition.base=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
+  // For every marker, i.e. base class
+  for (auto iter = ND->bases_begin(), e = ND->bases_end(); iter != e; ++iter) {
+    CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
+    std::string markerLabel = marker->getNameAsString();
+
+    if (markerLabel=="Copiable") {
+      definition.copiable = true;
+    } else if (markerLabel == "Transient") {
+      definition.transient = true;
+    } else if (markerLabel == "StoredAs") {
+      definition.storage = getTypeParamAsString(marker);
+    } else if (markerLabel == "StoredWithArrayOf") {
+      definition.storage = "ImplWithArray<Implementation<" + name + ">, " +
+        getTypeParamAsString(marker) + ">";
+    } else if (markerLabel == "BasedOn") {
+      definition.base = getTypeParamAsString(marker);
     } else {}
   }
 
   std::string err;
-  llvm::raw_fd_ostream to((name+"-implem.hh").c_str(),err);
-  assert(err=="");
+  llvm::raw_fd_ostream to((name+"-implem.hh").c_str(), err);
+  assert(err == "");
   definition.makeOutput(to);
 }
 
@@ -90,12 +84,15 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "  typedef " << storage << " Type;\n";
     to << "};\n\n";
   }
-  to << "class "<< name << ": public " << base << " {\n";
+
+  to << "class " << name << ": public " << base << " {\n";
   to << "public:\n";
-  to << "  " << name << "() : " << base << "(\"" << name << "\", " << copiable << ", " << transient <<") {}\n";
+  to << "  " << name << "() : " << base << "(\"" << name << "\", "
+     << b2s(copiable) << ", " << b2s(transient) <<") {}\n";
+  to << "\n";
   to << "  static const " << name << "* const type() {\n";
   to << "    static const " << name << " rawType;\n";
   to << "    return &rawType;\n";
   to << "  }\n";
-  to << "};\n\n";
+  to << "};\n";
 }

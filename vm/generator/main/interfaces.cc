@@ -24,8 +24,6 @@
 
 #include "generator.hh"
 
-#include <stdlib.h>
-
 using namespace clang;
 
 struct InterfaceDef {
@@ -43,30 +41,27 @@ struct InterfaceDef {
 };
 
 void handleInterface(const SpecDecl* ND) {
-  const TemplateArgumentList& L=ND->getTemplateArgs();
-  assert(L.size()==1);
-  assert(L[0].getKind()==TemplateArgument::Type);
-  const std::string name=
-    dyn_cast<TagType>(L[0].getAsType().getTypePtr())
-    ->getDecl()->getNameAsString();
+  const std::string name = getTypeParamAsString(ND);
 
   InterfaceDef definition;
   definition.name = name;
 
-  for(CXXRecordDecl::base_class_const_iterator i=ND->bases_begin(), e=ND->bases_end();
-      i!=e;
-      ++i) {
-    CXXRecordDecl* arg=i->getType()->getAsCXXRecordDecl();
-    std::string argLabel=arg->getNameAsString();
-    if(argLabel=="ImplementedBy"){
-      definition.implems=dyn_cast<TemplateSpecializationType>(i->getType().getTypePtr());
-    } else if(argLabel=="NoAutoWait"){
-      definition.autoWait=false;
+  // For every marker, i.e. base class
+  for (auto iter = ND->bases_begin(), e = ND->bases_end(); iter != e; ++iter) {
+    CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
+    std::string markerLabel = marker->getNameAsString();
+
+    if (markerLabel == "ImplementedBy") {
+      definition.implems =
+        dyn_cast<TemplateSpecializationType>(iter->getType().getTypePtr());
+    } else if (markerLabel == "NoAutoWait") {
+      definition.autoWait = false;
     } else {}
   }
+
   std::string err;
-  llvm::raw_fd_ostream to((name+"-interf.hh").c_str(),err);
-  assert(err=="");
+  llvm::raw_fd_ostream to((name+"-interf.hh").c_str(), err);
+  assert(err == "");
   definition.makeOutput(ND, to);
 }
 
@@ -74,55 +69,72 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   to << "class "<< name << " {\n";
   to << "public:\n";
   to << "  " << name << "(Node& self) : _self(Reference::dereference(self)) {}\n";
-  for(CXXRecordDecl::method_iterator i=ND->method_begin(), e=ND->method_end();
-      i!=e;
-      ++i) {
-    CXXMethodDecl* m=*i;
-    if(!m->isUserProvided())continue;
+
+  // For every method in Interface<T>
+  for (auto iter = ND->method_begin(), e = ND->method_end(); iter != e; ++iter) {
+    CXXMethodDecl* m = *iter;
+    if (!m->isUserProvided())
+      continue;
+
+    /* We will iterate several times over all parameters of the method,
+     * excluding the self param, which is the first parameter. */
+    auto param_begin = m->param_begin() + 1;
+    auto param_end = m->param_end();
+
+    // Declaration of the procedure
     to << "\n  " << m->getResultType().getAsString(context->getPrintingPolicy());
     to << " " << m->getNameAsString() << "(";
-    for(FunctionDecl::param_iterator j=(m->param_begin())+1, e=m->param_end();
-	(j!=e);
-	++j,(j!=e)?to<<", ":to) {
-      ParmVarDecl* p=*j;
-      to << p->getType().getAsString(context->getPrintingPolicy());
-      to << " " << p->getNameAsString();
+    // For every parameter of that method, excluding the self param
+    for (auto iter = param_begin; iter != param_end; ++iter) {
+      ParmVarDecl* param = *iter;
+      to << typeToString(param->getType()) << " " << param->getNameAsString();
+      if (iter+1 != param_end)
+        to << ", ";
     }
-    to << "){\n    ";
-    for(int j=0; j<(int)implems->getNumArgs(); ++j) {
-      std::string imp=
-	implems->getArg(j).getAsType()->getAsCXXRecordDecl()->getNameAsString();
+    to << ") {\n    ";
+
+    // For every implementation that implements this interface (ImplementedBy)
+    for (int i = 0; i < (int) implems->getNumArgs(); ++i) {
+      std::string imp =
+        implems->getArg(i).getAsType()->getAsCXXRecordDecl()->getNameAsString();
+
       to << "if (_self.type == " << imp << "::type()) {\n";
       to << "      return IMPL("
-	 << m->getResultType().getAsString(context->getPrintingPolicy())
-	 << ", " << imp << ", " << m->getNameAsString() << ", " << "&_self";
-      for(FunctionDecl::param_iterator j=(m->param_begin())+1, e=m->param_end();
-	  (j!=e);
-	  ++j) {
-	ParmVarDecl* p=*j;
-	to << ", " << p->getNameAsString();
+         << typeToString(m->getResultType())
+         << ", " << imp << ", " << m->getNameAsString() << ", " << "&_self";
+
+      // For every parameter of the method, excluding the self param
+      for (auto iter = param_begin; iter != param_end; ++iter) {
+        ParmVarDecl* param = *iter;
+        to << ", " << param->getNameAsString();
       }
+
       to << ");\n";
       to << "    } else ";
     }
-    if(autoWait && (m->getResultType().getAsString(context->getPrintingPolicy())=="BuiltinResult")){
+
+    // Auto-wait handling
+    if (autoWait && (typeToString(m->getResultType()) == "BuiltinResult")) {
       to << "if (_self.type->isTransient()) {\n";
       to << "      return &_self;\n";
       to << "    } else ";
     }
+
+    // Default behavior
     to << "{\n";
     to << "      return Interface<" << name << ">().";
     to << m->getNameAsString() << "(_self";
-    for(FunctionDecl::param_iterator j=(m->param_begin())+1, e=m->param_end();
-	(j!=e);
-	++j) {
-      ParmVarDecl* p=*j;
-      to << ", " << p->getNameAsString();
+    // For every parameter of the method, excluding the self param
+    for (auto iter = param_begin; iter != param_end; ++iter) {
+      ParmVarDecl* param = *iter;
+      to << ", " << param->getNameAsString();
     }
     to << ");\n";
     to << "    }\n";
+
     to << "  }\n";
   }
+
   to << "private:\n";
   to << "  Node& _self;\n";
   to << "};\n\n";

@@ -28,9 +28,14 @@
 #include <stdlib.h>
 
 #include "memmanager.hh"
+#include "memmanlist.hh"
 #include "store.hh"
 #include "threadpool.hh"
 #include "atomtable.hh"
+
+////////////////////
+// VirtualMachine //
+////////////////////
 
 typedef bool (*PreemptionTest)(void* data);
 
@@ -71,6 +76,10 @@ public:
   bool testPreemption();
 
   ThreadPool& getThreadPool() { return threadPool; }
+
+  MemoryManager& getMemoryManager() {
+    return memoryManager;
+  }
 private:
   friend class Thread;
   friend class Implementation<Atom>;
@@ -103,6 +112,48 @@ void* operator new (size_t size, VM vm) {
 void* operator new[] (size_t size, VM vm) {
   return vm->getMemory(size);
 }
+
+/////////////////////
+// VMAllocatedList //
+/////////////////////
+
+template <class T>
+class VMAllocatedList: public MemManagedList<T> {
+public:
+  void push_back(VM vm, const T& item) {
+    MemManagedList<T>::push_back(vm->getMemoryManager(), item);
+  }
+
+  template <class... Args>
+  void push_back_new(VM vm, Args... args) {
+    MemManagedList<T>::push_back_new(vm->getMemoryManager(), args...);
+  }
+
+  void push_front(VM vm, const T& item) {
+    MemManagedList<T>::push_front(vm->getMemoryManager(), item);
+  }
+
+  template <class... Args>
+  void push_front_new(VM vm, Args... args) {
+    MemManagedList<T>::push_front_new(vm->getMemoryManager(), args...);
+  }
+
+  T pop_front(VM vm) {
+    return MemManagedList<T>::pop_front(vm->getMemoryManager());
+  }
+
+  void remove_front(VM vm) {
+    MemManagedList<T>::remove_front(vm->getMemoryManager());
+  }
+
+  void clear(VM vm) {
+    MemManagedList<T>::clear(vm->getMemoryManager());
+  }
+
+  void splice(VM vm, VMAllocatedList<T>& source) {
+    MemManagedList<T>::splice(vm->getMemoryManager(), source);
+  }
+};
 
 ///////////////////////////
 // Inline VirtualMachine //

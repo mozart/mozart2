@@ -24,13 +24,23 @@
 
 #include "generator.hh"
 
+#include <stdlib.h>
+
 using namespace clang;
 
-void makeInterface(const SpecDecl* ND,
-		   std::string name,
-		   const TemplateSpecializationType& implems,
-		   bool autoWait,
-		   llvm::raw_fd_ostream& to);
+struct InterfaceDef {
+  InterfaceDef() {
+    name = "";
+    implems = 0;
+    autoWait = true;
+  }
+
+  void makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to);
+
+  std::string name;
+  const TemplateSpecializationType* implems;
+  bool autoWait;
+};
 
 void handleInterface(const SpecDecl* ND) {
   const TemplateArgumentList& L=ND->getTemplateArgs();
@@ -39,30 +49,28 @@ void handleInterface(const SpecDecl* ND) {
   const std::string name=
     dyn_cast<TagType>(L[0].getAsType().getTypePtr())
     ->getDecl()->getNameAsString();
-  const TemplateSpecializationType* implems=0;
-  bool autoWait=true;
+
+  InterfaceDef definition;
+  definition.name = name;
+
   for(CXXRecordDecl::base_class_const_iterator i=ND->bases_begin(), e=ND->bases_end();
       i!=e;
       ++i) {
     CXXRecordDecl* arg=i->getType()->getAsCXXRecordDecl();
     std::string argLabel=arg->getNameAsString();
     if(argLabel=="ImplementedBy"){
-      implems=dyn_cast<TemplateSpecializationType>(i->getType().getTypePtr());
+      definition.implems=dyn_cast<TemplateSpecializationType>(i->getType().getTypePtr());
     } else if(argLabel=="NoAutoWait"){
-      autoWait=false;
+      definition.autoWait=false;
     } else {}
   }
   std::string err;
   llvm::raw_fd_ostream to((name+"-interf.hh").c_str(),err);
   assert(err=="");
-  makeInterface(ND, name, *implems, autoWait, to);
+  definition.makeOutput(ND, to);
 }
 
-void makeInterface(const SpecDecl* ND,
-		   std::string name,
-		   const TemplateSpecializationType& implems,
-		   bool autoWait,
-		   llvm::raw_fd_ostream& to){
+void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   to << "class "<< name << " {\n";
   to << "public:\n";
   to << "  " << name << "(Node& self) : _self(Reference::dereference(self)) {}\n";
@@ -81,18 +89,18 @@ void makeInterface(const SpecDecl* ND,
       to << " " << p->getNameAsString();
     }
     to << "){\n    ";
-    for(int j=0; j<(int)implems.getNumArgs(); ++j) {
+    for(int j=0; j<(int)implems->getNumArgs(); ++j) {
       std::string imp=
-	implems.getArg(j).getAsType()->getAsCXXRecordDecl()->getNameAsString();
+	implems->getArg(j).getAsType()->getAsCXXRecordDecl()->getNameAsString();
       to << "if (_self.type == " << imp << "::type()) {\n";
-      to << "      return IMPL(" 
+      to << "      return IMPL("
 	 << m->getResultType().getAsString(context->getPrintingPolicy())
 	 << ", " << imp << ", " << m->getNameAsString() << ", " << "&_self";
       for(FunctionDecl::param_iterator j=(m->param_begin())+1, e=m->param_end();
 	  (j!=e);
 	  ++j) {
 	ParmVarDecl* p=*j;
-	to << ", " << p->getNameAsString(); 
+	to << ", " << p->getNameAsString();
       }
       to << ");\n";
       to << "    } else ";

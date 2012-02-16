@@ -27,55 +27,63 @@
 
 using namespace clang;
 
-void makeImplementation(std::string name,
-			bool copiable,
-			bool transient,
-			std::string storage,
-			std::string base,
-			llvm::raw_fd_ostream& to);
+struct ImplementationDef {
+  ImplementationDef() {
+    name = "";
+    copiable = false;
+    transient = false;
+    storage = "";
+    base = "Type";
+  }
+
+  void makeOutput(llvm::raw_fd_ostream& to);
+
+  std::string name;
+  bool copiable;
+  bool transient;
+  std::string storage;
+  std::string base;
+};
 
 void handleImplementation(const SpecDecl* ND) {
   const TemplateArgumentList& L=ND->getTemplateArgs();
   assert(L.size()==1);
   assert(L[0].getKind()==TemplateArgument::Type);
-  const std::string name=
+
+  const std::string name =
     dyn_cast<TagType>(L[0].getAsType().getTypePtr())
     ->getDecl()->getNameAsString();
-  bool copiable=false;
-  bool transient=false;
-  std::string storage="";
-  std::string base="Type";
+
+  ImplementationDef definition;
+  definition.name = name;
+
   for(CXXRecordDecl::base_class_const_iterator i=ND->bases_begin(), e=ND->bases_end();
       i!=e;
       ++i) {
     CXXRecordDecl* arg=i->getType()->getAsCXXRecordDecl();
     std::string argLabel=arg->getNameAsString();
     if(argLabel=="Copiable"){
-      copiable=true;
+      definition.copiable=true;
     } else if(argLabel=="Transient"){
-      transient=true;
+      definition.transient=true;
     } else if(argLabel=="StoredAs"){
-      storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
+      definition.storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
     } else if(argLabel=="StoredWithArrayOf"){
-      storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
-      storage="ImplWithArray<Implementation<" + name + ">, " + storage + ">";
+      definition.storage=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
+      definition.storage="ImplWithArray<Implementation<" + name + ">, " + definition.storage + ">";
     } else if(argLabel=="BasedOn"){
-      base=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
+      definition.base=dyn_cast<SpecDecl>(arg)->getTemplateArgs()[0].getAsType().getAsString(context->getPrintingPolicy());
     } else {}
   }
+
   std::string err;
   llvm::raw_fd_ostream to((name+"-implem.hh").c_str(),err);
   assert(err=="");
-  makeImplementation(name, copiable, transient, storage, base, to);
+  definition.makeOutput(to);
 }
 
-void makeImplementation(std::string name,
-			bool copiable,
-			bool transient,
-			std::string storage,
-			std::string base,
-			llvm::raw_fd_ostream& to){
-  if(storage != ""){
+void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
+  if (storage != "") {
     to << "template <>\n";
     to << "class Storage<" << name << "> {\n";
     to << "public:\n";

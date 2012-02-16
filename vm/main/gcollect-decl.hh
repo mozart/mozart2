@@ -27,6 +27,8 @@
 
 #include "core-forward-decl.hh"
 #include "memmanager.hh"
+#include "memmanlist.hh"
+#include "suspendable-decl.hh"
 
 // Set this to true to print debug info about the GC
 #ifdef OZ_DEBUG_GC
@@ -42,16 +44,33 @@ const bool OzDebugGC = false;
 class GarbageCollector {
 public:
   GarbageCollector(VM vm) :
-    vm(vm) {}
+    vm(vm), stableNodesToGC(nullptr), unstableNodesToGC(nullptr) {}
 
   inline
   MemoryManager& getMemoryManager();
 
   void doGC();
 
+  inline
+  void gcThread(Suspendable* from, Suspendable*& to);
+
+  inline
+  void gcStableNode(StableNode& from, StableNode& to);
+
+  inline
+  void gcUnstableNode(UnstableNode& from, UnstableNode& to);
+
+  inline
+  void gcStableRef(StableNode* from, StableNode*& to);
+
   VM vm;
 private:
   MemoryManager secondMemManager;
+
+  MemManagedList<Suspendable**> threadsToGC;
+  StableNode* stableNodesToGC;
+  UnstableNode* unstableNodesToGC;
+  MemManagedList<StableNode**> stableRefsToGC;
 };
 
 #endif // __GCOLLECT_DECL_H

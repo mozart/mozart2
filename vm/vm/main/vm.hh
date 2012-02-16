@@ -32,6 +32,7 @@
 #include "store.hh"
 #include "threadpool.hh"
 #include "atomtable.hh"
+#include "gcollect-decl.hh"
 
 ////////////////////
 // VirtualMachine //
@@ -43,7 +44,8 @@ class VirtualMachine {
 public:
   VirtualMachine(PreemptionTest preemptionTest,
                  void* preemptionTestData = nullptr) :
-    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData) {
+    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
+    gc(this) {
 
     memoryManager.init();
   }
@@ -85,7 +87,7 @@ private:
   friend class Thread;
   friend class Implementation<Atom>;
 
-  VirtualMachine(const VirtualMachine& src) {}
+  VirtualMachine(const VirtualMachine& src) : gc(this) {}
 
   friend void* operator new (size_t size, VM vm);
   friend void* operator new[] (size_t size, VM vm);
@@ -106,6 +108,8 @@ private:
   MemoryManager memoryManager;
 
   SuspendableList aliveThreads;
+
+  GarbageCollector gc;
 };
 
 void* operator new (size_t size, VM vm) {
@@ -159,6 +163,7 @@ public:
 };
 
 #include "suspendable.hh"
+#include "gcollect.hh"
 
 ///////////////////////////
 // Inline VirtualMachine //

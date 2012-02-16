@@ -41,7 +41,7 @@ typedef BuiltinResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
 class BuiltinProcedure;
 
 #ifndef MOZART_GENERATOR
-#include "BuiltinProcedure-implem.hh"
+#include "BuiltinProcedure-implem-decl.hh"
 #endif
 
 template <>
@@ -90,7 +90,7 @@ private:
 class Abstraction;
 
 #ifndef MOZART_GENERATOR
-#include "Abstraction-implem.hh"
+#include "Abstraction-implem-decl.hh"
 #endif
 
 /**

@@ -30,7 +30,7 @@
 class SmallInt;
 
 #ifndef MOZART_GENERATOR
-#include "SmallInt-implem.hh"
+#include "SmallInt-implem-decl.hh"
 #endif
 
 template <>

@@ -31,7 +31,7 @@
 class Atom;
 
 #ifndef MOZART_GENERATOR
-#include "Atom-implem.hh"
+#include "Atom-implem-decl.hh"
 #endif
 
 template <>

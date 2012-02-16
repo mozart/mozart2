@@ -36,6 +36,7 @@ struct ImplementationDef {
     base = "Type";
   }
 
+  void makeOutputDecl(llvm::raw_fd_ostream& to);
   void makeOutput(llvm::raw_fd_ostream& to);
 
   std::string name;
@@ -70,13 +71,22 @@ void handleImplementation(const SpecDecl* ND) {
     } else {}
   }
 
-  std::string err;
-  llvm::raw_fd_ostream to((name+"-implem.hh").c_str(), err);
-  assert(err == "");
-  definition.makeOutput(to);
+  {
+    std::string err;
+    llvm::raw_fd_ostream to((name+"-implem-decl.hh").c_str(), err);
+    assert(err == "");
+    definition.makeOutputDecl(to);
+  }
+
+  {
+    std::string err;
+    llvm::raw_fd_ostream to((name+"-implem.hh").c_str(), err);
+    assert(err == "");
+    definition.makeOutput(to);
+  }
 }
 
-void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
+void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
   if (storage != "") {
     to << "template <>\n";
     to << "class Storage<" << name << "> {\n";
@@ -95,4 +105,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   to << "    return &rawType;\n";
   to << "  }\n";
   to << "};\n";
+}
+
+void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 }

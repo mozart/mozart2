@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 
   // Arguments of the program
 
-  const nativeint N = 25; // time of the order of seconds on a 2-3 GHz CPU
+  const nativeint N = 35; // time of the order of seconds on a 2-3 GHz CPU
 
   // Define the builtins
 
@@ -148,7 +148,10 @@ int main(int argc, char **argv) {
     OpArrayInitElementG, 2, 1, 0,
     OpArrayInitElementY, 2, 2, 0,
 
-    OpCallBuiltin, 4, 1, 2,
+    //OpCallBuiltin, 4, 1, 2,
+    OpMoveMoveXYXY, 0, 1, 1, 2,
+    OpCallX, 2, 0,
+    OpMoveMoveYXYX, 1, 0, 2, 1,
 
     OpMoveKX, 2, 2,
     OpInlineAdd, 0, 2, 3,

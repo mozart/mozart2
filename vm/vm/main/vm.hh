@@ -162,6 +162,7 @@ public:
   }
 };
 
+#include "reference.hh"
 #include "suspendable.hh"
 #include "gcollect.hh"
 

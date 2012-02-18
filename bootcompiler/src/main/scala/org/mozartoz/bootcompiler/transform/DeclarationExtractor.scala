@@ -29,13 +29,13 @@ object DeclarationExtractor extends Transformer with TransformUtils {
   }
 
   def extractDecls(
-      declarations: List[Declaration]): (List[Variable], List[Statement]) = {
-    val decls = new ListBuffer[Variable]
+      declarations: List[Declaration]): (List[RawVariable], List[Statement]) = {
+    val decls = new ListBuffer[RawVariable]
     val statements = new ListBuffer[Statement]
 
     for (declaration <- declarations) {
       declaration match {
-        case variable:Variable =>
+        case variable:RawVariable =>
           decls += variable
 
         case stat @ BindStatement(left, right) =>
@@ -51,7 +51,7 @@ object DeclarationExtractor extends Transformer with TransformUtils {
   }
 
   def extractDeclsInExpression(expr: Expression) = expr match {
-    case variable:Variable =>
+    case variable:RawVariable =>
       List(variable)
 
     case _ =>

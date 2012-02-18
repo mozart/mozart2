@@ -2,9 +2,25 @@ package org.mozartoz.bootcompiler
 package transform
 
 import ast._
+import symtab._
 
-abstract class Transformer extends (Program => Program) {
-  def apply(program: Program) = transformStat(program)
+abstract class Transformer extends (Program => Unit) {
+  var abstraction: Abstraction = _
+
+  def apply(program: Program) {
+    if (program.isRawCode)
+      program.rawCode = transformStat(program.rawCode)
+    else {
+      for (abs <- program.abstractions) {
+        abstraction = abs
+        try {
+          abs.body = transformStat(abs.body)
+        } finally {
+          abstraction = null
+        }
+      }
+    }
+  }
 
   def transformStat(statement: Statement): Statement = statement match {
     case CompoundStatement(stats) =>
@@ -73,7 +89,7 @@ abstract class Transformer extends (Program => Program) {
 
     // Trivial expressions
 
-    case Variable(name) => expression
+    case RawVariable(name) => expression
     case EscapedVariable(variable) => expression
     case UnboundExpression() => expression
     case IntLiteral(value) => expression
@@ -81,6 +97,11 @@ abstract class Transformer extends (Program => Program) {
     case True() => expression
     case False() => expression
     case UnitVal() => expression
+
+    // Synthetic expressions
+
+    case AbstractionValue(abs) => expression
+    case Variable(sym) => expression
   }
 
   def transformDecl(declaration: Declaration): Declaration = declaration match {

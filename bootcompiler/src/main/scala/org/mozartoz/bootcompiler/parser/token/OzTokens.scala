@@ -9,10 +9,10 @@ trait OzTokens extends StdTokens {
     override def toString() = "atom "+chars
   }
 
-  /** A special token representing a token (identifier or atom literal)
+  /** A special token representing a label, i.e. an identifier or atom literal
    *  followed directly by a (
    */
-  case class OpenRecord(label: Token) extends Token {
+  case class Label(label: Token) extends Token {
     override def chars = label.chars + "("
     override def toString() = label.toString() + "("
   }

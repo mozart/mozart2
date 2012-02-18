@@ -23,8 +23,7 @@ object Main {
     }
   }
 
-  def produce(prog: List[Statement]) {
-    for (statement <- prog)
-      println(statement)
+  def produce(prog: Statement) {
+    println(prog)
   }
 }

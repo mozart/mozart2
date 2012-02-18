@@ -10,8 +10,8 @@ import token._
 class OzLexical extends Lexical with OzTokens {
   // see `token' in `Scanners'
   def token: Parser[Token] = (
-      identifier >> handleOpenRecord
-    | atomLiteral >> handleOpenRecord
+      identifier >> handleLabel
+    | atomLiteral >> handleLabel
     | integerLiteral
     | atomLiteral
     | EofCh ^^^ EOF
@@ -19,10 +19,12 @@ class OzLexical extends Lexical with OzTokens {
     | failure("illegal character")
   )
 
-  def handleOpenRecord(prev: Token) = prev match {
-    case kw @ Keyword(chars) => success(kw)
+  private val unitTrueFalse = Set("unit", "true", "false")
+
+  def handleLabel(prev: Token) = prev match {
+    case kw @ Keyword(chars) if (!(unitTrueFalse contains chars)) => success(kw)
     case _ => (
-        '(' ^^^ OpenRecord(prev)
+        '(' ^^^ Label(prev)
       | success(prev)
     )
   }

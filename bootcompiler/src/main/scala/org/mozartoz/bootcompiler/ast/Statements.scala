@@ -1,7 +1,7 @@
 package org.mozartoz.bootcompiler
 package ast
 
-trait Statement extends StatOrExpr with Declaration
+sealed abstract class Statement extends StatOrExpr with Declaration
 
 case class CompoundStatement(statements: List[Statement]) extends Statement {
   def syntax(indent: String) = {

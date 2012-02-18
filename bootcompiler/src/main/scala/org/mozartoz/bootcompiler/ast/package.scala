@@ -1,6 +1,8 @@
 package org.mozartoz.bootcompiler
 
 package object ast {
+  type Program = Statement
+
   // Utils
 
   def escapePseudoChars(name: String, delim: Char) = {

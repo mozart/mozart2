@@ -7,6 +7,7 @@ import scala.util.parsing.input.StreamReader
 
 import parser._
 import ast._
+import transform._
 
 object Main {
   def main(args: Array[String]) {
@@ -23,7 +24,12 @@ object Main {
     }
   }
 
-  def produce(prog: Statement) {
-    println(prog)
+  def produce(prog: Program) {
+    val transformedProg = applyTransforms(prog)
+    println(transformedProg)
+  }
+
+  def applyTransforms(prog: Program) = {
+    DeclarationExtractor(prog)
   }
 }

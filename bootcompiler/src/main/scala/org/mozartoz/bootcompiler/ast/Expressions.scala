@@ -1,7 +1,7 @@
 package org.mozartoz.bootcompiler
 package ast
 
-trait Expression extends StatOrExpr
+sealed abstract class Expression extends StatOrExpr
 
 // Compound expressions
 

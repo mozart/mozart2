@@ -13,14 +13,6 @@ abstract class Transformer extends (Program => Program) {
     case LocalStatement(declarations, statement) =>
       LocalStatement(declarations map transformDecl, transformStat(statement))
 
-    case ProcStatement(name, args, body, flags) =>
-      ProcStatement(transformExpr(name), transformFormalArgs(args),
-          transformStat(body), flags)
-
-    case FunStatement(name, args, body, flags) =>
-      FunStatement(transformExpr(name), transformFormalArgs(args),
-          transformExpr(body), flags)
-
     case CallStatement(callable, args) =>
       CallStatement(transformExpr(callable), transformActualArgs(args))
 
@@ -47,11 +39,13 @@ abstract class Transformer extends (Program => Program) {
 
     // Complex expressions
 
-    case ProcExpression(args, body, flags) =>
-      ProcExpression(transformFormalArgs(args), transformStat(body), flags)
+    case ProcExpression(name, args, body, flags) =>
+      ProcExpression(name, transformFormalArgs(args),
+          transformStat(body), flags)
 
-    case FunExpression(args, body, flags) =>
-      FunExpression(transformFormalArgs(args), transformExpr(body), flags)
+    case FunExpression(name, args, body, flags) =>
+      FunExpression(name, transformFormalArgs(args),
+          transformExpr(body), flags)
 
     case CallExpression(callable, args) =>
       CallExpression(transformExpr(callable), transformActualArgs(args))

@@ -101,22 +101,32 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val procStatement: PackratParser[Statement] =
     (("proc" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
-      case flags ~ name ~ args ~ body => ProcStatement(name, args, body, flags)
+      case flags ~ left ~ args ~ body =>
+        val name = left match {
+          case Variable(name) => name
+          case _ => ""
+        }
+        BindStatement(left, ProcExpression(name, args, body, flags))
     }
 
   lazy val funStatement: PackratParser[Statement] =
     (("fun" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
-      case flags ~ name ~ args ~ body => FunStatement(name, args, body, flags)
+      case flags ~ left ~ args ~ body =>
+        val name = left match {
+          case Variable(name) => name
+          case _ => ""
+        }
+        BindStatement(left, FunExpression(name, args, body, flags))
     }
 
   lazy val procExpression: PackratParser[Expression] =
     (("proc" ~> procFlags <~ "{" ~ dollar) ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
-      case flags ~ args ~ body => ProcExpression(args, body, flags)
+      case flags ~ args ~ body => ProcExpression("", args, body, flags)
     }
 
   lazy val funExpression: PackratParser[Expression] =
     (("fun" ~> procFlags <~ "{" ~ dollar) ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
-      case flags ~ args ~ body => FunExpression(args, body, flags)
+      case flags ~ args ~ body => FunExpression("", args, body, flags)
     }
 
   lazy val procFlags = rep(atom)

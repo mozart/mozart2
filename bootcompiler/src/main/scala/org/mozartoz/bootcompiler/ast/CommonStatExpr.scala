@@ -22,9 +22,7 @@ trait LocalCommon extends StatOrExpr {
   }
 }
 
-trait ProcFunCommon extends StatOrExpr {
-  protected def nameSyntax(indent: String): String
-
+trait ProcFunExpression extends StatOrExpr {
   protected val keyword: String
 
   protected val args: FormalArgs
@@ -35,7 +33,7 @@ trait ProcFunCommon extends StatOrExpr {
     val flagsSyntax = flags.foldLeft("") { _ + " " + _.syntax(indent) }
     val argsSyntax = args.args.foldLeft("") { _ + " " + _.syntax(indent) }
 
-    val header0 = keyword + flagsSyntax + " {" + nameSyntax(indent)
+    val header0 = keyword + flagsSyntax + " {$"
     val header = header0 + argsSyntax + "}"
 
     val bodyIndent = indent + "   "
@@ -43,28 +41,6 @@ trait ProcFunCommon extends StatOrExpr {
 
     header + "\n" + bodySyntax + "\n" + indent + "end"
   }
-}
-
-trait ProcCommon extends ProcFunCommon {
-  protected val keyword = "proc"
-
-  protected val body: Statement
-}
-
-trait FunCommon extends ProcFunCommon {
-  protected val keyword = "fun"
-
-  protected val body: Expression
-}
-
-trait ProcFunStatement extends ProcFunCommon {
-  protected val name: Expression
-
-  protected def nameSyntax(indent: String) = name.syntax(indent)
-}
-
-trait ProcFunExpression extends ProcFunCommon {
-  protected def nameSyntax(indent: String) = "$"
 }
 
 trait CallCommon extends StatOrExpr {

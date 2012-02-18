@@ -17,14 +17,6 @@ case class LocalStatement(declarations: List[Declaration],
   protected val body = statement
 }
 
-case class ProcStatement(name: Expression, args: FormalArgs,
-    body: Statement, flags: List[Atom]) extends Statement
-    with ProcCommon with ProcFunStatement
-
-case class FunStatement(name: Expression, args: FormalArgs,
-    body: Expression, flags: List[Atom]) extends Statement
-    with FunCommon with ProcFunStatement
-
 case class CallStatement(callable: Expression,
     args: ActualArgs) extends Statement with CallCommon
 

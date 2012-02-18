@@ -42,14 +42,6 @@ object DeclarationExtractor extends Transformer with TransformUtils {
           decls ++= extractDeclsInExpression(left)
           statements += stat
 
-        case stat @ ProcStatement(name, _, _, _) =>
-          decls ++= extractDeclsInExpression(name)
-          statements += stat
-
-        case stat @ FunStatement(name, _, _, _) =>
-          decls ++= extractDeclsInExpression(name)
-          statements += stat
-
         case stat:Statement =>
           statements += stat
       }

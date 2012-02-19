@@ -8,38 +8,21 @@
 #include "stdint.h"
 #include <gtest/gtest.h>
 
-
 bool simplePreemption(void* data) {
-      static int count = 3;
+  static int count = 3;
 
-      if (--count == 0) {
-	count = 3;
-	return true;
-      } else {
-	return false;
-      }
-    }
-
-class SmallIntFactorialTest : public ::testing::Test {
- protected:
-  VM vm;
-  SmallIntFactorialTest() {
+  if (--count == 0) {
+    count = 3;
+    return true;
+  } else {
+    return false;
   }
-
-  virtual ~SmallIntFactorialTest() {
-  }
-
-  virtual void SetUp() {
-  }
-
-  virtual void TearDown() {
-  }
-};
+}
 
 
-TEST_F(SmallIntFactorialTest, Run) {
+TEST(FactorialTests, SmallIntTest) {
   VirtualMachine virtualMachine(simplePreemption);
-  vm = &virtualMachine;
+  VM vm = &virtualMachine;
 
   // Arguments of the program
 
@@ -49,7 +32,7 @@ TEST_F(SmallIntFactorialTest, Run) {
 
   UnstableNode builtinCreateThread;
   builtinCreateThread.make<BuiltinProcedure>(
-    vm, 1, (OzBuiltin) &builtins::createThread);
+					     vm, 1, (OzBuiltin) &builtins::createThread);
 
   // Define immediate constants
 
@@ -228,10 +211,11 @@ TEST_F(SmallIntFactorialTest, Run) {
   UnstableNode* initialThreadParams[] = { &abstractionMain };
   builtins::createThread(vm, initialThreadParams);
 
-  std::cout << "Initialized" << std::endl;
-
   vm->run();
 
-  std::cout << "Finished" << std::endl;
+}
+
+TEST(FactorialTests, FloatTest) {
+
 
 }

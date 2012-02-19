@@ -37,12 +37,12 @@ BuiltinResult equals(VM vm, UnstableNode* args[]) {
 }
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {
-  Addable x = args[0]->node;
+  Numeric x = args[0]->node;
   return x.add(vm, args[1], args[2]);
 }
 
 BuiltinResult subtract(VM vm, UnstableNode* args[]) {
-  Addable x = args[0]->node;
+  Numeric x = args[0]->node;
   return x.subtract(vm, args[1], args[2]);
 }
 

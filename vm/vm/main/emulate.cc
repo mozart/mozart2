@@ -498,7 +498,7 @@ void Thread::run() {
       }
 
       case OpInlineAdd: {
-        Addable x = XPC(1).node;
+        Numeric x = XPC(1).node;
         BuiltinResult result = x.add(vm, &XPC(2), &XPC(3));
 
         if (result == BuiltinResultContinue)

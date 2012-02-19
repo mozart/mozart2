@@ -120,9 +120,9 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   }
 };
 
-class Addable;
+class Numeric;
 template<>
-struct Interface<Addable>: ImplementedBy<SmallInt> {
+struct Interface<Numeric>: ImplementedBy<SmallInt> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     // TODO add non-SmallInt
     cout << "SmallInt expected but " << self.type->getName();
@@ -174,7 +174,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "BuiltinCallable-interf.hh"
 #include "Callable-interf.hh"
 #include "CodeAreaProvider-interf.hh"
-#include "Addable-interf.hh"
+#include "Numeric-interf.hh"
 #include "IntegerValue-interf.hh"
 #include "BooleanValue-interf.hh"
 #include "ArrayInitializer-interf.hh"

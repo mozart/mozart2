@@ -93,12 +93,12 @@ BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
   float a = value();
   float c = a + b;
 
-  if(numeric_limits<float>::max() - b < a){
-      //No overflow
-      result->make<Float>(vm,c);
-    } else {
+  if(c == numeric_limits<float>::infinity())
       //overflow (use gmp?)
       result->make<Float>(vm,0);
+    } else {
+      //No overflow
+      result->make<Float>(vm,c);
     }
 
   return BuiltinResultContinue;

@@ -237,7 +237,7 @@ TEST(FactorialTests, FloatTest) {
   one.make<Float>(vm, 1.0f);
   minusOne.make<Float>(vm, -1.0f);
   minusTwo.make<Float>(vm, -2.0f);
-  nnode.make<Float>(vm, N);
+  nnode.make<SmallInt>(vm, N);
 
   // Define Fibonacci function
 

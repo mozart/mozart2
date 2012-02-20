@@ -93,7 +93,7 @@ BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
   float a = value();
   float c = a + b;
 
-  if(c == numeric_limits<float>::infinity())
+  if(c == numeric_limits<float>::infinity()){
       //overflow (use gmp?)
       result->make<Float>(vm,0);
     } else {

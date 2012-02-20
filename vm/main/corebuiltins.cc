@@ -81,6 +81,9 @@ BuiltinResult show(VM vm, UnstableNode* args[]) {
   } else if (arg.type == Boolean::type()) {
     bool value = IMPLNOSELF(bool, Boolean, value, &arg);
     printf("%s\n", value ? "true" : "false");
+  } else if (arg.type == Float::type()) {
+    double value = IMPLNOSELF(double, Float, value, &arg);
+    printf("%f\n", value);
   } else if (arg.type->isTransient()) {
     return &arg;
   } else {

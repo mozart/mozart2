@@ -30,6 +30,7 @@
 #include "variables-decl.hh"
 #include "boolean-decl.hh"
 #include "smallint-decl.hh"
+#include "float-decl.hh"
 #include "codearea-decl.hh"
 #include "callables-decl.hh"
 #include "atom-decl.hh"
@@ -122,18 +123,18 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 
 class Numeric;
 template<>
-struct Interface<Numeric>: ImplementedBy<SmallInt> {
+struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
-    // TODO add non-SmallInt
-    std::cout << "SmallInt expected but " << self.type->getName();
+    // TODO add non-(SmallInt or Float)
+    std::cout << "SmallInt or Float expected but " << self.type->getName();
     std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 
   BuiltinResult subtract(Node& self, VM vm, UnstableNode* right,
                          UnstableNode* result) {
-    // TODO subtract non-SmallInt
-    std::cout << "SmallInt expected but " << self.type->getName();
+    // TODO subtract non-(SmallInt or Float)
+    std::cout << "SmallInt or Float expected but " << self.type->getName();
     std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
@@ -190,6 +191,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "variables.hh"
 #include "boolean.hh"
 #include "smallint.hh"
+#include "float.hh"
 #include "codearea.hh"
 #include "callables.hh"
 #include "atom.hh"

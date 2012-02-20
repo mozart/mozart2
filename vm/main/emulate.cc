@@ -465,12 +465,15 @@ void Thread::run() {
         } else if (arg.type == Boolean::type()) {
           bool value = IMPLNOSELF(bool, Boolean, value, &arg);
           printf("%s\n", value ? "True" : "False");
+        } else if (arg.type == Float::type()) {
+          double value = IMPLNOSELF(double, Float, value, &arg);
+          printf("%f\n", value);
         } else if (arg.type->isTransient()) {
           waitFor(vm, &arg, preempted);
           break;
         } else {
           const std::string typeName = arg.type->getName();
-          std::cout << "SmallInt or Boolean expected but ";
+          std::cout << "SmallInt, Boolean or Float expected but ";
           std::cout << typeName << " found" << std::endl;
         }
         advancePC(1); break;

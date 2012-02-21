@@ -32,7 +32,7 @@ object Main {
   }
 
   def applyTransforms(prog: Program) {
-    DeclarationExtractor(prog)
     Namer(prog)
+    Flattener(prog)
   }
 }

@@ -72,12 +72,12 @@ case class ShortCircuitBinaryOp(left: Expression, operator: String,
 
 // Trivial expressions
 
-case class RawVariable(name: String) extends Expression
+case class Variable(name: String) extends Expression with SymbolNode
     with FormalArg with Declaration {
   def syntax(indent: String) = name
 }
 
-case class EscapedVariable(variable: RawVariable) extends Expression {
+case class EscapedVariable(variable: Variable) extends Expression {
   def syntax(indent: String) = "!!" + variable.syntax(indent+"  ")
 }
 
@@ -104,14 +104,3 @@ abstract class BuiltinName(tag: String) extends AtomLike {
 case class True() extends BuiltinName("true")
 case class False() extends BuiltinName("false")
 case class UnitVal() extends BuiltinName("unit")
-
-// Synthetic expressions
-
-case class AbstractionValue(abstraction: Abstraction) extends Expression {
-  def syntax(indent: String) = "<Abs:%s>" format abstraction.fullName
-}
-
-case class Variable(sym: Symbol) extends Expression
-    with FormalArg with Declaration {
-  def syntax(indent: String) = sym.fullName
-}

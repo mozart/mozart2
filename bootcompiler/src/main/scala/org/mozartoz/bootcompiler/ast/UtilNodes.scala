@@ -1,13 +1,35 @@
 package org.mozartoz.bootcompiler
 package ast
 
-case class FormalArgs(args: List[FormalArg]) {
+import symtab._
+
+trait SymbolNode extends Node {
+  var symbol: Symbol = NoSymbol
+
+  def withSymbol(sym: Symbol): this.type = {
+    symbol = sym
+    this
+  }
+
+  override def copyAttrs(tree: Node): this.type = {
+    super.copyAttrs(tree)
+
+    tree match {
+      case symTree:SymbolNode => symbol = symTree.symbol
+      case _ => ()
+    }
+
+    this
+  }
+}
+
+case class FormalArgs(args: List[FormalArg]) extends Node {
   def syntax(indent: String) = args mkString " "
 }
 
-trait FormalArg extends Node
+trait FormalArg extends Node with SymbolNode
 
-case class ActualArgs(args: List[Expression]) {
+case class ActualArgs(args: List[Expression]) extends Node {
   def syntax(indent: String) = args mkString " "
 }
 

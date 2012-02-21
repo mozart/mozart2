@@ -10,11 +10,19 @@ object Symbol {
   }
 }
 
-sealed abstract class Symbol(val owner: Abstraction, val name: String) {
+sealed abstract class Symbol(val name: String) {
   val id = Symbol.nextID()
+
+  private var _owner: Abstraction = NoAbstraction
+  def owner = _owner
+
+  def setOwner(owner: Abstraction) {
+    _owner = owner
+  }
 
   val isDefined = true
   val isBuiltin = false
+  val isFormal = false
   val isSynthetic = false
 
   def fullName = name + "~" + id
@@ -22,16 +30,17 @@ sealed abstract class Symbol(val owner: Abstraction, val name: String) {
   override def toString() = fullName
 }
 
-class VariableSymbol(owner: Abstraction, name: String,
-    synthetic: Boolean = false) extends Symbol(owner, name) {
+class VariableSymbol(name: String, formal: Boolean = false,
+    synthetic: Boolean = false) extends Symbol(name) {
+  override val isFormal = formal
   override val isSynthetic = synthetic
 }
 
 class BuiltinSymbol(name: String,
-    val arity: Int) extends Symbol(NoAbstraction, name) {
+    val arity: Int) extends Symbol(name) {
   override val isBuiltin = true
 }
 
-object NoSymbol extends Symbol(NoAbstraction, "<NoSymbol>") {
+object NoSymbol extends Symbol("<NoSymbol>") {
   override val isDefined = false
 }

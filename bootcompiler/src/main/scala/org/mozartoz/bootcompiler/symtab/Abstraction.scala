@@ -35,24 +35,6 @@ class Abstraction(val owner: Abstraction, val name: String) {
     "`X$" + _lastSyntheticNum + "`"
   }
 
-  def newFormal(name: String): VariableSymbol = {
-    val result = new VariableSymbol(this, name)
-    formals += result
-    return result
-  }
-
-  private def newLocal(name: String, synthetic: Boolean): VariableSymbol = {
-    val result = new VariableSymbol(this, name, synthetic)
-    locals += result
-    result
-  }
-
-  def newLocal(name: String): VariableSymbol =
-    newLocal(name, false)
-
-  def newLocal(): VariableSymbol =
-    newLocal(nextSyntheticName(), true)
-
   def newAbstraction(name: String) =
     new Abstraction(this, name)
 

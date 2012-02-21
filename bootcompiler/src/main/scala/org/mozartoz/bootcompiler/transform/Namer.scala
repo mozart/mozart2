@@ -1,38 +1,20 @@
 package org.mozartoz.bootcompiler
 package transform
 
-import scala.collection.mutable.HashMap
+import scala.collection.mutable.ListBuffer
 
 import ast._
 import symtab._
 
-object Namer extends Transformer {
+object Namer extends Transformer with TransformUtils {
   type Env = Map[String, Symbol]
 
-  private var program: Program = _
   private var env: Env = _
 
   override def apply(prog: Program) {
-    program = prog
-    try {
-      val rawCode = prog.rawCode
-      program.rawCode = null
-
-      withAbstraction(prog.topLevelAbstraction) {
-        withEnvironment(prog.builtins.topLevelEnvironment) {
-          prog.topLevelAbstraction.body = transformStat(rawCode)
-        }
-      }
-    } finally {
-      program = null
+    withEnvironment(prog.builtins.topLevelEnvironment) {
+      super.apply(prog)
     }
-  }
-
-  private def withAbstraction[A](newAbs: Abstraction)(f: => A) = {
-    val savedAbs = abstraction
-    abstraction = newAbs
-    try f
-    finally abstraction = savedAbs
   }
 
   private def withEnvironment[A](newEnv: Env)(f: => A) = {
@@ -43,67 +25,104 @@ object Namer extends Transformer {
   }
 
   private def withEnvironmentFromDecls[A](
-      declarations: List[Declaration])(f: => A) = {
-    val newEnv = new HashMap[String, Symbol]
-
-    for (RawVariable(name) <- declarations) {
-      newEnv += name -> abstraction.newLocal(name)
-    }
-
+      decls: List[Variable])(f: => A) = {
+    val newEnv = (decls map (decl => decl.name -> decl.symbol))
     withEnvironment(env ++ newEnv)(f)
   }
 
-  override def transformStat(stat: Statement) = stat match {
-    case LocalStatement(declarations, statement) =>
-      withEnvironmentFromDecls(declarations) {
-        transformStat(statement)
+  override def transformStat(statement: Statement) = statement match {
+    case local @ LocalStatement(declarations, body) =>
+      val (decls, stats) = extractDecls(declarations)
+      val stat = statsAndStatToStat(stats, body)
+
+      withEnvironmentFromDecls(decls) {
+        if (decls.isEmpty) transformStat(stat)
+        else treeCopy.LocalStatement(local, decls, transformStat(stat))
       }
 
-    case _ => super.transformStat(stat)
+    case _ =>
+      super.transformStat(statement)
   }
 
-  override def transformExpr(expr: Expression) = expr match {
-    case LocalExpression(declarations, expression) =>
-      withEnvironmentFromDecls(declarations) {
-        transformExpr(expression)
+  override def transformExpr(expression: Expression) = expression match {
+    case local @ LocalExpression(declarations, body) =>
+      val (decls, stats) = extractDecls(declarations)
+      val expr = statsAndExprToExpr(stats, body)
+
+      withEnvironmentFromDecls(decls) {
+        if (decls.isEmpty) transformExpr(expr)
+        else treeCopy.LocalExpression(local, decls, transformExpr(expr))
       }
 
-    case RawVariable(name) =>
-      Variable(env(name))
+    case proc @ ProcExpression(name, args, body, flags) =>
+      val namedFormals = nameFormals(args.args)
 
-    case EscapedVariable(RawVariable(name)) =>
-      Variable(env(name))
-
-    case ProcExpression(name, args, body, flags) =>
-      makeAbstractionValue(name, args, flags) { abs => body }
-
-    case FunExpression(name, args, body, flags) =>
-      makeAbstractionValue(name, args, flags) { abs =>
-        val resultVar = abs.newFormal("<Result>")
-        BindStatement(Variable(resultVar), body)
+      withEnvironmentFromDecls(namedFormals) {
+        treeCopy.ProcExpression(proc,
+            name,
+            treeCopy.FormalArgs(args, namedFormals),
+            transformStat(body),
+            flags)
       }
 
-    case _ => super.transformExpr(expr)
+    case fun @ FunExpression(name, args, body, flags) =>
+      val namedFormals = nameFormals(args.args)
+
+      withEnvironmentFromDecls(namedFormals) {
+        treeCopy.FunExpression(fun,
+            name,
+            treeCopy.FormalArgs(args, namedFormals),
+            transformExpr(body),
+            flags)
+      }
+
+    case v @ Variable(name) =>
+      treeCopy.Variable(v, name) withSymbol env(name)
+
+    case EscapedVariable(v) =>
+      transformExpr(v)
+
+    case _ =>
+      super.transformExpr(expression)
   }
 
-  private def makeAbstractionValue(name: String, args: FormalArgs,
-      flags: List[Atom])(absToBody: Abstraction => Statement) = {
-    val abs = abstraction.newAbstraction(name)
+  def extractDecls(
+      declarations: List[Declaration]): (List[Variable], List[Statement]) = {
+    val decls = new ListBuffer[Variable]
+    val statements = new ListBuffer[Statement]
 
-    program.abstractions += abs
+    for (declaration <- declarations) {
+      declaration match {
+        case variable:Variable =>
+          decls += variable
 
-    var innerEnv = new HashMap[String, Symbol]
-    for (RawVariable(arg) <- args.args)
-      innerEnv += arg -> abs.newFormal(arg)
+        case stat @ BindStatement(left, right) =>
+          decls ++= extractDeclsInExpression(left)
+          statements += stat
 
-    abs.flags ++= flags map (_.value)
-
-    abs.body = withAbstraction(abs) {
-        withEnvironment(env ++ innerEnv) {
-          transformStat(absToBody(abs))
-        }
+        case stat:Statement =>
+          statements += stat
       }
+    }
 
-    AbstractionValue(abs)
+    val namedDecls = for (v@Variable(name) <- decls.toList)
+      yield treeCopy.Variable(v, name) withSymbol new VariableSymbol(name)
+
+    (namedDecls, statements.toList)
+  }
+
+  def extractDeclsInExpression(expr: Expression) = expr match {
+    case variable:Variable =>
+      List(variable)
+
+    case _ =>
+      Nil
+  }
+
+  def nameFormals(args: List[FormalArg]) = {
+    for (v @ Variable(name) <- args) yield {
+      val symbol = new VariableSymbol(name, formal = true)
+      treeCopy.Variable(v, name) withSymbol symbol
+    }
   }
 }

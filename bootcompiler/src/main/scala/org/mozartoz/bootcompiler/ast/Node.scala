@@ -22,6 +22,11 @@ abstract class Node extends Product with Cloneable {
     this
   }
 
+  private[bootcompiler] def copyAttrs(tree: Node): this.type = {
+    _pos = tree.pos
+    this
+  }
+
   def syntax(indent: String = ""): String
 
   override def toString = syntax()

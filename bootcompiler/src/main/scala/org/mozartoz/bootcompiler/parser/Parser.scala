@@ -103,7 +103,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     (("proc" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
       case flags ~ left ~ args ~ body =>
         val name = left match {
-          case RawVariable(name) => name
+          case Variable(name) => name
           case _ => ""
         }
         BindStatement(left, ProcExpression(name, args, body, flags))
@@ -113,7 +113,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     (("fun" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
       case flags ~ left ~ args ~ body =>
         val name = left match {
-          case RawVariable(name) => name
+          case Variable(name) => name
           case _ => ""
         }
         BindStatement(left, FunExpression(name, args, body, flags))
@@ -293,6 +293,6 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val atom: PackratParser[Atom] =
     atomLit ^^ (chars => Atom(chars))
 
-  lazy val variable: PackratParser[RawVariable] =
-    ident ^^ (chars => RawVariable(chars))
+  lazy val variable: PackratParser[Variable] =
+    ident ^^ (chars => Variable(chars))
 }

@@ -61,7 +61,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
 
 class Equatable;
 template<>
-struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
+struct Interface<Equatable>: ImplementedBy<SmallInt, Float, Atom>, NoAutoWait {
   BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     if (self.type->isTransient()) {
       // TODO A == B when A and B are aliased transients should return true

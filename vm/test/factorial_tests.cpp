@@ -230,6 +230,9 @@ TEST(FactorialTests, FloatTest) {
   builtinCreateThread.make<BuiltinProcedure>(
 					     vm, 1, (OzBuiltin) &builtins::createThread);
 
+  UnstableNode builtinEquals;
+  builtinEquals.make<BuiltinProcedure>(vm, 3, (OzBuiltin) &builtins::equals);
+
   // Define immediate constants
 
   UnstableNode zero, one, minusOne, minusTwo, nnode;
@@ -237,7 +240,7 @@ TEST(FactorialTests, FloatTest) {
   one.make<Float>(vm, 1.0f);
   minusOne.make<Float>(vm, -1.0f);
   minusTwo.make<Float>(vm, -2.0f);
-  nnode.make<SmallInt>(vm, N);
+  nnode.make<Float>(vm, N);
 
   // Define Fibonacci function
 
@@ -273,6 +276,7 @@ TEST(FactorialTests, FloatTest) {
    * K2 = -2
    * K3 = <CodeArea P>
    * K4 = <Thread.create>
+   * K5 = <equals>
    *
    * G0 = Fibonacci
    *
@@ -295,18 +299,30 @@ TEST(FactorialTests, FloatTest) {
 
   ByteCode fibonacciCodeBlock[] = {
     // if N == 0
-    OpInlineEqualsInteger, 0, 0, 4,
+    OpMoveKX, 0, 3,
+    OpCallBuiltin, 5, 3, 0, 3, 2,
+    OpCondBranch, 2, 9, 5, 0,
+
+    // error
+    OpMoveKX, 2, 3,
+    OpPrint, 3,
 
     // then
-    //    Res = 0
+    // Res = 0
     OpUnifyXK, 1, 0,
     OpReturn,
 
     // elseif N == 1
-    OpInlineEqualsInteger, 0, 1, 4,
+    OpMoveKX, 1, 3,
+    OpCallBuiltin, 5, 3, 0, 3, 2,
+    OpCondBranch, 2, 9, 5, 0,
+
+    // error
+    OpMoveKX, 2, 3,
+    OpPrint, 3,
 
     // then
-    //    Res = 1
+    // Res = 1
     OpUnifyXK, 1, 1,
     OpReturn,
 
@@ -342,7 +358,7 @@ TEST(FactorialTests, FloatTest) {
   };
 
   UnstableNode fibonacciCodeArea;
-  fibonacciCodeArea.make<CodeArea>(vm, 5, fibonacciCodeBlock,
+  fibonacciCodeArea.make<CodeArea>(vm, 6, fibonacciCodeBlock,
                                    sizeof(fibonacciCodeBlock), 4);
 
   ArrayInitializer initFibonacciCodeArea = fibonacciCodeArea.node;
@@ -351,6 +367,7 @@ TEST(FactorialTests, FloatTest) {
   initFibonacciCodeArea.initElement(vm, 2, &minusTwo);
   initFibonacciCodeArea.initElement(vm, 3, &fibonacciInnerCodeArea);
   initFibonacciCodeArea.initElement(vm, 4, &builtinCreateThread);
+  initFibonacciCodeArea.initElement(vm, 5, &builtinEquals);
 
   UnstableNode abstractionFibonacci;
   abstractionFibonacci.make<Abstraction>(vm, 1, 2, &fibonacciCodeArea);

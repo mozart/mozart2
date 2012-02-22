@@ -464,7 +464,7 @@ void Thread::run() {
           bool value = IMPLNOSELF(bool, Boolean, value, &arg);
           printf("%s\n", value ? "True" : "False");
         } else if (arg.type == Float::type()) {
-          float value = IMPLNOSELF(float, Float, value, &arg);
+          double value = IMPLNOSELF(double, Float, value, &arg);
           printf("%f\n", value);
         } else if (arg.type->isTransient()) {
           waitFor(vm, &arg, preempted);

@@ -40,7 +40,7 @@
 #include "Float-implem.hh"
 #endif
 
-float Implementation<Float>::build(VM vm, GC gc, Self from) {
+double Implementation<Float>::build(VM vm, GC gc, Self from) {
   return from.get().value();
 }
 
@@ -50,7 +50,7 @@ BuiltinResult Implementation<Float>::equals(Self self, VM vm,
   Node& rightNode = Reference::dereference(right->node);
 
   if (rightNode.type == Float::type()) {
-    float r = IMPLNOSELF(float, Float, value, &rightNode);
+    double r = IMPLNOSELF(double, Float, value, &rightNode);
     result->make<Boolean>(vm, value() == r);
     return BuiltinResultContinue;
   } else if (rightNode.type->isTransient()) {
@@ -63,7 +63,7 @@ BuiltinResult Implementation<Float>::equals(Self self, VM vm,
 }
 
 BuiltinResult Implementation<Float>::equalsInteger(Self self, VM vm,
-                                                      float right,
+                                                      double right,
                                                       bool* result) {
   *result = value() == right;
   return BuiltinResultContinue;
@@ -75,7 +75,7 @@ BuiltinResult Implementation<Float>::add(Self self, VM vm,
   Node& rightNode = Reference::dereference(right->node);
 
   if (rightNode.type == Float::type()) {
-    float b = IMPLNOSELF(float, Float, value, &rightNode);
+    double b = IMPLNOSELF(double, Float, value, &rightNode);
     return addValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
     return &rightNode;
@@ -88,12 +88,12 @@ BuiltinResult Implementation<Float>::add(Self self, VM vm,
 }
 
 BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
-                                                 float b,
+                                                 double b,
                                                  UnstableNode* result) {
-  float a = value();
-  float c = a + b;
+  double a = value();
+  double c = a + b;
 
-  if(c == numeric_limits<float>::infinity()){
+  if(c == numeric_limits<double>::infinity()){
       //overflow (use gmp?)
       result->make<Float>(vm,0);
     } else {

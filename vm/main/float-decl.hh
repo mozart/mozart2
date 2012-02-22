@@ -34,34 +34,34 @@ class Float;
 #endif
 
 template <>
-class Implementation<Float>: Copiable, StoredAs<float> {
+class Implementation<Float>: Copiable, StoredAs<double> {
 public:
   typedef SelfType<Float>::Self Self;
 public:
-  Implementation(float value) : _value(value) {}
+  Implementation(double value) : _value(value) {}
 
-  static float build(VM, float value) { return value; }
+  static double build(VM, double value) { return value; }
 
   inline
-  static float build(VM vm, GC gc, Self from);
+  static double build(VM vm, GC gc, Self from);
 
-  float value() const { return _value; }
+  double value() const { return _value; }
 
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right,
                        UnstableNode* result);
 
   inline
-  BuiltinResult equalsInteger(Self self, VM vm, float right, bool* result);
+  BuiltinResult equalsInteger(Self self, VM vm, double right, bool* result);
 
   inline
   BuiltinResult add(Self self, VM vm, UnstableNode* right,
                     UnstableNode* result);
 
   inline
-  BuiltinResult addValue(Self self, VM vm, float b, UnstableNode* result);
+  BuiltinResult addValue(Self self, VM vm, double b, UnstableNode* result);
 private:
-  const float _value;
+  const double _value;
 };
 
 #endif // __FLOAT_DECL_H

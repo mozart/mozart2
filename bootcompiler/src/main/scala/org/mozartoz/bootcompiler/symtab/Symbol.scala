@@ -8,6 +8,9 @@ object Symbol {
     _lastID += 1
     _lastID
   }
+
+  def newSynthetic() =
+    new VariableSymbol("`x$" + (_lastID+1).toString() + "`", synthetic = true)
 }
 
 sealed abstract class Symbol(val name: String) {

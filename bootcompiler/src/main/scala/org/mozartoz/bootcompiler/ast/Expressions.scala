@@ -77,6 +77,11 @@ case class Variable(name: String) extends Expression with SymbolNode
   def syntax(indent: String) = name
 }
 
+object Variable {
+  def apply(symbol: Symbol) =
+    new Variable(symbol.name) withSymbol symbol
+}
+
 case class EscapedVariable(variable: Variable) extends Expression {
   def syntax(indent: String) = "!!" + variable.syntax(indent+"  ")
 }

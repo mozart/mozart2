@@ -5,11 +5,23 @@ import ast._
 import symtab._
 
 abstract class Transformer extends (Program => Unit) {
+  var program: Program = _
   var abstraction: Abstraction = _
+
+  def builtins = program.builtins
 
   val treeCopy = new TreeCopier
 
   def apply(program: Program) {
+    this.program = program
+    try {
+      apply()
+    } finally {
+      this.program = null
+    }
+  }
+
+  protected def apply() {
     if (program.isRawCode)
       program.rawCode = transformStat(program.rawCode)
     else {

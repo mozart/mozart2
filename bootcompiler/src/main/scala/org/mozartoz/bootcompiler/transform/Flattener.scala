@@ -7,19 +7,12 @@ import ast._
 import symtab._
 
 object Flattener extends Transformer {
-  private var program: Program = _
+  override def apply() {
+    val rawCode = program.rawCode
+    program.rawCode = null
 
-  override def apply(prog: Program) {
-    program = prog
-    try {
-      val rawCode = prog.rawCode
-      program.rawCode = null
-
-      withAbstraction(prog.topLevelAbstraction) {
-        prog.topLevelAbstraction.body = transformStat(rawCode)
-      }
-    } finally {
-      program = null
+    withAbstraction(program.topLevelAbstraction) {
+      program.topLevelAbstraction.body = transformStat(rawCode)
     }
   }
 

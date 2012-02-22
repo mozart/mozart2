@@ -33,6 +33,7 @@ object Main {
 
   def applyTransforms(prog: Program) {
     Namer(prog)
+    Desugar(prog)
     Flattener(prog)
   }
 }

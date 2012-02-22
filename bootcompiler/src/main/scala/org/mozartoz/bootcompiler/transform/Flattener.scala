@@ -55,21 +55,6 @@ object Flattener extends Transformer {
       treeCopy.ProcExpression(proc, name, args,
           treeCopy.SkipStatement(body), flags)
 
-    case fun @ FunExpression(name, args, body, flags) =>
-      val resultVarSym = new VariableSymbol("<Result>",
-          formal = true, synthetic = true)
-      val resultVar = treeCopy.Variable(args,
-          resultVarSym.name) withSymbol resultVarSym
-
-      val newArgs = treeCopy.FormalArgs(args, args.args :+ resultVar)
-
-      val newBody = treeCopy.BindStatement(body,
-          treeCopy.Variable(resultVar, resultVar.name),
-          body)
-
-      val proc = treeCopy.ProcExpression(fun, name, newArgs, newBody, flags)
-      transformExpr(proc)
-
     case _ =>
       super.transformExpr(expression)
   }

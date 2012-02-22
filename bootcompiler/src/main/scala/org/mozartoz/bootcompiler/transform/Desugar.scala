@@ -19,6 +19,21 @@ object Desugar extends Transformer {
   }
 
   override def transformExpr(expression: Expression) = expression match {
+    case fun @ FunExpression(name, args, body, flags) =>
+      val resultVarSym = new VariableSymbol("<Result>",
+          formal = true, synthetic = true)
+      val resultVar = treeCopy.Variable(args,
+          resultVarSym.name) withSymbol resultVarSym
+
+      val newArgs = treeCopy.FormalArgs(args, args.args :+ resultVar)
+
+      val newBody = treeCopy.BindStatement(body,
+          treeCopy.Variable(resultVar, resultVar.name),
+          body)
+
+      val proc = treeCopy.ProcExpression(fun, name, newArgs, newBody, flags)
+      transformExpr(proc)
+
     case thread @ ThreadExpression(body) =>
       val resultSymbol = Symbol.newSynthetic()
 

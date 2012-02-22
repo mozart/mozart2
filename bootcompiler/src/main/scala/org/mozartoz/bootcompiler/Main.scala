@@ -34,6 +34,7 @@ object Main {
   def applyTransforms(prog: Program) {
     Namer(prog)
     Desugar(prog)
+    Unnester(prog)
     Flattener(prog)
   }
 }

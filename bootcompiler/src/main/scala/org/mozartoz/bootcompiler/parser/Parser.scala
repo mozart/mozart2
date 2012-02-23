@@ -61,16 +61,8 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // Expressions
 
-  lazy val expression: PackratParser[Expression] = (
-      "local" ~> inExpression <~ "end"
-    | "(" ~> inExpression <~ ")"
-    | procExpression
-    | funExpression
-    | callExpression
-    | ifExpression
-    | threadExpression
-    | operationExpression
-  )
+  lazy val expression: PackratParser[Expression] =
+    expression0
 
   // Declarations
 
@@ -183,10 +175,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   // Bind
 
   lazy val bindStatement: PackratParser[Statement] =
-    (expression1 <~ "=") ~ expression ^^ BindStatement
-
-  lazy val bindExpression: PackratParser[Expression] =
-    (expression1 <~ "=") ~ expression ^^ BindExpression
+    (expression1 <~ "=") ~ expression0 ^^ BindStatement
 
   // Skip
 
@@ -195,8 +184,8 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // Operations with precedence
 
-  lazy val operationExpression: PackratParser[Expression] = (
-      bindExpression
+  lazy val expression0: PackratParser[Expression] = (
+      (expression1 <~ "=") ~ expression0 ^^ BindExpression
     | expression1
   )
 
@@ -264,8 +253,17 @@ class OzParser extends OzTokenParsers with PackratParsers
   // @X   !!X   (prefix)
   lazy val expression13: PackratParser[Expression] = expression14
 
-  // trivial
-  lazy val expression14: PackratParser[Expression] = trivialExpression
+  // elementary
+  lazy val expression14: PackratParser[Expression] = (
+      "local" ~> inExpression <~ "end"
+    | "(" ~> inExpression <~ ")"
+    | procExpression
+    | funExpression
+    | callExpression
+    | ifExpression
+    | threadExpression
+    | trivialExpression
+  )
 
   // Trivial expressions
 

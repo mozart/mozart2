@@ -2,8 +2,9 @@ package org.mozartoz.bootcompiler
 
 import java.io.{ FileReader, BufferedReader }
 
+import scala.collection.immutable.PagedSeq
 import scala.util.parsing.combinator._
-import scala.util.parsing.input.StreamReader
+import scala.util.parsing.input._
 
 import parser._
 import ast._
@@ -15,7 +16,8 @@ object Main {
     println("Mozart-Oz bootstrap compiler")
 
     val fileName = args(0)
-    val reader = StreamReader(new BufferedReader(new FileReader(fileName)))
+    val reader = new PagedSeqReader(PagedSeq.fromReader(
+        new BufferedReader(new FileReader(fileName))))
     val parser = new OzParser()
 
     parser.parse(reader) match {

@@ -130,6 +130,10 @@ struct Interface<Numeric>: ImplementedBy<SmallInt,Float> {
     cout << " found" << endl;
     return BuiltinResultContinue;
   }
+  BuiltinResult subtract(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    cout << "SmallInt expected but " << self.type->getName() << " found" << endl;
+    return BuiltinResultContinue;
+  }
 };
 
 class IntegerValue;

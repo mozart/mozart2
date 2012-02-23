@@ -104,4 +104,40 @@ BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
   return BuiltinResultContinue;
 }
 
+BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == Float::type()) {
+    double b = IMPLNOSELF(double, Float, value, &rightNode);
+    return subtractValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
+  } else {
+    // TODO Float + non-Float
+    std::cout << "Float expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+}
+
+BuiltinResult Implementation<Float>::subtractValue(Self self, VM vm,
+                                                 double b,
+                                                 UnstableNode* result) {
+  double a = value();
+  double c = a - b;
+
+  if(c == numeric_limits<double>::infinity()){
+      //overflow (use gmp?)
+      result->make<Float>(vm,0);
+    } else {
+      //No overflow
+      result->make<Float>(vm,c);
+    }
+
+  return BuiltinResultContinue;
+}
+
+
 #endif // __FLOAT_H

@@ -223,20 +223,16 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val expression7: PackratParser[Expression] = expression8
 
   // X+Y   X-Y   (left-associative)
-  lazy val expression8: PackratParser[Expression] =
-    expression9 ~ rep(("+" | "-") ~ expression9) ^^ {
-      case x ~ ys => ys.foldLeft(x) {
-        case (prev, op ~ right) => BinaryOp(prev, op, right)
-      }
-    }
+  lazy val expression8: PackratParser[Expression] = (
+      expression8 ~ ("+" | "-") ~ expression9 ^^ BinaryOp
+    | expression9
+  )
 
   // X*Y   X/Y    X div Y   X mod Y   (left-associative)
-  lazy val expression9: PackratParser[Expression] =
-    expression10 ~ rep(("*" | "/" | "div" | "mod") ~ expression10) ^^ {
-      case x ~ ys => ys.foldLeft(x) {
-        case (prev, op ~ right) => BinaryOp(prev, op, right)
-      }
-    }
+  lazy val expression9: PackratParser[Expression] = (
+      expression9 ~ ("*" | "/" | "div" | "mod") ~ expression10 ^^ BinaryOp
+    | expression10
+  )
 
   // X,Y   (right-associative)
   lazy val expression10: PackratParser[Expression] = expression11

@@ -17,12 +17,21 @@ trait TreeDSL {
       case _ =>
         treeCopy.CompoundStatement(self, List(self, right))
     }
+
+    def ~> (right: Expression) =
+      treeCopy.StatAndExpression(self, self, right)
   }
 
   /** Operations on Expressions */
   implicit def expression2ops(self: Expression) = new {
     def === (rhs: Expression) =
       treeCopy.BindStatement(self, self, rhs)
+
+    def call(args: Expression*) =
+      treeCopy.CallStatement(self, self, ActualArgs(args.toList))
+
+    def callExpr(args: Expression*) =
+      treeCopy.CallExpression(self, self, ActualArgs(args.toList))
   }
 
   /** Convert a Symbol into a Variable */
@@ -39,7 +48,7 @@ trait TreeDSL {
       Some((statement.left, statement.right))
   }
 
-  /** Construct IFStatements and IfExpressions */
+  /** Construct IfStatements and IfExpressions */
   def IF(cond: Expression) = new {
     // Statement
     def THEN(trueStat: Statement) = new {
@@ -52,5 +61,43 @@ trait TreeDSL {
       def ELSE(falseExpr: Expression) =
         treeCopy.IfExpression(cond, cond, trueExpr, falseExpr)
     }
+  }
+
+  /** Construct ProcExpressions */
+  def PROC(name: String, args: List[FormalArg],
+      flags: List[Atom] = Nil)(body: Statement) = {
+    treeCopy.ProcExpression(body, name,
+        treeCopy.FormalArgs(args.headOption getOrElse body, args),
+        body,
+        flags)
+  }
+
+  /** Construct ThreadStatements */
+  def THREAD(body: Statement) =
+    treeCopy.ThreadStatement(body, body)
+
+  /** Construct LocalStatements and LocalExpressions */
+  def LOCAL(decls: Declaration*) = new {
+    def IN(body: Statement) =
+      treeCopy.LocalStatement(body, decls.toList, body)
+
+    def IN(body: Expression) =
+      treeCopy.LocalExpression(body, decls.toList, body)
+  }
+
+  def statementWithTemp(statement: Symbol => Statement) = {
+    val temp = Symbol.newSynthetic()
+    LOCAL (temp) IN statement(temp)
+  }
+
+  def statementWithTemps(statement: (Symbol, Symbol) => Statement) = {
+    val temp1 = Symbol.newSynthetic()
+    val temp2 = Symbol.newSynthetic()
+    LOCAL (temp1, temp2) IN statement(temp1, temp2)
+  }
+
+  def expressionWithTemp(expression: Symbol => Expression) = {
+    val temp = Symbol.newSynthetic()
+    LOCAL (temp) IN expression(temp)
   }
 }

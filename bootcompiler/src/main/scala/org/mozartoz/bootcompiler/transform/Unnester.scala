@@ -13,12 +13,11 @@ object Unnester extends Transformer with TreeDSL {
       transformBindVarToExpression(bind, v, lhs)
 
     case lhs === rhs =>
-      val tempSymbol = Symbol.newSynthetic()
-
-      val bindLhs = tempSymbol === lhs
-      val bindRhs = tempSymbol === rhs
-
-      transformStat(bindLhs ~ bindRhs)
+      statementWithTemp { temp =>
+        transformStat {
+          (temp === lhs) ~ (temp === rhs)
+        }
+      }
 
     case _ =>
       super.transformStat(statement)
@@ -54,29 +53,31 @@ object Unnester extends Transformer with TreeDSL {
       bind
 
     case UnaryOp(op, rhs2) =>
-      val temp = Symbol.newSynthetic()
-      transformStat((temp === rhs2) ~ (v === treeCopy.UnaryOp(rhs, op, temp)))
+      statementWithTemp { temp =>
+        transformStat((temp === rhs2) ~ (v === treeCopy.UnaryOp(rhs, op, temp)))
+      }
 
     case BinaryOp(v2:Variable, op, v3:Variable) =>
       bind
 
     case BinaryOp(v2:Variable, op, rhs3) =>
-      val temp = Symbol.newSynthetic()
-      transformStat(
-          (temp === rhs3) ~ (v === treeCopy.BinaryOp(rhs, v2, op, temp)))
+      statementWithTemp { temp =>
+        transformStat(
+            (temp === rhs3) ~ (v === treeCopy.BinaryOp(rhs, v2, op, temp)))
+      }
 
     case BinaryOp(lhs2, op, v3:Variable) =>
-      val temp = Symbol.newSynthetic()
-      transformStat(
-          (temp === lhs2) ~ (v === treeCopy.BinaryOp(rhs, temp, op, v3)))
+      statementWithTemp { temp =>
+        transformStat(
+            (temp === lhs2) ~ (v === treeCopy.BinaryOp(rhs, temp, op, v3)))
+      }
 
     case BinaryOp(lhs2, op, rhs3) =>
-      val temp2 = Symbol.newSynthetic()
-      val temp3 = Symbol.newSynthetic()
-
-      val bindings = (temp2 === lhs2) ~ (temp3 === rhs3)
-      transformStat(
-          bindings ~ (v === treeCopy.BinaryOp(rhs, temp2, op, temp3)))
+      statementWithTemps { (temp2, temp3) =>
+        val bindings = (temp2 === lhs2) ~ (temp3 === rhs3)
+        transformStat(
+            bindings ~ (v === treeCopy.BinaryOp(rhs, temp2, op, temp3)))
+      }
 
     case _:FunExpression | _:ThreadExpression | _:EscapedVariable =>
       throw new Exception(

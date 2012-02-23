@@ -28,7 +28,7 @@ object Flattener extends Transformer {
       for (v @ Variable(_) <- declarations)
         abstraction.acquire(v.symbol.asInstanceOf[VariableSymbol])
 
-      super.transformStat(statement)
+      transformStat(stat)
 
     case _ =>
       super.transformStat(statement)
@@ -39,7 +39,7 @@ object Flattener extends Transformer {
       for (v @ Variable(_) <- declarations)
         abstraction.acquire(v.symbol.asInstanceOf[VariableSymbol])
 
-      super.transformExpr(expression)
+      transformExpr(expr)
 
     case proc @ ProcExpression(name, args, body, flags) =>
       val abs = abstraction.newAbstraction(name)

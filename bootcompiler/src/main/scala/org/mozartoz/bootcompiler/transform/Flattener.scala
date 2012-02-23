@@ -26,7 +26,7 @@ object Flattener extends Transformer {
   override def transformStat(statement: Statement) = statement match {
     case LocalStatement(declarations, stat) =>
       for (v @ Variable(_) <- declarations)
-        v.symbol.setOwner(abstraction)
+        abstraction.acquire(v.symbol.asInstanceOf[VariableSymbol])
 
       super.transformStat(statement)
 
@@ -37,7 +37,7 @@ object Flattener extends Transformer {
   override def transformExpr(expression: Expression) = expression match {
     case LocalExpression(declarations, expr) =>
       for (v @ Variable(_) <- declarations)
-        v.symbol.setOwner(abstraction)
+        abstraction.acquire(v.symbol.asInstanceOf[VariableSymbol])
 
       super.transformExpr(expression)
 
@@ -45,6 +45,9 @@ object Flattener extends Transformer {
       val abs = abstraction.newAbstraction(name)
 
       program.abstractions += abs
+
+      for (v @ Variable(_) <- args)
+        abs.acquire(v.symbol.asInstanceOf[VariableSymbol])
 
       abs.flags ++= flags map (_.value)
 

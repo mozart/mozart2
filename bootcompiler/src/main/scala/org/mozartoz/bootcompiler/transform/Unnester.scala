@@ -19,6 +19,32 @@ object Unnester extends Transformer with TreeDSL {
         }
       }
 
+    case call @ CallStatement(callable, args) =>
+      val argsAndTheirTemps =
+        for (arg <- callable :: args) yield arg match {
+          case v:Variable => v -> v
+          case _ => arg -> Variable(Symbol.newSynthetic())
+        }
+
+      val argsNeedingTempsAndTheirTemps =
+        argsAndTheirTemps filter (x => x._1 ne x._2)
+
+      val tempArgs = argsNeedingTempsAndTheirTemps map (_._2)
+
+      if (tempArgs.isEmpty) super.transformStat(call)
+      else {
+        LOCAL (tempArgs:_*) IN {
+          val computeTemps =
+            for ((arg, temp) <- argsNeedingTempsAndTheirTemps)
+              yield transformStat(temp === arg)
+
+          val temps = argsAndTheirTemps map (_._2)
+          val newCall = treeCopy.CallStatement(call, temps.head, temps.tail)
+
+          CompoundStatement(computeTemps) ~ newCall
+        }
+      }
+
     case _ =>
       super.transformStat(statement)
   }

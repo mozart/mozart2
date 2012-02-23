@@ -127,11 +127,11 @@ abstract class Transformer extends (Program => Unit) {
     case _ => declaration
   }
 
-  def transformFormalArgs(args: FormalArgs): FormalArgs =
-    FormalArgs(args.args map transformFormalArg)
+  def transformFormalArgs(args: List[FormalArg]): List[FormalArg] =
+    args map transformFormalArg
 
   def transformFormalArg(arg: FormalArg) = arg
 
-  def transformActualArgs(args: ActualArgs): ActualArgs =
-    ActualArgs(args.args map transformExpr)
+  def transformActualArgs(args: List[Expression]): List[Expression] =
+    args map transformExpr
 }

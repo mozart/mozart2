@@ -55,23 +55,23 @@ object Namer extends Transformer with TransformUtils {
       }
 
     case proc @ ProcExpression(name, args, body, flags) =>
-      val namedFormals = nameFormals(args.args)
+      val namedFormals = nameFormals(args)
 
       withEnvironmentFromDecls(namedFormals) {
         treeCopy.ProcExpression(proc,
             name,
-            treeCopy.FormalArgs(args, namedFormals),
+            namedFormals,
             transformStat(body),
             flags)
       }
 
     case fun @ FunExpression(name, args, body, flags) =>
-      val namedFormals = nameFormals(args.args)
+      val namedFormals = nameFormals(args)
 
       withEnvironmentFromDecls(namedFormals) {
         treeCopy.FunExpression(fun,
             name,
-            treeCopy.FormalArgs(args, namedFormals),
+            namedFormals,
             transformExpr(body),
             flags)
       }

@@ -13,7 +13,7 @@ class TreeCopier {
       statement: Statement) =
     new LocalStatement(declarations, statement).copyAttrs(tree)
 
-  def CallStatement(tree: Node, callable: Expression, args: ActualArgs) =
+  def CallStatement(tree: Node, callable: Expression, args: List[Expression]) =
     new CallStatement(callable, args).copyAttrs(tree)
 
   def IfStatement(tree: Node, condition: Expression,
@@ -41,15 +41,15 @@ class TreeCopier {
 
   // Complex expressions
 
-  def ProcExpression(tree: Node, name: String, args: FormalArgs,
+  def ProcExpression(tree: Node, name: String, args: List[FormalArg],
       body: Statement, flags: List[Atom]) =
     new ProcExpression(name, args, body, flags).copyAttrs(tree)
 
-  def FunExpression(tree: Node, name: String, args: FormalArgs,
+  def FunExpression(tree: Node, name: String, args: List[FormalArg],
       body: Expression, flags: List[Atom]) =
     new FunExpression(name, args, body, flags).copyAttrs(tree)
 
-  def CallExpression(tree: Node, callable: Expression, args: ActualArgs) =
+  def CallExpression(tree: Node, callable: Expression, args: List[Expression]) =
     new CallExpression(callable, args).copyAttrs(tree)
 
   def IfExpression(tree: Node, condition: Expression,
@@ -100,12 +100,4 @@ class TreeCopier {
 
   def UnitVal(tree: Node) =
     new UnitVal().copyAttrs(tree)
-
-  // Other
-
-  def FormalArgs(tree: Node, args: List[FormalArg]) =
-    new FormalArgs(args).copyAttrs(tree)
-
-  def ActualArgs(tree: Node, args: List[Expression]) =
-    new ActualArgs(args).copyAttrs(tree)
 }

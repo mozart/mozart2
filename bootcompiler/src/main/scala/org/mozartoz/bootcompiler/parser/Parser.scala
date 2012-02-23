@@ -123,7 +123,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val procFlags = rep(atom)
 
-  lazy val formalArgs = rep(formalArg) ^^ FormalArgs
+  lazy val formalArgs = rep(formalArg)
 
   lazy val formalArg = variable
 
@@ -137,7 +137,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val callExpression: PackratParser[Expression] =
     "{" ~> expression ~ actualArgs <~ "}" ^^ CallExpression
 
-  lazy val actualArgs = rep(expression) ^^ ActualArgs
+  lazy val actualArgs = rep(expression)
 
   // If then else end
 

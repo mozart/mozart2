@@ -21,7 +21,7 @@ object Desugar extends Transformer with TreeDSL {
     case fun @ FunExpression(name, args, body, flags) =>
       val result = Symbol.newSynthetic("<Result>", formal = true)
 
-      val proc = PROC(name, args.args :+ Variable(result), flags) {
+      val proc = PROC(name, args :+ Variable(result), flags) {
         result === body
       }
 

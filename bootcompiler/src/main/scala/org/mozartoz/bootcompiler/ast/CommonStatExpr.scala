@@ -25,13 +25,13 @@ trait LocalCommon extends StatOrExpr {
 trait ProcFunExpression extends StatOrExpr {
   protected val keyword: String
 
-  protected val args: FormalArgs
+  protected val args: List[FormalArg]
   protected val body: StatOrExpr
   protected val flags: List[Atom]
 
   def syntax(indent: String) = {
     val flagsSyntax = flags.foldLeft("") { _ + " " + _.syntax(indent) }
-    val argsSyntax = args.args.foldLeft("") { _ + " " + _.syntax(indent) }
+    val argsSyntax = args.foldLeft("") { _ + " " + _.syntax(indent) }
 
     val header0 = keyword + flagsSyntax + " {$"
     val header = header0 + argsSyntax + "}"
@@ -45,9 +45,9 @@ trait ProcFunExpression extends StatOrExpr {
 
 trait CallCommon extends StatOrExpr {
   protected val callable: Expression
-  protected val args: ActualArgs
+  protected val args: List[Expression]
 
-  def syntax(indent: String) = args.args match {
+  def syntax(indent: String) = args match {
     case Nil => "{" + callable.syntax() + "}"
 
     case firstArg :: otherArgs => {

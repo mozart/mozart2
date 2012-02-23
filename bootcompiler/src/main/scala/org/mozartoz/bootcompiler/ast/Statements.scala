@@ -18,7 +18,7 @@ case class LocalStatement(declarations: List[Declaration],
 }
 
 case class CallStatement(callable: Expression,
-    args: ActualArgs) extends Statement with CallCommon
+    args: List[Expression]) extends Statement with CallCommon
 
 case class IfStatement(condition: Expression,
     trueStatement: Statement,

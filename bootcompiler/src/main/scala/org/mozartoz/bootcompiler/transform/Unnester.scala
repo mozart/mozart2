@@ -38,9 +38,9 @@ object Unnester extends Transformer with TreeDSL {
     case LocalExpression(decls, expr) =>
       transformStat(treeCopy.LocalStatement(rhs, decls, v === expr))
 
-    case CallExpression(callable, ActualArgs(args)) =>
+    case CallExpression(callable, args) =>
       transformStat(treeCopy.CallStatement(
-          rhs, callable, ActualArgs(args :+ v)))
+          rhs, callable, args :+ v))
 
     case IfExpression(cond, trueExpr, falseExpr) =>
       val statement = IF (cond) THEN (v === trueExpr) ELSE (v === falseExpr)

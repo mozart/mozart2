@@ -23,15 +23,7 @@ trait SymbolNode extends Node {
   }
 }
 
-case class FormalArgs(args: List[FormalArg]) extends Node {
-  def syntax(indent: String) = args mkString " "
-}
-
 trait FormalArg extends Node with SymbolNode
-
-case class ActualArgs(args: List[Expression]) extends Node {
-  def syntax(indent: String) = args mkString " "
-}
 
 trait Declaration extends Node
 

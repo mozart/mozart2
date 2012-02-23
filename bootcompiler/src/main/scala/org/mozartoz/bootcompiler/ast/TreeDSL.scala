@@ -28,10 +28,10 @@ trait TreeDSL {
       treeCopy.BindStatement(self, self, rhs)
 
     def call(args: Expression*) =
-      treeCopy.CallStatement(self, self, ActualArgs(args.toList))
+      treeCopy.CallStatement(self, self, args.toList)
 
     def callExpr(args: Expression*) =
-      treeCopy.CallExpression(self, self, ActualArgs(args.toList))
+      treeCopy.CallExpression(self, self, args.toList)
   }
 
   /** Convert a Symbol into a Variable */
@@ -66,10 +66,7 @@ trait TreeDSL {
   /** Construct ProcExpressions */
   def PROC(name: String, args: List[FormalArg],
       flags: List[Atom] = Nil)(body: Statement) = {
-    treeCopy.ProcExpression(body, name,
-        treeCopy.FormalArgs(args.headOption getOrElse body, args),
-        body,
-        flags)
+    treeCopy.ProcExpression(body, name, args, body, flags)
   }
 
   /** Construct ThreadStatements */

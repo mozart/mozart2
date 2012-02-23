@@ -21,20 +21,20 @@ case class LocalExpression(declarations: List[Declaration],
 
 // Complex expressions
 
-case class ProcExpression(name: String, args: FormalArgs,
+case class ProcExpression(name: String, args: List[FormalArg],
     body: Statement, flags: List[Atom]) extends Expression
     with ProcFunExpression {
   protected val keyword = "proc"
 }
 
-case class FunExpression(name: String, args: FormalArgs,
+case class FunExpression(name: String, args: List[FormalArg],
     body: Expression, flags: List[Atom]) extends Expression
     with ProcFunExpression {
   protected val keyword = "fun"
 }
 
 case class CallExpression(callable: Expression,
-    args: ActualArgs) extends Expression with CallCommon
+    args: List[Expression]) extends Expression with CallCommon
 
 case class IfExpression(condition: Expression,
     trueExpression: Expression,

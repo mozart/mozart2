@@ -32,6 +32,18 @@ object Desugar extends Transformer with TreeDSL {
         transformStat(THREAD (temp === body)) ~> temp
       }
 
+    case UnaryOp(op, arg) =>
+      transformExpr(builtins.unaryOpToBuiltin(op) callExpr (arg))
+
+    case BinaryOp(lhs, op, rhs) =>
+      transformExpr(builtins.binaryOpToBuiltin(op) callExpr (lhs, rhs))
+
+    case ShortCircuitBinaryOp(lhs, "andthen", rhs) =>
+      transformExpr(IF (lhs) THEN (rhs) ELSE (False()))
+
+    case ShortCircuitBinaryOp(lhs, "orelse", rhs) =>
+      transformExpr(IF (lhs) THEN (True()) ELSE (rhs))
+
     case _ =>
       super.transformExpr(expression)
   }

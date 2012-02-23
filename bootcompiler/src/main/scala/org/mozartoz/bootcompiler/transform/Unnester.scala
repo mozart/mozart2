@@ -49,37 +49,8 @@ object Unnester extends Transformer with TreeDSL {
     case BindExpression(lhs2, rhs2) =>
       transformStat((v === lhs2) ~ (v === rhs2))
 
-    case UnaryOp(op, v2:Variable) =>
-      bind
-
-    case UnaryOp(op, rhs2) =>
-      statementWithTemp { temp =>
-        transformStat((temp === rhs2) ~ (v === treeCopy.UnaryOp(rhs, op, temp)))
-      }
-
-    case BinaryOp(v2:Variable, op, v3:Variable) =>
-      bind
-
-    case BinaryOp(v2:Variable, op, rhs3) =>
-      statementWithTemp { temp =>
-        transformStat(
-            (temp === rhs3) ~ (v === treeCopy.BinaryOp(rhs, v2, op, temp)))
-      }
-
-    case BinaryOp(lhs2, op, v3:Variable) =>
-      statementWithTemp { temp =>
-        transformStat(
-            (temp === lhs2) ~ (v === treeCopy.BinaryOp(rhs, temp, op, v3)))
-      }
-
-    case BinaryOp(lhs2, op, rhs3) =>
-      statementWithTemps { (temp2, temp3) =>
-        val bindings = (temp2 === lhs2) ~ (temp3 === rhs3)
-        transformStat(
-            bindings ~ (v === treeCopy.BinaryOp(rhs, temp2, op, temp3)))
-      }
-
-    case _:FunExpression | _:ThreadExpression | _:EscapedVariable =>
+    case _:FunExpression | _:ThreadExpression | _:EscapedVariable |
+        _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp =>
       throw new Exception(
           "illegal tree in Unnester.transformBindVarToExpression")
   }

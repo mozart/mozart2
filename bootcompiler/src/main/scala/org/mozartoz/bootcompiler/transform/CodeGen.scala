@@ -58,7 +58,7 @@ object CodeGen extends Transformer with TreeDSL {
 
   override def applyToAbstraction() {
     // Allocate local variables
-    code += OpAllocateL(abstraction.formals.size + abstraction.locals.size)
+    code += OpAllocateY(abstraction.formals.size + abstraction.locals.size)
 
     // Save formals in local variables
     for ((formal, index) <- abstraction.formals.zipWithIndex)
@@ -72,7 +72,7 @@ object CodeGen extends Transformer with TreeDSL {
     generate(abstraction.body)
 
     // Deallocate local variables and return
-    code += OpDeallocateL()
+    code += OpDeallocateY()
     code += OpReturn()
   }
 

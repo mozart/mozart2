@@ -37,9 +37,9 @@ case class OpMoveKX(source: KReg, dest: XReg) extends OpCode
 case class OpMoveKY(source: KReg, dest: YReg) extends OpCode
 
 /** Allocate `count` local variables, i.e., Y registers */
-case class OpAllocateL(count: ImmInt) extends OpCode
+case class OpAllocateY(count: ImmInt) extends OpCode
 /** Deallocate the current Y registers */
-case class OpDeallocateL() extends OpCode
+case class OpDeallocateY() extends OpCode
 
 /** Create a new Unbound variable and store it into `dest` */
 case class OpCreateVarX(dest: XReg) extends OpCode

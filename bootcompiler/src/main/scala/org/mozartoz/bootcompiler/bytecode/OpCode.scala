@@ -51,3 +51,17 @@ case class OpUnifyXX(lhs: XReg, rhs: XReg) extends OpCode
 case class OpUnifyXY(lhs: XReg, rhs: YReg) extends OpCode
 case class OpUnifyXG(lhs: XReg, rhs: GReg) extends OpCode
 case class OpUnifyXK(lhs: XReg, rhs: KReg) extends OpCode
+
+case class OpArrayInitElementX(target: XReg,
+    index: ImmInt, value: XReg) extends OpCode
+case class OpArrayInitElementY(target: XReg,
+    index: ImmInt, value: YReg) extends OpCode
+case class OpArrayInitElementG(target: XReg,
+    index: ImmInt, value: GReg) extends OpCode
+case class OpArrayInitElementK(target: XReg,
+    index: ImmInt, value: KReg) extends OpCode
+
+case class OpCreateAbstractionX(arity: ImmInt, body: XReg,
+    globalCount: ImmInt, dest: XReg) extends OpCode
+case class OpCreateAbstractionK(arity: ImmInt, body: KReg,
+    globalCount: ImmInt, dest: XReg) extends OpCode

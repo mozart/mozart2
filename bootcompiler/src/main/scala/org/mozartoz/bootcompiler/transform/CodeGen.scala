@@ -39,6 +39,17 @@ object CodeGen extends Transformer with TreeDSL {
         case right:KReg => code += OpUnifyXK(self, right)
       }
     }
+
+    def array(index: ImmInt)(implicit ev: A <:< XReg) = new {
+      def := (value: Register) {
+        value match {
+          case v:XReg => code += OpArrayInitElementX(self, index, v)
+          case v:YReg => code += OpArrayInitElementY(self, index, v)
+          case v:GReg => code += OpArrayInitElementG(self, index, v)
+          case v:KReg => code += OpArrayInitElementK(self, index, v)
+        }
+      }
+    }
   }
 
   private implicit def symbol2ops2(self: Symbol) = new {
@@ -57,11 +68,11 @@ object CodeGen extends Transformer with TreeDSL {
 
     // Save formals in local variables
     for ((formal, index) <- abstraction.formals.zipWithIndex)
-      code += OpMoveXY(XReg(index), formal)
+      code += OpMoveXY(XReg(index), formal.toReg.asInstanceOf[YReg])
 
     // Create new variables for the other locals
     for (local <- abstraction.locals)
-      code += OpCreateVarY(local)
+      code += OpCreateVarY(local.toReg.asInstanceOf[YReg])
 
     // Actual codegen
     generate(abstraction.body)
@@ -85,7 +96,15 @@ object CodeGen extends Transformer with TreeDSL {
         // TODO
 
       case ((lhs:Variable) === (rhs @ CreateAbstraction(abs, globals))) =>
-        // TODO
+        val dest = XReg(0)
+
+        val bodyReg = code.registerFor(abs.codeArea)
+        code += OpCreateAbstractionK(abs.arity, bodyReg, globals.size, dest)
+
+        for ((global, index) <- globals.zipWithIndex)
+          dest.array(index) := global.symbol
+
+        lhs.symbol := dest
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>
         // TODO Branch distances

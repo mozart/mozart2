@@ -9,7 +9,7 @@ import util._
 class CodeArea {
   val opCodes = new ArrayBuffer[OpCode]
 
-  private val registerAllocs = new HashMap[Symbol, Register]
+  private val registerAllocs = new HashMap[Any, Register]
 
   def isDefined = !opCodes.isEmpty
 
@@ -23,19 +23,25 @@ class CodeArea {
   private val YCounter = new RegCounter(YReg)
   private val KCounter = new RegCounter(KReg)
 
-  def registerFor(symbol: VariableSymbol): YReg = {
-    registerFor(symbol:Symbol).asInstanceOf[YReg]
-  }
+  def registerFor(symbol: VariableSymbol): YOrGReg =
+    innerRegisterFor(symbol).asInstanceOf[YOrGReg]
 
-  def registerFor(symbol: BuiltinSymbol): KReg = {
-    registerFor(symbol:Symbol).asInstanceOf[KReg]
-  }
+  def registerFor(symbol: BuiltinSymbol): KReg =
+    innerRegisterFor(symbol).asInstanceOf[KReg]
 
-  def registerFor(symbol: Symbol) = {
-    registerAllocs.getOrElseUpdate(symbol, {
-      (symbol: @unchecked) match {
-        case _:VariableSymbol => YCounter.next()
-        case _:BuiltinSymbol => KCounter.next()
+  def registerFor(symbol: Symbol) =
+    innerRegisterFor(symbol)
+
+  def registerFor(codeArea: CodeArea) =
+    innerRegisterFor(codeArea).asInstanceOf[KReg]
+
+  private def innerRegisterFor(key: Any) = {
+    registerAllocs.getOrElseUpdate(key, {
+      (key: @unchecked) match {
+        case sym:VariableSymbol =>
+          if (sym.isGlobal) GReg(sym.owner.globals.indexOf(sym))
+          else YCounter.next()
+        case _:BuiltinSymbol | _:CodeArea => KCounter.next()
       }
     })
   }

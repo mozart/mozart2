@@ -24,10 +24,11 @@ sealed abstract class Register(letter: String) extends OpCodeArg {
 trait XOrYReg extends Register
 trait XOrGReg extends Register
 trait XOrKReg extends Register
+trait YOrGReg extends Register
 
 case class XReg(index: Int) extends Register("X")
     with XOrYReg with XOrGReg with XOrKReg
 
-case class YReg(index: Int) extends Register("Y") with XOrYReg
-case class GReg(index: Int) extends Register("G") with XOrGReg
+case class YReg(index: Int) extends Register("Y") with XOrYReg with YOrGReg
+case class GReg(index: Int) extends Register("G") with XOrGReg with YOrGReg
 case class KReg(index: Int) extends Register("K") with XOrKReg

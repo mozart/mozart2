@@ -107,12 +107,27 @@ object CodeGen extends Transformer with TreeDSL {
         lhs.symbol := dest
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>
-        // TODO Branch distances
         XReg(0) := cond.symbol
-        code += OpCondBranch(XReg(0), 0, 0, 0)
-        generate(trueStat)
-        code += OpBranch(0)
-        generate(falseStat)
+        val condBranchHole = code.addHole()
+        var branchHole: CodeArea#Hole = null
+
+        val errorSize = code.counting {
+          // TODO generate error code
+        }
+
+        val trueBranchSize = code.counting {
+          generate(trueStat)
+          branchHole = code.addHole()
+        }
+
+        val falseBranchSize = code.counting {
+          generate(falseStat)
+        }
+
+        condBranchHole fillWith OpCondBranch(XReg(0),
+            errorSize, errorSize + trueBranchSize, 0)
+
+        branchHole fillWith OpBranch(falseBranchSize)
 
       case CallStatement(callable:Variable, args) =>
         for ((arg:Variable, index) <- args.zipWithIndex)

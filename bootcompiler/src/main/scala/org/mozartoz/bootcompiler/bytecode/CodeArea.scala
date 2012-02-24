@@ -48,4 +48,22 @@ class CodeArea {
 
   def += (opCode: OpCode) =
     opCodes += opCode
+
+  class Hole(index: Int) {
+    def fillWith(opCode: OpCode) {
+      opCodes(index) = opCode
+    }
+  }
+
+  def addHole() = {
+    val index = opCodes.size
+    opCodes += OpHole()
+    new Hole(index)
+  }
+
+  def counting(body: => Unit) = {
+    val before = opCodes.size
+    body
+    opCodes.size - before
+  }
 }

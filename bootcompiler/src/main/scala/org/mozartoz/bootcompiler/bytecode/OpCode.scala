@@ -65,3 +65,6 @@ case class OpCreateAbstractionX(arity: ImmInt, body: XReg,
     globalCount: ImmInt, dest: XReg) extends OpCode
 case class OpCreateAbstractionK(arity: ImmInt, body: KReg,
     globalCount: ImmInt, dest: XReg) extends OpCode
+
+// Special
+case class OpHole() extends OpCode

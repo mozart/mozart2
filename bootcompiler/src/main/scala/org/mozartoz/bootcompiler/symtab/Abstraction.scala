@@ -27,7 +27,7 @@ class Abstraction(val owner: Abstraction, val name: String) {
 
   private val _freeVarToGlobal = Map[VariableSymbol, VariableSymbol]()
 
-  val codeArea = new CodeArea
+  val codeArea = new CodeArea(this)
 
   def arity = formals.size
 

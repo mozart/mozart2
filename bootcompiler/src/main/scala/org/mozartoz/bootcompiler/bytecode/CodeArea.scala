@@ -7,7 +7,7 @@ import ast._
 import symtab._
 import util._
 
-class CodeArea {
+class CodeArea(val abstraction: Abstraction) {
   val opCodes = new ArrayBuffer[OpCode]
 
   private val registerAllocs = new HashMap[Any, Register]
@@ -15,6 +15,8 @@ class CodeArea {
   def isDefined = !opCodes.isEmpty
 
   def size = opCodes.map(_.size).sum
+
+  override def toString() = "<CodeArea %s>" format (abstraction.fullName)
 
   def dump() {
     println("constants: " + (constants mkString " "))

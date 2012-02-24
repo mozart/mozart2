@@ -54,12 +54,6 @@ object CodeGen extends Transformer with TreeDSL {
 
   private implicit def symbol2ops2(self: Symbol) = new {
     def toReg = symbol2reg(self)
-
-    def := (source: Register) {
-      toReg match {
-        case xy:XOrYReg => xy := source
-      }
-    }
   }
 
   override def applyToAbstraction() {

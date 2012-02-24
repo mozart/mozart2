@@ -4,6 +4,7 @@ package symtab
 import scala.collection.mutable.ListBuffer
 
 import ast._
+import util._
 
 class Program(var rawCode: Statement) {
   def isRawCode = rawCode ne null
@@ -24,5 +25,30 @@ class Program(var rawCode: Statement) {
         println()
       }
     }
+  }
+
+  def produceCC(implicit out: Output) {
+    out << """
+       |#include <iostream>
+       |
+       |#include "emulate.hh"
+       |#include "vm.hh"
+       |#include "smallint.hh"
+       |#include "callables.hh"
+       |#include "variables.hh"
+       |#include "corebuiltins.hh"
+       |#include "stdint.h"
+       |
+       |bool simplePreemption(void* data) {
+       |  static int count = 3;
+       |
+       |  if (--count == 0) {
+       |    count = 3;
+       |    return true;
+       |  } else {
+       |    return false;
+       |  }
+       |}
+       |""".stripMargin \\
   }
 }

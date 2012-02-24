@@ -10,6 +10,7 @@ import parser._
 import ast._
 import transform._
 import symtab._
+import util._
 
 object Main {
   def main(args: Array[String]) {
@@ -31,6 +32,8 @@ object Main {
     val prog = new Program(rawCode)
     applyTransforms(prog)
     prog.dump()
+
+    prog.produceCC(new Output(Console.out))
   }
 
   def applyTransforms(prog: Program) {

@@ -105,7 +105,7 @@ object CodeGen extends Transformer with TreeDSL {
         for ((global, index) <- globals.zipWithIndex)
           dest.array(index) := global.symbol
 
-        lhs.symbol := dest
+        dest === lhs.symbol
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>
         XReg(0) := cond.symbol

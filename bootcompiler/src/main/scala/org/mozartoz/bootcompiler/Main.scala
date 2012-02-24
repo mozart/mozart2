@@ -38,5 +38,6 @@ object Main {
     Desugar(prog)
     Unnester(prog)
     Flattener(prog)
+    CodeGen(prog)
   }
 }

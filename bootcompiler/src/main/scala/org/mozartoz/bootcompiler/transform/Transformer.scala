@@ -28,12 +28,16 @@ abstract class Transformer extends (Program => Unit) {
       for (abs <- program.abstractions) {
         abstraction = abs
         try {
-          abs.body = transformStat(abs.body)
+          applyToAbstraction()
         } finally {
           abstraction = null
         }
       }
     }
+  }
+
+  protected def applyToAbstraction() {
+    abstraction.body = transformStat(abstraction.body)
   }
 
   def transformStat(statement: Statement): Statement = statement match {

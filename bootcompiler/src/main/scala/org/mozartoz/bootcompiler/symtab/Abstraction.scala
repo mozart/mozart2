@@ -4,6 +4,7 @@ package symtab
 import scala.collection.mutable.ArrayBuffer
 
 import ast._
+import bytecode._
 
 object Abstraction {
   private var _lastID = 0
@@ -22,6 +23,8 @@ class Abstraction(val owner: Abstraction, val name: String) {
   val flags = new ArrayBuffer[String]
 
   var body: Statement = _
+
+  val codeArea = new CodeArea
 
   def arity = formals.size
 
@@ -42,7 +45,14 @@ class Abstraction(val owner: Abstraction, val name: String) {
     println(fullName + ": P/" + arity.toString())
     println("  formals: " + (formals mkString " "))
     println("  locals: " + (locals mkString " "))
+
+    println()
     println(body)
+
+    if (codeArea.isDefined) {
+      println()
+      codeArea.dump()
+    }
   }
 }
 

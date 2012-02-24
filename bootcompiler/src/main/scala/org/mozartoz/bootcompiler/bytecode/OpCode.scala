@@ -4,17 +4,17 @@ package bytecode
 sealed abstract class OpCode extends Product {
   val name = getClass().getSimpleName()
 
-  def argCount = productArity
+  def argumentCount = productArity
 
-  def args: List[OpCodeArg] = {
+  def arguments: List[OpCodeArg] = {
     for (item <- productIterator.toList)
       yield item.asInstanceOf[OpCodeArg]
   }
 
-  def size = argCount + 1
+  def size = argumentCount + 1
 
   def code = {
-    (name /: args) {
+    (name /: arguments) {
       (prev, arg) => prev + ", " + arg.code
     }
   }
@@ -36,6 +36,13 @@ case class OpDeallocateL() extends OpCode
 
 case class OpCreateVarX(dest: XReg) extends OpCode
 case class OpCreateVarY(dest: YReg) extends OpCode
+
+case class OpCallBuiltin(builtin: KReg, arity: ImmInt,
+    args: List[XReg]) extends OpCode {
+  override def argumentCount = 2 + arity.value
+
+  override def arguments = builtin :: arity :: args
+}
 
 case class OpCallX(target: XReg, arity: ImmInt) extends OpCode
 case class OpCallG(target: GReg, arity: ImmInt) extends OpCode

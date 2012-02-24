@@ -39,28 +39,28 @@ class Builtins {
       ">=" -> Number.>=
   )
 
-  object Show extends BuiltinSymbol("Show", 1)
+  object Show extends BuiltinSymbol("Show", in = 1, out = 0)
 
-  object CreateThread extends BuiltinSymbol("CreateThread", 1)
+  object CreateThread extends BuiltinSymbol("CreateThread", in = 1, out = 0)
 
   object Value {
-    object == extends BuiltinSymbol("Value.'=='", 3)
-    object \= extends BuiltinSymbol("Value.'\\='", 3)
+    object == extends BuiltinSymbol("Value.'=='", in = 2, out = 1)
+    object \= extends BuiltinSymbol("Value.'\\='", in = 2, out = 1)
   }
 
   object Number {
-    object ~ extends BuiltinSymbol("Number.'~'", 2)
+    object ~ extends BuiltinSymbol("Number.'~'", in = 1, out = 1)
 
-    object + extends BuiltinSymbol("Number.'+'", 3)
-    object - extends BuiltinSymbol("Number.'-'", 3)
-    object * extends BuiltinSymbol("Number.'*'", 3)
-    object / extends BuiltinSymbol("Number.'/'", 3)
-    object div extends BuiltinSymbol("Number.'div'", 3)
-    object mod extends BuiltinSymbol("Number.'mod'", 3)
+    object + extends BuiltinSymbol("Number.'+'", in = 2, out = 1)
+    object - extends BuiltinSymbol("Number.'-'", in = 2, out = 1)
+    object * extends BuiltinSymbol("Number.'*'", in = 2, out = 1)
+    object / extends BuiltinSymbol("Number.'/'", in = 2, out = 1)
+    object div extends BuiltinSymbol("Number.'div'", in = 2, out = 1)
+    object mod extends BuiltinSymbol("Number.'mod'", in = 2, out = 1)
 
-    object < extends BuiltinSymbol("Number.'<'", 3)
-    object =< extends BuiltinSymbol("Number.'=<'", 3)
-    object > extends BuiltinSymbol("Number.'>'", 3)
-    object >= extends BuiltinSymbol("Number.'>='", 3)
+    object < extends BuiltinSymbol("Number.'<'", in = 2, out = 1)
+    object =< extends BuiltinSymbol("Number.'=<'", in = 2, out = 1)
+    object > extends BuiltinSymbol("Number.'>'", in = 2, out = 1)
+    object >= extends BuiltinSymbol("Number.'>='", in = 2, out = 1)
   }
 }

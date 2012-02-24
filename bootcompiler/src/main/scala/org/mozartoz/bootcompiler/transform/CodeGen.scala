@@ -130,13 +130,46 @@ object CodeGen extends Transformer with TreeDSL {
         branchHole fillWith OpBranch(falseBranchSize)
 
       case CallStatement(callable:Variable, args) =>
-        for ((arg:Variable, index) <- args.zipWithIndex)
-          XReg(index) := arg.symbol
+        val argCount = args.size
 
-        val callableReg = XReg(args.size)
-        callableReg := callable.symbol
+        (callable.symbol: @unchecked) match {
+          case symbol:VariableSymbol =>
+            for ((arg:Variable, index) <- args.zipWithIndex)
+              XReg(index) := arg.symbol
 
-        code += OpCallX(callableReg, args.size)
+            symbol.toReg match {
+              case reg:XReg => code += OpCallX(reg, argCount)
+              case reg:GReg => code += OpCallG(reg, argCount)
+              case _ =>
+                val reg = XReg(argCount)
+                reg := symbol
+                code += OpCallX(reg, argCount)
+            }
+
+          case symbol:BuiltinSymbol =>
+            if (argCount != symbol.arity)
+              throw new IllegalArgumentException(
+                  "Wrong arity for builtin application of %s" format symbol)
+
+            for {
+              (arg:Variable, index) <- args.zipWithIndex
+              if index < symbol.inputArity
+            } {
+              XReg(index) := arg.symbol
+            }
+
+            val reg = code.registerFor(symbol)
+
+            code += OpCallBuiltin(reg, argCount,
+                (0 until argCount).toList map XReg)
+
+            for {
+              (arg:Variable, index) <- args.zipWithIndex
+              if index >= symbol.inputArity
+            } {
+              XReg(index) === arg.symbol
+            }
+        }
     }
   }
 }

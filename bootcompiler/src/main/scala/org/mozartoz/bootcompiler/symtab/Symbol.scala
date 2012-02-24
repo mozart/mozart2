@@ -48,9 +48,12 @@ class VariableSymbol(name: String, formal: Boolean = false,
     new VariableSymbol(name, false, true, true)
 }
 
-class BuiltinSymbol(name: String,
-    val arity: Int) extends Symbol(name) {
+class BuiltinSymbol(name: String, in: Int, out: Int) extends Symbol(name) {
   override val isBuiltin = true
+
+  val inputArity = in
+  val outputArity = out
+  val arity = in + out
 }
 
 object NoSymbol extends Symbol("<NoSymbol>") {

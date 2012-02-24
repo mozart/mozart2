@@ -3,6 +3,7 @@ package bytecode
 
 import scala.collection.mutable._
 
+import ast._
 import symtab._
 import util._
 
@@ -16,12 +17,15 @@ class CodeArea {
   def size = opCodes.map(_.size).sum
 
   def dump() {
+    println("constants: " + (constants mkString " "))
+    println()
     for (opCode <- opCodes)
       println(opCode.code)
   }
 
   private val YCounter = new RegCounter(YReg)
-  private val KCounter = new RegCounter(KReg)
+
+  val constants = new ArrayBuffer[Any]
 
   def registerFor(symbol: VariableSymbol): YOrGReg =
     innerRegisterFor(symbol).asInstanceOf[YOrGReg]
@@ -35,13 +39,19 @@ class CodeArea {
   def registerFor(codeArea: CodeArea) =
     innerRegisterFor(codeArea).asInstanceOf[KReg]
 
+  def registerFor(constant: Constant) =
+    innerRegisterFor(constant).asInstanceOf[KReg]
+
   private def innerRegisterFor(key: Any) = {
     registerAllocs.getOrElseUpdate(key, {
-      (key: @unchecked) match {
+      key match {
         case sym:VariableSymbol =>
           if (sym.isGlobal) GReg(sym.owner.globals.indexOf(sym))
           else YCounter.next()
-        case _:BuiltinSymbol | _:CodeArea => KCounter.next()
+
+        case _:BuiltinSymbol | _:CodeArea | _:Constant =>
+          constants += key
+          KReg(constants.size - 1)
       }
     })
   }

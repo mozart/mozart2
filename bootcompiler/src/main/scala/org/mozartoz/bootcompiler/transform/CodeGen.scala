@@ -93,7 +93,8 @@ object CodeGen extends Transformer with TreeDSL {
         XReg(0) === rhs.symbol
 
       case ((lhs:Variable) === (rhs:Constant)) =>
-        // TODO
+        XReg(0) := code.registerFor(rhs)
+        XReg(0) === lhs.symbol
 
       case ((lhs:Variable) === (rhs @ CreateAbstraction(abs, globals))) =>
         val dest = XReg(0)

@@ -10,7 +10,7 @@ object Symbol {
   }
 
   def newSynthetic(name: String, formal: Boolean = false): VariableSymbol =
-    new VariableSymbol(name, synthetic = true)
+    new VariableSymbol(name, formal = formal, synthetic = true)
 
   def newSynthetic(): VariableSymbol =
     newSynthetic("`x$" + (_lastID+1).toString() + "`")

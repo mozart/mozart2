@@ -67,4 +67,22 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   return BuiltinResultContinue;
 }
 
+BuiltinResult show(VM vm, UnstableNode* args[]) {
+  Node& arg = Reference::dereference(args[0]->node);
+
+  if (arg.type == SmallInt::type()) {
+    nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
+    printf("%ld\n", value);
+  } else if (arg.type == Boolean::type()) {
+    bool value = IMPLNOSELF(bool, Boolean, value, &arg);
+    printf("%s\n", value ? "true" : "false");
+  } else if (arg.type->isTransient()) {
+    return &arg;
+  } else {
+    cout << "<" << arg.type->getName() << ">" << endl;
+  }
+
+  return BuiltinResultContinue;
+}
+
 }

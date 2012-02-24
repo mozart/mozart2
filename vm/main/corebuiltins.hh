@@ -36,6 +36,8 @@ BuiltinResult add(VM vm, UnstableNode* args[]);
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]);
 
+BuiltinResult show(VM vm, UnstableNode* args[]);
+
 }
 
 #endif // __COREBUILTINS_H

@@ -45,6 +45,22 @@ object Unnester extends Transformer with TreeDSL {
         }
       }
 
+    case test @ IfStatement(cond, trueStat, falseStat) =>
+      val newTrueStat = transformStat(trueStat)
+      val newFalseStat = transformStat(falseStat)
+
+      cond match {
+        case v:Variable =>
+          IF (v) THEN (newTrueStat) ELSE (newFalseStat)
+
+        case _ =>
+          statementWithTemp { temp =>
+            transformStat(temp === cond) ~ {
+              IF (temp) THEN (newTrueStat) ELSE (newFalseStat)
+            }
+          }
+      }
+
     case _ =>
       super.transformStat(statement)
   }

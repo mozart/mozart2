@@ -58,7 +58,20 @@ object Flattener extends Transformer {
       treeCopy.ProcExpression(proc, name, args,
           treeCopy.SkipStatement(body), flags)
 
+    case v @ FreeVar(name, sym) =>
+      treeCopy.Variable(v, name) withSymbol abstraction.freeVarToGlobal(sym)
+
     case _ =>
       super.transformExpr(expression)
+  }
+
+  object FreeVar {
+    def unapply(v: Variable) = {
+      if (v.symbol.owner eq abstraction) None
+      else (v.symbol match {
+        case sym:VariableSymbol => Some((v.name, sym))
+        case _ => None
+      })
+    }
   }
 }

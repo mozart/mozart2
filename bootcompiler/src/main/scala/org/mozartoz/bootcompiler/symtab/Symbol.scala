@@ -22,14 +22,16 @@ sealed abstract class Symbol(val name: String) {
   private var _owner: Abstraction = NoAbstraction
   def owner = _owner
 
-  def setOwner(owner: Abstraction) {
+  def setOwner(owner: Abstraction): this.type = {
     _owner = owner
+    this
   }
 
   val isDefined = true
   val isBuiltin = false
   val isFormal = false
   val isSynthetic = false
+  val isGlobal = false
 
   def fullName = name + "~" + id
 
@@ -37,9 +39,13 @@ sealed abstract class Symbol(val name: String) {
 }
 
 class VariableSymbol(name: String, formal: Boolean = false,
-    synthetic: Boolean = false) extends Symbol(name) {
+    synthetic: Boolean = false, global: Boolean = false) extends Symbol(name) {
   override val isFormal = formal
   override val isSynthetic = synthetic
+  override val isGlobal = global
+
+  def copyAsGlobal() =
+    new VariableSymbol(name, false, true, true)
 }
 
 class BuiltinSymbol(name: String,

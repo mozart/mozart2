@@ -1,7 +1,7 @@
 package org.mozartoz.bootcompiler
 package symtab
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ ArrayBuffer, Map }
 
 import ast._
 import bytecode._
@@ -19,10 +19,13 @@ class Abstraction(val owner: Abstraction, val name: String) {
 
   val formals = new ArrayBuffer[VariableSymbol]
   val locals = new ArrayBuffer[VariableSymbol]
+  val globals = new ArrayBuffer[VariableSymbol]
 
   val flags = new ArrayBuffer[String]
 
   var body: Statement = _
+
+  private val _freeVarToGlobal = Map[VariableSymbol, VariableSymbol]()
 
   val codeArea = new CodeArea
 
@@ -31,6 +34,7 @@ class Abstraction(val owner: Abstraction, val name: String) {
   def acquire(symbol: VariableSymbol) {
     symbol.setOwner(this)
     if (symbol.isFormal) formals += symbol
+    else if (symbol.isGlobal) globals += symbol
     else locals += symbol
   }
 
@@ -41,10 +45,20 @@ class Abstraction(val owner: Abstraction, val name: String) {
   def newAbstraction(name: String) =
     new Abstraction(this, name)
 
+  def freeVarToGlobal(symbol: VariableSymbol) = {
+    require(symbol.owner ne this)
+    _freeVarToGlobal.getOrElseUpdate(symbol, {
+      val global = symbol.copyAsGlobal()
+      acquire(global)
+      global
+    })
+  }
+
   def dump() {
     println(fullName + ": P/" + arity.toString())
     println("  formals: " + (formals mkString " "))
     println("  locals: " + (locals mkString " "))
+    println("  globals: " + (globals mkString " "))
 
     println()
     println(body)

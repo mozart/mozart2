@@ -124,6 +124,10 @@ abstract class Transformer extends (Program => Unit) {
     case True() => expression
     case False() => expression
     case UnitVal() => expression
+
+    // Synthetic-only
+
+    case CreateAbstraction(abstraction, globals) => expression
   }
 
   def transformDecl(declaration: Declaration): Declaration = declaration match {

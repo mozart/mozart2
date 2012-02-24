@@ -84,7 +84,7 @@ object CodeGen extends Transformer with TreeDSL {
       case ((lhs:Variable) === (rhs:Constant)) =>
         // TODO
 
-      case ((lhs:Variable) === (rhs:ProcExpression)) =>
+      case ((lhs:Variable) === (rhs @ CreateAbstraction(abs, globals))) =>
         // TODO
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>

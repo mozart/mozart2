@@ -1,12 +1,14 @@
 package org.mozartoz.bootcompiler
 package transform
 
-import scala.collection.mutable.HashMap
+import scala.collection.mutable._
 
 import ast._
 import symtab._
 
 object Flattener extends Transformer {
+  private var globalToFreeVar: Map[VariableSymbol, VariableSymbol] = _
+
   override def apply() {
     val rawCode = program.rawCode
     program.rawCode = null
@@ -18,9 +20,16 @@ object Flattener extends Transformer {
 
   private def withAbstraction[A](newAbs: Abstraction)(f: => A) = {
     val savedAbs = abstraction
-    abstraction = newAbs
-    try f
-    finally abstraction = savedAbs
+    val savedGlobalToFreeVar = globalToFreeVar
+
+    try {
+      abstraction = newAbs
+      globalToFreeVar = Map.empty
+      f
+    } finally {
+      abstraction = savedAbs
+      globalToFreeVar = savedGlobalToFreeVar
+    }
   }
 
   override def transformStat(statement: Statement) = statement match {
@@ -51,15 +60,28 @@ object Flattener extends Transformer {
 
       abs.flags ++= flags map (_.value)
 
-      abs.body = withAbstraction(abs) {
-        transformStat(body)
+      val (newBody, globalArgs) = withAbstraction(abs) {
+        val newBody = transformStat(body)
+
+        val globalArgs =
+          for (global <- abs.globals.toList)
+            yield Variable(globalToFreeVar(global))
+
+        (newBody, globalArgs)
       }
 
-      treeCopy.ProcExpression(proc, name, args,
-          treeCopy.SkipStatement(body), flags)
+      abs.body = newBody
+
+      val newGlobalArgs = globalArgs map {
+        g => transformExpr(g).asInstanceOf[Variable]
+      }
+
+      treeCopy.CreateAbstraction(proc, abs, newGlobalArgs)
 
     case v @ FreeVar(name, sym) =>
-      treeCopy.Variable(v, name) withSymbol abstraction.freeVarToGlobal(sym)
+      val global = abstraction.freeVarToGlobal(sym)
+      globalToFreeVar += global -> sym
+      treeCopy.Variable(v, name) withSymbol global
 
     case _ =>
       super.transformExpr(expression)

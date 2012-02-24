@@ -92,7 +92,8 @@ object Unnester extends Transformer with TreeDSL {
       transformStat((v === lhs2) ~ (v === rhs2))
 
     case _:FunExpression | _:ThreadExpression | _:EscapedVariable |
-        _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp =>
+        _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
+        _:CreateAbstraction =>
       throw new Exception(
           "illegal tree in Unnester.transformBindVarToExpression")
   }

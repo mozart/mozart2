@@ -2,6 +2,7 @@ package org.mozartoz.bootcompiler
 package transform
 
 import ast._
+import symtab._
 
 class TreeCopier {
   // Statements
@@ -100,4 +101,10 @@ class TreeCopier {
 
   def UnitVal(tree: Node) =
     new UnitVal().copyAttrs(tree)
+
+  // Synthetic-only
+
+  def CreateAbstraction(tree: Node, abstraction: Abstraction,
+      globals: List[Variable]) =
+    new CreateAbstraction(abstraction, globals).copyAttrs(tree)
 }

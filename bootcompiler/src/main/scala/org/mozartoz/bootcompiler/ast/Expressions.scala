@@ -109,3 +109,13 @@ abstract class BuiltinName(tag: String) extends AtomLike {
 case class True() extends BuiltinName("true")
 case class False() extends BuiltinName("false")
 case class UnitVal() extends BuiltinName("unit")
+
+/** Synthetic-only expressions */
+
+case class CreateAbstraction(abstraction: Abstraction,
+    globals: List[Variable]) extends Expression {
+  def syntax(indent: String) = {
+    "{CreateAbstraction '%s' [%s]}" format (abstraction.fullName,
+        globals mkString " ")
+  }
+}

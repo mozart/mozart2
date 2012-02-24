@@ -27,7 +27,11 @@ class Program(var rawCode: Statement) {
     }
   }
 
-  def produceCC(implicit out: Output) {
+  def produceCC(out: Output) {
+    import Output._
+
+    val codeAreas = abstractions map (_.codeArea)
+
     out << """
        |#include <iostream>
        |
@@ -49,6 +53,58 @@ class Program(var rawCode: Statement) {
        |    return false;
        |  }
        |}
-       |""".stripMargin \\
+       |""".stripMargin
+
+    out << """
+       |class Program {
+       |public:
+       |  Program();
+       |
+       |  void run();
+       |private:
+       |  VirtualMachine virtualMachine;
+       |  VM vm;
+       |  UnstableNode* topLevelAbstraction;
+       |""".stripMargin
+
+    for (codeArea <- codeAreas) {
+      out << """
+         |  UnstableNode* %s;
+         |  void %s();
+         |""".stripMargin % (codeArea.ccCodeArea, codeArea.ccCreateMethodName)
+    }
+
+    out << """
+       |};
+       |
+       |int main(int argc, char** argv) {
+       |  Program program;
+       |  program.run();
+       |}
+       |
+       |Program::Program() : virtualMachine(simplePreemption),
+       |  vm(&virtualMachine) {
+       |
+       |""".stripMargin
+
+    for (codeArea <- codeAreas.reverse)
+      out << "  %s();\n" % codeArea.ccCreateMethodName
+
+    out << """
+       |}
+       |
+       |void Program::run() {
+       |  UnstableNode topLevelAbstraction;
+       |  topLevelAbstraction.make<Abstraction>(vm, 0, 0, %s);
+       |
+       |  UnstableNode* initialThreadParams[] = { &topLevelAbstraction };
+       |  builtins::createThread(vm, initialThreadParams);
+       |
+       |  vm->run();
+       |}
+       |""".stripMargin % topLevelAbstraction.codeArea.ccCodeArea
+
+    for (codeArea <- codeAreas)
+      codeArea.produceCC(out)
   }
 }

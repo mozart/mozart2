@@ -14,8 +14,6 @@ import util._
 
 object Main {
   def main(args: Array[String]) {
-    println("Mozart-Oz bootstrap compiler")
-
     val fileName = args(0)
     val reader = new PagedSeqReader(PagedSeq.fromReader(
         new BufferedReader(new FileReader(fileName))))
@@ -31,7 +29,6 @@ object Main {
   def produce(rawCode: Statement) {
     val prog = new Program(rawCode)
     applyTransforms(prog)
-    prog.dump()
 
     prog.produceCC(new Output(Console.out))
   }

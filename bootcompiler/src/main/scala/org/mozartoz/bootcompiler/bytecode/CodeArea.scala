@@ -78,4 +78,95 @@ class CodeArea(val abstraction: Abstraction) {
     body
     opCodes.size - before
   }
+
+  def computeXCount() = {
+    var maxX = 0
+
+    for {
+      opCode <- opCodes
+      XReg(index) <- opCode.arguments
+    } {
+      maxX = maxX max index
+    }
+
+    maxX + 1
+  }
+
+  val ccCodeArea = "codeArea" + abstraction.id.toString()
+  val ccCreateMethodName = "createCodeArea" + abstraction.id.toString()
+
+  def produceCC(out: Output) {
+    import Output._
+
+    out << """
+       |/*
+       |""".stripMargin
+
+    Console.withOut(out.underlying) {
+      abstraction.dump()
+    }
+
+    out << """
+       |*/
+       |
+       |void Program::%s() {
+       |  ByteCode codeBlock[] = {
+       |""".stripMargin % ccCreateMethodName
+
+    for (opCode <- opCodes)
+      out << "    %s,\n" % opCode.code
+
+    out << """
+       |  };
+       |
+       |  %s = new (vm) UnstableNode;
+       |  %s->make<CodeArea>(vm, %d, codeBlock, sizeof(codeBlock), %d);
+       |""".stripMargin % (ccCodeArea, ccCodeArea,
+           constants.size, computeXCount())
+
+    if (!constants.isEmpty) {
+      out << """
+         |  ArrayInitializer initializer = %s->node;
+         |  UnstableNode temp;
+         |""".stripMargin % ccCodeArea
+
+      for ((constant, index) <- constants.zipWithIndex) {
+        produceCCInitConstant(out, constant)
+        out << "  initializer.initElement(vm, %d, &temp);\n" % (
+            index, index)
+      }
+    }
+
+    out << """
+       |}
+       |""".stripMargin
+  }
+
+  private def produceCCInitConstant(out: Output, constant: Any) {
+    import Output._
+
+    constant match {
+      case builtin:BuiltinSymbol =>
+        out << "  temp.make<BuiltinProcedure>(vm, "
+        out << "%d, (OzBuiltin) &%s);\n" % (builtin.arity, builtin.ccName)
+
+      case codeArea:CodeArea =>
+        out << "  temp.copy(vm, *%s);\n" % codeArea.ccCodeArea
+
+      case IntLiteral(value) =>
+        out << "  temp.make<SmallInt>(vm, %d);\n" % value
+
+      case Atom(value) =>
+        out << "  temp.make<Atom>(vm, %d, \"%s\");\n" % (value.length(), value)
+
+      case True() =>
+        out << "  temp.make<Boolean>(vm, true);\n"
+
+      case False() =>
+        out << "  temp.make<Boolean>(vm, false);\n"
+
+      case UnitVal() =>
+        out << "  temp.make<Unit>(vm);\n"
+    }
+  }
 }

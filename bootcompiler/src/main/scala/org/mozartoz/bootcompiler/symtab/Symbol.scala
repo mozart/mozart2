@@ -54,6 +54,11 @@ class BuiltinSymbol(name: String, in: Int, out: Int) extends Symbol(name) {
   val inputArity = in
   val outputArity = out
   val arity = in + out
+
+  def ccName = {
+    // TODO
+    "builtins::" + name
+  }
 }
 
 object NoSymbol extends Symbol("<NoSymbol>") {

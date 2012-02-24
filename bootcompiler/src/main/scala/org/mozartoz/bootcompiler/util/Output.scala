@@ -21,13 +21,4 @@ class Output(val underlying: PrintStream) {
     print(x)
     this
   }
-
-  def \\ : this.type = {
-    println()
-    this
-  }
-
-  def test() {
-    this << "hello" % 3 << "salut" \\
-  }
 }

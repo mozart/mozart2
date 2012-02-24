@@ -67,16 +67,16 @@ class CodeArea(val abstraction: Abstraction) {
     }
   }
 
-  def addHole() = {
+  def addHole(size: Int = 1) = {
     val index = opCodes.size
-    opCodes += OpHole()
+    opCodes += OpHole(size)
     new Hole(index)
   }
 
   def counting(body: => Unit) = {
     val before = opCodes.size
     body
-    opCodes.size - before
+    (before until opCodes.size) map (i => opCodes(i).size) sum
   }
 
   def computeXCount() = {

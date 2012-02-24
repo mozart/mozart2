@@ -71,12 +71,12 @@ case class OpReturn() extends OpCode
 case class OpBranch(distance: ImmInt) extends OpCode
 
 /** Conditional branch
- *  If `test == true`, skip `trueDistance` amount of bytecode
  *  If `test == false`, skip `falseDistance` amount of bytecode
+ *  If `test == true`, skip `trueDistance` amount of bytecode
  *  Otherwise, skip `errorDistance` amount of bytecode
  */
-case class OpCondBranch(test: XReg, trueDistance: ImmInt,
-    falseDistance: ImmInt, errorDistance: ImmInt) extends OpCode
+case class OpCondBranch(test: XReg, falseDistance: ImmInt,
+    trueDistance: ImmInt, errorDistance: ImmInt) extends OpCode
 
 /** Unify `lhs` with `rhs`, i.e., `lhs = rhs` */
 case class OpUnifyXX(lhs: XReg, rhs: XReg) extends OpCode
@@ -105,4 +105,4 @@ case class OpCreateAbstractionK(arity: ImmInt, body: KReg,
 // Special
 
 /** Dummy used by `CodeArea.addHole()` (not a true opcode) */
-case class OpHole() extends OpCode
+case class OpHole(override val size: Int) extends OpCode

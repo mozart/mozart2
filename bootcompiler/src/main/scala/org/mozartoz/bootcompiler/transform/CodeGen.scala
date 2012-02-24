@@ -112,7 +112,7 @@ object CodeGen extends Transformer with TreeDSL {
 
         val trueBranchSize = code.counting {
           generate(trueStat)
-          branchHole = code.addHole()
+          branchHole = code.addHole(2)
         }
 
         val falseBranchSize = code.counting {
@@ -120,7 +120,7 @@ object CodeGen extends Transformer with TreeDSL {
         }
 
         condBranchHole fillWith OpCondBranch(XReg(0),
-            errorSize, errorSize + trueBranchSize, 0)
+            errorSize + trueBranchSize, errorSize, 0)
 
         branchHole fillWith OpBranch(falseBranchSize)
 

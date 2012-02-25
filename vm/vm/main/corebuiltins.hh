@@ -33,6 +33,7 @@ namespace builtins {
 BuiltinResult equals(VM vm, UnstableNode* args[]);
 
 BuiltinResult add(VM vm, UnstableNode* args[]);
+BuiltinResult subtract(VM vm, UnstableNode* args[]);
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]);
 

@@ -41,6 +41,11 @@ BuiltinResult add(VM vm, UnstableNode* args[]) {
   return x.add(vm, args[1], args[2]);
 }
 
+BuiltinResult subtract(VM vm, UnstableNode* args[]) {
+  Addable x = args[0]->node;
+  return x.subtract(vm, args[1], args[2]);
+}
+
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   int arity;
   StableNode* body;

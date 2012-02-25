@@ -129,6 +129,14 @@ struct Interface<Addable>: ImplementedBy<SmallInt> {
     cout << " found" << endl;
     return BuiltinResultContinue;
   }
+
+  BuiltinResult subtract(Node& self, VM vm, UnstableNode* right,
+                         UnstableNode* result) {
+    // TODO subtract non-SmallInt
+    cout << "SmallInt expected but " << self.type->getName();
+    cout << " found" << endl;
+    return BuiltinResultContinue;
+  }
 };
 
 class IntegerValue;

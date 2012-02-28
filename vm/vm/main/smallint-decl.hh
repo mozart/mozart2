@@ -25,7 +25,7 @@
 #ifndef __SMALLINT_DECL_H
 #define __SMALLINT_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
 
 class SmallInt;
 

@@ -26,9 +26,8 @@
 #define __GCOLLECT_H
 
 #include "gcollect-decl.hh"
-#include "vm.hh"
-#include "store.hh"
-#include "suspendable.hh"
+
+#include "vm-decl.hh"
 
 void ThreadQueue::gCollect(GC gc) {
   for (auto iterator = c.begin(); iterator != c.end(); iterator++) {

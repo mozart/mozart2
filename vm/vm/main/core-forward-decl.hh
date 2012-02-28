@@ -25,8 +25,14 @@
 #ifndef __CORE_FORWARD_DECL_H
 #define __CORE_FORWARD_DECL_H
 
-#include <stdlib.h>
-#include <stdint.h>
+#ifndef __MOZARTCORE_H
+#ifndef MOZART_GENERATOR
+#error Illegal inclusion chain. You must include "mozartcore.hh".
+#endif
+#endif
+
+#include <cstdlib>
+#include <cstdint>
 
 typedef intptr_t nativeint;
 

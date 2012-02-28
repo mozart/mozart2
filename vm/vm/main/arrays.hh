@@ -25,8 +25,8 @@
 #ifndef __ARRAYS_H
 #define __ARRAYS_H
 
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 /**
  * A simple wrapper for an array and its size (only in debug mode)

@@ -25,9 +25,8 @@
 #ifndef __CODEAREA_DECL_H
 #define __CODEAREA_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
 #include "opcodes.hh"
-#include "arrays.hh"
 
 #include <cstring>
 

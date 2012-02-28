@@ -25,8 +25,6 @@
 #ifndef __MEMMANAGER_H
 #define __MEMMANAGER_H
 
-#include "core-forward-decl.hh"
-
 #include <algorithm>
 
 using namespace std;

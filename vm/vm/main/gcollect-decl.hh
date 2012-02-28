@@ -26,8 +26,10 @@
 #define __GCOLLECT_DECL_H
 
 #include "core-forward-decl.hh"
+
 #include "memmanager.hh"
 #include "memmanlist.hh"
+
 #include "suspendable-decl.hh"
 
 // Set this to true to print debug info about the GC

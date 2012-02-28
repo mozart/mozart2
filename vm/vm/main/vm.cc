@@ -24,18 +24,16 @@
 
 #include "mozartcore.hh"
 
-#include "emulate.hh"
-
 void VirtualMachine::run() {
   while (true) {
     if (gc.isGCRequired())
       gc.doGC();
 
-    Thread* currentThread;
+    Suspendable* currentThread;
 
     // Select a thread
     do {
-      currentThread = dynamic_cast<Thread*>(threadPool.popNext());
+      currentThread = threadPool.popNext();
 
       if (currentThread == nullptr) {
         // All remaining threads are suspended

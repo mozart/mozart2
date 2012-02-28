@@ -31,8 +31,6 @@
 #include "corebuiltins.hh"
 #include "variables.hh"
 
-using namespace std;
-
 const ProgramCounter NullPC = nullptr;
 
 ////////////////
@@ -106,7 +104,7 @@ Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
 
   // Set up
 
-  xregs.init(vm, max(Xcount, InitXRegisters));
+  xregs.init(vm, std::max(Xcount, InitXRegisters));
 
   pushFrame(vm, abstraction, start, 0, nullptr, Gs, Ks);
 
@@ -466,8 +464,9 @@ void Thread::run() {
           waitFor(vm, &arg, preempted);
           break;
         } else {
-          const string typeName = arg.type->getName();
-          cout << "SmallInt or Boolean expected but " << typeName << " found\n";
+          const std::string typeName = arg.type->getName();
+          std::cout << "SmallInt or Boolean expected but ";
+          std::cout << typeName << " found" << std::endl;
         }
         advancePC(1); break;
       }
@@ -575,8 +574,8 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
 
   if (result == BuiltinResultContinue) {
     if (actualArity != formalArity) {
-      cout << "Illegal arity: " << formalArity << " expected but ";
-      cout << actualArity << " found" << endl;
+      std::cout << "Illegal arity: " << formalArity << " expected but ";
+      std::cout << actualArity << " found" << std::endl;
       // TODO Raise illegal arity exception
     }
 

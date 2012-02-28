@@ -39,8 +39,9 @@ void Reference::gCollect(GC gc, Node& from, StableNode& to) const {
   Node& destNode = dereference(from);
 
   if (OzDebugGC) {
-    cerr << " \\-> gc " << &destNode << " of type " << destNode.type->getName();
-    cerr << "   \tto node " << &to << endl;
+    std::cerr << " \\-> gc " << &destNode << " of type ";
+    std::cerr << destNode.type->getName();
+    std::cerr << "   \tto node " << &to << std::endl;
   }
 
   destNode.type->gCollect(gc, destNode, to);
@@ -51,8 +52,9 @@ void Reference::gCollect(GC gc, Node& from, UnstableNode& to) const {
   Node& destNode = dereference(from);
 
   if (OzDebugGC) {
-    cerr << " \\-> gc " << &destNode << " of type " << destNode.type->getName();
-    cerr << "   \tto node " << &to << endl;
+    std::cerr << " \\-> gc " << &destNode << " of type ";
+    std::cerr << destNode.type->getName();
+    std::cerr << "   \tto node " << &to << std::endl;
   }
 
   destNode.type->gCollect(gc, destNode, to);

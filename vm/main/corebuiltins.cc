@@ -62,8 +62,8 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
     return result;
 
   if (arity != 0) {
-    cout << "Illegal arity: " << 0 << " expected but ";
-    cout << arity << " found" << endl;
+    std::cout << "Illegal arity: " << 0 << " expected but ";
+    std::cout << arity << " found" << std::endl;
     // TODO Raise illegal arity exception
   }
 
@@ -84,7 +84,7 @@ BuiltinResult show(VM vm, UnstableNode* args[]) {
   } else if (arg.type->isTransient()) {
     return &arg;
   } else {
-    cout << "<" << arg.type->getName() << ">" << endl;
+    std::cout << "<" << arg.type->getName() << ">" << std::endl;
   }
 
   return BuiltinResultContinue;

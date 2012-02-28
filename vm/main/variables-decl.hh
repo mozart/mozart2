@@ -25,7 +25,7 @@
 #ifndef __VARIABLES_DECL_H
 #define __VARIABLES_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
 
 //////////////
 // Variable //

@@ -25,7 +25,7 @@
 #ifndef __ATOMTABLE_H
 #define __ATOMTABLE_H
 
-#include "store.hh"
+#include "core-forward-decl.hh"
 
 class Atom;
 class AtomTable;

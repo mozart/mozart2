@@ -25,10 +25,9 @@
 #ifndef __REFERENCE_H
 #define __REFERENCE_H
 
-#ifndef MOZART_GENERATOR
+#include "reference-decl.hh"
 
-#include "store.hh"
-#include "gctypes.hh"
+#include "gctypes-decl.hh"
 
 #include <iostream>
 
@@ -59,7 +58,5 @@ void Reference::gCollect(GC gc, Node& from, UnstableNode& to) const {
   destNode.type->gCollect(gc, destNode, to);
   destNode.make<GCedToUnstable>(gc->vm, &to);
 }
-
-#endif // MOZART_GENERATOR
 
 #endif // __REFERENCE_H

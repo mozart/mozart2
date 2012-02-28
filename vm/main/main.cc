@@ -23,14 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
+#include <cstdint>
 
-#include "emulate.hh"
-#include "vm.hh"
+#include "mozartcore.hh"
 #include "smallint.hh"
 #include "callables.hh"
 #include "variables.hh"
 #include "corebuiltins.hh"
-#include "stdint.h"
 
 bool simplePreemption(void* data) {
   static int count = 3;

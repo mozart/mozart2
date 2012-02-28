@@ -27,6 +27,8 @@
 
 #include <string>
 
+#include "core-forward-decl.hh"
+
 using namespace std;
 
 class Type {

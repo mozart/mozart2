@@ -22,48 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __THREADPOOL_H
-#define __THREADPOOL_H
+#ifndef __MOZARTCORE_H
+#define __MOZARTCORE_H
 
-#include "threadpool-decl.hh"
+#include "core-forward-decl.hh"
 
-////////////////
-// ThreadPool //
-////////////////
+#include "vm.hh"
+#include "store.hh"
+#include "threadpool.hh"
+#include "suspendable.hh"
+#include "gcollect.hh"
 
-Suspendable* ThreadPool::popNext() {
-  do {
-    // While remainings[tpHi] > 0, return the first Hi-priority thread
-    if (!queues[tpHi].empty() && remainings[tpHi] > 0) {
-      remainings[tpHi]--;
-      return popNext(tpHi);
-    }
+#include "reference.hh"
+#include "gctypes.hh"
 
-    // Reset remainings[tpHi] for subsequent calls
-    remainings[tpHi] = HiToMiddlePriorityRatio;
-
-    // While remainings[tpMiddle] > 0, return the first Middle-priority thread
-    if (!queues[tpMiddle].empty() && remainings[tpMiddle] > 0) {
-      remainings[tpMiddle]--;
-      return popNext(tpMiddle);
-    }
-
-    // Reset remainings[tpMiddle] for subsequent calls
-    remainings[tpMiddle] = MiddleToLowPriorityRatio;
-
-    // remainings[tpLow] is not used, always return the first Low-priority thread
-    if (!queues[tpLow].empty()) {
-      return popNext(tpLow);
-    }
-  } while (!empty()); // might not be empty if all remainings were 0
-
-  return nullptr;
-}
-
-Suspendable* ThreadPool::popNext(ThreadPriority priority) {
-  Suspendable* result = queues[priority].front();
-  queues[priority].pop();
-  return result;
-}
-
-#endif // __THREADPOOL_H
+#endif // __MOZARTCORE_H

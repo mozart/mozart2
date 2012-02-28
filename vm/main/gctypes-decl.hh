@@ -25,7 +25,7 @@
 #ifndef __GCTYPES_DECL_H
 #define __GCTYPES_DECL_H
 
-#include "store.hh"
+#include "vm-decl.hh"
 
 //////////////////
 // GCedToStable //

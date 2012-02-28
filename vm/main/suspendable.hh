@@ -26,7 +26,7 @@
 #define __SUSPENDABLE_HH
 
 #include "suspendable-decl.hh"
-#include "vm.hh"
+#include "vm-decl.hh"
 
 Suspendable::Suspendable(VM vm, ThreadPriority priority) :
   vm(vm), _priority(priority), _runnable(true), _terminated(false) {

@@ -25,8 +25,7 @@
 #ifndef __COREBUILTINS_H
 #define __COREBUILTINS_H
 
-#include "store.hh"
-#include "codearea.hh"
+#include "mozartcore.hh"
 
 namespace builtins {
 

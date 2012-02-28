@@ -25,7 +25,7 @@
 #ifndef __BOOLEAN_DECL_H
 #define __BOOLEAN_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
 
 class Boolean;
 

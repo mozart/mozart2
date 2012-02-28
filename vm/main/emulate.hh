@@ -26,15 +26,16 @@
 #define __EMULATE_H
 
 #include <stack>
-#include <assert.h>
+#include <cassert>
+
+#include "mozartcore.hh"
 
 #include "arrays.hh"
 #include "opcodes.hh"
-#include "store.hh"
 #include "ozlimits.hh"
 #include "codearea.hh"
 #include "suspendable.hh"
-#include "smallint-decl.hh"
+#include "smallint.hh"
 
 /**
  * Entry of a thread stack

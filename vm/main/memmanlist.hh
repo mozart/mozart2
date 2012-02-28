@@ -27,7 +27,7 @@
 
 #include "memmanager.hh"
 
-#include <assert.h>
+#include <cassert>
 
 ////////////////////
 // MemManagedList //

@@ -25,8 +25,7 @@
 #ifndef __ATOM_DECL_H
 #define __ATOM_DECL_H
 
-#include "store.hh"
-#include "atomtable.hh"
+#include "mozartcore.hh"
 
 class Atom;
 

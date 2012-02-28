@@ -23,13 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "emulate.hh"
-#include <iostream>
-#include <assert.h>
 
-#include "smallint.hh"
+#include <iostream>
+#include <cassert>
+
 #include "coreinterfaces.hh"
 #include "corebuiltins.hh"
-#include "vm.hh"
 #include "variables.hh"
 
 using namespace std;

@@ -35,8 +35,6 @@ enum ThreadPriority {
   tpCount
 };
 
-class Thread;
-
 class Suspendable {
 public:
   inline

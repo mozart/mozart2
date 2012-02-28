@@ -25,8 +25,7 @@
 #ifndef __COREINTERFACES_H
 #define __COREINTERFACES_H
 
-#include "store.hh"
-#include "suspendable.hh"
+#include "mozartcore.hh"
 
 #include "variables-decl.hh"
 #include "boolean-decl.hh"

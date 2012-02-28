@@ -24,16 +24,7 @@
 
 #include "mozartcore.hh"
 
-#include "variables.hh"
 #include "emulate.hh"
-
-StableNode* VirtualMachine::newVariable() {
-  StableNode* result = new (this) StableNode;
-  UnstableNode temp;
-  temp.make<Unbound>(this);
-  result->init(this, temp);
-  return result;
-}
 
 void VirtualMachine::run() {
   while (true) {

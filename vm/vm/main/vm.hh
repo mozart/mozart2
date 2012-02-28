@@ -31,6 +31,37 @@
 // VirtualMachine //
 ////////////////////
 
+void VirtualMachine::run() {
+  while (true) {
+    if (gc.isGCRequired())
+      gc.doGC();
+
+    Suspendable* currentThread;
+
+    // Select a thread
+    do {
+      currentThread = threadPool.popNext();
+
+      if (currentThread == nullptr) {
+        // All remaining threads are suspended
+        // TODO Is there something special to do in that case?
+        return;
+      }
+    } while (currentThread->isTerminated());
+
+    // Run the thread
+    currentThread->run();
+
+    // Schedule the thread anew if it is still runnable
+    if (currentThread->isRunnable())
+      threadPool.schedule(currentThread);
+  }
+}
+
+bool VirtualMachine::testPreemption() {
+  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
+}
+
 void VirtualMachine::scheduleThread(Suspendable* thread) {
   threadPool.schedule(thread);
 }
@@ -41,14 +72,6 @@ void* operator new (size_t size, VM vm) {
 
 void* operator new[] (size_t size, VM vm) {
   return vm->getMemory(size);
-}
-
-///////////////////////////
-// Inline VirtualMachine //
-///////////////////////////
-
-bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
 }
 
 #endif // __VM_H

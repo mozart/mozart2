@@ -66,7 +66,8 @@ struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
       return &self;
     } else {
       // TODO == of non-SmallInt
-      cout << self.type->getName() << " == (right) not implemented yet" << endl;
+      std::cout << self.type->getName();
+      std::cout << " == (right) not implemented yet" << std::endl;
       result->make<Boolean>(vm, false);
       return BuiltinResultContinue;
     }
@@ -78,8 +79,8 @@ template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
   BuiltinResult callBuiltin(Node& self, VM vm, int argc, UnstableNode* args[]) {
     // TODO call non-builtin
-    cout << "BuiltinProcedure expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "BuiltinProcedure expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 };
@@ -92,8 +93,8 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
                             StaticArray<StableNode>* Gs,
                             StaticArray<StableNode>* Ks) {
     // TODO call non-abstraction
-    cout << "Abstraction expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "Abstraction expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     *arity = 0;
     *body = nullptr;
     *start = nullptr;
@@ -110,8 +111,8 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
                                 int* Xcount, StaticArray<StableNode>* Ks) {
     // TODO code area info of a non-CodeArea
-    cout << "CodeArea expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "CodeArea expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     *start = nullptr;
     *Xcount = 0;
     *Ks = nullptr;
@@ -124,16 +125,16 @@ template<>
 struct Interface<Addable>: ImplementedBy<SmallInt> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     // TODO add non-SmallInt
-    cout << "SmallInt expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "SmallInt expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 
   BuiltinResult subtract(Node& self, VM vm, UnstableNode* right,
                          UnstableNode* result) {
     // TODO subtract non-SmallInt
-    cout << "SmallInt expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "SmallInt expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 };

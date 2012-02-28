@@ -59,8 +59,8 @@ struct StackEntry {
   StableNode* abstraction;
 
   union {
-    ProgramCounter PC;  // Normal
-    ptrdiff_t PCOffset; // During GC
+    ProgramCounter PC;       // Normal
+    std::ptrdiff_t PCOffset; // During GC
   };
 
   size_t yregCount;

@@ -29,15 +29,13 @@
 
 #include "core-forward-decl.hh"
 
-using namespace std;
-
 class Type {
 public:
-  Type(string name, bool copiable = false, bool transient = false) :
+  Type(std::string name, bool copiable = false, bool transient = false) :
     _name(name), _copiable(copiable), _transient(transient) {
   }
 
-  const string& getName() const { return _name; }
+  const std::string& getName() const { return _name; }
 
   virtual void* getInterface(void* intfID) {
     // TODO
@@ -50,7 +48,7 @@ public:
   virtual void gCollect(GC gc, Node& from, StableNode& to) const = 0;
   virtual void gCollect(GC gc, Node& from, UnstableNode& to) const = 0;
 private:
-  const string _name;
+  const std::string _name;
 
   const bool _copiable;
   const bool _transient;

@@ -35,7 +35,7 @@ class GCedToStable;
 
 class GCedToStableBase: public Type {
 public:
-  GCedToStableBase(string name, bool copiable, bool transient) :
+  GCedToStableBase(std::string name, bool copiable, bool transient) :
     Type(name, copiable, transient) {}
 
   inline
@@ -72,7 +72,7 @@ class GCedToUnstable;
 
 class GCedToUnstableBase: public Type {
 public:
-  GCedToUnstableBase(string name, bool copiable, bool transient) :
+  GCedToUnstableBase(std::string name, bool copiable, bool transient) :
     Type(name, copiable, transient) {}
 
   inline

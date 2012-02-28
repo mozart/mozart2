@@ -13,6 +13,6 @@ string(REPLACE ".hh" ".hh.gen" interface_headers_gen "${interface_headers}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(vm main.cc emulate.cc vm.cc corebuiltins.cc
+add_executable(vm main.cc emulate.cc corebuiltins.cc
                memmanager.cc gcollect.cc)
 add_dependencies(vm ${interface_headers_gen})

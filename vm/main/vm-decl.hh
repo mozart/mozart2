@@ -54,8 +54,6 @@ public:
     memoryManager.init();
   }
 
-  StableNode* newVariable();
-
   void* malloc(size_t size) {
     return memoryManager.malloc(size);
   }

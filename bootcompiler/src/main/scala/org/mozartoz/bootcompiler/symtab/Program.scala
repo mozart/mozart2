@@ -35,13 +35,10 @@ class Program(var rawCode: Statement) {
     out << """
        |#include <iostream>
        |
+       |#include "mozartcore.hh"
        |#include "emulate.hh"
-       |#include "vm.hh"
-       |#include "smallint.hh"
-       |#include "callables.hh"
-       |#include "variables.hh"
+       |#include "coreinterfaces.hh"
        |#include "corebuiltins.hh"
-       |#include "stdint.h"
        |
        |bool simplePreemption(void* data) {
        |  static int count = 3;

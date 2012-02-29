@@ -85,5 +85,8 @@ const OpCode OpPrint = 0x48;
 const OpCode OpInlineEqualsInteger = 0x50;
 const OpCode OpInlineAdd = 0x51;
 const OpCode OpInlineMinus1 = 0x52;
-
+const OpCode OpInlineDivide = 0x53;
+const OpCode OpInlineMultiply = 0x54;
+const OpCode OpInlineSubtract = 0x55;
+const OpCode OpInlineModulus = 0x56;
 #endif // __OPCODES_H

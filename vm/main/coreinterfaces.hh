@@ -134,6 +134,18 @@ struct Interface<Numeric>: ImplementedBy<SmallInt,Float> {
     cout << "SmallInt expected but " << self.type->getName() << " found" << endl;
     return BuiltinResultContinue;
   }
+  BuiltinResult multiply(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    cout << "SmallInt expected but " << self.type->getName() << " found" << endl;
+    return BuiltinResultContinue;
+  }
+  BuiltinResult divide(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    cout << "SmallInt expected but " << self.type->getName() << " found" << endl;
+    return BuiltinResultContinue;
+  }
+  BuiltinResult modulus(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    cout << "SmallInt expected but " << self.type->getName() << " found" << endl;
+    return BuiltinResultContinue;
+  }
 };
 
 class IntegerValue;

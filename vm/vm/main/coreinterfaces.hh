@@ -39,7 +39,7 @@
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
-  BuiltinResult wait(Node& self, VM vm, Suspendable* thread) {
+  BuiltinResult wait(Node& self, VM vm, Runnable* thread) {
     if (self.type->isTransient()) {
       return &self;
     } else {

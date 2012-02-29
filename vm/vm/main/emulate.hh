@@ -34,7 +34,7 @@
 #include "opcodes.hh"
 #include "ozlimits.hh"
 #include "codearea.hh"
-#include "suspendable.hh"
+#include "runnable.hh"
 #include "smallint.hh"
 
 /**
@@ -132,7 +132,7 @@ private:
  * The Thread class contains the information about the execution of a
  * lightweight thread. It contains the main emulator loop.
  */
-class Thread : public Suspendable {
+class Thread : public Runnable {
 public:
   Thread(VM vm, StableNode* abstraction);
 
@@ -144,10 +144,10 @@ public:
   void beforeGC();
   void afterGC();
 
-  Suspendable* gCollect(GC gc);
+  Runnable* gCollect(GC gc);
 protected:
   void terminate() {
-    Suspendable::terminate();
+    Runnable::terminate();
     xregs.release(vm);
   }
 private:

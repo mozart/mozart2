@@ -31,7 +31,7 @@
 // ThreadPool //
 ////////////////
 
-Suspendable* ThreadPool::popNext() {
+Runnable* ThreadPool::popNext() {
   do {
     // While remainings[tpHi] > 0, return the first Hi-priority thread
     if (!queues[tpHi].empty() && remainings[tpHi] > 0) {
@@ -60,8 +60,8 @@ Suspendable* ThreadPool::popNext() {
   return nullptr;
 }
 
-Suspendable* ThreadPool::popNext(ThreadPriority priority) {
-  Suspendable* result = queues[priority].front();
+Runnable* ThreadPool::popNext(ThreadPriority priority) {
+  Runnable* result = queues[priority].front();
   queues[priority].pop();
   return result;
 }

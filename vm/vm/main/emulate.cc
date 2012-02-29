@@ -87,7 +87,7 @@ void StackEntry::afterGC(VM vm) {
 // Thread //
 ////////////
 
-Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
+Thread::Thread(VM vm, StableNode* abstraction) : Runnable(vm) {
   // getCallInfo
 
   int arity;
@@ -116,7 +116,7 @@ Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
   vm->scheduleThread(this);
 }
 
-Thread::Thread(GC gc, Thread& from) : Suspendable(gc, from) {
+Thread::Thread(GC gc, Thread& from) : Runnable(gc, from) {
   // X registers
 
   size_t Xcount = from.xregs.size();
@@ -659,7 +659,7 @@ void Thread::afterGC()
     (*iterator).afterGC(vm);
 }
 
-Suspendable* Thread::gCollect(GC gc) {
+Runnable* Thread::gCollect(GC gc) {
   return new (gc->vm) Thread(gc, *this);
 }
 

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SUSPENDABLE_DECL_HH
-#define __SUSPENDABLE_DECL_HH
+#ifndef __RUNNABLE_DECL_H
+#define __RUNNABLE_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -35,13 +35,13 @@ enum ThreadPriority {
   tpCount
 };
 
-class Suspendable {
+class Runnable {
 public:
   inline
-  Suspendable(VM vm, ThreadPriority priority = tpMiddle);
+  Runnable(VM vm, ThreadPriority priority = tpMiddle);
 
   inline
-  Suspendable(GC gc, Suspendable& from);
+  Runnable(GC gc, Runnable& from);
 
   ThreadPriority getPriority() { return _priority; }
 
@@ -56,29 +56,29 @@ public:
   virtual void beforeGC() {}
   virtual void afterGC() {}
 
-  virtual Suspendable* gCollect(GC gc) = 0;
+  virtual Runnable* gCollect(GC gc) = 0;
 protected:
   inline
   void terminate();
 
   VM vm;
 private:
-  friend class SuspendableList;
+  friend class RunnableList;
 
   ThreadPriority _priority;
 
   bool _runnable;
   bool _terminated;
 
-  Suspendable* _previous;
-  Suspendable* _next;
+  Runnable* _previous;
+  Runnable* _next;
 };
 
-class SuspendableList {
+class RunnableList {
 public:
   struct iterator {
   public:
-    iterator(Suspendable* node) : node(node) {}
+    iterator(Runnable* node) : node(node) {}
 
     bool operator==(const iterator& other) {
       return node == other.node;
@@ -99,14 +99,14 @@ public:
       return result;
     }
 
-    Suspendable* operator*() {
+    Runnable* operator*() {
       return node;
     }
   private:
-    Suspendable* node;
+    Runnable* node;
   };
 public:
-  SuspendableList() : first(nullptr), last(nullptr) {}
+  RunnableList() : first(nullptr), last(nullptr) {}
 
   iterator begin() {
     return iterator(first);
@@ -116,9 +116,9 @@ public:
     return iterator(nullptr);
   }
 private:
-  friend class Suspendable;
+  friend class Runnable;
 
-  void insert(Suspendable* item) {
+  void insert(Runnable* item) {
     item->_previous = last;
     item->_next = nullptr;
 
@@ -130,7 +130,7 @@ private:
     last = item;
   }
 
-  void remove(Suspendable* item) {
+  void remove(Runnable* item) {
     if (item->_previous == nullptr)
       first = item->_next;
     else
@@ -142,8 +142,8 @@ private:
       item->_next->_previous = item->_previous;
   }
 
-  Suspendable* first;
-  Suspendable* last;
+  Runnable* first;
+  Runnable* last;
 };
 
-#endif /* __SUSPENDABLE_DECL_HH */
+#endif // __RUNNABLE_DECL_H

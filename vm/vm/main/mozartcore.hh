@@ -30,7 +30,7 @@
 #include "vm.hh"
 #include "store.hh"
 #include "threadpool.hh"
-#include "suspendable.hh"
+#include "runnable.hh"
 #include "gcollect.hh"
 
 #include "reference.hh"

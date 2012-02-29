@@ -36,7 +36,7 @@ void VirtualMachine::run() {
     if (gc.isGCRequired())
       gc.doGC();
 
-    Suspendable* currentThread;
+    Runnable* currentThread;
 
     // Select a thread
     do {
@@ -62,7 +62,7 @@ bool VirtualMachine::testPreemption() {
   return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
 }
 
-void VirtualMachine::scheduleThread(Suspendable* thread) {
+void VirtualMachine::scheduleThread(Runnable* thread) {
   threadPool.schedule(thread);
 }
 

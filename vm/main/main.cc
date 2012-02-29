@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
   builtinCreateThread.make<BuiltinProcedure>(
     vm, 1, (OzBuiltin) &builtins::createThread);
 
+  UnstableNode builtinShow;
+  builtinShow.make<BuiltinProcedure>(
+    vm, 1, (OzBuiltin) &builtins::show);
+
   // Define immediate constants
 
   UnstableNode zero, one, minusOne, minusTwo, nnode;
@@ -188,11 +192,12 @@ int main(int argc, char **argv) {
 
   /*
    * {Fibonacci N R}
-   * {Print R}
+   * {Show R}
    */
 
   /*
    * K0 = N
+   * K1 = Show (builtin)
    *
    * G0 = Fibonacci
    *
@@ -208,9 +213,9 @@ int main(int argc, char **argv) {
     OpMoveKX, 0, 0,
     OpCallG, 0, 2,
 
-    // {Print R}
+    // {Show R}
     OpMoveYX, 0, 0,
-    OpPrint, 0,
+    OpCallBuiltin, 1, 1, 0,
 
     // end
     OpDeallocateY,
@@ -218,11 +223,12 @@ int main(int argc, char **argv) {
   };
 
   UnstableNode mainCodeArea;
-  mainCodeArea.make<CodeArea>(vm, 1, mainCodeBlock,
+  mainCodeArea.make<CodeArea>(vm, 2, mainCodeBlock,
                               sizeof(mainCodeBlock), 2);
 
   ArrayInitializer initMainCodeArea = mainCodeArea.node;
   initMainCodeArea.initElement(vm, 0, &nnode);
+  initMainCodeArea.initElement(vm, 1, &builtinShow);
 
   UnstableNode abstractionMain;
   abstractionMain.make<Abstraction>(vm, 1, 0, &mainCodeArea);

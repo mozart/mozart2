@@ -34,6 +34,14 @@ BuiltinResult equals(VM vm, UnstableNode* args[]);
 BuiltinResult add(VM vm, UnstableNode* args[]);
 BuiltinResult subtract(VM vm, UnstableNode* args[]);
 
+BuiltinResult subtract(VM vm, UnstableNode* args[]);
+
+BuiltinResult multiply(VM vm, UnstableNode* args[]);
+
+BuiltinResult divide(VM vm, UnstableNode* args[]);
+
+BuiltinResult modulus(VM vm, UnstableNode* args[]);
+
 BuiltinResult createThread(VM vm, UnstableNode* args[]);
 
 BuiltinResult show(VM vm, UnstableNode* args[]);

@@ -104,10 +104,9 @@ BuiltinResult Implementation<SmallInt>::addValue(Self self, VM vm,
 
   return BuiltinResultContinue;
 }
-
 BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
-                                                 UnstableNode* right,
-                                                 UnstableNode* result) {
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
   Node& rightNode = Reference::dereference(right->node);
 
   if (rightNode.type == SmallInt::type()) {
@@ -124,13 +123,121 @@ BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
 }
 
 BuiltinResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
-                                                      nativeint b,
-                                                      UnstableNode* result) {
+                                                 nativeint b,
+                                                 UnstableNode* result) {
   nativeint a = value();
   nativeint c = a - b;
 
   // Detecting overflow - platform dependent (2's complement)
-  if ((((a ^ c) & (-b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+  if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+    // No overflow
+    result->make<SmallInt>(vm, c);
+  } else {
+    // Overflow - TODO: create a BigInt
+    result->make<SmallInt>(vm, 0);
+  }
+
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<SmallInt>::divide(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == SmallInt::type()) {
+    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
+    return divideValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
+  } else {
+    // TODO SmallInt + non-SmallInt
+    std::cout << "SmallInt expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+}
+
+BuiltinResult Implementation<SmallInt>::divideValue(Self self, VM vm,
+                                                 nativeint b,
+                                                 UnstableNode* result) {
+  nativeint a = value();
+  nativeint c = a / b;
+
+  // Detecting overflow - platform dependent (2's complement)
+  if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+    // No overflow
+    result->make<SmallInt>(vm, c);
+  } else {
+    // Overflow - TODO: create a BigInt
+    result->make<SmallInt>(vm, 0);
+  }
+
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<SmallInt>::multiply(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == SmallInt::type()) {
+    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
+    return multiplyValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
+  } else {
+    // TODO SmallInt + non-SmallInt
+    std::cout << "SmallInt expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+}
+
+BuiltinResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
+                                                 nativeint b,
+                                                 UnstableNode* result) {
+  nativeint a = value();
+  nativeint c = a * b;
+
+  // Detecting overflow - platform dependent (2's complement)
+  if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+    // No overflow
+    result->make<SmallInt>(vm, c);
+  } else {
+    // Overflow - TODO: create a BigInt
+    result->make<SmallInt>(vm, 0);
+  }
+
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<SmallInt>::modulus(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == SmallInt::type()) {
+    nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
+    return modulusValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
+  } else {
+    // TODO SmallInt + non-SmallInt
+    std::cout << "SmallInt expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+}
+
+BuiltinResult Implementation<SmallInt>::modulusValue(Self self, VM vm,
+                                                 nativeint b,
+                                                 UnstableNode* result) {
+  nativeint a = value();
+  nativeint c = a % b;
+
+  // Detecting overflow - platform dependent (2's complement)
+  if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
     result->make<SmallInt>(vm, c);
   } else {

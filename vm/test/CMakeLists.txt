@@ -1,14 +1,11 @@
-cmake_minimum_required(VERSION 2.6)
-PROJECT(MOZART)
 
-################################################################################
-# GTest - http://code.google.com/p/googletest/
-################################################################################
-enable_testing(true)
-include_directories(${GTEST_SRC_DIR}/include ${GTEST_SRC_DIR})
+set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../main")
+include_directories(${SRC} ${GTEST_SRC_DIR}/include ${GTEST_SRC_DIR} ${CMAKE_CURRENT_BINARY_DIR}/../main)
 
-################################################################################
-# MOZART
-################################################################################
-add_executable(ut ut_source.cpp source.cpp)
-target_link_libraries(ut pthread "${GTEST_BUILD_DIR}/libgtest.a" "${GTEST_BUILD_DIR}/libgtest_main.a")
+add_executable(vmtest factorial_tests.cpp
+		      ../main/emulate.cc
+		      ../main/corebuiltins.cc
+		      ../main/memmanager.cc
+		      ../main/gcollect.cc)
+
+target_link_libraries(vmtest pthread "${GTEST_BUILD_DIR}/libgtest.a" "${GTEST_BUILD_DIR}/libgtest_main.a")

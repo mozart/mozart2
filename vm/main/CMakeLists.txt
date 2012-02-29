@@ -13,6 +13,8 @@ string(REPLACE ".hh" ".hh.gen" interface_headers_gen "${interface_headers}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(vm main.cc emulate.cc corebuiltins.cc
-               memmanager.cc gcollect.cc)
-add_dependencies(vm ${interface_headers_gen})
+add_library(mozartvm emulate.cc corebuiltins.cc memmanager.cc gcollect.cc)
+add_dependencies(mozartvm ${interface_headers_gen})
+
+add_executable(vm main.cc)
+target_link_libraries(vm mozartvm)

@@ -1,6 +1,6 @@
 package org.mozartoz.bootcompiler
 
-import java.io.{ FileReader, BufferedReader }
+import java.io.{ Console => _, _ }
 
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.combinator._
@@ -15,22 +15,26 @@ import util._
 object Main {
   def main(args: Array[String]) {
     val fileName = args(0)
+    val outputStream =
+      if (args.size > 1) new PrintStream(args(1))
+      else Console.out
+
     val reader = new PagedSeqReader(PagedSeq.fromReader(
         new BufferedReader(new FileReader(fileName))))
     val parser = new OzParser()
 
     parser.parse(reader) match {
-      case parser.Success(rawCode, _) => produce(rawCode)
+      case parser.Success(rawCode, _) => produce(rawCode, outputStream)
       case parser.NoSuccess(msg, _) =>
         Console.err.println(msg)
     }
   }
 
-  def produce(rawCode: Statement) {
+  def produce(rawCode: Statement, outputStream: PrintStream) {
     val prog = new Program(rawCode)
     applyTransforms(prog)
 
-    prog.produceCC(new Output(Console.out))
+    prog.produceCC(new Output(outputStream))
   }
 
   def applyTransforms(prog: Program) {

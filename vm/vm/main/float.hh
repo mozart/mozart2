@@ -82,9 +82,7 @@ BuiltinResult Implementation<Float>::add(Self self, VM vm,
 BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
                                               double b,
                                               UnstableNode* result) {
-  double a = value();
-  double c = a + b;
-  result->make<Float>(vm, c);
+  result->make<Float>(vm, value() + b);
 
   return BuiltinResultContinue;
 }
@@ -96,11 +94,11 @@ BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
 
   if (rightNode.type == Float::type()) {
     double b = IMPLNOSELF(double, Float, value, &rightNode);
-    return addValue(self, vm, b, result);
+    return subtractValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
     return &rightNode;
   } else {
-    // TODO Float + non-Float
+    // TODO Float - non-Float
     std::cout << "Float expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
     return BuiltinResultContinue;
@@ -110,10 +108,78 @@ BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
 BuiltinResult Implementation<Float>::subtractValue(Self self, VM vm,
                                                    double b,
                                                    UnstableNode* result) {
-  double a = value();
-  double c = a + b;
-  result->make<Float>(vm, c);
+  result->make<Float>(vm, value() - b);
 
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
+                                              UnstableNode* right,
+                                              UnstableNode* result) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == Float::type()) {
+    double b = IMPLNOSELF(double, Float, value, &rightNode);
+    return multiplyValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
+  } else {
+    // TODO Float * non-Float
+    std::cout << "Float expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+}
+
+BuiltinResult Implementation<Float>::multiplyValue(Self self, VM vm,
+                                                   double b,
+                                                   UnstableNode* result) {
+  result->make<Float>(vm, value() * b);
+
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<Float>::divide(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
+  Node& rightNode = Reference::dereference(right->node);
+
+  if (rightNode.type == Float::type()) {
+    double b = IMPLNOSELF(double, Float, value, &rightNode);
+    return divideValue(self, vm, b, result);
+  } else if (rightNode.type->isTransient()) {
+    return &rightNode;
+  } else {
+    // TODO Float / non-Float
+    std::cout << "Float expected but " << rightNode.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+}
+
+BuiltinResult Implementation<Float>::divideValue(Self self, VM vm,
+                                                 double b,
+                                                 UnstableNode* result) {
+  result->make<Float>(vm, value() / b);
+
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<Float>::div(Self self, VM vm,
+                                         UnstableNode* right,
+                                         UnstableNode* result) {
+  // TODO Raise exception
+  std::cout << "SmallInt expected but " << Float::type()->getName();
+  std::cout << " found" << std::endl;
+  return BuiltinResultContinue;
+}
+
+BuiltinResult Implementation<Float>::mod(Self self, VM vm,
+                                         UnstableNode* right,
+                                         UnstableNode* result) {
+  // TODO Raise exception
+  std::cout << "SmallInt expected but " << Float::type()->getName();
+  std::cout << " found" << std::endl;
   return BuiltinResultContinue;
 }
 

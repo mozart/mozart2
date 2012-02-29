@@ -1,14 +1,20 @@
-cmake_minimum_required(VERSION 2.6)
-PROJECT(MOZART)
+# Mozart VM library
 
-################################################################################
-# GTest - http://code.google.com/p/googletest/
-################################################################################
-enable_testing(true)
-include_directories(${GTEST_SRC_DIR}/include ${GTEST_SRC_DIR})
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../main" "${CMAKE_CURRENT_BINARY_DIR}/../main")
 
-################################################################################
-# MOZART
-################################################################################
-add_executable(ut ut_source.cpp source.cpp)
-target_link_libraries(ut pthread "${GTEST_BUILD_DIR}/libgtest.a" "${GTEST_BUILD_DIR}/libgtest_main.a")
+# GTest libraries
+
+add_library(gtest STATIC IMPORTED)
+set_property(TARGET gtest PROPERTY
+             IMPORTED_LOCATION "${GTEST_BUILD_DIR}/libgtest.a")
+
+add_library(gtest_main STATIC IMPORTED)
+set_property(TARGET gtest_main PROPERTY
+             IMPORTED_LOCATION "${GTEST_BUILD_DIR}/libgtest_main.a")
+
+include_directories("${GTEST_SRC_DIR}" "${GTEST_SRC_DIR}/include")
+
+# The testing executable
+
+add_executable(vmtest smallinttest.cc)
+target_link_libraries(vmtest mozartvm pthread gtest gtest_main)

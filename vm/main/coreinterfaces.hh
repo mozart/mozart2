@@ -124,7 +124,8 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 class Numeric;
 template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
-  BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
+  BuiltinResult add(Node& self, VM vm, UnstableNode* right,
+                    UnstableNode* result) {
     // TODO add non-(SmallInt or Float)
     std::cout << "SmallInt or Float expected but " << self.type->getName();
     std::cout << " found" << std::endl;
@@ -135,6 +136,38 @@ struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
                          UnstableNode* result) {
     // TODO subtract non-(SmallInt or Float)
     std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult multiply(Node& self, VM vm, UnstableNode* right,
+                         UnstableNode* result) {
+    // TODO multiply non-(SmallInt or Float)
+    std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult divide(Node& self, VM vm, UnstableNode* right,
+                       UnstableNode* result) {
+    // TODO divide non-Float
+    std::cout << "Float expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult div(Node& self, VM vm, UnstableNode* right,
+                    UnstableNode* result) {
+    // TODO div non-SmallInt
+    std::cout << "SmallInt expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult mod(Node& self, VM vm, UnstableNode* right,
+                    UnstableNode* result) {
+    // TODO mod non-SmallInt
+    std::cout << "SmallInt expected but " << self.type->getName();
     std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }

@@ -56,14 +56,40 @@ public:
                     UnstableNode* result);
 
   inline
-  BuiltinResult addValue(Self self, VM vm, double b, UnstableNode* result);
+  BuiltinResult addValue(Self self, VM vm, double b,
+                         UnstableNode* result);
 
   inline
   BuiltinResult subtract(Self self, VM vm, UnstableNode* right,
                          UnstableNode* result);
 
   inline
-  BuiltinResult subtractValue(Self self, VM vm, double b, UnstableNode* result);
+  BuiltinResult subtractValue(Self self, VM vm, double b,
+                              UnstableNode* result);
+
+  inline
+  BuiltinResult multiply(Self self, VM vm, UnstableNode* right,
+                         UnstableNode* result);
+
+  inline
+  BuiltinResult multiplyValue(Self self, VM vm, double b,
+                              UnstableNode* result);
+
+  inline
+  BuiltinResult divide(Self self, VM vm, UnstableNode* right,
+                       UnstableNode* result);
+
+  inline
+  BuiltinResult divideValue(Self self, VM vm, double b,
+                            UnstableNode* result);
+
+  inline
+  BuiltinResult div(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult mod(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
 private:
   const double _value;
 };

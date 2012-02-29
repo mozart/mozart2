@@ -46,6 +46,26 @@ BuiltinResult subtract(VM vm, UnstableNode* args[]) {
   return x.subtract(vm, args[1], args[2]);
 }
 
+BuiltinResult multiply(VM vm, UnstableNode* args[]) {
+  Numeric x = args[0]->node;
+  return x.multiply(vm, args[1], args[2]);
+}
+
+BuiltinResult divide(VM vm, UnstableNode* args[]) {
+  Numeric x = args[0]->node;
+  return x.divide(vm, args[1], args[2]);
+}
+
+BuiltinResult div(VM vm, UnstableNode* args[]) {
+  Numeric x = args[0]->node;
+  return x.div(vm, args[1], args[2]);
+}
+
+BuiltinResult mod(VM vm, UnstableNode* args[]) {
+  Numeric x = args[0]->node;
+  return x.mod(vm, args[1], args[2]);
+}
+
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   int arity;
   StableNode* body;

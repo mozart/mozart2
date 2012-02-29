@@ -25,7 +25,7 @@
 #ifndef __VARIABLES_DECL_H
 #define __VARIABLES_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
 
 //////////////
 // Variable //
@@ -48,7 +48,7 @@ public:
   Implementation(VM vm, GC gc, Self from);
 
   inline
-  BuiltinResult wait(Self self, VM vm, Suspendable* thread);
+  BuiltinResult wait(Self self, VM vm, Runnable* thread);
 
   inline
   BuiltinResult bind(Self self, VM vm, Node* src);
@@ -56,11 +56,11 @@ private:
   inline
   void resumePendingThreads(VM vm);
 
-  void transferPendingThreads(VM vm, VMAllocatedList<Suspendable*>& source) {
+  void transferPendingThreads(VM vm, VMAllocatedList<Runnable*>& source) {
     pendingThreads.splice(vm, source);
   }
 
-  VMAllocatedList<Suspendable*> pendingThreads;
+  VMAllocatedList<Runnable*> pendingThreads;
 };
 
 /////////////
@@ -87,7 +87,7 @@ public:
   static void* build(VM vm, GC gc, Self from);
 
   inline
-  BuiltinResult wait(Self self, VM vm, Suspendable* thread);
+  BuiltinResult wait(Self self, VM vm, Runnable* thread);
 
   inline
   BuiltinResult bind(Self self, VM vm, Node* src);

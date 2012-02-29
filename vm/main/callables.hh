@@ -27,10 +27,10 @@
 
 #include "callables-decl.hh"
 
-#include <iostream>
-
 #include "coreinterfaces.hh"
-#include "smallint-decl.hh"
+#include "smallint.hh"
+
+#include <iostream>
 
 /////////////////////////////
 // Inline BuiltinProcedure //

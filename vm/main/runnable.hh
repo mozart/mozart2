@@ -22,48 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __THREADPOOL_H
-#define __THREADPOOL_H
+#ifndef __RUNNABLE_H
+#define __RUNNABLE_H
 
-#include "threadpool-decl.hh"
+#include "runnable-decl.hh"
+#include "vm-decl.hh"
 
-////////////////
-// ThreadPool //
-////////////////
+Runnable::Runnable(VM vm, ThreadPriority priority) :
+  vm(vm), _priority(priority), _runnable(true), _terminated(false) {
 
-Runnable* ThreadPool::popNext() {
-  do {
-    // While remainings[tpHi] > 0, return the first Hi-priority thread
-    if (!queues[tpHi].empty() && remainings[tpHi] > 0) {
-      remainings[tpHi]--;
-      return popNext(tpHi);
-    }
-
-    // Reset remainings[tpHi] for subsequent calls
-    remainings[tpHi] = HiToMiddlePriorityRatio;
-
-    // While remainings[tpMiddle] > 0, return the first Middle-priority thread
-    if (!queues[tpMiddle].empty() && remainings[tpMiddle] > 0) {
-      remainings[tpMiddle]--;
-      return popNext(tpMiddle);
-    }
-
-    // Reset remainings[tpMiddle] for subsequent calls
-    remainings[tpMiddle] = MiddleToLowPriorityRatio;
-
-    // remainings[tpLow] is not used, always return the first Low-priority thread
-    if (!queues[tpLow].empty()) {
-      return popNext(tpLow);
-    }
-  } while (!empty()); // might not be empty if all remainings were 0
-
-  return nullptr;
+  vm->aliveThreads.insert(this);
 }
 
-Runnable* ThreadPool::popNext(ThreadPriority priority) {
-  Runnable* result = queues[priority].front();
-  queues[priority].pop();
-  return result;
+Runnable::Runnable(GC gc, Runnable& from) :
+  vm(gc->vm) {
+
+  _priority = from._priority;
+  _runnable = from._runnable;
+  _terminated = from._terminated;
+
+  vm->aliveThreads.insert(this);
 }
 
-#endif // __THREADPOOL_H
+void Runnable::terminate() {
+  _runnable = false;
+  _terminated = true;
+
+  vm->aliveThreads.remove(this);
+}
+
+#endif // __RUNNABLE_H

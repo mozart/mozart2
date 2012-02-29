@@ -25,11 +25,7 @@
 #ifndef __MEMMANAGER_H
 #define __MEMMANAGER_H
 
-#include "core-forward-decl.hh"
-
 #include <algorithm>
-
-using namespace std;
 
 const size_t MegaBytes = 1024*1024;
 
@@ -50,13 +46,13 @@ public:
   }
 
   void swapWith(MemoryManager& other) {
-    swap(_nextBlock, other._nextBlock);
-    swap(_baseBlock, other._baseBlock);
-    swap(_maxMemory, other._maxMemory);
-    swap(_allocated, other._allocated);
+    std::swap(_nextBlock, other._nextBlock);
+    std::swap(_baseBlock, other._baseBlock);
+    std::swap(_maxMemory, other._maxMemory);
+    std::swap(_allocated, other._allocated);
 
     for (size_t i = 0; i < MaxBuckets; i++)
-      swap(freeListBuckets[i], other.freeListBuckets[i]);
+      std::swap(freeListBuckets[i], other.freeListBuckets[i]);
   }
 
   void init() {

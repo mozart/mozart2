@@ -25,7 +25,7 @@
 #ifndef __SMALLINT_DECL_H
 #define __SMALLINT_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
 
 class SmallInt;
 
@@ -60,6 +60,14 @@ public:
 
   inline
   BuiltinResult addValue(Self self, VM vm, nativeint b, UnstableNode* result);
+
+  inline
+  BuiltinResult subtract(Self self, VM vm, UnstableNode* right,
+                         UnstableNode* result);
+
+  inline
+  BuiltinResult subtractValue(Self self, VM vm, nativeint b,
+                              UnstableNode* result);
 private:
   const nativeint _value;
 };

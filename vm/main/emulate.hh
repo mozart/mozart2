@@ -26,15 +26,16 @@
 #define __EMULATE_H
 
 #include <stack>
-#include <assert.h>
+#include <cassert>
+
+#include "mozartcore.hh"
 
 #include "arrays.hh"
 #include "opcodes.hh"
-#include "store.hh"
 #include "ozlimits.hh"
 #include "codearea.hh"
-#include "suspendable.hh"
-#include "smallint-decl.hh"
+#include "runnable.hh"
+#include "smallint.hh"
 
 /**
  * Entry of a thread stack
@@ -58,8 +59,8 @@ struct StackEntry {
   StableNode* abstraction;
 
   union {
-    ProgramCounter PC;  // Normal
-    ptrdiff_t PCOffset; // During GC
+    ProgramCounter PC;       // Normal
+    std::ptrdiff_t PCOffset; // During GC
   };
 
   size_t yregCount;
@@ -131,7 +132,7 @@ private:
  * The Thread class contains the information about the execution of a
  * lightweight thread. It contains the main emulator loop.
  */
-class Thread : public Suspendable {
+class Thread : public Runnable {
 public:
   Thread(VM vm, StableNode* abstraction);
 
@@ -143,10 +144,10 @@ public:
   void beforeGC();
   void afterGC();
 
-  Suspendable* gCollect(GC gc);
+  Runnable* gCollect(GC gc);
 protected:
   void terminate() {
-    Suspendable::terminate();
+    Runnable::terminate();
     xregs.release(vm);
   }
 private:

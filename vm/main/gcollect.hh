@@ -26,13 +26,12 @@
 #define __GCOLLECT_H
 
 #include "gcollect-decl.hh"
-#include "vm.hh"
-#include "store.hh"
-#include "suspendable.hh"
+
+#include "vm-decl.hh"
 
 void ThreadQueue::gCollect(GC gc) {
   for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
-    Suspendable*& thread = *iterator;
+    Runnable*& thread = *iterator;
     gc->gcThread(thread, thread);
   }
 }
@@ -45,7 +44,7 @@ MemoryManager& GarbageCollector::getMemoryManager() {
   return vm->getMemoryManager();
 }
 
-void GarbageCollector::gcThread(Suspendable* from, Suspendable*& to) {
+void GarbageCollector::gcThread(Runnable* from, Runnable*& to) {
   to = from;
   threadsToGC.push_front(secondMemManager, &to);
 }

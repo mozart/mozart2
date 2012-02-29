@@ -37,8 +37,13 @@ BuiltinResult equals(VM vm, UnstableNode* args[]) {
 }
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {
-  Addable x = args[0]->node;
+  Numeric x = args[0]->node;
   return x.add(vm, args[1], args[2]);
+}
+
+BuiltinResult subtract(VM vm, UnstableNode* args[]) {
+  Numeric x = args[0]->node;
+  return x.subtract(vm, args[1], args[2]);
 }
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
@@ -57,12 +62,33 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
     return result;
 
   if (arity != 0) {
-    cout << "Illegal arity: " << 0 << " expected but ";
-    cout << arity << " found" << endl;
+    std::cout << "Illegal arity: " << 0 << " expected but ";
+    std::cout << arity << " found" << std::endl;
     // TODO Raise illegal arity exception
   }
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, *args[0]));
+
+  return BuiltinResultContinue;
+}
+
+BuiltinResult show(VM vm, UnstableNode* args[]) {
+  Node& arg = Reference::dereference(args[0]->node);
+
+  if (arg.type == SmallInt::type()) {
+    nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
+    printf("%ld\n", value);
+  } else if (arg.type == Boolean::type()) {
+    bool value = IMPLNOSELF(bool, Boolean, value, &arg);
+    printf("%s\n", value ? "true" : "false");
+  } else if (arg.type == Float::type()) {
+    double value = IMPLNOSELF(double, Float, value, &arg);
+    printf("%f\n", value);
+  } else if (arg.type->isTransient()) {
+    return &arg;
+  } else {
+    std::cout << "<" << arg.type->getName() << ">" << std::endl;
+  }
 
   return BuiltinResultContinue;
 }

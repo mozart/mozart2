@@ -25,12 +25,12 @@
 #ifndef __COREINTERFACES_H
 #define __COREINTERFACES_H
 
-#include "store.hh"
-#include "suspendable.hh"
+#include "mozartcore.hh"
 
 #include "variables-decl.hh"
 #include "boolean-decl.hh"
 #include "smallint-decl.hh"
+#include "float-decl.hh"
 #include "codearea-decl.hh"
 #include "callables-decl.hh"
 #include "atom-decl.hh"
@@ -40,7 +40,7 @@
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
-  BuiltinResult wait(Node& self, VM vm, Suspendable* thread) {
+  BuiltinResult wait(Node& self, VM vm, Runnable* thread) {
     if (self.type->isTransient()) {
       return &self;
     } else {
@@ -67,7 +67,8 @@ struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
       return &self;
     } else {
       // TODO == of non-SmallInt
-      cout << self.type->getName() << " == (right) not implemented yet" << endl;
+      std::cout << self.type->getName();
+      std::cout << " == (right) not implemented yet" << std::endl;
       result->make<Boolean>(vm, false);
       return BuiltinResultContinue;
     }
@@ -79,8 +80,8 @@ template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
   BuiltinResult callBuiltin(Node& self, VM vm, int argc, UnstableNode* args[]) {
     // TODO call non-builtin
-    cout << "BuiltinProcedure expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "BuiltinProcedure expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 };
@@ -93,8 +94,8 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
                             StaticArray<StableNode>* Gs,
                             StaticArray<StableNode>* Ks) {
     // TODO call non-abstraction
-    cout << "Abstraction expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "Abstraction expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     *arity = 0;
     *body = nullptr;
     *start = nullptr;
@@ -111,8 +112,8 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
                                 int* Xcount, StaticArray<StableNode>* Ks) {
     // TODO code area info of a non-CodeArea
-    cout << "CodeArea expected but " << self.type->getName();
-    cout << " found" << endl;
+    std::cout << "CodeArea expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     *start = nullptr;
     *Xcount = 0;
     *Ks = nullptr;
@@ -120,13 +121,21 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   }
 };
 
-class Addable;
+class Numeric;
 template<>
-struct Interface<Addable>: ImplementedBy<SmallInt> {
+struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
-    // TODO add non-SmallInt
-    cout << "SmallInt expected but " << self.type->getName();
-    cout << " found" << endl;
+    // TODO add non-(SmallInt or Float)
+    std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult subtract(Node& self, VM vm, UnstableNode* right,
+                         UnstableNode* result) {
+    // TODO subtract non-(SmallInt or Float)
+    std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << " found" << std::endl;
     return BuiltinResultContinue;
   }
 };
@@ -174,7 +183,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "BuiltinCallable-interf.hh"
 #include "Callable-interf.hh"
 #include "CodeAreaProvider-interf.hh"
-#include "Addable-interf.hh"
+#include "Numeric-interf.hh"
 #include "IntegerValue-interf.hh"
 #include "BooleanValue-interf.hh"
 #include "ArrayInitializer-interf.hh"
@@ -182,6 +191,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "variables.hh"
 #include "boolean.hh"
 #include "smallint.hh"
+#include "float.hh"
 #include "codearea.hh"
 #include "callables.hh"
 #include "atom.hh"

@@ -27,8 +27,6 @@
 #include <new>
 #include <iostream>
 
-using namespace std;
-
 ///////////////////
 // MemoryManager //
 ///////////////////
@@ -36,10 +34,10 @@ using namespace std;
 void* MemoryManager::getMoreMemory(size_t size) {
   // TODO  Get more memory a memory manager is running short
 
-  cerr << "FATAL: Failed to allocate " << size << " bytes" << endl;
-  cerr << " (already allocated ";
-  cerr << (_allocated / MegaBytes) << " MB)" << endl;
+  std::cerr << "FATAL: Failed to allocate " << size << " bytes" << std::endl;
+  std::cerr << " (already allocated ";
+  std::cerr << (_allocated / MegaBytes) << " MB)" << std::endl;
 
-  bad_alloc ba;
+  std::bad_alloc ba;
   throw ba;
 }

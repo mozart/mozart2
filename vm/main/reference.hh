@@ -25,10 +25,9 @@
 #ifndef __REFERENCE_H
 #define __REFERENCE_H
 
-#ifndef MOZART_GENERATOR
+#include "reference-decl.hh"
 
-#include "store.hh"
-#include "gctypes.hh"
+#include "gctypes-decl.hh"
 
 #include <iostream>
 
@@ -40,8 +39,9 @@ void Reference::gCollect(GC gc, Node& from, StableNode& to) const {
   Node& destNode = dereference(from);
 
   if (OzDebugGC) {
-    cerr << " \\-> gc " << &destNode << " of type " << destNode.type->getName();
-    cerr << "   \tto node " << &to << endl;
+    std::cerr << " \\-> gc " << &destNode << " of type ";
+    std::cerr << destNode.type->getName();
+    std::cerr << "   \tto node " << &to << std::endl;
   }
 
   destNode.type->gCollect(gc, destNode, to);
@@ -52,14 +52,13 @@ void Reference::gCollect(GC gc, Node& from, UnstableNode& to) const {
   Node& destNode = dereference(from);
 
   if (OzDebugGC) {
-    cerr << " \\-> gc " << &destNode << " of type " << destNode.type->getName();
-    cerr << "   \tto node " << &to << endl;
+    std::cerr << " \\-> gc " << &destNode << " of type ";
+    std::cerr << destNode.type->getName();
+    std::cerr << "   \tto node " << &to << std::endl;
   }
 
   destNode.type->gCollect(gc, destNode, to);
   destNode.make<GCedToUnstable>(gc->vm, &to);
 }
-
-#endif // MOZART_GENERATOR
 
 #endif // __REFERENCE_H

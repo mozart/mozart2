@@ -25,16 +25,18 @@
 #ifndef __COREBUILTINS_H
 #define __COREBUILTINS_H
 
-#include "store.hh"
-#include "codearea.hh"
+#include "mozartcore.hh"
 
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]);
 
 BuiltinResult add(VM vm, UnstableNode* args[]);
+BuiltinResult subtract(VM vm, UnstableNode* args[]);
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]);
+
+BuiltinResult show(VM vm, UnstableNode* args[]);
 
 }
 

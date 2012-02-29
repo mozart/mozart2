@@ -25,9 +25,9 @@
 #ifndef __CALLABLES_DECL_H
 #define __CALLABLES_DECL_H
 
-#include "store.hh"
+#include "mozartcore.hh"
+
 #include "opcodes.hh"
-#include "arrays.hh"
 
 //////////////////////
 // BuiltinProcedure //

@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "gcollect.hh"
-
-#include "gctypes.hh"
+#include "mozartcore.hh"
 
 #include <iostream>
 
@@ -34,8 +32,8 @@
 
 void GarbageCollector::doGC() {
   if (OzDebugGC) {
-    cerr << "Before GC: " << getMemoryManager().getAllocated();
-    cerr << " bytes used." << endl;
+    std::cerr << "Before GC: " << getMemoryManager().getAllocated();
+    std::cerr << " bytes used." << std::endl;
   }
 
   // Before GC
@@ -49,7 +47,7 @@ void GarbageCollector::doGC() {
   getMemoryManager().init();
 
   // Forget the list of alive threads
-  vm->aliveThreads = SuspendableList();
+  vm->aliveThreads = RunnableList();
 
   // Root of GC are runnable threads
   vm->getThreadPool().gCollect(this);
@@ -78,12 +76,12 @@ void GarbageCollector::doGC() {
   }
 
   if (OzDebugGC) {
-    cerr << "After GC: " << getMemoryManager().getAllocated();
-    cerr << " bytes used." << endl;
+    std::cerr << "After GC: " << getMemoryManager().getAllocated();
+    std::cerr << " bytes used." << std::endl;
   }
 }
 
-void GarbageCollector::gcOneThread(Suspendable*& thread) {
+void GarbageCollector::gcOneThread(Runnable*& thread) {
   thread = thread->gCollect(this);
 }
 
@@ -95,8 +93,8 @@ void GarbageCollector::gcOneNode(NodeType*& list) {
   Node* from = node->gcFrom;
 
   if (OzDebugGC) {
-    cerr << "gc node " << from << " of type " << from->type->getName();
-    cerr << "   \tto node " << node << endl;
+    std::cerr << "gc node " << from << " of type " << from->type->getName();
+    std::cerr << "   \tto node " << node << std::endl;
   }
 
   from->type->gCollect(this, *from, *node);
@@ -105,7 +103,7 @@ void GarbageCollector::gcOneNode(NodeType*& list) {
 
 void GarbageCollector::gcOneStableRef(StableNode*& ref) {
   if (OzDebugGC)
-    cerr << "gc stable ref from " << ref << " to " << &ref << endl;
+    std::cerr << "gc stable ref from " << ref << " to " << &ref << std::endl;
 
   Node& from = Reference::dereference(ref->node);
 

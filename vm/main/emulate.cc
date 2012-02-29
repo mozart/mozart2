@@ -23,16 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "emulate.hh"
-#include <iostream>
-#include <assert.h>
 
-#include "smallint.hh"
+#include <iostream>
+#include <cassert>
+
 #include "coreinterfaces.hh"
 #include "corebuiltins.hh"
-#include "vm.hh"
 #include "variables.hh"
-
-using namespace std;
 
 const ProgramCounter NullPC = nullptr;
 
@@ -90,31 +87,36 @@ void StackEntry::afterGC(VM vm) {
 // Thread //
 ////////////
 
-Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
+Thread::Thread(VM vm, StableNode* abstraction) : Runnable(vm) {
   // getCallInfo
 
   int arity;
   StableNode* body;
-  ProgramCounter start;
-  int Xcount;
+  ProgramCounter start = nullptr;
+  int Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   Callable callable = abstraction->node;
-  BuiltinResult result = callable.getCallInfo(vm, &arity, &body, &start,
-                                              &Xcount, &Gs, &Ks);
+#ifndef NDEBUG
+  BuiltinResult result =
+#endif
+  callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+
+#ifndef NDEBUG
   assert(result == BuiltinResultContinue && arity == 0);
+#endif
 
   // Set up
 
-  xregs.init(vm, max(Xcount, InitXRegisters));
+  xregs.init(vm, std::max(Xcount, InitXRegisters));
 
   pushFrame(vm, abstraction, start, 0, nullptr, Gs, Ks);
 
   vm->scheduleThread(this);
 }
 
-Thread::Thread(GC gc, Thread& from) : Suspendable(gc, from) {
+Thread::Thread(GC gc, Thread& from) : Runnable(gc, from) {
   // X registers
 
   size_t Xcount = from.xregs.size();
@@ -453,26 +455,6 @@ void Thread::run() {
         break;
       }
 
-      // Hard-coded stuff
-
-      case OpPrint: {
-        Node& arg = Reference::dereference(XPC(1).node);
-        if (arg.type == SmallInt::type()) {
-          nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
-          printf("%ld\n", value);
-        } else if (arg.type == Boolean::type()) {
-          bool value = IMPLNOSELF(bool, Boolean, value, &arg);
-          printf("%s\n", value ? "True" : "False");
-        } else if (arg.type->isTransient()) {
-          waitFor(vm, &arg, preempted);
-          break;
-        } else {
-          const string typeName = arg.type->getName();
-          cout << "SmallInt or Boolean expected but " << typeName << " found\n";
-        }
-        advancePC(1); break;
-      }
-
       // Inlines for some builtins
 
       case OpInlineEqualsInteger: {
@@ -495,7 +477,7 @@ void Thread::run() {
       }
 
       case OpInlineAdd: {
-        Addable x = XPC(1).node;
+        Numeric x = XPC(1).node;
         BuiltinResult result = x.add(vm, &XPC(2), &XPC(3));
 
         if (result == BuiltinResultContinue)
@@ -576,8 +558,8 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
 
   if (result == BuiltinResultContinue) {
     if (actualArity != formalArity) {
-      cout << "Illegal arity: " << formalArity << " expected but ";
-      cout << actualArity << " found" << endl;
+      std::cout << "Illegal arity: " << formalArity << " expected but ";
+      std::cout << actualArity << " found" << std::endl;
       // TODO Raise illegal arity exception
     }
 
@@ -656,7 +638,7 @@ void Thread::afterGC()
     (*iterator).afterGC(vm);
 }
 
-Suspendable* Thread::gCollect(GC gc) {
+Runnable* Thread::gCollect(GC gc) {
   return new (gc->vm) Thread(gc, *this);
 }
 

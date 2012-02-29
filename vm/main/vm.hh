@@ -25,93 +25,46 @@
 #ifndef __VM_H
 #define __VM_H
 
-#include <stdlib.h>
-
-#include "memmanager.hh"
-#include "memmanlist.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "atomtable.hh"
-#include "gcollect-decl.hh"
+#include "vm-decl.hh"
 
 ////////////////////
 // VirtualMachine //
 ////////////////////
 
-typedef bool (*PreemptionTest)(void* data);
+void VirtualMachine::run() {
+  while (true) {
+    if (gc.isGCRequired())
+      gc.doGC();
 
-class VirtualMachine {
-public:
-  VirtualMachine(PreemptionTest preemptionTest,
-                 void* preemptionTestData = nullptr) :
-    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
-    gc(this) {
+    Runnable* currentThread;
 
-    memoryManager.init();
+    // Select a thread
+    do {
+      currentThread = threadPool.popNext();
+
+      if (currentThread == nullptr) {
+        // All remaining threads are suspended
+        // TODO Is there something special to do in that case?
+        return;
+      }
+    } while (currentThread->isTerminated());
+
+    // Run the thread
+    currentThread->run();
+
+    // Schedule the thread anew if it is still runnable
+    if (currentThread->isRunnable())
+      threadPool.schedule(currentThread);
   }
+}
 
-  StableNode* newVariable();
+bool VirtualMachine::testPreemption() {
+  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
+}
 
-  void* malloc(size_t size) {
-    return memoryManager.malloc(size);
-  }
-
-  void free(void* ptr, size_t size) {
-    memoryManager.free(ptr, size);
-  }
-
-  template <class T>
-  StaticArray<T> newStaticArray(size_t size) {
-    void* memory = malloc(size * sizeof(T));
-    return StaticArray<T>(static_cast<T*>(memory), size);
-  }
-
-  template <class T>
-  void deleteStaticArray(StaticArray<T> array, size_t size) {
-    void* memory = static_cast<void*>((T*) array);
-    free(memory, size * sizeof(T));
-  }
-
-  void run();
-
-  inline
-  bool testPreemption();
-
-  ThreadPool& getThreadPool() { return threadPool; }
-
-  MemoryManager& getMemoryManager() {
-    return memoryManager;
-  }
-private:
-  friend class GarbageCollector;
-  friend class Suspendable;
-  friend class Thread;
-  friend class Implementation<Atom>;
-
-  VirtualMachine(const VirtualMachine& src) : gc(this) {}
-
-  friend void* operator new (size_t size, VM vm);
-  friend void* operator new[] (size_t size, VM vm);
-
-  void* getMemory(size_t size) {
-    return memoryManager.getMemory(size);
-  }
-
-  // Called from the constructor of Thread
-  void scheduleThread(Thread* thread);
-
-  ThreadPool threadPool;
-  AtomTable atomTable;
-
-  PreemptionTest _preemptionTest;
-  void* _preemptionTestData;
-
-  MemoryManager memoryManager;
-
-  SuspendableList aliveThreads;
-
-  GarbageCollector gc;
-};
+void VirtualMachine::scheduleThread(Runnable* thread) {
+  threadPool.schedule(thread);
+}
 
 void* operator new (size_t size, VM vm) {
   return vm->getMemory(size);
@@ -119,60 +72,6 @@ void* operator new (size_t size, VM vm) {
 
 void* operator new[] (size_t size, VM vm) {
   return vm->getMemory(size);
-}
-
-/////////////////////
-// VMAllocatedList //
-/////////////////////
-
-template <class T>
-class VMAllocatedList: public MemManagedList<T> {
-public:
-  void push_back(VM vm, const T& item) {
-    MemManagedList<T>::push_back(vm->getMemoryManager(), item);
-  }
-
-  template <class... Args>
-  void push_back_new(VM vm, Args... args) {
-    MemManagedList<T>::push_back_new(vm->getMemoryManager(), args...);
-  }
-
-  void push_front(VM vm, const T& item) {
-    MemManagedList<T>::push_front(vm->getMemoryManager(), item);
-  }
-
-  template <class... Args>
-  void push_front_new(VM vm, Args... args) {
-    MemManagedList<T>::push_front_new(vm->getMemoryManager(), args...);
-  }
-
-  T pop_front(VM vm) {
-    return MemManagedList<T>::pop_front(vm->getMemoryManager());
-  }
-
-  void remove_front(VM vm) {
-    MemManagedList<T>::remove_front(vm->getMemoryManager());
-  }
-
-  void clear(VM vm) {
-    MemManagedList<T>::clear(vm->getMemoryManager());
-  }
-
-  void splice(VM vm, VMAllocatedList<T>& source) {
-    MemManagedList<T>::splice(vm->getMemoryManager(), source);
-  }
-};
-
-#include "reference.hh"
-#include "suspendable.hh"
-#include "gcollect.hh"
-
-///////////////////////////
-// Inline VirtualMachine //
-///////////////////////////
-
-bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
 }
 
 #endif // __VM_H

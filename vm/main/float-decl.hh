@@ -22,33 +22,50 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SUSPENDABLE_HH
-#define __SUSPENDABLE_HH
+#ifndef __FLOAT_DECL_H
+#define __FLOAT_DECL_H
 
-#include "suspendable-decl.hh"
-#include "vm.hh"
+#include "mozartcore.hh"
 
-Suspendable::Suspendable(VM vm, ThreadPriority priority) :
-  vm(vm), _priority(priority), _runnable(true), _terminated(false) {
+class Float;
 
-  vm->aliveThreads.insert(this);
-}
+#ifndef MOZART_GENERATOR
+#include "Float-implem-decl.hh"
+#endif
 
-Suspendable::Suspendable(GC gc, Suspendable& from) :
-  vm(gc->vm) {
+template <>
+class Implementation<Float>: Copiable, StoredAs<double> {
+public:
+  typedef SelfType<Float>::Self Self;
+public:
+  Implementation(double value) : _value(value) {}
 
-  _priority = from._priority;
-  _runnable = from._runnable;
-  _terminated = from._terminated;
+  static double build(VM, double value) { return value; }
 
-  vm->aliveThreads.insert(this);
-}
+  inline
+  static double build(VM vm, GC gc, Self from);
 
-void Suspendable::terminate() {
-  _runnable = false;
-  _terminated = true;
+  double value() const { return _value; }
 
-  vm->aliveThreads.remove(this);
-}
+  inline
+  BuiltinResult equals(Self self, VM vm, UnstableNode* right,
+                       UnstableNode* result);
 
-#endif /* __SUSPENDABLE_HH */
+  inline
+  BuiltinResult add(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult addValue(Self self, VM vm, double b, UnstableNode* result);
+
+  inline
+  BuiltinResult subtract(Self self, VM vm, UnstableNode* right,
+                         UnstableNode* result);
+
+  inline
+  BuiltinResult subtractValue(Self self, VM vm, double b, UnstableNode* result);
+private:
+  const double _value;
+};
+
+#endif // __FLOAT_DECL_H

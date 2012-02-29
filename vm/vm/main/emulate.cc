@@ -455,30 +455,6 @@ void Thread::run() {
         break;
       }
 
-      // Hard-coded stuff
-
-      case OpPrint: {
-        Node& arg = Reference::dereference(XPC(1).node);
-        if (arg.type == SmallInt::type()) {
-          nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
-          printf("%ld\n", value);
-        } else if (arg.type == Boolean::type()) {
-          bool value = IMPLNOSELF(bool, Boolean, value, &arg);
-          printf("%s\n", value ? "True" : "False");
-        } else if (arg.type == Float::type()) {
-          double value = IMPLNOSELF(double, Float, value, &arg);
-          printf("%f\n", value);
-        } else if (arg.type->isTransient()) {
-          waitFor(vm, &arg, preempted);
-          break;
-        } else {
-          const std::string typeName = arg.type->getName();
-          std::cout << "SmallInt, Boolean or Float expected but ";
-          std::cout << typeName << " found" << std::endl;
-        }
-        advancePC(1); break;
-      }
-
       // Inlines for some builtins
 
       case OpInlineEqualsInteger: {

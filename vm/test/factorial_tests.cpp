@@ -188,7 +188,6 @@ TEST(FactorialTests, SmallIntTest) {
 
     // {Print R}
     OpMoveYX, 0, 0,
-    OpPrint, 0,
 
     // end
     OpDeallocateY,

@@ -47,7 +47,7 @@ Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
 }
 
 BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
-                                             Suspendable* thread) {
+                                             Runnable* thread) {
   thread->unsetRunnable();
   pendingThreads.push_back(vm, thread);
 
@@ -100,7 +100,7 @@ void* Implementation<Unbound>::build(VM vm, GC gc, Self from) {
 }
 
 BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
-                                            Suspendable* thread) {
+                                            Runnable* thread) {
   self.make<Variable>(vm);
 
   DataflowVariable var = *self;

@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SUSPENDABLE_HH
-#define __SUSPENDABLE_HH
+#ifndef __RUNNABLE_H
+#define __RUNNABLE_H
 
-#include "suspendable-decl.hh"
+#include "runnable-decl.hh"
 #include "vm-decl.hh"
 
-Suspendable::Suspendable(VM vm, ThreadPriority priority) :
+Runnable::Runnable(VM vm, ThreadPriority priority) :
   vm(vm), _priority(priority), _runnable(true), _terminated(false) {
 
   vm->aliveThreads.insert(this);
 }
 
-Suspendable::Suspendable(GC gc, Suspendable& from) :
+Runnable::Runnable(GC gc, Runnable& from) :
   vm(gc->vm) {
 
   _priority = from._priority;
@@ -44,11 +44,11 @@ Suspendable::Suspendable(GC gc, Suspendable& from) :
   vm->aliveThreads.insert(this);
 }
 
-void Suspendable::terminate() {
+void Runnable::terminate() {
   _runnable = false;
   _terminated = true;
 
   vm->aliveThreads.remove(this);
 }
 
-#endif /* __SUSPENDABLE_HH */
+#endif // __RUNNABLE_H

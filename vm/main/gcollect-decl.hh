@@ -30,7 +30,7 @@
 #include "memmanager.hh"
 #include "memmanlist.hh"
 
-#include "suspendable-decl.hh"
+#include "runnable-decl.hh"
 
 // Set this to true to print debug info about the GC
 #ifdef OZ_DEBUG_GC
@@ -58,7 +58,7 @@ public:
   void doGC();
 
   inline
-  void gcThread(Suspendable* from, Suspendable*& to);
+  void gcThread(Runnable* from, Runnable*& to);
 
   inline
   void gcStableNode(StableNode& from, StableNode& to);
@@ -72,7 +72,7 @@ public:
   VM vm;
 private:
   inline
-  void gcOneThread(Suspendable*& thread);
+  void gcOneThread(Runnable*& thread);
 
   template <class NodeType, class GCedType>
   inline
@@ -83,7 +83,7 @@ private:
 
   MemoryManager secondMemManager;
 
-  MemManagedList<Suspendable**> threadsToGC;
+  MemManagedList<Runnable**> threadsToGC;
   StableNode* stableNodesToGC;
   UnstableNode* unstableNodesToGC;
   MemManagedList<StableNode**> stableRefsToGC;

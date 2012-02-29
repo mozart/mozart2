@@ -28,15 +28,15 @@
 #include <queue>
 
 #include "core-forward-decl.hh"
-#include "suspendable-decl.hh"
+#include "runnable-decl.hh"
 
 /////////////////
 // ThreadQueue //
 /////////////////
 
-class ThreadQueue : public std::queue<Suspendable*> {
+class ThreadQueue : public std::queue<Runnable*> {
 public:
-  void remove(Suspendable* item) {
+  void remove(Runnable* item) {
     for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
       if (*iterator == item) {
         c.erase(iterator);
@@ -70,17 +70,17 @@ public:
     return empty(tpMiddle) && empty(tpHi) && empty(tpLow);
   }
 
-  void schedule(Suspendable* thread) {
+  void schedule(Runnable* thread) {
     queues[thread->getPriority()].push(thread);
   }
 
-  void unschedule(Suspendable* thread) {
+  void unschedule(Runnable* thread) {
     queues[tpLow].remove(thread);
     queues[tpMiddle].remove(thread);
     queues[tpHi].remove(thread);
   }
 
-  void reschedule(Suspendable* thread) {
+  void reschedule(Runnable* thread) {
     unschedule(thread);
     schedule(thread);
   }
@@ -92,14 +92,14 @@ public:
   }
 
   inline
-  Suspendable* popNext();
+  Runnable* popNext();
 private:
   bool empty(ThreadPriority priority) {
     return queues[priority].empty();
   }
 
   inline
-  Suspendable* popNext(ThreadPriority priority);
+  Runnable* popNext(ThreadPriority priority);
 
   ThreadQueue queues[tpCount];
   int remainings[tpCount];

@@ -47,7 +47,7 @@ void GarbageCollector::doGC() {
   getMemoryManager().init();
 
   // Forget the list of alive threads
-  vm->aliveThreads = SuspendableList();
+  vm->aliveThreads = RunnableList();
 
   // Root of GC are runnable threads
   vm->getThreadPool().gCollect(this);
@@ -81,7 +81,7 @@ void GarbageCollector::doGC() {
   }
 }
 
-void GarbageCollector::gcOneThread(Suspendable*& thread) {
+void GarbageCollector::gcOneThread(Runnable*& thread) {
   thread = thread->gCollect(this);
 }
 

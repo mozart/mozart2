@@ -87,7 +87,7 @@ public:
   }
 private:
   friend class GarbageCollector;
-  friend class Suspendable;
+  friend class Runnable;
   friend class Thread;
   friend class Implementation<Atom>;
 
@@ -102,7 +102,7 @@ private:
 
   // Called from the constructor of Thread
   inline
-  void scheduleThread(Suspendable* thread);
+  void scheduleThread(Runnable* thread);
 
   ThreadPool threadPool;
   AtomTable atomTable;
@@ -112,7 +112,7 @@ private:
 
   MemoryManager memoryManager;
 
-  SuspendableList aliveThreads;
+  RunnableList aliveThreads;
 
   GarbageCollector gc;
 };

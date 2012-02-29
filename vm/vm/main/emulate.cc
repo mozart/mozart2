@@ -92,15 +92,20 @@ Thread::Thread(VM vm, StableNode* abstraction) : Suspendable(vm) {
 
   int arity;
   StableNode* body;
-  ProgramCounter start;
-  int Xcount;
+  ProgramCounter start = nullptr;
+  int Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   Callable callable = abstraction->node;
-  BuiltinResult result = callable.getCallInfo(vm, &arity, &body, &start,
-                                              &Xcount, &Gs, &Ks);
+#ifndef NDEBUG
+  BuiltinResult result =
+#endif
+  callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+
+#ifndef NDEBUG
   assert(result == BuiltinResultContinue && arity == 0);
+#endif
 
   // Set up
 

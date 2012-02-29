@@ -64,6 +64,28 @@ public:
 
   inline
   BuiltinResult subtractValue(Self self, VM vm, double b, UnstableNode* result);
+  inline
+  BuiltinResult divide(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult divideValue(Self self, VM vm, double b, UnstableNode* result);
+
+  inline
+  BuiltinResult multiply(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult multiplyValue(Self self, VM vm, double b, UnstableNode* result);
+
+  inline
+  BuiltinResult modulus(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult modulusValue(Self self, VM vm, double b, UnstableNode* result);
+
+
 private:
   const double _value;
 };

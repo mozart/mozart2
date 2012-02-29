@@ -60,7 +60,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
 
 class Equatable;
 template<>
-struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
+struct Interface<Equatable>: ImplementedBy<SmallInt, Float, Atom>, NoAutoWait {
   BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     if (self.type->isTransient()) {
       // TODO A == B when A and B are aliased transients should return true
@@ -126,16 +126,23 @@ template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
   BuiltinResult add(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
     // TODO add non-(SmallInt or Float)
-    std::cout << "SmallInt or Float expected but " << self.type->getName();
-    std::cout << " found" << std::endl;
+    std::cout << "SmallInt or Float expected but " << self.type->getName() << " found" << std::endl;
     return BuiltinResultContinue;
   }
-
-  BuiltinResult subtract(Node& self, VM vm, UnstableNode* right,
-                         UnstableNode* result) {
-    // TODO subtract non-(SmallInt or Float)
-    std::cout << "SmallInt or Float expected but " << self.type->getName();
-    std::cout << " found" << std::endl;
+  BuiltinResult subtract(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    std::cout << "SmallInt expected but " << self.type->getName() << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+  BuiltinResult multiply(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    std::cout << "SmallInt expected but " << self.type->getName() << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+  BuiltinResult divide(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    std::cout << "SmallInt expected but " << self.type->getName() << " found" << std::endl;
+    return BuiltinResultContinue;
+  }
+  BuiltinResult modulus(Node& self, VM vm, UnstableNode* right, UnstableNode* result){
+    std::cout << "SmallInt expected but " << self.type->getName() << " found" << std::endl;
     return BuiltinResultContinue;
   }
 };

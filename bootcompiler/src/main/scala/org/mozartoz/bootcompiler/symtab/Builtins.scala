@@ -62,11 +62,11 @@ class Builtins {
         "subtract", in = 2, out = 1)
     object * extends BuiltinSymbol("Number.'*'",
         "multiply", in = 2, out = 1)
-    object / extends BuiltinSymbol("Number.'/'",
+    object / extends BuiltinSymbol("Float.'/'",
         "divide", in = 2, out = 1)
-    object div extends BuiltinSymbol("Number.'div'",
+    object div extends BuiltinSymbol("Int.'div'",
         "div", in = 2, out = 1)
-    object mod extends BuiltinSymbol("Number.'mod'",
+    object mod extends BuiltinSymbol("Int.'mod'",
         "mod", in = 2, out = 1)
 
     object < extends BuiltinSymbol("Number.'<'",

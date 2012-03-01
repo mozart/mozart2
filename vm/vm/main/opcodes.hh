@@ -81,6 +81,8 @@ const OpCode OpCreateAbstractionK = 0x45;
 // Inlines for some builtins
 const OpCode OpInlineEqualsInteger = 0x50;
 const OpCode OpInlineAdd = 0x51;
-const OpCode OpInlineMinus1 = 0x52;
+const OpCode OpInlineSubtract = 0x52;
+const OpCode OpInlinePlus1 = 0x53;
+const OpCode OpInlineMinus1 = 0x54;
 
 #endif // __OPCODES_H

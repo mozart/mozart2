@@ -101,7 +101,7 @@ template<class T>
 class MWUAccessor<MWUnion<>,T,T>{
 public:
   static T& get(MWUnion<>* u){return *reinterpret_cast<T*>(u->it);}
-  static void init(VM vm, MWUnion<> *u, T *v){
+  static void init(VM vm, MWUnion<> *u, T v){
     u->it=reinterpret_cast<char*>(new(vm)T(v));
   }
 };

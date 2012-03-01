@@ -488,6 +488,30 @@ void Thread::run() {
         break;
       }
 
+      case OpInlineSubtract: {
+        Numeric x = XPC(1).node;
+        BuiltinResult result = x.subtract(vm, &XPC(2), &XPC(3));
+
+        if (result == BuiltinResultContinue)
+          advancePC(3);
+        else
+          waitFor(vm, result, preempted);
+
+        break;
+      }
+
+      case OpInlinePlus1: {
+        IntegerValue x = XPC(1).node;
+        BuiltinResult result = x.addValue(vm, 1, &XPC(2));
+
+        if (result == BuiltinResultContinue)
+          advancePC(2);
+        else
+          waitFor(vm, result, preempted);
+
+        break;
+      }
+
       case OpInlineMinus1: {
         IntegerValue x = XPC(1).node;
         BuiltinResult result = x.addValue(vm, -1, &XPC(2));

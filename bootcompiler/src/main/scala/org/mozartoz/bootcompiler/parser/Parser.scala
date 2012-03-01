@@ -268,6 +268,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | "!!" ~> variable ^^ EscapedVariable
     | unboundExpression
     | integerConst
+    | floatConst
     | atomLike
   )
 
@@ -276,6 +277,9 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val integerConst: PackratParser[IntLiteral] =
     numericLit ^^ (chars => IntLiteral(chars.toInt))
+
+  lazy val floatConst: PackratParser[FloatLiteral] =
+    floatLit ^^ (chars => FloatLiteral(chars.toInt))
 
   lazy val atomLike: PackratParser[AtomLike] = (
       "true" ^^^ True()

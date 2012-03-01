@@ -120,6 +120,7 @@ abstract class Transformer extends (Program => Unit) {
     case EscapedVariable(variable) => expression
     case UnboundExpression() => expression
     case IntLiteral(value) => expression
+    case FloatLiteral(value) => expression
     case Atom(value) => expression
     case True() => expression
     case False() => expression

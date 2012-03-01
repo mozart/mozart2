@@ -13,7 +13,11 @@ trait OzTokenParsers extends StdTokenParsers {
   type Tokens = OzTokens
   val lexical = new OzLexical
 
-  import lexical.{Keyword, NumericLit, StringLit, AtomLit, Identifier}
+  import lexical._
+
+  /** A parser which matches a float literal */
+  def floatLit: Parser[String] =
+    elem("float literal", _.isInstanceOf[FloatLit]) ^^ (_.chars)
 
   /** A parser which matches an atom literal */
   def atomLit: Parser[String] =

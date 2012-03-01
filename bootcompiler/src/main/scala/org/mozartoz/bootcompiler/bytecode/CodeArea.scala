@@ -156,6 +156,9 @@ class CodeArea(val abstraction: Abstraction) {
       case IntLiteral(value) =>
         out << "  temp.make<SmallInt>(vm, %d);\n" % value
 
+      case FloatLiteral(value) =>
+        out << "  temp.make<Float>(vm, %s);\n" % value.toString()
+
       case Atom(value) =>
         out << "  temp.make<Atom>(vm, %d, \"%s\");\n" % (value.length(), value)
 

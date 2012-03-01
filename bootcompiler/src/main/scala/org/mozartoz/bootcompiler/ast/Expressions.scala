@@ -96,6 +96,10 @@ case class IntLiteral(value: Long) extends Constant {
   def syntax(indent: String) = value.toString()
 }
 
+case class FloatLiteral(value: Double) extends Constant {
+  def syntax(indent: String) = value.toString()
+}
+
 trait AtomLike extends Constant
 
 case class Atom(value: String) extends AtomLike {

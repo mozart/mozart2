@@ -12,6 +12,7 @@ class OzLexical extends Lexical with OzTokens {
   def token: Parser[Token] = (
       identifier >> handleLabel
     | atomLiteral >> handleLabel
+    | floatLiteral
     | integerLiteral
     | atomLiteral
     | EofCh ^^^ EOF
@@ -32,6 +33,12 @@ class OzLexical extends Lexical with OzTokens {
   def identifier =
     upperCaseLetter ~ rep(identChar) ^^ {
       case first ~ rest => Identifier(first :: rest mkString "")
+    }
+
+  def floatLiteral =
+    (digit ~ rep(digit) <~ '.') ~ rep(digit) ^^ {
+      case first ~ rest ~ fract =>
+        FloatLit(first :: rest mkString "" + "." + fract mkString "")
     }
 
   def integerLiteral =

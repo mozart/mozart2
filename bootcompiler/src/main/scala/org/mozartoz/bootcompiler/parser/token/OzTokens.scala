@@ -4,6 +4,11 @@ package token
 import scala.util.parsing.combinator.token._
 
 trait OzTokens extends StdTokens {
+  /** The class of float literal tokens */
+  case class FloatLit(chars: String) extends Token {
+    override def toString() = chars
+  }
+
   /** The class of atom literal tokens */
   case class AtomLit(chars: String) extends Token {
     override def toString() = "atom "+chars

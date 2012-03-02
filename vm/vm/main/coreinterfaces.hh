@@ -34,6 +34,7 @@
 #include "codearea-decl.hh"
 #include "callables-decl.hh"
 #include "atom-decl.hh"
+#include "records-decl.hh"
 
 #include <iostream>
 
@@ -199,9 +200,35 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
   }
 };
 
+class RecordLike;
+template<>
+struct Interface<RecordLike>: ImplementedBy<Tuple> {
+  BuiltinResult width(Node& self, VM vm, UnstableNode* result) {
+    // TODO width on a non-Tuple
+    result->make<Boolean>(vm, false);
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult dot(Node& self, VM vm, UnstableNode* feature,
+                    UnstableNode* result) {
+    // TODO dot on a non-Record
+    result->make<Boolean>(vm, false);
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult dotNumber(Node& self, VM vm, nativeint feature,
+                          UnstableNode* result) {
+    // TODO dot on a non-Record
+    result->make<Boolean>(vm, false);
+    return BuiltinResultContinue;
+  }
+};
+
 class ArrayInitializer;
 template<>
-struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
+struct Interface<ArrayInitializer>:
+  ImplementedBy<Tuple, Abstraction, CodeArea> {
+
   BuiltinResult initElement(Node& self, VM vm, size_t index,
                             UnstableNode* value) {
     // TODO initElement on a non-ArrayInitializer
@@ -219,6 +246,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "Numeric-interf.hh"
 #include "IntegerValue-interf.hh"
 #include "BooleanValue-interf.hh"
+#include "RecordLike-interf.hh"
 #include "ArrayInitializer-interf.hh"
 
 #include "variables.hh"
@@ -228,6 +256,7 @@ struct Interface<ArrayInitializer>: ImplementedBy<Abstraction, CodeArea> {
 #include "codearea.hh"
 #include "callables.hh"
 #include "atom.hh"
+#include "records.hh"
 
 #endif // MOZART_GENERATOR
 

@@ -160,7 +160,8 @@ class CodeArea(val abstraction: Abstraction) {
         out << "  temp.make<Float>(vm, %s);\n" % value.toString()
 
       case Atom(value) =>
-        out << "  temp.make<Atom>(vm, %d, \"%s\");\n" % (value.length(), value)
+        out << "  temp.make<Atom>(vm, %d, u\"%s\");\n" % (
+            value.length(), value)
 
       case True() =>
         out << "  temp.make<Boolean>(vm, true);\n"

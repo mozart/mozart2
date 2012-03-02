@@ -40,7 +40,7 @@ public:
 
   Implementation(const AtomImpl* value) : _value(value) {}
 
-  static AtomImpl* build(VM vm, std::size_t size, char16_t* data) {
+  static AtomImpl* build(VM vm, std::size_t size, const char16_t* data) {
     assert(size == (size << 5) >> 5);
     return vm->atomTable.get(vm, size, data);
   }

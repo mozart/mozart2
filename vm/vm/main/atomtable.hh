@@ -33,13 +33,14 @@ class AtomTable;
 class AtomImpl {
   friend class AtomTable;
   friend class Implementation<Atom>;
-  AtomImpl(size_t size, char16_t* data, size_t critBit, int d, AtomImpl* other)
+  AtomImpl(size_t size, const char16_t* data,
+           size_t critBit, int d, AtomImpl* other)
     : size(size), data(data),critBit(critBit) {
     side[d]=this;
     side[1-d]=other;
   }
   size_t size;
-  char16_t* data;
+  const char16_t* data;
   size_t critBit;
   AtomImpl* side[2];
 };
@@ -47,7 +48,7 @@ class AtomImpl {
 class AtomTable {
 public:
   AtomTable():root(nullptr), _count(0){}
-  AtomImpl* get(VM vm, size_t size, char16_t* data) {
+  AtomImpl* get(VM vm, size_t size, const char16_t* data) {
     size <<= 4;
     if(root == nullptr){
       ++_count;
@@ -77,16 +78,16 @@ public:
   }
   size_t count() {return _count;}
 private:
-  int bitAt(size_t size, char16_t* data, size_t pos) {
+  int bitAt(size_t size, const char16_t* data, size_t pos) {
     if(pos >= size) return 1;
     return (data[pos >> 4] & (1 << (pos & 0xF))) ? 1 : 0;
   }
-  char16_t charAt(size_t sizeC, char16_t* data, size_t i) {
+  char16_t charAt(size_t sizeC, const char16_t* data, size_t i) {
     if(i >= sizeC) return ~(char16_t)0;
     return data[i];
   }
-  size_t firstMismatch(size_t s1, char16_t* d1,
-		       size_t s2, char16_t* d2,
+  size_t firstMismatch(size_t s1, const char16_t* d1,
+		       size_t s2, const char16_t* d2,
 		       size_t start, size_t stop) {
     if(start == stop) return stop;
     stop--;

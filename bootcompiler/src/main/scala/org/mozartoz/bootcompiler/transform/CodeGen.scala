@@ -83,6 +83,9 @@ object CodeGen extends Transformer with TreeDSL {
 
   def generate(statement: Statement) {
     statement match {
+      case SkipStatement() =>
+        // skip
+
       case CompoundStatement(statements) =>
         for (stat <- statements)
           generate(stat)

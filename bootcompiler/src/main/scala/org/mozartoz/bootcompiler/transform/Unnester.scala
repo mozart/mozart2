@@ -20,29 +20,8 @@ object Unnester extends Transformer with TreeDSL {
       }
 
     case call @ CallStatement(callable, args) =>
-      val argsAndTheirTemps =
-        for (arg <- callable :: args) yield arg match {
-          case v:Variable => v -> v
-          case _ => arg -> Variable(Symbol.newSynthetic())
-        }
-
-      val argsNeedingTempsAndTheirTemps =
-        argsAndTheirTemps filter (x => x._1 ne x._2)
-
-      val tempArgs = argsNeedingTempsAndTheirTemps map (_._2)
-
-      if (tempArgs.isEmpty) super.transformStat(call)
-      else {
-        LOCAL (tempArgs:_*) IN {
-          val computeTemps =
-            for ((arg, temp) <- argsNeedingTempsAndTheirTemps)
-              yield transformStat(temp === arg)
-
-          val temps = argsAndTheirTemps map (_._2)
-          val newCall = treeCopy.CallStatement(call, temps.head, temps.tail)
-
-          CompoundStatement(computeTemps) ~ newCall
-        }
+      withSimplifiedHeaderAndArgs(callable, args) { (newCallable, newArgs) =>
+        treeCopy.CallStatement(call, newCallable, newArgs)
       }
 
     case test @ IfStatement(cond, trueStat, falseStat) =>
@@ -91,10 +70,52 @@ object Unnester extends Transformer with TreeDSL {
     case BindExpression(lhs2, rhs2) =>
       transformStat((v === lhs2) ~ (v === rhs2))
 
+    case record @ Record(label, fields) =>
+      withSimplifiedHeaderAndArgs(label, fields) { (newLabel, newFields) =>
+        v === treeCopy.Record(record, newLabel, newFields)
+      }
+
     case _:FunExpression | _:ThreadExpression | _:EscapedVariable |
         _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
         _:CreateAbstraction =>
       throw new Exception(
           "illegal tree in Unnester.transformBindVarToExpression")
+  }
+
+  private def withSimplifiedHeaderAndArgs(header: Expression,
+      args: List[Expression])(
+      makeStatement: (Expression, List[Expression]) => Statement) = {
+
+    withSimplifiedArgs(header :: args) { simplified =>
+      makeStatement(simplified.head, simplified.tail)
+    }
+  }
+
+  private def withSimplifiedArgs(args: List[Expression])(
+      makeStatement: List[Expression] => Statement) = {
+    val argsAndTheirTemps =
+      for (arg <- args) yield arg match {
+        case v:Variable => v -> v
+        case _ => arg -> Variable(Symbol.newSynthetic())
+      }
+
+    val argsNeedingTempsAndTheirTemps =
+      argsAndTheirTemps filter (x => x._1 ne x._2)
+
+    val tempArgs = argsNeedingTempsAndTheirTemps map (_._2)
+
+    if (tempArgs.isEmpty) makeStatement(args)
+    else {
+      LOCAL (tempArgs:_*) IN {
+        val computeTemps =
+          for ((arg, temp) <- argsNeedingTempsAndTheirTemps)
+            yield transformStat(temp === arg)
+
+        val temps = argsAndTheirTemps map (_._2)
+        val newStatement = makeStatement(temps)
+
+        CompoundStatement(computeTemps) ~ newStatement
+      }
+    }
   }
 }

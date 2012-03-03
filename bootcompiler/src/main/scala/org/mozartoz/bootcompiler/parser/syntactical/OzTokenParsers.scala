@@ -23,6 +23,18 @@ trait OzTokenParsers extends StdTokenParsers {
   def atomLit: Parser[String] =
     elem("atom literal", _.isInstanceOf[AtomLit]) ^^ (_.chars)
 
+  /** A parser which matches an atom literal label */
+  def atomLitLabel: Parser[String] =
+    acceptMatch("atom literal label", {
+      case Label(AtomLit(chars)) => chars
+    })
+
+  /** A parser which matches an identifier label */
+  def identLabel: Parser[String] =
+    acceptMatch("identifier label", {
+      case Label(Identifier(chars)) => chars
+    })
+
   /* an implicit keyword function that gives a warning when a given word is
    * not in the reserved/delimiters list
    */

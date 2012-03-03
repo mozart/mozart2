@@ -126,6 +126,12 @@ abstract class Transformer extends (Program => Unit) {
     case False() => expression
     case UnitVal() => expression
 
+    // Records
+
+    case Record(label, fields) =>
+      treeCopy.Record(expression, transformExpr(label),
+          fields map transformExpr)
+
     // Synthetic-only
 
     case CreateAbstraction(abstraction, globals) => expression

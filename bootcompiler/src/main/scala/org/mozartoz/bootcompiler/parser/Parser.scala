@@ -244,7 +244,10 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   // X.Y   X^Y   (left-associative)
-  lazy val expression12: PackratParser[Expression] = expression13
+  lazy val expression12: PackratParser[Expression] = (
+      expression12 ~ "." ~ expression13 ^^ BinaryOp
+    | expression13
+  )
 
   // @X   !!X   (prefix)
   lazy val expression13: PackratParser[Expression] = expression14
@@ -259,6 +262,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifExpression
     | threadExpression
     | trivialExpression
+    | recordExpression
   )
 
   // Trivial expressions
@@ -293,4 +297,15 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val variable: PackratParser[Variable] =
     ident ^^ (chars => Variable(chars))
+
+  // Record expressions
+
+  lazy val recordExpression: PackratParser[Expression] =
+    recordLabel ~ recordFields <~ ")" ^^ Record
+
+  lazy val recordLabel: PackratParser[Expression] =
+    atomLitLabel ^^ Atom
+
+  lazy val recordFields: PackratParser[List[Expression]] =
+    rep(expression)
 }

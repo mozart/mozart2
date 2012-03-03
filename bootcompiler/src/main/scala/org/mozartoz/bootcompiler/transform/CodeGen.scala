@@ -50,6 +50,11 @@ object CodeGen extends Transformer with TreeDSL {
         }
       }
     }
+
+    def initArrayWith(values: List[Expression])(implicit ev: A <:< XReg) {
+      for ((value:Variable, index) <- values.zipWithIndex)
+        array(index) := value.symbol
+    }
   }
 
   private implicit def symbol2ops2(self: Symbol) = new {
@@ -90,15 +95,30 @@ object CodeGen extends Transformer with TreeDSL {
         XReg(0) := code.registerFor(rhs)
         XReg(0) === lhs.symbol
 
+      case ((lhs:Variable) === (rhs @ Record(label:Variable, fields))) =>
+        val fieldCount = fields.size
+        val dest = XReg(0)
+
+        code.registerFor(label.symbol) match {
+          case reg:XReg =>
+            code += OpCreateTupleX(reg, fieldCount, dest)
+          case reg:KReg => reg
+            code += OpCreateTupleK(reg, fieldCount, dest)
+          case reg =>
+            XReg(1) := reg
+            code += OpCreateTupleX(XReg(1), fieldCount, dest)
+        }
+
+        dest.initArrayWith(fields)
+        dest === lhs.symbol
+
       case ((lhs:Variable) === (rhs @ CreateAbstraction(abs, globals))) =>
         val dest = XReg(0)
 
         val bodyReg = code.registerFor(abs.codeArea)
         code += OpCreateAbstractionK(abs.arity, bodyReg, globals.size, dest)
 
-        for ((global, index) <- globals.zipWithIndex)
-          dest.array(index) := global.symbol
-
+        dest.initArrayWith(globals)
         dest === lhs.symbol
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>

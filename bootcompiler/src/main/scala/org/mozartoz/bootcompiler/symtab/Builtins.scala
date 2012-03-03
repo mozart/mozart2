@@ -36,7 +36,9 @@ class Builtins {
       "<" -> Number.<,
       "=<" -> Number.=<,
       ">" -> Number.>,
-      ">=" -> Number.>=
+      ">=" -> Number.>=,
+
+      "." -> Value.dot
   )
 
   object Show extends BuiltinSymbol("Show",
@@ -50,6 +52,9 @@ class Builtins {
         "equals", in = 2, out = 1)
     object \= extends BuiltinSymbol("Value.'\\='",
         "notEquals", in = 2, out = 1)
+
+    object dot extends BuiltinSymbol("Value.'.'",
+        "dot", in = 2, out = 1)
   }
 
   object Number {

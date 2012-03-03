@@ -102,6 +102,11 @@ class TreeCopier {
   def UnitVal(tree: Node) =
     new UnitVal().copyAttrs(tree)
 
+  // Records
+
+  def Record(tree: Node, label: Expression, fields: List[Expression]) =
+    new Record(label, fields).copyAttrs(tree)
+
   // Synthetic-only
 
   def CreateAbstraction(tree: Node, abstraction: Abstraction,

@@ -102,6 +102,13 @@ case class OpCreateAbstractionX(arity: ImmInt, body: XReg,
 case class OpCreateAbstractionK(arity: ImmInt, body: KReg,
     globalCount: ImmInt, dest: XReg) extends OpCode
 
+/** Create a tuple of given `label' and `width'
+ *  Elements must be initialized with `OpArrayInitElement_' afterwards. */
+case class OpCreateTupleX(label: XReg, width: ImmInt,
+    dest: XReg) extends OpCode
+case class OpCreateTupleK(label: KReg, width: ImmInt,
+    dest: XReg) extends OpCode
+
 // Special
 
 /** Dummy used by `CodeArea.addHole()` (not a true opcode) */

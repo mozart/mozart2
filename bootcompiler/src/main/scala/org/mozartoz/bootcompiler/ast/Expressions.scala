@@ -114,6 +114,26 @@ case class True() extends BuiltinName("true")
 case class False() extends BuiltinName("false")
 case class UnitVal() extends BuiltinName("unit")
 
+// Records
+
+case class Record(label: Expression,
+    fields: List[Expression]) extends Expression {
+  def syntax(indent: String) = fields.toList match {
+    case Nil => label.syntax()
+
+    case firstField :: otherFields => {
+      val prefix = label.syntax() + "("
+      val subIndent = indent + " " * prefix.length
+
+      val firstLine = prefix + firstField.syntax(subIndent)
+
+      otherFields.foldLeft(firstLine) {
+        _ + "\n" + subIndent + _.syntax(subIndent)
+      } + ")"
+    }
+  }
+}
+
 /** Synthetic-only expressions */
 
 case class CreateAbstraction(abstraction: Abstraction,

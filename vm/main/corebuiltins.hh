@@ -38,6 +38,9 @@ BuiltinResult divide(VM vm, UnstableNode* args[]);
 BuiltinResult div(VM vm, UnstableNode* args[]);
 BuiltinResult mod(VM vm, UnstableNode* args[]);
 
+BuiltinResult width(VM vm, UnstableNode* args[]);
+BuiltinResult dot(VM vm, UnstableNode* args[]);
+
 BuiltinResult createThread(VM vm, UnstableNode* args[]);
 
 BuiltinResult show(VM vm, UnstableNode* args[]);

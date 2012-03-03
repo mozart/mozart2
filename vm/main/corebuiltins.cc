@@ -66,6 +66,16 @@ BuiltinResult mod(VM vm, UnstableNode* args[]) {
   return x.mod(vm, args[1], args[2]);
 }
 
+BuiltinResult width(VM vm, UnstableNode* args[]) {
+  RecordLike x = args[0]->node;
+  return x.width(vm, args[1]);
+}
+
+BuiltinResult dot(VM vm, UnstableNode* args[]) {
+  RecordLike x = args[0]->node;
+  return x.dot(vm, args[1], args[2]);
+}
+
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   int arity;
   StableNode* body;

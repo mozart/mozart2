@@ -36,6 +36,19 @@ BuiltinResult equals(VM vm, UnstableNode* args[]) {
   return x.equals(vm, args[1], args[2]);
 }
 
+BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
+  Equatable x = args[0]->node;
+  BuiltinResult result = x.equals(vm, args[1], args[2]);
+
+  if (result == BuiltinResultContinue) {
+    assert(args[2]->node.type == Boolean::type());
+    bool equalsResult = IMPLNOSELF(bool, Boolean, value, &args[2]->node);
+    args[2]->make<Boolean>(vm, !equalsResult);
+  }
+
+  return result;
+}
+
 BuiltinResult add(VM vm, UnstableNode* args[]) {
   Numeric x = args[0]->node;
   return x.add(vm, args[1], args[2]);

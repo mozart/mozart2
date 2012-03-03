@@ -30,6 +30,7 @@
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]);
+BuiltinResult notEquals(VM vm, UnstableNode* args[]);
 
 BuiltinResult add(VM vm, UnstableNode* args[]);
 BuiltinResult subtract(VM vm, UnstableNode* args[]);

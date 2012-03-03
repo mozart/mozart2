@@ -217,10 +217,22 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val expression5: PackratParser[Expression] = expression6
 
   // X|Y   (right-associative)
-  lazy val expression6: PackratParser[Expression] = expression7
+  lazy val expression6: PackratParser[Expression] = (
+      (expression7 <~ "|") ~ expression6 ^^ cons
+    | expression7
+  )
+
+  private def cons(head: Expression, tail: Expression) =
+    Record(Atom("|"), List(head, tail))
 
   // X#Y#...#Z   (mixin)
-  lazy val expression7: PackratParser[Expression] = expression8
+  lazy val expression7: PackratParser[Expression] = (
+      expression8 ~ rep1("#" ~> expression8) ^^ sharp
+    | expression8
+  )
+
+  private def sharp(first: Expression, rest: List[Expression]) =
+    Record(Atom("#"), first :: rest)
 
   // X+Y   X-Y   (left-associative)
   lazy val expression8: PackratParser[Expression] = (

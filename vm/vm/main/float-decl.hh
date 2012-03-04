@@ -52,6 +52,9 @@ public:
                        UnstableNode* result);
 
   inline
+  BuiltinResult equalsFloat(Self self, VM vm, double right, bool* result);
+
+  inline
   BuiltinResult add(Self self, VM vm, UnstableNode* right,
                     UnstableNode* result);
 

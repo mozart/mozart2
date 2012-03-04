@@ -190,6 +190,22 @@ struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
   }
 };
 
+class FloatValue;
+template<>
+struct Interface<FloatValue>: ImplementedBy<Float> {
+  BuiltinResult equalsFloat(Node& self, VM vm, double right, bool* result) {
+    // TODO equalsFloat on a non-Float
+    *result = false;
+    return BuiltinResultContinue;
+  }
+
+  BuiltinResult addValue(Node& self, VM vm, double b, UnstableNode* result) {
+    // TODO addValue on a non-Float
+    result->make<Float>(vm, 0);
+    return BuiltinResultContinue;
+  }
+};
+
 class BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
@@ -245,6 +261,7 @@ struct Interface<ArrayInitializer>:
 #include "CodeAreaProvider-interf.hh"
 #include "Numeric-interf.hh"
 #include "IntegerValue-interf.hh"
+#include "FloatValue-interf.hh"
 #include "BooleanValue-interf.hh"
 #include "RecordLike-interf.hh"
 #include "ArrayInitializer-interf.hh"

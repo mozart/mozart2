@@ -196,8 +196,7 @@ BuiltinResult Implementation<SmallInt>::divide(Self self, VM vm,
                                                UnstableNode* right,
                                                UnstableNode* result) {
   // TODO Raise exception
-  std::cout << "Float expected but " << SmallInt::type()->getName();
-  std::cout << " found" << std::endl;
+  std::cout << "SmallInt doesn't support divide" << std::endl;
   return BuiltinResultContinue;
 }
 

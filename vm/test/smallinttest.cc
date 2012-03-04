@@ -56,7 +56,79 @@ TEST_F(SmallIntTest, Add) {
 }
 
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+TEST_F(SmallIntTest, Subtract) {
+  UnstableNode leftNode, rightNode, resultNode;
+
+  for (nativeint left = -5; left <= 5; left++) {
+    leftNode.make<SmallInt>(vm, left);
+
+    for (nativeint right = -5; right <= 5; right++) {
+      rightNode.make<SmallInt>(vm, right);
+
+      Numeric leftNumeric = leftNode.node;
+      leftNumeric.subtract(vm, &rightNode, &resultNode);
+
+      EXPECT_EQ_INT(left-right, resultNode.node);
+    }
+  }
+}
+
+
+TEST_F(SmallIntTest, Multiply) {
+  UnstableNode leftNode, rightNode, resultNode;
+
+  for (nativeint left = -5; left <= 5; left++) {
+    leftNode.make<SmallInt>(vm, left);
+
+    for (nativeint right = -5; right <= 5; right++) {
+      rightNode.make<SmallInt>(vm, right);
+
+      Numeric leftNumeric = leftNode.node;
+      leftNumeric.multiply(vm, &rightNode, &resultNode);
+
+      EXPECT_EQ_INT((left * right), resultNode.node);
+    }
+  }
+}
+
+TEST_F(SmallIntTest, Div) {
+  UnstableNode leftNode, rightNode, resultNode;
+
+  for (nativeint left = -5; left <= 5; left++) {
+    leftNode.make<SmallInt>(vm, left);
+
+    for (nativeint right = -5; right <= 5; right++) {
+      if (right == 0) {
+        continue;
+      } else {
+        rightNode.make<SmallInt>(vm, right);
+
+        Numeric leftNumeric = leftNode.node;
+        leftNumeric.div(vm, &rightNode, &resultNode);
+
+        EXPECT_EQ_INT(left / right, resultNode.node);
+      }
+    }
+  }
+}
+
+TEST_F(SmallIntTest, Mod) {
+  UnstableNode leftNode, rightNode, resultNode;
+
+  for (nativeint left = -5; left <= 5; left++) {
+    leftNode.make<SmallInt>(vm, left);
+
+    for (nativeint right = -10; right <= 10; right++) {
+      if (right == 0) {
+        continue;
+      } else {
+        rightNode.make<SmallInt>(vm, right);
+
+        Numeric leftNumeric = leftNode.node;
+        leftNumeric.mod(vm, &rightNode, &resultNode);
+
+        EXPECT_EQ_INT(left % right, resultNode.node);
+      }
+    }
+  }
 }

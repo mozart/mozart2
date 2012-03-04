@@ -61,6 +61,13 @@ BuiltinResult Implementation<Float>::equals(Self self, VM vm,
   }
 }
 
+BuiltinResult Implementation<Float>::equalsFloat(Self self, VM vm,
+                                                 double right,
+                                                 bool* result) {
+  *result = value() == right;
+  return BuiltinResultContinue;
+}
+
 BuiltinResult Implementation<Float>::add(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
@@ -169,8 +176,7 @@ BuiltinResult Implementation<Float>::div(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   // TODO Raise exception
-  std::cout << "SmallInt expected but " << Float::type()->getName();
-  std::cout << " found" << std::endl;
+  std::cout << "Floats don't support arithmetic operation 'div'" << std::endl;
   return BuiltinResultContinue;
 }
 
@@ -178,8 +184,7 @@ BuiltinResult Implementation<Float>::mod(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   // TODO Raise exception
-  std::cout << "SmallInt expected but " << Float::type()->getName();
-  std::cout << " found" << std::endl;
+  std::cout << "Floats don't support arithmetic operation 'mod'" << std::endl;
   return BuiltinResultContinue;
 }
 

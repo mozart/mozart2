@@ -37,13 +37,14 @@ template <>
 class Implementation<Float>: Copiable, StoredAs<double> {
 public:
   typedef SelfType<Float>::Self Self;
+  typedef SelfType<Float>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(double value) : _value(value) {}
 
   static double build(VM, double value) { return value; }
 
   inline
-  static double build(VM vm, GC gc, Self from);
+  static double build(VM vm, GC gc, SelfReadOnlyView from);
 
   double value() const { return _value; }
 

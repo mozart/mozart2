@@ -31,7 +31,7 @@
 #include "Boolean-implem.hh"
 #endif
 
-bool Implementation<Boolean>::build(VM vm, GC gc, Self from) {
+bool Implementation<Boolean>::build(VM vm, GC gc, SelfReadOnlyView from) {
   return from.get().value();
 }
 

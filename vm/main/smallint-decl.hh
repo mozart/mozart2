@@ -37,13 +37,14 @@ template <>
 class Implementation<SmallInt>: Copiable, StoredAs<nativeint> {
 public:
   typedef SelfType<SmallInt>::Self Self;
+  typedef SelfType<SmallInt>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(nativeint value) : _value(value) {}
 
   static nativeint build(VM, nativeint value) { return value; }
 
   inline
-  static nativeint build(VM vm, GC gc, Self from);
+  static nativeint build(VM vm, GC gc, SelfReadOnlyView from);
 
   nativeint value() const { return _value; }
 

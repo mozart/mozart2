@@ -39,7 +39,7 @@
 #include "Float-implem.hh"
 #endif
 
-double Implementation<Float>::build(VM vm, GC gc, Self from) {
+double Implementation<Float>::build(VM vm, GC gc, SelfReadOnlyView from) {
   return from.get().value();
 }
 

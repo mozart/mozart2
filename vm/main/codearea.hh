@@ -37,7 +37,7 @@
 
 Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
                                          StaticArray<StableNode> _Ks,
-                                         GC gc, Self from) {
+                                         GC gc, SelfReadOnlyView from) {
   _size = from->_size;
   _Xcount = from->_Xcount;
   _Kc = Kc;

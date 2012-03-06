@@ -104,6 +104,8 @@ void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
   to << "class " << name << ": public " << base << " {\n";
   to << "private:\n";
   to << "  typedef SelfType<" << name << ">::Self Self;\n";
+  to << "  typedef SelfType<" << name
+     << ">::SelfReadOnlyView SelfReadOnlyView;\n";
   to << "public:\n";
   to << "  " << name << "() : " << base << "(\"" << name << "\", "
      << b2s(copiable) << ", " << b2s(transient) <<") {}\n";
@@ -139,7 +141,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 }
 
 void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
-  to << "  Self fromAsSelf(&from);\n";
+  to << "  SelfReadOnlyView fromAsSelf(&from);\n";
   to << "  to.node.make<" << name << ">(gc->vm, ";
   if (storage.substr(0, 14) == "ImplWithArray<")
     to << "fromAsSelf.getArraySize(), ";

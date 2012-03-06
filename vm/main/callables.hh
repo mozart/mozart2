@@ -61,7 +61,7 @@ BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,
-                                            GC gc, Self from) {
+                                            GC gc, SelfReadOnlyView from) {
   _arity = from->_arity;
   gc->gcStableNode(from->_body, _body);
   _Gc = Gc;

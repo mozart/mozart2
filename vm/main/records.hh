@@ -53,7 +53,7 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
                                       StaticArray<StableNode> _elements,
-                                      GC gc, Self from) {
+                                      GC gc, SelfReadOnlyView from) {
   _width = width;
   gc->gcStableNode(from->_label, _label);
 

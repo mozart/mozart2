@@ -125,11 +125,6 @@ protected:
 public:
   BaseSelf(Node* node) : _node(node) {}
 
-  template<class U, class... Args>
-  void make(VM vm, Args... args) {
-    _node->make<U>(vm, args...);
-  }
-
   operator Node*() {
     return _node;
   }
@@ -250,12 +245,30 @@ struct SelfTypeInner<T, ImplWithArray<I, E>> {
 };
 
 /**
+ * An extension of the readonly views on Self type that is writable
+ */
+template <class ROView>
+class WritableSelfType : public ROView {
+public:
+  typedef ROView ReadOnlyView;
+public:
+  WritableSelfType(Node* node) : ROView(node) {}
+
+  template<class U, class... Args>
+  void make(VM vm, Args... args) {
+    this->_node->make<U>(vm, args...);
+  }
+};
+
+/**
  * Metafunction from type to its Self type
  * Use as SelfType<T>::Self
  */
 template <class T>
 struct SelfType {
-  typedef typename SelfTypeInner<T, typename Storage<T>::Type>::Self Self;
+  typedef typename SelfTypeInner<T, typename Storage<T>::Type>::Self
+    SelfReadOnlyView;
+  typedef WritableSelfType<SelfReadOnlyView> Self;
 };
 
 /**

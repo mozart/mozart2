@@ -54,6 +54,14 @@ private:
   const bool _transient;
 };
 
+template <class T>
+struct RawType {
+  static const T rawType;
+};
+
+template <class T>
+const T RawType<T>::rawType;
+
 template<class T>
 struct Interface;
 template<class...>

@@ -61,8 +61,7 @@ public:
   typedef Node* Self;
 
   static const Reference* const type() {
-    static const Reference rawType;
-    return &rawType;
+    return &RawType<Reference>::rawType;
   }
 
   inline

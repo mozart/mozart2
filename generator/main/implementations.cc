@@ -109,8 +109,7 @@ void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
      << b2s(copiable) << ", " << b2s(transient) <<") {}\n";
   to << "\n";
   to << "  static const " << name << "* const type() {\n";
-  to << "    static const " << name << " rawType;\n";
-  to << "    return &rawType;\n";
+  to << "    return &RawType<" << name << ">::rawType;\n";
   to << "  }\n";
 
   if (autoGCollect) {

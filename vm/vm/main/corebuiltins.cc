@@ -40,7 +40,7 @@ BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
   Equatable x = args[0]->node;
   BuiltinResult result = x.equals(vm, args[1], args[2]);
 
-  if (result == BuiltinResultContinue) {
+  if (result.isProceed()) {
     assert(args[2]->node.type == Boolean::type());
     bool equalsResult = IMPLNOSELF(bool, Boolean, value, &args[2]->node);
     args[2]->make<Boolean>(vm, !equalsResult);
@@ -101,7 +101,7 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   BuiltinResult result = x.getCallInfo(vm, &arity, &body, &start,
                                        &Xcount, &Gs, &Ks);
 
-  if (result != BuiltinResultContinue)
+  if (!result.isProceed())
     return result;
 
   if (arity != 0) {
@@ -112,7 +112,7 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, *args[0]));
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult show(VM vm, UnstableNode* args[]) {
@@ -128,12 +128,12 @@ BuiltinResult show(VM vm, UnstableNode* args[]) {
     double value = IMPLNOSELF(double, Float, value, &arg);
     printf("%f\n", value);
   } else if (arg.type->isTransient()) {
-    return &arg;
+    return BuiltinResult::waitFor(&arg);
   } else {
     std::cout << "<" << arg.type->getName() << ">" << std::endl;
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 }

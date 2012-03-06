@@ -51,7 +51,7 @@ BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
   thread->unsetRunnable();
   pendingThreads.push_back(vm, thread);
 
-  return self;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Variable>::bind(Self self, VM vm, Node* src) {
@@ -71,7 +71,7 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, Node* src) {
     resumePendingThreads(vm);
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 void Implementation<Variable>::resumePendingThreads(VM vm) {
@@ -112,7 +112,7 @@ BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, Node* src) {
     Reference::makeFor(vm, *src);
   *self = *src;
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 #endif // __VARIABLES_H

@@ -293,7 +293,7 @@ void Thread::run() {
         BuiltinCallable x = KPC(1).node;
         BuiltinResult result = x.callBuiltin(vm, argc, args);
 
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2 + argc);
         else
           waitFor(vm, result, preempted);
@@ -350,7 +350,7 @@ void Thread::run() {
         BooleanValue testBoolValue = test.node;
         BuiltinResult result = testBoolValue.valueOrNotBool(vm, &testValue);
 
-        if (result == BuiltinResultContinue) {
+        if (result.isProceed()) {
           int distance;
 
           switch (testValue) {
@@ -371,7 +371,7 @@ void Thread::run() {
 
       case OpUnifyXX: {
         BuiltinResult result = unify(vm, XPC(1).node, XPC(2).node);
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2);
         else
           waitFor(vm, result, preempted);
@@ -380,7 +380,7 @@ void Thread::run() {
 
       case OpUnifyXY: {
         BuiltinResult result = unify(vm, XPC(1).node, YPC(2).node);
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2);
         else
           waitFor(vm, result, preempted);
@@ -389,7 +389,7 @@ void Thread::run() {
 
       case OpUnifyXK: {
         BuiltinResult result = unify(vm, XPC(1).node, KPC(2).node);
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2);
         else
           waitFor(vm, result, preempted);
@@ -398,7 +398,7 @@ void Thread::run() {
 
       case OpUnifyXG: {
         BuiltinResult result = unify(vm, XPC(1).node, GPC(2).node);
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2);
         else
           waitFor(vm, result, preempted);
@@ -484,7 +484,7 @@ void Thread::run() {
 
         BuiltinResult result = x.equalsInteger(vm, right, &resultValue);
 
-        if (result == BuiltinResultContinue) {
+        if (result.isProceed()) {
           if (resultValue)
             advancePC(3);
           else
@@ -500,7 +500,7 @@ void Thread::run() {
         Numeric x = XPC(1).node;
         BuiltinResult result = x.add(vm, &XPC(2), &XPC(3));
 
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(3);
         else
           waitFor(vm, result, preempted);
@@ -512,7 +512,7 @@ void Thread::run() {
         Numeric x = XPC(1).node;
         BuiltinResult result = x.subtract(vm, &XPC(2), &XPC(3));
 
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(3);
         else
           waitFor(vm, result, preempted);
@@ -524,7 +524,7 @@ void Thread::run() {
         IntegerValue x = XPC(1).node;
         BuiltinResult result = x.addValue(vm, 1, &XPC(2));
 
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2);
         else
           waitFor(vm, result, preempted);
@@ -536,7 +536,7 @@ void Thread::run() {
         IntegerValue x = XPC(1).node;
         BuiltinResult result = x.addValue(vm, -1, &XPC(2));
 
-        if (result == BuiltinResultContinue)
+        if (result.isProceed())
           advancePC(2);
         else
           waitFor(vm, result, preempted);
@@ -600,7 +600,7 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
   BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &start,
                                        &Xcount, &Gs, &Ks);
 
-  if (result == BuiltinResultContinue) {
+  if (result.isProceed()) {
     if (actualArity != formalArity) {
       std::cout << "Illegal arity: " << formalArity << " expected but ";
       std::cout << actualArity << " found" << std::endl;
@@ -645,7 +645,7 @@ BuiltinResult Thread::unify(VM vm, Node& l, Node& r) {
     return IMPL(BuiltinResult, Variable, bind, &right, vm, &left);
   else {
     // TODO Non-trivial unify
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -654,14 +654,14 @@ void Thread::arrayInitElement(Node& node, size_t index, UnstableNode* value,
   ArrayInitializer x = node;
   BuiltinResult result = x.initElement(vm, index, value);
 
-  if (result == BuiltinResultContinue)
+  if (result.isProceed())
     advancePC(3);
   else
     waitFor(vm, result, preempted);
 }
 
-void Thread::waitFor(VM vm, Node* node, bool& preempted) {
-  DataflowVariable var = *node;
+void Thread::waitFor(VM vm, BuiltinResult result, bool& preempted) {
+  DataflowVariable var = *result.getWaiteeNode();
   var.wait(vm, this);
 
   if (!isRunnable())

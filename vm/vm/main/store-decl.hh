@@ -260,14 +260,30 @@ struct SelfType {
 
 /**
  * Result of the call to a builtin.
- * It always represents a node that must be waited upon. The value 'nullptr' is
- * valid, and denotes that no value must be waited upon, i.e., the execution can
- * continue.
+ * Unless the result is a proceed indication (isProceed() == true), the node
+ * is a reference to a node that must be waited upon.
  * Throwing an exception is achieved by pointing to a failed value.
  */
-typedef Node* BuiltinResult;
+struct BuiltinResult {
+public:
+  inline
+  static BuiltinResult proceed();
 
-const BuiltinResult BuiltinResultContinue = nullptr;
+  inline
+  static BuiltinResult waitFor(Node* node);
+
+  bool isProceed() {
+    return node == nullptr;
+  }
+
+  Node* getWaiteeNode() {
+    return node;
+  }
+private:
+  BuiltinResult(Node* node) : node(node) {}
+
+  Node* node;
+};
 
 /**
  * Strange and magical class that allows to call methods on storage-typed nodes

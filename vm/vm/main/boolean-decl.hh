@@ -53,7 +53,7 @@ public:
 
   BuiltinResult valueOrNotBool(Self self, VM vm, BoolOrNotBool* result) {
     *result = value() ? bTrue : bFalse;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 private:
   const bool _value;

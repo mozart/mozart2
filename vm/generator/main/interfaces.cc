@@ -116,7 +116,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
     // Auto-wait handling
     if (autoWait && (typeToString(m->getResultType()) == "BuiltinResult")) {
       to << "if (_self.type->isTransient()) {\n";
-      to << "      return &_self;\n";
+      to << "      return BuiltinResult::waitFor(&_self);\n";
       to << "    } else ";
     }
 

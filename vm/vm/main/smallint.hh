@@ -52,13 +52,13 @@ BuiltinResult Implementation<SmallInt>::equals(Self self, VM vm,
   if (rightNode.type == SmallInt::type()) {
     nativeint r = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     result->make<Boolean>(vm, value() == r);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO SmallInt == non-SmallInt
     result->make<Boolean>(vm, false);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -66,7 +66,7 @@ BuiltinResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                       nativeint right,
                                                       bool* result) {
   *result = value() == right;
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<SmallInt>::add(Self self, VM vm,
@@ -78,12 +78,12 @@ BuiltinResult Implementation<SmallInt>::add(Self self, VM vm,
     nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     return addValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO SmallInt + non-SmallInt
     std::cout << "SmallInt expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -102,7 +102,7 @@ BuiltinResult Implementation<SmallInt>::addValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
@@ -114,12 +114,12 @@ BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
     nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     return subtractValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO SmallInt - non-SmallInt
     std::cout << "SmallInt expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -138,7 +138,7 @@ BuiltinResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<SmallInt>::multiply(Self self, VM vm,
@@ -150,12 +150,12 @@ BuiltinResult Implementation<SmallInt>::multiply(Self self, VM vm,
     nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     return multiplyValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO SmallInt * non-SmallInt
     std::cout << "SmallInt expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -189,7 +189,7 @@ BuiltinResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<SmallInt>::divide(Self self, VM vm,
@@ -197,7 +197,7 @@ BuiltinResult Implementation<SmallInt>::divide(Self self, VM vm,
                                                UnstableNode* result) {
   // TODO Raise exception
   std::cout << "SmallInt doesn't support divide" << std::endl;
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<SmallInt>::div(Self self, VM vm,
@@ -209,12 +209,12 @@ BuiltinResult Implementation<SmallInt>::div(Self self, VM vm,
     nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     return divValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO SmallInt div non-SmallInt
     std::cout << "SmallInt expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -232,7 +232,7 @@ BuiltinResult Implementation<SmallInt>::divValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<SmallInt>::mod(Self self, VM vm,
@@ -244,12 +244,12 @@ BuiltinResult Implementation<SmallInt>::mod(Self self, VM vm,
     nativeint b = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
     return modValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO SmallInt mod non-SmallInt
     std::cout << "SmallInt expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -267,7 +267,7 @@ BuiltinResult Implementation<SmallInt>::modValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 #endif // __SMALLINT_H

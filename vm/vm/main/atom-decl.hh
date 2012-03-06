@@ -37,7 +37,8 @@ template <>
 class Implementation<Atom>: Copiable, StoredAs<AtomImpl*> {
 public:
   typedef SelfType<Atom>::Self Self;
-
+  typedef SelfType<Atom>::SelfReadOnlyView SelfReadOnlyView;
+public:
   Implementation(const AtomImpl* value) : _value(value) {}
 
   static AtomImpl* build(VM vm, std::size_t size, const char16_t* data) {
@@ -46,7 +47,7 @@ public:
   }
 
   inline
-  static AtomImpl* build(VM vm, GC gc, Self from);
+  static AtomImpl* build(VM vm, GC gc, SelfReadOnlyView from);
 
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right, UnstableNode* result);

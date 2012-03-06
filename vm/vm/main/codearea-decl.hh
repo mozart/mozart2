@@ -44,6 +44,7 @@ template <>
 class Implementation<CodeArea>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<CodeArea>::Self Self;
+  typedef SelfType<CodeArea>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
                  ByteCode* codeBlock, int size, int Xcount)
@@ -54,7 +55,7 @@ public:
 
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 GC gc, Self from);
+                 GC gc, SelfReadOnlyView from);
 
   size_t getArraySize() {
     return _Kc;

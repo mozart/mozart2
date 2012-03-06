@@ -41,13 +41,14 @@ template <>
 class Implementation<Boolean>: Copiable, StoredAs<bool> {
 public:
   typedef SelfType<Boolean>::Self Self;
+  typedef SelfType<Boolean>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(bool value) : _value(value) {}
 
   static bool build(VM, bool value) { return value; }
 
   inline
-  static bool build(VM vm, GC gc, Self from);
+  static bool build(VM vm, GC gc, SelfReadOnlyView from);
 
   bool value() const { return _value; }
 

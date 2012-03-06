@@ -44,6 +44,7 @@ template <>
 class Implementation<Tuple>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<Tuple>::Self Self;
+  typedef SelfType<Tuple>::SelfReadOnlyView SelfReadOnlyView;
 public:
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
@@ -51,7 +52,7 @@ public:
 
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GC gc, Self from);
+                 GC gc, SelfReadOnlyView from);
 
   size_t getArraySize() {
     return _width;

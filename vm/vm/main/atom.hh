@@ -33,7 +33,7 @@
 #include "Atom-implem.hh"
 #endif
 
-AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
+AtomImpl* Implementation<Atom>::build(VM vm, GC gc, SelfReadOnlyView from) {
   return build(vm, from.get().value()->size, from.get().value()->data);
 }
 

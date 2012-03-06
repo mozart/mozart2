@@ -41,11 +41,12 @@ template <>
 class Implementation<Variable>: Transient {
 public:
   typedef SelfType<Variable>::Self Self;
+  typedef SelfType<Variable>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(VM) {}
 
   inline
-  Implementation(VM vm, GC gc, Self from);
+  Implementation(VM vm, GC gc, SelfReadOnlyView from);
 
   inline
   BuiltinResult wait(Self self, VM vm, Runnable* thread);
@@ -77,6 +78,7 @@ template <>
 class Implementation<Unbound>: Transient, StoredAs<void*> {
 public:
   typedef SelfType<Unbound>::Self Self;
+  typedef SelfType<Unbound>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation() {}
   Implementation(void* dummy) {}
@@ -84,7 +86,7 @@ public:
   static void* build(VM) { return nullptr; }
 
   inline
-  static void* build(VM vm, GC gc, Self from);
+  static void* build(VM vm, GC gc, SelfReadOnlyView from);
 
   inline
   BuiltinResult wait(Self self, VM vm, Runnable* thread);

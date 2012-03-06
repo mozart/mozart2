@@ -52,19 +52,19 @@ BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
                                                     size_t index,
                                                     UnstableNode* value) {
   self[index].init(vm, *value);
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult
 Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
-					  ProgramCounter* start,
-					  int* Xcount,
-					  StaticArray<StableNode>* Ks) {
+                                          ProgramCounter* start,
+                                          int* Xcount,
+                                          StaticArray<StableNode>* Ks) {
   *start = _codeBlock;
   *Xcount = _Xcount;
   *Ks = self.getArray();
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 #endif // __CODEAREA_H

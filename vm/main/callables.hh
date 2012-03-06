@@ -43,12 +43,12 @@
 BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                       UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
   // TODO raiseIllegalArity
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 ////////////////////////
@@ -75,14 +75,14 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
 BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
                                                  UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Abstraction>::initElement(Self self, VM vm,
                                                        size_t index,
                                                        UnstableNode* value) {
   self[index].init(vm, *value);
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Abstraction>::getCallInfo(
@@ -94,7 +94,7 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
     BuiltinResult result = provider.getCodeAreaInfo(
       vm, &_start, &_Xcount, &_Ks);
 
-    if (result != BuiltinResultContinue)
+    if (!result.isProceed())
       return result;
 
     _codeAreaCacheValid = true;
@@ -107,7 +107,7 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
   *Gs = self.getArray();
   *Ks = _Ks;
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 #endif // __CALLABLES_H

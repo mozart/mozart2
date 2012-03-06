@@ -45,13 +45,13 @@ BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
   if (rightNode.type == Atom::type()) {
     const AtomImpl* r = IMPLNOSELF(const AtomImpl*, Atom, value, &rightNode);
     result->make<Boolean>(vm, value()==r);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO Atom == non-Atom
     result->make<Boolean>(vm, false);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 

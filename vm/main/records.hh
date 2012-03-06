@@ -64,14 +64,14 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
 BuiltinResult Implementation<Tuple>::width(Self self, VM vm,
                                            UnstableNode* result) {
   result->make<SmallInt>(vm, _width);
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Tuple>::initElement(Self self, VM vm,
                                                  size_t index,
                                                  UnstableNode* value) {
   self[index].init(vm, *value);
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Tuple>::dot(Self self, VM vm,
@@ -83,11 +83,11 @@ BuiltinResult Implementation<Tuple>::dot(Self self, VM vm,
     nativeint feat = IMPLNOSELF(nativeint, SmallInt, value, &featureNode);
     return dotNumber(self, vm, feat, result);
   } else if (featureNode.type->isTransient()) {
-    return &featureNode;
+    return BuiltinResult::waitFor(&featureNode);
   } else {
     // TODO Tuple . non-SmallInt
     result->make<Boolean>(vm, false);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -97,12 +97,12 @@ BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,
   if ((feature > 0) && ((size_t) feature <= _width)) {
     // Inside bounds
     result->copy(vm, self[(size_t) feature - 1]);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   } else {
     // Out of bounds
     // TODO Raise exception
     result->make<Boolean>(vm, false);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 

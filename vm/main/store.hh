@@ -74,4 +74,16 @@ void UnstableNode::swap(UnstableNode& from) {
   from.node = temp;
 }
 
+///////////////////
+// BuiltinResult //
+///////////////////
+
+BuiltinResult BuiltinResult::proceed() {
+  return BuiltinResult(nullptr);
+}
+
+BuiltinResult BuiltinResult::waitFor(Node* node) {
+  return BuiltinResult(node);
+}
+
 #endif // __STORE_H

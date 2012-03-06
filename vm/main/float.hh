@@ -51,13 +51,13 @@ BuiltinResult Implementation<Float>::equals(Self self, VM vm,
   if (rightNode.type == Float::type()) {
     double r = IMPLNOSELF(double, Float, value, &rightNode);
     result->make<Boolean>(vm, value() == r);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO Float == non-Float
     result->make<Boolean>(vm, false);
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -65,7 +65,7 @@ BuiltinResult Implementation<Float>::equalsFloat(Self self, VM vm,
                                                  double right,
                                                  bool* result) {
   *result = value() == right;
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Float>::add(Self self, VM vm,
@@ -77,12 +77,12 @@ BuiltinResult Implementation<Float>::add(Self self, VM vm,
     double b = IMPLNOSELF(double, Float, value, &rightNode);
     return addValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO Float + non-Float
     std::cout << "Float expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -91,7 +91,7 @@ BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
                                               UnstableNode* result) {
   result->make<Float>(vm, value() + b);
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
@@ -103,12 +103,12 @@ BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
     double b = IMPLNOSELF(double, Float, value, &rightNode);
     return subtractValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO Float - non-Float
     std::cout << "Float expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -117,7 +117,7 @@ BuiltinResult Implementation<Float>::subtractValue(Self self, VM vm,
                                                    UnstableNode* result) {
   result->make<Float>(vm, value() - b);
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
@@ -129,12 +129,12 @@ BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
     double b = IMPLNOSELF(double, Float, value, &rightNode);
     return multiplyValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO Float * non-Float
     std::cout << "Float expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -143,7 +143,7 @@ BuiltinResult Implementation<Float>::multiplyValue(Self self, VM vm,
                                                    UnstableNode* result) {
   result->make<Float>(vm, value() * b);
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Float>::divide(Self self, VM vm,
@@ -155,12 +155,12 @@ BuiltinResult Implementation<Float>::divide(Self self, VM vm,
     double b = IMPLNOSELF(double, Float, value, &rightNode);
     return divideValue(self, vm, b, result);
   } else if (rightNode.type->isTransient()) {
-    return &rightNode;
+    return BuiltinResult::waitFor(&rightNode);
   } else {
     // TODO Float / non-Float
     std::cout << "Float expected but " << rightNode.type->getName();
     std::cout << " found" << std::endl;
-    return BuiltinResultContinue;
+    return BuiltinResult::proceed();
   }
 }
 
@@ -169,7 +169,7 @@ BuiltinResult Implementation<Float>::divideValue(Self self, VM vm,
                                                  UnstableNode* result) {
   result->make<Float>(vm, value() / b);
 
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Float>::div(Self self, VM vm,
@@ -177,7 +177,7 @@ BuiltinResult Implementation<Float>::div(Self self, VM vm,
                                          UnstableNode* result) {
   // TODO Raise exception
   std::cout << "Floats don't support arithmetic operation 'div'" << std::endl;
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<Float>::mod(Self self, VM vm,
@@ -185,7 +185,7 @@ BuiltinResult Implementation<Float>::mod(Self self, VM vm,
                                          UnstableNode* result) {
   // TODO Raise exception
   std::cout << "Floats don't support arithmetic operation 'mod'" << std::endl;
-  return BuiltinResultContinue;
+  return BuiltinResult::proceed();
 }
 
 #endif // __FLOAT_H

@@ -268,20 +268,18 @@ void Thread::run() {
       }
 
       case OpCreateVarMoveX: {
-        UnstableNode ref;
-        ref.make<Unbound>(vm);
-        Reference::makeFor(vm, ref);
-        XPC(1) = ref;
-        XPC(2) = ref;
+        StableNode* stable = new (vm) StableNode;
+        stable->make<Unbound>(vm);
+        XPC(1).make<Reference>(vm, stable);
+        XPC(2).make<Reference>(vm, stable);
         advancePC(2); break;
       }
 
       case OpCreateVarMoveY: {
-        UnstableNode ref;
-        ref.make<Unbound>(vm);
-        Reference::makeFor(vm, ref);
-        YPC(1) = ref;
-        XPC(2) = ref;
+        StableNode* stable = new (vm) StableNode;
+        stable->make<Unbound>(vm);
+        YPC(1).make<Reference>(vm, stable);
+        XPC(2).make<Reference>(vm, stable);
         advancePC(2); break;
       }
 

@@ -59,9 +59,14 @@ void UnstableNode::copy(VM vm, StableNode& from) {
 }
 
 void UnstableNode::copy(VM vm, UnstableNode& from) {
-  if (!from.node.type->isCopiable())
-    Reference::makeFor(vm, from);
-  node = from.node;
+  if (from.type()->isCopiable()) {
+    node = from.node;
+  } else {
+    StableNode* stable = new (vm) StableNode;
+    stable->node = from.node;
+    make<Reference>(vm, stable);
+    from.make<Reference>(vm, stable);
+  }
 }
 
 void UnstableNode::reset(VM vm) {

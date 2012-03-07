@@ -126,7 +126,7 @@ class CodeArea(val abstraction: Abstraction) {
 
     if (!constants.isEmpty) {
       out << """
-         |  ArrayInitializer initializer = %s->node;
+         |  ArrayInitializer initializer = *%s;
          |  UnstableNode temp;
          |""".stripMargin % ccCodeArea
 

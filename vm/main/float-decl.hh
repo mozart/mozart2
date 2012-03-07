@@ -47,6 +47,11 @@ public:
 
   double value() const { return _value; }
 
+  BuiltinResult floatValue(Self self, VM vm, double* result) {
+    *result = value();
+    return BuiltinResult::proceed();
+  }
+
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right,
                        UnstableNode* result);

@@ -51,6 +51,11 @@ public:
 
   bool value() const { return _value; }
 
+  BuiltinResult boolValue(Self self, VM vm, bool* result) {
+    *result = value();
+    return BuiltinResult::proceed();
+  }
+
   BuiltinResult valueOrNotBool(Self self, VM vm, BoolOrNotBool* result) {
     *result = value() ? bTrue : bFalse;
     return BuiltinResult::proceed();

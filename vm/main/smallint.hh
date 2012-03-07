@@ -48,14 +48,14 @@ nativeint Implementation<SmallInt>::build(VM vm, GC gc, SelfReadOnlyView from) {
 BuiltinResult Implementation<SmallInt>::equals(Self self, VM vm,
                                                UnstableNode* right,
                                                UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+  RichNode rightNode = *right;
 
-  if (rightNode.type == SmallInt::type()) {
-    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, &rightNode);
+  if (rightNode.type() == SmallInt::type()) {
+    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, rightNode);
     result->make<Boolean>(vm, value() == r);
     return BuiltinResult::proceed();
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
+  } else if (rightNode.type()->isTransient()) {
+    return BuiltinResult::waitFor(vm, rightNode);
   } else {
     // TODO SmallInt == non-SmallInt
     result->make<Boolean>(vm, false);
@@ -74,7 +74,7 @@ BuiltinResult Implementation<SmallInt>::add(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = right->node;
+  IntegerValue rightValue = *right;
 
   BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
   if (!res.isProceed())
@@ -105,7 +105,7 @@ BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
                                                  UnstableNode* right,
                                                  UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = right->node;
+  IntegerValue rightValue = *right;
 
   BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
   if (!res.isProceed())
@@ -136,7 +136,7 @@ BuiltinResult Implementation<SmallInt>::multiply(Self self, VM vm,
                                                  UnstableNode* right,
                                                  UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = right->node;
+  IntegerValue rightValue = *right;
 
   BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
   if (!res.isProceed())
@@ -190,7 +190,7 @@ BuiltinResult Implementation<SmallInt>::div(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = right->node;
+  IntegerValue rightValue = *right;
 
   BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
   if (!res.isProceed())
@@ -220,7 +220,7 @@ BuiltinResult Implementation<SmallInt>::mod(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = right->node;
+  IntegerValue rightValue = *right;
 
   BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
   if (!res.isProceed())

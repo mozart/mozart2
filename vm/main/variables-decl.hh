@@ -52,7 +52,7 @@ public:
   BuiltinResult wait(Self self, VM vm, Runnable* thread);
 
   inline
-  BuiltinResult bind(Self self, VM vm, Node* src);
+  BuiltinResult bind(Self self, VM vm, RichNode src);
 private:
   inline
   void resumePendingThreads(VM vm);
@@ -92,7 +92,7 @@ public:
   BuiltinResult wait(Self self, VM vm, Runnable* thread);
 
   inline
-  BuiltinResult bind(Self self, VM vm, Node* src);
+  BuiltinResult bind(Self self, VM vm, RichNode src);
 };
 
 #endif // __VARIABLES_DECL_H

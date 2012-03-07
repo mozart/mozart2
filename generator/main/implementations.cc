@@ -142,7 +142,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 
 void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
   to << "  SelfReadOnlyView fromAsSelf(&from);\n";
-  to << "  to.node.make<" << name << ">(gc->vm, ";
+  to << "  to.make<" << name << ">(gc->vm, ";
   if (storage.substr(0, 14) == "ImplWithArray<")
     to << "fromAsSelf.getArraySize(), ";
   to << "gc, fromAsSelf);\n";

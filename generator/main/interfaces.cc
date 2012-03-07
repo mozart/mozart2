@@ -68,7 +68,11 @@ void handleInterface(const SpecDecl* ND) {
 void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   to << "class "<< name << " {\n";
   to << "public:\n";
-  to << "  " << name << "(Node& self) : _self(Reference::dereference(self)) {}\n";
+  to << "  " << name << "(RichNode self) : _self(self) {}\n";
+  to << "  " << name << "(UnstableNode& self) : _self(self) {}\n";
+  to << "\n";
+  to << "  template <class T>\n";
+  to << "  " << name << "(WritableSelfType<T> self) : _self(self) {}\n";
 
   // For every method in Interface<T>
   for (auto iter = ND->method_begin(), e = ND->method_end(); iter != e; ++iter) {
@@ -98,10 +102,10 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
       std::string imp =
         implems->getArg(i).getAsType()->getAsCXXRecordDecl()->getNameAsString();
 
-      to << "if (_self.type == " << imp << "::type()) {\n";
+      to << "if (_self.type() == " << imp << "::type()) {\n";
       to << "      return IMPL("
          << typeToString(m->getResultType())
-         << ", " << imp << ", " << m->getNameAsString() << ", " << "&_self";
+         << ", " << imp << ", " << m->getNameAsString() << ", " << "_self";
 
       // For every parameter of the method, excluding the self param
       for (auto iter = param_begin; iter != param_end; ++iter) {
@@ -115,8 +119,8 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
 
     // Auto-wait handling
     if (autoWait && (typeToString(m->getResultType()) == "BuiltinResult")) {
-      to << "if (_self.type->isTransient()) {\n";
-      to << "      return BuiltinResult::waitFor(&_self);\n";
+      to << "if (_self.type()->isTransient()) {\n";
+      to << "      return BuiltinResult::waitFor(vm, _self);\n";
       to << "    } else ";
     }
 
@@ -136,6 +140,6 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   }
 
   to << "private:\n";
-  to << "  Node& _self;\n";
+  to << "  RichNode _self;\n";
   to << "};\n\n";
 }

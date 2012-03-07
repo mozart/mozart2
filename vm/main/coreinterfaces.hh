@@ -41,13 +41,13 @@
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
-  BuiltinResult wait(Node& self, VM vm, Runnable* thread) {
+  BuiltinResult wait(RichNode self, VM vm, Runnable* thread) {
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult bind(Node& self, VM vm, Node* src) {
-    if (self.type->isTransient()) {
-      return BuiltinResult::waitFor(&self);
+  BuiltinResult bind(RichNode self, VM vm, RichNode src) {
+    if (self.type()->isTransient()) {
+      return BuiltinResult::waitFor(vm, self);
     } else {
       // TODO bind a bound value
       return BuiltinResult::proceed();
@@ -58,13 +58,14 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
 class Equatable;
 template<>
 struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
-  BuiltinResult equals(Node& self, VM vm, UnstableNode* right, UnstableNode* result) {
-    if (self.type->isTransient()) {
+  BuiltinResult equals(RichNode self, VM vm, UnstableNode* right,
+                       UnstableNode* result) {
+    if (self.type()->isTransient()) {
       // TODO A == B when A and B are aliased transients should return true
-      return BuiltinResult::waitFor(&self);
+      return BuiltinResult::waitFor(vm, self);
     } else {
       // TODO == of non-SmallInt
-      std::cout << self.type->getName();
+      std::cout << self.type()->getName();
       std::cout << " == (right) not implemented yet" << std::endl;
       result->make<Boolean>(vm, false);
       return BuiltinResult::proceed();
@@ -75,9 +76,10 @@ struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
 class BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
-  BuiltinResult callBuiltin(Node& self, VM vm, int argc, UnstableNode* args[]) {
+  BuiltinResult callBuiltin(RichNode self, VM vm, int argc,
+                            UnstableNode* args[]) {
     // TODO call non-builtin
-    std::cout << "BuiltinProcedure expected but " << self.type->getName();
+    std::cout << "BuiltinProcedure expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
@@ -86,12 +88,12 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
 class Callable;
 template<>
 struct Interface<Callable>: ImplementedBy<Abstraction> {
-  BuiltinResult getCallInfo(Node& self, VM vm, int* arity, StableNode** body,
+  BuiltinResult getCallInfo(RichNode self, VM vm, int* arity, StableNode** body,
                             ProgramCounter* start, int* Xcount,
                             StaticArray<StableNode>* Gs,
                             StaticArray<StableNode>* Ks) {
     // TODO call non-abstraction
-    std::cout << "Abstraction expected but " << self.type->getName();
+    std::cout << "Abstraction expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     *arity = 0;
     *body = nullptr;
@@ -106,10 +108,10 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
 class CodeAreaProvider;
 template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
-  BuiltinResult getCodeAreaInfo(Node& self, VM vm, ProgramCounter* start,
+  BuiltinResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter* start,
                                 int* Xcount, StaticArray<StableNode>* Ks) {
     // TODO code area info of a non-CodeArea
-    std::cout << "CodeArea expected but " << self.type->getName();
+    std::cout << "CodeArea expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     *start = nullptr;
     *Xcount = 0;
@@ -121,50 +123,50 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 class Numeric;
 template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
-  BuiltinResult add(Node& self, VM vm, UnstableNode* right,
+  BuiltinResult add(RichNode self, VM vm, UnstableNode* right,
                     UnstableNode* result) {
     // TODO add non-(SmallInt or Float)
-    std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << "SmallInt or Float expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult subtract(Node& self, VM vm, UnstableNode* right,
+  BuiltinResult subtract(RichNode self, VM vm, UnstableNode* right,
                          UnstableNode* result) {
     // TODO subtract non-(SmallInt or Float)
-    std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << "SmallInt or Float expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult multiply(Node& self, VM vm, UnstableNode* right,
+  BuiltinResult multiply(RichNode self, VM vm, UnstableNode* right,
                          UnstableNode* result) {
     // TODO multiply non-(SmallInt or Float)
-    std::cout << "SmallInt or Float expected but " << self.type->getName();
+    std::cout << "SmallInt or Float expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult divide(Node& self, VM vm, UnstableNode* right,
+  BuiltinResult divide(RichNode self, VM vm, UnstableNode* right,
                        UnstableNode* result) {
     // TODO divide non-Float
-    std::cout << "Float expected but " << self.type->getName();
+    std::cout << "Float expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult div(Node& self, VM vm, UnstableNode* right,
+  BuiltinResult div(RichNode self, VM vm, UnstableNode* right,
                     UnstableNode* result) {
     // TODO div non-SmallInt
-    std::cout << "SmallInt expected but " << self.type->getName();
+    std::cout << "SmallInt expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult mod(Node& self, VM vm, UnstableNode* right,
+  BuiltinResult mod(RichNode self, VM vm, UnstableNode* right,
                     UnstableNode* result) {
     // TODO mod non-SmallInt
-    std::cout << "SmallInt expected but " << self.type->getName();
+    std::cout << "SmallInt expected but " << self.type()->getName();
     std::cout << " found" << std::endl;
     return BuiltinResult::proceed();
   }
@@ -173,19 +175,21 @@ struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
 class IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
-  BuiltinResult intValue(Node& self, VM vm, nativeint* result) {
+  BuiltinResult intValue(RichNode self, VM vm, nativeint* result) {
     // TODO Raise exception
     *result = 0;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult equalsInteger(Node& self, VM vm, nativeint right, bool* result) {
+  BuiltinResult equalsInteger(RichNode self, VM vm,
+                              nativeint right, bool* result) {
     // TODO equalsInteger on a non-SmallInt
     *result = false;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult addValue(Node& self, VM vm, nativeint b, UnstableNode* result) {
+  BuiltinResult addValue(RichNode self, VM vm,
+                         nativeint b, UnstableNode* result) {
     // TODO addValue on a non-SmallInt
     result->make<SmallInt>(vm, 0);
     return BuiltinResult::proceed();
@@ -195,19 +199,21 @@ struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
 class FloatValue;
 template<>
 struct Interface<FloatValue>: ImplementedBy<Float> {
-  BuiltinResult floatValue(Node& self, VM vm, double* result) {
+  BuiltinResult floatValue(RichNode self, VM vm, double* result) {
     // TODO Raise exception
     *result = 0.0;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult equalsFloat(Node& self, VM vm, double right, bool* result) {
+  BuiltinResult equalsFloat(RichNode self, VM vm,
+                            double right, bool* result) {
     // TODO equalsFloat on a non-Float
     *result = false;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult addValue(Node& self, VM vm, double b, UnstableNode* result) {
+  BuiltinResult addValue(RichNode self, VM vm,
+                         double b, UnstableNode* result) {
     // TODO addValue on a non-Float
     result->make<Float>(vm, 0);
     return BuiltinResult::proceed();
@@ -217,13 +223,13 @@ struct Interface<FloatValue>: ImplementedBy<Float> {
 class BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
-  BuiltinResult boolValue(Node& self, VM vm, bool* result) {
+  BuiltinResult boolValue(RichNode self, VM vm, bool* result) {
     // TODO Raise exception
     *result = false;
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult valueOrNotBool(Node& self, VM vm, BoolOrNotBool* result) {
+  BuiltinResult valueOrNotBool(RichNode self, VM vm, BoolOrNotBool* result) {
     // TODO valueOrNotBool on a non-Boolean
     *result = bNotBool;
     return BuiltinResult::proceed();
@@ -233,20 +239,20 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 class RecordLike;
 template<>
 struct Interface<RecordLike>: ImplementedBy<Tuple> {
-  BuiltinResult width(Node& self, VM vm, UnstableNode* result) {
+  BuiltinResult width(RichNode self, VM vm, UnstableNode* result) {
     // TODO width on a non-Tuple
     result->make<Boolean>(vm, false);
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult dot(Node& self, VM vm, UnstableNode* feature,
+  BuiltinResult dot(RichNode self, VM vm, UnstableNode* feature,
                     UnstableNode* result) {
     // TODO dot on a non-Record
     result->make<Boolean>(vm, false);
     return BuiltinResult::proceed();
   }
 
-  BuiltinResult dotNumber(Node& self, VM vm, nativeint feature,
+  BuiltinResult dotNumber(RichNode self, VM vm, nativeint feature,
                           UnstableNode* result) {
     // TODO dot on a non-Record
     result->make<Boolean>(vm, false);
@@ -259,7 +265,7 @@ template<>
 struct Interface<ArrayInitializer>:
   ImplementedBy<Tuple, Abstraction, CodeArea> {
 
-  BuiltinResult initElement(Node& self, VM vm, size_t index,
+  BuiltinResult initElement(RichNode self, VM vm, size_t index,
                             UnstableNode* value) {
     // TODO initElement on a non-ArrayInitializer
     return BuiltinResult::proceed();

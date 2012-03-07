@@ -61,7 +61,8 @@ void StackEntry::beforeGC(VM vm) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable callable = abstraction->node;
+  UnstableNode temp(vm, *abstraction);
+  Callable callable = temp;
   callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
 
   PCOffset = PC - start;
@@ -75,7 +76,8 @@ void StackEntry::afterGC(VM vm) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable callable = abstraction->node;
+  UnstableNode temp(vm, *abstraction);
+  Callable callable = temp;
   callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
 
   PC = start + PCOffset;
@@ -97,7 +99,8 @@ Thread::Thread(VM vm, StableNode* abstraction) : Runnable(vm) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable callable = abstraction->node;
+  UnstableNode temp(vm, *abstraction);
+  Callable callable = temp;
 #ifndef NDEBUG
   BuiltinResult result =
 #endif
@@ -290,7 +293,8 @@ void Thread::run() {
         for (int i = 0; i < argc; i++)
           args[i] = &XPC(3 + i);
 
-        BuiltinCallable x = KPC(1).node;
+        UnstableNode temp(vm, KPC(1));
+        BuiltinCallable x = temp;
         BuiltinResult result = x.callBuiltin(vm, argc, args);
 
         if (result.isProceed())
@@ -347,7 +351,7 @@ void Thread::run() {
         UnstableNode& test = XPC(1);
         BoolOrNotBool testValue;
 
-        BooleanValue testBoolValue = test.node;
+        BooleanValue testBoolValue = test;
         BuiltinResult result = testBoolValue.valueOrNotBool(vm, &testValue);
 
         if (result.isProceed()) {
@@ -370,7 +374,7 @@ void Thread::run() {
       // Unification
 
       case OpUnifyXX: {
-        BuiltinResult result = unify(vm, XPC(1).node, XPC(2).node);
+        BuiltinResult result = unify(vm, XPC(1), XPC(2));
         if (result.isProceed())
           advancePC(2);
         else
@@ -379,7 +383,7 @@ void Thread::run() {
       }
 
       case OpUnifyXY: {
-        BuiltinResult result = unify(vm, XPC(1).node, YPC(2).node);
+        BuiltinResult result = unify(vm, XPC(1), YPC(2));
         if (result.isProceed())
           advancePC(2);
         else
@@ -388,7 +392,8 @@ void Thread::run() {
       }
 
       case OpUnifyXK: {
-        BuiltinResult result = unify(vm, XPC(1).node, KPC(2).node);
+        UnstableNode rhs(vm, KPC(2));
+        BuiltinResult result = unify(vm, XPC(1), rhs);
         if (result.isProceed())
           advancePC(2);
         else
@@ -397,7 +402,8 @@ void Thread::run() {
       }
 
       case OpUnifyXG: {
-        BuiltinResult result = unify(vm, XPC(1).node, GPC(2).node);
+        UnstableNode rhs(vm, GPC(2));
+        BuiltinResult result = unify(vm, XPC(1), rhs);
         if (result.isProceed())
           advancePC(2);
         else
@@ -408,27 +414,27 @@ void Thread::run() {
       // Creation of data structures
 
       case OpArrayInitElementX: {
-        arrayInitElement(XPC(1).node, IntPC(2), &XPC(3),
+        arrayInitElement(XPC(1), IntPC(2), &XPC(3),
                          vm, PC, preempted);
         break;
       }
 
       case OpArrayInitElementY: {
-        arrayInitElement(XPC(1).node, IntPC(2), &YPC(3),
+        arrayInitElement(XPC(1), IntPC(2), &YPC(3),
                          vm, PC, preempted);
         break;
       }
 
       case OpArrayInitElementG: {
         UnstableNode value(vm, GPC(3));
-        arrayInitElement(XPC(1).node, IntPC(2), &value,
+        arrayInitElement(XPC(1), IntPC(2), &value,
                          vm, PC, preempted);
         break;
       }
 
       case OpArrayInitElementK: {
         UnstableNode value(vm, KPC(3));
-        arrayInitElement(XPC(1).node, IntPC(2), &value,
+        arrayInitElement(XPC(1), IntPC(2), &value,
                          vm, PC, preempted);
         break;
       }
@@ -478,7 +484,7 @@ void Thread::run() {
       // Inlines for some builtins
 
       case OpInlineEqualsInteger: {
-        IntegerValue x = XPC(1).node;
+        IntegerValue x = XPC(1);
         nativeint right = IntPC(2);
         bool resultValue;
 
@@ -497,7 +503,7 @@ void Thread::run() {
       }
 
       case OpInlineAdd: {
-        Numeric x = XPC(1).node;
+        Numeric x = XPC(1);
         BuiltinResult result = x.add(vm, &XPC(2), &XPC(3));
 
         if (result.isProceed())
@@ -509,7 +515,7 @@ void Thread::run() {
       }
 
       case OpInlineSubtract: {
-        Numeric x = XPC(1).node;
+        Numeric x = XPC(1);
         BuiltinResult result = x.subtract(vm, &XPC(2), &XPC(3));
 
         if (result.isProceed())
@@ -521,7 +527,7 @@ void Thread::run() {
       }
 
       case OpInlinePlus1: {
-        IntegerValue x = XPC(1).node;
+        IntegerValue x = XPC(1);
         BuiltinResult result = x.addValue(vm, 1, &XPC(2));
 
         if (result.isProceed())
@@ -533,7 +539,7 @@ void Thread::run() {
       }
 
       case OpInlineMinus1: {
-        IntegerValue x = XPC(1).node;
+        IntegerValue x = XPC(1);
         BuiltinResult result = x.addValue(vm, -1, &XPC(2));
 
         if (result.isProceed())
@@ -596,7 +602,8 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable x = target->node;
+  UnstableNode temp(vm, *target);
+  Callable x = temp;
   BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &start,
                                        &Xcount, &Gs, &Ks);
 
@@ -631,25 +638,22 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
   }
 }
 
-BuiltinResult Thread::unify(VM vm, Node& l, Node& r) {
-  Node& left = Reference::dereference(l);
-  Node& right = Reference::dereference(r);
-
-  if (left.type == Unbound::type())
-    return IMPL(BuiltinResult, Unbound, bind, &left, vm, &right);
-  else if (right.type == Unbound::type())
-    return IMPL(BuiltinResult, Unbound, bind, &right, vm, &left);
-  else if (left.type == Variable::type())
-    return IMPL(BuiltinResult, Variable, bind, &left, vm, &right);
-  else if (right.type == Variable::type())
-    return IMPL(BuiltinResult, Variable, bind, &right, vm, &left);
+BuiltinResult Thread::unify(VM vm, RichNode left, RichNode right) {
+  if (left.type() == Unbound::type())
+    return IMPL(BuiltinResult, Unbound, bind, left, vm, right);
+  else if (right.type() == Unbound::type())
+    return IMPL(BuiltinResult, Unbound, bind, right, vm, left);
+  else if (left.type() == Variable::type())
+    return IMPL(BuiltinResult, Variable, bind, left, vm, right);
+  else if (right.type() == Variable::type())
+    return IMPL(BuiltinResult, Variable, bind, right, vm, left);
   else {
     // TODO Non-trivial unify
     return BuiltinResult::proceed();
   }
 }
 
-void Thread::arrayInitElement(Node& node, size_t index, UnstableNode* value,
+void Thread::arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                               VM vm, ProgramCounter& PC, bool& preempted) {
   ArrayInitializer x = node;
   BuiltinResult result = x.initElement(vm, index, value);
@@ -661,7 +665,8 @@ void Thread::arrayInitElement(Node& node, size_t index, UnstableNode* value,
 }
 
 void Thread::waitFor(VM vm, BuiltinResult result, bool& preempted) {
-  DataflowVariable var = *result.getWaiteeNode();
+  UnstableNode waitee(vm, *result.getWaiteeNode());
+  DataflowVariable var = waitee;
   var.wait(vm, this);
 
   if (!isRunnable())

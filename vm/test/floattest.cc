@@ -14,7 +14,7 @@ protected:
   virtual void TearDown() {
   }
 
-  void EXPECT_EQ_FLOAT(double expected, Node& actual) {
+  void EXPECT_EQ_FLOAT(double expected, UnstableNode& actual) {
     FloatValue floatValue = actual;
     bool result = false;
     floatValue.equalsFloat(vm, expected, &result);
@@ -32,8 +32,8 @@ TEST_F(FloatTest, Build) {
     UnstableNode node;
     node.make<Float>(vm, i);
 
-    EXPECT_EQ(Float::type(), node.node.type);
-    EXPECT_EQ_FLOAT(i, node.node);
+    EXPECT_EQ(Float::type(), node.type());
+    EXPECT_EQ_FLOAT(i, node);
   }
 }
 
@@ -47,9 +47,9 @@ TEST_F(FloatTest, Add) {
     for (double right = -5; right <= 5; right++) {
       rightNode.make<Float>(vm, right);
 
-      Numeric leftNumeric = leftNode.node;
+      Numeric leftNumeric = leftNode;
       leftNumeric.add(vm, &rightNode, &resultNode);
-      EXPECT_EQ_FLOAT(left + right, resultNode.node);
+      EXPECT_EQ_FLOAT(left + right, resultNode);
     }
   }
 }
@@ -64,10 +64,10 @@ TEST_F(FloatTest, Subtract) {
     for (double right = -5; right <= 5; right++) {
       rightNode.make<Float>(vm, right);
 
-      Numeric leftNumeric = leftNode.node;
+      Numeric leftNumeric = leftNode;
       leftNumeric.subtract(vm, &rightNode, &resultNode);
 
-      EXPECT_EQ_FLOAT(left - right, resultNode.node);
+      EXPECT_EQ_FLOAT(left - right, resultNode);
     }
   }
 }
@@ -82,10 +82,10 @@ TEST_F(FloatTest, Multiply) {
     for (double right = -5; right <= 5; right++) {
       rightNode.make<Float>(vm, right);
 
-      Numeric leftNumeric = leftNode.node;
+      Numeric leftNumeric = leftNode;
       leftNumeric.multiply(vm, &rightNode, &resultNode);
 
-      EXPECT_EQ_FLOAT(left * right, resultNode.node);
+      EXPECT_EQ_FLOAT(left * right, resultNode);
     }
   }
 }
@@ -102,10 +102,10 @@ TEST_F(FloatTest, Divide) {
       } else {
         rightNode.make<Float>(vm, right);
 
-        Numeric leftNumeric = leftNode.node;
+        Numeric leftNumeric = leftNode;
         leftNumeric.divide(vm, &rightNode, &resultNode);
 
-        EXPECT_EQ_FLOAT(left / right, resultNode.node);
+        EXPECT_EQ_FLOAT(left / right, resultNode);
       }
     }
   }

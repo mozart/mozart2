@@ -32,17 +32,17 @@
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]) {
-  Equatable x = args[0]->node;
+  Equatable x = *args[0];
   return x.equals(vm, args[1], args[2]);
 }
 
 BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
-  Equatable x = args[0]->node;
+  Equatable x = *args[0];
   BuiltinResult result = x.equals(vm, args[1], args[2]);
 
   if (result.isProceed()) {
-    assert(args[2]->node.type == Boolean::type());
-    bool equalsResult = IMPLNOSELF(bool, Boolean, value, &args[2]->node);
+    assert(args[2]->type() == Boolean::type());
+    bool equalsResult = IMPLNOSELF(bool, Boolean, value, *args[2]);
     args[2]->make<Boolean>(vm, !equalsResult);
   }
 
@@ -50,42 +50,42 @@ BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
 }
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {
-  Numeric x = args[0]->node;
+  Numeric x = *args[0];
   return x.add(vm, args[1], args[2]);
 }
 
 BuiltinResult subtract(VM vm, UnstableNode* args[]) {
-  Numeric x = args[0]->node;
+  Numeric x = *args[0];
   return x.subtract(vm, args[1], args[2]);
 }
 
 BuiltinResult multiply(VM vm, UnstableNode* args[]) {
-  Numeric x = args[0]->node;
+  Numeric x = *args[0];
   return x.multiply(vm, args[1], args[2]);
 }
 
 BuiltinResult divide(VM vm, UnstableNode* args[]) {
-  Numeric x = args[0]->node;
+  Numeric x = *args[0];
   return x.divide(vm, args[1], args[2]);
 }
 
 BuiltinResult div(VM vm, UnstableNode* args[]) {
-  Numeric x = args[0]->node;
+  Numeric x = *args[0];
   return x.div(vm, args[1], args[2]);
 }
 
 BuiltinResult mod(VM vm, UnstableNode* args[]) {
-  Numeric x = args[0]->node;
+  Numeric x = *args[0];
   return x.mod(vm, args[1], args[2]);
 }
 
 BuiltinResult width(VM vm, UnstableNode* args[]) {
-  RecordLike x = args[0]->node;
+  RecordLike x = *args[0];
   return x.width(vm, args[1]);
 }
 
 BuiltinResult dot(VM vm, UnstableNode* args[]) {
-  RecordLike x = args[0]->node;
+  RecordLike x = *args[0];
   return x.dot(vm, args[1], args[2]);
 }
 
@@ -97,7 +97,7 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable x = args[0]->node;
+  Callable x = *args[0];
   BuiltinResult result = x.getCallInfo(vm, &arity, &body, &start,
                                        &Xcount, &Gs, &Ks);
 
@@ -116,21 +116,21 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
 }
 
 BuiltinResult show(VM vm, UnstableNode* args[]) {
-  Node& arg = Reference::dereference(args[0]->node);
+  RichNode arg = *args[0];
 
-  if (arg.type == SmallInt::type()) {
-    nativeint value = IMPLNOSELF(nativeint, SmallInt, value, &arg);
-    printf("%ld\n", value);
-  } else if (arg.type == Boolean::type()) {
-    bool value = IMPLNOSELF(bool, Boolean, value, &arg);
-    printf("%s\n", value ? "true" : "false");
-  } else if (arg.type == Float::type()) {
-    double value = IMPLNOSELF(double, Float, value, &arg);
-    printf("%f\n", value);
-  } else if (arg.type->isTransient()) {
-    return BuiltinResult::waitFor(&arg);
+  if (arg.type() == SmallInt::type()) {
+    nativeint value = IMPLNOSELF(nativeint, SmallInt, value, arg);
+    std::cout << value << std::endl;
+  } else if (arg.type() == Boolean::type()) {
+    bool value = IMPLNOSELF(bool, Boolean, value, arg);
+    std::cout << value << std::endl;
+  } else if (arg.type() == Float::type()) {
+    double value = IMPLNOSELF(double, Float, value, arg);
+    std::cout << value << std::endl;
+  } else if (arg.type()->isTransient()) {
+    return BuiltinResult::waitFor(vm, arg);
   } else {
-    std::cout << "<" << arg.type->getName() << ">" << std::endl;
+    std::cout << "<" << arg.type()->getName() << ">" << std::endl;
   }
 
   return BuiltinResult::proceed();

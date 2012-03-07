@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
   fibonacciCodeArea.make<CodeArea>(vm, 5, fibonacciCodeBlock,
                                    sizeof(fibonacciCodeBlock), 4);
 
-  ArrayInitializer initFibonacciCodeArea = fibonacciCodeArea.node;
+  ArrayInitializer initFibonacciCodeArea = fibonacciCodeArea;
   initFibonacciCodeArea.initElement(vm, 0, &zero);
   initFibonacciCodeArea.initElement(vm, 1, &one);
   initFibonacciCodeArea.initElement(vm, 2, &minusTwo);
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
   UnstableNode abstractionFibonacci;
   abstractionFibonacci.make<Abstraction>(vm, 1, 2, &fibonacciCodeArea);
 
-  ArrayInitializer initAbstractionFibonacci = abstractionFibonacci.node;
+  ArrayInitializer initAbstractionFibonacci = abstractionFibonacci;
   initAbstractionFibonacci.initElement(vm, 0, &abstractionFibonacci);
 
   // Define Main procedure
@@ -226,14 +226,14 @@ int main(int argc, char **argv) {
   mainCodeArea.make<CodeArea>(vm, 2, mainCodeBlock,
                               sizeof(mainCodeBlock), 2);
 
-  ArrayInitializer initMainCodeArea = mainCodeArea.node;
+  ArrayInitializer initMainCodeArea = mainCodeArea;
   initMainCodeArea.initElement(vm, 0, &nnode);
   initMainCodeArea.initElement(vm, 1, &builtinShow);
 
   UnstableNode abstractionMain;
   abstractionMain.make<Abstraction>(vm, 1, 0, &mainCodeArea);
 
-  ArrayInitializer initAbstractionMain = abstractionMain.node;
+  ArrayInitializer initAbstractionMain = abstractionMain;
   initAbstractionMain.initElement(vm, 0, &abstractionFibonacci);
 
   UnstableNode* initialThreadParams[] = { &abstractionMain };

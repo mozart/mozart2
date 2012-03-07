@@ -90,7 +90,8 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
   int* Xcount, StaticArray<StableNode>* Gs, StaticArray<StableNode>* Ks) {
 
   if (!_codeAreaCacheValid) {
-    CodeAreaProvider provider = _body.node;
+    UnstableNode temp(vm, _body);
+    CodeAreaProvider provider = temp;
     BuiltinResult result = provider.getCodeAreaInfo(
       vm, &_start, &_Xcount, &_Ks);
 

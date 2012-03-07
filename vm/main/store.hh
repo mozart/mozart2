@@ -74,6 +74,44 @@ void UnstableNode::swap(UnstableNode& from) {
   from.node = temp;
 }
 
+//////////////
+// RichNode //
+//////////////
+
+RichNode::RichNode(UnstableNode& origin) :
+  _node(&Reference::dereference(origin.node)), _origin(origin) {
+}
+
+void RichNode::update() {
+  _node = &Reference::dereference(*_node);
+}
+
+void RichNode::reinit(VM vm, StableNode& from) {
+  if (from.type()->isCopiable()) {
+    *_node = from.node;
+  } else {
+    _node->make<Reference>(vm, &from);
+    _origin.node = *_node;
+  }
+}
+
+void RichNode::reinit(VM vm, UnstableNode& from) {
+  if (from.type()->isCopiable()) {
+    *_node = from.node;
+  } else if (_origin.type() == Reference::type()) {
+    StableNode* stable = Reference::getStableRefFor(vm, _origin);
+    stable->init(vm, from);
+  } else {
+    StableNode* stable = Reference::getStableRefFor(vm, from);
+    _node->make<Reference>(vm, stable);
+    _origin.node = *_node;
+  }
+}
+
+void RichNode::reinit(VM vm, RichNode from) {
+  reinit(vm, from.origin());
+}
+
 ///////////////////
 // BuiltinResult //
 ///////////////////
@@ -82,8 +120,8 @@ BuiltinResult BuiltinResult::proceed() {
   return BuiltinResult(nullptr);
 }
 
-BuiltinResult BuiltinResult::waitFor(Node* node) {
-  return BuiltinResult(node);
+BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
+  return BuiltinResult(Reference::getStableRefFor(vm, node));
 }
 
 #endif // __STORE_H

@@ -165,6 +165,7 @@ private:
                 StaticArray<StableNode>& gregs,
                 StaticArray<StableNode>& kregs);
 
+  __attribute__((always_inline))
   inline
   void call(StableNode* target, int actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
@@ -176,10 +177,10 @@ private:
             bool& preempted);
 
   inline
-  BuiltinResult unify(VM vm, Node& l, Node& r);
+  BuiltinResult unify(VM vm, RichNode left, RichNode right);
 
   inline
-  void arrayInitElement(Node& node, size_t index, UnstableNode* value,
+  void arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                         VM vm, ProgramCounter& PC, bool& preempted);
 
   void waitFor(VM vm, BuiltinResult result, bool& preempted);

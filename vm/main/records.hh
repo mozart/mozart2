@@ -48,7 +48,7 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].node.make<SmallInt>(vm, 0);
+    _elements[i].make<SmallInt>(vm, 0);
 }
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
@@ -77,18 +77,14 @@ BuiltinResult Implementation<Tuple>::initElement(Self self, VM vm,
 BuiltinResult Implementation<Tuple>::dot(Self self, VM vm,
                                          UnstableNode* feature,
                                          UnstableNode* result) {
-  Node& featureNode = Reference::dereference(feature->node);
+  nativeint featureIntValue = 0;
+  IntegerValue featureValue = *feature;
 
-  if (featureNode.type == SmallInt::type()) {
-    nativeint feat = IMPLNOSELF(nativeint, SmallInt, value, &featureNode);
-    return dotNumber(self, vm, feat, result);
-  } else if (featureNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&featureNode);
-  } else {
-    // TODO Tuple . non-SmallInt
-    result->make<Boolean>(vm, false);
-    return BuiltinResult::proceed();
-  }
+  BuiltinResult res = featureValue.intValue(vm, &featureIntValue);
+  if (!res.isProceed())
+    return res;
+
+  return dotNumber(self, vm, featureIntValue, result);
 }
 
 BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,

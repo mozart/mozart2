@@ -54,18 +54,16 @@ BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
   return BuiltinResult::proceed();
 }
 
-BuiltinResult Implementation<Variable>::bind(Self self, VM vm, Node* src) {
+BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   // Actual binding
-  if (!src->type->isCopiable())
-    Reference::makeFor(vm, *src);
-  *self = *src;
+  RichNode(self).reinit(vm, src);
 
   // If the value we were bound to is a Variable too, we have to transfer the
   // threads waiting for this so that they wait for the other Variable.
   // Otherwise, we wake up the threads.
-  Node& node = Reference::dereference(*self);
-  if (node.type == Variable::type()) {
-    IMPLNOSELF(void, Variable, transferPendingThreads, &node,
+  src.update();
+  if (src.type() == Variable::type()) {
+    IMPLNOSELF(void, Variable, transferPendingThreads, src,
                vm, pendingThreads);
   } else {
     resumePendingThreads(vm);
@@ -103,14 +101,12 @@ BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
                                             Runnable* thread) {
   self.make<Variable>(vm);
 
-  DataflowVariable var = *self;
+  DataflowVariable var = self;
   return var.wait(vm, thread);
 }
 
-BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, Node* src) {
-  if (!src->type->isCopiable())
-    Reference::makeFor(vm, *src);
-  *self = *src;
+BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
+  RichNode(self).reinit(vm, src);
 
   return BuiltinResult::proceed();
 }

@@ -173,6 +173,12 @@ struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
 class IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
+  BuiltinResult intValue(Node& self, VM vm, nativeint* result) {
+    // TODO Raise exception
+    *result = 0;
+    return BuiltinResult::proceed();
+  }
+
   BuiltinResult equalsInteger(Node& self, VM vm, nativeint right, bool* result) {
     // TODO equalsInteger on a non-SmallInt
     *result = false;
@@ -189,6 +195,12 @@ struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
 class FloatValue;
 template<>
 struct Interface<FloatValue>: ImplementedBy<Float> {
+  BuiltinResult floatValue(Node& self, VM vm, double* result) {
+    // TODO Raise exception
+    *result = 0.0;
+    return BuiltinResult::proceed();
+  }
+
   BuiltinResult equalsFloat(Node& self, VM vm, double right, bool* result) {
     // TODO equalsFloat on a non-Float
     *result = false;
@@ -205,6 +217,12 @@ struct Interface<FloatValue>: ImplementedBy<Float> {
 class BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
+  BuiltinResult boolValue(Node& self, VM vm, bool* result) {
+    // TODO Raise exception
+    *result = false;
+    return BuiltinResult::proceed();
+  }
+
   BuiltinResult valueOrNotBool(Node& self, VM vm, BoolOrNotBool* result) {
     // TODO valueOrNotBool on a non-Boolean
     *result = bNotBool;

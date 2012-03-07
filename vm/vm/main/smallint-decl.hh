@@ -47,6 +47,11 @@ public:
 
   nativeint value() const { return _value; }
 
+  BuiltinResult intValue(Self self, VM vm, nativeint* result) {
+    *result = value();
+    return BuiltinResult::proceed();
+  }
+
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right,
                        UnstableNode* result);

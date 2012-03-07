@@ -71,19 +71,14 @@ BuiltinResult Implementation<Float>::equalsFloat(Self self, VM vm,
 BuiltinResult Implementation<Float>::add(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+  double rightFloatValue = 0.0;
+  FloatValue rightValue = right->node;
 
-  if (rightNode.type == Float::type()) {
-    double b = IMPLNOSELF(double, Float, value, &rightNode);
-    return addValue(self, vm, b, result);
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
-  } else {
-    // TODO Float + non-Float
-    std::cout << "Float expected but " << rightNode.type->getName();
-    std::cout << " found" << std::endl;
-    return BuiltinResult::proceed();
-  }
+  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  if (!res.isProceed())
+    return res;
+
+  return addValue(self, vm, rightFloatValue, result);
 }
 
 BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
@@ -97,19 +92,14 @@ BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
 BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
                                               UnstableNode* right,
                                               UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+  double rightFloatValue = 0.0;
+  FloatValue rightValue = right->node;
 
-  if (rightNode.type == Float::type()) {
-    double b = IMPLNOSELF(double, Float, value, &rightNode);
-    return subtractValue(self, vm, b, result);
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
-  } else {
-    // TODO Float - non-Float
-    std::cout << "Float expected but " << rightNode.type->getName();
-    std::cout << " found" << std::endl;
-    return BuiltinResult::proceed();
-  }
+  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  if (!res.isProceed())
+    return res;
+
+  return subtractValue(self, vm, rightFloatValue, result);
 }
 
 BuiltinResult Implementation<Float>::subtractValue(Self self, VM vm,
@@ -123,19 +113,14 @@ BuiltinResult Implementation<Float>::subtractValue(Self self, VM vm,
 BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
                                               UnstableNode* right,
                                               UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+  double rightFloatValue = 0.0;
+  FloatValue rightValue = right->node;
 
-  if (rightNode.type == Float::type()) {
-    double b = IMPLNOSELF(double, Float, value, &rightNode);
-    return multiplyValue(self, vm, b, result);
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
-  } else {
-    // TODO Float * non-Float
-    std::cout << "Float expected but " << rightNode.type->getName();
-    std::cout << " found" << std::endl;
-    return BuiltinResult::proceed();
-  }
+  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  if (!res.isProceed())
+    return res;
+
+  return multiplyValue(self, vm, rightFloatValue, result);
 }
 
 BuiltinResult Implementation<Float>::multiplyValue(Self self, VM vm,
@@ -149,19 +134,14 @@ BuiltinResult Implementation<Float>::multiplyValue(Self self, VM vm,
 BuiltinResult Implementation<Float>::divide(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+  double rightFloatValue = 0.0;
+  FloatValue rightValue = right->node;
 
-  if (rightNode.type == Float::type()) {
-    double b = IMPLNOSELF(double, Float, value, &rightNode);
-    return divideValue(self, vm, b, result);
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
-  } else {
-    // TODO Float / non-Float
-    std::cout << "Float expected but " << rightNode.type->getName();
-    std::cout << " found" << std::endl;
-    return BuiltinResult::proceed();
-  }
+  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  if (!res.isProceed())
+    return res;
+
+  return divideValue(self, vm, rightFloatValue, result);
 }
 
 BuiltinResult Implementation<Float>::divideValue(Self self, VM vm,

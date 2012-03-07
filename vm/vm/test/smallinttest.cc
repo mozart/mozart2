@@ -14,7 +14,7 @@ protected:
   virtual void TearDown() {
   }
 
-  void EXPECT_EQ_INT(nativeint expected, Node& actual) {
+  void EXPECT_EQ_INT(nativeint expected, UnstableNode& actual) {
     IntegerValue intValue = actual;
     bool result = false;
     intValue.equalsInteger(vm, expected, &result);
@@ -32,8 +32,8 @@ TEST_F(SmallIntTest, Build) {
     UnstableNode node;
     node.make<SmallInt>(vm, i);
 
-    EXPECT_EQ(SmallInt::type(), node.node.type);
-    EXPECT_EQ_INT(i, node.node);
+    EXPECT_EQ(SmallInt::type(), node.type());
+    EXPECT_EQ_INT(i, node);
   }
 }
 
@@ -47,10 +47,10 @@ TEST_F(SmallIntTest, Add) {
     for (nativeint right = -5; right <= 5; right++) {
       rightNode.make<SmallInt>(vm, right);
 
-      Numeric leftNumeric = leftNode.node;
+      Numeric leftNumeric = leftNode;
       leftNumeric.add(vm, &rightNode, &resultNode);
 
-      EXPECT_EQ_INT(left+right, resultNode.node);
+      EXPECT_EQ_INT(left+right, resultNode);
     }
   }
 }
@@ -65,10 +65,10 @@ TEST_F(SmallIntTest, Subtract) {
     for (nativeint right = -5; right <= 5; right++) {
       rightNode.make<SmallInt>(vm, right);
 
-      Numeric leftNumeric = leftNode.node;
+      Numeric leftNumeric = leftNode;
       leftNumeric.subtract(vm, &rightNode, &resultNode);
 
-      EXPECT_EQ_INT(left-right, resultNode.node);
+      EXPECT_EQ_INT(left-right, resultNode);
     }
   }
 }
@@ -83,10 +83,10 @@ TEST_F(SmallIntTest, Multiply) {
     for (nativeint right = -5; right <= 5; right++) {
       rightNode.make<SmallInt>(vm, right);
 
-      Numeric leftNumeric = leftNode.node;
+      Numeric leftNumeric = leftNode;
       leftNumeric.multiply(vm, &rightNode, &resultNode);
 
-      EXPECT_EQ_INT((left * right), resultNode.node);
+      EXPECT_EQ_INT((left * right), resultNode);
     }
   }
 }
@@ -103,10 +103,10 @@ TEST_F(SmallIntTest, Div) {
       } else {
         rightNode.make<SmallInt>(vm, right);
 
-        Numeric leftNumeric = leftNode.node;
+        Numeric leftNumeric = leftNode;
         leftNumeric.div(vm, &rightNode, &resultNode);
 
-        EXPECT_EQ_INT(left / right, resultNode.node);
+        EXPECT_EQ_INT(left / right, resultNode);
       }
     }
   }
@@ -124,10 +124,10 @@ TEST_F(SmallIntTest, Mod) {
       } else {
         rightNode.make<SmallInt>(vm, right);
 
-        Numeric leftNumeric = leftNode.node;
+        Numeric leftNumeric = leftNode;
         leftNumeric.mod(vm, &rightNode, &resultNode);
 
-        EXPECT_EQ_INT(left % right, resultNode.node);
+        EXPECT_EQ_INT(left % right, resultNode);
       }
     }
   }

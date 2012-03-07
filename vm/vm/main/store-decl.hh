@@ -42,7 +42,22 @@
  * inherently mutable data (such as the contents of a cell).
  */
 class Node {
-public:
+private:
+  friend class StableNode;
+  friend class UnstableNode;
+  friend class RichNode;
+  friend class Reference;
+  friend class GarbageCollector;
+
+  template <class T>
+  friend class BaseSelf;
+
+  template <class T>
+  friend class WritableSelfType;
+
+  template <class T, class R, class M, M m>
+  friend class ImplNoSelf;
+
   template<class T, class... Args>
   void make(VM vm, Args... args) {
     typedef Accessor<T, typename Storage<T>::Type> Access;
@@ -60,11 +75,23 @@ public:
  */
 class StableNode {
 public:
+  const Type* type() {
+    return node.type;
+  }
+
   inline void init(VM vm, StableNode& from);
   inline void init(VM vm, UnstableNode& from);
+
+  template<class T, class... Args>
+  void make(VM vm, Args... args) {
+    node.make<T>(vm, args...);
+  }
 private:
   friend class UnstableNode;
-public: // TODO make it private once the development has been bootstrapped
+  friend class RichNode;
+  friend class GarbageCollector;
+  friend class Reference;
+
   union {
     Node node;
 
@@ -91,6 +118,10 @@ public:
     copy(vm, from);
   }
 
+  const Type* type() {
+    return node.type;
+  }
+
   inline void copy(VM vm, StableNode& from);
   inline void copy(VM vm, UnstableNode& from);
   inline void swap(UnstableNode& from);
@@ -102,7 +133,10 @@ public:
   }
 private:
   friend class StableNode;
-public: // TODO make it private once the development has been bootstrapped
+  friend class RichNode;
+  friend class GarbageCollector;
+  friend class Reference;
+
   union {
     Node node;
 
@@ -115,6 +149,50 @@ public: // TODO make it private once the development has been bootstrapped
 };
 
 /**
+ * A rich node is a node with an accompanying unstable origin
+ * The important invariant of this class is that following a chain of
+ * references starting at the origin eventually reaches the node.
+ */
+struct RichNode {
+private:
+  RichNode(Node* node, UnstableNode& origin) : _node(node), _origin(origin) {}
+public:
+  inline
+  RichNode(UnstableNode& origin);
+
+  const Type* type() {
+    return _node->type;
+  }
+
+  UnstableNode& origin() {
+    return _origin;
+  }
+
+  inline
+  void update();
+
+  inline void reinit(VM vm, StableNode& from);
+  inline void reinit(VM vm, UnstableNode& from);
+  inline void reinit(VM vm, RichNode from);
+private:
+  template <class T, class R, class M, M m>
+  friend class Impl;
+
+  template <class T, class R, class M, M m>
+  friend class ImplNoSelf;
+
+  MemWord value() {
+    return _node->value;
+  }
+private:
+  template <class T>
+  friend class WritableSelfType;
+
+  Node* _node;
+  UnstableNode& _origin;
+};
+
+/**
  * Base class for Self types
  */
 template <class T>
@@ -124,14 +202,6 @@ protected:
   typedef Accessor<T, StorageType> Access;
 public:
   BaseSelf(Node* node) : _node(node) {}
-
-  operator Node*() {
-    return _node;
-  }
-
-  Node& operator*() {
-    return *_node;
-  }
 protected:
   auto getBase() -> decltype(Access::get(MemWord())) {
     return Access::get(_node->value);
@@ -252,12 +322,19 @@ class WritableSelfType : public ROView {
 public:
   typedef ROView ReadOnlyView;
 public:
-  WritableSelfType(Node* node) : ROView(node) {}
+  WritableSelfType(RichNode richNode) :
+    ROView(richNode._node), _origin(richNode.origin()) {}
 
   template<class U, class... Args>
   void make(VM vm, Args... args) {
     this->_node->make<U>(vm, args...);
   }
+
+  operator RichNode() {
+    return RichNode(this->_node, _origin);
+  }
+private:
+  UnstableNode& _origin;
 };
 
 /**
@@ -283,19 +360,19 @@ public:
   static BuiltinResult proceed();
 
   inline
-  static BuiltinResult waitFor(Node* node);
+  static BuiltinResult waitFor(VM vm, RichNode node);
 
   bool isProceed() {
     return node == nullptr;
   }
 
-  Node* getWaiteeNode() {
+  StableNode* getWaiteeNode() {
     return node;
   }
 private:
-  BuiltinResult(Node* node) : node(node) {}
+  BuiltinResult(StableNode* node) : node(node) {}
 
-  Node* node;
+  StableNode* node;
 };
 
 /**
@@ -307,8 +384,8 @@ public:
   typedef Accessor<T, typename Storage<T>::Type> Type;
 
   template<class... Args>
-  static R f(Node* it, Args... args) {
-    return (Type::get(it->value).*m)(typename SelfType<T>::Self(it), args...);
+  static R f(RichNode it, Args... args) {
+    return (Type::get(it.value()).*m)(typename SelfType<T>::Self(it), args...);
   }
 };
 
@@ -323,6 +400,11 @@ template<class T, class R, class M, M m>
 class ImplNoSelf {
 public:
   typedef Accessor<T, typename Storage<T>::Type> Type;
+
+  template<class... Args>
+  static R f(RichNode it, Args... args) {
+    return (Type::get(it.value()).*m)(args...);
+  }
 
   template<class... Args>
   static R f(Node* it, Args... args) {

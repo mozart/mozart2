@@ -46,14 +46,14 @@ double Implementation<Float>::build(VM vm, GC gc, SelfReadOnlyView from) {
 BuiltinResult Implementation<Float>::equals(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+  RichNode rightNode = *right;
 
-  if (rightNode.type == Float::type()) {
-    double r = IMPLNOSELF(double, Float, value, &rightNode);
+  if (rightNode.type() == Float::type()) {
+    double r = IMPLNOSELF(double, Float, value, rightNode);
     result->make<Boolean>(vm, value() == r);
     return BuiltinResult::proceed();
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
+  } else if (rightNode.type()->isTransient()) {
+    return BuiltinResult::waitFor(vm, rightNode);
   } else {
     // TODO Float == non-Float
     result->make<Boolean>(vm, false);
@@ -72,7 +72,7 @@ BuiltinResult Implementation<Float>::add(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = right->node;
+  FloatValue rightValue = *right;
 
   BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
@@ -93,7 +93,7 @@ BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
                                               UnstableNode* right,
                                               UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = right->node;
+  FloatValue rightValue = *right;
 
   BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
@@ -114,7 +114,7 @@ BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
                                               UnstableNode* right,
                                               UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = right->node;
+  FloatValue rightValue = *right;
 
   BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
@@ -135,7 +135,7 @@ BuiltinResult Implementation<Float>::divide(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = right->node;
+  FloatValue rightValue = *right;
 
   BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
   if (!res.isProceed())

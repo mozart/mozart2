@@ -42,7 +42,7 @@ void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
-    std::cerr << dest->node.type->getName() << ")" << std::endl;
+    std::cerr << dest->type()->getName() << ")" << std::endl;
   }
 
   to.init(gc->vm, *dest);
@@ -53,7 +53,7 @@ void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
-    std::cerr << dest->node.type->getName() << ")" << std::endl;
+    std::cerr << dest->type()->getName() << ")" << std::endl;
   }
 
   to.copy(gc->vm, *dest);
@@ -68,7 +68,7 @@ void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
-    std::cerr << dest->node.type->getName() << ")" << std::endl;
+    std::cerr << dest->type()->getName() << ")" << std::endl;
   }
 
   to.init(gc->vm, *dest);
@@ -79,7 +79,7 @@ void GCedToUnstableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
-    std::cerr << dest->node.type->getName() << ")" << std::endl;
+    std::cerr << dest->type()->getName() << ")" << std::endl;
   }
 
   to.copy(gc->vm, *dest);

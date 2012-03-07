@@ -89,37 +89,25 @@ public:
     stable->init(vm, node);
   }
 
-  static void makeFor(VM vm, Node& node) {
-    UnstableNode temp;
-    temp.node = node;
-    makeFor(vm, temp);
-    node = temp.node;
-  }
-
-  // This is optimized for the 0- and 1-dereference paths
-  // Normally the else case would have been only a while loop
-  static StableNode* getStableRefFor(VM vm, Node& node) {
-    if (node.type != type()) {
-      makeFor(vm, node);
-      return IMPLNOSELF(StableNode*, Reference, dest, &node);
+  static StableNode* getStableRefFor(VM vm, UnstableNode& node) {
+    if (node.type() != type()) {
+      StableNode* stable = new (vm) StableNode;
+      stable->init(vm, node);
+      return stable;
     } else {
-      StableNode* result = IMPLNOSELF(StableNode*, Reference, dest, &node);
-      if (result->node.type != type())
-        return result;
-      else
-        return getStableRefForLoop(result);
+      return getStableRefFor(vm, node.node);
     }
   }
 
-  static StableNode* getStableRefFor(VM vm, UnstableNode& node) {
-    return getStableRefFor(vm, node.node);
-  }
-
   static StableNode* getStableRefFor(VM vm, StableNode& node) {
-    if (node.node.type != type())
+    if (node.type() != type())
       return &node;
     else
       return getStableRefFor(vm, node.node);
+  }
+
+  static StableNode* getStableRefFor(VM vm, RichNode node) {
+    return getStableRefFor(vm, node.origin());
   }
 private:
   static Node& dereferenceLoop(Node* node) {
@@ -128,10 +116,20 @@ private:
     return *node;
   }
 
+  // This is optimized for the 1-dereference path
+  // Normally it would have been only a while loop
+  static StableNode* getStableRefFor(VM vm, Node& node) {
+    StableNode* result = IMPLNOSELF(StableNode*, Reference, dest, &node);
+    if (result->type() != type())
+      return result;
+    else
+      return getStableRefForLoop(result);
+  }
+
   static StableNode* getStableRefForLoop(StableNode* node) {
     do {
       node = IMPLNOSELF(StableNode*, Reference, dest, &node->node);
-    } while (node->node.type == type());
+    } while (node->type() == type());
 
     return node;
   }

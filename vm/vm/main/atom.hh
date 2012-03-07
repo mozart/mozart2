@@ -38,16 +38,16 @@ AtomImpl* Implementation<Atom>::build(VM vm, GC gc, SelfReadOnlyView from) {
 }
 
 BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
-					   UnstableNode* right,
-					   UnstableNode* result) {
-  Node& rightNode = Reference::dereference(right->node);
+                                           UnstableNode* right,
+                                           UnstableNode* result) {
+  RichNode rightNode = *right;
 
-  if (rightNode.type == Atom::type()) {
-    const AtomImpl* r = IMPLNOSELF(const AtomImpl*, Atom, value, &rightNode);
+  if (rightNode.type() == Atom::type()) {
+    const AtomImpl* r = IMPLNOSELF(const AtomImpl*, Atom, value, rightNode);
     result->make<Boolean>(vm, value()==r);
     return BuiltinResult::proceed();
-  } else if (rightNode.type->isTransient()) {
-    return BuiltinResult::waitFor(&rightNode);
+  } else if (rightNode.type()->isTransient()) {
+    return BuiltinResult::waitFor(vm, rightNode);
   } else {
     // TODO Atom == non-Atom
     result->make<Boolean>(vm, false);

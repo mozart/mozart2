@@ -84,11 +84,6 @@ public:
     }
   }
 
-  static void makeFor(VM vm, UnstableNode& node) {
-    StableNode* stable = new (vm) StableNode;
-    stable->init(vm, node);
-  }
-
   static StableNode* getStableRefFor(VM vm, UnstableNode& node) {
     if (node.type() != type()) {
       StableNode* stable = new (vm) StableNode;

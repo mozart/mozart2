@@ -107,7 +107,7 @@ Thread::Thread(VM vm, StableNode* abstraction) : Runnable(vm) {
   callable.getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
 
 #ifndef NDEBUG
-  assert(result == BuiltinResultContinue && arity == 0);
+  assert(result.isProceed() && arity == 0);
 #endif
 
   // Set up
@@ -298,7 +298,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2 + argc);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
 
         break;
       }
@@ -363,7 +363,7 @@ void Thread::run() {
 
           advancePC(4 + distance);
         } else {
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
         }
 
         break;
@@ -376,7 +376,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
         break;
       }
 
@@ -385,7 +385,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
         break;
       }
 
@@ -395,7 +395,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
         break;
       }
 
@@ -405,7 +405,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
         break;
       }
 
@@ -494,7 +494,7 @@ void Thread::run() {
           else
             advancePC(3 + IntPC(3));
         } else {
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
         }
 
         break;
@@ -507,7 +507,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(3);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
 
         break;
       }
@@ -519,7 +519,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(3);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
 
         break;
       }
@@ -531,7 +531,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
 
         break;
       }
@@ -543,7 +543,7 @@ void Thread::run() {
         if (result.isProceed())
           advancePC(2);
         else
-          waitFor(vm, result, preempted);
+          applyBuiltinResult(vm, result, preempted);
 
         break;
       }
@@ -632,7 +632,7 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
     if (vm->testPreemption())
       preempted = true;
   } else {
-    waitFor(vm, result, preempted);
+    applyBuiltinResult(vm, result, preempted);
   }
 }
 
@@ -659,16 +659,40 @@ void Thread::arrayInitElement(RichNode node, size_t index, UnstableNode* value,
   if (result.isProceed())
     advancePC(3);
   else
-    waitFor(vm, result, preempted);
+    applyBuiltinResult(vm, result, preempted);
 }
 
-void Thread::waitFor(VM vm, BuiltinResult result, bool& preempted) {
-  UnstableNode waitee(vm, *result.getWaiteeNode());
-  DataflowVariable var = waitee;
-  var.wait(vm, this);
+void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
+  switch (result.status()) {
+    case BuiltinResult::brProceed: {
+      // Do nothing
+      break;
+    }
 
-  if (!isRunnable())
-    preempted = true;
+    case BuiltinResult::brWaitBefore: {
+      UnstableNode waitee(vm, *result.getWaiteeNode());
+      DataflowVariable var = waitee;
+      var.wait(vm, this);
+
+      if (!isRunnable())
+        preempted = true;
+
+      break;
+    }
+
+    case BuiltinResult::brRaise: {
+      // TODO Allow to catch an exception
+      UnstableNode exception(vm, *result.getExceptionNode());
+      std::cout << "Exception" << std::endl;
+
+      UnstableNode* showArgs[] = { &exception };
+      builtins::show(vm, showArgs);
+
+      terminate();
+      preempted = true;
+      break;
+    }
+  }
 }
 
 void Thread::beforeGC()

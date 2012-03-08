@@ -122,11 +122,15 @@ void RichNode::reinit(VM vm, RichNode from) {
 ///////////////////
 
 BuiltinResult BuiltinResult::proceed() {
-  return BuiltinResult(nullptr);
+  return BuiltinResult(nullptr, brProceed);
 }
 
 BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
-  return BuiltinResult(Reference::getStableRefFor(vm, node));
+  return BuiltinResult(Reference::getStableRefFor(vm, node), brWaitBefore);
+}
+
+BuiltinResult BuiltinResult::raise(VM vm, RichNode node) {
+  return BuiltinResult(Reference::getStableRefFor(vm, node), brRaise);
 }
 
 #endif // __STORE_H

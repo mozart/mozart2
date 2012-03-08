@@ -350,11 +350,14 @@ struct SelfType {
 
 /**
  * Result of the call to a builtin.
- * Unless the result is a proceed indication (isProceed() == true), the node
- * is a reference to a node that must be waited upon.
- * Throwing an exception is achieved by pointing to a failed value.
  */
 struct BuiltinResult {
+public:
+  enum Status {
+    brProceed,    // Proceed, aka success
+    brWaitBefore, // Need an unbound variable, I want you to wait on that one
+    brRaise,      // Raise an exception
+  };
 public:
   inline
   static BuiltinResult proceed();
@@ -362,17 +365,34 @@ public:
   inline
   static BuiltinResult waitFor(VM vm, RichNode node);
 
+  inline
+  static BuiltinResult raise(VM vm, RichNode node);
+
   bool isProceed() {
-    return node == nullptr;
+    return _status == brProceed;
   }
 
+  Status status() {
+    return _status;
+  }
+
+  /** If status() == brWaitBefore, the node that must be waited upon */
   StableNode* getWaiteeNode() {
+    assert(status() == brWaitBefore);
+    return node;
+  }
+
+  /** If status() == brRaise, the node containing the exception to raise */
+  StableNode* getExceptionNode() {
+    assert(status() == brRaise);
     return node;
   }
 private:
-  BuiltinResult(StableNode* node) : node(node) {}
+  BuiltinResult(StableNode* node, Status status) :
+    node(node), _status(status) {}
 
   StableNode* node;
+  Status _status;
 };
 
 /**

@@ -73,7 +73,7 @@ public:
     if (argc == _arity)
       return _builtin(vm, args);
     else
-      return raiseIllegalArity(argc);
+      return raiseIllegalArity(self, vm, argc);
   }
 
   /**
@@ -83,7 +83,7 @@ public:
   BuiltinResult arity(Self self, VM vm, UnstableNode* result);
 private:
   inline
-  BuiltinResult raiseIllegalArity(int argc);
+  BuiltinResult raiseIllegalArity(Self self, VM vm, int argc);
 
   int _arity;
   OzBuiltin _builtin;

@@ -181,9 +181,7 @@ BuiltinResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
 BuiltinResult Implementation<SmallInt>::divide(Self self, VM vm,
                                                UnstableNode* right,
                                                UnstableNode* result) {
-  // TODO Raise exception
-  std::cout << "SmallInt doesn't support divide" << std::endl;
-  return BuiltinResult::proceed();
+  return raiseTypeError(vm, u"Float", self);
 }
 
 BuiltinResult Implementation<SmallInt>::div(Self self, VM vm,

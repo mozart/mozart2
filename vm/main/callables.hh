@@ -46,9 +46,13 @@ BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
   return BuiltinResult::proceed();
 }
 
-BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(int argc) {
-  // TODO raiseIllegalArity
-  return BuiltinResult::proceed();
+BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(
+  Self self, VM vm, int argc) {
+
+  UnstableNode exception;
+  exception.make<Atom>(vm, u"illegalArity");
+
+  return BuiltinResult::raise(vm, exception);
 }
 
 ////////////////////////

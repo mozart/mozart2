@@ -607,9 +607,8 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
 
   if (result.isProceed()) {
     if (actualArity != formalArity) {
-      std::cout << "Illegal arity: " << formalArity << " expected but ";
-      std::cout << actualArity << " found" << std::endl;
-      // TODO Raise illegal arity exception
+      applyBuiltinResult(vm, raiseAtom(vm, u"illegalArity"), preempted);
+      return;
     }
 
     advancePC(2);

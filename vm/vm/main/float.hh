@@ -28,6 +28,7 @@
 #include "float-decl.hh"
 
 #include "boolean.hh"
+#include "coreinterfaces.hh"
 
 #include <iostream>
 
@@ -155,17 +156,13 @@ BuiltinResult Implementation<Float>::divideValue(Self self, VM vm,
 BuiltinResult Implementation<Float>::div(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
-  // TODO Raise exception
-  std::cout << "Floats don't support arithmetic operation 'div'" << std::endl;
-  return BuiltinResult::proceed();
+  return raiseTypeError(vm, u"Integer", self);
 }
 
 BuiltinResult Implementation<Float>::mod(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
-  // TODO Raise exception
-  std::cout << "Floats don't support arithmetic operation 'mod'" << std::endl;
-  return BuiltinResult::proceed();
+  return raiseTypeError(vm, u"Integer", self);
 }
 
 #endif // __FLOAT_H

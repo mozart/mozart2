@@ -97,9 +97,7 @@ BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,
     return BuiltinResult::proceed();
   } else {
     // Out of bounds
-    // TODO Raise exception
-    result->make<Boolean>(vm, false);
-    return BuiltinResult::proceed();
+    return raiseAtom(vm, u"illegalFieldSelection");
   }
 }
 

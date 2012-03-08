@@ -28,6 +28,7 @@
 #include <iostream>
 
 #include "emulate.hh"
+#include "exchelpers.hh"
 
 namespace builtins {
 
@@ -104,11 +105,8 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   if (!result.isProceed())
     return result;
 
-  if (arity != 0) {
-    std::cout << "Illegal arity: " << 0 << " expected but ";
-    std::cout << arity << " found" << std::endl;
-    // TODO Raise illegal arity exception
-  }
+  if (arity != 0)
+    return raiseAtom(vm, u"illegalArity");
 
   new (vm) Thread(vm, Reference::getStableRefFor(vm, *args[0]));
 

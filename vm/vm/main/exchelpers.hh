@@ -1,4 +1,4 @@
-// Copyright © 2012, Université catholique de Louvain
+// Copyright © 2011, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,51 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ATOM_DECL_H
-#define __ATOM_DECL_H
+#ifndef __EXCHELPERS_H
+#define __EXCHELPERS_H
 
-#include "mozartcore.hh"
+#include "exchelpers-decl.hh"
 
-#include <string>
-#include <ostream>
+#include "coreinterfaces.hh"
 
-class Atom;
+BuiltinResult raiseAtom(VM vm, const char16_t* atom) {
+  UnstableNode exception;
+  exception.make<Atom>(vm, atom);
 
-#ifndef MOZART_GENERATOR
-#include "Atom-implem-decl.hh"
-#endif
+  return BuiltinResult::raise(vm, exception);
+}
 
-template <>
-class Implementation<Atom>: Copiable, StoredAs<AtomImpl*> {
-public:
-  typedef SelfType<Atom>::Self Self;
-  typedef SelfType<Atom>::SelfReadOnlyView SelfReadOnlyView;
-public:
-  Implementation(const AtomImpl* value) : _value(value) {}
+BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
+  UnstableNode label;
+  label.make<Atom>(vm, u"typeError");
 
-  static AtomImpl* build(VM vm, std::size_t size, const char16_t* data) {
-    assert(size == (size << 5) >> 5);
-    return vm->atomTable.get(vm, size, data);
-  }
+  UnstableNode exception;
+  exception.make<Tuple>(vm, 2, &label);
 
-  static AtomImpl* build(VM vm, const char16_t* data) {
-    return build(vm, std::char_traits<char16_t>::length(data), data);
-  }
+  ArrayInitializer initializer = exception;
 
-  inline
-  static AtomImpl* build(VM vm, GC gc, SelfReadOnlyView from);
+  UnstableNode arg;
+  arg.make<Atom>(vm, expected);
+  initializer.initElement(vm, 0, &arg);
 
-  inline
-  BuiltinResult equals(Self self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
+  initializer.initElement(vm, 1, &actual.origin());
 
-  const AtomImpl* value() const { return _value; }
+  return BuiltinResult::raise(vm, exception);
+}
 
-  inline
-  void printReprToStream(SelfReadOnlyView self, VM vm,
-                         std::ostream* out, int depth);
-private:
-  const AtomImpl* _value;
-};
-
-#endif // __ATOM_DECL_H
+#endif // __EXCHELPERS_H

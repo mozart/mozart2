@@ -46,6 +46,10 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]);
 
 BuiltinResult show(VM vm, UnstableNode* args[]);
 
+
+void printReprToStream(VM vm, RichNode node,
+                       std::ostream& out, int depth = 10);
+
 }
 
 #endif // __COREBUILTINS_H

@@ -30,6 +30,7 @@
 #include "coreinterfaces.hh"
 #include "smallint.hh"
 #include "boolean.hh"
+#include "corebuiltins.hh"
 
 //////////////////
 // Inline Tuple //
@@ -100,6 +101,29 @@ BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,
     result->make<Boolean>(vm, false);
     return BuiltinResult::proceed();
   }
+}
+
+void Implementation<Tuple>::printReprToStream(SelfReadOnlyView self, VM vm,
+                                              std::ostream* _out, int depth) {
+  std::ostream& out = *_out;
+
+  UnstableNode label(vm, _label);
+  builtins::printReprToStream(vm, label, out, depth-1);
+  out << "(";
+
+  if (depth <= 1) {
+    out << "...";
+  } else {
+    for (size_t i = 0; i < _width; i++) {
+      if (i > 0)
+        out << ", ";
+
+      UnstableNode element(vm, self[i]);
+      builtins::printReprToStream(vm, element, out, depth-1);
+    }
+  }
+
+  out << ")";
 }
 
 #endif // __RECORDS_H

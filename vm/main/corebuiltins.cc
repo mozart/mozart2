@@ -117,23 +117,38 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
 
 BuiltinResult show(VM vm, UnstableNode* args[]) {
   RichNode arg = *args[0];
+  printReprToStream(vm, arg, std::cout);
+  std::cout << std::endl;
+  return BuiltinResult::proceed();
+}
+
+void printReprToStream(VM vm, RichNode arg,
+                       std::ostream& out, int depth) {
+  if (depth <= 0) {
+    out << "...";
+    return;
+  }
 
   if (arg.type() == SmallInt::type()) {
     nativeint value = IMPLNOSELF(nativeint, SmallInt, value, arg);
-    std::cout << value << std::endl;
+    out << value;
   } else if (arg.type() == Boolean::type()) {
     bool value = IMPLNOSELF(bool, Boolean, value, arg);
-    std::cout << value << std::endl;
+    out << (value ? "true" : "false");
   } else if (arg.type() == Float::type()) {
     double value = IMPLNOSELF(double, Float, value, arg);
-    std::cout << value << std::endl;
+    out << value;
+  } else if (arg.type() == Atom::type()) {
+    IMPL(void, Atom, printReprToStream, arg,
+         vm, &out, depth);
+  } else if (arg.type() == Tuple::type()) {
+    IMPL(void, Tuple, printReprToStream, arg,
+         vm, &out, depth);
   } else if (arg.type()->isTransient()) {
-    return BuiltinResult::waitFor(vm, arg);
+    out << "_";
   } else {
-    std::cout << "<" << arg.type()->getName() << ">" << std::endl;
+    out << "<" << arg.type()->getName() << ">";
   }
-
-  return BuiltinResult::proceed();
 }
 
 }

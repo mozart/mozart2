@@ -55,4 +55,12 @@ BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
   }
 }
 
+void Implementation<Atom>::printReprToStream(SelfReadOnlyView self, VM vm,
+                                             std::ostream* _out, int depth) {
+  std::ostream& out = *_out;
+
+  //out << "'" << _value->data << "'";
+  out << "<Atom>";
+}
+
 #endif // __ATOM_H

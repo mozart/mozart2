@@ -77,6 +77,10 @@ public:
   inline
   BuiltinResult dotNumber(Self self, VM vm, nativeint feature,
                           UnstableNode* result);
+
+  inline
+  void printReprToStream(SelfReadOnlyView self, VM vm,
+                         std::ostream* out, int depth);
 private:
   StableNode _label;
   size_t _width;

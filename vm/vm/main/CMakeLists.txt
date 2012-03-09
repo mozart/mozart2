@@ -15,6 +15,3 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(mozartvm emulate.cc corebuiltins.cc memmanager.cc gcollect.cc)
 add_dependencies(mozartvm ${interface_headers_gen})
-
-add_executable(vm main.cc)
-target_link_libraries(vm mozartvm)

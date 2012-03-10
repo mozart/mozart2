@@ -55,9 +55,6 @@ private:
   template <class T>
   friend class WritableSelfType;
 
-  template <class T, class R, class M, M m>
-  friend class ImplNoSelf;
-
   template<class T, class... Args>
   void make(VM vm, Args... args) {
     typedef Accessor<T, typename Storage<T>::Type> Access;
@@ -184,16 +181,6 @@ public:
   inline void reinit(VM vm, StableNode& from);
   inline void reinit(VM vm, UnstableNode& from);
   inline void reinit(VM vm, RichNode from);
-private:
-  template <class T, class R, class M, M m>
-  friend class Impl;
-
-  template <class T, class R, class M, M m>
-  friend class ImplNoSelf;
-
-  MemWord value() {
-    return _node->value;
-  }
 private:
   template <class T>
   friend class WritableSelfType;
@@ -417,46 +404,5 @@ public:
 protected:
   Self _self;
 };
-
-/**
- * Strange and magical class that allows to call methods on storage-typed nodes
- */
-template<class T, class R, class M, M m>
-class Impl {
-public:
-  typedef Accessor<T, typename Storage<T>::Type> Type;
-
-  template<class... Args>
-  static R f(RichNode it, Args... args) {
-    return (Type::get(it.value()).*m)(typename SelfType<T>::Self(it), args...);
-  }
-};
-
-#define IMPL(ResType, Type, method, args...) \
-  (Impl<Type, ResType, decltype(&Implementation<Type>::method), \
-    &Implementation<Type>::method>::f(args))
-
-/**
- * Strange and magical class that allows to call methods on storage-typed nodes
- */
-template<class T, class R, class M, M m>
-class ImplNoSelf {
-public:
-  typedef Accessor<T, typename Storage<T>::Type> Type;
-
-  template<class... Args>
-  static R f(RichNode it, Args... args) {
-    return (Type::get(it.value()).*m)(args...);
-  }
-
-  template<class... Args>
-  static R f(Node* it, Args... args) {
-    return (Type::get(it->value).*m)(args...);
-  }
-};
-
-#define IMPLNOSELF(ResType, Type, method, args...) \
-  (ImplNoSelf<Type, ResType, decltype(&Implementation<Type>::method), \
-    &Implementation<Type>::method>::f(args))
 
 #endif // __STORE_DECL_H

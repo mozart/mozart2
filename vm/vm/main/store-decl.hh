@@ -148,6 +148,10 @@ private:
   };
 };
 
+template <class T>
+class TypedRichNode {
+};
+
 /**
  * A rich node is a node with an accompanying unstable origin
  * The important invariant of this class is that following a chain of
@@ -166,6 +170,12 @@ public:
 
   UnstableNode& origin() {
     return _origin;
+  }
+
+  template <class T>
+  TypedRichNode<T> as() {
+    assert(type() == T::type());
+    return TypedRichNode<T>(*this);
   }
 
   inline
@@ -393,6 +403,19 @@ private:
 
   StableNode* node;
   Status _status;
+};
+
+/**
+ * Base class for specializations of TypedRichNode<T>
+ */
+template <class T>
+class BaseTypedRichNode {
+protected:
+  typedef typename SelfType<T>::Self Self;
+public:
+  BaseTypedRichNode(Self self) : _self(self) {}
+protected:
+  Self _self;
 };
 
 /**

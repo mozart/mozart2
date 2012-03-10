@@ -64,6 +64,10 @@ private:
   StableNode* _dest;
 };
 
+#ifndef MOZART_GENERATOR
+#include "GCedToStable-implem-decl-after.hh"
+#endif
+
 ////////////////////
 // GCedToUnstable //
 ////////////////////
@@ -100,5 +104,9 @@ public:
 private:
   UnstableNode* _dest;
 };
+
+#ifndef MOZART_GENERATOR
+#include "GCedToUnstable-implem-decl-after.hh"
+#endif
 
 #endif // __GCTYPES_DECL_H

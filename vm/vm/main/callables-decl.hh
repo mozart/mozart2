@@ -89,6 +89,10 @@ private:
   OzBuiltin _builtin;
 };
 
+#ifndef MOZART_GENERATOR
+#include "BuiltinProcedure-implem-decl-after.hh"
+#endif
+
 /////////////////
 // Abstraction //
 /////////////////
@@ -161,5 +165,9 @@ private:
   int _Xcount;
   StaticArray<StableNode> _Ks;
 };
+
+#ifndef MOZART_GENERATOR
+#include "Abstraction-implem-decl-after.hh"
+#endif
 
 #endif // __CALLABLES_DECL_H

@@ -69,4 +69,8 @@ private:
   const AtomImpl* _value;
 };
 
+#ifndef MOZART_GENERATOR
+#include "Atom-implem-decl-after.hh"
+#endif
+
 #endif // __ATOM_DECL_H

@@ -108,10 +108,12 @@ void GarbageCollector::gcOneStableRef(StableNode*& ref) {
   Node& from = Reference::dereference(ref->node);
 
   if (from.type == GCedToStable::type()) {
-    StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+    Implementation<GCedToStable>::SelfReadOnlyView fromAsSelf(&from);
+    StableNode* dest = fromAsSelf.get().dest();
     ref = Reference::getStableRefFor(vm, *dest);
   } else if (from.type == GCedToUnstable::type()) {
-    UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+    Implementation<GCedToUnstable>::SelfReadOnlyView fromAsSelf(&from);
+    UnstableNode* dest = fromAsSelf.get().dest();
     ref = Reference::getStableRefFor(vm, *dest);
   } else {
     ref = new (vm) StableNode;

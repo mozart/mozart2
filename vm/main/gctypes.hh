@@ -33,12 +33,15 @@
 
 #include <iostream>
 
+#ifndef MOZART_GENERATOR
+
 //////////////////
 // GCedToStable //
 //////////////////
 
 void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
-  StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+  Implementation<GCedToStable>::SelfReadOnlyView fromAsSelf(&from);
+  StableNode* dest = fromAsSelf.get().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -49,7 +52,8 @@ void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
 }
 
 void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
-  StableNode* dest = IMPLNOSELF(StableNode*, GCedToStable, dest, &from);
+  Implementation<GCedToStable>::SelfReadOnlyView fromAsSelf(&from);
+  StableNode* dest = fromAsSelf.get().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -64,7 +68,8 @@ void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
 //////////////////
 
 void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
-  UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+  Implementation<GCedToUnstable>::SelfReadOnlyView fromAsSelf(&from);
+  UnstableNode* dest = fromAsSelf.get().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -75,7 +80,8 @@ void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
 }
 
 void GCedToUnstableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
-  UnstableNode* dest = IMPLNOSELF(UnstableNode*, GCedToUnstable, dest, &from);
+  Implementation<GCedToUnstable>::SelfReadOnlyView fromAsSelf(&from);
+  UnstableNode* dest = fromAsSelf.get().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -84,5 +90,7 @@ void GCedToUnstableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
 
   to.copy(gc->vm, *dest);
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __GCTYPES_H

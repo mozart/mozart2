@@ -42,8 +42,9 @@ BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
   BuiltinResult result = x.equals(vm, args[1], args[2]);
 
   if (result.isProceed()) {
-    assert(args[2]->type() == Boolean::type());
-    bool equalsResult = IMPLNOSELF(bool, Boolean, value, *args[2]);
+    RichNode richResult = *args[2];
+    assert(richResult.type() == Boolean::type());
+    bool equalsResult = richResult.as<Boolean>().value();
     args[2]->make<Boolean>(vm, !equalsResult);
   }
 
@@ -128,20 +129,15 @@ void printReprToStream(VM vm, RichNode arg,
   }
 
   if (arg.type() == SmallInt::type()) {
-    nativeint value = IMPLNOSELF(nativeint, SmallInt, value, arg);
-    out << value;
+    out << arg.as<SmallInt>().value();
   } else if (arg.type() == Boolean::type()) {
-    bool value = IMPLNOSELF(bool, Boolean, value, arg);
-    out << (value ? "true" : "false");
+    out << (arg.as<Boolean>().value() ? "true" : "false");
   } else if (arg.type() == Float::type()) {
-    double value = IMPLNOSELF(double, Float, value, arg);
-    out << value;
+    out << arg.as<Float>().value();
   } else if (arg.type() == Atom::type()) {
-    IMPL(void, Atom, printReprToStream, arg,
-         vm, &out, depth);
+    arg.as<Atom>().printReprToStream(vm, &out, depth);
   } else if (arg.type() == Tuple::type()) {
-    IMPL(void, Tuple, printReprToStream, arg,
-         vm, &out, depth);
+    arg.as<Tuple>().printReprToStream(vm, &out, depth);
   } else if (arg.type()->isTransient()) {
     out << "_";
   } else {

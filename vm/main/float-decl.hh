@@ -103,4 +103,8 @@ private:
   const double _value;
 };
 
+#ifndef MOZART_GENERATOR
+#include "Float-implem-decl-after.hh"
+#endif
+
 #endif // __FLOAT_DECL_H

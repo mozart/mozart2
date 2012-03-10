@@ -27,25 +27,46 @@
 
 using namespace clang;
 
+enum StorageKind {
+  skDefault,
+  skCustom,
+  skWithArray
+};
+
+struct ImplemMethodDef {
+  ImplemMethodDef(CXXMethodDecl* method) : method(method) {
+    hasSelfParam = false;
+  }
+
+  CXXMethodDecl* method;
+  bool hasSelfParam;
+  FunctionDecl::param_iterator param_begin;
+  FunctionDecl::param_iterator param_end;
+};
+
 struct ImplementationDef {
   ImplementationDef() {
     name = "";
     copiable = false;
     transient = false;
+    storageKind = skDefault;
     storage = "";
     base = "Type";
     autoGCollect = true;
   }
 
-  void makeOutputDecl(llvm::raw_fd_ostream& to);
+  void makeOutputDeclBefore(llvm::raw_fd_ostream& to);
+  void makeOutputDeclAfter(llvm::raw_fd_ostream& to);
   void makeOutput(llvm::raw_fd_ostream& to);
 
   std::string name;
   bool copiable;
   bool transient;
+  StorageKind storageKind;
   std::string storage;
   std::string base;
   bool autoGCollect;
+  std::vector<ImplemMethodDef> methods;
 private:
   void makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to);
 };
@@ -66,8 +87,10 @@ void handleImplementation(const SpecDecl* ND) {
     } else if (markerLabel == "Transient") {
       definition.transient = true;
     } else if (markerLabel == "StoredAs") {
+      definition.storageKind = skCustom;
       definition.storage = getTypeParamAsString(marker);
     } else if (markerLabel == "StoredWithArrayOf") {
+      definition.storageKind = skWithArray;
       definition.storage = "ImplWithArray<Implementation<" + name + ">, " +
         getTypeParamAsString(marker) + ">";
     } else if (markerLabel == "BasedOn") {
@@ -77,11 +100,39 @@ void handleImplementation(const SpecDecl* ND) {
     } else {}
   }
 
+  // For every method in Implementation<T>
+  for (auto iter = ND->method_begin(), e = ND->method_end(); iter != e; ++iter) {
+    CXXMethodDecl* m = *iter;
+    if (!m->isUserProvided() || !m->isInstance())
+      continue;
+    if (m->getAccess() != AS_public)
+      continue;
+    if (isa<CXXConstructorDecl>(m) || (m->getNameAsString() == "build"))
+      continue;
+
+    ImplemMethodDef method(m);
+
+    method.hasSelfParam = (m->param_size() > 0) &&
+      ((*m->param_begin())->getNameAsString() == "self");
+
+    method.param_begin = m->param_begin() + (method.hasSelfParam ? 1 : 0);
+    method.param_end = m->param_end();
+
+    definition.methods.push_back(method);
+  }
+
   {
     std::string err;
     llvm::raw_fd_ostream to((name+"-implem-decl.hh").c_str(), err);
     assert(err == "");
-    definition.makeOutputDecl(to);
+    definition.makeOutputDeclBefore(to);
+  }
+
+  {
+    std::string err;
+    llvm::raw_fd_ostream to((name+"-implem-decl-after.hh").c_str(), err);
+    assert(err == "");
+    definition.makeOutputDeclAfter(to);
   }
 
   {
@@ -92,8 +143,8 @@ void handleImplementation(const SpecDecl* ND) {
   }
 }
 
-void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
-  if (storage != "") {
+void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
+  if (storageKind != skDefault) {
     to << "template <>\n";
     to << "class Storage<" << name << "> {\n";
     to << "public:\n";
@@ -126,6 +177,35 @@ void ImplementationDef::makeOutputDecl(llvm::raw_fd_ostream& to) {
   to << "};\n";
 }
 
+void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
+  to << "template <>\n";
+  to << "class TypedRichNode<" << name << "> "
+     << ": BaseTypedRichNode<" << name << "> {\n";
+  to << "public:\n";
+  to << "  TypedRichNode(Self self) : BaseTypedRichNode(self) {}\n";
+
+  for (auto method = methods.begin(); method != methods.end(); ++method) {
+    CXXMethodDecl* m = method->method;
+
+    to << "\n";
+    to << "  inline\n";
+    to << "  " << m->getResultType().getAsString(context->getPrintingPolicy());
+    to << " " << m->getNameAsString() << "(";
+
+    // For every parameter of that method, excluding the self param
+    for (auto iter = method->param_begin; iter != method->param_end; ++iter) {
+      ParmVarDecl* param = *iter;
+      to << typeToString(param->getType()) << " " << param->getNameAsString();
+      if (iter+1 != method->param_end)
+        to << ", ";
+    }
+
+    to << ");\n";
+  }
+
+  to << "};\n";
+}
+
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   if (autoGCollect) {
     to << "void " << name
@@ -138,12 +218,55 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     makeContentsOfAutoGCollect(to);
     to << "}\n";
   }
+
+  for (auto method = methods.begin(); method != methods.end(); ++method) {
+    CXXMethodDecl* m = method->method;
+
+    to << "\n";
+    to << m->getResultType().getAsString(context->getPrintingPolicy());
+    to << " TypedRichNode<" << name << ">::" << m->getNameAsString() << "(";
+
+    // For every parameter of that method, excluding the self param
+    for (auto iter = method->param_begin; iter != method->param_end; ++iter) {
+      ParmVarDecl* param = *iter;
+      to << typeToString(param->getType()) << " " << param->getNameAsString();
+      if (iter+1 != method->param_end)
+        to << ", ";
+    }
+
+    to << ") {\n  ";
+
+    if (!m->getResultType().getTypePtr()->isVoidType())
+      to << "return ";
+
+    if (storageKind == skCustom)
+      to << "_self.get().";
+    else
+      to << "_self->";
+    to << m->getNameAsString() << "(";
+
+    if (method->hasSelfParam)
+      to << "_self";
+
+    // For every parameter of that method, excluding the self param
+    for (auto iter = method->param_begin; iter != method->param_end; ++iter) {
+      if (method->hasSelfParam || iter != method->param_begin)
+        to << ", ";
+
+      ParmVarDecl* param = *iter;
+      to << param->getNameAsString();
+    }
+
+    to << ");\n";
+
+    to << "}\n";
+  }
 }
 
 void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
   to << "  SelfReadOnlyView fromAsSelf(&from);\n";
   to << "  to.make<" << name << ">(gc->vm, ";
-  if (storage.substr(0, 14) == "ImplWithArray<")
+  if (storageKind == skWithArray)
     to << "fromAsSelf.getArraySize(), ";
   to << "gc, fromAsSelf);\n";
 }

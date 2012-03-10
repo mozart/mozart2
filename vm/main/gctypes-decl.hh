@@ -54,6 +54,7 @@ class Implementation<GCedToStable>: StoredAs<StableNode*>,
   NoAutoGCollect, BasedOn<GCedToStableBase> {
 public:
   typedef SelfType<GCedToStable>::Self Self;
+  typedef SelfType<GCedToStable>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
@@ -63,6 +64,10 @@ public:
 private:
   StableNode* _dest;
 };
+
+#ifndef MOZART_GENERATOR
+#include "GCedToStable-implem-decl-after.hh"
+#endif
 
 ////////////////////
 // GCedToUnstable //
@@ -91,6 +96,7 @@ class Implementation<GCedToUnstable>: StoredAs<UnstableNode*>,
   NoAutoGCollect, BasedOn<GCedToUnstableBase> {
 public:
   typedef SelfType<GCedToUnstable>::Self Self;
+  typedef SelfType<GCedToUnstable>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(UnstableNode* dest) : _dest(dest) {}
 
@@ -100,5 +106,9 @@ public:
 private:
   UnstableNode* _dest;
 };
+
+#ifndef MOZART_GENERATOR
+#include "GCedToUnstable-implem-decl-after.hh"
+#endif
 
 #endif // __GCTYPES_DECL_H

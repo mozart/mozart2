@@ -65,4 +65,8 @@ private:
   const bool _value;
 };
 
+#ifndef MOZART_GENERATOR
+#include "Boolean-implem-decl-after.hh"
+#endif
+
 #endif // __BOOLEAN_DECL_H

@@ -51,7 +51,7 @@ BuiltinResult Implementation<SmallInt>::equals(Self self, VM vm,
   RichNode rightNode = *right;
 
   if (rightNode.type() == SmallInt::type()) {
-    nativeint r = IMPLNOSELF(nativeint, SmallInt, value, rightNode);
+    nativeint r = rightNode.as<SmallInt>().value();
     result->make<Boolean>(vm, value() == r);
     return BuiltinResult::proceed();
   } else if (rightNode.type()->isTransient()) {

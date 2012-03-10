@@ -64,6 +64,10 @@ private:
   VMAllocatedList<Runnable*> pendingThreads;
 };
 
+#ifndef MOZART_GENERATOR
+#include "Variable-implem-decl-after.hh"
+#endif
+
 /////////////
 // Unbound //
 /////////////
@@ -94,5 +98,9 @@ public:
   inline
   BuiltinResult bind(Self self, VM vm, RichNode src);
 };
+
+#ifndef MOZART_GENERATOR
+#include "Unbound-implem-decl-after.hh"
+#endif
 
 #endif // __VARIABLES_DECL_H

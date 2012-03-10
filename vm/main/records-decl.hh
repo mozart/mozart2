@@ -86,4 +86,8 @@ private:
   size_t _width;
 };
 
+#ifndef MOZART_GENERATOR
+#include "Tuple-implem-decl-after.hh"
+#endif
+
 #endif // __RECORDS_DECL_H

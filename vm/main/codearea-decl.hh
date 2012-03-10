@@ -82,4 +82,8 @@ private:
   size_t _Kc;  // number of K registers
 };
 
+#ifndef MOZART_GENERATOR
+#include "CodeArea-implem-decl-after.hh"
+#endif
+
 #endif // __CODEAREA_DECL_H

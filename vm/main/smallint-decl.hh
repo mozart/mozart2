@@ -110,4 +110,8 @@ private:
   const nativeint _value;
 };
 
+#ifndef MOZART_GENERATOR
+#include "SmallInt-implem-decl-after.hh"
+#endif
+
 #endif // __SMALLINT_DECL_H

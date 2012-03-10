@@ -61,4 +61,8 @@ void Reference::gCollect(GC gc, Node& from, UnstableNode& to) const {
   destNode.make<GCedToUnstable>(gc->vm, &to);
 }
 
+StableNode* Reference::destOf(Node* node) {
+  return SelfReadOnlyView(node).get().dest();
+}
+
 #endif // __REFERENCE_H

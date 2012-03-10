@@ -55,10 +55,11 @@ private:
  * Type of a reference
  */
 class Reference: public Type {
+private:
+  typedef SelfType<Reference>::Self Self;
+  typedef SelfType<Reference>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Reference() : Type("Reference", true) {}
-
-  typedef Node* Self;
 
   static const Reference* const type() {
     return &RawType<Reference>::rawType;
@@ -76,7 +77,7 @@ public:
     if (node.type != type())
       return node;
     else {
-      Node* result = &IMPLNOSELF(StableNode*, Reference, dest, &node)->node;
+      Node* result = &destOf(&node)->node;
       if (result->type != type())
         return *result;
       else
@@ -107,14 +108,14 @@ public:
 private:
   static Node& dereferenceLoop(Node* node) {
     while (node->type == type())
-      node = &(IMPLNOSELF(StableNode*, Reference, dest, node)->node);
+      node = &destOf(node)->node;
     return *node;
   }
 
   // This is optimized for the 1-dereference path
   // Normally it would have been only a while loop
   static StableNode* getStableRefFor(VM vm, Node& node) {
-    StableNode* result = IMPLNOSELF(StableNode*, Reference, dest, &node);
+    StableNode* result = destOf(&node);
     if (result->type() != type())
       return result;
     else
@@ -123,11 +124,14 @@ private:
 
   static StableNode* getStableRefForLoop(StableNode* node) {
     do {
-      node = IMPLNOSELF(StableNode*, Reference, dest, &node->node);
+      node = destOf(&node->node);
     } while (node->type() == type());
 
     return node;
   }
+
+  inline
+  static StableNode* destOf(Node* node);
 };
 
 #endif // __REFERENCE_DECL_H

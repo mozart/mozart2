@@ -50,7 +50,7 @@ BuiltinResult Implementation<Float>::equals(Self self, VM vm,
   RichNode rightNode = *right;
 
   if (rightNode.type() == Float::type()) {
-    double r = IMPLNOSELF(double, Float, value, rightNode);
+    double r = rightNode.as<Float>().value();
     result->make<Boolean>(vm, value() == r);
     return BuiltinResult::proceed();
   } else if (rightNode.type()->isTransient()) {

@@ -103,14 +103,16 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
         implems->getArg(i).getAsType()->getAsCXXRecordDecl()->getNameAsString();
 
       to << "if (_self.type() == " << imp << "::type()) {\n";
-      to << "      return IMPL("
-         << typeToString(m->getResultType())
-         << ", " << imp << ", " << m->getNameAsString() << ", " << "_self";
+      to << "      return _self.as<" << imp << ">()."
+         << m->getNameAsString() << "(";
 
       // For every parameter of the method, excluding the self param
       for (auto iter = param_begin; iter != param_end; ++iter) {
+        if (iter != param_begin)
+          to << ", ";
+
         ParmVarDecl* param = *iter;
-        to << ", " << param->getNameAsString();
+        to << param->getNameAsString();
       }
 
       to << ");\n";

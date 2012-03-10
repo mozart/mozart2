@@ -43,8 +43,8 @@ BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
   RichNode rightNode = *right;
 
   if (rightNode.type() == Atom::type()) {
-    const AtomImpl* r = IMPLNOSELF(const AtomImpl*, Atom, value, rightNode);
-    result->make<Boolean>(vm, value()==r);
+    const AtomImpl* r = rightNode.as<Atom>().value();
+    result->make<Boolean>(vm, value() == r);
     return BuiltinResult::proceed();
   } else if (rightNode.type()->isTransient()) {
     return BuiltinResult::waitFor(vm, rightNode);

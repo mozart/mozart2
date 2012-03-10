@@ -637,13 +637,13 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
 
 BuiltinResult Thread::unify(VM vm, RichNode left, RichNode right) {
   if (left.type() == Unbound::type())
-    return IMPL(BuiltinResult, Unbound, bind, left, vm, right);
+    return left.as<Unbound>().bind(vm, right);
   else if (right.type() == Unbound::type())
-    return IMPL(BuiltinResult, Unbound, bind, right, vm, left);
+    return right.as<Unbound>().bind(vm, left);
   else if (left.type() == Variable::type())
-    return IMPL(BuiltinResult, Variable, bind, left, vm, right);
+    return left.as<Variable>().bind(vm, right);
   else if (right.type() == Variable::type())
-    return IMPL(BuiltinResult, Variable, bind, right, vm, left);
+    return right.as<Variable>().bind(vm, left);
   else {
     // TODO Non-trivial unify
     return BuiltinResult::proceed();

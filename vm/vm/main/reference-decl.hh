@@ -33,14 +33,55 @@
 
 class Reference;
 
-template <>
-class Storage<Reference> {
+class ReferenceBase: public Type {
 public:
-  typedef StableNode* Type;
+  ReferenceBase(std::string name, bool copiable, bool transient) :
+    Type(name, copiable, transient) {}
+
+  inline
+  void gCollect(GC gc, Node& from, StableNode& to) const;
+
+  inline
+  void gCollect(GC gc, Node& from, UnstableNode& to) const;
+
+  inline
+  static Node& dereference(Node& node);
+
+  inline
+  static StableNode* getStableRefFor(VM vm, UnstableNode& node);
+
+  inline
+  static StableNode* getStableRefFor(VM vm, StableNode& node);
+
+  inline
+  static StableNode* getStableRefFor(VM vm, RichNode node);
+private:
+  inline
+  static const Reference* type();
+
+  inline
+  static Node& dereferenceLoop(Node* node);
+
+  inline
+  static StableNode* getStableRefFor(VM vm, Node& node);
+
+  inline
+  static StableNode* getStableRefForLoop(StableNode* node);
+
+  inline
+  static StableNode* destOf(Node* node);
 };
 
+#ifndef MOZART_GENERATOR
+#include "Reference-implem-decl.hh"
+#endif
+
 template <>
-class Implementation<Reference> {
+class Implementation<Reference>:
+  Copiable, StoredAs<StableNode*>, NoAutoGCollect, BasedOn<ReferenceBase> {
+public:
+  typedef SelfType<Reference>::Self Self;
+  typedef SelfType<Reference>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
@@ -51,87 +92,8 @@ private:
   StableNode* _dest;
 };
 
-/**
- * Type of a reference
- */
-class Reference: public Type {
-private:
-  typedef SelfType<Reference>::Self Self;
-  typedef SelfType<Reference>::SelfReadOnlyView SelfReadOnlyView;
-public:
-  Reference() : Type("Reference", true) {}
-
-  static const Reference* const type() {
-    return &RawType<Reference>::rawType;
-  }
-
-  inline
-  void gCollect(GC gc, Node& from, StableNode& to) const;
-
-  inline
-  void gCollect(GC gc, Node& from, UnstableNode& to) const;
-
-  // This is optimized for the 0- and 1-dereference paths
-  // Normally it would have been only a while loop
-  static Node& dereference(Node& node) {
-    if (node.type != type())
-      return node;
-    else {
-      Node* result = &destOf(&node)->node;
-      if (result->type != type())
-        return *result;
-      else
-        return dereferenceLoop(result);
-    }
-  }
-
-  static StableNode* getStableRefFor(VM vm, UnstableNode& node) {
-    if (node.type() != type()) {
-      StableNode* stable = new (vm) StableNode;
-      stable->init(vm, node);
-      return stable;
-    } else {
-      return getStableRefFor(vm, node.node);
-    }
-  }
-
-  static StableNode* getStableRefFor(VM vm, StableNode& node) {
-    if (node.type() != type())
-      return &node;
-    else
-      return getStableRefFor(vm, node.node);
-  }
-
-  static StableNode* getStableRefFor(VM vm, RichNode node) {
-    return getStableRefFor(vm, node.origin());
-  }
-private:
-  static Node& dereferenceLoop(Node* node) {
-    while (node->type == type())
-      node = &destOf(node)->node;
-    return *node;
-  }
-
-  // This is optimized for the 1-dereference path
-  // Normally it would have been only a while loop
-  static StableNode* getStableRefFor(VM vm, Node& node) {
-    StableNode* result = destOf(&node);
-    if (result->type() != type())
-      return result;
-    else
-      return getStableRefForLoop(result);
-  }
-
-  static StableNode* getStableRefForLoop(StableNode* node) {
-    do {
-      node = destOf(&node->node);
-    } while (node->type() == type());
-
-    return node;
-  }
-
-  inline
-  static StableNode* destOf(Node* node);
-};
+#ifndef MOZART_GENERATOR
+#include "Reference-implem-decl-after.hh"
+#endif
 
 #endif // __REFERENCE_DECL_H

@@ -27,7 +27,9 @@
 
 #include "store-decl.hh"
 
-#include "reference-decl.hh"
+#include "reference.hh"
+
+#ifndef MOZART_GENERATOR
 
 /////////////////////////
 // Node implementation //
@@ -132,5 +134,7 @@ BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
 BuiltinResult BuiltinResult::raise(VM vm, RichNode node) {
   return BuiltinResult(Reference::getStableRefFor(vm, node), brRaise);
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __STORE_H

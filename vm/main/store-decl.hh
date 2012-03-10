@@ -46,7 +46,7 @@ private:
   friend class StableNode;
   friend class UnstableNode;
   friend class RichNode;
-  friend class Reference;
+  friend class ReferenceBase;
   friend class GarbageCollector;
 
   template <class T>
@@ -87,7 +87,7 @@ private:
   friend class UnstableNode;
   friend class RichNode;
   friend class GarbageCollector;
-  friend class Reference;
+  friend class ReferenceBase;
 
   union {
     Node node;
@@ -132,7 +132,7 @@ private:
   friend class StableNode;
   friend class RichNode;
   friend class GarbageCollector;
-  friend class Reference;
+  friend class ReferenceBase;
 
   union {
     Node node;

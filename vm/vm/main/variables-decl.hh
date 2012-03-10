@@ -53,13 +53,13 @@ public:
 
   inline
   BuiltinResult bind(Self self, VM vm, RichNode src);
-private:
-  inline
-  void resumePendingThreads(VM vm);
 
   void transferPendingThreads(VM vm, VMAllocatedList<Runnable*>& source) {
     pendingThreads.splice(vm, source);
   }
+private:
+  inline
+  void resumePendingThreads(VM vm);
 
   VMAllocatedList<Runnable*> pendingThreads;
 };

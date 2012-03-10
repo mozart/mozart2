@@ -63,8 +63,7 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   // Otherwise, we wake up the threads.
   src.update();
   if (src.type() == Variable::type()) {
-    IMPLNOSELF(void, Variable, transferPendingThreads, src,
-               vm, pendingThreads);
+    src.as<Variable>().transferPendingThreads(vm, pendingThreads);
   } else {
     resumePendingThreads(vm);
   }

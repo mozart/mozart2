@@ -623,7 +623,7 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
     }
 
     // Setup new frame
-    abstraction = Reference::getStableRefFor(vm, target);
+    abstraction = target.getStableRef(vm);
     PC = start;
     xregs->grow(vm, Xcount, formalArity);
     yregCount = 0;

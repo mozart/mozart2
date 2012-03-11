@@ -41,79 +41,12 @@
 
 #ifndef MOZART_GENERATOR
 
-const Reference* ReferenceBase::type() {
-  return Reference::type();
-}
-
 void ReferenceBase::gCollect(GC gc, RichNode from, StableNode& to) const {
   assert(false);
 }
 
 void ReferenceBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
   assert(false);
-}
-
-// This is optimized for the 0- and 1-dereference paths
-// Normally it would have been only a while loop
-Node& ReferenceBase::dereference(Node& node) {
-  if (node.type != type())
-    return node;
-  else {
-    Node* result = &destOf(&node)->node;
-    if (result->type != type())
-      return *result;
-    else
-      return dereferenceLoop(result);
-  }
-}
-
-StableNode* ReferenceBase::getStableRefFor(VM vm, UnstableNode& node) {
-  if (node.type() != type()) {
-    StableNode* stable = new (vm) StableNode;
-    stable->init(vm, node);
-    return stable;
-  } else {
-    return getStableRefFor(vm, node.node);
-  }
-}
-
-StableNode* ReferenceBase::getStableRefFor(VM vm, StableNode& node) {
-  if (node.type() != type())
-    return &node;
-  else
-    return getStableRefFor(vm, node.node);
-}
-
-StableNode* ReferenceBase::getStableRefFor(VM vm, RichNode node) {
-  return getStableRefFor(vm, node.origin());
-}
-
-Node& ReferenceBase::dereferenceLoop(Node* node) {
-  while (node->type == type())
-    node = &destOf(node)->node;
-  return *node;
-}
-
-// This is optimized for the 1-dereference path
-// Normally it would have been only a while loop
-StableNode* ReferenceBase::getStableRefFor(VM vm, Node& node) {
-  StableNode* result = destOf(&node);
-  if (result->type() != type())
-    return result;
-  else
-    return getStableRefForLoop(result);
-}
-
-StableNode* ReferenceBase::getStableRefForLoop(StableNode* node) {
-  do {
-    node = destOf(&node->node);
-  } while (node->type() == type());
-
-  return node;
-}
-
-StableNode* ReferenceBase::destOf(Node* node) {
-  return Implementation<Reference>::SelfReadOnlyView(node).get().dest();
 }
 
 #endif // MOZART_GENERATOR

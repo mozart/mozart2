@@ -47,7 +47,6 @@ private:
   friend class StableNode;
   friend class UnstableNode;
   friend class RichNode;
-  friend class ReferenceBase;
 
   template <class T>
   friend class BaseSelf;
@@ -87,7 +86,6 @@ private:
   friend class UnstableNode;
   friend class RichNode;
   friend class GarbageCollector;
-  friend class ReferenceBase;
 
   union {
     Node node;
@@ -132,7 +130,6 @@ private:
   friend class StableNode;
   friend class RichNode;
   friend class GarbageCollector;
-  friend class ReferenceBase;
 
   union {
     Node node;
@@ -176,6 +173,9 @@ public:
   }
 
   inline
+  StableNode* getStableRef(VM vm);
+
+  inline
   void update();
 
   inline void reinit(VM vm, StableNode& from);
@@ -189,6 +189,21 @@ public:
 
   inline
   std::string toDebugString();
+private:
+  inline
+  static Node* dereference(Node* node);
+
+  inline
+  static Node* dereferenceLoop(Node* node);
+
+  inline
+  static StableNode* getStableRefFor(VM vm, UnstableNode& node);
+
+  inline
+  static StableNode* getStableRefForLoop(StableNode* node);
+
+  inline
+  static StableNode* destOf(Node* node);
 private:
   template <class T>
   friend class WritableSelfType;

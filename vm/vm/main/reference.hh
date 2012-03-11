@@ -27,10 +27,6 @@
 
 #include "reference-decl.hh"
 
-#include "gctypes-decl.hh"
-
-#include <iostream>
-
 ///////////////
 // Reference //
 ///////////////
@@ -38,17 +34,5 @@
 #ifndef MOZART_GENERATOR
 #include "Reference-implem.hh"
 #endif
-
-#ifndef MOZART_GENERATOR
-
-void ReferenceBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  assert(false);
-}
-
-void ReferenceBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  assert(false);
-}
-
-#endif // MOZART_GENERATOR
 
 #endif // __REFERENCE_H

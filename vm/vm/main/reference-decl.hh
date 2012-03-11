@@ -34,25 +34,12 @@
 
 class Reference;
 
-class ReferenceBase: public Type {
-public:
-  ReferenceBase(std::string name, bool copiable, bool transient) :
-    Type(name, copiable, transient) {}
-
-  inline
-  void gCollect(GC gc, RichNode from, StableNode& to) const;
-
-  inline
-  void gCollect(GC gc, RichNode from, UnstableNode& to) const;
-};
-
 #ifndef MOZART_GENERATOR
 #include "Reference-implem-decl.hh"
 #endif
 
 template <>
-class Implementation<Reference>:
-  Copiable, StoredAs<StableNode*>, NoAutoGCollect, BasedOn<ReferenceBase> {
+class Implementation<Reference>: Copiable, StoredAs<StableNode*> {
 public:
   typedef SelfType<Reference>::Self Self;
   typedef SelfType<Reference>::SelfReadOnlyView SelfReadOnlyView;
@@ -60,6 +47,11 @@ public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
   static StableNode* build(VM, StableNode* dest) { return dest; }
+
+  static StableNode* build(VM vm, GC gc, SelfReadOnlyView from) {
+    assert(false);
+    return nullptr;
+  }
 
   StableNode* dest() const { return _dest; }
 private:

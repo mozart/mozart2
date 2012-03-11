@@ -27,10 +27,6 @@
 
 #include "gctypes-decl.hh"
 
-#ifndef MOZART_GENERATOR
-#include "GCedToStable-implem.hh"
-#endif
-
 #include <iostream>
 
 #ifndef MOZART_GENERATOR
@@ -39,9 +35,12 @@
 // GCedToStable //
 //////////////////
 
-void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
-  Implementation<GCedToStable>::SelfReadOnlyView fromAsSelf(&from);
-  StableNode* dest = fromAsSelf.get().dest();
+#ifndef MOZART_GENERATOR
+#include "GCedToStable-implem.hh"
+#endif
+
+void GCedToStableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
+  StableNode* dest = from.as<GCedToStable>().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -51,9 +50,8 @@ void GCedToStableBase::gCollect(GC gc, Node& from, StableNode& to) const {
   to.init(gc->vm, *dest);
 }
 
-void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
-  Implementation<GCedToStable>::SelfReadOnlyView fromAsSelf(&from);
-  StableNode* dest = fromAsSelf.get().dest();
+void GCedToStableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
+  StableNode* dest = from.as<GCedToStable>().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -63,13 +61,16 @@ void GCedToStableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
   to.copy(gc->vm, *dest);
 }
 
-//////////////////
-// GCedToStable //
-//////////////////
+////////////////////
+// GCedToUnstable //
+////////////////////
 
-void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
-  Implementation<GCedToUnstable>::SelfReadOnlyView fromAsSelf(&from);
-  UnstableNode* dest = fromAsSelf.get().dest();
+#ifndef MOZART_GENERATOR
+#include "GCedToUnstable-implem.hh"
+#endif
+
+void GCedToUnstableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
+  UnstableNode* dest = from.as<GCedToUnstable>().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";
@@ -79,9 +80,8 @@ void GCedToUnstableBase::gCollect(GC gc, Node& from, StableNode& to) const {
   to.init(gc->vm, *dest);
 }
 
-void GCedToUnstableBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
-  Implementation<GCedToUnstable>::SelfReadOnlyView fromAsSelf(&from);
-  UnstableNode* dest = fromAsSelf.get().dest();
+void GCedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
+  UnstableNode* dest = from.as<GCedToUnstable>().dest();
 
   if (OzDebugGC) {
     std::cerr << "  (dest = " << dest << " with type ";

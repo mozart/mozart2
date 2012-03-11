@@ -168,10 +168,10 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
   if (autoGCollect) {
     to << "\n";
     to << "  inline\n";
-    to << "  void gCollect(GC gc, Node& from, StableNode& to) const;\n";
+    to << "  void gCollect(GC gc, RichNode from, StableNode& to) const;\n";
     to << "\n";
     to << "  inline\n";
-    to << "  void gCollect(GC gc, Node& from, UnstableNode& to) const;\n";
+    to << "  void gCollect(GC gc, RichNode from, UnstableNode& to) const;\n";
   }
 
   to << "};\n";
@@ -209,12 +209,12 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   if (autoGCollect) {
     to << "void " << name
-       << "::gCollect(GC gc, Node& from, StableNode& to) const {\n";
+       << "::gCollect(GC gc, RichNode from, StableNode& to) const {\n";
     makeContentsOfAutoGCollect(to);
     to << "}\n\n";
 
     to << "void " << name
-       << "::gCollect(GC gc, Node& from, UnstableNode& to) const {\n";
+       << "::gCollect(GC gc, RichNode from, UnstableNode& to) const {\n";
     makeContentsOfAutoGCollect(to);
     to << "}\n";
   }
@@ -264,7 +264,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 }
 
 void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
-  to << "  SelfReadOnlyView fromAsSelf(&from);\n";
+  to << "  Self fromAsSelf = from;\n";
   to << "  to.make<" << name << ">(gc->vm, ";
   if (storageKind == skWithArray)
     to << "fromAsSelf.getArraySize(), ";

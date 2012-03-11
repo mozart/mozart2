@@ -29,6 +29,8 @@
 
 #include "core-forward-decl.hh"
 
+#include "store-decl.hh"
+
 class Type {
 public:
   Type(std::string name, bool copiable = false, bool transient = false) :
@@ -45,8 +47,8 @@ public:
   bool isCopiable() const { return _copiable; }
   bool isTransient() const { return _transient; }
 
-  virtual void gCollect(GC gc, Node& from, StableNode& to) const = 0;
-  virtual void gCollect(GC gc, Node& from, UnstableNode& to) const = 0;
+  virtual void gCollect(GC gc, RichNode from, StableNode& to) const = 0;
+  virtual void gCollect(GC gc, RichNode from, UnstableNode& to) const = 0;
 private:
   const std::string _name;
 
@@ -68,9 +70,6 @@ template<class...>
 struct ImplementedBy{};
 struct NoAutoWait{};
 
-template <class T>
-class Implementation {
-};
 struct Copiable{};
 struct Transient{};
 template<class>

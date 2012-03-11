@@ -26,6 +26,7 @@
 #define __REFERENCE_DECL_H
 
 #include "vm-decl.hh"
+#include "type.hh"
 
 ///////////////
 // Reference //
@@ -39,10 +40,10 @@ public:
     Type(name, copiable, transient) {}
 
   inline
-  void gCollect(GC gc, Node& from, StableNode& to) const;
+  void gCollect(GC gc, RichNode from, StableNode& to) const;
 
   inline
-  void gCollect(GC gc, Node& from, UnstableNode& to) const;
+  void gCollect(GC gc, RichNode from, UnstableNode& to) const;
 
   inline
   static Node& dereference(Node& node);

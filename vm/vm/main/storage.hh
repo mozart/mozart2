@@ -25,8 +25,9 @@
 #ifndef __STORAGE_H
 #define __STORAGE_H
 
+#include "core-forward-decl.hh"
+
 #include "memword.hh"
-#include "type.hh"
 #include "arrays.hh"
 
 template<class I, class E>

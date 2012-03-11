@@ -51,13 +51,13 @@ void GarbageCollector::gcThread(Runnable* from, Runnable*& to) {
 
 void GarbageCollector::gcStableNode(StableNode& from, StableNode& to) {
   to.gcNext = stableNodesToGC;
-  to.gcFrom = &from.node;
+  to.gcFrom = &from;
   stableNodesToGC = &to;
 }
 
 void GarbageCollector::gcUnstableNode(UnstableNode& from, UnstableNode& to) {
   to.gcNext = unstableNodesToGC;
-  to.gcFrom = &from.node;
+  to.gcFrom = &from;
   unstableNodesToGC = &to;
 }
 

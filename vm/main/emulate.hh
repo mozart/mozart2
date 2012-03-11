@@ -167,7 +167,7 @@ private:
 
   __attribute__((always_inline))
   inline
-  void call(StableNode* target, int actualArity, bool isTailCall,
+  void call(RichNode target, int actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
             ProgramCounter& PC, size_t& yregCount,
             XRegArray* xregs,

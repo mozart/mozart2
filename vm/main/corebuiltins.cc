@@ -99,7 +99,8 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable x = *args[0];
+  RichNode target = *args[0];
+  Callable x = target;
   BuiltinResult result = x.getCallInfo(vm, &arity, &body, &start,
                                        &Xcount, &Gs, &Ks);
 
@@ -109,7 +110,7 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   if (arity != 0)
     return raiseAtom(vm, u"illegalArity");
 
-  new (vm) Thread(vm, Reference::getStableRefFor(vm, *args[0]));
+  new (vm) Thread(vm, Reference::getStableRefFor(vm, target));
 
   return BuiltinResult::proceed();
 }

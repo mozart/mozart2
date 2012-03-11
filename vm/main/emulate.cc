@@ -303,29 +303,35 @@ void Thread::run() {
         break;
       }
 
-      case OpCallX:
-        call(Reference::getStableRefFor(vm, XPC(1)), IntPC(2), false,
+      case OpCallX: {
+        call(XPC(1), IntPC(2), false,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
+      }
 
-      case OpCallG:
-        call(Reference::getStableRefFor(vm, GPC(1)), IntPC(2), false,
+      case OpCallG: {
+        UnstableNode temp(vm, GPC(1));
+        call(temp, IntPC(2), false,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
+      }
 
-      case OpTailCallX:
-        call(Reference::getStableRefFor(vm, XPC(1)), IntPC(2), true,
+      case OpTailCallX: {
+        call(XPC(1), IntPC(2), true,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
+      }
 
-      case OpTailCallG:
-        call(Reference::getStableRefFor(vm, GPC(1)), IntPC(2), true,
+      case OpTailCallG: {
+        UnstableNode temp(vm, GPC(1));
+        call(temp, IntPC(2), true,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
+      }
 
       case OpReturn: {
         if (stack.empty()) {
@@ -585,7 +591,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
   stack.remove_front(vm);
 }
 
-void Thread::call(StableNode* target, int actualArity, bool isTailCall,
+void Thread::call(RichNode target, int actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
                   ProgramCounter& PC, size_t& yregCount,
                   XRegArray* xregs,
@@ -600,8 +606,7 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  UnstableNode temp(vm, *target);
-  Callable x = temp;
+  Callable x = target;
   BuiltinResult result = x.getCallInfo(vm, &formalArity, &body, &start,
                                        &Xcount, &Gs, &Ks);
 
@@ -618,7 +623,7 @@ void Thread::call(StableNode* target, int actualArity, bool isTailCall,
     }
 
     // Setup new frame
-    abstraction = target;
+    abstraction = Reference::getStableRefFor(vm, target);
     PC = start;
     xregs->grow(vm, Xcount, formalArity);
     yregCount = 0;

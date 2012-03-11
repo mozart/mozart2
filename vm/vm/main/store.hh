@@ -88,11 +88,15 @@ void UnstableNode::swap(UnstableNode& from) {
 //////////////
 
 RichNode::RichNode(UnstableNode& origin) :
-  _node(&Reference::dereference(origin.node)), _origin(origin) {
+  _node(dereference(&origin.node)), _origin(origin) {
+}
+
+StableNode* RichNode::getStableRef(VM vm) {
+  return getStableRefFor(vm, _origin);
 }
 
 void RichNode::update() {
-  _node = &Reference::dereference(*_node);
+  _node = dereference(_node);
 }
 
 void RichNode::reinit(VM vm, StableNode& from) {
@@ -108,10 +112,10 @@ void RichNode::reinit(VM vm, UnstableNode& from) {
   if (from.type()->isCopiable()) {
     *_node = from.node;
   } else if (_origin.type() == Reference::type()) {
-    StableNode* stable = Reference::getStableRefFor(vm, _origin);
+    StableNode* stable = getStableRefFor(vm, _origin);
     stable->init(vm, from);
   } else {
-    StableNode* stable = Reference::getStableRefFor(vm, from);
+    StableNode* stable = getStableRefFor(vm, from);
     _node->make<Reference>(vm, stable);
     _origin.node = *_node;
   }
@@ -127,6 +131,57 @@ std::string RichNode::toDebugString() {
   return stream.str();
 }
 
+Node* RichNode::dereference(Node* node) {
+  /* This is optimized for the 0- and 1-dereference paths.
+   * Normally it would have been only a while loop. */
+  if (node->type != Reference::type())
+    return node;
+  else {
+    Node* result = &destOf(node)->node;
+    if (result->type != Reference::type())
+      return result;
+    else
+      return dereferenceLoop(result);
+  }
+}
+
+Node* RichNode::dereferenceLoop(Node* node) {
+  do {
+    node = &destOf(node)->node;
+  } while (node->type == Reference::type());
+
+  return node;
+}
+
+StableNode* RichNode::getStableRefFor(VM vm, UnstableNode& node) {
+  /* This is optimized for the 0- and 1-dereference paths.
+   * Normally the else part would have been only a while loop. */
+  if (node.type() != Reference::type()) {
+    StableNode* stable = new (vm) StableNode;
+    stable->init(vm, node);
+    return stable;
+  } else {
+    StableNode* result = destOf(&node.node);
+    if (result->type() != Reference::type())
+      return result;
+    else
+      return getStableRefForLoop(result);
+  }
+}
+
+StableNode* RichNode::getStableRefForLoop(StableNode* node) {
+  do {
+    node = destOf(&node->node);
+  } while (node->type() == Reference::type());
+
+  return node;
+}
+
+StableNode* RichNode::destOf(Node* node) {
+  // TODO Can we get away without this ugly thing?
+  return Implementation<Reference>::SelfReadOnlyView(node).get().dest();
+}
+
 ///////////////////
 // BuiltinResult //
 ///////////////////
@@ -136,11 +191,11 @@ BuiltinResult BuiltinResult::proceed() {
 }
 
 BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
-  return BuiltinResult(Reference::getStableRefFor(vm, node), brWaitBefore);
+  return BuiltinResult(node.getStableRef(vm), brWaitBefore);
 }
 
 BuiltinResult BuiltinResult::raise(VM vm, RichNode node) {
-  return BuiltinResult(Reference::getStableRefFor(vm, node), brRaise);
+  return BuiltinResult(node.getStableRef(vm), brRaise);
 }
 
 #endif // MOZART_GENERATOR

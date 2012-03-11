@@ -44,33 +44,6 @@ public:
 
   inline
   void gCollect(GC gc, RichNode from, UnstableNode& to) const;
-
-  inline
-  static Node& dereference(Node& node);
-
-  inline
-  static StableNode* getStableRefFor(VM vm, UnstableNode& node);
-
-  inline
-  static StableNode* getStableRefFor(VM vm, StableNode& node);
-
-  inline
-  static StableNode* getStableRefFor(VM vm, RichNode node);
-private:
-  inline
-  static const Reference* type();
-
-  inline
-  static Node& dereferenceLoop(Node* node);
-
-  inline
-  static StableNode* getStableRefFor(VM vm, Node& node);
-
-  inline
-  static StableNode* getStableRefForLoop(StableNode* node);
-
-  inline
-  static StableNode* destOf(Node* node);
 };
 
 #ifndef MOZART_GENERATOR

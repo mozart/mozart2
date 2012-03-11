@@ -114,10 +114,10 @@ void GarbageCollector::gcOneStableRef(StableNode*& ref) {
     StableNode* dest = from.as<GCedToStable>().dest();
     UnstableNode temp2;
     temp2.make<Reference>(vm, dest);
-    ref = Reference::getStableRefFor(vm, temp2);
+    ref = RichNode(temp2).getStableRef(vm);
   } else if (from.type() == GCedToUnstable::type()) {
     UnstableNode* dest = from.as<GCedToUnstable>().dest();
-    ref = Reference::getStableRefFor(vm, *dest);
+    ref = RichNode(*dest).getStableRef(vm);
   } else {
     ref = new (vm) StableNode;
     from.type()->gCollect(this, from, *ref);

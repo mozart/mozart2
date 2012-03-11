@@ -110,7 +110,7 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   if (arity != 0)
     return raiseAtom(vm, u"illegalArity");
 
-  new (vm) Thread(vm, Reference::getStableRefFor(vm, target));
+  new (vm) Thread(vm, target.getStableRef(vm));
 
   return BuiltinResult::proceed();
 }

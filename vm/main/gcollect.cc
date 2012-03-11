@@ -90,33 +90,34 @@ void GarbageCollector::gcOneNode(NodeType*& list) {
   NodeType* node = list;
   list = node->gcNext;
 
-  Node* from = node->gcFrom;
+  UnstableNode temp(vm, *node->gcFrom);
+  RichNode from = temp;
 
   if (OzDebugGC) {
-    std::cerr << "gc node " << from << " of type " << from->type->getName();
+    std::cerr << "gc node " << from.toDebugString();
     std::cerr << "   \tto node " << node << std::endl;
   }
 
-  from->type->gCollect(this, *from, *node);
-  from->make<GCedType>(vm, node);
+  from.type()->gCollect(this, from, *node);
+  from.remake<GCedType>(vm, node);
 }
 
 void GarbageCollector::gcOneStableRef(StableNode*& ref) {
   if (OzDebugGC)
     std::cerr << "gc stable ref from " << ref << " to " << &ref << std::endl;
 
-  Node& from = Reference::dereference(ref->node);
+  UnstableNode temp;
+  temp.make<Reference>(vm, ref);
+  RichNode from = temp;
 
-  if (from.type == GCedToStable::type()) {
-    Implementation<GCedToStable>::SelfReadOnlyView fromAsSelf(&from);
-    StableNode* dest = fromAsSelf.get().dest();
+  if (from.type() == GCedToStable::type()) {
+    StableNode* dest = from.as<GCedToStable>().dest();
     ref = Reference::getStableRefFor(vm, *dest);
-  } else if (from.type == GCedToUnstable::type()) {
-    Implementation<GCedToUnstable>::SelfReadOnlyView fromAsSelf(&from);
-    UnstableNode* dest = fromAsSelf.get().dest();
+  } else if (from.type() == GCedToUnstable::type()) {
+    UnstableNode* dest = from.as<GCedToUnstable>().dest();
     ref = Reference::getStableRefFor(vm, *dest);
   } else {
     ref = new (vm) StableNode;
-    from.type->gCollect(this, from, *ref);
+    from.type()->gCollect(this, from, *ref);
   }
 }

@@ -29,6 +29,8 @@
 
 #include "reference.hh"
 
+#include <sstream>
+
 #ifndef MOZART_GENERATOR
 
 /////////////////////////
@@ -117,6 +119,12 @@ void RichNode::reinit(VM vm, UnstableNode& from) {
 
 void RichNode::reinit(VM vm, RichNode from) {
   reinit(vm, from.origin());
+}
+
+std::string RichNode::toDebugString() {
+  std::stringstream stream;
+  stream << type()->getName() << "@" << _node;
+  return stream.str();
 }
 
 ///////////////////

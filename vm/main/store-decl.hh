@@ -28,7 +28,8 @@
 #include "core-forward-decl.hh"
 #include "memword.hh"
 #include "storage.hh"
-#include "type.hh"
+
+#include <string>
 
 /**
  * A value node in the store.
@@ -47,7 +48,6 @@ private:
   friend class UnstableNode;
   friend class RichNode;
   friend class ReferenceBase;
-  friend class GarbageCollector;
 
   template <class T>
   friend class BaseSelf;
@@ -95,7 +95,7 @@ private:
     // Garbage collector hack
     struct {
       StableNode* gcNext;
-      Node* gcFrom;
+      StableNode* gcFrom;
     };
   };
 };
@@ -140,7 +140,7 @@ private:
     // Garbage collector hack
     struct {
       UnstableNode* gcNext;
-      Node* gcFrom;
+      UnstableNode* gcFrom;
     };
   };
 };
@@ -181,6 +181,14 @@ public:
   inline void reinit(VM vm, StableNode& from);
   inline void reinit(VM vm, UnstableNode& from);
   inline void reinit(VM vm, RichNode from);
+
+  template<class T, class... Args>
+  void remake(VM vm, Args... args) {
+    _node->make<T>(vm, args...);
+  }
+
+  inline
+  std::string toDebugString();
 private:
   template <class T>
   friend class WritableSelfType;

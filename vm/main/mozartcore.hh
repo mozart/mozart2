@@ -27,8 +27,9 @@
 
 #include "core-forward-decl.hh"
 
-#include "vm.hh"
 #include "store.hh"
+#include "type.hh"
+#include "vm.hh"
 #include "threadpool.hh"
 #include "runnable.hh"
 #include "gcollect.hh"

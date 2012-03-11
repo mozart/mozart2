@@ -45,30 +45,12 @@ const Reference* ReferenceBase::type() {
   return Reference::type();
 }
 
-void ReferenceBase::gCollect(GC gc, Node& from, StableNode& to) const {
-  Node& destNode = dereference(from);
-
-  if (OzDebugGC) {
-    std::cerr << " \\-> gc " << &destNode << " of type ";
-    std::cerr << destNode.type->getName();
-    std::cerr << "   \tto node " << &to << std::endl;
-  }
-
-  destNode.type->gCollect(gc, destNode, to);
-  destNode.make<GCedToStable>(gc->vm, &to);
+void ReferenceBase::gCollect(GC gc, RichNode from, StableNode& to) const {
+  assert(false);
 }
 
-void ReferenceBase::gCollect(GC gc, Node& from, UnstableNode& to) const {
-  Node& destNode = dereference(from);
-
-  if (OzDebugGC) {
-    std::cerr << " \\-> gc " << &destNode << " of type ";
-    std::cerr << destNode.type->getName();
-    std::cerr << "   \tto node " << &to << std::endl;
-  }
-
-  destNode.type->gCollect(gc, destNode, to);
-  destNode.make<GCedToUnstable>(gc->vm, &to);
+void ReferenceBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
+  assert(false);
 }
 
 // This is optimized for the 0- and 1-dereference paths

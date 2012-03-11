@@ -36,6 +36,8 @@
 
 typedef intptr_t nativeint;
 
+class Type;
+
 class Node;
 class StableNode;
 class UnstableNode;
@@ -51,5 +53,9 @@ void* operator new (size_t size, VM vm);
 
 inline
 void* operator new[] (size_t size, VM vm);
+
+template <class T>
+class Implementation {
+};
 
 #endif // __CORE_FORWARD_DECL_H

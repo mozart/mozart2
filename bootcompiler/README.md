@@ -5,6 +5,15 @@ This is the bootstrap compiler for Mozart-Oz v2. The complete Oz compiler is wri
 
 For this reason, a design goal of this bootstrap compiler is to stay minimal. In particular, we will not attempt to perform any optimization of the resulting code.
 
+Dependencies:
+Install SBT - http://www.scala-sbt.org/
+
+instructions:
+
+projects$ git clone git://github.com/mozart/mozart2-bootcompiler.git bootcompiler
+projects$ cd bootcompiler
+bootcompiler$ sbt "run Fibonacci.oz"
+
 ### See also ###
 
-*   [Mozart-Oz v2](https://github.com/yjaradin/mozart2)
+*   [Mozart-Oz v2](https://github.com/mozart/mozart2)

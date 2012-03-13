@@ -121,5 +121,6 @@ void GarbageCollector::gcOneStableRef(StableNode*& ref) {
   } else {
     ref = new (vm) StableNode;
     from.type()->gCollect(this, from, *ref);
+    from.remake<GCedToStable>(vm, ref);
   }
 }

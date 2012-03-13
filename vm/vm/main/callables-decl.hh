@@ -48,7 +48,6 @@ template <>
 class Implementation<BuiltinProcedure> {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
-  typedef SelfType<BuiltinProcedure>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(VM, int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
@@ -110,7 +109,6 @@ template <>
 class Implementation<Abstraction>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<Abstraction>::Self Self;
-  typedef SelfType<Abstraction>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
                  int arity, UnstableNode* body)

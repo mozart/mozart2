@@ -41,7 +41,6 @@ template <>
 class Implementation<Variable>: Transient {
 public:
   typedef SelfType<Variable>::Self Self;
-  typedef SelfType<Variable>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(VM) {}
 
@@ -82,7 +81,6 @@ template <>
 class Implementation<Unbound>: Transient, StoredAs<void*> {
 public:
   typedef SelfType<Unbound>::Self Self;
-  typedef SelfType<Unbound>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation() {}
   Implementation(void* dummy) {}

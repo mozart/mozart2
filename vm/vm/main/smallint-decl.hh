@@ -37,7 +37,6 @@ template <>
 class Implementation<SmallInt>: Copiable, StoredAs<nativeint> {
 public:
   typedef SelfType<SmallInt>::Self Self;
-  typedef SelfType<SmallInt>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(nativeint value) : _value(value) {}
 

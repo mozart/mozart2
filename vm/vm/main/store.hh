@@ -179,7 +179,10 @@ StableNode* RichNode::getStableRefForLoop(StableNode* node) {
 
 StableNode* RichNode::destOf(Node* node) {
   // TODO Can we get away without this ugly thing?
-  return Implementation<Reference>::SelfReadOnlyView(node).get().dest();
+  typedef typename Storage<Reference>::Type StorageType;
+  typedef Accessor<Reference, StorageType> Access;
+
+  return Access::get(node->value).dest();
 }
 
 ///////////////////

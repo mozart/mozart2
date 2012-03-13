@@ -46,7 +46,7 @@ public:
   Implementation(VM) {}
 
   inline
-  Implementation(VM vm, GC gc, SelfReadOnlyView from);
+  Implementation(VM vm, GC gc, Self from);
 
   inline
   BuiltinResult wait(Self self, VM vm, Runnable* thread);
@@ -90,7 +90,7 @@ public:
   static void* build(VM) { return nullptr; }
 
   inline
-  static void* build(VM vm, GC gc, SelfReadOnlyView from);
+  static void* build(VM vm, GC gc, Self from);
 
   inline
   BuiltinResult wait(Self self, VM vm, Runnable* thread);

@@ -54,7 +54,7 @@ public:
   }
 
   inline
-  static AtomImpl* build(VM vm, GC gc, SelfReadOnlyView from);
+  static AtomImpl* build(VM vm, GC gc, Self from);
 
   inline
   BuiltinResult equals(Self self, VM vm, UnstableNode* right,
@@ -63,8 +63,7 @@ public:
   const AtomImpl* value() const { return _value; }
 
   inline
-  void printReprToStream(SelfReadOnlyView self, VM vm,
-                         std::ostream* out, int depth);
+  void printReprToStream(Self self, VM vm, std::ostream* out, int depth);
 private:
   const AtomImpl* _value;
 };

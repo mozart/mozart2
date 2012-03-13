@@ -48,7 +48,7 @@ public:
 
   static StableNode* build(VM, StableNode* dest) { return dest; }
 
-  static StableNode* build(VM vm, GC gc, SelfReadOnlyView from) {
+  static StableNode* build(VM vm, GC gc, Self from) {
     assert(false);
     return nullptr;
   }

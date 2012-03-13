@@ -55,7 +55,7 @@ public:
 
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 GC gc, SelfReadOnlyView from);
+                 GC gc, Self from);
 
   size_t getArraySize() {
     return _Kc;

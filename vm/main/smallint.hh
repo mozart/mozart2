@@ -41,7 +41,7 @@
 #include "SmallInt-implem.hh"
 #endif
 
-nativeint Implementation<SmallInt>::build(VM vm, GC gc, SelfReadOnlyView from) {
+nativeint Implementation<SmallInt>::build(VM vm, GC gc, Self from) {
   return from.get().value();
 }
 

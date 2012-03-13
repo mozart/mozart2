@@ -52,7 +52,7 @@ public:
 
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GC gc, SelfReadOnlyView from);
+                 GC gc, Self from);
 
   size_t getArraySize() {
     return _width;
@@ -79,8 +79,7 @@ public:
                           UnstableNode* result);
 
   inline
-  void printReprToStream(SelfReadOnlyView self, VM vm,
-                         std::ostream* out, int depth);
+  void printReprToStream(Self self, VM vm, std::ostream* out, int depth);
 private:
   StableNode _label;
   size_t _width;

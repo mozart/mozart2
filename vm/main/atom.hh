@@ -33,7 +33,7 @@
 #include "Atom-implem.hh"
 #endif
 
-AtomImpl* Implementation<Atom>::build(VM vm, GC gc, SelfReadOnlyView from) {
+AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
   return build(vm, from.get().value()->size, from.get().value()->data);
 }
 
@@ -55,7 +55,7 @@ BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
   }
 }
 
-void Implementation<Atom>::printReprToStream(SelfReadOnlyView self, VM vm,
+void Implementation<Atom>::printReprToStream(Self self, VM vm,
                                              std::ostream* _out, int depth) {
   std::ostream& out = *_out;
 

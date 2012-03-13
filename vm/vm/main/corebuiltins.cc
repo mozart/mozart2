@@ -92,7 +92,7 @@ BuiltinResult dot(VM vm, UnstableNode* args[]) {
 }
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
-  int arity;
+  int arity = 0;
   StableNode* body;
   ProgramCounter start;
   int Xcount;

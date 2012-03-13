@@ -155,6 +155,7 @@ struct RichNode {
 private:
   RichNode(Node* node, UnstableNode& origin) : _node(node), _origin(origin) {}
 public:
+  __attribute__((always_inline))
   inline
   RichNode(UnstableNode& origin);
 
@@ -172,6 +173,7 @@ public:
     return TypedRichNode<T>(*this);
   }
 
+  __attribute__((always_inline))
   inline
   StableNode* getStableRef(VM vm);
 
@@ -193,12 +195,14 @@ private:
   inline
   static Node* dereference(Node* node);
 
+  __attribute__((noinline))
   inline
   static Node* dereferenceLoop(Node* node);
 
   inline
   static StableNode* getStableRefFor(VM vm, UnstableNode& node);
 
+  __attribute__((noinline))
   inline
   static StableNode* getStableRefForLoop(StableNode* node);
 

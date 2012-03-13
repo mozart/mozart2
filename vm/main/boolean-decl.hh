@@ -41,7 +41,6 @@ template <>
 class Implementation<Boolean>: Copiable, StoredAs<bool> {
 public:
   typedef SelfType<Boolean>::Self Self;
-  typedef SelfType<Boolean>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(bool value) : _value(value) {}
 

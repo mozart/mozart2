@@ -155,8 +155,6 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
   to << "class " << name << ": public " << base << " {\n";
   to << "private:\n";
   to << "  typedef SelfType<" << name << ">::Self Self;\n";
-  to << "  typedef SelfType<" << name
-     << ">::SelfReadOnlyView SelfReadOnlyView;\n";
   to << "public:\n";
   to << "  " << name << "() : " << base << "(\"" << name << "\", "
      << b2s(copiable) << ", " << b2s(transient) <<") {}\n";

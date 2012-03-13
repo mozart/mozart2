@@ -37,7 +37,6 @@ template <>
 class Implementation<Float>: Copiable, StoredAs<double> {
 public:
   typedef SelfType<Float>::Self Self;
-  typedef SelfType<Float>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(double value) : _value(value) {}
 

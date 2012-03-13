@@ -42,7 +42,6 @@ template <>
 class Implementation<Reference>: Copiable, StoredAs<StableNode*> {
 public:
   typedef SelfType<Reference>::Self Self;
-  typedef SelfType<Reference>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 

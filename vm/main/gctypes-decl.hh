@@ -55,7 +55,6 @@ class Implementation<GCedToStable>: StoredAs<StableNode*>,
   NoAutoGCollect, BasedOn<GCedToStableBase> {
 public:
   typedef SelfType<GCedToStable>::Self Self;
-  typedef SelfType<GCedToStable>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
@@ -97,7 +96,6 @@ class Implementation<GCedToUnstable>: StoredAs<UnstableNode*>,
   NoAutoGCollect, BasedOn<GCedToUnstableBase> {
 public:
   typedef SelfType<GCedToUnstable>::Self Self;
-  typedef SelfType<GCedToUnstable>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(UnstableNode* dest) : _dest(dest) {}
 

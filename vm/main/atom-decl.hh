@@ -40,7 +40,6 @@ template <>
 class Implementation<Atom>: Copiable, StoredAs<AtomImpl*> {
 public:
   typedef SelfType<Atom>::Self Self;
-  typedef SelfType<Atom>::SelfReadOnlyView SelfReadOnlyView;
 public:
   Implementation(const AtomImpl* value) : _value(value) {}
 

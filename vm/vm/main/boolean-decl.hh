@@ -48,7 +48,7 @@ public:
   static bool build(VM, bool value) { return value; }
 
   inline
-  static bool build(VM vm, GC gc, SelfReadOnlyView from);
+  static bool build(VM vm, GC gc, Self from);
 
   bool value() const { return _value; }
 

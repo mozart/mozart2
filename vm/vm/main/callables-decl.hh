@@ -53,7 +53,7 @@ public:
   Implementation(VM, int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
 
-  Implementation(VM vm, GC gc, SelfReadOnlyView from) {
+  Implementation(VM vm, GC gc, Self from) {
     _arity = from->_arity;
     _builtin = from->_builtin;
   }
@@ -121,7 +121,7 @@ public:
 
   inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 GC gc, SelfReadOnlyView from);
+                 GC gc, Self from);
 
   size_t getArraySize() {
     return _Gc;

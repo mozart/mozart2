@@ -37,7 +37,7 @@
 #include "Variable-implem.hh"
 #endif
 
-Implementation<Variable>::Implementation(VM vm, GC gc, SelfReadOnlyView from) {
+Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
   for (auto iterator = from->pendingThreads.begin();
        iterator != from->pendingThreads.end();
        iterator++) {
@@ -92,7 +92,7 @@ void Implementation<Variable>::resumePendingThreads(VM vm) {
 #include "Unbound-implem.hh"
 #endif
 
-void* Implementation<Unbound>::build(VM vm, GC gc, SelfReadOnlyView from) {
+void* Implementation<Unbound>::build(VM vm, GC gc, Self from) {
   return nullptr;
 }
 

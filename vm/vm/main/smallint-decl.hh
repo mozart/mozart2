@@ -44,7 +44,7 @@ public:
   static nativeint build(VM, nativeint value) { return value; }
 
   inline
-  static nativeint build(VM vm, GC gc, SelfReadOnlyView from);
+  static nativeint build(VM vm, GC gc, Self from);
 
   nativeint value() const { return _value; }
 

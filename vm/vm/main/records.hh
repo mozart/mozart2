@@ -54,7 +54,7 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
                                       StaticArray<StableNode> _elements,
-                                      GC gc, SelfReadOnlyView from) {
+                                      GC gc, Self from) {
   _width = width;
   gc->gcStableNode(from->_label, _label);
 
@@ -101,7 +101,7 @@ BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,
   }
 }
 
-void Implementation<Tuple>::printReprToStream(SelfReadOnlyView self, VM vm,
+void Implementation<Tuple>::printReprToStream(Self self, VM vm,
                                               std::ostream* _out, int depth) {
   std::ostream& out = *_out;
 

@@ -206,8 +206,12 @@ private:
   static StableNode* destOf(Node* node);
 private:
   template <class T>
-  friend class WritableSelfType;
+  friend class BaseSelf;
 
+  MemWord value() {
+    return _node->value;
+  }
+private:
   Node* _node;
   UnstableNode& _origin;
 };
@@ -221,13 +225,22 @@ protected:
   typedef typename Storage<T>::Type StorageType;
   typedef Accessor<T, StorageType> Access;
 public:
-  BaseSelf(Node* node) : _node(node) {}
-protected:
-  auto getBase() -> decltype(Access::get(MemWord())) {
-    return Access::get(_node->value);
+  BaseSelf(RichNode node) : _node(node) {}
+
+  template<class U, class... Args>
+  void remake(VM vm, Args... args) {
+    _node.remake<U>(vm, args...);
   }
 
-  Node* _node;
+  operator RichNode() {
+    return _node;
+  }
+protected:
+  auto getBase() -> decltype(Access::get(MemWord())) {
+    return Access::get(_node.value());
+  }
+private:
+  RichNode _node;
 };
 
 /**
@@ -238,7 +251,7 @@ class CustomStorageSelf: public BaseSelf<T> {
 private:
   typedef Implementation<T> Impl;
 public:
-  CustomStorageSelf(Node* node) : BaseSelf<T>(node) {}
+  CustomStorageSelf(RichNode node) : BaseSelf<T>(node) {}
 
   Impl get() {
     return this->getBase();
@@ -253,7 +266,7 @@ class DefaultStorageSelf: public BaseSelf<T> {
 private:
   typedef Implementation<T> Impl;
 public:
-  DefaultStorageSelf(Node* node) : BaseSelf<T>(node) {}
+  DefaultStorageSelf(RichNode node) : BaseSelf<T>(node) {}
 
   Impl* operator->() {
     return &this->getBase();
@@ -287,7 +300,7 @@ private:
   typedef typename ExtractImplWithArray<StorageType>::Impl Impl;
   typedef typename ExtractImplWithArray<StorageType>::Elem Elem;
 public:
-  ImplWithArraySelf(Node* node) : BaseSelf<T>(node) {}
+  ImplWithArraySelf(RichNode node) : BaseSelf<T>(node) {}
 
   Impl* operator->() {
     return get().operator->();
@@ -335,37 +348,12 @@ struct SelfTypeInner<T, ImplWithArray<I, E>> {
 };
 
 /**
- * An extension of the readonly views on Self type that is writable
- */
-template <class ROView>
-class WritableSelfType : public ROView {
-public:
-  typedef ROView ReadOnlyView;
-public:
-  WritableSelfType(RichNode richNode) :
-    ROView(richNode._node), _origin(richNode.origin()) {}
-
-  template<class U, class... Args>
-  void make(VM vm, Args... args) {
-    this->_node->make<U>(vm, args...);
-  }
-
-  operator RichNode() {
-    return RichNode(this->_node, _origin);
-  }
-private:
-  UnstableNode& _origin;
-};
-
-/**
  * Metafunction from type to its Self type
  * Use as SelfType<T>::Self
  */
 template <class T>
 struct SelfType {
-  typedef typename SelfTypeInner<T, typename Storage<T>::Type>::Self
-    SelfReadOnlyView;
-  typedef WritableSelfType<SelfReadOnlyView> Self;
+  typedef typename SelfTypeInner<T, typename Storage<T>::Type>::Self Self;
 };
 
 /**

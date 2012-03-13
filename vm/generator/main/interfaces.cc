@@ -72,7 +72,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   to << "  " << name << "(UnstableNode& self) : _self(self) {}\n";
   to << "\n";
   to << "  template <class T>\n";
-  to << "  " << name << "(WritableSelfType<T> self) : _self(self) {}\n";
+  to << "  " << name << "(BaseSelf<T> self) : _self(self) {}\n";
 
   // For every method in Interface<T>
   for (auto iter = ND->method_begin(), e = ND->method_end(); iter != e; ++iter) {

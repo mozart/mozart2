@@ -98,7 +98,7 @@ void* Implementation<Unbound>::build(VM vm, GC gc, Self from) {
 
 BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
                                             Runnable* thread) {
-  self.make<Variable>(vm);
+  self.remake<Variable>(vm);
 
   DataflowVariable var = self;
   return var.wait(vm, thread);

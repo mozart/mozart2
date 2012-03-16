@@ -4,8 +4,8 @@ foreach(header ${interface_headers})
 add_custom_command(
   OUTPUT ${header}.gen
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast -o${header}.ast -DMOZART_GENERATOR ${CMAKE_CURRENT_SOURCE_DIR}/${header}
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../../generator/main/generator ${header}.ast
-  COMMAND touch ${header}.gen
+  COMMAND generator ${header}.ast
+  COMMAND ${CMAKE_COMMAND} -E touch ${header}.gen
   DEPENDS generator
   IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/${header}"
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

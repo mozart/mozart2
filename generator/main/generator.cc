@@ -28,6 +28,25 @@ using namespace clang;
 
 clang::ASTContext* context;
 
+void processDeclContext(const DeclContext* ds) {
+  for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
+    Decl* decl = *iter;
+
+    if (const SpecDecl* ND = dyn_cast<SpecDecl>(decl)) {
+      /* It's a template specialization decl, might be an
+       * Interface<T> or an Implementation<T> that we must process. */
+      if (ND->getNameAsString() == "Interface") {
+        handleInterface(ND);
+      } else if (ND->getNameAsString() == "Implementation") {
+        handleImplementation(ND);
+      }
+    } else if (const NamespaceDecl* nsDecl = dyn_cast<NamespaceDecl>(decl)) {
+      /* It's a namespace, recurse in it. */
+      processDeclContext(nsDecl);
+    }
+  }
+}
+
 int main(int argc, char* argv[]) {
   llvm::IntrusiveRefCntPtr<DiagnosticsEngine> Diags;
   FileSystemOptions FileSystemOpts;
@@ -44,18 +63,6 @@ int main(int argc, char* argv[]) {
   policy.Bool=1;
   context->setPrintingPolicy(policy);
 
-  // Loop over Interface<T> and Implementation<T>
-  DeclContext* ds=context->getTranslationUnitDecl();
-  for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
-    Decl* D = *iter;
-    const SpecDecl* ND = dyn_cast<SpecDecl>(D);
-
-    if (!ND) {
-      // Do nothing
-    } else if (ND->getNameAsString() == "Interface") {
-      handleInterface(ND);
-    } else if (ND->getNameAsString() == "Implementation") {
-      handleImplementation(ND);
-    }
-  }
+  // Process
+  processDeclContext(context->getTranslationUnitDecl());
 }

@@ -23,8 +23,8 @@ include_directories("${MOZART_DIR}/vm/main" "${MOZART_DIR}/build/vm/main")
 
 add_custom_command(
   OUTPUT main.cc
-  COMMAND ${SCALA} -cp "${BOOTCOMPILER_DIR}/target/scala-2.9.1/classes/"
-    org.mozartoz.bootcompiler.Main
+  COMMAND ${SCALA}
+    "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT.jar"
     "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz"
     "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
   DEPENDS Main.oz

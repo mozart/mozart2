@@ -40,6 +40,8 @@ class Program(var rawCode: Statement) {
        |#include "coreinterfaces.hh"
        |#include "corebuiltins.hh"
        |
+       |using namespace mozart;
+       |
        |bool simplePreemption(void* data) {
        |  static int count = 3;
        |

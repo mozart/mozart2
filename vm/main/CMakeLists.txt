@@ -1,4 +1,4 @@
-set(interface_headers mozartcore.hh coreinterfaces.hh)
+set(interface_headers coreinterfaces.hh)
 
 foreach(header ${interface_headers})
 add_custom_command(

@@ -30,6 +30,8 @@
 #include "core-forward-decl.hh"
 #include "runnable-decl.hh"
 
+namespace mozart {
+
 /////////////////
 // ThreadQueue //
 /////////////////
@@ -104,5 +106,7 @@ private:
   ThreadQueue queues[tpCount];
   int remainings[tpCount];
 };
+
+}
 
 #endif // __THREADPOOL_DECL_H

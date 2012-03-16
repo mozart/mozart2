@@ -32,6 +32,8 @@
 
 #include <iostream>
 
+namespace mozart {
+
 /////////////////////////////
 // Inline BuiltinProcedure //
 /////////////////////////////
@@ -113,6 +115,8 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
   *Ks = _Ks;
 
   return BuiltinResult::proceed();
+}
+
 }
 
 #endif // __CALLABLES_H

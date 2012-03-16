@@ -32,6 +32,8 @@
 #include "boolean.hh"
 #include "corebuiltins.hh"
 
+namespace mozart {
+
 //////////////////
 // Inline Tuple //
 //////////////////
@@ -122,6 +124,8 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
   }
 
   out << ")";
+}
+
 }
 
 #endif // __RECORDS_H

@@ -41,6 +41,8 @@
 
 #include "core-forward-decl.hh"
 
+namespace mozart {
+
 // MWTest is a metafunction that returns T if i!=0 and a type guaranteed to be
 // smaller or equal to char* if i==0
 template<class T, int i>
@@ -124,5 +126,7 @@ typedef MWUnion<nativeint, bool, double> MemWord;
 
 static_assert(sizeof(MemWord) == sizeof(char *),
   "MemWord has not the size of a word");
+
+}
 
 #endif // __MEMWORD_H

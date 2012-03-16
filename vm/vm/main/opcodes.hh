@@ -25,6 +25,8 @@
 #ifndef __OPCODES_H
 #define __OPCODES_H
 
+namespace mozart {
+
 typedef short unsigned int uint16_t;
 
 typedef uint16_t ByteCode;
@@ -87,5 +89,7 @@ const OpCode OpInlineAdd = 0x51;
 const OpCode OpInlineSubtract = 0x52;
 const OpCode OpInlinePlus1 = 0x53;
 const OpCode OpInlineMinus1 = 0x54;
+
+}
 
 #endif // __OPCODES_H

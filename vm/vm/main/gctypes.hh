@@ -31,6 +31,8 @@
 
 #ifndef MOZART_GENERATOR
 
+namespace mozart {
+
 //////////////////
 // GCedToStable //
 //////////////////
@@ -89,6 +91,8 @@ void GCedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const 
   }
 
   to.copy(gc->vm, *dest);
+}
+
 }
 
 #endif // MOZART_GENERATOR

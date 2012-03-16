@@ -37,6 +37,8 @@
 #include "runnable.hh"
 #include "smallint.hh"
 
+namespace mozart {
+
 /**
  * Entry of a thread stack
  */
@@ -188,5 +190,7 @@ private:
   XRegArray xregs;
   VMAllocatedList<StackEntry> stack;
 };
+
+}
 
 #endif // __EMULATE_H

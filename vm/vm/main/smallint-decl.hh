@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 class SmallInt;
 
 #ifndef MOZART_GENERATOR
@@ -112,5 +114,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "SmallInt-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __SMALLINT_DECL_H

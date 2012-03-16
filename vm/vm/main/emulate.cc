@@ -31,6 +31,8 @@
 #include "corebuiltins.hh"
 #include "variables.hh"
 
+namespace mozart {
+
 const ProgramCounter NullPC = nullptr;
 
 ////////////////
@@ -715,6 +717,8 @@ void Thread::afterGC()
 
 Runnable* Thread::gCollect(GC gc) {
   return new (gc->vm) Thread(gc, *this);
+}
+
 }
 
 #undef advancePC

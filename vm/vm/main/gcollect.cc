@@ -26,6 +26,8 @@
 
 #include <iostream>
 
+namespace mozart {
+
 //////////////////////
 // GarbageCollector //
 //////////////////////
@@ -123,4 +125,6 @@ void GarbageCollector::gcOneStableRef(StableNode*& ref) {
     from.type()->gCollect(this, from, *ref);
     from.remake<GCedToStable>(vm, ref);
   }
+}
+
 }

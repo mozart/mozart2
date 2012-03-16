@@ -28,6 +28,8 @@
 #include "runnable-decl.hh"
 #include "vm-decl.hh"
 
+namespace mozart {
+
 Runnable::Runnable(VM vm, ThreadPriority priority) :
   vm(vm), _priority(priority), _runnable(true), _terminated(false) {
 
@@ -49,6 +51,8 @@ void Runnable::terminate() {
   _terminated = true;
 
   vm->aliveThreads.remove(this);
+}
+
 }
 
 #endif // __RUNNABLE_H

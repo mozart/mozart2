@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 //////////////
 // Variable //
 //////////////
@@ -100,5 +102,7 @@ public:
 #ifndef MOZART_GENERATOR
 #include "Unbound-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __VARIABLES_DECL_H

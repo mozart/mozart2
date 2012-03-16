@@ -27,6 +27,8 @@
 
 #include "threadpool-decl.hh"
 
+namespace mozart {
+
 ////////////////
 // ThreadPool //
 ////////////////
@@ -64,6 +66,8 @@ Runnable* ThreadPool::popNext(ThreadPriority priority) {
   Runnable* result = queues[priority].front();
   queues[priority].pop();
   return result;
+}
+
 }
 
 #endif // __THREADPOOL_H

@@ -27,10 +27,14 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 inline
 BuiltinResult raiseAtom(VM vm, const char16_t* atom);
 
 inline
 BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual);
+
+}
 
 #endif // __EXCHELPERS_DECL_H

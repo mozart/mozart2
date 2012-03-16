@@ -27,6 +27,8 @@
 
 #include "core-forward-decl.hh"
 
+namespace mozart {
+
 class Atom;
 class AtomTable;
 
@@ -107,4 +109,7 @@ private:
   AtomImpl* root;
   size_t _count;
 };
+
+}
+
 #endif // __ATOMTABLE_H

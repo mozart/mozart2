@@ -31,6 +31,8 @@
 
 #include <string>
 
+namespace mozart {
+
 /**
  * A value node in the store.
  * The store is entirely made of nodes. A node is basically a typed value.
@@ -419,5 +421,7 @@ public:
 protected:
   Self _self;
 };
+
+}
 
 #endif // __STORE_DECL_H

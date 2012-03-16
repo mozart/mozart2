@@ -29,6 +29,8 @@
 
 #include "coreinterfaces.hh"
 
+namespace mozart {
+
 //////////////////////
 // Inline Variable ///
 //////////////////////
@@ -108,6 +110,8 @@ BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
   RichNode(self).reinit(vm, src);
 
   return BuiltinResult::proceed();
+}
+
 }
 
 #endif // __VARIABLES_H

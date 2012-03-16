@@ -33,6 +33,8 @@
 
 #ifndef MOZART_GENERATOR
 
+namespace mozart {
+
 /////////////////////////
 // Node implementation //
 /////////////////////////
@@ -199,6 +201,8 @@ BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
 
 BuiltinResult BuiltinResult::raise(VM vm, RichNode node) {
   return BuiltinResult(node.getStableRef(vm), brRaise);
+}
+
 }
 
 #endif // MOZART_GENERATOR

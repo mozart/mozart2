@@ -30,6 +30,8 @@
 #include <string>
 #include <ostream>
 
+namespace mozart {
+
 class Atom;
 
 #ifndef MOZART_GENERATOR
@@ -70,5 +72,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "Atom-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __ATOM_DECL_H

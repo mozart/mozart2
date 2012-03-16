@@ -32,6 +32,8 @@
 
 #include "runnable-decl.hh"
 
+namespace mozart {
+
 // Set this to true to print debug info about the GC
 #ifdef OZ_DEBUG_GC
 const bool OzDebugGC = true;
@@ -88,5 +90,7 @@ private:
   UnstableNode* unstableNodesToGC;
   MemManagedList<StableNode**> stableRefsToGC;
 };
+
+}
 
 #endif // __GCOLLECT_DECL_H

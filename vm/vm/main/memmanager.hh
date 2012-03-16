@@ -27,6 +27,8 @@
 
 #include <algorithm>
 
+namespace mozart {
+
 const size_t MegaBytes = 1024*1024;
 
 const size_t MAX_MEMORY = 512 * MegaBytes;
@@ -140,5 +142,7 @@ private:
 
   void* freeListBuckets[MaxBuckets];
 };
+
+}
 
 #endif // __MEMMANAGER_H

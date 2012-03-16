@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 class Float;
 
 #ifndef MOZART_GENERATOR
@@ -105,5 +107,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "Float-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __FLOAT_DECL_H

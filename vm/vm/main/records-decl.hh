@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 ///////////
 // Tuple //
 ///////////
@@ -87,5 +89,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "Tuple-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __RECORDS_DECL_H

@@ -27,12 +27,16 @@
 
 #include "boolean-decl.hh"
 
+namespace mozart {
+
 #ifndef MOZART_GENERATOR
 #include "Boolean-implem.hh"
 #endif
 
 bool Implementation<Boolean>::build(VM vm, GC gc, Self from) {
   return from.get().value();
+}
+
 }
 
 #endif // __BOOLEAN_H

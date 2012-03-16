@@ -38,6 +38,8 @@
 
 #include "atomtable.hh"
 
+namespace mozart {
+
 ////////////////////
 // VirtualMachine //
 ////////////////////
@@ -93,8 +95,8 @@ private:
 
   VirtualMachine(const VirtualMachine& src) : gc(this) {}
 
-  friend void* operator new (size_t size, VM vm);
-  friend void* operator new[] (size_t size, VM vm);
+  friend void* ::operator new (size_t size, mozart::VM vm);
+  friend void* ::operator new[] (size_t size, mozart::VM vm);
 
   void* getMemory(size_t size) {
     return memoryManager.getMemory(size);
@@ -158,5 +160,7 @@ public:
     MemManagedList<T>::splice(vm->getMemoryManager(), source);
   }
 };
+
+}
 
 #endif // __VM_DECL_H

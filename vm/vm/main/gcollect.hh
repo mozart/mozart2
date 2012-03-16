@@ -29,6 +29,8 @@
 
 #include "vm-decl.hh"
 
+namespace mozart {
+
 void ThreadQueue::gCollect(GC gc) {
   for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
     Runnable*& thread = *iterator;
@@ -64,6 +66,8 @@ void GarbageCollector::gcUnstableNode(UnstableNode& from, UnstableNode& to) {
 void GarbageCollector::gcStableRef(StableNode* from, StableNode*& to) {
   to = from;
   stableRefsToGC.push_front(secondMemManager, &to);
+}
+
 }
 
 #endif // __GCOLLECT_H

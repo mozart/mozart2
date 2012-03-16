@@ -32,6 +32,8 @@
 
 #include <iostream>
 
+namespace mozart {
+
 //////////////////
 // Inline Float //
 //////////////////
@@ -163,6 +165,8 @@ BuiltinResult Implementation<Float>::mod(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   return raiseTypeError(vm, u"Integer", self);
+}
+
 }
 
 #endif // __FLOAT_H

@@ -31,6 +31,8 @@
 
 #include "store-decl.hh"
 
+namespace mozart {
+
 class Type {
 public:
   Type(std::string name, bool copiable = false, bool transient = false) :
@@ -79,5 +81,7 @@ struct StoredWithArrayOf{};
 template<class>
 struct BasedOn{};
 struct NoAutoGCollect{};
+
+}
 
 #endif // __TYPE_H

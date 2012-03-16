@@ -30,6 +30,8 @@
 #include "emulate.hh"
 #include "exchelpers.hh"
 
+namespace mozart {
+
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]) {
@@ -144,6 +146,8 @@ void printReprToStream(VM vm, RichNode arg,
   } else {
     out << "<" << arg.type()->getName() << ">";
   }
+}
+
 }
 
 }

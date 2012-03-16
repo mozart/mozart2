@@ -27,6 +27,8 @@
 
 #include "core-forward-decl.hh"
 
+namespace mozart {
+
 // This enum is often used for indexing in arrays
 // tpCount reflects the number of valid ThreadPriority's
 // And you probably don't want to add or remove existing ThreadPriority's
@@ -145,5 +147,7 @@ private:
   Runnable* first;
   Runnable* last;
 };
+
+}
 
 #endif // __RUNNABLE_DECL_H

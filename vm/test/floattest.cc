@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace mozart;
+
 class FloatTest : public ::testing::Test {
 protected:
   FloatTest() : virtualMachine(nullptr, nullptr), vm(&virtualMachine) {}

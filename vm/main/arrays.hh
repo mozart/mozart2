@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <cassert>
 
+namespace mozart {
+
 /**
  * A simple wrapper for an array and its size (only in debug mode)
  * @param <T> Type of the elements in the array
@@ -88,5 +90,7 @@ public:
 #endif
   }
 };
+
+}
 
 #endif // __ARRAYS_H

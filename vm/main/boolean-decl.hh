@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 class Boolean;
 
 typedef enum BOOL_OR_NOT_BOOL {
@@ -67,5 +69,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "Boolean-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __BOOLEAN_DECL_H

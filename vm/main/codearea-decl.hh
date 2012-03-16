@@ -30,6 +30,8 @@
 
 #include <cstring>
 
+namespace mozart {
+
 //////////////
 // CodeArea //
 //////////////
@@ -84,5 +86,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "CodeArea-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __CODEAREA_DECL_H

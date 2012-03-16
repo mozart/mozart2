@@ -27,6 +27,8 @@
 #include <new>
 #include <iostream>
 
+namespace mozart {
+
 ///////////////////
 // MemoryManager //
 ///////////////////
@@ -40,4 +42,6 @@ void* MemoryManager::getMoreMemory(size_t size) {
 
   std::bad_alloc ba;
   throw ba;
+}
+
 }

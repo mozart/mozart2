@@ -34,6 +34,8 @@
 #include <cstdlib>
 #include <cstdint>
 
+namespace mozart {
+
 typedef intptr_t nativeint;
 
 class Type;
@@ -48,14 +50,18 @@ typedef VirtualMachine* VM;
 class GarbageCollector;
 typedef GarbageCollector* GC;
 
-inline
-void* operator new (size_t size, VM vm);
-
-inline
-void* operator new[] (size_t size, VM vm);
-
 template <class T>
 class Implementation {
 };
+
+}
+
+// new operators must be declared outside of any namespace
+
+inline
+void* operator new (size_t size, mozart::VM vm);
+
+inline
+void* operator new[] (size_t size, mozart::VM vm);
 
 #endif // __CORE_FORWARD_DECL_H

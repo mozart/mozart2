@@ -27,6 +27,8 @@
 
 #include "codearea-decl.hh"
 
+namespace mozart {
+
 /////////////////////
 // Inline CodeArea //
 /////////////////////
@@ -65,6 +67,8 @@ Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
   *Ks = self.getArray();
 
   return BuiltinResult::proceed();
+}
+
 }
 
 #endif // __CODEAREA_H

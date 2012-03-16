@@ -33,6 +33,8 @@
 #include <limits>
 #include <iostream>
 
+namespace mozart {
+
 /////////////////////
 // Inline SmallInt //
 /////////////////////
@@ -242,6 +244,8 @@ BuiltinResult Implementation<SmallInt>::modValue(Self self, VM vm,
   }
 
   return BuiltinResult::proceed();
+}
+
 }
 
 #endif // __SMALLINT_H

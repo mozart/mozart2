@@ -25,6 +25,10 @@
 #ifndef __OZLIMITS_H
 #define __OZLIMITS_H
 
+namespace mozart {
+
 constexpr int InitXRegisters = 64;
+
+}
 
 #endif // __OZLIMITS_H

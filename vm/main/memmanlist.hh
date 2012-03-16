@@ -29,6 +29,8 @@
 
 #include <cassert>
 
+namespace mozart {
+
 ////////////////////
 // MemManagedList //
 ////////////////////
@@ -196,5 +198,7 @@ private:
   ListNode* first;
   ListNode* last;
 };
+
+}
 
 #endif // __MEMMANLIST_H

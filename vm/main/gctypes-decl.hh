@@ -28,6 +28,8 @@
 #include "vm-decl.hh"
 #include "type.hh"
 
+namespace mozart {
+
 //////////////////
 // GCedToStable //
 //////////////////
@@ -109,5 +111,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "GCedToUnstable-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __GCTYPES_DECL_H

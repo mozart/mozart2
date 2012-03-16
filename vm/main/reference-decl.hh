@@ -28,6 +28,8 @@
 #include "vm-decl.hh"
 #include "type.hh"
 
+namespace mozart {
+
 ///////////////
 // Reference //
 ///////////////
@@ -60,5 +62,7 @@ private:
 #ifndef MOZART_GENERATOR
 #include "Reference-implem-decl-after.hh"
 #endif
+
+}
 
 #endif // __REFERENCE_DECL_H

@@ -40,6 +40,8 @@
 
 #include <iostream>
 
+namespace mozart {
+
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
@@ -218,7 +220,11 @@ struct Interface<ArrayInitializer>:
   }
 };
 
+} // namespace mozart
+
 #ifndef MOZART_GENERATOR
+
+namespace mozart {
 
 #include "DataflowVariable-interf.hh"
 #include "Equatable-interf.hh"
@@ -232,6 +238,8 @@ struct Interface<ArrayInitializer>:
 #include "RecordLike-interf.hh"
 #include "ArrayInitializer-interf.hh"
 
+} // namespace mozart
+
 #include "variables.hh"
 #include "boolean.hh"
 #include "smallint.hh"
@@ -242,6 +250,8 @@ struct Interface<ArrayInitializer>:
 #include "records.hh"
 
 #include "exchelpers.hh"
+
+namespace mozart {
 
 /////////////
 // Inlines //
@@ -272,6 +282,8 @@ BuiltinResult Interface<DataflowVariable>::bind(RichNode self, VM vm,
     return BuiltinResult::raise(vm, exception);
   }
 }
+
+} // namespace mozart
 
 #endif // MOZART_GENERATOR
 

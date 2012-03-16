@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]);
@@ -49,6 +51,8 @@ BuiltinResult show(VM vm, UnstableNode* args[]);
 
 void printReprToStream(VM vm, RichNode node,
                        std::ostream& out, int depth = 10);
+
+}
 
 }
 

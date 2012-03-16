@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace mozart;
+
 class SmallIntTest : public ::testing::Test {
 protected:
   SmallIntTest() : virtualMachine(nullptr, nullptr), vm(&virtualMachine) {}

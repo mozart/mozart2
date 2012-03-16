@@ -29,6 +29,8 @@
 
 #include "coreinterfaces.hh"
 
+namespace mozart {
+
 BuiltinResult raiseAtom(VM vm, const char16_t* atom) {
   UnstableNode exception;
   exception.make<Atom>(vm, atom);
@@ -52,6 +54,8 @@ BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
   initializer.initElement(vm, 1, &actual.origin());
 
   return BuiltinResult::raise(vm, exception);
+}
+
 }
 
 #endif // __EXCHELPERS_H

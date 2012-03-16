@@ -30,6 +30,8 @@
 #include "memword.hh"
 #include "arrays.hh"
 
+namespace mozart {
+
 template<class I, class E>
 class ImplWithArray {
   I* p;
@@ -129,5 +131,7 @@ public:
     return *(value.get<Impl*>());
   }
 };
+
+}
 
 #endif // __STORAGE_H

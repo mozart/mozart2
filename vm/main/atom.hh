@@ -29,6 +29,8 @@
 
 #include "boolean.hh"
 
+namespace mozart {
+
 #ifndef MOZART_GENERATOR
 #include "Atom-implem.hh"
 #endif
@@ -61,6 +63,8 @@ void Implementation<Atom>::printReprToStream(Self self, VM vm,
 
   //out << "'" << _value->data << "'";
   out << "<Atom>";
+}
+
 }
 
 #endif // __ATOM_H

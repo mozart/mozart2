@@ -27,6 +27,8 @@
 
 #include "vm-decl.hh"
 
+namespace mozart {
+
 ////////////////////
 // VirtualMachine //
 ////////////////////
@@ -66,11 +68,15 @@ void VirtualMachine::scheduleThread(Runnable* thread) {
   threadPool.schedule(thread);
 }
 
-void* operator new (size_t size, VM vm) {
+}
+
+// new operators must be declared outside of any namespace
+
+void* operator new (size_t size, mozart::VM vm) {
   return vm->getMemory(size);
 }
 
-void* operator new[] (size_t size, VM vm) {
+void* operator new[] (size_t size, mozart::VM vm) {
   return vm->getMemory(size);
 }
 

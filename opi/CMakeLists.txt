@@ -1,10 +1,19 @@
 cmake_minimum_required(VERSION 2.6)
 project(testmozart)
 
+
 # Configure paths
-set(MOZART_DIR "/home/sjrd/projets/mozart")
-set(BOOTCOMPILER_DIR "/home/sjrd/projets/workspace/bootcompiler")
-set(SCALA "/usr/bin/scala")
+set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2"
+    CACHE PATH "Path to Mozart2 source directory")
+set(MOZART_BUILD_DIR "${MOZART_DIR}/build"
+    CACHE PATH "Path to Mozart2 build directory")
+
+set(BOOTCOMPILER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2-bootcompiler"
+    CACHE PATH "Path to Mozart2 boot compiler directory")
+
+set(SCALA "/usr/bin/scala"
+    CACHE PATH "Scala executable")
+
 
 # Configure compiler
 set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG")

@@ -4,20 +4,16 @@ This is a trivial example application, whose only purpose is to show how to actu
 
 ## Build instructions
 
-First open `CMakeLists.txt` and adapt the three paths at the top of the file to your installation:
+The first time, prepare your build environment with:
 
-```cmake
-# Configure paths
-set(MOZART_DIR "/path/to/mozart2")
-set(BOOTCOMPILER_DIR "/path/to/mozart2-bootcompiler")
-set(SCALA "/usr/bin/scala")
-```
+    experiment$ mkdir build
+    experiment$ cd build
+    build$ cmake -D MOZART_DIR=/path/to/mozart2 \
+        -D BOOTCOMPILER_DIR=/path/to/mozart2-bootcompiler ..
 
-Then:
+When that has been done one, you can build with:
 
-    mozart-app-test$ mkdir build
-    mozart-app-test$ cd build
-    build$ cmake .. && make
+    build$ make
 
 ## To run the generated program
 

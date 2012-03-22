@@ -68,6 +68,22 @@ private:
   MemWord value;
 };
 
+struct NodeBackup {
+public:
+  void restore() {
+    *node = saved;
+  }
+private:
+  friend class StableNode;
+  friend class UnstableNode;
+  friend class RichNode;
+
+  NodeBackup(Node* node) : node(node), saved(*node) {}
+private:
+  Node* node;
+  Node saved;
+};
+
 /**
  * Stable node, which is guaranteed never to change
  */
@@ -83,6 +99,10 @@ public:
   template<class T, class... Args>
   void make(VM vm, Args... args) {
     node.make<T>(vm, args...);
+  }
+
+  NodeBackup makeBackup() {
+    return NodeBackup(&node);
   }
 private:
   friend class UnstableNode;
@@ -127,6 +147,10 @@ public:
   template<class T, class... Args>
   void make(VM vm, Args... args) {
     node.make<T>(vm, args...);
+  }
+
+  NodeBackup makeBackup() {
+    return NodeBackup(&node);
   }
 private:
   friend class StableNode;
@@ -189,6 +213,10 @@ public:
   template<class T, class... Args>
   void remake(VM vm, Args... args) {
     _node->make<T>(vm, args...);
+  }
+
+  NodeBackup makeBackup() {
+    return NodeBackup(_node);
   }
 
   inline

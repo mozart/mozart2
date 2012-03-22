@@ -68,6 +68,10 @@ public:
     T& operator*() {
       return node->item;
     }
+
+    T* operator->() {
+      return &node->item;
+    }
   private:
     ListNode* node;
   };
@@ -172,6 +176,14 @@ public:
 
   iterator end() {
     return iterator(nullptr);
+  }
+
+  /** Size of the list. O(n) operation. */
+  size_t size() {
+    size_t result = 0;
+    for (auto iter = begin(); iter != end(); ++iter)
+      result++;
+    return result;
   }
 private:
   ListNode* newNode(MemoryManager& mm, ListNode* next, const T& item) {

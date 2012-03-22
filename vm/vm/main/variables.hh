@@ -48,12 +48,15 @@ Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
   }
 }
 
-BuiltinResult Implementation<Variable>::wait(Self self, VM vm,
-                                             Runnable* thread) {
+void Implementation<Variable>::addToSuspendList(Self self, VM vm,
+                                                Runnable* thread) {
   thread->unsetRunnable();
   pendingThreads.push_back(vm, thread);
+}
 
-  return BuiltinResult::proceed();
+void Implementation<Variable>::addToSuspendList(Self self, VM vm,
+                                                RichNode variable) {
+  pendingVariables.push_back(vm, variable.getStableRef(vm));
 }
 
 BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
@@ -65,15 +68,17 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   // Otherwise, we wake up the threads.
   src.update();
   if (src.type() == Variable::type()) {
-    src.as<Variable>().transferPendingThreads(vm, pendingThreads);
+    src.as<Variable>().transferPendings(vm, pendingThreads, pendingVariables);
   } else {
-    resumePendingThreads(vm);
+    resumePendings(vm);
   }
 
   return BuiltinResult::proceed();
 }
 
-void Implementation<Variable>::resumePendingThreads(VM vm) {
+void Implementation<Variable>::resumePendings(VM vm) {
+  // Wake up threads
+
   ThreadPool& threadPool = vm->getThreadPool();
 
   for (auto iter = pendingThreads.begin();
@@ -84,6 +89,22 @@ void Implementation<Variable>::resumePendingThreads(VM vm) {
   }
 
   pendingThreads.clear(vm);
+
+  // "Wake up", i.e., bind control variables
+
+  for (auto iter = pendingVariables.begin();
+       iter != pendingVariables.end(); iter++) {
+    UnstableNode unstableVar(vm, **iter);
+    RichNode variable = unstableVar;
+
+    if (variable.type()->isTransient()) {
+      UnstableNode unit;
+      unit.make<SmallInt>(vm, 0);
+      DataflowVariable(variable).bind(vm, unit);
+    }
+  }
+
+  pendingVariables.clear(vm);
 }
 
 /////////////////////
@@ -98,12 +119,16 @@ void* Implementation<Unbound>::build(VM vm, GC gc, Self from) {
   return nullptr;
 }
 
-BuiltinResult Implementation<Unbound>::wait(Self self, VM vm,
-                                            Runnable* thread) {
+void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
+                                               Runnable* thread) {
   self.remake<Variable>(vm);
+  DataflowVariable(self).addToSuspendList(vm, thread);
+}
 
-  DataflowVariable var = self;
-  return var.wait(vm, thread);
+void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
+                                               RichNode variable) {
+  self.remake<Variable>(vm);
+  DataflowVariable(self).addToSuspendList(vm, variable);
 }
 
 BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {

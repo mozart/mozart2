@@ -50,19 +50,25 @@ public:
   Implementation(VM vm, GC gc, Self from);
 
   inline
-  BuiltinResult wait(Self self, VM vm, Runnable* thread);
+  void addToSuspendList(Self self, VM vm, Runnable* thread);
+
+  inline
+  void addToSuspendList(Self self, VM vm, RichNode variable);
 
   inline
   BuiltinResult bind(Self self, VM vm, RichNode src);
 
-  void transferPendingThreads(VM vm, VMAllocatedList<Runnable*>& source) {
-    pendingThreads.splice(vm, source);
+  void transferPendings(VM vm, VMAllocatedList<Runnable*>& srcThreads,
+                        VMAllocatedList<StableNode*>& srcVariables) {
+    pendingThreads.splice(vm, srcThreads);
+    pendingVariables.splice(vm, srcVariables);
   }
 private:
   inline
-  void resumePendingThreads(VM vm);
+  void resumePendings(VM vm);
 
   VMAllocatedList<Runnable*> pendingThreads;
+  VMAllocatedList<StableNode*> pendingVariables;
 };
 
 #ifndef MOZART_GENERATOR
@@ -93,7 +99,10 @@ public:
   static void* build(VM vm, GC gc, Self from);
 
   inline
-  BuiltinResult wait(Self self, VM vm, Runnable* thread);
+  void addToSuspendList(Self self, VM vm, Runnable* thread);
+
+  inline
+  void addToSuspendList(Self self, VM vm, RichNode variable);
 
   inline
   BuiltinResult bind(Self self, VM vm, RichNode src);

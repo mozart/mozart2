@@ -90,11 +90,11 @@ void UnstableNode::swap(UnstableNode& from) {
 //////////////
 
 RichNode::RichNode(UnstableNode& origin) :
-  _node(dereference(&origin.node)), _origin(origin) {
+  _node(dereference(&origin.node)), _origin(&origin) {
 }
 
 StableNode* RichNode::getStableRef(VM vm) {
-  return getStableRefFor(vm, _origin);
+  return getStableRefFor(vm, *_origin);
 }
 
 void RichNode::update() {
@@ -106,20 +106,20 @@ void RichNode::reinit(VM vm, StableNode& from) {
     *_node = from.node;
   } else {
     _node->make<Reference>(vm, &from);
-    _origin.node = *_node;
+    _origin->node = *_node;
   }
 }
 
 void RichNode::reinit(VM vm, UnstableNode& from) {
   if (from.type()->isCopiable()) {
     *_node = from.node;
-  } else if (_origin.type() == Reference::type()) {
-    StableNode* stable = getStableRefFor(vm, _origin);
+  } else if (_origin->type() == Reference::type()) {
+    StableNode* stable = getStableRefFor(vm, *_origin);
     stable->init(vm, from);
   } else {
     StableNode* stable = getStableRefFor(vm, from);
     _node->make<Reference>(vm, stable);
-    _origin.node = *_node;
+    _origin->node = *_node;
   }
 }
 

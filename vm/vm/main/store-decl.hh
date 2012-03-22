@@ -155,7 +155,7 @@ class TypedRichNode {
  */
 struct RichNode {
 private:
-  RichNode(Node* node, UnstableNode& origin) : _node(node), _origin(origin) {}
+  RichNode(Node* node, UnstableNode& origin) : _node(node), _origin(&origin) {}
 public:
   __attribute__((always_inline))
   inline
@@ -166,7 +166,7 @@ public:
   }
 
   UnstableNode& origin() {
-    return _origin;
+    return *_origin;
   }
 
   template <class T>
@@ -219,7 +219,7 @@ private:
   }
 private:
   Node* _node;
-  UnstableNode& _origin;
+  UnstableNode* _origin;
 };
 
 /**

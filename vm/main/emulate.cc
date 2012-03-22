@@ -678,7 +678,7 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
     case BuiltinResult::brWaitBefore: {
       UnstableNode waitee(vm, *result.getWaiteeNode());
       DataflowVariable var = waitee;
-      var.wait(vm, this);
+      var.addToSuspendList(vm, this);
 
       if (!isRunnable())
         preempted = true;

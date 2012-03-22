@@ -45,8 +45,10 @@ namespace mozart {
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
-  BuiltinResult wait(RichNode self, VM vm, Runnable* thread) {
-    return BuiltinResult::proceed();
+  void addToSuspendList(RichNode self, VM vm, Runnable* thread) {
+  }
+
+  void addToSuspendList(RichNode self, VM vm, RichNode variable) {
   }
 
   inline

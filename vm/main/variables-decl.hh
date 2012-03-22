@@ -40,7 +40,7 @@ class Variable;
 #endif
 
 template <>
-class Implementation<Variable>: Transient {
+class Implementation<Variable>: Transient, WithVariableBehavior<90> {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
@@ -86,7 +86,8 @@ class Unbound;
 #endif
 
 template <>
-class Implementation<Unbound>: Transient, StoredAs<void*> {
+class Implementation<Unbound>: Transient, StoredAs<void*>,
+  WithVariableBehavior<100> {
 public:
   typedef SelfType<Unbound>::Self Self;
 public:

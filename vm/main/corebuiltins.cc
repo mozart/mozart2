@@ -29,28 +29,32 @@
 
 #include "emulate.hh"
 #include "exchelpers.hh"
+#include "unify.hh"
 
 namespace mozart {
 
 namespace builtins {
 
 BuiltinResult equals(VM vm, UnstableNode* args[]) {
-  Equatable x = *args[0];
-  return x.equals(vm, args[1], args[2]);
+  RichNode left = *args[0];
+  RichNode right = *args[1];
+  bool result = false;
+
+  BuiltinResult res = mozart::equals(vm, left, right, &result);
+  if (res.isProceed())
+    args[2]->make<Boolean>(vm, result);
+  return res;
 }
 
 BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
-  Equatable x = *args[0];
-  BuiltinResult result = x.equals(vm, args[1], args[2]);
+  RichNode left = *args[0];
+  RichNode right = *args[1];
+  bool result = false;
 
-  if (result.isProceed()) {
-    RichNode richResult = *args[2];
-    assert(richResult.type() == Boolean::type());
-    bool equalsResult = richResult.as<Boolean>().value();
-    args[2]->make<Boolean>(vm, !equalsResult);
-  }
-
-  return result;
+  BuiltinResult res = mozart::notEquals(vm, left, right, &result);
+  if (res.isProceed())
+    args[2]->make<Boolean>(vm, result);
+  return res;
 }
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {

@@ -46,22 +46,8 @@ double Implementation<Float>::build(VM vm, GC gc, Self from) {
   return from.get().value();
 }
 
-BuiltinResult Implementation<Float>::equals(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
-  RichNode rightNode = *right;
-
-  if (rightNode.type() == Float::type()) {
-    double r = rightNode.as<Float>().value();
-    result->make<Boolean>(vm, value() == r);
-    return BuiltinResult::proceed();
-  } else if (rightNode.type()->isTransient()) {
-    return BuiltinResult::waitFor(vm, rightNode);
-  } else {
-    // TODO Float == non-Float
-    result->make<Boolean>(vm, false);
-    return BuiltinResult::proceed();
-  }
+bool Implementation<Float>::equals(VM vm, Self right) {
+  return value() == right.get().value();
 }
 
 BuiltinResult Implementation<Float>::equalsFloat(Self self, VM vm,

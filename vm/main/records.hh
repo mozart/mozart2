@@ -28,6 +28,7 @@
 #include "records-decl.hh"
 
 #include "coreinterfaces.hh"
+#include "unify.hh"
 #include "smallint.hh"
 #include "boolean.hh"
 #include "corebuiltins.hh"
@@ -62,6 +63,17 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
 
   for (size_t i = 0; i < width; i++)
     gc->gcStableNode(from[i], _elements[i]);
+}
+
+bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
+                                   WalkStack& stack) {
+  if (_width != right->_width)
+    return false;
+
+  stack.pushArray(vm, self.getArray(), right.getArray(), _width);
+  stack.push(vm, &_label, &right->_label);
+
+  return true;
 }
 
 BuiltinResult Implementation<Tuple>::width(Self self, VM vm,

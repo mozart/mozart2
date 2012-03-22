@@ -33,10 +33,21 @@
 
 namespace mozart {
 
+enum StructuralBehavior {
+  sbValue,      // Simple, non-aggregate value
+  sbStructural, // Aggregate value compared with structural equality
+  sbTokenEq,    // Data with token equality
+  sbVariable    // Variable with binding opportunity
+};
+
 class Type {
 public:
-  Type(std::string name, bool copiable = false, bool transient = false) :
-    _name(name), _copiable(copiable), _transient(transient) {
+  Type(std::string name, bool copiable, bool transient,
+       StructuralBehavior structuralBehavior,
+       unsigned char bindingPriority) :
+    _name(name), _copiable(copiable), _transient(transient),
+    _structuralBehavior(structuralBehavior),
+    _bindingPriority(bindingPriority) {
   }
 
   const std::string& getName() const { return _name; }
@@ -49,6 +60,14 @@ public:
   bool isCopiable() const { return _copiable; }
   bool isTransient() const { return _transient; }
 
+  StructuralBehavior getStructuralBehavior() const {
+    return _structuralBehavior;
+  }
+
+  unsigned char getBindingPriority() const {
+    return _bindingPriority;
+  }
+
   virtual void gCollect(GC gc, RichNode from, StableNode& to) const = 0;
   virtual void gCollect(GC gc, RichNode from, UnstableNode& to) const = 0;
 private:
@@ -56,6 +75,8 @@ private:
 
   const bool _copiable;
   const bool _transient;
+  const StructuralBehavior _structuralBehavior;
+  const unsigned char _bindingPriority;
 };
 
 template <class T>
@@ -67,19 +88,33 @@ template <class T>
 const T RawType<T>::rawType;
 
 template<class T>
-struct Interface;
+struct Interface{};
+
 template<class...>
 struct ImplementedBy{};
+
 struct NoAutoWait{};
 
 struct Copiable{};
+
 struct Transient{};
+
 template<class>
 struct StoredAs{};
+
 template<class>
 struct StoredWithArrayOf{};
+
+struct WithValueBehavior{};
+
+struct WithStructuralBehavior{};
+
+template<unsigned char>
+struct WithVariableBehavior{};
+
 template<class>
 struct BasedOn{};
+
 struct NoAutoGCollect{};
 
 }

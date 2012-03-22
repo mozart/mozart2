@@ -36,7 +36,7 @@ class Float;
 #endif
 
 template <>
-class Implementation<Float>: Copiable, StoredAs<double> {
+class Implementation<Float>: Copiable, StoredAs<double>, WithValueBehavior {
 public:
   typedef SelfType<Float>::Self Self;
 public:
@@ -49,14 +49,13 @@ public:
 
   double value() const { return _value; }
 
+  inline
+  bool equals(VM vm, Self right);
+
   BuiltinResult floatValue(Self self, VM vm, double* result) {
     *result = value();
     return BuiltinResult::proceed();
   }
-
-  inline
-  BuiltinResult equals(Self self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
 
   inline
   BuiltinResult equalsFloat(Self self, VM vm, double right, bool* result);

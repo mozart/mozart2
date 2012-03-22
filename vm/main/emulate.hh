@@ -179,9 +179,6 @@ private:
             bool& preempted);
 
   inline
-  BuiltinResult unify(VM vm, RichNode left, RichNode right);
-
-  inline
   void arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                         VM vm, ProgramCounter& PC, bool& preempted);
 

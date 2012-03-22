@@ -39,7 +39,7 @@ class Atom;
 #endif
 
 template <>
-class Implementation<Atom>: Copiable, StoredAs<AtomImpl*> {
+class Implementation<Atom>: Copiable, StoredAs<AtomImpl*>, WithValueBehavior {
 public:
   typedef SelfType<Atom>::Self Self;
 public:
@@ -58,8 +58,7 @@ public:
   static AtomImpl* build(VM vm, GC gc, Self from);
 
   inline
-  BuiltinResult equals(Self self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
+  bool equals(VM vm, Self right);
 
   const AtomImpl* value() const { return _value; }
 

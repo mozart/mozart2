@@ -195,6 +195,10 @@ BuiltinResult BuiltinResult::proceed() {
   return BuiltinResult(nullptr, brProceed);
 }
 
+BuiltinResult BuiltinResult::failed() {
+  return BuiltinResult(nullptr, brFailed);
+}
+
 BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
   return BuiltinResult(node.getStableRef(vm), brWaitBefore);
 }

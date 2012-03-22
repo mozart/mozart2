@@ -47,22 +47,8 @@ nativeint Implementation<SmallInt>::build(VM vm, GC gc, Self from) {
   return from.get().value();
 }
 
-BuiltinResult Implementation<SmallInt>::equals(Self self, VM vm,
-                                               UnstableNode* right,
-                                               UnstableNode* result) {
-  RichNode rightNode = *right;
-
-  if (rightNode.type() == SmallInt::type()) {
-    nativeint r = rightNode.as<SmallInt>().value();
-    result->make<Boolean>(vm, value() == r);
-    return BuiltinResult::proceed();
-  } else if (rightNode.type()->isTransient()) {
-    return BuiltinResult::waitFor(vm, rightNode);
-  } else {
-    // TODO SmallInt == non-SmallInt
-    result->make<Boolean>(vm, false);
-    return BuiltinResult::proceed();
-  }
+bool Implementation<SmallInt>::equals(VM vm, Self right) {
+  return value() == right.get().value();
 }
 
 BuiltinResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,

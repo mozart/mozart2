@@ -32,6 +32,24 @@ std::string typeToString(clang::QualType type);
 std::string getTypeParamAsString(const SpecDecl* specDecl);
 std::string getTypeParamAsString(clang::CXXRecordDecl* arg);
 
+template <class T>
+T getValueParamAsIntegral(const SpecDecl* specDecl) {
+  const clang::TemplateArgumentList& templateArgs = specDecl->getTemplateArgs();
+
+  assert(templateArgs.size() == 1);
+  assert(templateArgs[0].getKind() == clang::TemplateArgument::Integral);
+
+  auto result = templateArgs[0].getAsIntegral()->getLimitedValue(
+    std::numeric_limits<T>::max());
+
+  return (T) result;
+}
+
+template <class T>
+T getValueParamAsIntegral(clang::CXXRecordDecl* arg) {
+  return getValueParamAsIntegral<T>(clang::dyn_cast<SpecDecl>(arg));
+}
+
 inline
 std::string b2s(bool value) {
   return value ? "true" : "false";

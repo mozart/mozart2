@@ -30,6 +30,7 @@
 #include "coreinterfaces.hh"
 #include "corebuiltins.hh"
 #include "variables.hh"
+#include "unify.hh"
 
 namespace mozart {
 
@@ -642,21 +643,6 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
   }
 }
 
-BuiltinResult Thread::unify(VM vm, RichNode left, RichNode right) {
-  if (left.type() == Unbound::type())
-    return left.as<Unbound>().bind(vm, right);
-  else if (right.type() == Unbound::type())
-    return right.as<Unbound>().bind(vm, left);
-  else if (left.type() == Variable::type())
-    return left.as<Variable>().bind(vm, right);
-  else if (right.type() == Variable::type())
-    return right.as<Variable>().bind(vm, left);
-  else {
-    // TODO Non-trivial unify
-    return BuiltinResult::proceed();
-  }
-}
-
 void Thread::arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                               VM vm, ProgramCounter& PC, bool& preempted) {
   ArrayInitializer x = node;
@@ -684,6 +670,11 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
         preempted = true;
 
       break;
+    }
+
+    case BuiltinResult::brFailed: {
+      result = raiseAtom(vm, u"failure");
+      // fall through
     }
 
     case BuiltinResult::brRaise: {

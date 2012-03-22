@@ -40,7 +40,7 @@ typedef enum BOOL_OR_NOT_BOOL {
 #endif
 
 template <>
-class Implementation<Boolean>: Copiable, StoredAs<bool> {
+class Implementation<Boolean>: Copiable, StoredAs<bool>, WithValueBehavior {
 public:
   typedef SelfType<Boolean>::Self Self;
 public:
@@ -52,6 +52,9 @@ public:
   static bool build(VM vm, GC gc, Self from);
 
   bool value() const { return _value; }
+
+  inline
+  bool equals(VM vm, Self right);
 
   BuiltinResult boolValue(Self self, VM vm, bool* result) {
     *result = value();

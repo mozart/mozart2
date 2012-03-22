@@ -37,6 +37,10 @@ bool Implementation<Boolean>::build(VM vm, GC gc, Self from) {
   return from.get().value();
 }
 
+bool Implementation<Boolean>::equals(VM vm, Self right) {
+  return value() == right.get().value();
+}
+
 }
 
 #endif // __BOOLEAN_H

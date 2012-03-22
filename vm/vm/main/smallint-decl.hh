@@ -36,7 +36,8 @@ class SmallInt;
 #endif
 
 template <>
-class Implementation<SmallInt>: Copiable, StoredAs<nativeint> {
+class Implementation<SmallInt>: Copiable, StoredAs<nativeint>,
+  WithValueBehavior {
 public:
   typedef SelfType<SmallInt>::Self Self;
 public:
@@ -49,14 +50,13 @@ public:
 
   nativeint value() const { return _value; }
 
+  inline
+  bool equals(VM vm, Self right);
+
   BuiltinResult intValue(Self self, VM vm, nativeint* result) {
     *result = value();
     return BuiltinResult::proceed();
   }
-
-  inline
-  BuiltinResult equals(Self self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
 
   inline
   BuiltinResult equalsInteger(Self self, VM vm, nativeint right, bool* result);

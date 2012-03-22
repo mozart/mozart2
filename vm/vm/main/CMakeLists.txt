@@ -21,5 +21,6 @@ add_custom_target(gensources
   DEPENDS ${interface_headers_gen}
   VERBATIM)
 
-add_library(mozartvm emulate.cc corebuiltins.cc memmanager.cc gcollect.cc)
+add_library(mozartvm emulate.cc corebuiltins.cc memmanager.cc gcollect.cc
+  unify.cc)
 add_dependencies(mozartvm gensources)

@@ -51,22 +51,50 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
   void addToSuspendList(RichNode self, VM vm, RichNode variable) {
   }
 
-  inline
-  BuiltinResult bind(RichNode self, VM vm, RichNode src);
+  /**
+   * Precondition:
+   *   self.type()->getStructuralBehavior() == sbVariable
+   */
+  BuiltinResult bind(RichNode self, VM vm, RichNode src) {
+    assert(self.type()->getStructuralBehavior() == sbVariable);
+    assert(false);
+    return raiseTypeError(vm, u"Variable", self);
+  }
 };
 
-class Equatable;
+class ValueEquatable;
 template<>
-struct Interface<Equatable>: ImplementedBy<SmallInt, Atom>, NoAutoWait {
-  BuiltinResult equals(RichNode self, VM vm, UnstableNode* right,
-                       UnstableNode* result) {
-    if (self.type()->isTransient()) {
-      // TODO A == B when A and B are aliased transients should return true
-      return BuiltinResult::waitFor(vm, self);
-    } else {
-      // TODO ==
-      return raiseAtom(vm, u"== not implemented yet");
-    }
+struct Interface<ValueEquatable>:
+  ImplementedBy<SmallInt, Atom, Boolean, Float> {
+
+  /**
+   * Precondition:
+   *   self.type()->getStructuralBehavior() == sbValue
+   *   self.type() == right.type()
+   */
+  bool equals(RichNode self, VM vm, RichNode right) {
+    assert(self.type()->getStructuralBehavior() == sbValue);
+    assert(self.type() == right.type());
+    assert(false);
+    return false;
+  }
+};
+
+class StructuralEquatable;
+template<>
+struct Interface<StructuralEquatable>:
+  ImplementedBy<Tuple> {
+
+  /**
+   * Precondition:
+   *   self.type()->getStructuralBehavior() == sbStructural
+   *   self.type() == right.type()
+   */
+  bool equals(RichNode self, VM vm, RichNode right, WalkStack& stack) {
+    assert(self.type()->getStructuralBehavior() == sbStructural);
+    assert(self.type() == right.type());
+    assert(false);
+    return false;
   }
 };
 
@@ -229,7 +257,8 @@ struct Interface<ArrayInitializer>:
 namespace mozart {
 
 #include "DataflowVariable-interf.hh"
-#include "Equatable-interf.hh"
+#include "ValueEquatable-interf.hh"
+#include "StructuralEquatable-interf.hh"
 #include "BuiltinCallable-interf.hh"
 #include "Callable-interf.hh"
 #include "CodeAreaProvider-interf.hh"
@@ -252,40 +281,6 @@ namespace mozart {
 #include "records.hh"
 
 #include "exchelpers.hh"
-
-namespace mozart {
-
-/////////////
-// Inlines //
-/////////////
-
-BuiltinResult Interface<DataflowVariable>::bind(RichNode self, VM vm,
-                                                RichNode src) {
-  // TODO bind a bound value
-  UnstableNode isEqual;
-  Equatable eqSelf = self;
-  BuiltinResult res = eqSelf.equals(vm, &src.origin(), &isEqual);
-
-  if (!res.isProceed())
-    return res;
-
-  bool isEqualBool;
-  res = BooleanValue(isEqual).boolValue(vm, &isEqualBool);
-
-  if (!res.isProceed())
-    return res;
-
-  if (isEqualBool) {
-    return BuiltinResult::proceed();
-  } else {
-    UnstableNode exception;
-    exception.make<Atom>(vm, u"failure");
-
-    return BuiltinResult::raise(vm, exception);
-  }
-}
-
-} // namespace mozart
 
 #endif // MOZART_GENERATOR
 

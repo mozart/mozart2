@@ -26,6 +26,7 @@
 #define __RECORDS_DECL_H
 
 #include "mozartcore.hh"
+#include "unify-decl.hh"
 
 namespace mozart {
 
@@ -43,7 +44,8 @@ class Tuple;
  * Tuple (specialization of Record)
  */
 template <>
-class Implementation<Tuple>: StoredWithArrayOf<StableNode> {
+class Implementation<Tuple>: StoredWithArrayOf<StableNode>,
+  WithStructuralBehavior {
 public:
   typedef SelfType<Tuple>::Self Self;
 public:
@@ -60,6 +62,9 @@ public:
   }
 
   int getWidth() { return _width; }
+
+  inline
+  bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
   /**
    * Get the width of the tuple in a node

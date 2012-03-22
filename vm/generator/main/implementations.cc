@@ -24,6 +24,7 @@
 
 #include "generator.hh"
 #include <iostream>
+#include <cassert>
 
 using namespace clang;
 
@@ -32,6 +33,24 @@ enum StorageKind {
   skCustom,
   skWithArray
 };
+
+// See StructuralBehavior in vm/main/type.hh
+enum StructuralBehavior {
+  sbValue, sbStructural, sbTokenEq, sbVariable
+};
+
+std::string sb2s(StructuralBehavior behavior) {
+  switch (behavior) {
+    case sbValue: return "sbValue";
+    case sbStructural: return "sbStructural";
+    case sbTokenEq: return "sbTokenEq";
+    case sbVariable: return "sbVariable";
+
+    default:
+      assert(false);
+      return "";
+  }
+}
 
 struct ImplemMethodDef {
   ImplemMethodDef(CXXMethodDecl* method) : method(method) {
@@ -51,6 +70,8 @@ struct ImplementationDef {
     transient = false;
     storageKind = skDefault;
     storage = "";
+    structuralBehavior = sbTokenEq;
+    bindingPriority = 0;
     base = "Type";
     autoGCollect = true;
   }
@@ -64,6 +85,8 @@ struct ImplementationDef {
   bool transient;
   StorageKind storageKind;
   std::string storage;
+  StructuralBehavior structuralBehavior;
+  unsigned char bindingPriority;
   std::string base;
   bool autoGCollect;
   std::vector<ImplemMethodDef> methods;
@@ -82,7 +105,7 @@ void handleImplementation(const SpecDecl* ND) {
     CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
     std::string markerLabel = marker->getNameAsString();
 
-    if (markerLabel=="Copiable") {
+    if (markerLabel == "Copiable") {
       definition.copiable = true;
     } else if (markerLabel == "Transient") {
       definition.transient = true;
@@ -93,6 +116,14 @@ void handleImplementation(const SpecDecl* ND) {
       definition.storageKind = skWithArray;
       definition.storage = "ImplWithArray<Implementation<" + name + ">, " +
         getTypeParamAsString(marker) + ">";
+    } else if (markerLabel == "WithValueBehavior") {
+      definition.structuralBehavior = sbValue;
+    } else if (markerLabel == "WithStructuralBehavior") {
+      definition.structuralBehavior = sbStructural;
+    } else if (markerLabel == "WithVariableBehavior") {
+      definition.structuralBehavior = sbVariable;
+      definition.bindingPriority =
+        getValueParamAsIntegral<unsigned char>(marker);
     } else if (markerLabel == "BasedOn") {
       definition.base = getTypeParamAsString(marker);
     } else if (markerLabel == "NoAutoGCollect") {
@@ -157,7 +188,9 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
   to << "  typedef SelfType<" << name << ">::Self Self;\n";
   to << "public:\n";
   to << "  " << name << "() : " << base << "(\"" << name << "\", "
-     << b2s(copiable) << ", " << b2s(transient) <<") {}\n";
+     << b2s(copiable) << ", " << b2s(transient) << ", "
+     << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
+     << ") {}\n";
   to << "\n";
   to << "  static const " << name << "* const type() {\n";
   to << "    return &RawType<" << name << ">::rawType;\n";
@@ -206,6 +239,7 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
 
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   if (autoGCollect) {
+    to << "\n";
     to << "void " << name
        << "::gCollect(GC gc, RichNode from, StableNode& to) const {\n";
     makeContentsOfAutoGCollect(to);
@@ -262,6 +296,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 }
 
 void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
+  to << "  assert(from.type() == type());\n";
   to << "  Self fromAsSelf = from;\n";
   to << "  to.make<" << name << ">(gc->vm, ";
   if (storageKind == skWithArray)

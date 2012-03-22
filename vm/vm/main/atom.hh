@@ -39,22 +39,8 @@ AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
   return build(vm, from.get().value()->size, from.get().value()->data);
 }
 
-BuiltinResult Implementation<Atom>::equals(Self self, VM vm,
-                                           UnstableNode* right,
-                                           UnstableNode* result) {
-  RichNode rightNode = *right;
-
-  if (rightNode.type() == Atom::type()) {
-    const AtomImpl* r = rightNode.as<Atom>().value();
-    result->make<Boolean>(vm, value() == r);
-    return BuiltinResult::proceed();
-  } else if (rightNode.type()->isTransient()) {
-    return BuiltinResult::waitFor(vm, rightNode);
-  } else {
-    // TODO Atom == non-Atom
-    result->make<Boolean>(vm, false);
-    return BuiltinResult::proceed();
-  }
+bool Implementation<Atom>::equals(VM vm, Self right) {
+  return value() == right.get().value();
 }
 
 void Implementation<Atom>::printReprToStream(Self self, VM vm,

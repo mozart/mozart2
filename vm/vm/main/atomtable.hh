@@ -27,20 +27,38 @@
 
 #include "core-forward-decl.hh"
 
+#include <cstring>
+
 namespace mozart {
 
 class Atom;
 class AtomTable;
 
 class AtomImpl {
+public:
+  size_t length() const {
+    return size >> 4;
+  }
+
+  const char16_t* contents() const {
+    return data;
+  }
+private:
   friend class AtomTable;
-  friend class Implementation<Atom>;
-  AtomImpl(size_t size, const char16_t* data,
+
+  AtomImpl(VM vm, size_t size, const char16_t* data,
            size_t critBit, int d, AtomImpl* other)
-    : size(size), data(data),critBit(critBit) {
+    : size(size), critBit(critBit) {
+
+    size_t dataLengthPlus1 = (size >> 4) + 1;
+    char16_t* data0 = new (vm) char16_t[dataLengthPlus1];
+    std::memcpy(data0, data, dataLengthPlus1 * sizeof(char16_t));
+    this->data = data0;
+
     side[d]=this;
     side[1-d]=other;
   }
+
   size_t size;
   const char16_t* data;
   size_t critBit;
@@ -49,12 +67,14 @@ class AtomImpl {
 
 class AtomTable {
 public:
-  AtomTable():root(nullptr), _count(0){}
+  AtomTable() : root(nullptr), _count(0) {}
+
   AtomImpl* get(VM vm, size_t size, const char16_t* data) {
+    assert(size == (size << 5) >> 5);
     size <<= 4;
     if(root == nullptr){
       ++_count;
-      return root = new (vm) AtomImpl(size, data, size+16, 1, nullptr);
+      return root = new (vm) AtomImpl(vm, size, data, size+16, 1, nullptr);
     }
     AtomImpl** curP = &root;
     size_t nextToCheck = 0;
@@ -71,7 +91,7 @@ public:
 			       nextToCheck, checkEnd);
       if(f < checkEnd){
 	++_count;
-	return cur = new (vm) AtomImpl(size, data, f, bitAt(size, data, f), cur);
+	return cur = new (vm) AtomImpl(vm, size, data, f, bitAt(size, data, f), cur);
       }
       if(cand) return cur;
       nextToCheck=cur->critBit+1;

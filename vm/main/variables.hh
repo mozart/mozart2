@@ -40,6 +40,8 @@ namespace mozart {
 #endif
 
 Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
+  gc->gcSpace(from->_home, _home);
+
   for (auto iterator = from->pendingThreads.begin();
        iterator != from->pendingThreads.end();
        iterator++) {
@@ -114,8 +116,10 @@ void Implementation<Variable>::resumePendings(VM vm) {
 #include "Unbound-implem.hh"
 #endif
 
-void* Implementation<Unbound>::build(VM vm, GC gc, Self from) {
-  return nullptr;
+SpaceRef Implementation<Unbound>::build(VM vm, GC gc, Self from) {
+  SpaceRef home;
+  gc->gcSpace(from.get().home(), home);
+  return home;
 }
 
 void Implementation<Unbound>::addToSuspendList(Self self, VM vm,

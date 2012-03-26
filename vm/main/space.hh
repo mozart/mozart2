@@ -22,20 +22,38 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_H
-#define __MOZARTCORE_H
+#ifndef __SPACE_H
+#define __SPACE_H
 
-#include "core-forward-decl.hh"
+#include "space-decl.hh"
 
-#include "store.hh"
-#include "type.hh"
-#include "space.hh"
-#include "vm.hh"
-#include "threadpool.hh"
-#include "runnable.hh"
-#include "gcollect.hh"
+namespace mozart {
 
-#include "reference.hh"
-#include "gctypes.hh"
+Space* SpaceRef::operator->() {
+  Space* result = space;
+  while (result->status() == Space::ssReference)
+    result = result->_reference;
+  return result;
+}
 
-#endif // __MOZARTCORE_H
+Space::Space(GC gc, Space* from) {
+  assert(from->_status != ssReference && from->_status != ssGCed);
+
+  if (from->_isTopLevel)
+    _parent = nullptr;
+  else
+    gc->gcSpace(from->_parent, _parent);
+
+  _isTopLevel = from->_isTopLevel;
+  _status = from->_status;
+
+  for (auto iter = from->script.begin(); iter != from->script.end(); ++iter) {
+    ScriptEntry& entry = script.append(gc->vm);
+    gc->gcUnstableNode(iter->left, entry.left);
+    gc->gcUnstableNode(iter->right, entry.right);
+  }
+}
+
+}
+
+#endif // __SPACE_H

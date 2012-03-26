@@ -33,12 +33,14 @@ namespace mozart {
 Runnable::Runnable(VM vm, ThreadPriority priority) :
   vm(vm), _priority(priority), _runnable(true), _terminated(false) {
 
+  _space = vm->getCurrentSpace();
   vm->aliveThreads.insert(this);
 }
 
 Runnable::Runnable(GC gc, Runnable& from) :
   vm(gc->vm) {
 
+  gc->gcSpace(from._space, _space);
   _priority = from._priority;
   _runnable = from._runnable;
   _terminated = from._terminated;

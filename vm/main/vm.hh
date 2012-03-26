@@ -33,6 +33,17 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
+VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
+                               void* preemptionTestData) :
+  _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
+  gc(this) {
+
+  memoryManager.init();
+
+  _topLevelSpace = new (this) Space;
+  _currentSpace = _topLevelSpace;
+}
+
 void VirtualMachine::run() {
   while (true) {
     if (gc.isGCRequired())

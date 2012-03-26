@@ -48,13 +48,9 @@ typedef bool (*PreemptionTest)(void* data);
 
 class VirtualMachine {
 public:
+  inline
   VirtualMachine(PreemptionTest preemptionTest,
-                 void* preemptionTestData = nullptr) :
-    _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
-    gc(this) {
-
-    memoryManager.init();
-  }
+                 void* preemptionTestData = nullptr);
 
   void* malloc(size_t size) {
     return memoryManager.malloc(size);
@@ -87,6 +83,14 @@ public:
   MemoryManager& getMemoryManager() {
     return memoryManager;
   }
+
+  Space* getTopLevelSpace() {
+    return _topLevelSpace;
+  }
+
+  Space* getCurrentSpace() {
+    return _currentSpace;
+  }
 private:
   friend class GarbageCollector;
   friend class Runnable;
@@ -113,6 +117,9 @@ private:
   void* _preemptionTestData;
 
   MemoryManager memoryManager;
+
+  Space* _topLevelSpace;
+  Space* _currentSpace;
 
   RunnableList aliveThreads;
 

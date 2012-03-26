@@ -16,11 +16,10 @@ protected:
   virtual void TearDown() {
   }
 
-  void EXPECT_EQ_INT(nativeint expected, UnstableNode& actual) {
-    IntegerValue intValue = actual;
-    bool result = false;
-    intValue.equalsInteger(vm, expected, &result);
-    EXPECT_TRUE(result);
+  void EXPECT_EQ_INT(nativeint expected, RichNode actual) {
+    EXPECT_EQ(SmallInt::type(), actual.type());
+    if (actual.type() == SmallInt::type())
+      EXPECT_EQ(expected, actual.as<SmallInt>().value());
   }
 
   // The VM
@@ -34,7 +33,6 @@ TEST_F(SmallIntTest, Build) {
     UnstableNode node;
     node.make<SmallInt>(vm, i);
 
-    EXPECT_EQ(SmallInt::type(), node.type());
     EXPECT_EQ_INT(i, node);
   }
 }

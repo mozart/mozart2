@@ -36,7 +36,8 @@ namespace mozart {
 #endif
 
 AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
-  return build(vm, from.get().value()->size, from.get().value()->data);
+  const AtomImpl* fromValue = from.get().value();
+  return build(vm, fromValue->length(), fromValue->contents());
 }
 
 bool Implementation<Atom>::equals(VM vm, Self right) {

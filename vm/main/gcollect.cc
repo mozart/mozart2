@@ -48,7 +48,8 @@ void GarbageCollector::doGC() {
   getMemoryManager().swapWith(secondMemManager);
   getMemoryManager().init();
 
-  // Forget the list of alive threads
+  // Forget lists of things
+  vm->atomTable = AtomTable();
   vm->aliveThreads = RunnableList();
 
   // Root of GC are runnable threads

@@ -16,11 +16,10 @@ protected:
   virtual void TearDown() {
   }
 
-  void EXPECT_EQ_FLOAT(double expected, UnstableNode& actual) {
-    FloatValue floatValue = actual;
-    bool result = false;
-    floatValue.equalsFloat(vm, expected, &result);
-    EXPECT_TRUE(result);
+  void EXPECT_EQ_FLOAT(double expected, RichNode actual) {
+    EXPECT_EQ(Float::type(), actual.type());
+    if (actual.type() == Float::type())
+      EXPECT_DOUBLE_EQ(expected, actual.as<Float>().value());
   }
 
   // The VM
@@ -34,7 +33,6 @@ TEST_F(FloatTest, Build) {
     UnstableNode node;
     node.make<Float>(vm, i);
 
-    EXPECT_EQ(Float::type(), node.type());
     EXPECT_EQ_FLOAT(i, node);
   }
 }
@@ -51,6 +49,7 @@ TEST_F(FloatTest, Add) {
 
       Numeric leftNumeric = leftNode;
       leftNumeric.add(vm, &rightNode, &resultNode);
+
       EXPECT_EQ_FLOAT(left + right, resultNode);
     }
   }
@@ -98,10 +97,9 @@ TEST_F(FloatTest, Divide) {
   for (double left = -5; left <= 5; left++) {
     leftNode.make<Float>(vm, left);
 
-    for (double right = -5; right <= 5; right++) {
-      if (right == 0) {
-        continue;
-      } else {
+    for (int rightInt = -5; rightInt <= 5; rightInt++) {
+      if (rightInt != 0) {
+        double right = rightInt;
         rightNode.make<Float>(vm, right);
 
         Numeric leftNumeric = leftNode;

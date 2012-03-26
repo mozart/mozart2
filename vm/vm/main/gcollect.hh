@@ -28,6 +28,7 @@
 #include "gcollect-decl.hh"
 
 #include "vm-decl.hh"
+#include "space-decl.hh"
 
 namespace mozart {
 
@@ -44,6 +45,15 @@ void ThreadQueue::gCollect(GC gc) {
 
 MemoryManager& GarbageCollector::getMemoryManager() {
   return vm->getMemoryManager();
+}
+
+void GarbageCollector::gcSpace(SpaceRef from, SpaceRef& to) {
+  // Spaces are GCed immediately
+  Space* space = from;
+  if (space->status() == Space::ssGCed)
+    to = space->getGCed();
+  else
+    to = space->gCollect(this);
 }
 
 void GarbageCollector::gcThread(Runnable* from, Runnable*& to) {

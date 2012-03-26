@@ -38,6 +38,9 @@ void GarbageCollector::doGC() {
     std::cerr << " bytes used." << std::endl;
   }
 
+  // General assumptions when running GC
+  assert(vm->_currentSpace == vm->_topLevelSpace);
+
   // Before GC
   for (auto iterator = vm->aliveThreads.begin();
        iterator != vm->aliveThreads.end(); iterator++) {
@@ -51,6 +54,12 @@ void GarbageCollector::doGC() {
   // Forget lists of things
   vm->atomTable = AtomTable();
   vm->aliveThreads = RunnableList();
+
+  // Always keep the top-level space
+  SpaceRef topLevelSpaceRef = vm->_topLevelSpace;
+  gcSpace(topLevelSpaceRef, topLevelSpaceRef);
+  vm->_topLevelSpace = topLevelSpaceRef;
+  vm->_currentSpace = vm->_topLevelSpace;
 
   // Root of GC are runnable threads
   vm->getThreadPool().gCollect(this);

@@ -45,6 +45,10 @@ public:
   inline
   Runnable(GC gc, Runnable& from);
 
+  Space* getSpace() {
+    return _space;
+  }
+
   ThreadPriority getPriority() { return _priority; }
 
   virtual void run() = 0;
@@ -66,6 +70,8 @@ protected:
   VM vm;
 private:
   friend class RunnableList;
+
+  SpaceRef _space;
 
   ThreadPriority _priority;
 

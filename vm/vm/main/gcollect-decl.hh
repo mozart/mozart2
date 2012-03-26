@@ -60,6 +60,9 @@ public:
   void doGC();
 
   inline
+  void gcSpace(SpaceRef from, SpaceRef& to);
+
+  inline
   void gcThread(Runnable* from, Runnable*& to);
 
   inline

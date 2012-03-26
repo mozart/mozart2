@@ -50,6 +50,32 @@ typedef VirtualMachine* VM;
 class GarbageCollector;
 typedef GarbageCollector* GC;
 
+class Space;
+
+/**
+ * Reference to a Space
+ * It is close to a Space*, except that it handles dereferencing transparently
+ */
+struct SpaceRef {
+public:
+  SpaceRef() {}
+
+  SpaceRef(Space* space) : space(space) {}
+
+  inline
+  Space* operator->();
+
+  Space& operator*() {
+    return *operator->();
+  }
+
+  operator Space*() {
+    return operator->();
+  }
+private:
+  Space* space;
+};
+
 template <class T>
 class Implementation {
 };

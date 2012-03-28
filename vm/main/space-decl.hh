@@ -77,6 +77,8 @@ public:
       return _parent;
   }
 
+  // Status
+
   bool isTopLevel() {
     return _isTopLevel;
   }
@@ -96,11 +98,31 @@ public:
     return true;
   }
 
+  StableNode* getRootVar() {
+    return &_rootVar;
+  }
+
+  // Operations
+
+  // Garbage collection
+
   Space* gCollect(GC gc) {
     Space* result = new (gc->vm) Space(gc, this);
     _status = ssGCed;
     _gced = result;
     return result;
+  }
+public:
+  // Maintenance
+
+  void incRunnableCount() {
+    if (!isTopLevel())
+      runnableCount++;
+  }
+
+  void decRunnableCount() {
+    if (!isTopLevel())
+      runnableCount--;
   }
 private:
   void setReference(Space* ref) {
@@ -126,7 +148,11 @@ private:
   bool _isTopLevel;
   Status _status;
 
+  StableNode _rootVar;
+
   SpaceScript script;
+
+  int runnableCount;
 };
 
 }

@@ -77,9 +77,19 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]);
 
 BuiltinResult show(VM vm, UnstableNode* args[]);
 
+////////////
+// Spaces //
+////////////
+
+BuiltinResult newSpace(VM vm, UnstableNode* args[]);
+BuiltinResult askSpace(VM vm, UnstableNode* args[]);
+BuiltinResult mergeSpace(VM vm, UnstableNode* args[]);
+
 ///////////
 // Utils //
 ///////////
+
+BuiltinResult expectCallable(VM vm, RichNode target, int expectedArity);
 
 void printReprToStream(VM vm, RichNode node,
                        std::ostream& out, int depth = 10);

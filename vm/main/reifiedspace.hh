@@ -22,42 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __RUNNABLE_H
-#define __RUNNABLE_H
+#ifndef __REIFIEDSPACE_H
+#define __REIFIEDSPACE_H
 
-#include "runnable-decl.hh"
-#include "vm-decl.hh"
-#include "space-decl.hh"
+#include "reifiedspace-decl.hh"
+
+#include "coreinterfaces.hh"
 
 namespace mozart {
 
-Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
-  vm(vm), _space(space), _priority(priority),
-  _runnable(true), _terminated(false) {
+//////////////////
+// ReifiedSpace //
+//////////////////
 
-  _space->incRunnableCount();
+#ifndef MOZART_GENERATOR
+#include "ReifiedSpace-implem.hh"
+#endif
 
-  vm->aliveThreads.insert(this);
-}
-
-Runnable::Runnable(GC gc, Runnable& from) :
-  vm(gc->vm) {
-
-  gc->gcSpace(from._space, _space);
-  _priority = from._priority;
-  _runnable = from._runnable;
-  _terminated = from._terminated;
-
-  vm->aliveThreads.insert(this);
-}
-
-void Runnable::terminate() {
-  _runnable = false;
-  _terminated = true;
-
-  vm->aliveThreads.remove(this);
+Implementation<ReifiedSpace>::Implementation(VM vm, GC gc, Self from) {
+  gc->gcSpace(from->_space, _space);
+  _status = from->_status;
 }
 
 }
 
-#endif // __RUNNABLE_H
+#endif // __REIFIEDSPACE_H

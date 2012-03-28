@@ -442,6 +442,7 @@ public:
     brFailed,     // Unification failed
     brWaitBefore, // Need an unbound variable, I want you to wait on that one
     brRaise,      // Raise an exception
+    brPreempt,    // Preempt the thread now, but do not suspend
   };
 public:
   inline
@@ -455,6 +456,9 @@ public:
 
   inline
   static BuiltinResult raise(VM vm, RichNode node);
+
+  inline
+  static BuiltinResult preempt();
 
   bool isProceed() {
     return _status == brProceed;

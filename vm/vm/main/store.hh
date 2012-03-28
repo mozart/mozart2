@@ -207,6 +207,10 @@ BuiltinResult BuiltinResult::raise(VM vm, RichNode node) {
   return BuiltinResult(node.getStableRef(vm), brRaise);
 }
 
+BuiltinResult BuiltinResult::preempt() {
+  return BuiltinResult(nullptr, brPreempt);
+}
+
 }
 
 #endif // MOZART_GENERATOR

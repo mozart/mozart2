@@ -141,25 +141,13 @@ BuiltinResult dot(VM vm, UnstableNode* args[]) {
 /////////////
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
-  int arity = 0;
-  StableNode* body;
-  ProgramCounter start;
-  int Xcount;
-  StaticArray<StableNode> Gs;
-  StaticArray<StableNode> Ks;
-
   RichNode target = *args[0];
-  Callable x = target;
-  BuiltinResult result = x.getCallInfo(vm, &arity, &body, &start,
-                                       &Xcount, &Gs, &Ks);
 
+  BuiltinResult result = expectCallable(vm, target, 0);
   if (!result.isProceed())
     return result;
 
-  if (arity != 0)
-    return raiseIllegalArity(vm, 0, arity);
-
-  new (vm) Thread(vm, target.getStableRef(vm));
+  new (vm) Thread(vm, vm->getCurrentSpace(), target.getStableRef(vm));
 
   return BuiltinResult::proceed();
 }
@@ -175,9 +163,64 @@ BuiltinResult show(VM vm, UnstableNode* args[]) {
   return BuiltinResult::proceed();
 }
 
+////////////
+// Spaces //
+////////////
+
+BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
+  RichNode target = *args[0];
+
+  BuiltinResult result = expectCallable(vm, target, 1);
+  if (!result.isProceed())
+    return result;
+
+  // Create the space
+  Space* space = new (vm) Space(vm->getCurrentSpace());
+  space->getRootVar()->make<Unbound>(vm);
+
+  // Create the thread {Proc Root}
+  UnstableNode rootVar(vm, *space->getRootVar());
+  UnstableNode* threadArgs[] = { &rootVar };
+
+  new (vm) Thread(vm, space, target.getStableRef(vm), 1, threadArgs);
+
+  // Create the reification of the space
+  args[1]->make<ReifiedSpace>(vm, space);
+
+  return BuiltinResult::preempt();
+}
+
+BuiltinResult askSpace(VM vm, UnstableNode* args[]) {
+  return BuiltinResult::proceed();
+}
+
+BuiltinResult mergeSpace(VM vm, UnstableNode* args[]) {
+  return BuiltinResult::proceed();
+}
+
 ///////////
 // Utils //
 ///////////
+
+BuiltinResult expectCallable(VM vm, RichNode target, int expectedArity) {
+  int arity = 0;
+  StableNode* body;
+  ProgramCounter start;
+  int Xcount;
+  StaticArray<StableNode> Gs;
+  StaticArray<StableNode> Ks;
+
+  BuiltinResult result = Callable(target).getCallInfo(
+    vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+
+  if (!result.isProceed())
+    return result;
+
+  if (arity != expectedArity)
+    return raiseIllegalArity(vm, expectedArity, arity);
+
+  return BuiltinResult::proceed();
+}
 
 void printReprToStream(VM vm, RichNode arg,
                        std::ostream& out, int depth) {

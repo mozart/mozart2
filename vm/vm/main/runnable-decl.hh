@@ -40,7 +40,7 @@ enum ThreadPriority {
 class Runnable {
 public:
   inline
-  Runnable(VM vm, ThreadPriority priority = tpMiddle);
+  Runnable(VM vm, Space* space, ThreadPriority priority = tpMiddle);
 
   inline
   Runnable(GC gc, Runnable& from);

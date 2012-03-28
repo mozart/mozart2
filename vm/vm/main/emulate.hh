@@ -137,7 +137,10 @@ private:
  */
 class Thread : public Runnable {
 public:
-  Thread(VM vm, StableNode* abstraction);
+  Thread(VM vm, Space* space, StableNode* abstraction);
+
+  Thread(VM vm, Space* space, StableNode* abstraction,
+         size_t argc, UnstableNode* args[]);
 
   inline
   Thread(GC gc, Thread& from);
@@ -154,6 +157,10 @@ protected:
     xregs.release(vm);
   }
 private:
+  inline
+  void constructor(VM vm, StableNode* abstraction,
+                   size_t argc, UnstableNode* args[]);
+
   inline
   void pushFrame(VM vm, StableNode* abstraction,
                  ProgramCounter PC, size_t yregCount,

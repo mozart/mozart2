@@ -126,7 +126,8 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
         break;
       }
 
-      case BuiltinResult::brProceed: {
+      case BuiltinResult::brProceed:
+      case BuiltinResult::brPreempt: {
         // nothing to do
       }
     }

@@ -22,42 +22,61 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __RUNNABLE_H
-#define __RUNNABLE_H
+#ifndef __REIFIEDSPACE_DECL_H
+#define __REIFIEDSPACE_DECL_H
 
-#include "runnable-decl.hh"
-#include "vm-decl.hh"
-#include "space-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 
-Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
-  vm(vm), _space(space), _priority(priority),
-  _runnable(true), _terminated(false) {
+//////////////////
+// ReifiedSpace //
+//////////////////
 
-  _space->incRunnableCount();
+class ReifiedSpace;
 
-  vm->aliveThreads.insert(this);
+#ifndef MOZART_GENERATOR
+#include "ReifiedSpace-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<ReifiedSpace> {
+public:
+  typedef SelfType<ReifiedSpace>::Self Self;
+
+  enum Status {
+    ssNormal, ssFailed, ssMerged
+  };
+public:
+  Implementation(VM, Space* space) : _space(space), _status(ssNormal) {}
+
+  inline
+  Implementation(VM vm, GC gc, Self from);
+
+  Space* space() {
+    return _space;
+  }
+
+  Status status() {
+    return _status;
+  }
+
+  bool isFailed() {
+    return status() == ssFailed;
+  }
+
+  bool isMerged() {
+    return status() == ssMerged;
+  }
+private:
+  SpaceRef _space;
+  Status _status;
+};
+
+#ifndef MOZART_GENERATOR
+#include "ReifiedSpace-implem-decl-after.hh"
+#endif
+
 }
 
-Runnable::Runnable(GC gc, Runnable& from) :
-  vm(gc->vm) {
-
-  gc->gcSpace(from._space, _space);
-  _priority = from._priority;
-  _runnable = from._runnable;
-  _terminated = from._terminated;
-
-  vm->aliveThreads.insert(this);
-}
-
-void Runnable::terminate() {
-  _runnable = false;
-  _terminated = true;
-
-  vm->aliveThreads.remove(this);
-}
-
-}
-
-#endif // __RUNNABLE_H
+#endif // __REIFIEDSPACE_DECL_H

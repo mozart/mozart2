@@ -35,6 +35,7 @@
 #include "callables-decl.hh"
 #include "atom-decl.hh"
 #include "records-decl.hh"
+#include "reifiedspace-decl.hh"
 
 #include "corebuilders.hh"
 #include "exchelpers-decl.hh"
@@ -288,6 +289,7 @@ namespace mozart {
 #include "callables.hh"
 #include "atom.hh"
 #include "records.hh"
+#include "reifiedspace.hh"
 
 #include "exchelpers.hh"
 

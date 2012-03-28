@@ -90,7 +90,18 @@ void StackEntry::afterGC(VM vm) {
 // Thread //
 ////////////
 
-Thread::Thread(VM vm, StableNode* abstraction) : Runnable(vm) {
+Thread::Thread(VM vm, Space* space,
+               StableNode* abstraction): Runnable(vm, space) {
+  constructor(vm, abstraction, 0, nullptr);
+}
+
+Thread::Thread(VM vm, Space* space, StableNode* abstraction,
+               size_t argc, UnstableNode* args[]): Runnable(vm, space) {
+  constructor(vm, abstraction, argc, args);
+}
+
+void Thread::constructor(VM vm, StableNode* abstraction,
+                         size_t argc, UnstableNode* args[]) {
   // getCallInfo
 
   int arity;
@@ -107,12 +118,15 @@ Thread::Thread(VM vm, StableNode* abstraction) : Runnable(vm) {
   Callable(temp).getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
 
 #ifndef NDEBUG
-  assert(result.isProceed() && arity == 0);
+  assert(result.isProceed() && arity == argc);
 #endif
 
   // Set up
 
   xregs.init(vm, std::max(Xcount, InitXRegisters));
+
+  for (size_t i = 0; i < argc; i++)
+    xregs[i].copy(vm, *args[i]);
 
   pushFrame(vm, abstraction, start, 0, nullptr, Gs, Ks);
 
@@ -677,6 +691,11 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
       builtins::show(vm, showArgs);
 
       terminate();
+      preempted = true;
+      break;
+    }
+
+    case BuiltinResult::brPreempt: {
       preempted = true;
       break;
     }

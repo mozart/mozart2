@@ -15,6 +15,8 @@ class Builtins {
 
     register(Show)
 
+    register(Space.NewSpace)
+
     Map.empty ++ registry
   }
 
@@ -46,6 +48,11 @@ class Builtins {
 
   object CreateThread extends BuiltinSymbol("CreateThread",
       "createThread", in = 1, out = 0)
+
+  object Space {
+    object NewSpace extends BuiltinSymbol("NewSpace",
+        "newSpace", in = 1, out = 1)
+  }
 
   object Value {
     object == extends BuiltinSymbol("Value.'=='",

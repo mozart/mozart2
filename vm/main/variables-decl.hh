@@ -69,7 +69,7 @@ public:
   }
 private:
   inline
-  void resumePendings(VM vm);
+  void resumePendings(VM vm, Space* currentSpace);
 
   SpaceRef _home;
 

@@ -694,11 +694,6 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
       preempted = true;
       break;
     }
-
-    case BuiltinResult::brPreempt: {
-      preempted = true;
-      break;
-    }
   }
 }
 

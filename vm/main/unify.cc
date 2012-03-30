@@ -126,8 +126,7 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
         break;
       }
 
-      case BuiltinResult::brProceed:
-      case BuiltinResult::brPreempt: {
+      case BuiltinResult::brProceed: {
         // nothing to do
       }
     }
@@ -215,7 +214,12 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
   /* No need to undo temporary bindings here, even if we are in wkEquals mode.
    * In fact, we should not undo them in that case, as that compactifies
    * the store, and speeds up subsequent tests and/or unifications.
+   *
+   * However, the above is *wrong* when in a subspace, because of speculative
+   * bindings.
    */
+  if (!vm->isOnTopLevel())
+    undoBindings(vm);
 
   return BuiltinResult::proceed();
 }

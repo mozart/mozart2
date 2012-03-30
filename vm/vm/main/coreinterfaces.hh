@@ -57,6 +57,16 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
    * Precondition:
    *   self.type()->getStructuralBehavior() == sbVariable
    */
+  Space* home(RichNode self) {
+    assert(self.type()->getStructuralBehavior() == sbVariable);
+    assert(false);
+    return nullptr;
+  }
+
+  /**
+   * Precondition:
+   *   self.type()->getStructuralBehavior() == sbVariable
+   */
   BuiltinResult bind(RichNode self, VM vm, RichNode src) {
     assert(self.type()->getStructuralBehavior() == sbVariable);
     assert(false);

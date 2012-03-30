@@ -50,6 +50,17 @@ public:
   }
 };
 
+struct TrailEntry {
+public:
+  TrailEntry(StableNode* node, const Node& saved) : node(node), saved(saved) {}
+
+  StableNode* node;
+  Node saved;
+};
+
+class SpaceTrail : public VMAllocatedList<TrailEntry> {
+};
+
 /**
  * Computation space
  */
@@ -60,11 +71,12 @@ public:
   };
 public:
   /** Construct the top-level space */
-  Space() : _parent(nullptr), _isTopLevel(true), _status(ssNormal) {}
+  Space(VM vm) : vm(vm), _parent(nullptr), _isTopLevel(true), _status(ssNormal),
+    _mark(false) {}
 
   /** Construct a subspace */
-  Space(Space* parent) : _parent(parent), _isTopLevel(false),
-    _status(ssNormal) {}
+  Space(VM vm, Space* parent) : vm(vm), _parent(parent), _isTopLevel(false),
+    _status(ssNormal), _mark(false) {}
 
   /** GC constructor */
   inline
@@ -77,8 +89,9 @@ public:
       return _parent;
   }
 
-  // Status
+// Status
 
+public:
   bool isTopLevel() {
     return _isTopLevel;
   }
@@ -102,19 +115,43 @@ public:
     return &_rootVar;
   }
 
-  // Operations
+// Relations between spaces
 
-  // Garbage collection
+  bool isAncestor(Space* potentialAncestor) {
+    for (Space* s = this; s != nullptr; s = s->getParent()) {
+      if (s == potentialAncestor)
+        return true;
+    }
 
+    return false;
+  }
+
+// Speculative bindings
+
+  void makeBackupForSpeculativeBinding(StableNode* node) {
+    trail.push_back_new(vm, node, node->node);
+  }
+
+// Garbage collection
+
+public:
   Space* gCollect(GC gc) {
     Space* result = new (gc->vm) Space(gc, this);
     _status = ssGCed;
     _gced = result;
     return result;
   }
-public:
-  // Maintenance
+private:
+  friend class GarbageCollector;
 
+  Space* getGCed() {
+    assert(status() == ssGCed);
+    return _gced;
+  }
+
+// Maintenance
+
+public:
   void incRunnableCount() {
     if (!isTopLevel())
       runnableCount++;
@@ -129,15 +166,52 @@ private:
     _status = ssReference;
     _reference = ref;
   }
-private:
-  friend class GarbageCollector;
 
-  Space* getGCed() {
-    assert(status() == ssGCed);
-    return _gced;
+// Installation and deinstallation
+
+public:
+  /**
+   * Try to install this space. Returns true on success and false on failure.
+   * Upon failure, the highest space that could be installed is installed.
+   */
+  bool install();
+private:
+  inline
+  Space* findCommonAncestor(Space* other);
+
+  inline
+  void deinstallTo(Space* ancestor);
+
+  inline
+  bool installFrom(Space* ancestor);
+
+  inline
+  void deinstallThis();
+
+  inline
+  bool installThis();
+
+// The mark
+
+private:
+  bool hasMark() {
+    return _mark;
   }
+
+  void setMark() {
+    _mark = true;
+  }
+
+  void unsetMark() {
+    _mark = false;
+  }
+
+// Fields
+
 private:
   friend struct SpaceRef;
+
+  VM vm;
 
   union {
     SpaceRef _parent;  // status not in [ssReference, ssGCed] && !isTopLevel
@@ -148,8 +222,11 @@ private:
   bool _isTopLevel;
   Status _status;
 
+  bool _mark;
+
   StableNode _rootVar;
 
+  SpaceTrail trail;
   SpaceScript script;
 
   int runnableCount;

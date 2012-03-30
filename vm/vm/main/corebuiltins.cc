@@ -175,7 +175,7 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
     return result;
 
   // Create the space
-  Space* space = new (vm) Space(vm->getCurrentSpace());
+  Space* space = new (vm) Space(vm, vm->getCurrentSpace());
   space->getRootVar()->make<Unbound>(vm);
 
   // Create the thread {Proc Root}
@@ -187,7 +187,7 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
   // Create the reification of the space
   args[1]->make<ReifiedSpace>(vm, space);
 
-  return BuiltinResult::preempt();
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult askSpace(VM vm, UnstableNode* args[]) {

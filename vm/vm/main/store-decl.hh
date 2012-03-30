@@ -46,6 +46,7 @@ namespace mozart {
  */
 class Node {
 private:
+  friend struct NodeBackup;
   friend class StableNode;
   friend class UnstableNode;
   friend class RichNode;
@@ -121,9 +122,11 @@ public:
     node = from.node;
   }
 private:
+  friend struct NodeBackup;
   friend class UnstableNode;
   friend class RichNode;
   friend class GarbageCollector;
+  friend class Space;
 
   union {
     Node node;
@@ -191,9 +194,11 @@ public:
     return *this;
   }
 private:
+  friend struct NodeBackup;
   friend class StableNode;
   friend class RichNode;
   friend class GarbageCollector;
+  friend class Space;
 
   union {
     Node node;
@@ -442,7 +447,6 @@ public:
     brFailed,     // Unification failed
     brWaitBefore, // Need an unbound variable, I want you to wait on that one
     brRaise,      // Raise an exception
-    brPreempt,    // Preempt the thread now, but do not suspend
   };
 public:
   inline
@@ -456,9 +460,6 @@ public:
 
   inline
   static BuiltinResult raise(VM vm, RichNode node);
-
-  inline
-  static BuiltinResult preempt();
 
   bool isProceed() {
     return _status == brProceed;

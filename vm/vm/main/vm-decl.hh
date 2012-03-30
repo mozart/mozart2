@@ -91,6 +91,13 @@ public:
   Space* getCurrentSpace() {
     return _currentSpace;
   }
+
+  bool isOnTopLevel() {
+    return _isOnTopLevel;
+  }
+
+  inline
+  void setCurrentSpace(Space* space);
 private:
   friend class GarbageCollector;
   friend class Runnable;
@@ -120,6 +127,7 @@ private:
 
   Space* _topLevelSpace;
   Space* _currentSpace;
+  bool _isOnTopLevel;
 
   RunnableList aliveThreads;
 

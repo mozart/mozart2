@@ -147,6 +147,12 @@ public:
 
   void run();
 
+  void kill() {
+    Runnable::kill();
+    xregs.release(vm);
+    // TODO Release the stack frames
+  }
+
   void beforeGC();
   void afterGC();
 

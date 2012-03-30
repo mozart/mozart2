@@ -59,6 +59,9 @@ public:
   void setRunnable() { _runnable = true; }
   void unsetRunnable() { _runnable = false; }
 
+  inline
+  virtual void kill();
+
   virtual void beforeGC() {}
   virtual void afterGC() {}
 
@@ -77,6 +80,7 @@ private:
 
   bool _runnable;
   bool _terminated;
+  bool _dead;
 
   Runnable* _previous;
   Runnable* _next;

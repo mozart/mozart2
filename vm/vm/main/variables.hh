@@ -62,6 +62,13 @@ void Implementation<Variable>::addToSuspendList(Self self, VM vm,
 }
 
 BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
+  // Is it a speculative binding?
+  Space* currentSpace = vm->getCurrentSpace();
+  if (home() != currentSpace) {
+    currentSpace->makeBackupForSpeculativeBinding(
+      RichNode(self).getStableRef(vm));
+  }
+
   // Actual binding
   RichNode(self).reinit(vm, src);
 
@@ -72,13 +79,19 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   if (src.type() == Variable::type()) {
     src.as<Variable>().transferPendings(vm, pendingThreads, pendingVariables);
   } else {
-    resumePendings(vm);
+    resumePendings(vm, currentSpace);
   }
 
   return BuiltinResult::proceed();
 }
 
-void Implementation<Variable>::resumePendings(VM vm) {
+void Implementation<Variable>::resumePendings(VM vm, Space* currentSpace) {
+  bool topLevel = vm->isOnTopLevel();
+
+  /* About spaces, the general idea here is to wake up things whose home
+   * space is the current space or any of its children, but not the others.
+   */
+
   // Wake up threads
 
   ThreadPool& threadPool = vm->getThreadPool();
@@ -86,8 +99,10 @@ void Implementation<Variable>::resumePendings(VM vm) {
   for (auto iter = pendingThreads.begin();
        iter != pendingThreads.end(); iter++) {
 
-    (*iter)->setRunnable();
-    threadPool.schedule(*iter);
+    if (topLevel || (*iter)->getSpace()->isAncestor(currentSpace)) {
+      (*iter)->setRunnable();
+      threadPool.schedule(*iter);
+    }
   }
 
   pendingThreads.clear(vm);
@@ -100,8 +115,11 @@ void Implementation<Variable>::resumePendings(VM vm) {
     RichNode variable = unstableVar;
 
     if (variable.type()->isTransient()) {
-      UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
-      DataflowVariable(variable).bind(vm, unit);
+      DataflowVariable df = variable;
+      if (topLevel || df.home()->isAncestor(currentSpace)) {
+        UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
+        df.bind(vm, unit);
+      }
     }
   }
 
@@ -135,6 +153,14 @@ void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
 }
 
 BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
+  // Is it a speculative binding?
+  Space* currentSpace = vm->getCurrentSpace();
+  if (home() != currentSpace) {
+    currentSpace->makeBackupForSpeculativeBinding(
+      RichNode(self).getStableRef(vm));
+  }
+
+  // Actual binding
   RichNode(self).reinit(vm, src);
 
   return BuiltinResult::proceed();

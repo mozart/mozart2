@@ -26,6 +26,7 @@
 #define __VM_H
 
 #include "vm-decl.hh"
+#include "space-decl.hh"
 
 namespace mozart {
 
@@ -40,7 +41,7 @@ VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
 
   memoryManager.init();
 
-  _topLevelSpace = new (this) Space;
+  _topLevelSpace = new (this) Space(this);
   _currentSpace = _topLevelSpace;
 }
 
@@ -62,6 +63,13 @@ void VirtualMachine::run() {
       }
     } while (currentThread->isTerminated());
 
+    // Install the thread's space
+    if (!currentThread->getSpace()->install()) {
+      // The space is failed, kill the thread now
+      currentThread->kill();
+      continue;
+    }
+
     // Run the thread
     currentThread->run();
 
@@ -77,6 +85,11 @@ bool VirtualMachine::testPreemption() {
 
 void VirtualMachine::scheduleThread(Runnable* thread) {
   threadPool.schedule(thread);
+}
+
+void VirtualMachine::setCurrentSpace(Space* space) {
+  _currentSpace = space;
+  _isOnTopLevel = space->isTopLevel();
 }
 
 }

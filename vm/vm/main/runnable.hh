@@ -33,7 +33,7 @@ namespace mozart {
 
 Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
-  _runnable(true), _terminated(false) {
+  _runnable(true), _terminated(false), _dead(false) {
 
   _space->incRunnableCount();
 
@@ -47,8 +47,16 @@ Runnable::Runnable(GC gc, Runnable& from) :
   _priority = from._priority;
   _runnable = from._runnable;
   _terminated = from._terminated;
+  _dead = from._dead;
 
   vm->aliveThreads.insert(this);
+}
+
+void Runnable::kill() {
+  _runnable = false;
+  _dead = true;
+
+  vm->aliveThreads.remove(this);
 }
 
 void Runnable::terminate() {

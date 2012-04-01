@@ -50,10 +50,7 @@ MemoryManager& GarbageCollector::getMemoryManager() {
 void GarbageCollector::gcSpace(SpaceRef from, SpaceRef& to) {
   // Spaces are GCed immediately
   Space* space = from;
-  if (space->status() == Space::ssGCed)
-    to = space->getGCed();
-  else
-    to = space->gCollect(this);
+  to = space->gCollect(this);
 }
 
 void GarbageCollector::gcThread(Runnable* from, Runnable*& to) {

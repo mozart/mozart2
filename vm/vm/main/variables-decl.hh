@@ -62,14 +62,24 @@ public:
   inline
   BuiltinResult bind(Self self, VM vm, RichNode src);
 
-  void transferPendings(VM vm, VMAllocatedList<Runnable*>& srcThreads,
-                        VMAllocatedList<StableNode*>& srcVariables) {
-    pendingThreads.splice(vm, srcThreads);
-    pendingVariables.splice(vm, srcVariables);
-  }
-private:
   inline
-  void resumePendings(VM vm, Space* currentSpace);
+  void transferPendings(VM vm, VMAllocatedList<Runnable*>& srcThreads,
+                        VMAllocatedList<StableNode*>& srcVariables);
+
+  inline
+  void transferPendingsSubSpace(VM vm, Space* currentSpace,
+                                VMAllocatedList<Runnable*>& srcThreads,
+                                VMAllocatedList<StableNode*>& srcVariables);
+private:
+  // TODO Might a good candidate for noinline
+  inline
+  BuiltinResult bindSubSpace(Self self, VM vm, RichNode src);
+
+  inline
+  void resumePendings(VM vm);
+
+  inline
+  void resumePendingsSubSpace(VM vm, Space* currentSpace);
 
   SpaceRef _home;
 

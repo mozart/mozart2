@@ -104,63 +104,84 @@ public:
     return _status == ssFailed;
   }
 
-  bool isAlive() {
-    for (Space* s = this; !s->isTopLevel(); s = s->getParent())
-      if (s->isFailed())
-        return false;
-    return true;
-  }
+  inline
+  bool isAlive();
 
   StableNode* getRootVar() {
     return &_rootVar;
   }
 
+  UnstableNode* getStatusVar() {
+    return &_statusVar;
+  }
+
+// Admissibility
+
+  /* A space A is admissible for an operation while the current space is B iff
+   * A is not an ancestor of B.
+   */
+
+  inline
+  bool isAdmissible(Space* currentSpace);
+
+  bool isAdmissible(VM vm) {
+    return isAdmissible(vm->getCurrentSpace());
+  }
+
+  bool isAdmissible() {
+    return isAdmissible(vm);
+  }
+
 // Relations between spaces
 
-  bool isAncestor(Space* potentialAncestor) {
-    for (Space* s = this; s != nullptr; s = s->getParent()) {
-      if (s == potentialAncestor)
-        return true;
-    }
-
-    return false;
-  }
+  inline
+  bool isAncestor(Space* potentialAncestor);
 
 // Speculative bindings
 
-  void makeBackupForSpeculativeBinding(StableNode* node) {
-    trail.push_back_new(vm, node, node->node);
-  }
+  inline
+  void makeBackupForSpeculativeBinding(StableNode* node);
+
+// Operations
+
+  inline
+  BuiltinResult merge(VM vm, Space* destSpace);
 
 // Garbage collection
 
 public:
-  Space* gCollect(GC gc) {
-    Space* result = new (gc->vm) Space(gc, this);
-    _status = ssGCed;
-    _gced = result;
-    return result;
-  }
-private:
-  friend class GarbageCollector;
+  inline
+  Space* gCollect(GC gc);
 
-  Space* getGCed() {
-    assert(status() == ssGCed);
-    return _gced;
-  }
-
-// Maintenance
+// Stability detection
 
 public:
-  void incRunnableCount() {
-    if (!isTopLevel())
-      runnableCount++;
-  }
+  inline
+  bool isStable();
 
-  void decRunnableCount() {
-    if (!isTopLevel())
-      runnableCount--;
-  }
+  inline
+  bool isBlocked();
+
+  inline
+  void incSuspensionCount(int n = 1);
+
+  inline
+  void decSuspensionCount();
+
+  inline
+  int getSuspensionCount();
+
+  inline
+  void incRunnableThreadCount();
+
+  inline
+  void decRunnableThreadCount();
+
+  inline
+  bool hasRunnableThreads();
+
+// Commit
+
 private:
   void setReference(Space* ref) {
     _status = ssReference;
@@ -224,12 +245,16 @@ private:
 
   bool _mark;
 
+  VMAllocatedList<Runnable*> suspensionList;
+
   StableNode _rootVar;
+  UnstableNode _statusVar;
 
   SpaceTrail trail;
   SpaceScript script;
 
-  int runnableCount;
+  int suspensionCount;
+  int cascadedRunnableThreadCount;
 };
 
 }

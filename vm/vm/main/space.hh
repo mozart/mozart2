@@ -54,6 +54,119 @@ Space::Space(GC gc, Space* from) {
   }
 }
 
+// Status
+
+bool Space::isAlive() {
+  for (Space* s = this; !s->isTopLevel(); s = s->getParent())
+    if (s->isFailed())
+      return false;
+  return true;
+}
+
+// Admissibility
+
+bool Space::isAdmissible(Space* currentSpace) {
+  // Test the most common case first: currentSpace is the parent of this
+  if (getParent() == currentSpace)
+    return true;
+
+  // Fall back on the full loop
+  return !currentSpace->isAncestor(this);
+}
+
+// Relations between spaces
+
+bool Space::isAncestor(Space* potentialAncestor) {
+  for (Space* s = this; s != nullptr; s = s->getParent()) {
+    if (s == potentialAncestor)
+      return true;
+  }
+
+  return false;
+}
+
+// Speculative bindings
+
+void Space::makeBackupForSpeculativeBinding(StableNode* node) {
+  trail.push_back_new(vm, node, node->node);
+}
+
+// Operations
+
+BuiltinResult Space::merge(VM vm, Space* destSpace) {
+  // TODO
+  return BuiltinResult::proceed();
+}
+
+// Garbage collection
+
+Space* Space::gCollect(GC gc) {
+  if (_status == ssGCed) {
+    return _gced;
+  } else {
+    Space* result = new (gc->vm) Space(gc, this);
+    _status = ssGCed;
+    _gced = result;
+    return result;
+  }
+}
+
+// Stability detection
+
+bool Space::isStable() {
+  if (hasRunnableThreads())
+    return false;
+
+  if (!trail.empty())
+    return false;
+
+  // TODO
+  return true;
+}
+
+bool Space::isBlocked() {
+  return !hasRunnableThreads();
+}
+
+void Space::incSuspensionCount(int n) {
+  assert(!isFailed());
+  suspensionCount += n;
+}
+
+void Space::decSuspensionCount() {
+  assert(!isFailed());
+  assert(suspensionCount > 0);
+  suspensionCount--;
+}
+
+int Space::getSuspensionCount() {
+  assert(!isFailed() && suspensionCount >= 0);
+  return suspensionCount;
+}
+
+void Space::incRunnableThreadCount() {
+  for (Space* space = this; !space->isTopLevel();
+       space = space->getParent()) {
+    if ((space->cascadedRunnableThreadCount)++ > 0)
+      return;
+  }
+}
+
+void Space::decRunnableThreadCount() {
+  for (Space* space = this; !space->isTopLevel();
+       space = space->getParent()) {
+    if (--(space->cascadedRunnableThreadCount) > 0)
+      return;
+
+    if (space->isStable())
+      ; // TODO Inject new empty thread in space
+  }
+}
+
+bool Space::hasRunnableThreads() {
+  return cascadedRunnableThreadCount > 0;
+}
+
 }
 
 #endif // __SPACE_H

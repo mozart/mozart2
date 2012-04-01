@@ -28,6 +28,7 @@
 #include "reifiedspace-decl.hh"
 
 #include "coreinterfaces.hh"
+#include "boolean.hh"
 
 namespace mozart {
 
@@ -42,6 +43,96 @@ namespace mozart {
 Implementation<ReifiedSpace>::Implementation(VM vm, GC gc, Self from) {
   gc->gcSpace(from->_space, _space);
   _status = from->_status;
+}
+
+BuiltinResult Implementation<ReifiedSpace>::isSpace(
+  VM vm, UnstableNode* result) {
+  result->make<Boolean>(vm, true);
+  return BuiltinResult::proceed();
+}
+
+template <class T, class... Args>
+inline
+UnstableNode build(VM vm, Args... args) {
+  UnstableNode result;
+  result.make<T>(vm, args...);
+  return result;
+}
+
+BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  switch (status()) {
+    case ssFailed: {
+      result->make<Atom>(vm, u"failed");
+      return BuiltinResult::proceed();
+    }
+
+    case ssMerged: {
+      result->make<Atom>(vm, u"merged");
+      return BuiltinResult::proceed();
+    }
+
+    case ssNormal: {
+      Space* space = getSpace();
+
+      if (!space->isAdmissible(vm))
+        return raise(vm, u"spaceAdmissible");
+
+      if (space->isBlocked() && !space->isStable()) {
+        UnstableNode label = build<Atom>(vm, u"suspended");
+        result->make<Tuple>(vm, 1, &label);
+
+        auto tuple = RichNode(*result).as<Tuple>();
+        tuple.initElement(vm, 0, space->getStatusVar());
+      }
+
+      result->copy(vm, *space->getStatusVar());
+      return BuiltinResult::proceed();
+    }
+  }
+}
+
+BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  switch (status()) {
+    case ssFailed:
+      return BuiltinResult::failed();
+
+    case ssMerged:
+      return raise(vm, u"spaceMerged");
+
+    case ssNormal: {
+      Space* currentSpace = vm->getCurrentSpace();
+      Space* space = getSpace();
+
+      if (!space->isAdmissible(currentSpace))
+        return raise(vm, u"spaceAdmissible");
+
+      if (space->getParent() != currentSpace) {
+        // TODO This is not an error, but I don't know what to do with it yet
+        return raise(vm, u"spaceMergeNotImplemented");
+      }
+
+      // Update status var
+      RichNode statusVar = *space->getStatusVar();
+      if (statusVar.type()->isTransient()) {
+        UnstableNode atomMerged = build<Atom>(vm, u"merged");
+        DataflowVariable(statusVar).bind(vm, atomMerged);
+      }
+
+      // Extract root var
+      result->copy(vm, *space->getRootVar());
+
+      // Actual merge
+      BuiltinResult res = space->merge(vm, currentSpace);
+
+      this->_status = ssMerged;
+
+      return res;
+    }
+  }
 }
 
 }

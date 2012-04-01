@@ -62,8 +62,34 @@ void Implementation<Variable>::addToSuspendList(Self self, VM vm,
 }
 
 BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
-  // Is it a speculative binding?
+  if (vm->isOnTopLevel()) {
+    // The simple, fast binding when on top-level
+    RichNode(self).reinit(vm, src);
+
+    /* If the value we were bound to is a Variable too, we have to transfer the
+     * threads and variables waiting for this so that they wait for the other
+     * Variable.
+     * Otherwise, we wake up the threads and variables.
+     */
+    src.update();
+    if (src.type() == Variable::type()) {
+      src.as<Variable>().transferPendings(vm, pendingThreads, pendingVariables);
+    } else {
+      resumePendings(vm);
+    }
+
+    return BuiltinResult::proceed();
+  } else {
+    // The complicated, slow binding when in a subspace
+    return bindSubSpace(self, vm, src);
+  }
+}
+
+BuiltinResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
+                                                     RichNode src) {
   Space* currentSpace = vm->getCurrentSpace();
+
+  // Is it a speculative binding?
   if (home() != currentSpace) {
     currentSpace->makeBackupForSpeculativeBinding(
       RichNode(self).getStableRef(vm));
@@ -72,24 +98,91 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   // Actual binding
   RichNode(self).reinit(vm, src);
 
-  // If the value we were bound to is a Variable too, we have to transfer the
-  // threads waiting for this so that they wait for the other Variable.
-  // Otherwise, we wake up the threads.
+  /* If the value we were bound to is a Variable too, we have to transfer the
+   * threads and variables waiting for this so that they wait for the other
+   * Variable.
+   * Otherwise, we wake up the threads and variables.
+   */
   src.update();
   if (src.type() == Variable::type()) {
-    src.as<Variable>().transferPendings(vm, pendingThreads, pendingVariables);
+    src.as<Variable>().transferPendingsSubSpace(vm, currentSpace,
+                                                pendingThreads,
+                                                pendingVariables);
   } else {
-    resumePendings(vm, currentSpace);
+    resumePendingsSubSpace(vm, currentSpace);
   }
 
   return BuiltinResult::proceed();
 }
 
-void Implementation<Variable>::resumePendings(VM vm, Space* currentSpace) {
-  bool topLevel = vm->isOnTopLevel();
+void Implementation<Variable>::transferPendings(
+  VM vm, VMAllocatedList<Runnable*>& srcThreads,
+  VMAllocatedList<StableNode*>& srcVariables) {
 
-  /* About spaces, the general idea here is to wake up things whose home
-   * space is the current space or any of its children, but not the others.
+  pendingThreads.splice(vm, srcThreads);
+  pendingVariables.splice(vm, srcVariables);
+}
+
+void Implementation<Variable>::transferPendingsSubSpace(
+  VM vm, Space* currentSpace, VMAllocatedList<Runnable*>& srcThreads,
+  VMAllocatedList<StableNode*>& srcVariables) {
+
+  // Transfer threads
+  for (auto iter = srcThreads.removable_begin();
+        iter != srcThreads.removable_end(); ) {
+    if ((*iter)->getSpace()->isAncestor(currentSpace))
+      pendingThreads.splice(vm, srcThreads, iter);
+    else
+      ++iter;
+  }
+
+  // Transfer variables
+  for (auto iter = srcVariables.removable_begin();
+        iter != srcVariables.removable_end(); ) {
+    UnstableNode temp(vm, **iter);
+    RichNode richTemp = temp;
+
+    if (richTemp.type()->isTransient() &&
+        DataflowVariable(temp).home()->isAncestor(currentSpace))
+      pendingVariables.splice(vm, srcVariables, iter);
+    else
+      ++iter;
+  }
+}
+
+void Implementation<Variable>::resumePendings(VM vm) {
+  // Wake up threads
+
+  ThreadPool& threadPool = vm->getThreadPool();
+
+  for (auto iter = pendingThreads.begin();
+       iter != pendingThreads.end(); iter++) {
+    (*iter)->setRunnable();
+    threadPool.schedule(*iter);
+  }
+
+  pendingThreads.clear(vm);
+
+  // "Wake up", i.e., bind control variables
+
+  for (auto iter = pendingVariables.begin();
+       iter != pendingVariables.end(); iter++) {
+    UnstableNode unstableVar(vm, **iter);
+    RichNode variable = unstableVar;
+
+    if (variable.type()->isTransient()) {
+      UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
+      DataflowVariable(variable).bind(vm, unit);
+    }
+  }
+
+  pendingVariables.clear(vm);
+}
+
+void Implementation<Variable>::resumePendingsSubSpace(VM vm,
+                                                      Space* currentSpace) {
+  /* The general idea here is to wake up things whose home space is the current
+   * space or any of its children, but not the others.
    */
 
   // Wake up threads
@@ -99,7 +192,7 @@ void Implementation<Variable>::resumePendings(VM vm, Space* currentSpace) {
   for (auto iter = pendingThreads.begin();
        iter != pendingThreads.end(); iter++) {
 
-    if (topLevel || (*iter)->getSpace()->isAncestor(currentSpace)) {
+    if ((*iter)->getSpace()->isAncestor(currentSpace)) {
       (*iter)->setRunnable();
       threadPool.schedule(*iter);
     }
@@ -116,7 +209,7 @@ void Implementation<Variable>::resumePendings(VM vm, Space* currentSpace) {
 
     if (variable.type()->isTransient()) {
       DataflowVariable df = variable;
-      if (topLevel || df.home()->isAncestor(currentSpace)) {
+      if (df.home()->isAncestor(currentSpace)) {
         UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
         df.bind(vm, unit);
       }

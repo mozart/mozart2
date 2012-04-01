@@ -35,7 +35,7 @@ Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
   _runnable(true), _terminated(false), _dead(false) {
 
-  _space->incRunnableCount();
+  _space->incRunnableThreadCount();
 
   vm->aliveThreads.insert(this);
 }

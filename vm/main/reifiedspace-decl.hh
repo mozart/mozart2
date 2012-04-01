@@ -53,7 +53,7 @@ public:
   inline
   Implementation(VM vm, GC gc, Self from);
 
-  Space* space() {
+  Space* getSpace() {
     return _space;
   }
 
@@ -68,6 +68,15 @@ public:
   bool isMerged() {
     return status() == ssMerged;
   }
+public:
+  inline
+  BuiltinResult isSpace(VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult mergeSpace(Self self, VM vm, UnstableNode* result);
 private:
   SpaceRef _space;
   Status _status;

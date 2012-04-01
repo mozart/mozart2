@@ -75,6 +75,45 @@ public:
   private:
     ListNode* node;
   };
+
+  struct removable_iterator {
+    removable_iterator(ListNode* node, ListNode* prev) :
+      node(node), prev(prev) {}
+
+    bool operator==(const removable_iterator& other) {
+      return node == other.node;
+    }
+
+    bool operator!=(const removable_iterator& other) {
+      return node != other.node;
+    }
+
+    removable_iterator operator++() {
+      prev = node;
+      node = node->next;
+      return *this;
+    }
+
+    removable_iterator operator++(int) {
+      removable_iterator result = *this;
+      prev = node;
+      node = node->next;
+      return result;
+    }
+
+    T& operator*() {
+      return node->item;
+    }
+
+    T* operator->() {
+      return &node->item;
+    }
+  private:
+    friend class MemManagedList<T>;
+
+    ListNode* node;
+    ListNode* prev;
+  };
 public:
   MemManagedList() : first(nullptr), last(nullptr) {}
 
@@ -160,6 +199,12 @@ public:
     first = last = nullptr;
   }
 
+  void remove(MemoryManager& mm, removable_iterator& iterator) {
+    ListNode* node = iterator.node;
+    internalRemove(iterator);
+    freeNode(mm, node);
+  }
+
   void splice(MemoryManager& mm, MemManagedList<T>& source) {
     if (last == nullptr)
       first = source.first;
@@ -170,6 +215,21 @@ public:
     source.first = source.last = nullptr;
   }
 
+  void splice(MemoryManager& mm, MemManagedList<T>& source,
+              removable_iterator& srcIterator) {
+    ListNode* node = srcIterator.node;
+    source.internalRemove(srcIterator);
+
+    node->next = nullptr;
+
+    if (last == nullptr) {
+      first = last = node;
+    } else {
+      last->next = node;
+      last = node;
+    }
+  }
+
   iterator begin() {
     return iterator(first);
   }
@@ -178,12 +238,35 @@ public:
     return iterator(nullptr);
   }
 
+  removable_iterator removable_begin() {
+    return removable_iterator(first, nullptr);
+  }
+
+  removable_iterator removable_end() {
+    return removable_iterator(nullptr, last);
+  }
+
   /** Size of the list. O(n) operation. */
   size_t size() {
     size_t result = 0;
     for (auto iter = begin(); iter != end(); ++iter)
       result++;
     return result;
+  }
+private:
+  void internalRemove(removable_iterator& iterator) {
+    ListNode* node = iterator.node;
+    ListNode* prev = iterator.prev;
+
+    ++iterator;
+
+    if (node == last)
+      last = prev;
+
+    if (prev == nullptr)
+      first = node->next;
+    else
+      prev->next = node->next;
   }
 private:
   ListNode* newNode(MemoryManager& mm, ListNode* next, const T& item) {

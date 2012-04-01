@@ -140,39 +140,50 @@ private:
 
 template <class T>
 class VMAllocatedList: public MemManagedList<T> {
+private:
+  typedef MemManagedList<T> Super;
 public:
   void push_back(VM vm, const T& item) {
-    MemManagedList<T>::push_back(vm->getMemoryManager(), item);
+    Super::push_back(vm->getMemoryManager(), item);
   }
 
   template <class... Args>
   void push_back_new(VM vm, Args... args) {
-    MemManagedList<T>::push_back_new(vm->getMemoryManager(), args...);
+    Super::push_back_new(vm->getMemoryManager(), args...);
   }
 
   void push_front(VM vm, const T& item) {
-    MemManagedList<T>::push_front(vm->getMemoryManager(), item);
+    Super::push_front(vm->getMemoryManager(), item);
   }
 
   template <class... Args>
   void push_front_new(VM vm, Args... args) {
-    MemManagedList<T>::push_front_new(vm->getMemoryManager(), args...);
+    Super::push_front_new(vm->getMemoryManager(), args...);
   }
 
   T pop_front(VM vm) {
-    return MemManagedList<T>::pop_front(vm->getMemoryManager());
+    return Super::pop_front(vm->getMemoryManager());
   }
 
   void remove_front(VM vm) {
-    MemManagedList<T>::remove_front(vm->getMemoryManager());
+    Super::remove_front(vm->getMemoryManager());
   }
 
   void clear(VM vm) {
-    MemManagedList<T>::clear(vm->getMemoryManager());
+    Super::clear(vm->getMemoryManager());
+  }
+
+  void remove(VM vm, typename Super::removable_iterator& iterator) {
+    Super::remove(vm->getMemoryManager(), iterator);
   }
 
   void splice(VM vm, VMAllocatedList<T>& source) {
-    MemManagedList<T>::splice(vm->getMemoryManager(), source);
+    Super::splice(vm->getMemoryManager(), source);
+  }
+
+  void splice(VM vm, VMAllocatedList<T>& source,
+              typename Super::removable_iterator& srcIterator) {
+    Super::splice(vm->getMemoryManager(), source, srcIterator);
   }
 };
 

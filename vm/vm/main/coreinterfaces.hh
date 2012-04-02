@@ -36,6 +36,7 @@
 #include "atom-decl.hh"
 #include "records-decl.hh"
 
+#include "corebuilders.hh"
 #include "exchelpers-decl.hh"
 
 #include <iostream>

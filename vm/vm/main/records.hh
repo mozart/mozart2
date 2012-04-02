@@ -93,9 +93,8 @@ BuiltinResult Implementation<Tuple>::dot(Self self, VM vm,
                                          UnstableNode* feature,
                                          UnstableNode* result) {
   nativeint featureIntValue = 0;
-  IntegerValue featureValue = *feature;
 
-  BuiltinResult res = featureValue.intValue(vm, &featureIntValue);
+  BuiltinResult res = IntegerValue(*feature).intValue(vm, &featureIntValue);
   if (!res.isProceed())
     return res;
 

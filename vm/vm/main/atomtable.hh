@@ -69,6 +69,7 @@ class AtomTable {
 public:
   AtomTable() : root(nullptr), _count(0) {}
 
+  __attribute__((noinline))
   AtomImpl* get(VM vm, size_t size, const char16_t* data) {
     assert(size == (size << 5) >> 5);
     size <<= 4;

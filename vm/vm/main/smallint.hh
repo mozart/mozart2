@@ -62,9 +62,8 @@ BuiltinResult Implementation<SmallInt>::add(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = *right;
 
-  BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
+  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
@@ -93,9 +92,8 @@ BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
                                                  UnstableNode* right,
                                                  UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = *right;
 
-  BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
+  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
@@ -124,9 +122,8 @@ BuiltinResult Implementation<SmallInt>::multiply(Self self, VM vm,
                                                  UnstableNode* right,
                                                  UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = *right;
 
-  BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
+  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
@@ -176,9 +173,8 @@ BuiltinResult Implementation<SmallInt>::div(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = *right;
 
-  BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
+  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
@@ -206,9 +202,8 @@ BuiltinResult Implementation<SmallInt>::mod(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  IntegerValue rightValue = *right;
 
-  BuiltinResult res = rightValue.intValue(vm, &rightIntValue);
+  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 

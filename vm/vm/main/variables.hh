@@ -98,8 +98,7 @@ void Implementation<Variable>::resumePendings(VM vm) {
     RichNode variable = unstableVar;
 
     if (variable.type()->isTransient()) {
-      UnstableNode unit;
-      unit.make<SmallInt>(vm, 0);
+      UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
       DataflowVariable(variable).bind(vm, unit);
     }
   }

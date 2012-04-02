@@ -54,10 +54,8 @@ public:
   Implementation(VM, int arity, OzBuiltin builtin) :
     _arity(arity), _builtin(builtin) {}
 
-  Implementation(VM vm, GC gc, Self from) {
-    _arity = from->_arity;
-    _builtin = from->_builtin;
-  }
+  inline
+  Implementation(VM vm, GC gc, Self from);
 
   /**
    * Arity of this builtin
@@ -70,12 +68,8 @@ public:
    * @param argc   Actual number of parameters
    * @param args   Actual parameters
    */
-  BuiltinResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]) {
-    if (argc == _arity)
-      return _builtin(vm, args);
-    else
-      return raiseIllegalArity(self, vm, argc);
-  }
+  inline
+  BuiltinResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]);
 
   /**
    * Get the arity of the builtin in a node
@@ -83,9 +77,6 @@ public:
   inline
   BuiltinResult arity(Self self, VM vm, UnstableNode* result);
 private:
-  inline
-  BuiltinResult raiseIllegalArity(Self self, VM vm, int argc);
-
   int _arity;
   OzBuiltin _builtin;
 };

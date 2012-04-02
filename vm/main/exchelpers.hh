@@ -32,28 +32,27 @@
 namespace mozart {
 
 BuiltinResult raiseAtom(VM vm, const char16_t* atom) {
-  UnstableNode exception;
-  exception.make<Atom>(vm, atom);
+  UnstableNode exception = UnstableNode::build<Atom>(vm, atom);
 
   return BuiltinResult::raise(vm, exception);
 }
 
 BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
-  UnstableNode label;
-  label.make<Atom>(vm, u"typeError");
+  UnstableNode label = UnstableNode::build<Atom>(vm, u"typeError");
 
-  UnstableNode exception;
-  exception.make<Tuple>(vm, 2, &label);
+  UnstableNode exceptionUnstable = UnstableNode::build<Tuple>(vm, 2, &label);
+  auto exception = RichNode(exceptionUnstable).as<Tuple>();
 
-  ArrayInitializer initializer = exception;
+  UnstableNode arg = UnstableNode::build<Atom>(vm, expected);
+  exception.initElement(vm, 0, &arg);
 
-  UnstableNode arg;
-  arg.make<Atom>(vm, expected);
-  initializer.initElement(vm, 0, &arg);
-
-  initializer.initElement(vm, 1, &actual.origin());
+  exception.initElement(vm, 1, &actual.origin());
 
   return BuiltinResult::raise(vm, exception);
+}
+
+BuiltinResult raiseIllegalArity(VM vm, int expected, int actual) {
+  return raiseAtom(vm, u"illegalArity");
 }
 
 }

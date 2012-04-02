@@ -35,6 +35,9 @@ BuiltinResult raiseAtom(VM vm, const char16_t* atom);
 inline
 BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual);
 
+inline
+BuiltinResult raiseIllegalArity(VM vm, int expected, int actual);
+
 }
 
 #endif // __EXCHELPERS_DECL_H

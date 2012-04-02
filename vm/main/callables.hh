@@ -29,6 +29,7 @@
 
 #include "coreinterfaces.hh"
 #include "smallint.hh"
+#include "exchelpers.hh"
 
 #include <iostream>
 
@@ -42,19 +43,24 @@ namespace mozart {
 #include "BuiltinProcedure-implem.hh"
 #endif
 
+Implementation<BuiltinProcedure>::Implementation(VM vm, GC gc, Self from) {
+  _arity = from->_arity;
+  _builtin = from->_builtin;
+}
+
+BuiltinResult Implementation<BuiltinProcedure>::callBuiltin(
+  Self self, VM vm, int argc, UnstableNode* args[]) {
+
+  if (argc == _arity)
+    return _builtin(vm, args);
+  else
+    return raiseIllegalArity(vm, _arity, argc);
+}
+
 BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                       UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
   return BuiltinResult::proceed();
-}
-
-BuiltinResult Implementation<BuiltinProcedure>::raiseIllegalArity(
-  Self self, VM vm, int argc) {
-
-  UnstableNode exception;
-  exception.make<Atom>(vm, u"illegalArity");
-
-  return BuiltinResult::raise(vm, exception);
 }
 
 ////////////////////////

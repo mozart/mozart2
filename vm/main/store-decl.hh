@@ -165,6 +165,13 @@ public:
     node.make<T>(vm, args...);
   }
 
+  template<class T, class... Args>
+  static UnstableNode build(VM vm, Args... args) {
+    UnstableNode result;
+    result.make<T>(vm, args...);
+    return result;
+  }
+
   NodeBackup makeBackup() {
     return NodeBackup(&node);
   }

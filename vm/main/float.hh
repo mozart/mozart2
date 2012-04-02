@@ -61,9 +61,8 @@ BuiltinResult Implementation<Float>::add(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = *right;
 
-  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
@@ -82,9 +81,8 @@ BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
                                               UnstableNode* right,
                                               UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = *right;
 
-  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
@@ -103,9 +101,8 @@ BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
                                               UnstableNode* right,
                                               UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = *right;
 
-  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
@@ -124,9 +121,8 @@ BuiltinResult Implementation<Float>::divide(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   double rightFloatValue = 0.0;
-  FloatValue rightValue = *right;
 
-  BuiltinResult res = rightValue.floatValue(vm, &rightFloatValue);
+  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 

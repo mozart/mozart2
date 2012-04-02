@@ -28,31 +28,23 @@
 #include "exchelpers-decl.hh"
 
 #include "coreinterfaces.hh"
+#include "corebuilders.hh"
 
 namespace mozart {
 
-BuiltinResult raiseAtom(VM vm, const char16_t* atom) {
-  UnstableNode exception = UnstableNode::build<Atom>(vm, atom);
-
+template <class LT, class... Args>
+BuiltinResult raise(VM vm, LT&& label, Args&&... args) {
+  UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
+                                      std::forward<Args>(args)...);
   return BuiltinResult::raise(vm, exception);
 }
 
 BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
-  UnstableNode label = UnstableNode::build<Atom>(vm, u"typeError");
-
-  UnstableNode exceptionUnstable = UnstableNode::build<Tuple>(vm, 2, &label);
-  auto exception = RichNode(exceptionUnstable).as<Tuple>();
-
-  UnstableNode arg = UnstableNode::build<Atom>(vm, expected);
-  exception.initElement(vm, 0, &arg);
-
-  exception.initElement(vm, 1, &actual.origin());
-
-  return BuiltinResult::raise(vm, exception);
+  return raise(vm, u"typeError", expected, actual);
 }
 
 BuiltinResult raiseIllegalArity(VM vm, int expected, int actual) {
-  return raiseAtom(vm, u"illegalArity");
+  return raise(vm, u"illegalArity", expected, actual);
 }
 
 }

@@ -664,7 +664,7 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
     }
 
     case BuiltinResult::brFailed: {
-      result = raiseAtom(vm, u"failure");
+      result = raise(vm, u"failure");
       // fall through
     }
 

@@ -29,8 +29,9 @@
 
 namespace mozart {
 
+template <class LT, class... Args>
 inline
-BuiltinResult raiseAtom(VM vm, const char16_t* atom);
+BuiltinResult raise(VM vm, LT&& label, Args&&... args);
 
 inline
 BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual);

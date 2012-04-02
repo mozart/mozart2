@@ -489,6 +489,10 @@ protected:
   typedef typename SelfType<T>::Self Self;
 public:
   BaseTypedRichNode(Self self) : _self(self) {}
+
+  operator RichNode() {
+    return _self;
+  }
 protected:
   Self _self;
 };

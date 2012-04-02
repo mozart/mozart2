@@ -211,7 +211,7 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
 void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "template <>\n";
   to << "class TypedRichNode<" << name << "> "
-     << ": BaseTypedRichNode<" << name << "> {\n";
+     << ": public BaseTypedRichNode<" << name << "> {\n";
   to << "public:\n";
   to << "  TypedRichNode(Self self) : BaseTypedRichNode(self) {}\n";
 

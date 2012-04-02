@@ -25,6 +25,7 @@
 #ifndef __EMULATE_H
 #define __EMULATE_H
 
+#include <utility>
 #include <stack>
 #include <cassert>
 
@@ -94,7 +95,7 @@ public:
     allocArray(vm, newSize);
 
     for (size_t i = 0; i < elemsToKeep; i++)
-      _array[i] = oldArray[i];
+      _array[i] = std::move(oldArray[i]); // freed just below, so that's OK
 
     freeArray(vm, oldArray, oldSize);
 

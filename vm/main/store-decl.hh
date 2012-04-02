@@ -89,6 +89,8 @@ private:
  */
 class StableNode {
 public:
+  StableNode() {}
+
   const Type* type() {
     return node.type;
   }
@@ -103,6 +105,20 @@ public:
 
   NodeBackup makeBackup() {
     return NodeBackup(&node);
+  }
+private:
+  // Make this class non-copyable
+  StableNode(const StableNode& from);
+  StableNode& operator=(const StableNode& from);
+public:
+  // But make it movable
+
+  StableNode(StableNode&& from) {
+    node = from.node;
+  }
+
+  void init(StableNode&& from) {
+    node = from.node;
   }
 private:
   friend class UnstableNode;
@@ -151,6 +167,21 @@ public:
 
   NodeBackup makeBackup() {
     return NodeBackup(&node);
+  }
+private:
+  // Make this class non-copyable
+  UnstableNode(const UnstableNode& from);
+  UnstableNode& operator=(const UnstableNode& from);
+public:
+  // But make it movable
+
+  UnstableNode(UnstableNode&& from) {
+    node = from.node;
+  }
+
+  UnstableNode& operator=(UnstableNode&& from) {
+    node = from.node;
+    return *this;
   }
 private:
   friend class StableNode;

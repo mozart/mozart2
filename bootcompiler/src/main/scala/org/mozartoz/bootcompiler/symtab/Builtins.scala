@@ -16,6 +16,8 @@ class Builtins {
     register(Show)
 
     register(Space.NewSpace)
+    register(Space.AskVerboseSpace)
+    register(Space.MergeSpace)
 
     Map.empty ++ registry
   }
@@ -52,6 +54,12 @@ class Builtins {
   object Space {
     object NewSpace extends BuiltinSymbol("NewSpace",
         "newSpace", in = 1, out = 1)
+
+    object AskVerboseSpace extends BuiltinSymbol("AskVerboseSpace",
+        "askVerboseSpace", in = 1, out = 1)
+
+    object MergeSpace extends BuiltinSymbol("MergeSpace",
+        "mergeSpace", in = 1, out = 1)
   }
 
   object Value {

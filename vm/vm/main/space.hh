@@ -29,12 +29,48 @@
 
 namespace mozart {
 
+//////////////
+// SpaceRef //
+//////////////
+
 Space* SpaceRef::operator->() {
   Space* result = space;
   while (result->status() == Space::ssReference)
     result = result->_reference;
   return result;
 }
+
+/////////////////
+// DummyThread //
+/////////////////
+
+namespace internal {
+  /**
+   * Dummy thread that contains no code. It terminates as soon as it runs.
+   */
+  class DummyThread: public Runnable {
+  public:
+    DummyThread(VM vm, Space* space,
+                bool createSuspended = false): Runnable(vm, space) {
+      if (!createSuspended)
+        resume();
+    }
+
+    DummyThread(GC gc, DummyThread& from): Runnable(gc, from) {}
+
+    void run() {
+      terminate();
+    }
+
+    Runnable* gCollect(GC gc) {
+      return new (gc->vm) DummyThread(gc, *this);
+    }
+  };
+}
+
+///////////
+// Space //
+///////////
 
 Space::Space(GC gc, Space* from) {
   assert(from->_status != ssReference && from->_status != ssGCed);
@@ -93,9 +129,26 @@ void Space::makeBackupForSpeculativeBinding(StableNode* node) {
 
 // Operations
 
-BuiltinResult Space::merge(VM vm, Space* destSpace) {
-  // TODO
-  return BuiltinResult::proceed();
+BuiltinResult Space::merge(VM vm, Space* dest) {
+  Space* src = this;
+
+  assert(vm->getCurrentSpace() == dest);
+
+  // Make the source a transparent ref to the destination
+  src->setReference(dest);
+
+  // Merge the thread counters
+  if (!dest->isTopLevel()) {
+    dest->incThreadCount(src->getThreadCount());
+
+    if (src->cascadedRunnableThreadCount > 0)
+      dest->cascadedRunnableThreadCount += src->cascadedRunnableThreadCount-1;
+  }
+
+  // Merge constraints
+  bool res = src->installThis(/* isMerge = */ true);
+
+  return res ? BuiltinResult::proceed() : BuiltinResult::failed();
 }
 
 // Garbage collection
@@ -113,6 +166,30 @@ Space* Space::gCollect(GC gc) {
 
 // Stability detection
 
+void Space::notifyThreadCreated() {
+  incThreadCount();
+}
+
+void Space::notifyThreadTerminated() {
+  if (isTopLevel())
+    return;
+
+  if (--cascadedRunnableThreadCount)
+    getParent()->decRunnableThreadCount();
+
+  checkStability();
+}
+
+void Space::notifyThreadResumed() {
+  if (!isTopLevel())
+    incRunnableThreadCount();
+}
+
+void Space::notifyThreadSuspended() {
+  if (!isTopLevel())
+    decRunnableThreadCount();
+}
+
 bool Space::isStable() {
   if (hasRunnableThreads())
     return false;
@@ -120,7 +197,8 @@ bool Space::isStable() {
   if (!trail.empty())
     return false;
 
-  // TODO
+  // TODO Check suspension list
+
   return true;
 }
 
@@ -128,38 +206,38 @@ bool Space::isBlocked() {
   return !hasRunnableThreads();
 }
 
-void Space::incSuspensionCount(int n) {
+void Space::incThreadCount(int n) {
   assert(!isFailed());
-  suspensionCount += n;
+  assert(n >= 0);
+  threadCount += n;
 }
 
-void Space::decSuspensionCount() {
+void Space::decThreadCount() {
   assert(!isFailed());
-  assert(suspensionCount > 0);
-  suspensionCount--;
+  assert(threadCount > 0);
+  threadCount--;
 }
 
-int Space::getSuspensionCount() {
-  assert(!isFailed() && suspensionCount >= 0);
-  return suspensionCount;
+int Space::getThreadCount() {
+  assert(!isFailed() && threadCount >= 0);
+  return threadCount;
 }
 
 void Space::incRunnableThreadCount() {
-  for (Space* space = this; !space->isTopLevel();
-       space = space->getParent()) {
-    if ((space->cascadedRunnableThreadCount)++ > 0)
-      return;
+  if (!isTopLevel()) {
+    if (cascadedRunnableThreadCount++ == 0)
+      getParent()->incRunnableThreadCount();
   }
 }
 
 void Space::decRunnableThreadCount() {
-  for (Space* space = this; !space->isTopLevel();
-       space = space->getParent()) {
-    if (--(space->cascadedRunnableThreadCount) > 0)
-      return;
+  if (!isTopLevel()) {
+    if (--cascadedRunnableThreadCount == 0) {
+      if (isStable())
+        new (vm) internal::DummyThread(vm, this);
 
-    if (space->isStable())
-      ; // TODO Inject new empty thread in space
+      getParent()->decRunnableThreadCount();
+    }
   }
 }
 

@@ -134,18 +134,36 @@ public:
 
 // Relations between spaces
 
+public:
   inline
   bool isAncestor(Space* potentialAncestor);
 
 // Speculative bindings
 
+public:
   inline
   void makeBackupForSpeculativeBinding(StableNode* node);
 
 // Operations
 
+public:
   inline
   BuiltinResult merge(VM vm, Space* destSpace);
+
+// Status variable
+
+private:
+  inline
+  void bindStatusVar(VM vm, RichNode value);
+
+  inline
+  void bindStatusVar(VM vm, UnstableNode&& value);
+
+  inline
+  UnstableNode newStatusVar(VM vm);
+
+  inline
+  UnstableNode genSucceeded(VM vm, bool isEntailed);
 
 // Garbage collection
 
@@ -157,19 +175,31 @@ public:
 
 public:
   inline
+  void notifyThreadCreated();
+
+  inline
+  void notifyThreadTerminated();
+
+  inline
+  void notifyThreadResumed();
+
+  inline
+  void notifyThreadSuspended();
+public:
+  inline
   bool isStable();
 
   inline
   bool isBlocked();
+private:
+  inline
+  void incThreadCount(int n = 1);
 
   inline
-  void incSuspensionCount(int n = 1);
+  void decThreadCount();
 
   inline
-  void decSuspensionCount();
-
-  inline
-  int getSuspensionCount();
+  int getThreadCount();
 
   inline
   void incRunnableThreadCount();
@@ -179,6 +209,8 @@ public:
 
   inline
   bool hasRunnableThreads();
+
+  void checkStability();
 
 // Commit
 
@@ -209,8 +241,7 @@ private:
   inline
   void deinstallThis();
 
-  inline
-  bool installThis();
+  bool installThis(bool isMerge = false);
 
 // The mark
 
@@ -253,7 +284,28 @@ private:
   SpaceTrail trail;
   SpaceScript script;
 
-  int suspensionCount;
+  /*
+   * Maintaining a counter of threads
+   * Invariants:
+   *
+   *   threadCount ==
+   *     Number of threads th such that th->getSpace() == this,
+   *     which have been created but are not yet terminated.
+   *     Note that threads that are suspended (even lost, i.e.,
+   *     garbage-collectable), or that have failed are part of this count.
+   *
+   *   cascadedRunnableThreadCount == A + B
+   *     where A ==
+   *       Number of threads th such that th->getSpace() == this &&
+   *       th->isRunnable().
+   *     and B ==
+   *       Number of spaces sp such that sp->getParent() == this &&
+   *       sp->cascadedRunnableThreadCount > 0.
+   *
+   * These invariants are maintained by the notifyThread...() methods.
+   */
+
+  int threadCount;
   int cascadedRunnableThreadCount;
 };
 

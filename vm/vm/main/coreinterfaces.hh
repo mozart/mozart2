@@ -270,6 +270,18 @@ struct Interface<ArrayInitializer>:
   }
 };
 
+class SpaceLike;
+template<>
+struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace> {
+  BuiltinResult askVerboseSpace(RichNode self, VM vm, UnstableNode* result) {
+    return raiseTypeError(vm, u"Space", self);
+  }
+
+  BuiltinResult mergeSpace(RichNode self, VM vm, UnstableNode* result) {
+    return raiseTypeError(vm, u"Space", self);
+  }
+};
+
 } // namespace mozart
 
 #ifndef MOZART_GENERATOR
@@ -288,6 +300,7 @@ namespace mozart {
 #include "BooleanValue-interf.hh"
 #include "RecordLike-interf.hh"
 #include "ArrayInitializer-interf.hh"
+#include "SpaceLike-interf.hh"
 
 } // namespace mozart
 

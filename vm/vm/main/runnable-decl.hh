@@ -56,8 +56,11 @@ public:
   bool isTerminated() { return _terminated; }
   bool isRunnable() { return _runnable; }
 
-  void setRunnable() { _runnable = true; }
-  void unsetRunnable() { _runnable = false; }
+  inline
+  void resume(bool skipSchedule = false);
+
+  inline
+  void suspend(bool skipUnschedule = false);
 
   inline
   virtual void kill();
@@ -68,7 +71,10 @@ public:
   virtual Runnable* gCollect(GC gc) = 0;
 protected:
   inline
-  void terminate();
+  virtual void terminate();
+
+  inline
+  virtual void dispose();
 
   VM vm;
 private:

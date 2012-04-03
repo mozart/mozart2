@@ -29,6 +29,7 @@
 
 #include "coreinterfaces.hh"
 #include "boolean.hh"
+#include "corebuilders.hh"
 
 namespace mozart {
 
@@ -51,14 +52,6 @@ BuiltinResult Implementation<ReifiedSpace>::isSpace(
   return BuiltinResult::proceed();
 }
 
-template <class T, class... Args>
-inline
-UnstableNode build(VM vm, Args... args) {
-  UnstableNode result;
-  result.make<T>(vm, args...);
-  return result;
-}
-
 BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(
   Self self, VM vm, UnstableNode* result) {
 
@@ -77,18 +70,22 @@ BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(
       Space* space = getSpace();
 
       if (!space->isAdmissible(vm))
-        return raise(vm, u"spaceAdmissible");
+        return raise(vm, u"spaceAdmissible", self);
 
       if (space->isBlocked() && !space->isStable()) {
-        UnstableNode label = build<Atom>(vm, u"suspended");
-        result->make<Tuple>(vm, 1, &label);
+        UnstableNode statusVar(vm, *space->getStatusVar());
+        *result = buildTuple(vm, u"suspended", statusVar);
 
-        auto tuple = RichNode(*result).as<Tuple>();
-        tuple.initElement(vm, 0, space->getStatusVar());
+        return BuiltinResult::proceed();
       }
 
       result->copy(vm, *space->getStatusVar());
       return BuiltinResult::proceed();
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
     }
   }
 }
@@ -118,7 +115,7 @@ BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
       // Update status var
       RichNode statusVar = *space->getStatusVar();
       if (statusVar.type()->isTransient()) {
-        UnstableNode atomMerged = build<Atom>(vm, u"merged");
+        UnstableNode atomMerged = UnstableNode::build<Atom>(vm, u"merged");
         DataflowVariable(statusVar).bind(vm, atomMerged);
       }
 
@@ -131,6 +128,11 @@ BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
       this->_status = ssMerged;
 
       return res;
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
     }
   }
 }

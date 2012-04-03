@@ -52,7 +52,7 @@ Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
 
 void Implementation<Variable>::addToSuspendList(Self self, VM vm,
                                                 Runnable* thread) {
-  thread->unsetRunnable();
+  thread->suspend(/* skipUnschedule = */ true);
   pendingThreads.push_back(vm, thread);
 }
 
@@ -153,12 +153,9 @@ void Implementation<Variable>::transferPendingsSubSpace(
 void Implementation<Variable>::resumePendings(VM vm) {
   // Wake up threads
 
-  ThreadPool& threadPool = vm->getThreadPool();
-
   for (auto iter = pendingThreads.begin();
        iter != pendingThreads.end(); iter++) {
-    (*iter)->setRunnable();
-    threadPool.schedule(*iter);
+    (*iter)->resume();
   }
 
   pendingThreads.clear(vm);
@@ -187,14 +184,11 @@ void Implementation<Variable>::resumePendingsSubSpace(VM vm,
 
   // Wake up threads
 
-  ThreadPool& threadPool = vm->getThreadPool();
-
   for (auto iter = pendingThreads.begin();
        iter != pendingThreads.end(); iter++) {
 
     if ((*iter)->getSpace()->isAncestor(currentSpace)) {
-      (*iter)->setRunnable();
-      threadPool.schedule(*iter);
+      (*iter)->resume();
     }
   }
 

@@ -174,9 +174,12 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
   if (!result.isProceed())
     return result;
 
+  Space* currentSpace = vm->getCurrentSpace();
+
   // Create the space
-  Space* space = new (vm) Space(vm, vm->getCurrentSpace());
-  space->getRootVar()->make<Unbound>(vm);
+  Space* space = new (vm) Space(vm, currentSpace);
+  space->getRootVar()->make<Unbound>(vm, currentSpace);
+  space->getStatusVar()->make<Unbound>(vm, currentSpace);
 
   // Create the thread {Proc Root}
   UnstableNode rootVar(vm, *space->getRootVar());
@@ -190,12 +193,12 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
   return BuiltinResult::proceed();
 }
 
-BuiltinResult askSpace(VM vm, UnstableNode* args[]) {
-  return BuiltinResult::proceed();
+BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]) {
+  return SpaceLike(*args[0]).askVerboseSpace(vm, args[1]);
 }
 
 BuiltinResult mergeSpace(VM vm, UnstableNode* args[]) {
-  return BuiltinResult::proceed();
+  return SpaceLike(*args[0]).mergeSpace(vm, args[1]);
 }
 
 ///////////

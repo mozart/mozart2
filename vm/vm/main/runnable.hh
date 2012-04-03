@@ -33,9 +33,9 @@ namespace mozart {
 
 Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
-  _runnable(true), _terminated(false), _dead(false) {
+  _runnable(false), _terminated(false), _dead(false) {
 
-  _space->incRunnableThreadCount();
+  _space->notifyThreadCreated();
 
   vm->aliveThreads.insert(this);
 }
@@ -52,16 +52,44 @@ Runnable::Runnable(GC gc, Runnable& from) :
   vm->aliveThreads.insert(this);
 }
 
-void Runnable::kill() {
-  _runnable = false;
-  _dead = true;
+void Runnable::resume(bool skipSchedule) {
+  assert(!_dead && !_terminated);
+  assert(!_runnable);
 
-  vm->aliveThreads.remove(this);
+  _runnable = true;
+  _space->notifyThreadResumed();
+
+  if (!skipSchedule)
+    vm->getThreadPool().schedule(this);
+}
+
+void Runnable::suspend(bool skipUnschedule) {
+  assert(!_dead && !_terminated);
+  assert(_runnable);
+
+  _runnable = false;
+  _space->notifyThreadSuspended();
+
+  if (!skipUnschedule)
+    vm->getThreadPool().unschedule(this);
+}
+
+void Runnable::kill() {
+  dispose();
 }
 
 void Runnable::terminate() {
   _runnable = false;
   _terminated = true;
+
+  _space->notifyThreadTerminated();
+
+  dispose();
+}
+
+void Runnable::dispose() {
+  _runnable = false;
+  _dead = true;
 
   vm->aliveThreads.remove(this);
 }

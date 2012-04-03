@@ -46,6 +46,8 @@ public:
 public:
   Implementation(VM vm) : _home(vm->getCurrentSpace()) {}
 
+  Implementation(VM vm, Space* home) : _home(home) {}
+
   inline
   Implementation(VM vm, GC gc, Self from);
 
@@ -111,6 +113,10 @@ public:
 
   static SpaceRef build(VM vm) {
     return vm->getCurrentSpace();
+  }
+
+  static SpaceRef build(VM vm, Space* home) {
+    return home;
   }
 
   inline

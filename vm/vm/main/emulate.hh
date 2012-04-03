@@ -136,11 +136,15 @@ private:
  * lightweight thread. It contains the main emulator loop.
  */
 class Thread : public Runnable {
+private:
+  typedef Runnable Super;
 public:
-  Thread(VM vm, Space* space, StableNode* abstraction);
+  Thread(VM vm, Space* space, StableNode* abstraction,
+         bool createSuspended = false);
 
   Thread(VM vm, Space* space, StableNode* abstraction,
-         size_t argc, UnstableNode* args[]);
+         size_t argc, UnstableNode* args[],
+         bool createSuspended = false);
 
   inline
   Thread(GC gc, Thread& from);
@@ -148,9 +152,7 @@ public:
   void run();
 
   void kill() {
-    Runnable::kill();
-    xregs.release(vm);
-    // TODO Release the stack frames
+    Super::kill();
   }
 
   void beforeGC();
@@ -159,13 +161,25 @@ public:
   Runnable* gCollect(GC gc);
 protected:
   void terminate() {
-    Runnable::terminate();
+    Super::terminate();
+  }
+
+  void dispose() {
     xregs.release(vm);
+
+    while (!stack.empty()) {
+      StackEntry& entry = stack.front();
+      if (entry.yregCount != 0)
+        vm->deleteStaticArray<UnstableNode>(entry.yregs, entry.yregCount);
+    }
+
+    Super::dispose();
   }
 private:
   inline
   void constructor(VM vm, StableNode* abstraction,
-                   size_t argc, UnstableNode* args[]);
+                   size_t argc, UnstableNode* args[],
+                   bool createSuspended);
 
   inline
   void pushFrame(VM vm, StableNode* abstraction,

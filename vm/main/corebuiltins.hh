@@ -82,7 +82,7 @@ BuiltinResult show(VM vm, UnstableNode* args[]);
 ////////////
 
 BuiltinResult newSpace(VM vm, UnstableNode* args[]);
-BuiltinResult askSpace(VM vm, UnstableNode* args[]);
+BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]);
 BuiltinResult mergeSpace(VM vm, UnstableNode* args[]);
 
 ///////////

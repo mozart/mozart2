@@ -90,18 +90,20 @@ void StackEntry::afterGC(VM vm) {
 // Thread //
 ////////////
 
-Thread::Thread(VM vm, Space* space,
-               StableNode* abstraction): Runnable(vm, space) {
-  constructor(vm, abstraction, 0, nullptr);
+Thread::Thread(VM vm, Space* space, StableNode* abstraction,
+               bool createSuspended): Runnable(vm, space) {
+  constructor(vm, abstraction, 0, nullptr, createSuspended);
 }
 
 Thread::Thread(VM vm, Space* space, StableNode* abstraction,
-               size_t argc, UnstableNode* args[]): Runnable(vm, space) {
-  constructor(vm, abstraction, argc, args);
+               size_t argc, UnstableNode* args[],
+               bool createSuspended): Runnable(vm, space) {
+  constructor(vm, abstraction, argc, args, createSuspended);
 }
 
 void Thread::constructor(VM vm, StableNode* abstraction,
-                         size_t argc, UnstableNode* args[]) {
+                         size_t argc, UnstableNode* args[],
+                         bool createSuspended) {
   // getCallInfo
 
   int arity;
@@ -130,7 +132,9 @@ void Thread::constructor(VM vm, StableNode* abstraction,
 
   pushFrame(vm, abstraction, start, 0, nullptr, Gs, Ks);
 
-  vm->scheduleThread(this);
+  // Resume the thread unless createSuspended
+  if (!createSuspended)
+    resume();
 }
 
 Thread::Thread(GC gc, Thread& from) : Runnable(gc, from) {

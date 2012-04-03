@@ -24,12 +24,57 @@
 
 #include "mozartcore.hh"
 #include "unify.hh"
+#include "coreinterfaces.hh"
 
 namespace mozart {
 
 ///////////
 // Space //
 ///////////
+
+// Status variable
+
+void Space::bindStatusVar(VM vm, RichNode value) {
+  RichNode statusVar = *getStatusVar();
+  assert(statusVar.type()->isTransient());
+  DataflowVariable(statusVar).bind(vm, value);
+}
+
+void Space::bindStatusVar(VM vm, UnstableNode&& value) {
+  bindStatusVar(vm, RichNode(value));
+}
+
+UnstableNode Space::genSucceeded(VM vm, bool isEntailed) {
+  return buildTuple(vm, u"succeeded", isEntailed ? u"entailed" : u"stuck");
+}
+
+// Stability detection
+
+void Space::checkStability() {
+  assert(!isTopLevel());
+  assert(status() == ssNormal);
+
+  Space* parent = getParent();
+
+  if (isStable()) {
+    // Succeeded
+    vm->setCurrentSpace(parent);
+
+    bindStatusVar(vm, genSucceeded(vm, getThreadCount() == 0));
+  } else {
+    deinstallTo(parent); // TODO Why !?
+
+    if (!hasRunnableThreads()) {
+      // No runnable threads: suspended
+
+      UnstableNode newStatusVar = UnstableNode::build<Unbound>(vm, parent);
+      bindStatusVar(vm, buildTuple(vm, u"suspended", newStatusVar));
+      _statusVar = std::move(newStatusVar);
+    }
+  }
+}
+
+// Installation and deinstallation
 
 bool Space::install() {
   Space* from = vm->getCurrentSpace();
@@ -95,7 +140,7 @@ void Space::deinstallThis() {
   }
 }
 
-bool Space::installThis() {
+bool Space::installThis(bool isMerge) {
   bool result = true;
 
   for (auto iter = script.begin(); iter != script.end(); ++iter) {

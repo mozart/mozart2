@@ -275,6 +275,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | threadExpression
     | trivialExpression
     | recordExpression
+    | listExpression
   )
 
   // Trivial expressions
@@ -320,4 +321,13 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val recordFields: PackratParser[List[Expression]] =
     rep(expression)
+
+  // List expressions
+
+  lazy val listExpression: PackratParser[Expression] =
+    "[" ~> (expression+) <~ "]" ^^ exprListToListExpr
+
+  def exprListToListExpr(elems: List[Expression]): Expression =
+    if (elems.isEmpty) Atom("nil")
+    else Record(Atom("|"), List(elems.head, exprListToListExpr(elems.tail)))
 }

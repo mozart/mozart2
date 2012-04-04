@@ -57,10 +57,10 @@ public:
   bool isRunnable() { return _runnable; }
 
   inline
-  void resume(bool skipSchedule = false);
+  virtual void resume(bool skipSchedule = false);
 
   inline
-  void suspend(bool skipUnschedule = false);
+  virtual void suspend(bool skipUnschedule = false);
 
   inline
   virtual void kill();

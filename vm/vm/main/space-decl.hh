@@ -148,7 +148,12 @@ public:
 
 public:
   inline
+  void fail(VM vm);
+
+  inline
   BuiltinResult merge(VM vm, Space* destSpace);
+private:
+  void failInternal(VM vm);
 
 // Status variable
 
@@ -240,6 +245,9 @@ private:
 
   inline
   void deinstallThis();
+
+  inline
+  void deinstallThisFailed();
 
   bool installThis(bool isMerge = false);
 

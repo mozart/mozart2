@@ -61,7 +61,14 @@ public:
     return _width;
   }
 
+  StableNode* getLabel() {
+    return &_label;
+  }
+
   int getWidth() { return _width; }
+
+  inline
+  StableNode* getElement(Self self, size_t index);
 
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);

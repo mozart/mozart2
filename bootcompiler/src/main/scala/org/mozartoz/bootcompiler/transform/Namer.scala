@@ -91,19 +91,32 @@ object Namer extends Transformer with TransformUtils {
     val decls = new ListBuffer[Variable]
     val statements = new ListBuffer[Statement]
 
-    for (declaration <- declarations) {
-      declaration match {
-        case variable:Variable =>
-          decls += variable
+    def process(declarations: List[Declaration]) {
+      for (declaration <- declarations) {
+        declaration match {
+          case variable:Variable =>
+            decls += variable
 
-        case stat @ BindStatement(left, right) =>
-          decls ++= extractDeclsInExpression(left)
-          statements += stat
+          case stat @ BindStatement(left, right) =>
+            decls ++= extractDeclsInExpression(left)
+            statements += stat
 
-        case stat:Statement =>
-          statements += stat
+          case stat @ LocalStatement(subDecls, subStat) =>
+            val (declsInside, statsInside) = extractDecls(List(subStat))
+            decls ++= declsInside
+            statements += treeCopy.LocalStatement(stat, subDecls,
+                statementsToStatement(statsInside))
+
+          case stat @ CompoundStatement(subStatements) =>
+            process(subStatements)
+
+          case stat:Statement =>
+            statements += stat
+        }
       }
     }
+
+    process(declarations)
 
     val namedDecls = for (v@Variable(name) <- decls.toList)
       yield treeCopy.Variable(v, name) withSymbol new VariableSymbol(name)

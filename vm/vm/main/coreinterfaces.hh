@@ -235,7 +235,7 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 
 class RecordLike;
 template<>
-struct Interface<RecordLike>: ImplementedBy<Tuple> {
+struct Interface<RecordLike>: ImplementedBy<Tuple, Atom> {
   BuiltinResult label(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }

@@ -60,6 +60,27 @@ public:
   bool equals(VM vm, Self right);
 
   const AtomImpl* value() const { return _value; }
+public:
+  // RecordLike interface
+
+  inline
+  BuiltinResult label(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult width(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult dot(Self self, VM vm, UnstableNode* feature,
+                    UnstableNode* result);
+
+  inline
+  BuiltinResult dotNumber(Self self, VM vm, nativeint feature,
+                          UnstableNode* result);
+
+  inline
+  BuiltinResult waitOr(Self self, VM vm, UnstableNode* result);
+public:
+  // Miscellaneous
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream* out, int depth);

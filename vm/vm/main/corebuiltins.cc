@@ -35,6 +35,10 @@ namespace mozart {
 
 namespace builtins {
 
+/////////////////////////
+// Unification-related //
+/////////////////////////
+
 BuiltinResult equals(VM vm, UnstableNode* args[]) {
   RichNode left = *args[0];
   RichNode right = *args[1];
@@ -56,6 +60,33 @@ BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
     args[2]->make<Boolean>(vm, result);
   return res;
 }
+
+//////////////////
+// Value status //
+//////////////////
+
+BuiltinResult wait(VM vm, UnstableNode* args[]) {
+  RichNode value = *args[0];
+
+  if (value.type()->isTransient())
+    return BuiltinResult::waitFor(vm, value);
+  else
+    return BuiltinResult::proceed();
+}
+
+BuiltinResult waitOr(VM vm, UnstableNode* args[]) {
+  return RecordLike(*args[0]).waitOr(vm, args[1]);
+}
+
+BuiltinResult isDet(VM vm, UnstableNode* args[]) {
+  RichNode value = *args[0];
+  args[1]->make<Boolean>(vm, !value.type()->isTransient());
+  return BuiltinResult::proceed();
+}
+
+////////////////
+// Arithmetic //
+////////////////
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
@@ -87,6 +118,14 @@ BuiltinResult mod(VM vm, UnstableNode* args[]) {
   return x.mod(vm, args[1], args[2]);
 }
 
+/////////////
+// Records //
+/////////////
+
+BuiltinResult label(VM vm, UnstableNode* args[]) {
+  return RecordLike(*args[0]).label(vm, args[1]);
+}
+
 BuiltinResult width(VM vm, UnstableNode* args[]) {
   RecordLike x = *args[0];
   return x.width(vm, args[1]);
@@ -96,6 +135,10 @@ BuiltinResult dot(VM vm, UnstableNode* args[]) {
   RecordLike x = *args[0];
   return x.dot(vm, args[1], args[2]);
 }
+
+/////////////
+// Threads //
+/////////////
 
 BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   int arity = 0;
@@ -121,12 +164,20 @@ BuiltinResult createThread(VM vm, UnstableNode* args[]) {
   return BuiltinResult::proceed();
 }
 
+///////////////////
+// Miscellaneous //
+///////////////////
+
 BuiltinResult show(VM vm, UnstableNode* args[]) {
   RichNode arg = *args[0];
   printReprToStream(vm, arg, std::cout);
   std::cout << std::endl;
   return BuiltinResult::proceed();
 }
+
+///////////
+// Utils //
+///////////
 
 void printReprToStream(VM vm, RichNode arg,
                        std::ostream& out, int depth) {

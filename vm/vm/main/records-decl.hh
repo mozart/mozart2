@@ -66,6 +66,9 @@ public:
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
+  inline
+  BuiltinResult label(Self self, VM vm, UnstableNode* result);
+
   /**
    * Get the width of the tuple in a node
    */
@@ -83,6 +86,9 @@ public:
   inline
   BuiltinResult dotNumber(Self self, VM vm, nativeint feature,
                           UnstableNode* result);
+
+  inline
+  BuiltinResult waitOr(Self self, VM vm, UnstableNode* result);
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream* out, int depth);

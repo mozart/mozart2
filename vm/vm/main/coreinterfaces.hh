@@ -225,8 +225,12 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 class RecordLike;
 template<>
 struct Interface<RecordLike>: ImplementedBy<Tuple> {
+  BuiltinResult label(RichNode self, VM vm, UnstableNode* result) {
+    return raiseTypeError(vm, u"Record", self);
+  }
+
   BuiltinResult width(RichNode self, VM vm, UnstableNode* result) {
-    return raiseTypeError(vm, u"Tuple", self);
+    return raiseTypeError(vm, u"Record", self);
   }
 
   BuiltinResult dot(RichNode self, VM vm, UnstableNode* feature,
@@ -236,6 +240,10 @@ struct Interface<RecordLike>: ImplementedBy<Tuple> {
 
   BuiltinResult dotNumber(RichNode self, VM vm, nativeint feature,
                           UnstableNode* result) {
+    return raiseTypeError(vm, u"Record", self);
+  }
+
+  BuiltinResult waitOr(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }
 };

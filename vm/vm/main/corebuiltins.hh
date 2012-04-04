@@ -31,8 +31,24 @@ namespace mozart {
 
 namespace builtins {
 
+/////////////////////////
+// Unification-related //
+/////////////////////////
+
 BuiltinResult equals(VM vm, UnstableNode* args[]);
 BuiltinResult notEquals(VM vm, UnstableNode* args[]);
+
+//////////////////
+// Value status //
+//////////////////
+
+BuiltinResult wait(VM vm, UnstableNode* args[]);
+BuiltinResult waitOr(VM vm, UnstableNode* args[]);
+BuiltinResult isDet(VM vm, UnstableNode* args[]);
+
+////////////////
+// Arithmetic //
+////////////////
 
 BuiltinResult add(VM vm, UnstableNode* args[]);
 BuiltinResult subtract(VM vm, UnstableNode* args[]);
@@ -41,13 +57,29 @@ BuiltinResult divide(VM vm, UnstableNode* args[]);
 BuiltinResult div(VM vm, UnstableNode* args[]);
 BuiltinResult mod(VM vm, UnstableNode* args[]);
 
+/////////////
+// Records //
+/////////////
+
+BuiltinResult label(VM vm, UnstableNode* args[]);
 BuiltinResult width(VM vm, UnstableNode* args[]);
 BuiltinResult dot(VM vm, UnstableNode* args[]);
 
+/////////////
+// Threads //
+/////////////
+
 BuiltinResult createThread(VM vm, UnstableNode* args[]);
+
+///////////////////
+// Miscellaneous //
+///////////////////
 
 BuiltinResult show(VM vm, UnstableNode* args[]);
 
+///////////
+// Utils //
+///////////
 
 void printReprToStream(VM vm, RichNode node,
                        std::ostream& out, int depth = 10);

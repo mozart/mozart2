@@ -76,6 +76,12 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
   return true;
 }
 
+BuiltinResult Implementation<Tuple>::label(Self self, VM vm,
+                                           UnstableNode* result) {
+  result->copy(vm, _label);
+  return BuiltinResult::proceed();
+}
+
 BuiltinResult Implementation<Tuple>::width(Self self, VM vm,
                                            UnstableNode* result) {
   result->make<SmallInt>(vm, _width);
@@ -112,6 +118,34 @@ BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,
     // Out of bounds
     return raise(vm, u"illegalFieldSelection", self, feature);
   }
+}
+
+BuiltinResult Implementation<Tuple>::waitOr(Self self, VM vm,
+                                            UnstableNode* result) {
+  // If there is a field which is bound, then return its feature
+  for (size_t i = 0; i < _width; i++) {
+    UnstableNode field(vm, self[i]);
+    if (!RichNode(field).type()->isTransient()) {
+      result->make<SmallInt>(vm, i+1);
+      return BuiltinResult::proceed();
+    }
+  }
+
+  // Create the control variable
+  UnstableNode unstableControlVar;
+  unstableControlVar.make<Variable>(vm);
+  RichNode controlVar = unstableControlVar;
+  controlVar.getStableRef(vm);
+  controlVar.update();
+
+  // Add the control variable to the suspension list of all the fields
+  for (size_t i = 0; i < _width; i++) {
+    UnstableNode field(vm, self[i]);
+    DataflowVariable(field).addToSuspendList(vm, controlVar);
+  }
+
+  // Wait for the control variable
+  return BuiltinResult::waitFor(vm, controlVar);
 }
 
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,

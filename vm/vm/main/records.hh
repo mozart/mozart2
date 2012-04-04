@@ -65,6 +65,10 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
     gc->gcStableNode(from[i], _elements[i]);
 }
 
+StableNode* Implementation<Tuple>::getElement(Self self, size_t index) {
+  return &self[index];
+}
+
 bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
                                    WalkStack& stack) {
   if (_width != right->_width)

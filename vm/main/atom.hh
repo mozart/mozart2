@@ -28,6 +28,7 @@
 #include "atom-decl.hh"
 
 #include "boolean.hh"
+#include "variables.hh"
 
 namespace mozart {
 
@@ -42,6 +43,39 @@ AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
 
 bool Implementation<Atom>::equals(VM vm, Self right) {
   return value() == right.get().value();
+}
+
+BuiltinResult Implementation<Atom>::label(Self self, VM vm,
+                                          UnstableNode* result) {
+  result->copy(vm, self);
+  return BuiltinResult::proceed();
+}
+
+BuiltinResult Implementation<Atom>::width(Self self, VM vm,
+                                          UnstableNode* result) {
+  result->make<SmallInt>(vm, 0);
+  return BuiltinResult::proceed();
+}
+
+BuiltinResult Implementation<Atom>::dot(Self self, VM vm,
+                                        UnstableNode* feature,
+                                        UnstableNode* result) {
+  // Always out of bounds
+  return raise(vm, u"illegalFieldSelection", self, *feature);
+}
+
+BuiltinResult Implementation<Atom>::dotNumber(Self self, VM vm,
+                                              nativeint feature,
+                                              UnstableNode* result) {
+  // Always out of bounds
+  return raise(vm, u"illegalFieldSelection", self, feature);
+}
+
+BuiltinResult Implementation<Atom>::waitOr(Self self, VM vm,
+                                           UnstableNode* result) {
+  // Wait forever
+  UnstableNode dummyVar = UnstableNode::build<Variable>(vm);
+  return BuiltinResult::waitFor(vm, dummyVar);
 }
 
 void Implementation<Atom>::printReprToStream(Self self, VM vm,

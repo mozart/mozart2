@@ -15,9 +15,16 @@ class Builtins {
 
     register(Show)
 
+    register(Value.Wait)
+    register(Value.WaitOr)
+    register(Value.IsDet)
+
     register(Space.NewSpace)
     register(Space.AskVerboseSpace)
     register(Space.MergeSpace)
+
+    register(Record.Label)
+    register(Record.Width)
 
     Map.empty ++ registry
   }
@@ -68,6 +75,12 @@ class Builtins {
     object \= extends BuiltinSymbol("Value.'\\='",
         "notEquals", in = 2, out = 1)
 
+    object Wait extends BuiltinSymbol("Wait", "wait", in = 1, out = 0)
+    object WaitOr extends BuiltinSymbol("WaitOr", "waitOr", in = 1, out = 1)
+
+    object IsDet extends BuiltinSymbol("IsDet",
+        "isDet", in = 1, out = 1)
+
     object dot extends BuiltinSymbol("Value.'.'",
         "dot", in = 2, out = 1)
   }
@@ -97,5 +110,10 @@ class Builtins {
         "greaterThan", in = 2, out = 1)
     object >= extends BuiltinSymbol("Number.'>='",
         "greaterEqual", in = 2, out = 1)
+  }
+
+  object Record {
+    object Label extends BuiltinSymbol("Label", "label", in = 1, out = 1)
+    object Width extends BuiltinSymbol("Width", "width", in = 1, out = 1)
   }
 }

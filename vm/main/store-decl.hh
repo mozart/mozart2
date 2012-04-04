@@ -94,7 +94,7 @@ class TypedRichNode {
  * The important invariant of this class is that following a chain of
  * references starting at the origin eventually reaches the node.
  */
-struct RichNode {
+class RichNode {
 private:
   RichNode(Node* node, UnstableNode& origin) : _node(node), _origin(&origin) {}
 public:

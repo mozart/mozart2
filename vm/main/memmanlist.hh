@@ -36,7 +36,7 @@ namespace mozart {
 ////////////////////
 
 template <class T>
-struct MemManagedList {
+class MemManagedList {
 private:
   struct ListNode {
     ListNode* next;

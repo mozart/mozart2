@@ -85,132 +85,6 @@ private:
   Node saved;
 };
 
-/**
- * Stable node, which is guaranteed never to change
- */
-class StableNode {
-public:
-  StableNode() {}
-
-  const Type* type() {
-    return node.type;
-  }
-
-  inline void init(VM vm, StableNode& from);
-  inline void init(VM vm, UnstableNode& from);
-
-  template<class T, class... Args>
-  void make(VM vm, Args... args) {
-    node.make<T>(vm, args...);
-  }
-
-  NodeBackup makeBackup() {
-    return NodeBackup(&node);
-  }
-private:
-  // Make this class non-copyable
-  StableNode(const StableNode& from);
-  StableNode& operator=(const StableNode& from);
-public:
-  // But make it movable
-
-  StableNode(StableNode&& from) {
-    node = from.node;
-  }
-
-  void init(StableNode&& from) {
-    node = from.node;
-  }
-private:
-  friend struct NodeBackup;
-  friend class UnstableNode;
-  friend class RichNode;
-  friend class GarbageCollector;
-  friend class Space;
-
-  union {
-    Node node;
-
-    // Garbage collector hack
-    struct {
-      StableNode* gcNext;
-      StableNode* gcFrom;
-    };
-  };
-};
-
-/**
- * Unstable node, which is allowed to change over time
- */
-class UnstableNode {
-public:
-  UnstableNode() {}
-
-  UnstableNode(VM vm, StableNode& from) {
-    copy(vm, from);
-  }
-
-  UnstableNode(VM vm, UnstableNode& from) {
-    copy(vm, from);
-  }
-
-  const Type* type() {
-    return node.type;
-  }
-
-  inline void copy(VM vm, StableNode& from);
-  inline void copy(VM vm, UnstableNode& from);
-  inline void swap(UnstableNode& from);
-  inline void reset(VM vm);
-
-  template<class T, class... Args>
-  void make(VM vm, Args... args) {
-    node.make<T>(vm, args...);
-  }
-
-  template<class T, class... Args>
-  static UnstableNode build(VM vm, Args... args) {
-    UnstableNode result;
-    result.make<T>(vm, args...);
-    return result;
-  }
-
-  NodeBackup makeBackup() {
-    return NodeBackup(&node);
-  }
-private:
-  // Make this class non-copyable
-  UnstableNode(const UnstableNode& from);
-  UnstableNode& operator=(const UnstableNode& from);
-public:
-  // But make it movable
-
-  UnstableNode(UnstableNode&& from) {
-    node = from.node;
-  }
-
-  UnstableNode& operator=(UnstableNode&& from) {
-    node = from.node;
-    return *this;
-  }
-private:
-  friend struct NodeBackup;
-  friend class StableNode;
-  friend class RichNode;
-  friend class GarbageCollector;
-  friend class Space;
-
-  union {
-    Node node;
-
-    // Garbage collector hack
-    struct {
-      UnstableNode* gcNext;
-      UnstableNode* gcFrom;
-    };
-  };
-};
-
 template <class T>
 class TypedRichNode {
 };
@@ -295,6 +169,134 @@ private:
 private:
   Node* _node;
   UnstableNode* _origin;
+};
+
+/**
+ * Stable node, which is guaranteed never to change
+ */
+class StableNode {
+public:
+  StableNode() {}
+
+  const Type* type() {
+    return node.type;
+  }
+
+  inline void init(VM vm, StableNode& from);
+  inline void init(VM vm, UnstableNode& from);
+  inline void init(VM vm, RichNode from);
+
+  template<class T, class... Args>
+  void make(VM vm, Args... args) {
+    node.make<T>(vm, args...);
+  }
+
+  NodeBackup makeBackup() {
+    return NodeBackup(&node);
+  }
+private:
+  // Make this class non-copyable
+  StableNode(const StableNode& from);
+  StableNode& operator=(const StableNode& from);
+public:
+  // But make it movable
+
+  StableNode(StableNode&& from) {
+    node = from.node;
+  }
+
+  void init(StableNode&& from) {
+    node = from.node;
+  }
+private:
+  friend struct NodeBackup;
+  friend class UnstableNode;
+  friend class RichNode;
+  friend class GarbageCollector;
+  friend class Space;
+
+  union {
+    Node node;
+
+    // Garbage collector hack
+    struct {
+      StableNode* gcNext;
+      StableNode* gcFrom;
+    };
+  };
+};
+
+/**
+ * Unstable node, which is allowed to change over time
+ */
+class UnstableNode {
+public:
+  UnstableNode() {}
+
+  UnstableNode(VM vm, StableNode& from) {
+    copy(vm, from);
+  }
+
+  UnstableNode(VM vm, UnstableNode& from) {
+    copy(vm, from);
+  }
+
+  const Type* type() {
+    return node.type;
+  }
+
+  inline void copy(VM vm, StableNode& from);
+  inline void copy(VM vm, UnstableNode& from);
+  inline void copy(VM vm, RichNode from);
+  inline void swap(UnstableNode& from);
+  inline void reset(VM vm);
+
+  template<class T, class... Args>
+  void make(VM vm, Args... args) {
+    node.make<T>(vm, args...);
+  }
+
+  template<class T, class... Args>
+  static UnstableNode build(VM vm, Args... args) {
+    UnstableNode result;
+    result.make<T>(vm, args...);
+    return result;
+  }
+
+  NodeBackup makeBackup() {
+    return NodeBackup(&node);
+  }
+private:
+  // Make this class non-copyable
+  UnstableNode(const UnstableNode& from);
+  UnstableNode& operator=(const UnstableNode& from);
+public:
+  // But make it movable
+
+  UnstableNode(UnstableNode&& from) {
+    node = from.node;
+  }
+
+  UnstableNode& operator=(UnstableNode&& from) {
+    node = from.node;
+    return *this;
+  }
+private:
+  friend struct NodeBackup;
+  friend class StableNode;
+  friend class RichNode;
+  friend class GarbageCollector;
+  friend class Space;
+
+  union {
+    Node node;
+
+    // Garbage collector hack
+    struct {
+      UnstableNode* gcNext;
+      UnstableNode* gcFrom;
+    };
+  };
 };
 
 /**

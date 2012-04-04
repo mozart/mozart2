@@ -57,6 +57,10 @@ void StableNode::init(VM vm, UnstableNode& from) {
     from.make<Reference>(vm, this);
 }
 
+void StableNode::init(VM vm, RichNode from) {
+  init(vm, from.origin());
+}
+
 void UnstableNode::copy(VM vm, StableNode& from) {
   if (from.node.type->isCopiable())
     node = from.node;
@@ -73,6 +77,10 @@ void UnstableNode::copy(VM vm, UnstableNode& from) {
     make<Reference>(vm, stable);
     from.make<Reference>(vm, stable);
   }
+}
+
+void UnstableNode::copy(VM vm, RichNode from) {
+  copy(vm, from.origin());
 }
 
 void UnstableNode::reset(VM vm) {

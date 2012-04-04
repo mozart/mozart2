@@ -48,8 +48,10 @@ void Implementation<Atom>::printReprToStream(Self self, VM vm,
                                              std::ostream* _out, int depth) {
   std::ostream& out = *_out;
 
-  //out << "'" << _value->data << "'";
-  out << "<Atom>";
+  out << "'";
+  for (size_t i = 0; i < value()->length(); i++)
+    out << (char) value()->contents()[i];
+  out << "'";
 }
 
 }

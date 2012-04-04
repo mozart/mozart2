@@ -171,6 +171,7 @@ protected:
       StackEntry& entry = stack.front();
       if (entry.yregCount != 0)
         vm->deleteStaticArray<UnstableNode>(entry.yregs, entry.yregCount);
+      stack.remove_front(vm);
     }
 
     Super::dispose();

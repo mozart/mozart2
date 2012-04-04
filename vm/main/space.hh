@@ -47,8 +47,11 @@ Space* SpaceRef::operator->() {
 namespace internal {
   /**
    * Dummy thread that contains no code. It terminates as soon as it runs.
+   * Moreover, it can be resumed several times without harm.
    */
   class DummyThread: public Runnable {
+  private:
+    typedef Runnable Super;
   public:
     DummyThread(VM vm, Space* space,
                 bool createSuspended = false): Runnable(vm, space) {
@@ -60,6 +63,11 @@ namespace internal {
 
     void run() {
       terminate();
+    }
+
+    void resume(bool skipSchedule = false) {
+      if (!isRunnable())
+        Super::resume(skipSchedule);
     }
 
     Runnable* gCollect(GC gc) {
@@ -149,6 +157,10 @@ BuiltinResult Space::merge(VM vm, Space* dest) {
   bool res = src->installThis(/* isMerge = */ true);
 
   return res ? BuiltinResult::proceed() : BuiltinResult::failed();
+}
+
+void Space::fail(VM vm) {
+  failInternal(vm);
 }
 
 // Garbage collection

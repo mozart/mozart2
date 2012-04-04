@@ -682,6 +682,12 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
     }
 
     case BuiltinResult::brFailed: {
+      if (!vm->isOnTopLevel()) {
+        vm->getCurrentSpace()->fail(vm);
+        preempted = true;
+        return;
+      }
+
       result = raise(vm, u"failure");
       // fall through
     }

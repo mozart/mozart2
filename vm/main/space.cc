@@ -32,6 +32,21 @@ namespace mozart {
 // Space //
 ///////////
 
+// Operations
+
+void Space::failInternal(VM vm) {
+  assert(!isTopLevel());
+
+  Space* parent = getParent();
+  _status = ssFailed;
+  parent->decRunnableThreadCount();
+
+  deinstallThisFailed();
+  vm->setCurrentSpace(parent);
+
+  bindStatusVar(vm, trivialBuild(vm, u"failed"));
+}
+
 // Status variable
 
 void Space::bindStatusVar(VM vm, RichNode value) {
@@ -127,7 +142,22 @@ bool Space::installFrom(Space* ancestor) {
   return installThis();
 }
 
+namespace {
+  void createPropagateThreadOnceAndSuspendItOnVar(VM vm, Space* space,
+                                                  Runnable*& propagateThread,
+                                                  RichNode variable) {
+    if (variable.type()->isTransient()) {
+      if (propagateThread == nullptr)
+        propagateThread = new internal::DummyThread(vm, space);
+      DataflowVariable(variable).addToSuspendList(vm, propagateThread);
+    }
+  }
+}
+
 void Space::deinstallThis() {
+  bool hasNoRunnableThreads = !hasRunnableThreads();
+  Runnable* propagateThread = nullptr;
+
   while (!trail.empty()) {
     TrailEntry& trailEntry = trail.front();
     ScriptEntry& scriptEntry = script.append(vm);
@@ -136,6 +166,21 @@ void Space::deinstallThis() {
     trailEntry.node->node = trailEntry.saved;
     scriptEntry.right.make<Reference>(vm, trailEntry.node);
 
+    if (hasNoRunnableThreads) {
+      createPropagateThreadOnceAndSuspendItOnVar(vm, this, propagateThread,
+                                                 scriptEntry.left);
+      createPropagateThreadOnceAndSuspendItOnVar(vm, this, propagateThread,
+                                                 scriptEntry.right);
+    }
+
+    trail.remove_front(vm);
+  }
+}
+
+void Space::deinstallThisFailed() {
+  while (!trail.empty()) {
+    TrailEntry& trailEntry = trail.front();
+    trailEntry.node->node = trailEntry.saved;
     trail.remove_front(vm);
   }
 }
@@ -148,6 +193,7 @@ bool Space::installThis(bool isMerge) {
 
     if (!res.isProceed()) {
       assert(res.isFailed());
+      fail(vm);
       result = false;
       break;
     }

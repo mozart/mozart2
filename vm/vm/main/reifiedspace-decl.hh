@@ -73,6 +73,9 @@ public:
   BuiltinResult isSpace(VM vm, UnstableNode* result);
 
   inline
+  BuiltinResult askSpace(Self self, VM vm, UnstableNode* result);
+
+  inline
   BuiltinResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
 
   inline

@@ -193,6 +193,10 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
   return BuiltinResult::proceed();
 }
 
+BuiltinResult askSpace(VM vm, UnstableNode* args[]) {
+  return SpaceLike(*args[0]).askSpace(vm, args[1]);
+}
+
 BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).askVerboseSpace(vm, args[1]);
 }

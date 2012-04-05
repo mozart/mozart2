@@ -30,6 +30,7 @@
 #include "coreinterfaces.hh"
 #include "boolean.hh"
 #include "corebuilders.hh"
+#include "matchdsl.hh"
 
 namespace mozart {
 
@@ -50,6 +51,49 @@ BuiltinResult Implementation<ReifiedSpace>::isSpace(
   VM vm, UnstableNode* result) {
   result->make<Boolean>(vm, true);
   return BuiltinResult::proceed();
+}
+
+BuiltinResult Implementation<ReifiedSpace>::askSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  using namespace patternmatching;
+
+  switch (status()) {
+    case ssFailed: {
+      result->make<Atom>(vm, u"failed");
+      return BuiltinResult::proceed();
+    }
+
+    case ssMerged: {
+      result->make<Atom>(vm, u"merged");
+      return BuiltinResult::proceed();
+    }
+
+    case ssNormal: {
+      Space* space = getSpace();
+
+      if (!space->isAdmissible(vm))
+        return raise(vm, u"spaceAdmissible", self);
+
+      UnstableNode statusVar(vm, *space->getStatusVar());
+      BuiltinResult res = BuiltinResult::proceed();
+
+      if (matchesTuple(vm, res, statusVar, u"succeeded", wildcard())) {
+        result->make<Atom>(vm, u"succeeded");
+      } else if (res.isProceed()) {
+        *result = std::move(statusVar);
+      } else {
+        return res;
+      }
+
+      return BuiltinResult::proceed();
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
+    }
+  }
 }
 
 BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(

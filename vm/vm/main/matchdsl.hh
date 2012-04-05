@@ -499,6 +499,7 @@ bool matchesSharp(VM vm, BuiltinResult& result, RichNode value,
  * Convenience "else clause" when no match means a type error
  * See comments at the beginning of the file for usage.
  */
+inline
 BuiltinResult matchTypeError(VM vm, BuiltinResult& result, RichNode value,
                              const char16_t* expected) {
   if (result.isProceed())

@@ -20,6 +20,7 @@ class Builtins {
     register(Value.IsDet)
 
     register(Space.NewSpace)
+    register(Space.AskSpace)
     register(Space.AskVerboseSpace)
     register(Space.MergeSpace)
 
@@ -61,6 +62,9 @@ class Builtins {
   object Space {
     object NewSpace extends BuiltinSymbol("NewSpace",
         "newSpace", in = 1, out = 1)
+
+    object AskSpace extends BuiltinSymbol("AskSpace",
+        "askSpace", in = 1, out = 1)
 
     object AskVerboseSpace extends BuiltinSymbol("AskVerboseSpace",
         "askVerboseSpace", in = 1, out = 1)

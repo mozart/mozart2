@@ -85,6 +85,8 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]);
 BuiltinResult askSpace(VM vm, UnstableNode* args[]);
 BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]);
 BuiltinResult mergeSpace(VM vm, UnstableNode* args[]);
+BuiltinResult commitSpace(VM vm, UnstableNode* args[]);
+BuiltinResult chooseSpace(VM vm, UnstableNode* args[]);
 
 ///////////
 // Utils //

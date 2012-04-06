@@ -31,8 +31,80 @@
 #include "boolean.hh"
 #include "corebuilders.hh"
 #include "matchdsl.hh"
+#include "unify.hh"
 
 namespace mozart {
+
+///////////////////////
+// ChooseDistributor //
+///////////////////////
+
+class ChooseDistributor: public Distributor {
+private:
+  class UnifyThread: public Runnable {
+  private:
+    typedef Runnable Super;
+  public:
+    UnifyThread(VM vm, Space* space, UnstableNode* var,
+                UnstableNode* value): Runnable(vm, space) {
+      _var.copy(vm, *var);
+      _value.copy(vm, *value);
+      resume();
+    }
+
+    UnifyThread(GC gc, UnifyThread& from): Runnable(gc, from) {
+      gc->gcUnstableNode(from._var, _var);
+      gc->gcUnstableNode(from._value, _value);
+    }
+
+    void run() {
+      unify(vm, _var, _value);
+      terminate();
+    }
+
+    Runnable* gCollect(GC gc) {
+      return new (gc->vm) UnifyThread(gc, *this);
+    }
+  private:
+    UnstableNode _var;
+    UnstableNode _value;
+  };
+public:
+  ChooseDistributor(VM vm, Space* space, nativeint alternatives) {
+    _alternatives = alternatives;
+    _var.make<Unbound>(vm, space);
+  }
+
+  ChooseDistributor(GC gc, ChooseDistributor& from) {
+    _alternatives = from._alternatives;
+    gc->gcUnstableNode(from._var, _var);
+  }
+
+  UnstableNode* getVar() {
+    return &_var;
+  }
+
+  nativeint getAlternatives() {
+    return _alternatives;
+  }
+
+  nativeint commit(VM vm, Space* space, nativeint value) {
+    if (value > _alternatives)
+      return -value;
+
+    UnstableNode valueNode = trivialBuild(vm, value);
+    new (vm) UnifyThread(vm, space, &_var, &valueNode);
+
+    return 0;
+  }
+
+  virtual Distributor* gCollect(GC gc) {
+    return new (gc->vm) ChooseDistributor(gc, *this);
+  }
+private:
+  nativeint _alternatives;
+  UnstableNode _var;
+};
 
 //////////////////
 // ReifiedSpace //
@@ -172,6 +244,51 @@ BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
       this->_status = ssMerged;
 
       return res;
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
+    }
+  }
+}
+
+BuiltinResult Implementation<ReifiedSpace>::commitSpace(
+  Self self, VM vm, UnstableNode* value) {
+
+  using namespace patternmatching;
+
+  switch (status()) {
+    case ssFailed:
+      return BuiltinResult::proceed();
+
+    case ssMerged:
+      return raise(vm, u"spaceMerged");
+
+    case ssNormal: {
+      Space* space = getSpace();
+
+      if (!space->isAdmissible(vm))
+        return raise(vm, u"spaceAdmissible");
+
+      if (!space->hasDistributor())
+        return raise(vm, u"spaceNoChoice", self);
+
+      RichNode val = *value;
+      BuiltinResult res = BuiltinResult::proceed();
+      nativeint left, right;
+
+      if (matches(vm, res, val, capture(left))) {
+        int commitResult = space->commit(vm, left);
+        if (commitResult < 0)
+          return raise(vm, u"spaceAltRange", self, left, -commitResult);
+
+        return BuiltinResult::proceed();
+      } else if (matchesSharp(vm, res, val, capture(left), capture(right))) {
+        return raise(vm, u"notImplemented", u"commitRange");
+      } else {
+        return matchTypeError(vm, res, val, u"int or range");
+      }
     }
 
     default: {

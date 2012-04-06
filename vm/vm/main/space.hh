@@ -91,6 +91,11 @@ Space::Space(GC gc, Space* from) {
   _isTopLevel = from->_isTopLevel;
   _status = from->_status;
 
+  if (from->_distributor == nullptr)
+    _distributor = nullptr;
+  else
+    _distributor = from->_distributor->gCollect(gc);
+
   for (auto iter = from->script.begin(); iter != from->script.end(); ++iter) {
     ScriptEntry& entry = script.append(gc->vm);
     gc->gcUnstableNode(iter->left, entry.left);
@@ -157,6 +162,18 @@ BuiltinResult Space::merge(VM vm, Space* dest) {
   bool res = src->installThis(/* isMerge = */ true);
 
   return res ? BuiltinResult::proceed() : BuiltinResult::failed();
+}
+
+nativeint Space::commit(VM vm, nativeint value) {
+  nativeint commitResult = getDistributor()->commit(vm, this, value);
+
+  if (commitResult >= 0) {
+    clearStatusVar(vm);
+    if (commitResult == 0)
+      _distributor = nullptr;
+  }
+
+  return commitResult;
 }
 
 void Space::fail(VM vm) {

@@ -284,6 +284,10 @@ struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace> {
   BuiltinResult mergeSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
+
+  BuiltinResult commitSpace(RichNode self, VM vm, UnstableNode* result) {
+    return raiseTypeError(vm, u"Space", self);
+  }
 };
 
 } // namespace mozart

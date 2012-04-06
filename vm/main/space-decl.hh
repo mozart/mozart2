@@ -62,6 +62,18 @@ class SpaceTrail : public VMAllocatedList<TrailEntry> {
 };
 
 /**
+ * Base class for distributors
+ */
+class Distributor {
+public:
+  virtual nativeint getAlternatives() = 0;
+
+  virtual nativeint commit(VM vm, Space* space, nativeint value) = 0;
+
+  virtual Distributor* gCollect(GC gc) = 0;
+};
+
+/**
  * Computation space
  */
 class Space {
@@ -72,7 +84,7 @@ public:
 public:
   /** Construct the top-level space */
   Space(VM vm) : vm(vm), _parent(nullptr), _isTopLevel(true), _status(ssNormal),
-    _mark(false) {}
+    _mark(false), _distributor(nullptr) {}
 
   /** Construct a subspace */
   Space(VM vm, Space* parent) : vm(vm), _parent(parent), _isTopLevel(false),
@@ -152,12 +164,32 @@ public:
 
   inline
   BuiltinResult merge(VM vm, Space* destSpace);
+
+  inline
+  nativeint commit(VM vm, nativeint value);
 private:
   void failInternal(VM vm);
+
+// Distributor
+
+public:
+  bool hasDistributor() {
+    return _distributor != nullptr;
+  }
+
+  Distributor* getDistributor() {
+    return _distributor;
+  }
+
+  void setDistributor(Distributor* distributor) {
+    _distributor = distributor;
+  }
 
 // Status variable
 
 private:
+  void clearStatusVar(VM vm);
+
   inline
   void bindStatusVar(VM vm, RichNode value);
 
@@ -288,6 +320,8 @@ private:
 
   StableNode _rootVar;
   UnstableNode _statusVar;
+
+  Distributor* _distributor;
 
   SpaceTrail trail;
   SpaceScript script;

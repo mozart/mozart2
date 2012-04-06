@@ -49,6 +49,10 @@ void Space::failInternal(VM vm) {
 
 // Status variable
 
+void Space::clearStatusVar(VM vm) {
+  _statusVar.make<Unbound>(vm);
+}
+
 void Space::bindStatusVar(VM vm, RichNode value) {
   RichNode statusVar = *getStatusVar();
   assert(statusVar.type()->isTransient());
@@ -75,7 +79,13 @@ void Space::checkStability() {
     // Succeeded
     vm->setCurrentSpace(parent);
 
-    bindStatusVar(vm, genSucceeded(vm, getThreadCount() == 0));
+    if (hasDistributor()) {
+      nativeint alternatives = getDistributor()->getAlternatives();
+      UnstableNode newStatus = buildTuple(vm, u"alternatives", alternatives);
+      bindStatusVar(vm, newStatus);
+    } else {
+      bindStatusVar(vm, genSucceeded(vm, getThreadCount() == 0));
+    }
   } else {
     deinstallTo(parent); // TODO Why !?
 

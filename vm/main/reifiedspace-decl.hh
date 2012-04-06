@@ -80,6 +80,9 @@ public:
 
   inline
   BuiltinResult mergeSpace(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult commitSpace(Self self, VM vm, UnstableNode* value);
 private:
   SpaceRef _space;
   Status _status;

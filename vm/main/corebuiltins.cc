@@ -30,6 +30,7 @@
 #include "emulate.hh"
 #include "exchelpers.hh"
 #include "unify.hh"
+#include "reifiedspace.hh"
 
 namespace mozart {
 
@@ -203,6 +204,34 @@ BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]) {
 
 BuiltinResult mergeSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).mergeSpace(vm, args[1]);
+}
+
+BuiltinResult commitSpace(VM vm, UnstableNode* args[]) {
+  return SpaceLike(*args[0]).commitSpace(vm, args[1]);
+}
+
+BuiltinResult chooseSpace(VM vm, UnstableNode* args[]) {
+  // TODO How come I need 4 lines just to extract an Integer parameter!?
+  nativeint alternatives = 0;
+  BuiltinResult res = IntegerValue(*args[0]).intValue(vm, &alternatives);
+  if (!res.isProceed())
+    return res;
+
+  Space* space = vm->getCurrentSpace();
+
+  if (space->isTopLevel()) {
+    args[1]->make<Unbound>(vm);
+  } else if (space->hasDistributor()) {
+    return raise(vm, u"spaceDistributor");
+  } else {
+    ChooseDistributor* distributor =
+      new (vm) ChooseDistributor(vm, space, alternatives);
+
+    space->setDistributor(distributor);
+    args[1]->copy(vm, *distributor->getVar());
+  }
+
+  return BuiltinResult::proceed();
 }
 
 ///////////

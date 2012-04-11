@@ -33,12 +33,9 @@ class Program(var rawCode: Statement) {
     val codeAreas = abstractions map (_.codeArea)
 
     out << """
-       |#include <iostream>
+       |#include "mozart.hh"
        |
-       |#include "mozartcore.hh"
-       |#include "emulate.hh"
-       |#include "coreinterfaces.hh"
-       |#include "corebuiltins.hh"
+       |#include <iostream>
        |
        |using namespace mozart;
        |

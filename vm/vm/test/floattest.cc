@@ -1,6 +1,4 @@
-#include "mozartcore.hh"
-#include "coreinterfaces.hh"
-#include "corebuiltins.hh"
+#include "mozart.hh"
 
 #include <gtest/gtest.h>
 

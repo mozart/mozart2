@@ -25,23 +25,19 @@
 #ifndef __SMALLINT_H
 #define __SMALLINT_H
 
-#include "smallint-decl.hh"
-
-#include "coreinterfaces.hh"
-#include "boolean.hh"
+#include "mozartcore.hh"
 
 #include <limits>
-#include <iostream>
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-/////////////////////
-// Inline SmallInt //
-/////////////////////
+//////////////
+// SmallInt //
+//////////////
 
-#ifndef MOZART_GENERATOR
 #include "SmallInt-implem.hh"
-#endif
 
 nativeint Implementation<SmallInt>::build(VM vm, GC gc, Self from) {
   return from.get().value();
@@ -228,5 +224,7 @@ BuiltinResult Implementation<SmallInt>::modValue(Self self, VM vm,
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __SMALLINT_H

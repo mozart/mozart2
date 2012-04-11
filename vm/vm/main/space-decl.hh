@@ -28,9 +28,7 @@
 #include "core-forward-decl.hh"
 
 #include "store-decl.hh"
-#include "vm-decl.hh"
-
-#include <iostream>
+#include "vmallocatedlist-decl.hh"
 
 namespace mozart {
 
@@ -44,10 +42,8 @@ class SpaceScript : public VMAllocatedList<ScriptEntry> {
 private:
   typedef VMAllocatedList<ScriptEntry> Super;
 public:
-  ScriptEntry& append(VM vm) {
-    Super::push_back_new(vm);
-    return back();
-  }
+  inline
+  ScriptEntry& append(VM vm);
 };
 
 struct TrailEntry {
@@ -136,13 +132,11 @@ public:
   inline
   bool isAdmissible(Space* currentSpace);
 
-  bool isAdmissible(VM vm) {
-    return isAdmissible(vm->getCurrentSpace());
-  }
+  inline
+  bool isAdmissible(VM vm);
 
-  bool isAdmissible() {
-    return isAdmissible(vm);
-  }
+  inline
+  bool isAdmissible();
 
 // Relations between spaces
 

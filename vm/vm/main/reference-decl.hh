@@ -25,8 +25,7 @@
 #ifndef __REFERENCE_DECL_H
 #define __REFERENCE_DECL_H
 
-#include "vm-decl.hh"
-#include "type.hh"
+#include "type-decl.hh"
 
 namespace mozart {
 

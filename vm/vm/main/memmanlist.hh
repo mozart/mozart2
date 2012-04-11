@@ -27,15 +27,21 @@
 
 #include "memmanager.hh"
 
+#include <utility>
 #include <cassert>
 
 namespace mozart {
+
+inline
+MemoryManager& virtualMMToActualMM(MemoryManager& mm) {
+  return mm;
+}
 
 ////////////////////
 // MemManagedList //
 ////////////////////
 
-template <class T>
+template <class T, class MM = MemoryManager&>
 class MemManagedList {
 private:
   struct ListNode {
@@ -109,7 +115,7 @@ public:
       return &node->item;
     }
   private:
-    friend class MemManagedList<T>;
+    friend class MemManagedList<T, MM>;
 
     ListNode* node;
     ListNode* prev;
@@ -121,7 +127,7 @@ public:
     return first == nullptr;
   }
 
-  void push_back(MemoryManager& mm, const T& item) {
+  void push_back(MM mm, const T& item) {
     if (last == nullptr) {
       first = last = newNode(mm, nullptr, item);
     } else {
@@ -131,7 +137,7 @@ public:
   }
 
   template <class... Args>
-  void push_back_new(MemoryManager& mm, Args... args) {
+  void push_back_new(MM mm, Args... args) {
     if (last == nullptr) {
       first = last = newNode_new(mm, nullptr, args...);
     } else {
@@ -140,7 +146,7 @@ public:
     }
   }
 
-  void push_front(MemoryManager& mm, const T& item) {
+  void push_front(MM mm, const T& item) {
     if (last == nullptr) {
       first = last = newNode(mm, nullptr, item);
     } else {
@@ -149,7 +155,7 @@ public:
   }
 
   template <class... Args>
-  void push_front_new(MemoryManager& mm, Args... args) {
+  void push_front_new(MM mm, Args... args) {
     if (last == nullptr) {
       first = last = newNode_new(mm, nullptr, args...);
     } else {
@@ -157,7 +163,7 @@ public:
     }
   }
 
-  T pop_front(MemoryManager& mm) {
+  T pop_front(MM mm) {
     assert(!empty());
     ListNode* node = first;
     T result = node->item;
@@ -178,7 +184,7 @@ public:
     return last->item;
   }
 
-  void remove_front(MemoryManager& mm) {
+  void remove_front(MM mm) {
     assert(!empty());
     ListNode* node = first;
     first = node->next;
@@ -187,7 +193,7 @@ public:
     freeNode(mm, node);
   }
 
-  void clear(MemoryManager& mm) {
+  void clear(MM mm) {
     ListNode* node = first;
 
     while (node != nullptr) {
@@ -199,13 +205,13 @@ public:
     first = last = nullptr;
   }
 
-  void remove(MemoryManager& mm, removable_iterator& iterator) {
+  void remove(MM mm, removable_iterator& iterator) {
     ListNode* node = iterator.node;
     internalRemove(iterator);
     freeNode(mm, node);
   }
 
-  void splice(MemoryManager& mm, MemManagedList<T>& source) {
+  void splice(MM mm, MemManagedList<T, MM>& source) {
     if (last == nullptr)
       first = source.first;
     else
@@ -215,7 +221,7 @@ public:
     source.first = source.last = nullptr;
   }
 
-  void splice(MemoryManager& mm, MemManagedList<T>& source,
+  void splice(MM mm, MemManagedList<T, MM>& source,
               removable_iterator& srcIterator) {
     ListNode* node = srcIterator.node;
     source.internalRemove(srcIterator);
@@ -269,25 +275,29 @@ private:
       prev->next = node->next;
   }
 private:
-  ListNode* newNode(MemoryManager& mm, ListNode* next, const T& item) {
-    void* memory = mm.malloc(sizeof(ListNode));
-    ListNode* node = static_cast<ListNode*>(memory);
+  ListNode* newNode(MM mm, ListNode* next, const T& item) {
+    ListNode* node = mallocNode(mm);
     node->next = next;
     node->item = item;
     return node;
   }
 
   template <class... Args>
-  ListNode* newNode_new(MemoryManager& mm, ListNode* next, Args... args) {
-    void* memory = mm.malloc(sizeof(ListNode));
-    ListNode* node = static_cast<ListNode*>(memory);
+  ListNode* newNode_new(MM mm, ListNode* next, Args... args) {
+    ListNode* node = mallocNode(mm);
     node->next = next;
     new (&node->item) T(args...);
     return node;
   }
 
-  void freeNode(MemoryManager& mm, ListNode* node) {
-    mm.free(static_cast<void*>(node), sizeof(ListNode));
+  ListNode* mallocNode(MM mm) {
+    return static_cast<ListNode*>(
+      virtualMMToActualMM(mm).malloc(sizeof(ListNode)));
+  }
+
+  void freeNode(MM mm, ListNode* node) {
+    virtualMMToActualMM(mm).free(
+      static_cast<void*>(node), sizeof(ListNode));
   }
 
   ListNode* first;

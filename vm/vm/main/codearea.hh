@@ -25,17 +25,17 @@
 #ifndef __CODEAREA_H
 #define __CODEAREA_H
 
-#include "codearea-decl.hh"
+#include "mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-/////////////////////
-// Inline CodeArea //
-/////////////////////
+//////////////
+// CodeArea //
+//////////////
 
-#ifndef MOZART_GENERATOR
 #include "CodeArea-implem.hh"
-#endif
 
 Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
                                          StaticArray<StableNode> _Ks,
@@ -70,5 +70,7 @@ Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __CODEAREA_H

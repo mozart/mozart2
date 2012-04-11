@@ -25,19 +25,17 @@
 #ifndef __VARIABLES_H
 #define __VARIABLES_H
 
-#include "variables-decl.hh"
+#include "mozartcore.hh"
 
-#include "coreinterfaces.hh"
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-//////////////////////
-// Inline Variable ///
-//////////////////////
+//////////////
+// Variable //
+//////////////
 
-#ifndef MOZART_GENERATOR
 #include "Variable-implem.hh"
-#endif
 
 Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
   gc->gcSpace(from->_home, _home);
@@ -213,13 +211,11 @@ void Implementation<Variable>::resumePendingsSubSpace(VM vm,
   pendingVariables.clear(vm);
 }
 
-/////////////////////
-// Inline Unbound ///
-/////////////////////
+/////////////
+// Unbound //
+/////////////
 
-#ifndef MOZART_GENERATOR
 #include "Unbound-implem.hh"
-#endif
 
 SpaceRef Implementation<Unbound>::build(VM vm, GC gc, Self from) {
   SpaceRef home;
@@ -254,5 +250,7 @@ BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __VARIABLES_H

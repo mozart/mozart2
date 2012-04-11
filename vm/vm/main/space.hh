@@ -25,7 +25,7 @@
 #ifndef __SPACE_H
 #define __SPACE_H
 
-#include "space-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 
@@ -79,6 +79,15 @@ namespace internal {
       return new (gc->vm) DummyThread(gc, *this);
     }
   };
+}
+
+/////////////////
+// SpaceScript //
+/////////////////
+
+ScriptEntry& SpaceScript::append(VM vm) {
+  Super::push_back_new(vm);
+  return back();
 }
 
 ///////////
@@ -138,6 +147,14 @@ bool Space::isAdmissible(Space* currentSpace) {
 
   // Fall back on the full loop
   return !currentSpace->isAncestor(this);
+}
+
+bool Space::isAdmissible(VM vm) {
+  return isAdmissible(vm->getCurrentSpace());
+}
+
+bool Space::isAdmissible() {
+  return isAdmissible(vm);
 }
 
 // Relations between spaces

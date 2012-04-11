@@ -25,8 +25,7 @@
 #ifndef __VM_H
 #define __VM_H
 
-#include "vm-decl.hh"
-#include "space-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 

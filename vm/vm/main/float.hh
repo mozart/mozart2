@@ -25,22 +25,17 @@
 #ifndef __FLOAT_H
 #define __FLOAT_H
 
-#include "float-decl.hh"
+#include "mozartcore.hh"
 
-#include "boolean.hh"
-#include "coreinterfaces.hh"
-
-#include <iostream>
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-//////////////////
-// Inline Float //
-//////////////////
+///////////
+// Float //
+///////////
 
-#ifndef MOZART_GENERATOR
 #include "Float-implem.hh"
-#endif
 
 double Implementation<Float>::build(VM vm, GC gc, Self from) {
   return from.get().value();
@@ -150,5 +145,7 @@ BuiltinResult Implementation<Float>::mod(Self self, VM vm,
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __FLOAT_H

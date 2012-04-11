@@ -25,13 +25,7 @@
 #ifndef __REIFIEDSPACE_H
 #define __REIFIEDSPACE_H
 
-#include "reifiedspace-decl.hh"
-
-#include "coreinterfaces.hh"
-#include "boolean.hh"
-#include "corebuilders.hh"
-#include "matchdsl.hh"
-#include "unify.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 
@@ -106,13 +100,17 @@ private:
   UnstableNode _var;
 };
 
+}
+
+#ifndef MOZART_GENERATOR
+
+namespace mozart {
+
 //////////////////
 // ReifiedSpace //
 //////////////////
 
-#ifndef MOZART_GENERATOR
 #include "ReifiedSpace-implem.hh"
-#endif
 
 Implementation<ReifiedSpace>::Implementation(VM vm, GC gc, Self from) {
   gc->gcSpace(from->_space, _space);
@@ -299,5 +297,7 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __REIFIEDSPACE_H

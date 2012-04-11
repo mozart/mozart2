@@ -25,7 +25,8 @@
 #ifndef __CODEAREA_DECL_H
 #define __CODEAREA_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
+
 #include "opcodes.hh"
 
 #include <cstring>

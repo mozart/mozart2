@@ -25,23 +25,18 @@
 #ifndef __RECORDS_H
 #define __RECORDS_H
 
-#include "records-decl.hh"
-
-#include "coreinterfaces.hh"
-#include "unify.hh"
-#include "smallint.hh"
-#include "boolean.hh"
+#include "mozartcore.hh"
 #include "corebuiltins.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-//////////////////
-// Inline Tuple //
-//////////////////
+///////////
+// Tuple //
+///////////
 
-#ifndef MOZART_GENERATOR
 #include "Tuple-implem.hh"
-#endif
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
                                       StaticArray<StableNode> _elements,
@@ -176,5 +171,7 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __RECORDS_H

@@ -25,7 +25,7 @@
 #ifndef __ATOM_DECL_H
 #define __ATOM_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
 #include <string>
 #include <ostream>

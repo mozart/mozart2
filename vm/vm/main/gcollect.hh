@@ -25,10 +25,7 @@
 #ifndef __GCOLLECT_H
 #define __GCOLLECT_H
 
-#include "gcollect-decl.hh"
-
-#include "vm-decl.hh"
-#include "space-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 

@@ -25,9 +25,7 @@
 #ifndef __STORE_H
 #define __STORE_H
 
-#include "store-decl.hh"
-
-#include "reference.hh"
+#include "mozartcore.hh"
 
 #include <sstream>
 

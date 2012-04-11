@@ -25,9 +25,9 @@
 #ifndef __CORE_FORWARD_DECL_H
 #define __CORE_FORWARD_DECL_H
 
-#ifndef __MOZARTCORE_H
+#ifndef __MOZART_H
 #ifndef MOZART_GENERATOR
-#error Illegal inclusion chain. You must include "mozartcore.hh".
+#error Illegal inclusion chain. You must include "mozart.hh".
 #endif
 #endif
 

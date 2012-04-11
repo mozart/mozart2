@@ -25,8 +25,9 @@
 #ifndef __MATCHDSL_H
 #define __MATCHDSL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
+#include "coredatatypes-decl.hh"
 #include "coreinterfaces.hh"
 
 /**
@@ -172,6 +173,8 @@
  * functions do nothing and return false. This allows to chain several matches
  * easily.
  */
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
@@ -511,5 +514,7 @@ BuiltinResult matchTypeError(VM vm, BuiltinResult& result, RichNode value,
 } // namespace patternmatching
 
 } // namespace mozart
+
+#endif // MOZART_GENERATOR
 
 #endif // __MATCHDSL_H

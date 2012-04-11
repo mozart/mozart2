@@ -25,7 +25,7 @@
 #ifndef __UNIFY_DECL_H
 #define __UNIFY_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
 namespace mozart {
 
@@ -47,7 +47,7 @@ private:
   friend class WalkStack;
   friend struct StructuralDualWalk;
 
-  template <class T>
+  template <class T, class MM>
   friend class MemManagedList;
 
   WalkStackEntry(StableNode* left, StableNode* right, size_t count = 1) :
@@ -68,35 +68,26 @@ class WalkStack : private VMAllocatedList<WalkStackEntry> {
 private:
   typedef VMAllocatedList<WalkStackEntry> Super;
 public:
-  void push(VM vm, StableNode* left, StableNode* right) {
-    push_front_new(vm, left, right, 1);
-  }
+  inline
+  void push(VM vm, StableNode* left, StableNode* right);
 
+  inline
   void pushArray(VM vm, StaticArray<StableNode> left,
-                 StaticArray<StableNode> right, size_t count) {
-    push_front_new(vm, &left[0], &right[0], count);
-  }
+                 StaticArray<StableNode> right, size_t count);
 private:
   friend struct StructuralDualWalk;
 
-  bool empty() {
-    return Super::empty();
-  }
+  inline
+  bool empty();
 
-  WalkStackEntry& front() {
-    return Super::front();
-  }
+  inline
+  WalkStackEntry& front();
 
-  void remove_front(VM vm) {
-    if (front().count == 1)
-      Super::remove_front(vm);
-    else
-      front().next();
-  }
+  inline
+  void remove_front(VM vm);
 
-  void clear(VM vm) {
-    Super::clear(vm);
-  }
+  inline
+  void clear(VM vm);
 };
 
 }

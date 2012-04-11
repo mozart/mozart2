@@ -22,49 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GCTYPES_H
-#define __GCTYPES_H
+#ifndef __COREDATATYPES_DECL_H
+#define __COREDATATYPES_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#ifndef MOZART_GENERATOR
+#include "variables-decl.hh"
+#include "boolean-decl.hh"
+#include "smallint-decl.hh"
+#include "float-decl.hh"
+#include "codearea-decl.hh"
+#include "callables-decl.hh"
+#include "atom-decl.hh"
+#include "records-decl.hh"
+#include "reifiedspace-decl.hh"
 
-namespace mozart {
-
-//////////////////
-// GCedToStable //
-//////////////////
-
-#include "GCedToStable-implem.hh"
-
-void GCedToStableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
-  to.init(gc->vm, *dest);
-}
-
-void GCedToStableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
-  to.copy(gc->vm, *dest);
-}
-
-////////////////////
-// GCedToUnstable //
-////////////////////
-
-#include "GCedToUnstable-implem.hh"
-
-void GCedToUnstableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
-  to.init(gc->vm, *dest);
-}
-
-void GCedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
-  to.copy(gc->vm, *dest);
-}
-
-}
-
-#endif // MOZART_GENERATOR
-
-#endif // __GCTYPES_H
+#endif // __COREDATATYPES_DECL_H

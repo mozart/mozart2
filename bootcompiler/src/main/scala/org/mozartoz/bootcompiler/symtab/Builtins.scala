@@ -24,6 +24,7 @@ class Builtins {
     register(Space.AskVerboseSpace)
     register(Space.MergeSpace)
     register(Space.CommitSpace)
+    register(Space.CloneSpace)
     register(Space.ChooseSpace)
 
     register(Record.Label)
@@ -76,6 +77,9 @@ class Builtins {
 
     object CommitSpace extends BuiltinSymbol("CommitSpace",
         "commitSpace", in = 2, out = 0)
+
+    object CloneSpace extends BuiltinSymbol("CloneSpace",
+        "cloneSpace", in = 1, out = 1)
 
     object ChooseSpace extends BuiltinSymbol("ChooseSpace",
         "chooseSpace", in = 1, out = 1)

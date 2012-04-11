@@ -66,8 +66,13 @@ namespace internal {
     }
 
     void resume(bool skipSchedule = false) {
-      if (!isRunnable())
+      if (!isRunnable() && !isTerminated())
         Super::resume(skipSchedule);
+    }
+
+    void suspend(bool skipUnschedule = false) {
+      if (isRunnable() && !isTerminated())
+        Super::suspend(skipUnschedule);
     }
 
     Runnable* gCollect(GC gc) {
@@ -83,6 +88,8 @@ namespace internal {
 Space::Space(GC gc, Space* from) {
   assert(from->_status != ssReference && from->_status != ssGCed);
 
+  vm = from->vm;
+
   if (from->_isTopLevel)
     _parent = nullptr;
   else
@@ -91,16 +98,26 @@ Space::Space(GC gc, Space* from) {
   _isTopLevel = from->_isTopLevel;
   _status = from->_status;
 
+  _mark = false;
+
+  gc->gcStableNode(from->_rootVar, _rootVar);
+  gc->gcUnstableNode(from->_statusVar, _statusVar);
+
   if (from->_distributor == nullptr)
     _distributor = nullptr;
   else
     _distributor = from->_distributor->gCollect(gc);
+
+  assert(from->trail.empty());
 
   for (auto iter = from->script.begin(); iter != from->script.end(); ++iter) {
     ScriptEntry& entry = script.append(gc->vm);
     gc->gcUnstableNode(iter->left, entry.left);
     gc->gcUnstableNode(iter->right, entry.right);
   }
+
+  threadCount = from->threadCount;
+  cascadedRunnableThreadCount = from->cascadedRunnableThreadCount;
 }
 
 // Status

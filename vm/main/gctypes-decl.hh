@@ -25,8 +25,7 @@
 #ifndef __GCTYPES_DECL_H
 #define __GCTYPES_DECL_H
 
-#include "vm-decl.hh"
-#include "type.hh"
+#include "type-decl.hh"
 
 namespace mozart {
 

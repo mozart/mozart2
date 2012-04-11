@@ -25,18 +25,13 @@
 #ifndef __EMULATE_H
 #define __EMULATE_H
 
+#include "mozartcore.hh"
+
+#include "ozlimits.hh"
+
 #include <utility>
 #include <stack>
 #include <cassert>
-
-#include "mozartcore.hh"
-
-#include "arrays.hh"
-#include "opcodes.hh"
-#include "ozlimits.hh"
-#include "codearea.hh"
-#include "runnable.hh"
-#include "smallint.hh"
 
 namespace mozart {
 

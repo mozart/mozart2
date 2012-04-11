@@ -22,49 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GCTYPES_H
-#define __GCTYPES_H
+#ifndef __VMALLOCATEDLIST_H
+#define __VMALLOCATEDLIST_H
 
 #include "mozartcore.hh"
 
-#ifndef MOZART_GENERATOR
-
 namespace mozart {
 
-//////////////////
-// GCedToStable //
-//////////////////
+/////////////////////
+// VMAllocatedList //
+/////////////////////
 
-#include "GCedToStable-implem.hh"
-
-void GCedToStableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
-  to.init(gc->vm, *dest);
-}
-
-void GCedToStableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
-  to.copy(gc->vm, *dest);
-}
-
-////////////////////
-// GCedToUnstable //
-////////////////////
-
-#include "GCedToUnstable-implem.hh"
-
-void GCedToUnstableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
-  to.init(gc->vm, *dest);
-}
-
-void GCedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
-  to.copy(gc->vm, *dest);
+inline
+MemoryManager& virtualMMToActualMM(VM vm) {
+  return vm->getMemoryManager();
 }
 
 }
 
-#endif // MOZART_GENERATOR
-
-#endif // __GCTYPES_H
+#endif // __VMALLOCATEDLIST_H

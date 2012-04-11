@@ -25,9 +25,7 @@
 #ifndef __RUNNABLE_H
 #define __RUNNABLE_H
 
-#include "runnable-decl.hh"
-#include "vm-decl.hh"
-#include "space-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 

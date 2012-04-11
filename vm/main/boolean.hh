@@ -25,13 +25,17 @@
 #ifndef __BOOLEAN_H
 #define __BOOLEAN_H
 
-#include "boolean-decl.hh"
+#include "mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-#ifndef MOZART_GENERATOR
+/////////////
+// Boolean //
+/////////////
+
 #include "Boolean-implem.hh"
-#endif
 
 bool Implementation<Boolean>::build(VM vm, GC gc, Self from) {
   return from.get().value();
@@ -42,5 +46,7 @@ bool Implementation<Boolean>::equals(VM vm, Self right) {
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __BOOLEAN_H

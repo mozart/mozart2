@@ -22,15 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "corebuiltins.hh"
-#include "coreinterfaces.hh"
+#include "mozart.hh"
 
 #include <iostream>
-
-#include "emulate.hh"
-#include "exchelpers.hh"
-#include "unify.hh"
-#include "reifiedspace.hh"
 
 namespace mozart {
 

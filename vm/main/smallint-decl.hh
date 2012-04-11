@@ -25,7 +25,7 @@
 #ifndef __SMALLINT_DECL_H
 #define __SMALLINT_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
 namespace mozart {
 

@@ -25,7 +25,7 @@
 #ifndef __THREADPOOL_H
 #define __THREADPOOL_H
 
-#include "threadpool-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 

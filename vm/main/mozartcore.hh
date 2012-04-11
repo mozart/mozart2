@@ -25,17 +25,12 @@
 #ifndef __MOZARTCORE_H
 #define __MOZARTCORE_H
 
-#include "core-forward-decl.hh"
+#include "mozartcore-decl.hh"
 
-#include "store.hh"
-#include "type.hh"
-#include "space.hh"
-#include "vm.hh"
-#include "threadpool.hh"
-#include "runnable.hh"
-#include "gcollect.hh"
-
-#include "reference.hh"
-#include "gctypes.hh"
+#include "coredatatypes-decl.hh"
+#include "corebuilders.hh"
+#include "exchelpers-decl.hh"
+#include "coreinterfaces.hh"
+#include "matchdsl.hh"
 
 #endif // __MOZARTCORE_H

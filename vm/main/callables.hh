@@ -25,23 +25,17 @@
 #ifndef __CALLABLES_H
 #define __CALLABLES_H
 
-#include "callables-decl.hh"
+#include "mozartcore.hh"
 
-#include "coreinterfaces.hh"
-#include "smallint.hh"
-#include "exchelpers.hh"
-
-#include <iostream>
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-/////////////////////////////
-// Inline BuiltinProcedure //
-/////////////////////////////
+//////////////////////
+// BuiltinProcedure //
+//////////////////////
 
-#ifndef MOZART_GENERATOR
 #include "BuiltinProcedure-implem.hh"
-#endif
 
 Implementation<BuiltinProcedure>::Implementation(VM vm, GC gc, Self from) {
   _arity = from->_arity;
@@ -63,13 +57,11 @@ BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
   return BuiltinResult::proceed();
 }
 
-////////////////////////
-// Inline Abstraction //
-////////////////////////
+/////////////////
+// Abstraction //
+/////////////////
 
-#ifndef MOZART_GENERATOR
 #include "Abstraction-implem.hh"
-#endif
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,
@@ -124,5 +116,7 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __CALLABLES_H

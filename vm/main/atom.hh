@@ -25,16 +25,17 @@
 #ifndef __ATOM_H
 #define __ATOM_H
 
-#include "atom-decl.hh"
+#include "mozartcore.hh"
 
-#include "boolean.hh"
-#include "variables.hh"
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-#ifndef MOZART_GENERATOR
+//////////
+// Atom //
+//////////
+
 #include "Atom-implem.hh"
-#endif
 
 AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
   const AtomImpl* fromValue = from.get().value();
@@ -89,5 +90,7 @@ void Implementation<Atom>::printReprToStream(Self self, VM vm,
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __ATOM_H

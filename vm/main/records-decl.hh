@@ -25,7 +25,8 @@
 #ifndef __RECORDS_DECL_H
 #define __RECORDS_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
+
 #include "unify-decl.hh"
 
 namespace mozart {

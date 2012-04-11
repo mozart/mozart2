@@ -25,9 +25,9 @@
 #ifndef __COREBUILDERS_H
 #define __COREBUILDERS_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#include "coreinterfaces.hh"
+#include "coredatatypes-decl.hh"
 
 namespace mozart {
 

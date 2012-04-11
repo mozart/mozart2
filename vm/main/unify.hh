@@ -25,16 +25,51 @@
 #ifndef __UNIFY_H
 #define __UNIFY_H
 
-#include "unify-decl.hh"
-
-#include "coreinterfaces.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
+
+///////////////
+// WalkStack //
+///////////////
+
+void WalkStack::push(VM vm, StableNode* left, StableNode* right) {
+  push_front_new(vm, left, right, 1);
+}
+
+void WalkStack::pushArray(VM vm, StaticArray<StableNode> left,
+                          StaticArray<StableNode> right, size_t count) {
+  push_front_new(vm, &left[0], &right[0], count);
+}
+
+bool WalkStack::empty() {
+  return Super::empty();
+}
+
+WalkStackEntry& WalkStack::front() {
+  return Super::front();
+}
+
+void WalkStack::remove_front(VM vm) {
+  if (front().count == 1)
+    Super::remove_front(vm);
+  else
+    front().next();
+}
+
+void WalkStack::clear(VM vm) {
+  Super::clear(vm);
+}
+
+/////////////////////
+// Global routines //
+/////////////////////
 
 BuiltinResult fullUnify(VM vm, RichNode left, RichNode right);
 
 BuiltinResult fullEquals(VM vm, RichNode left, RichNode right, bool* result);
 
+#ifndef MOZART_GENERATOR
 
 BuiltinResult unify(VM vm, RichNode left, RichNode right) {
   const Type* leftType = left.type();
@@ -102,6 +137,8 @@ BuiltinResult notEquals(VM vm, RichNode left, RichNode right, bool* result) {
 
   return res;
 }
+
+#endif // MOZART_GENERATOR
 
 }
 

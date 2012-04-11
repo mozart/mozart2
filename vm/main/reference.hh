@@ -25,7 +25,9 @@
 #ifndef __REFERENCE_H
 #define __REFERENCE_H
 
-#include "reference-decl.hh"
+#include "mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
@@ -33,10 +35,10 @@ namespace mozart {
 // Reference //
 ///////////////
 
-#ifndef MOZART_GENERATOR
 #include "Reference-implem.hh"
-#endif
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __REFERENCE_H

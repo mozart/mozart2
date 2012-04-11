@@ -25,10 +25,7 @@
 #ifndef __EXCHELPERS_H
 #define __EXCHELPERS_H
 
-#include "exchelpers-decl.hh"
-
-#include "coreinterfaces.hh"
-#include "corebuilders.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 

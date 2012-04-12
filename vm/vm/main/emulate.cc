@@ -720,6 +720,10 @@ Runnable* Thread::gCollect(GC gc) {
   return new (gc->vm) Thread(gc, *this);
 }
 
+Runnable* Thread::sClone(SC sc) {
+  return new (sc->vm) Thread(sc, *this);
+}
+
 }
 
 #undef advancePC

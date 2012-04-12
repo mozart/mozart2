@@ -69,6 +69,16 @@ public:
   virtual void afterGR() {}
 
   virtual Runnable* gCollect(GC gc) = 0;
+  virtual Runnable* sClone(SC sc) = 0;
+
+  inline
+  Runnable* gCollectOuter(GC gc);
+
+  inline
+  Runnable* sCloneOuter(SC sc);
+
+  inline
+  void restoreAfterGR();
 protected:
   inline
   virtual void terminate();
@@ -87,6 +97,8 @@ private:
   bool _runnable;
   bool _terminated;
   bool _dead;
+
+  Runnable* _replicate;
 
   Runnable* _previous;
   Runnable* _next;

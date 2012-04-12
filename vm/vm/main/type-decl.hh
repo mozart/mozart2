@@ -74,6 +74,9 @@ public:
 
   virtual void gCollect(GC gc, RichNode from, StableNode& to) const = 0;
   virtual void gCollect(GC gc, RichNode from, UnstableNode& to) const = 0;
+
+  virtual void sClone(SC sc, RichNode from, StableNode& to) const = 0;
+  virtual void sClone(SC sc, RichNode from, UnstableNode& to) const = 0;
 private:
   const std::string _name;
 
@@ -145,6 +148,8 @@ template<class>
 struct BasedOn{};
 
 struct NoAutoGCollect{};
+
+struct NoAutoSClone{};
 
 }
 

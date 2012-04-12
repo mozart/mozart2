@@ -47,6 +47,12 @@ public:
 
   inline
   void gCollect(GC gc, RichNode from, UnstableNode& to) const;
+
+  inline
+  void sClone(SC sc, RichNode from, StableNode& to) const;
+
+  inline
+  void sClone(SC sc, RichNode from, UnstableNode& to) const;
 };
 
 #ifndef MOZART_GENERATOR
@@ -55,7 +61,7 @@ public:
 
 template <>
 class Implementation<GCedToStable>: StoredAs<StableNode*>,
-  NoAutoGCollect, BasedOn<GCedToStableBase> {
+  NoAutoGCollect, NoAutoSClone, BasedOn<GCedToStableBase> {
 public:
   typedef SelfType<GCedToStable>::Self Self;
 public:
@@ -90,6 +96,12 @@ public:
 
   inline
   void gCollect(GC gc, RichNode from, UnstableNode& to) const;
+
+  inline
+  void sClone(SC sc, RichNode from, StableNode& to) const;
+
+  inline
+  void sClone(SC sc, RichNode from, UnstableNode& to) const;
 };
 
 #ifndef MOZART_GENERATOR
@@ -98,7 +110,7 @@ public:
 
 template <>
 class Implementation<GCedToUnstable>: StoredAs<UnstableNode*>,
-  NoAutoGCollect, BasedOn<GCedToUnstableBase> {
+  NoAutoGCollect, NoAutoSClone, BasedOn<GCedToUnstableBase> {
 public:
   typedef SelfType<GCedToUnstable>::Self Self;
 public:

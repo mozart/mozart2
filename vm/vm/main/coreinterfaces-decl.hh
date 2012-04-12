@@ -276,6 +276,10 @@ struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace> {
   BuiltinResult commitSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
+
+  BuiltinResult cloneSpace(RichNode self, VM vm, UnstableNode* result) {
+    return raiseTypeError(vm, u"Space", self);
+  }
 };
 
 }

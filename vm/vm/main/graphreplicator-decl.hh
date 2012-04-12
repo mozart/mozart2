@@ -42,7 +42,7 @@ namespace mozart {
 class GraphReplicator {
 public:
   enum Kind {
-    grkGarbageCollection, grkCustom
+    grkGarbageCollection, grkSpaceCloning, grkCustom
   };
 public:
   inline
@@ -73,6 +73,10 @@ protected:
   virtual void customCopySpace(SpaceRef& to, SpaceRef from) {
     assert(_kind == grkCustom);
     assert(false);
+  }
+
+  MemoryManager& getSecondMM() {
+    return secondMM;
   }
 private:
   template <class Self>

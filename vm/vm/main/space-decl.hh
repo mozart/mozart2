@@ -75,7 +75,7 @@ public:
 class Space {
 public:
   enum Status {
-    ssNormal, ssReference, ssFailed, ssGCed
+    ssNormal, ssReference, ssFailed
   };
 public:
   /** Construct the top-level space */
@@ -165,6 +165,9 @@ public:
 
   inline
   nativeint commit(VM vm, nativeint value);
+
+  inline
+  Space* clone(VM vm);
 private:
   void failInternal(VM vm);
 
@@ -200,11 +203,33 @@ private:
   inline
   UnstableNode genSucceeded(VM vm, bool isEntailed);
 
-// Garbage collection
+// Garbage collection and cloning
 
 public:
+  bool shouldBeCloned() {
+    return !hasMark();
+  }
+
   inline
-  Space* gCollect(GC gc);
+  void setShouldNotBeCloned();
+
+  inline
+  void unsetShouldNotBeCloned();
+
+  inline
+  virtual Space* gCollect(GC gc);
+
+  inline
+  virtual Space* sClone(SC sc);
+
+  inline
+  Space* gCollectOuter(GC gc);
+
+  inline
+  Space* sCloneOuter(SC sc);
+
+  inline
+  void restoreAfterGR();
 
 // Stability detection
 
@@ -304,10 +329,11 @@ private:
   VM vm;
 
   union {
-    SpaceRef _parent;  // status not in [ssReference, ssGCed] && !isTopLevel
+    SpaceRef _parent;  // status != ssReference && !isTopLevel
     Space* _reference; // status == ssReference
-    Space* _gced;      // status == ssGCed
   };
+
+  Space* _replicate;
 
   bool _isTopLevel;
   Status _status;

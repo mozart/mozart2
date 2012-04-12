@@ -31,7 +31,7 @@ namespace mozart {
 
 Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
-  _runnable(false), _terminated(false), _dead(false) {
+  _runnable(false), _terminated(false), _dead(false), _replicate(nullptr) {
 
   _space->notifyThreadCreated();
 
@@ -39,7 +39,7 @@ Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
 }
 
 Runnable::Runnable(GR gr, Runnable& from) :
-  vm(gr->vm) {
+  vm(gr->vm), _replicate(nullptr) {
 
   gr->copySpace(_space, from._space);
   _priority = from._priority;
@@ -77,6 +77,30 @@ void Runnable::kill() {
   assert(!_dead && !_terminated);
 
   dispose();
+}
+
+Runnable* Runnable::gCollectOuter(GC gc) {
+  if (_replicate != nullptr) {
+    return _replicate;
+  } else {
+    _replicate = gCollect(gc);
+    return _replicate;
+  }
+}
+
+Runnable* Runnable::sCloneOuter(SC sc) {
+  if (_replicate != nullptr) {
+    return _replicate;
+  } else if (getSpace()->shouldBeCloned()) {
+    _replicate = sClone(sc);
+    return _replicate;
+  } else {
+    return this;
+  }
+}
+
+void Runnable::restoreAfterGR() {
+  _replicate = nullptr;
 }
 
 void Runnable::terminate() {

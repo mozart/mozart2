@@ -34,6 +34,7 @@
 #include "store-decl.hh"
 #include "threadpool-decl.hh"
 #include "gcollect-decl.hh"
+#include "sclone-decl.hh"
 #include "space-decl.hh"
 
 #include "atomtable.hh"
@@ -51,6 +52,8 @@ public:
   inline
   VirtualMachine(PreemptionTest preemptionTest,
                  void* preemptionTestData = nullptr);
+
+  VirtualMachine(const VirtualMachine& src) = delete;
 
   void* malloc(size_t size) {
     return memoryManager.malloc(size);
@@ -102,13 +105,15 @@ public:
 
   inline
   void setCurrentSpace(Space* space);
+
+  inline
+  Space* cloneSpace(Space* space);
 private:
   friend class GarbageCollector;
+  friend class SpaceCloner;
   friend class Runnable;
   friend class Thread;
   friend class Implementation<Atom>;
-
-  VirtualMachine(const VirtualMachine& src) : gc(this) {}
 
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);
@@ -137,6 +142,7 @@ private:
   RunnableList aliveThreads;
 
   GarbageCollector gc;
+  SpaceCloner sc;
 };
 
 }

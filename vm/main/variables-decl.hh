@@ -40,20 +40,17 @@ class Variable;
 #endif
 
 template <>
-class Implementation<Variable>: Transient, WithVariableBehavior<90> {
+class Implementation<Variable>: public WithHome, Transient,
+  WithVariableBehavior<90> {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
-  Implementation(VM vm) : _home(vm->getCurrentSpace()) {}
+  Implementation(VM vm): WithHome(vm) {}
 
-  Implementation(VM vm, Space* home) : _home(home) {}
+  Implementation(VM vm, Space* home): WithHome(home) {}
 
   inline
   Implementation(VM vm, GC gc, Self from);
-
-  Space* home() {
-    return _home;
-  }
 
   inline
   void addToSuspendList(Self self, VM vm, Runnable* thread);
@@ -83,8 +80,6 @@ private:
   inline
   void resumePendingsSubSpace(VM vm, Space* currentSpace);
 
-  SpaceRef _home;
-
   VMAllocatedList<Runnable*> pendingThreads;
   VMAllocatedList<StableNode*> pendingVariables;
 };
@@ -104,12 +99,12 @@ class Unbound;
 #endif
 
 template <>
-class Implementation<Unbound>: Transient, StoredAs<SpaceRef>,
+class Implementation<Unbound>: public WithHome, Transient, StoredAs<SpaceRef>,
   WithVariableBehavior<100> {
 public:
   typedef SelfType<Unbound>::Self Self;
 public:
-  Implementation(SpaceRef home) : _home(home) {}
+  Implementation(SpaceRef home): WithHome(home) {}
 
   static SpaceRef build(VM vm) {
     return vm->getCurrentSpace();
@@ -122,10 +117,6 @@ public:
   inline
   static SpaceRef build(VM vm, GC gc, Self from);
 
-  Space* home() {
-    return _home;
-  }
-
   inline
   void addToSuspendList(Self self, VM vm, Runnable* thread);
 
@@ -134,8 +125,6 @@ public:
 
   inline
   BuiltinResult bind(Self self, VM vm, RichNode src);
-private:
-  SpaceRef _home;
 };
 
 #ifndef MOZART_GENERATOR

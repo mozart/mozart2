@@ -51,6 +51,9 @@ public:
   Implementation(VM vm, Space* space):
     WithHome(vm), _space(space), _status(ssNormal) {}
 
+  Implementation(VM vm, Status status):
+    WithHome(vm), _space(nullptr), _status(status) {}
+
   inline
   Implementation(VM vm, GR gr, Self from);
 
@@ -84,6 +87,9 @@ public:
 
   inline
   BuiltinResult commitSpace(Self self, VM vm, UnstableNode* value);
+
+  inline
+  BuiltinResult cloneSpace(Self self, VM vm, UnstableNode* result);
 private:
   SpaceRef _space;
   Status _status;

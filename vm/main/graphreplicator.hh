@@ -48,7 +48,18 @@ void GraphReplicator::copySpace(SpaceRef& to, SpaceRef from) {
   switch (kind()) {
     case grkGarbageCollection: {
       Space* space = from;
-      to = space->gCollect(static_cast<GC>(this));
+      to = space->gCollectOuter(static_cast<GC>(this));
+      break;
+    }
+
+    case grkSpaceCloning: {
+      Space* space = from;
+      Space* copy = space->sCloneOuter(static_cast<SC>(this));
+      to = copy;
+
+      if (copy != space)
+        static_cast<SC>(this)->spaceBackups.push_back(secondMM, space);
+
       break;
     }
 

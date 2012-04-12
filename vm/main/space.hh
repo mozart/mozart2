@@ -78,6 +78,10 @@ namespace internal {
     Runnable* gCollect(GC gc) {
       return new (gc->vm) DummyThread(gc, *this);
     }
+
+    Runnable* sClone(SC sc) {
+      return new (sc->vm) DummyThread(sc, *this);
+    }
   };
 }
 
@@ -106,6 +110,7 @@ void Space::constructor(VM vm, bool isTopLevel, Space* parent) {
   this->vm = vm;
 
   _parent = parent;
+  _replicate = nullptr;
 
   _isTopLevel = isTopLevel;
   _status = ssNormal;
@@ -122,7 +127,14 @@ void Space::constructor(VM vm, bool isTopLevel, Space* parent) {
 }
 
 Space::Space(GR gr, Space* from) {
-  assert(from->_status != ssReference && from->_status != ssGCed);
+  assert(from->_status != ssReference);
+
+#ifndef NDEBUG
+  if (gr->kind() == GraphReplicator::grkSpaceCloning) {
+    // Never clone the top-level space
+    assert(!from->_isTopLevel);
+  }
+#endif
 
   vm = from->vm;
 
@@ -131,10 +143,22 @@ Space::Space(GR gr, Space* from) {
   else
     gr->copySpace(_parent, from->_parent);
 
+  _replicate = nullptr;
+
   _isTopLevel = from->_isTopLevel;
   _status = from->_status;
 
   _mark = false;
+
+#ifndef NDEBUG
+  if (gr->kind() == GraphReplicator::grkSpaceCloning) {
+    /* A space is cloned only when it's stable, and a stable space has a
+     * determined status variable.
+     */
+    RichNode fromStatusVar = from->_statusVar;
+    assert(!fromStatusVar.type()->isTransient());
+  }
+#endif
 
   gr->copyStableNode(_rootVar, from->_rootVar);
   gr->copyUnstableNode(_statusVar, from->_statusVar);
@@ -154,6 +178,13 @@ Space::Space(GR gr, Space* from) {
 
   threadCount = from->threadCount;
   cascadedRunnableThreadCount = from->cascadedRunnableThreadCount;
+
+#ifndef NDEBUG
+  if (gr->kind() == GraphReplicator::grkSpaceCloning) {
+    // A stable space, by definition, has no runnable threads
+    assert(cascadedRunnableThreadCount == 0);
+  }
+#endif
 }
 
 // Status
@@ -237,21 +268,58 @@ nativeint Space::commit(VM vm, nativeint value) {
   return commitResult;
 }
 
+Space* Space::clone(VM vm) {
+  return vm->cloneSpace(this);
+}
+
 void Space::fail(VM vm) {
   failInternal(vm);
 }
 
-// Garbage collection
+// Garbage collection and cloning
+
+void Space::setShouldNotBeCloned() {
+  setMark();
+  if (!isTopLevel())
+    getParent()->setShouldNotBeCloned();
+}
+
+void Space::unsetShouldNotBeCloned() {
+  unsetMark();
+  if (!isTopLevel())
+    getParent()->unsetShouldNotBeCloned();
+}
 
 Space* Space::gCollect(GC gc) {
-  if (_status == ssGCed) {
-    return _gced;
+  return new (gc->vm) Space(gc, this);
+}
+
+Space* Space::sClone(SC sc) {
+  return new (sc->vm) Space(sc, this);
+}
+
+Space* Space::gCollectOuter(GC gc) {
+  if (_replicate != nullptr) {
+    return _replicate;
   } else {
-    Space* result = new (gc->vm) Space(gc, this);
-    _status = ssGCed;
-    _gced = result;
-    return result;
+    _replicate = gCollect(gc);
+    return _replicate;
   }
+}
+
+Space* Space::sCloneOuter(SC sc) {
+  if (_replicate != nullptr) {
+    return _replicate;
+  } else if (shouldBeCloned()) {
+    _replicate = sClone(sc);
+    return _replicate;
+  } else {
+    return this;
+  }
+}
+
+void Space::restoreAfterGR() {
+  _replicate = nullptr;
 }
 
 // Stability detection

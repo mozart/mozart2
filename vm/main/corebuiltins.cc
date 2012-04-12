@@ -202,6 +202,10 @@ BuiltinResult commitSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).commitSpace(vm, args[1]);
 }
 
+BuiltinResult cloneSpace(VM vm, UnstableNode* args[]) {
+  return SpaceLike(*args[0]).cloneSpace(vm, args[1]);
+}
+
 BuiltinResult chooseSpace(VM vm, UnstableNode* args[]) {
   // TODO How come I need 4 lines just to extract an Integer parameter!?
   nativeint alternatives = 0;

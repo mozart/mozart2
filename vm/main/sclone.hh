@@ -22,22 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_DECL_H
-#define __MOZARTCORE_DECL_H
+#ifndef __SCLONE_H
+#define __SCLONE_H
 
-#include "core-forward-decl.hh"
+#include "mozartcore.hh"
 
-#include "store-decl.hh"
-#include "type-decl.hh"
-#include "runnable-decl.hh"
-#include "threadpool-decl.hh"
-#include "space-decl.hh"
-#include "graphreplicator-decl.hh"
-#include "gcollect-decl.hh"
-#include "sclone-decl.hh"
-#include "vm-decl.hh"
+namespace mozart {
 
-#include "reference-decl.hh"
-#include "gctypes-decl.hh"
+/////////////////
+// SpaceCloner //
+/////////////////
 
-#endif // __MOZARTCORE_DECL_H
+}
+
+#endif // __SCLONE_H

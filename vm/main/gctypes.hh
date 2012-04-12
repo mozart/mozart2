@@ -47,6 +47,16 @@ void GCedToStableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
   to.copy(gc->vm, *dest);
 }
 
+void GCedToStableBase::sClone(SC sc, RichNode from, StableNode& to) const {
+  StableNode* dest = from.as<GCedToStable>().dest();
+  to.init(sc->vm, *dest);
+}
+
+void GCedToStableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
+  StableNode* dest = from.as<GCedToStable>().dest();
+  to.copy(sc->vm, *dest);
+}
+
 ////////////////////
 // GCedToUnstable //
 ////////////////////
@@ -61,6 +71,16 @@ void GCedToUnstableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
 void GCedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
   UnstableNode* dest = from.as<GCedToUnstable>().dest();
   to.copy(gc->vm, *dest);
+}
+
+void GCedToUnstableBase::sClone(SC sc, RichNode from, StableNode& to) const {
+  UnstableNode* dest = from.as<GCedToUnstable>().dest();
+  to.init(sc->vm, *dest);
+}
+
+void GCedToUnstableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
+  UnstableNode* dest = from.as<GCedToUnstable>().dest();
+  to.copy(sc->vm, *dest);
 }
 
 }

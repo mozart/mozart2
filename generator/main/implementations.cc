@@ -75,6 +75,7 @@ struct ImplementationDef {
     withHome = false;
     base = "Type";
     autoGCollect = true;
+    autoSClone = true;
   }
 
   void makeOutputDeclBefore(llvm::raw_fd_ostream& to);
@@ -91,9 +92,12 @@ struct ImplementationDef {
   bool withHome;
   std::string base;
   bool autoGCollect;
+  bool autoSClone;
   std::vector<ImplemMethodDef> methods;
 private:
   void makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to);
+  void makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
+                                bool toStableNode);
 };
 
 void handleImplementation(const SpecDecl* ND) {
@@ -132,6 +136,8 @@ void handleImplementation(const SpecDecl* ND) {
       definition.base = getTypeParamAsString(marker);
     } else if (markerLabel == "NoAutoGCollect") {
       definition.autoGCollect = false;
+    } else if (markerLabel == "NoAutoSClone") {
+      definition.autoSClone = false;
     } else {}
   }
 
@@ -209,6 +215,15 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
     to << "  void gCollect(GC gc, RichNode from, UnstableNode& to) const;\n";
   }
 
+  if (autoSClone) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  void sClone(SC sc, RichNode from, StableNode& to) const;\n";
+    to << "\n";
+    to << "  inline\n";
+    to << "  void sClone(SC sc, RichNode from, UnstableNode& to) const;\n";
+  }
+
   to << "};\n";
 }
 
@@ -268,6 +283,19 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "}\n";
   }
 
+  if (autoSClone) {
+    to << "\n";
+    to << "void " << name
+       << "::sClone(SC sc, RichNode from, StableNode& to) const {\n";
+    makeContentsOfAutoSClone(to, true);
+    to << "}\n\n";
+
+    to << "void " << name
+       << "::sClone(SC sc, RichNode from, UnstableNode& to) const {\n";
+    makeContentsOfAutoSClone(to, false);
+    to << "}\n";
+  }
+
   // Special-casing the method WithHome::home() until we find a better solution
   if (withHome) {
     to << "\n";
@@ -323,4 +351,45 @@ void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
   if (storageKind == skWithArray)
     to << "fromAsSelf.getArraySize(), ";
   to << "gc, fromAsSelf);\n";
+}
+
+void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
+                                                 bool toStableNode) {
+  to << "  assert(from.type() == type());\n";
+
+  std::string cloneStatement = std::string("to.make<") + name + ">(sc->vm, ";
+  if (storageKind == skWithArray)
+    cloneStatement += "fromAsSelf.getArraySize(), ";
+  cloneStatement += "sc, fromAsSelf);";
+
+  std::string copyStatement =
+    std::string("to.") + (toStableNode ? "init" : "copy") + "(sc->vm, from);";
+
+  if (withHome) {
+    to << "  Self fromAsSelf = from;\n";
+    if (storageKind == skCustom)
+      to << "  if (fromAsSelf.get().home()->shouldBeCloned()) {\n";
+    else
+      to << "  if (fromAsSelf->home()->shouldBeCloned()) {\n";
+    to << "    " << cloneStatement << "\n";
+    to << "  } else {\n";
+    to << "    " << copyStatement << "\n";
+    to << "  }\n";
+  } else {
+    switch (this->structuralBehavior) {
+      case sbValue:
+      case sbStructural: {
+        to << "  Self fromAsSelf = from;\n";
+        to << "  " << cloneStatement << "\n";
+        break;
+      }
+
+      case sbTokenEq:
+      case sbVariable: {
+        // Actually, these have a home, but it's always the top-level
+        to << "  " << copyStatement << "\n";
+        break;
+      }
+    }
+  }
 }

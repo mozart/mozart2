@@ -53,6 +53,9 @@ typedef GraphReplicator* GR;
 class GarbageCollector;
 typedef GarbageCollector* GC;
 
+class SpaceCloner;
+typedef SpaceCloner* SC;
+
 class Space;
 
 /**

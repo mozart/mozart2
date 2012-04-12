@@ -59,6 +59,10 @@ private:
     Runnable* gCollect(GC gc) {
       return new (gc->vm) UnifyThread(gc, *this);
     }
+
+    Runnable* sClone(SC sc) {
+      return new (sc->vm) UnifyThread(sc, *this);
+    }
   private:
     UnstableNode _var;
     UnstableNode _value;
@@ -289,6 +293,40 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
       } else {
         return matchTypeError(vm, res, val, u"int or range");
       }
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
+    }
+  }
+}
+
+BuiltinResult Implementation<ReifiedSpace>::cloneSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  switch (status()) {
+    case ssFailed:
+      result->make<ReifiedSpace>(vm, ssFailed);
+      return BuiltinResult::proceed();
+
+    case ssMerged:
+      return raise(vm, u"spaceMerged");
+
+    case ssNormal: {
+      Space* space = getSpace();
+
+      if (!space->isAdmissible(vm))
+        return raise(vm, u"spaceAdmissible");
+
+      RichNode statusVar = *space->getStatusVar();
+      if (statusVar.type()->isTransient())
+        return BuiltinResult::waitFor(vm, statusVar);
+
+      Space* copy = space->clone(vm);
+      result->make<ReifiedSpace>(vm, copy);
+
+      return BuiltinResult::proceed();
     }
 
     default: {

@@ -36,7 +36,7 @@ namespace mozart {
 VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
                                void* preemptionTestData) :
   _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
-  gc(this) {
+  gc(this), sc(this) {
 
   memoryManager.init();
 
@@ -92,6 +92,10 @@ void VirtualMachine::scheduleThread(Runnable* thread) {
 void VirtualMachine::setCurrentSpace(Space* space) {
   _currentSpace = space;
   _isOnTopLevel = space->isTopLevel();
+}
+
+Space* VirtualMachine::cloneSpace(Space* space) {
+  return sc.doCloneSpace(space);
 }
 
 }

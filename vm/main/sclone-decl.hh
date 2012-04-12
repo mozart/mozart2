@@ -22,22 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_DECL_H
-#define __MOZARTCORE_DECL_H
+#ifndef __SCLONE_DECL_H
+#define __SCLONE_DECL_H
 
 #include "core-forward-decl.hh"
 
-#include "store-decl.hh"
-#include "type-decl.hh"
-#include "runnable-decl.hh"
-#include "threadpool-decl.hh"
-#include "space-decl.hh"
 #include "graphreplicator-decl.hh"
-#include "gcollect-decl.hh"
-#include "sclone-decl.hh"
-#include "vm-decl.hh"
 
-#include "reference-decl.hh"
-#include "gctypes-decl.hh"
+namespace mozart {
 
-#endif // __MOZARTCORE_DECL_H
+/////////////////
+// SpaceCloner //
+/////////////////
+
+class SpaceCloner: public GraphReplicator {
+public:
+  SpaceCloner(VM vm): GraphReplicator(vm, GraphReplicator::grkSpaceCloning) {}
+
+  Space* doCloneSpace(Space* space);
+private:
+  friend class GraphReplicator;
+
+  inline
+  void processThread(Runnable*& to, Runnable* from);
+
+  template <class NodeType, class GCedType>
+  inline
+  void processNode(NodeType*& to, RichNode from);
+private:
+  MemManagedList<Space*> spaceBackups;
+  MemManagedList<Runnable*> threadBackups;
+  MemManagedList<NodeBackup> nodeBackups;
+};
+
+}
+
+#endif // __SCLONE_DECL_H

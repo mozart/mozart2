@@ -154,6 +154,7 @@ public:
   void afterGR();
 
   Runnable* gCollect(GC gc);
+  Runnable* sClone(SC sc);
 protected:
   void terminate() {
     Super::terminate();

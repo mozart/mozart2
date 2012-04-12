@@ -24,22 +24,15 @@
 
 #include "mozart.hh"
 
-#include <iostream>
-
 namespace mozart {
 
-//////////////////////
-// GarbageCollector //
-//////////////////////
+/////////////////
+// SpaceCloner //
+/////////////////
 
-void GarbageCollector::doGC() {
-  if (OzDebugGC) {
-    std::cerr << "Before GC: " << vm->getMemoryManager().getAllocated();
-    std::cerr << " bytes used." << std::endl;
-  }
-
-  // General assumptions when running GC
-  assert(vm->_currentSpace == vm->_topLevelSpace);
+Space* SpaceCloner::doCloneSpace(Space* space) {
+  // Mark the ancestors of space as not-to-be-cloned
+  space->getParent()->setShouldNotBeCloned();
 
   // Before GR
   for (auto iterator = vm->aliveThreads.begin();
@@ -47,25 +40,34 @@ void GarbageCollector::doGC() {
     (*iterator)->beforeGR();
   }
 
-  // Swap spaces
-  vm->getMemoryManager().swapWith(vm->getSecondMemoryManager());
-  vm->getMemoryManager().init();
+  // Initialize the MM
+  getSecondMM().init();
 
-  // Forget lists of things
-  vm->atomTable = AtomTable();
-  vm->aliveThreads = RunnableList();
+  // Root of SC is the given space
+  SpaceRef spaceRef = space;
+  SpaceRef copy;
+  copySpace(copy, spaceRef);
 
-  // Always keep the top-level space
-  SpaceRef topLevelSpaceRef = vm->_topLevelSpace;
-  copySpace(topLevelSpaceRef, topLevelSpaceRef);
-  vm->_topLevelSpace = topLevelSpaceRef;
-  vm->_currentSpace = vm->_topLevelSpace;
+  // SC loop
+  runCopyLoop<SpaceCloner>();
 
-  // Root of GC are runnable threads
-  vm->getThreadPool().gCollect(this);
+  // Restore spaces
+  while (!spaceBackups.empty()) {
+    spaceBackups.front()->restoreAfterGR();
+    spaceBackups.remove_front(getSecondMM());
+  }
 
-  // GC loop
-  runCopyLoop<GarbageCollector>();
+  // Restore threads
+  while (!threadBackups.empty()) {
+    threadBackups.front()->restoreAfterGR();
+    threadBackups.remove_front(getSecondMM());
+  }
+
+  // Restore nodes
+  while (!nodeBackups.empty()) {
+    nodeBackups.front().restore();
+    nodeBackups.remove_front(getSecondMM());
+  }
 
   // After GR
   for (auto iterator = vm->aliveThreads.begin();
@@ -73,20 +75,28 @@ void GarbageCollector::doGC() {
     (*iterator)->afterGR();
   }
 
-  if (OzDebugGC) {
-    std::cerr << "After GC: " << vm->getMemoryManager().getAllocated();
-    std::cerr << " bytes used." << std::endl;
-  }
+  // Clear shouldBeCloned
+  space->getParent()->unsetShouldNotBeCloned();
+
+  return copy;
 }
 
-void GarbageCollector::processThread(Runnable*& to, Runnable* from) {
-  to = from->gCollectOuter(this);
+void SpaceCloner::processThread(Runnable*& to, Runnable* from) {
+  to = from->sCloneOuter(this);
+
+  if (to != from)
+    threadBackups.push_back(getSecondMM(), from);
 }
 
 template <class NodeType, class GCedType>
-void GarbageCollector::processNode(NodeType*& to, RichNode from) {
-  from.type()->gCollect(this, from, *to);
-  from.remake<GCedType>(vm, to);
+void SpaceCloner::processNode(NodeType*& to, RichNode from) {
+  from.type()->sClone(this, from, *to);
+
+  if ((from.type() != GCedToStable::type()) &&
+      (from.type() != GCedToUnstable::type())) {
+    nodeBackups.push_front(getSecondMM(), from.makeBackup());
+    from.remake<GCedType>(vm, to);
+  }
 }
 
 }

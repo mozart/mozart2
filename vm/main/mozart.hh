@@ -34,6 +34,7 @@
 #include "gcollect.hh"
 #include "graphreplicator.hh"
 #include "runnable.hh"
+#include "sclone.hh"
 #include "space.hh"
 #include "store.hh"
 #include "threadpool.hh"

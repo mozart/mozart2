@@ -52,12 +52,12 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
                                       StaticArray<StableNode> _elements,
-                                      GC gc, Self from) {
+                                      GR gr, Self from) {
   _width = width;
-  gc->gcStableNode(from->_label, _label);
+  gr->copyStableNode(_label, from->_label);
 
   for (size_t i = 0; i < width; i++)
-    gc->gcStableNode(from[i], _elements[i]);
+    gr->copyStableNode(_elements[i], from[i]);
 }
 
 StableNode* Implementation<Tuple>::getElement(Self self, size_t index) {

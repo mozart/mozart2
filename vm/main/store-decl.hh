@@ -212,7 +212,7 @@ private:
   friend struct NodeBackup;
   friend class UnstableNode;
   friend class RichNode;
-  friend class GarbageCollector;
+  friend class GraphReplicator;
   friend class Space;
 
   union {
@@ -285,7 +285,7 @@ private:
   friend struct NodeBackup;
   friend class StableNode;
   friend class RichNode;
-  friend class GarbageCollector;
+  friend class GraphReplicator;
   friend class Space;
 
   union {

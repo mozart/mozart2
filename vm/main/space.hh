@@ -59,7 +59,7 @@ namespace internal {
         resume();
     }
 
-    DummyThread(GC gc, DummyThread& from): Runnable(gc, from) {}
+    DummyThread(GR gr, DummyThread& from): Runnable(gr, from) {}
 
     void run() {
       terminate();
@@ -121,7 +121,7 @@ void Space::constructor(VM vm, bool isTopLevel, Space* parent) {
   cascadedRunnableThreadCount = 0;
 }
 
-Space::Space(GC gc, Space* from) {
+Space::Space(GR gr, Space* from) {
   assert(from->_status != ssReference && from->_status != ssGCed);
 
   vm = from->vm;
@@ -129,27 +129,27 @@ Space::Space(GC gc, Space* from) {
   if (from->_isTopLevel)
     _parent = nullptr;
   else
-    gc->gcSpace(from->_parent, _parent);
+    gr->copySpace(_parent, from->_parent);
 
   _isTopLevel = from->_isTopLevel;
   _status = from->_status;
 
   _mark = false;
 
-  gc->gcStableNode(from->_rootVar, _rootVar);
-  gc->gcUnstableNode(from->_statusVar, _statusVar);
+  gr->copyStableNode(_rootVar, from->_rootVar);
+  gr->copyUnstableNode(_statusVar, from->_statusVar);
 
   if (from->_distributor == nullptr)
     _distributor = nullptr;
   else
-    _distributor = from->_distributor->gCollect(gc);
+    _distributor = from->_distributor->replicate(gr);
 
   assert(from->trail.empty());
 
   for (auto iter = from->script.begin(); iter != from->script.end(); ++iter) {
-    ScriptEntry& entry = script.append(gc->vm);
-    gc->gcUnstableNode(iter->left, entry.left);
-    gc->gcUnstableNode(iter->right, entry.right);
+    ScriptEntry& entry = script.append(gr->vm);
+    gr->copyUnstableNode(entry.left, iter->left);
+    gr->copyUnstableNode(entry.right, iter->right);
   }
 
   threadCount = from->threadCount;

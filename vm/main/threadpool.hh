@@ -29,6 +29,17 @@
 
 namespace mozart {
 
+/////////////////
+// ThreadQueue //
+/////////////////
+
+void ThreadQueue::gCollect(GC gc) {
+  for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
+    Runnable*& thread = *iterator;
+    gc->copyThread(thread, thread);
+  }
+}
+
 ////////////////
 // ThreadPool //
 ////////////////

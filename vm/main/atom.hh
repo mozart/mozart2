@@ -37,7 +37,7 @@ namespace mozart {
 
 #include "Atom-implem.hh"
 
-AtomImpl* Implementation<Atom>::build(VM vm, GC gc, Self from) {
+AtomImpl* Implementation<Atom>::build(VM vm, GR gr, Self from) {
   const AtomImpl* fromValue = from.get().value();
   return build(vm, fromValue->length(), fromValue->contents());
 }

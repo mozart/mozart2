@@ -50,7 +50,7 @@ public:
   Implementation(VM vm, Space* home): WithHome(home) {}
 
   inline
-  Implementation(VM vm, GC gc, Self from);
+  Implementation(VM vm, GR gr, Self from);
 
   inline
   void addToSuspendList(Self self, VM vm, Runnable* thread);
@@ -115,7 +115,7 @@ public:
   }
 
   inline
-  static SpaceRef build(VM vm, GC gc, Self from);
+  static SpaceRef build(VM vm, GR gr, Self from);
 
   inline
   void addToSuspendList(Self self, VM vm, Runnable* thread);

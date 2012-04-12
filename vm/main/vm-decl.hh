@@ -84,6 +84,10 @@ public:
     return memoryManager;
   }
 
+  MemoryManager& getSecondMemoryManager() {
+    return secondMemoryManager;
+  }
+
   Space* getTopLevelSpace() {
     return _topLevelSpace;
   }
@@ -124,6 +128,7 @@ private:
   void* _preemptionTestData;
 
   MemoryManager memoryManager;
+  MemoryManager secondMemoryManager;
 
   Space* _topLevelSpace;
   Space* _currentSpace;

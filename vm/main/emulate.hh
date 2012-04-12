@@ -46,26 +46,26 @@ struct StackEntry {
     yregs(yregs), gregs(gregs), kregs(kregs) {}
 
   inline
-  StackEntry(GC gc, StackEntry& from);
+  StackEntry(GR gr, StackEntry& from);
 
   inline
-  void beforeGC(VM vm);
+  void beforeGR(VM vm);
 
   inline
-  void afterGC(VM vm);
+  void afterGR(VM vm);
 
   StableNode* abstraction;
 
   union {
     ProgramCounter PC;       // Normal
-    std::ptrdiff_t PCOffset; // During GC
+    std::ptrdiff_t PCOffset; // During GR
   };
 
   size_t yregCount;
   StaticArray<UnstableNode> yregs;
 
-  StaticArray<StableNode> gregs; // Irrelevant during GC
-  StaticArray<StableNode> kregs; // Irrelevant during GC
+  StaticArray<StableNode> gregs; // Irrelevant during GR
+  StaticArray<StableNode> kregs; // Irrelevant during GR
 };
 
 class XRegArray {
@@ -142,7 +142,7 @@ public:
          bool createSuspended = false);
 
   inline
-  Thread(GC gc, Thread& from);
+  Thread(GR gr, Thread& from);
 
   void run();
 
@@ -150,8 +150,8 @@ public:
     Super::kill();
   }
 
-  void beforeGC();
-  void afterGC();
+  void beforeGR();
+  void afterGR();
 
   Runnable* gCollect(GC gc);
 protected:

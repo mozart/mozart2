@@ -35,23 +35,23 @@ const ProgramCounter NullPC = nullptr;
 // StackEntry //
 ////////////////
 
-StackEntry::StackEntry(GC gc, StackEntry& from) {
-  gc->gcStableRef(from.abstraction, abstraction);
+StackEntry::StackEntry(GR gr, StackEntry& from) {
+  gr->copyStableRef(abstraction, from.abstraction);
   PCOffset = from.PCOffset;
   yregCount = from.yregCount;
 
   if (yregCount == 0)
     yregs = nullptr;
   else {
-    yregs = gc->vm->newStaticArray<UnstableNode>(yregCount);
+    yregs = gr->vm->newStaticArray<UnstableNode>(yregCount);
     for (size_t i = 0; i < yregCount; i++)
-      gc->gcUnstableNode(from.yregs[i], yregs[i]);
+      gr->copyUnstableNode(yregs[i], from.yregs[i]);
   }
 
   // gregs and kregs are irrelevant
 }
 
-void StackEntry::beforeGC(VM vm) {
+void StackEntry::beforeGR(VM vm) {
   int arity;
   StableNode* body;
   ProgramCounter start = nullptr;
@@ -65,7 +65,7 @@ void StackEntry::beforeGC(VM vm) {
   PCOffset = PC - start;
 }
 
-void StackEntry::afterGC(VM vm) {
+void StackEntry::afterGR(VM vm) {
   int arity;
   StableNode* body;
   ProgramCounter start = nullptr;
@@ -132,19 +132,19 @@ void Thread::constructor(VM vm, StableNode* abstraction,
     resume();
 }
 
-Thread::Thread(GC gc, Thread& from) : Runnable(gc, from) {
+Thread::Thread(GR gr, Thread& from): Runnable(gr, from) {
   // X registers
 
   size_t Xcount = from.xregs.size();
   xregs.init(vm, Xcount);
   for (size_t i = 0; i < Xcount; i++)
-    gc->gcUnstableNode(from.xregs[i], xregs[i]);
+    gr->copyUnstableNode(xregs[i], from.xregs[i]);
 
   // Stack frame
 
   for (auto iterator = from.stack.begin();
        iterator != from.stack.end(); iterator++) {
-    stack.push_back_new(vm, gc, *iterator);
+    stack.push_back_new(vm, gr, *iterator);
   }
 }
 
@@ -702,18 +702,18 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
   }
 }
 
-void Thread::beforeGC()
+void Thread::beforeGR()
 {
   VM vm = this->vm;
   for (auto iterator = stack.begin(); iterator != stack.end(); iterator++)
-    (*iterator).beforeGC(vm);
+    (*iterator).beforeGR(vm);
 }
 
-void Thread::afterGC()
+void Thread::afterGR()
 {
   VM vm = this->vm;
   for (auto iterator = stack.begin(); iterator != stack.end(); iterator++)
-    (*iterator).afterGC(vm);
+    (*iterator).afterGR(vm);
 }
 
 Runnable* Thread::gCollect(GC gc) {

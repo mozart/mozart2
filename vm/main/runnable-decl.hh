@@ -43,7 +43,7 @@ public:
   Runnable(VM vm, Space* space, ThreadPriority priority = tpMiddle);
 
   inline
-  Runnable(GC gc, Runnable& from);
+  Runnable(GR gr, Runnable& from);
 
   Space* getSpace() {
     return _space;
@@ -65,8 +65,8 @@ public:
   inline
   virtual void kill();
 
-  virtual void beforeGC() {}
-  virtual void afterGC() {}
+  virtual void beforeGR() {}
+  virtual void afterGR() {}
 
   virtual Runnable* gCollect(GC gc) = 0;
 protected:

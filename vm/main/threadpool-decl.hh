@@ -26,6 +26,7 @@
 #define __THREADPOOL_DECL_H
 
 #include <queue>
+#include <cassert>
 
 #include "core-forward-decl.hh"
 #include "runnable-decl.hh"
@@ -50,6 +51,15 @@ public:
   // Implemented in gcollect.hh
   inline
   void gCollect(GC gc);
+
+  bool isScheduled(Runnable* thread) {
+    for (auto iter = c.begin(); iter != c.end(); ++iter) {
+      if (*iter == thread)
+        return true;
+    }
+
+    return false;
+  }
 };
 
 ////////////////
@@ -73,6 +83,8 @@ public:
   }
 
   void schedule(Runnable* thread) {
+    assert(thread->isRunnable());
+    assert(!isScheduled(thread));
     queues[thread->getPriority()].push(thread);
   }
 
@@ -102,6 +114,12 @@ private:
 
   inline
   Runnable* popNext(ThreadPriority priority);
+
+  bool isScheduled(Runnable* thread) {
+    return queues[tpMiddle].isScheduled(thread) ||
+      queues[tpHi].isScheduled(thread) ||
+      queues[tpLow].isScheduled(thread);
+  }
 
   ThreadQueue queues[tpCount];
   int remainings[tpCount];

@@ -37,8 +37,8 @@ WithHome::WithHome(VM vm) {
   _home = vm->getCurrentSpace();
 }
 
-WithHome::WithHome(VM vm, GC gc, SpaceRef fromHome) {
-  gc->gcSpace(fromHome, _home);
+WithHome::WithHome(VM vm, GR gr, SpaceRef fromHome) {
+  gr->copySpace(_home, fromHome);
 }
 
 }

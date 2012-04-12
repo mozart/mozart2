@@ -32,6 +32,7 @@
 #include "runnable-decl.hh"
 #include "threadpool-decl.hh"
 #include "space-decl.hh"
+#include "graphreplicator-decl.hh"
 #include "gcollect-decl.hh"
 #include "vm-decl.hh"
 

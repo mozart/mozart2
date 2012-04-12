@@ -22,77 +22,85 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REIFIEDSPACE_DECL_H
-#define __REIFIEDSPACE_DECL_H
+#ifndef __GRAPHREPLICATOR_DECL_H
+#define __GRAPHREPLICATOR_DECL_H
 
-#include "mozartcore-decl.hh"
+#include "core-forward-decl.hh"
+
+#include "memmanager.hh"
+#include "memmanlist.hh"
+
+#include "store-decl.hh"
+#include "runnable-decl.hh"
 
 namespace mozart {
 
-//////////////////
-// ReifiedSpace //
-//////////////////
+/////////////////////
+// GraphReplicator //
+/////////////////////
 
-class ReifiedSpace;
-
-#ifndef MOZART_GENERATOR
-#include "ReifiedSpace-implem-decl.hh"
-#endif
-
-template <>
-class Implementation<ReifiedSpace>: public WithHome {
+class GraphReplicator {
 public:
-  typedef SelfType<ReifiedSpace>::Self Self;
-
-  enum Status {
-    ssNormal, ssFailed, ssMerged
+  enum Kind {
+    grkGarbageCollection, grkCustom
   };
 public:
-  Implementation(VM vm, Space* space):
-    WithHome(vm), _space(space), _status(ssNormal) {}
-
   inline
-  Implementation(VM vm, GR gr, Self from);
+  GraphReplicator(VM vm, Kind kind);
 
-  Space* getSpace() {
-    return _space;
+  Kind kind() {
+    return _kind;
   }
 
-  Status status() {
-    return _status;
+  inline
+  void copySpace(SpaceRef& to, SpaceRef from);
+
+  inline
+  void copyThread(Runnable*& to, Runnable* from);
+
+  inline
+  void copyStableNode(StableNode& to, StableNode& from);
+
+  inline
+  void copyUnstableNode(UnstableNode& to, UnstableNode& from);
+
+  inline
+  void copyStableRef(StableNode*& to, StableNode* from);
+protected:
+  template <class Self>
+  void runCopyLoop();
+
+  virtual void customCopySpace(SpaceRef& to, SpaceRef from) {
+    assert(_kind == grkCustom);
+    assert(false);
   }
-
-  bool isFailed() {
-    return status() == ssFailed;
-  }
-
-  bool isMerged() {
-    return status() == ssMerged;
-  }
-public:
-  inline
-  BuiltinResult isSpace(VM vm, UnstableNode* result);
-
-  inline
-  BuiltinResult askSpace(Self self, VM vm, UnstableNode* result);
-
-  inline
-  BuiltinResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
-
-  inline
-  BuiltinResult mergeSpace(Self self, VM vm, UnstableNode* result);
-
-  inline
-  BuiltinResult commitSpace(Self self, VM vm, UnstableNode* value);
 private:
-  SpaceRef _space;
-  Status _status;
-};
+  template <class Self>
+  inline
+  void processThreadInternal(Runnable*& thread);
 
-#ifndef MOZART_GENERATOR
-#include "ReifiedSpace-implem-decl-after.hh"
-#endif
+  template <class Self, class NodeType, class GCedType>
+  inline
+  void processNodeInternal(NodeType*& list);
+
+  template <class Self>
+  inline
+  void processStableRefInternal(StableNode*& ref);
+public:
+  VM vm;
+private:
+  Kind _kind;
+
+  MemoryManager& secondMM;
+
+  struct {
+    MemManagedList<Runnable**> threads;
+    StableNode* stableNodes;
+    UnstableNode* unstableNodes;
+    MemManagedList<StableNode**> stableRefs;
+  } todos;
+};
 
 }
 
-#endif // __REIFIEDSPACE_DECL_H
+#endif // __GRAPHREPLICATOR_DECL_H

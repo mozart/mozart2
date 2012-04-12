@@ -37,7 +37,7 @@ namespace mozart {
 
 #include "BuiltinProcedure-implem.hh"
 
-Implementation<BuiltinProcedure>::Implementation(VM vm, GC gc, Self from) {
+Implementation<BuiltinProcedure>::Implementation(VM vm, GR gr, Self from) {
   _arity = from->_arity;
   _builtin = from->_builtin;
 }
@@ -65,17 +65,17 @@ BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,
-                                            GC gc, Self from):
-  WithHome(vm, gc, from->home()) {
+                                            GR gr, Self from):
+  WithHome(vm, gr, from->home()) {
 
   _arity = from->_arity;
-  gc->gcStableNode(from->_body, _body);
+  gr->copyStableNode(_body, from->_body);
   _Gc = Gc;
 
   _codeAreaCacheValid = false;
 
   for (size_t i = 0; i < Gc; i++)
-    gc->gcStableNode(from[i], _Gs[i]);
+    gr->copyStableNode(_Gs[i], from[i]);
 }
 
 BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,

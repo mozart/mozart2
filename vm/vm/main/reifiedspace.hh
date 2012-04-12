@@ -46,9 +46,9 @@ private:
       resume();
     }
 
-    UnifyThread(GC gc, UnifyThread& from): Runnable(gc, from) {
-      gc->gcUnstableNode(from._var, _var);
-      gc->gcUnstableNode(from._value, _value);
+    UnifyThread(GR gr, UnifyThread& from): Runnable(gr, from) {
+      gr->copyUnstableNode(_var, from._var);
+      gr->copyUnstableNode(_value, from._value);
     }
 
     void run() {
@@ -69,9 +69,9 @@ public:
     _var.make<Unbound>(vm, space);
   }
 
-  ChooseDistributor(GC gc, ChooseDistributor& from) {
+  ChooseDistributor(GR gr, ChooseDistributor& from) {
     _alternatives = from._alternatives;
-    gc->gcUnstableNode(from._var, _var);
+    gr->copyUnstableNode(_var, from._var);
   }
 
   UnstableNode* getVar() {
@@ -92,8 +92,8 @@ public:
     return 0;
   }
 
-  virtual Distributor* gCollect(GC gc) {
-    return new (gc->vm) ChooseDistributor(gc, *this);
+  virtual Distributor* replicate(GR gr) {
+    return new (gr->vm) ChooseDistributor(gr, *this);
   }
 private:
   nativeint _alternatives;
@@ -112,10 +112,10 @@ namespace mozart {
 
 #include "ReifiedSpace-implem.hh"
 
-Implementation<ReifiedSpace>::Implementation(VM vm, GC gc, Self from):
-  WithHome(vm, gc, from->home()) {
+Implementation<ReifiedSpace>::Implementation(VM vm, GR gr, Self from):
+  WithHome(vm, gr, from->home()) {
 
-  gc->gcSpace(from->_space, _space);
+  gr->copySpace(_space, from->_space);
   _status = from->_status;
 }
 

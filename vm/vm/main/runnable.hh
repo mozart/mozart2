@@ -38,10 +38,10 @@ Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm->aliveThreads.insert(this);
 }
 
-Runnable::Runnable(GC gc, Runnable& from) :
-  vm(gc->vm) {
+Runnable::Runnable(GR gr, Runnable& from) :
+  vm(gr->vm) {
 
-  gc->gcSpace(from._space, _space);
+  gr->copySpace(_space, from._space);
   _priority = from._priority;
   _runnable = from._runnable;
   _terminated = from._terminated;

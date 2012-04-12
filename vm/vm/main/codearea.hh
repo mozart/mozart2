@@ -39,7 +39,7 @@ namespace mozart {
 
 Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
                                          StaticArray<StableNode> _Ks,
-                                         GC gc, Self from) {
+                                         GR gr, Self from) {
   _size = from->_size;
   _Xcount = from->_Xcount;
   _Kc = Kc;
@@ -47,7 +47,7 @@ Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
   _setCodeBlock(vm, from->_codeBlock, _size);
 
   for (size_t i = 0; i < Kc; i++)
-    gc->gcStableNode(from[i], _Ks[i]);
+    gr->copyStableNode(_Ks[i], from[i]);
 }
 
 BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,

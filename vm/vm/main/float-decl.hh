@@ -45,7 +45,7 @@ public:
   static double build(VM, double value) { return value; }
 
   inline
-  static double build(VM vm, GC gc, Self from);
+  static double build(VM vm, GR gr, Self from);
 
   double value() const { return _value; }
 

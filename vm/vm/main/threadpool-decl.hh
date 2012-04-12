@@ -48,7 +48,6 @@ public:
     }
   }
 
-  // Implemented in gcollect.hh
   inline
   void gCollect(GC gc);
 

@@ -54,7 +54,7 @@ public:
   }
 
   inline
-  static AtomImpl* build(VM vm, GC gc, Self from);
+  static AtomImpl* build(VM vm, GR gr, Self from);
 
   inline
   bool equals(VM vm, Self right);

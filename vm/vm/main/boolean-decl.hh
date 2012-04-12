@@ -49,7 +49,7 @@ public:
   static bool build(VM, bool value) { return value; }
 
   inline
-  static bool build(VM vm, GC gc, Self from);
+  static bool build(VM vm, GR gr, Self from);
 
   bool value() const { return _value; }
 

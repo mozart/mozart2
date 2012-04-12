@@ -27,10 +27,7 @@
 
 #include "core-forward-decl.hh"
 
-#include "memmanager.hh"
-#include "memmanlist.hh"
-
-#include "runnable-decl.hh"
+#include "graphreplicator-decl.hh"
 
 namespace mozart {
 
@@ -45,53 +42,24 @@ const bool OzDebugGC = false;
 // GarbageCollector //
 //////////////////////
 
-class GarbageCollector {
+class GarbageCollector: public GraphReplicator {
 public:
-  GarbageCollector(VM vm) :
-    vm(vm), stableNodesToGC(nullptr), unstableNodesToGC(nullptr) {}
+  GarbageCollector(VM vm):
+    GraphReplicator(vm, GraphReplicator::grkGarbageCollection) {}
 
   inline
-  MemoryManager& getMemoryManager();
-
-  bool isGCRequired() {
-    return getMemoryManager().isGCRequired();
-  }
+  bool isGCRequired();
 
   void doGC();
-
-  inline
-  void gcSpace(SpaceRef from, SpaceRef& to);
-
-  inline
-  void gcThread(Runnable* from, Runnable*& to);
-
-  inline
-  void gcStableNode(StableNode& from, StableNode& to);
-
-  inline
-  void gcUnstableNode(UnstableNode& from, UnstableNode& to);
-
-  inline
-  void gcStableRef(StableNode* from, StableNode*& to);
-
-  VM vm;
 private:
+  friend class GraphReplicator;
+
   inline
-  void gcOneThread(Runnable*& thread);
+  void processThread(Runnable*& to, Runnable* from);
 
   template <class NodeType, class GCedType>
   inline
-  void gcOneNode(NodeType*& list);
-
-  inline
-  void gcOneStableRef(StableNode*& ref);
-
-  MemoryManager secondMemManager;
-
-  MemManagedList<Runnable**> threadsToGC;
-  StableNode* stableNodesToGC;
-  UnstableNode* unstableNodesToGC;
-  MemManagedList<StableNode**> stableRefsToGC;
+  void processNode(NodeType*& to, RichNode from);
 };
 
 }

@@ -32,6 +32,7 @@
 
 #include "exchelpers.hh"
 #include "gcollect.hh"
+#include "graphreplicator.hh"
 #include "runnable.hh"
 #include "space.hh"
 #include "store.hh"

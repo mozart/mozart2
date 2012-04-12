@@ -103,7 +103,7 @@ public:
   WithHome(VM vm);
 
   inline
-  WithHome(VM vm, GC gc, SpaceRef fromHome);
+  WithHome(VM vm, GR gr, SpaceRef fromHome);
 
   Space* home() {
     return _home;

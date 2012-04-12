@@ -37,7 +37,7 @@ namespace mozart {
 
 #include "Float-implem.hh"
 
-double Implementation<Float>::build(VM vm, GC gc, Self from) {
+double Implementation<Float>::build(VM vm, GR gr, Self from) {
   return from.get().value();
 }
 

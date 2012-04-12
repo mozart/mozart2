@@ -34,22 +34,22 @@ namespace mozart {
 
 void GarbageCollector::doGC() {
   if (OzDebugGC) {
-    std::cerr << "Before GC: " << getMemoryManager().getAllocated();
+    std::cerr << "Before GC: " << vm->getMemoryManager().getAllocated();
     std::cerr << " bytes used." << std::endl;
   }
 
   // General assumptions when running GC
   assert(vm->_currentSpace == vm->_topLevelSpace);
 
-  // Before GC
+  // Before GR
   for (auto iterator = vm->aliveThreads.begin();
        iterator != vm->aliveThreads.end(); iterator++) {
-    (*iterator)->beforeGC();
+    (*iterator)->beforeGR();
   }
 
   // Swap spaces
-  getMemoryManager().swapWith(secondMemManager);
-  getMemoryManager().init();
+  vm->getMemoryManager().swapWith(vm->getSecondMemoryManager());
+  vm->getMemoryManager().init();
 
   // Forget lists of things
   vm->atomTable = AtomTable();
@@ -57,7 +57,7 @@ void GarbageCollector::doGC() {
 
   // Always keep the top-level space
   SpaceRef topLevelSpaceRef = vm->_topLevelSpace;
-  gcSpace(topLevelSpaceRef, topLevelSpaceRef);
+  copySpace(topLevelSpaceRef, topLevelSpaceRef);
   vm->_topLevelSpace = topLevelSpaceRef;
   vm->_currentSpace = vm->_topLevelSpace;
 
@@ -65,76 +65,28 @@ void GarbageCollector::doGC() {
   vm->getThreadPool().gCollect(this);
 
   // GC loop
-  while (!threadsToGC.empty() ||
-         stableNodesToGC != nullptr ||
-         unstableNodesToGC != nullptr ||
-         !stableRefsToGC.empty()) {
+  runCopyLoop<GarbageCollector>();
 
-    if (!threadsToGC.empty()) {
-      gcOneThread(*threadsToGC.pop_front(secondMemManager));
-    } else if (stableNodesToGC != nullptr) {
-      gcOneNode<StableNode, GCedToStable>(stableNodesToGC);
-    } else if (unstableNodesToGC != nullptr) {
-      gcOneNode<UnstableNode, GCedToUnstable>(unstableNodesToGC);
-    } else {
-      gcOneStableRef(*stableRefsToGC.pop_front(secondMemManager));
-    }
-  }
-
-  // After GC
+  // After GR
   for (auto iterator = vm->aliveThreads.begin();
        iterator != vm->aliveThreads.end(); iterator++) {
-    (*iterator)->afterGC();
+    (*iterator)->afterGR();
   }
 
   if (OzDebugGC) {
-    std::cerr << "After GC: " << getMemoryManager().getAllocated();
+    std::cerr << "After GC: " << vm->getMemoryManager().getAllocated();
     std::cerr << " bytes used." << std::endl;
   }
 }
 
-void GarbageCollector::gcOneThread(Runnable*& thread) {
-  thread = thread->gCollect(this);
+void GarbageCollector::processThread(Runnable*& to, Runnable* from) {
+  to = from->gCollect(this);
 }
 
 template <class NodeType, class GCedType>
-void GarbageCollector::gcOneNode(NodeType*& list) {
-  NodeType* node = list;
-  list = node->gcNext;
-
-  UnstableNode temp(vm, *node->gcFrom);
-  RichNode from = temp;
-
-  if (OzDebugGC) {
-    std::cerr << "gc node " << from.toDebugString();
-    std::cerr << "   \tto node " << node << std::endl;
-  }
-
-  from.type()->gCollect(this, from, *node);
-  from.remake<GCedType>(vm, node);
-}
-
-void GarbageCollector::gcOneStableRef(StableNode*& ref) {
-  if (OzDebugGC)
-    std::cerr << "gc stable ref from " << ref << " to " << &ref << std::endl;
-
-  UnstableNode temp;
-  temp.make<Reference>(vm, ref);
-  RichNode from = temp;
-
-  if (from.type() == GCedToStable::type()) {
-    StableNode* dest = from.as<GCedToStable>().dest();
-    UnstableNode temp2;
-    temp2.make<Reference>(vm, dest);
-    ref = RichNode(temp2).getStableRef(vm);
-  } else if (from.type() == GCedToUnstable::type()) {
-    UnstableNode* dest = from.as<GCedToUnstable>().dest();
-    ref = RichNode(*dest).getStableRef(vm);
-  } else {
-    ref = new (vm) StableNode;
-    from.type()->gCollect(this, from, *ref);
-    from.remake<GCedToStable>(vm, ref);
-  }
+void GarbageCollector::processNode(NodeType*& to, RichNode from) {
+  from.type()->gCollect(this, from, *to);
+  from.remake<GCedType>(vm, to);
 }
 
 }

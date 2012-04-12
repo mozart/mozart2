@@ -47,6 +47,9 @@ class UnstableNode;
 class VirtualMachine;
 typedef VirtualMachine* VM;
 
+class GraphReplicator;
+typedef GraphReplicator* GR;
+
 class GarbageCollector;
 typedef GarbageCollector* GC;
 

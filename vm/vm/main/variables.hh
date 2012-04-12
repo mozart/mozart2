@@ -37,14 +37,14 @@ namespace mozart {
 
 #include "Variable-implem.hh"
 
-Implementation<Variable>::Implementation(VM vm, GC gc, Self from):
-  WithHome(vm, gc, from->home()) {
+Implementation<Variable>::Implementation(VM vm, GR gr, Self from):
+  WithHome(vm, gr, from->home()) {
 
   for (auto iterator = from->pendingThreads.begin();
        iterator != from->pendingThreads.end();
        iterator++) {
     pendingThreads.push_back(vm, *iterator);
-    gc->gcThread(pendingThreads.back(), pendingThreads.back());
+    gr->copyThread(pendingThreads.back(), pendingThreads.back());
   }
 }
 
@@ -217,9 +217,9 @@ void Implementation<Variable>::resumePendingsSubSpace(VM vm,
 
 #include "Unbound-implem.hh"
 
-SpaceRef Implementation<Unbound>::build(VM vm, GC gc, Self from) {
+SpaceRef Implementation<Unbound>::build(VM vm, GR gr, Self from) {
   SpaceRef home;
-  gc->gcSpace(from.get().home(), home);
+  gr->copySpace(home, from.get().home());
   return home;
 }
 

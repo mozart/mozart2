@@ -22,31 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_H
-#define __BOOLEAN_H
+#include "mozart.hh"
 
-#include "mozartcore.hh"
-
-#ifndef MOZART_GENERATOR
+#include <iostream>
 
 namespace mozart {
 
-/////////////
-// Boolean //
-/////////////
-
-#include "Boolean-implem.hh"
-
-bool Implementation<Boolean>::build(VM vm, GR gr, Self from) {
-  return from.get().value();
-}
-
-bool Implementation<Boolean>::equals(VM vm, Self right) {
-  return value() == right.get().value();
-}
+/////////////////////
+// GraphReplicator //
+/////////////////////
 
 }
-
-#endif // MOZART_GENERATOR
-
-#endif // __BOOLEAN_H

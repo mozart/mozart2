@@ -55,7 +55,7 @@ public:
     _arity(arity), _builtin(builtin) {}
 
   inline
-  Implementation(VM vm, GC gc, Self from);
+  Implementation(VM vm, GR gr, Self from);
 
   /**
    * Arity of this builtin
@@ -113,7 +113,7 @@ public:
 
   inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 GC gc, Self from);
+                 GR gr, Self from);
 
   size_t getArraySize() {
     return _Gc;

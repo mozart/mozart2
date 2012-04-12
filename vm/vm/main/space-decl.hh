@@ -66,7 +66,7 @@ public:
 
   virtual nativeint commit(VM vm, Space* space, nativeint value) = 0;
 
-  virtual Distributor* gCollect(GC gc) = 0;
+  virtual Distributor* replicate(GR gr) = 0;
 };
 
 /**
@@ -86,9 +86,9 @@ public:
   inline
   Space(VM vm, Space* parent);
 
-  /** GC constructor */
+  /** GR constructor */
   inline
-  Space(GC gc, Space* from);
+  Space(GR gr, Space* from);
 private:
   inline
   void constructor(VM vm, bool isTopLevel, Space* parent);

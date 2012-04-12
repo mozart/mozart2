@@ -29,47 +29,12 @@
 
 namespace mozart {
 
-void ThreadQueue::gCollect(GC gc) {
-  for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
-    Runnable*& thread = *iterator;
-    gc->gcThread(thread, thread);
-  }
-}
-
 //////////////////////
 // GarbageCollector //
 //////////////////////
 
-MemoryManager& GarbageCollector::getMemoryManager() {
-  return vm->getMemoryManager();
-}
-
-void GarbageCollector::gcSpace(SpaceRef from, SpaceRef& to) {
-  // Spaces are GCed immediately
-  Space* space = from;
-  to = space->gCollect(this);
-}
-
-void GarbageCollector::gcThread(Runnable* from, Runnable*& to) {
-  to = from;
-  threadsToGC.push_front(secondMemManager, &to);
-}
-
-void GarbageCollector::gcStableNode(StableNode& from, StableNode& to) {
-  to.gcNext = stableNodesToGC;
-  to.gcFrom = &from;
-  stableNodesToGC = &to;
-}
-
-void GarbageCollector::gcUnstableNode(UnstableNode& from, UnstableNode& to) {
-  to.gcNext = unstableNodesToGC;
-  to.gcFrom = &from;
-  unstableNodesToGC = &to;
-}
-
-void GarbageCollector::gcStableRef(StableNode* from, StableNode*& to) {
-  to = from;
-  stableRefsToGC.push_front(secondMemManager, &to);
+bool GarbageCollector::isGCRequired() {
+  return vm->getMemoryManager().isGCRequired();
 }
 
 }

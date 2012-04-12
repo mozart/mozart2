@@ -57,7 +57,7 @@ public:
 
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 GC gc, Self from);
+                 GR gr, Self from);
 
   size_t getArraySize() {
     return _Kc;

@@ -99,13 +99,14 @@ class Abstraction;
  * Abstraction value, i.e., user-defined procedure
  */
 template <>
-class Implementation<Abstraction>: StoredWithArrayOf<StableNode> {
+class Implementation<Abstraction>: public WithHome,
+  StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
                  int arity, UnstableNode* body)
-    : _arity(arity), _Gc(Gc) {
+    : WithHome(vm), _arity(arity), _Gc(Gc) {
     _body.init(vm, *body);
     _codeAreaCacheValid = false;
   }

@@ -40,7 +40,7 @@ class ReifiedSpace;
 #endif
 
 template <>
-class Implementation<ReifiedSpace> {
+class Implementation<ReifiedSpace>: public WithHome {
 public:
   typedef SelfType<ReifiedSpace>::Self Self;
 
@@ -48,7 +48,8 @@ public:
     ssNormal, ssFailed, ssMerged
   };
 public:
-  Implementation(VM, Space* space) : _space(space), _status(ssNormal) {}
+  Implementation(VM vm, Space* space):
+    WithHome(vm), _space(space), _status(ssNormal) {}
 
   inline
   Implementation(VM vm, GC gc, Self from);

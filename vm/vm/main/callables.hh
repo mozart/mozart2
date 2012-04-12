@@ -65,7 +65,9 @@ BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,
-                                            GC gc, Self from) {
+                                            GC gc, Self from):
+  WithHome(vm, gc, from->home()) {
+
   _arity = from->_arity;
   gc->gcStableNode(from->_body, _body);
   _Gc = Gc;

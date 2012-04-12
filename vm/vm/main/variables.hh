@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "Variable-implem.hh"
 
-Implementation<Variable>::Implementation(VM vm, GC gc, Self from) {
-  gc->gcSpace(from->_home, _home);
+Implementation<Variable>::Implementation(VM vm, GC gc, Self from):
+  WithHome(vm, gc, from->home()) {
 
   for (auto iterator = from->pendingThreads.begin();
        iterator != from->pendingThreads.end();

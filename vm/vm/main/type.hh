@@ -27,4 +27,20 @@
 
 #include "mozartcore.hh"
 
+namespace mozart {
+
+//////////////
+// WithHome //
+//////////////
+
+WithHome::WithHome(VM vm) {
+  _home = vm->getCurrentSpace();
+}
+
+WithHome::WithHome(VM vm, GC gc, SpaceRef fromHome) {
+  gc->gcSpace(fromHome, _home);
+}
+
+}
+
 #endif // __TYPE_H

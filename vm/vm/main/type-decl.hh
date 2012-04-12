@@ -33,6 +33,10 @@
 
 namespace mozart {
 
+//////////
+// Type //
+//////////
+
 enum StructuralBehavior {
   sbValue,      // Simple, non-aggregate value
   sbStructural, // Aggregate value compared with structural equality
@@ -86,6 +90,31 @@ struct RawType {
 
 template <class T>
 const T RawType<T>::rawType;
+
+//////////////
+// WithHome //
+//////////////
+
+class WithHome {
+public:
+  WithHome(SpaceRef home): _home(home) {}
+
+  inline
+  WithHome(VM vm);
+
+  inline
+  WithHome(VM vm, GC gc, SpaceRef fromHome);
+
+  Space* home() {
+    return _home;
+  }
+private:
+  SpaceRef _home;
+};
+
+/////////////////////
+// Trivial markers //
+/////////////////////
 
 template<class T>
 struct Interface{};

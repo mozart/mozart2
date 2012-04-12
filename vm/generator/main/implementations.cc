@@ -72,6 +72,7 @@ struct ImplementationDef {
     storage = "";
     structuralBehavior = sbTokenEq;
     bindingPriority = 0;
+    withHome = false;
     base = "Type";
     autoGCollect = true;
   }
@@ -87,6 +88,7 @@ struct ImplementationDef {
   std::string storage;
   StructuralBehavior structuralBehavior;
   unsigned char bindingPriority;
+  bool withHome;
   std::string base;
   bool autoGCollect;
   std::vector<ImplemMethodDef> methods;
@@ -124,6 +126,8 @@ void handleImplementation(const SpecDecl* ND) {
       definition.structuralBehavior = sbVariable;
       definition.bindingPriority =
         getValueParamAsIntegral<unsigned char>(marker);
+    } else if (markerLabel == "WithHome") {
+      definition.withHome = true;
     } else if (markerLabel == "BasedOn") {
       definition.base = getTypeParamAsString(marker);
     } else if (markerLabel == "NoAutoGCollect") {
@@ -215,6 +219,13 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "public:\n";
   to << "  TypedRichNode(Self self) : BaseTypedRichNode(self) {}\n";
 
+  // Special-casing the method WithHome::home() until we find a better solution
+  if (withHome) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  Space* home();\n";
+  }
+
   for (auto method = methods.begin(); method != methods.end(); ++method) {
     CXXMethodDecl* m = method->method;
 
@@ -238,6 +249,12 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
 }
 
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
+  std::string _selfArrow;
+  if (storageKind == skCustom)
+    _selfArrow = "_self.get().";
+  else
+    _selfArrow = "_self->";
+
   if (autoGCollect) {
     to << "\n";
     to << "void " << name
@@ -248,6 +265,14 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "void " << name
        << "::gCollect(GC gc, RichNode from, UnstableNode& to) const {\n";
     makeContentsOfAutoGCollect(to);
+    to << "}\n";
+  }
+
+  // Special-casing the method WithHome::home() until we find a better solution
+  if (withHome) {
+    to << "\n";
+    to << "Space* TypedRichNode<" << name << ">::home() {\n";
+    to << "  return " << _selfArrow << "home();\n";
     to << "}\n";
   }
 
@@ -271,11 +296,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     if (!m->getResultType().getTypePtr()->isVoidType())
       to << "return ";
 
-    if (storageKind == skCustom)
-      to << "_self.get().";
-    else
-      to << "_self->";
-    to << m->getNameAsString() << "(";
+    to << _selfArrow << m->getNameAsString() << "(";
 
     if (method->hasSelfParam)
       to << "_self";

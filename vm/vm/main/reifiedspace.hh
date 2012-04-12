@@ -112,7 +112,9 @@ namespace mozart {
 
 #include "ReifiedSpace-implem.hh"
 
-Implementation<ReifiedSpace>::Implementation(VM vm, GC gc, Self from) {
+Implementation<ReifiedSpace>::Implementation(VM vm, GC gc, Self from):
+  WithHome(vm, gc, from->home()) {
+
   gc->gcSpace(from->_space, _space);
   _status = from->_status;
 }

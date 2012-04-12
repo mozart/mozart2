@@ -156,7 +156,7 @@ namespace {
                                                   RichNode variable) {
     if (variable.type()->isTransient()) {
       if (propagateThread == nullptr)
-        propagateThread = new internal::DummyThread(vm, space);
+        propagateThread = new internal::DummyThread(vm, space, true);
       DataflowVariable(variable).addToSuspendList(vm, propagateThread);
     }
   }

@@ -47,7 +47,8 @@ Runnable::Runnable(GC gc, Runnable& from) :
   _terminated = from._terminated;
   _dead = from._dead;
 
-  vm->aliveThreads.insert(this);
+  if (!_dead)
+    vm->aliveThreads.insert(this);
 }
 
 void Runnable::resume(bool skipSchedule) {
@@ -73,10 +74,15 @@ void Runnable::suspend(bool skipUnschedule) {
 }
 
 void Runnable::kill() {
+  assert(!_dead && !_terminated);
+
   dispose();
 }
 
 void Runnable::terminate() {
+  assert(!_dead && !_terminated);
+  assert(_runnable);
+
   _runnable = false;
   _terminated = true;
 

@@ -94,6 +94,33 @@ ScriptEntry& SpaceScript::append(VM vm) {
 // Space //
 ///////////
 
+Space::Space(VM vm) {
+  constructor(vm, true, nullptr);
+}
+
+Space::Space(VM vm, Space* parent) {
+  constructor(vm, false, parent);
+}
+
+void Space::constructor(VM vm, bool isTopLevel, Space* parent) {
+  this->vm = vm;
+
+  _parent = parent;
+
+  _isTopLevel = isTopLevel;
+  _status = ssNormal;
+
+  _mark = false;
+
+  _rootVar.make<Unbound>(vm, this);
+  _statusVar.make<Unbound>(vm, isTopLevel ? this : parent);
+
+  _distributor = nullptr;
+
+  threadCount = 0;
+  cascadedRunnableThreadCount = 0;
+}
+
 Space::Space(GC gc, Space* from) {
   assert(from->_status != ssReference && from->_status != ssGCed);
 
@@ -237,6 +264,7 @@ void Space::notifyThreadTerminated() {
   if (isTopLevel())
     return;
 
+  assert(cascadedRunnableThreadCount > 0);
   if (--cascadedRunnableThreadCount)
     getParent()->decRunnableThreadCount();
 

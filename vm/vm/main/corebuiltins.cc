@@ -173,8 +173,6 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
 
   // Create the space
   Space* space = new (vm) Space(vm, currentSpace);
-  space->getRootVar()->make<Unbound>(vm, space);
-  space->getStatusVar()->make<Unbound>(vm, currentSpace);
 
   // Create the thread {Proc Root}
   UnstableNode rootVar(vm, *space->getRootVar());

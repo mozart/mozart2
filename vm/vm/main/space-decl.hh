@@ -79,17 +79,21 @@ public:
   };
 public:
   /** Construct the top-level space */
-  Space(VM vm) : vm(vm), _parent(nullptr), _isTopLevel(true), _status(ssNormal),
-    _mark(false), _distributor(nullptr) {}
+  inline
+  Space(VM vm);
 
   /** Construct a subspace */
-  Space(VM vm, Space* parent) : vm(vm), _parent(parent), _isTopLevel(false),
-    _status(ssNormal), _mark(false) {}
+  inline
+  Space(VM vm, Space* parent);
 
   /** GC constructor */
   inline
   Space(GC gc, Space* from);
+private:
+  inline
+  void constructor(VM vm, bool isTopLevel, Space* parent);
 
+public:
   Space* getParent() {
     if (_isTopLevel)
       return nullptr;

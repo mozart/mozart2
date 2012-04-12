@@ -46,8 +46,10 @@ VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
 
 void VirtualMachine::run() {
   while (true) {
-    if (gc.isGCRequired())
+    if (gc.isGCRequired()) {
+      getTopLevelSpace()->install();
       gc.doGC();
+    }
 
     Runnable* currentThread;
 
@@ -70,6 +72,7 @@ void VirtualMachine::run() {
     }
 
     // Run the thread
+    assert(currentThread->isRunnable());
     currentThread->run();
 
     // Schedule the thread anew if it is still runnable

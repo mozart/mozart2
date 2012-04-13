@@ -69,6 +69,12 @@ public:
   void transferPendingsSubSpace(VM vm, Space* currentSpace,
                                 VMAllocatedList<Runnable*>& srcThreads,
                                 VMAllocatedList<StableNode*>& srcVariables);
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "_";
+  }
 private:
   // TODO Might a good candidate for noinline
   inline
@@ -125,6 +131,12 @@ public:
 
   inline
   OpResult bind(Self self, VM vm, RichNode src);
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "_<optimized>";
+  }
 };
 
 #ifndef MOZART_GENERATOR

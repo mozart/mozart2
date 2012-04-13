@@ -152,9 +152,7 @@ OpResult createThread(VM vm, UnstableNode* args[]) {
 ///////////////////
 
 OpResult show(VM vm, UnstableNode* args[]) {
-  RichNode arg = *args[0];
-  printReprToStream(vm, arg, std::cout);
-  std::cout << std::endl;
+  std::cout << repr(vm, *args[0]) << std::endl;
   return OpResult::proceed();
 }
 
@@ -252,30 +250,6 @@ OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
     return raiseIllegalArity(vm, expectedArity, arity);
 
   return OpResult::proceed();
-}
-
-void printReprToStream(VM vm, RichNode arg,
-                       std::ostream& out, int depth) {
-  if (depth <= 0) {
-    out << "...";
-    return;
-  }
-
-  if (arg.is<SmallInt>()) {
-    out << arg.as<SmallInt>().value();
-  } else if (arg.is<Boolean>()) {
-    out << (arg.as<Boolean>().value() ? "true" : "false");
-  } else if (arg.is<Float>()) {
-    out << arg.as<Float>().value();
-  } else if (arg.is<Atom>()) {
-    arg.as<Atom>().printReprToStream(vm, &out, depth);
-  } else if (arg.is<Tuple>()) {
-    arg.as<Tuple>().printReprToStream(vm, &out, depth);
-  } else if (arg.isTransient()) {
-    out << "_";
-  } else {
-    out << "<" << arg.type()->getName() << ">";
-  }
 }
 
 }

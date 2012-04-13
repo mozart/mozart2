@@ -80,9 +80,7 @@ OpResult Implementation<Atom>::waitOr(Self self, VM vm,
 }
 
 void Implementation<Atom>::printReprToStream(Self self, VM vm,
-                                             std::ostream* _out, int depth) {
-  std::ostream& out = *_out;
-
+                                             std::ostream& out, int depth) {
   out << "'";
   for (size_t i = 0; i < value()->length(); i++)
     out << (char) value()->contents()[i];

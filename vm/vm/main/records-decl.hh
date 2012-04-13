@@ -99,7 +99,7 @@ public:
   OpResult waitOr(Self self, VM vm, UnstableNode* result);
 
   inline
-  void printReprToStream(Self self, VM vm, std::ostream* out, int depth);
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 private:
   StableNode _label;
   size_t _width;

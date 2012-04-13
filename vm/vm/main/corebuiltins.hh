@@ -95,9 +95,6 @@ OpResult chooseSpace(VM vm, UnstableNode* args[]);
 
 OpResult expectCallable(VM vm, RichNode target, int expectedArity);
 
-void printReprToStream(VM vm, RichNode node,
-                       std::ostream& out, int depth = 10);
-
 }
 
 }

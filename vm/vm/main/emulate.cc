@@ -689,11 +689,8 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {
 
     case OpResult::orRaise: {
       // TODO Allow to catch an exception
-      UnstableNode exception(vm, *result.getExceptionNode());
       std::cout << "Exception" << std::endl;
-
-      UnstableNode* showArgs[] = { &exception };
-      builtins::show(vm, showArgs);
+      std::cout << repr(vm, *result.getExceptionNode()) << std::endl;
 
       terminate();
       preempted = true;

@@ -26,6 +26,7 @@
 #define __TYPE_DECL_H
 
 #include <string>
+#include <ostream>
 
 #include "core-forward-decl.hh"
 
@@ -72,6 +73,11 @@ public:
     return _bindingPriority;
   }
 
+  virtual void printReprToStream(VM vm, RichNode self, std::ostream& out,
+                                 int depth = 10) const {
+    out << "<" << _name << ">";
+  }
+
   virtual void gCollect(GC gc, RichNode from, StableNode& to) const = 0;
   virtual void gCollect(GC gc, RichNode from, UnstableNode& to) const = 0;
 
@@ -93,6 +99,37 @@ struct RawType {
 
 template <class T>
 const T RawType<T>::rawType;
+
+//////////////////
+// << for nodes //
+//////////////////
+
+class repr {
+public:
+  repr(VM vm, RichNode value, int depth = 10):
+    vm(vm), value(value), depth(depth) {}
+
+  repr(VM vm, StableNode& value, int depth = 10):
+    tempValue(vm, value), vm(vm), value(tempValue), depth(depth) {}
+
+  std::ostream& operator()(std::ostream& out) const {
+    if (depth <= 0)
+      out << "...";
+    else
+      value.type()->printReprToStream(vm, value, out, depth-1);
+    return out;
+  }
+private:
+  mutable UnstableNode tempValue;
+  mutable VM vm;
+  mutable RichNode value;
+  mutable int depth;
+};
+
+inline
+std::ostream& operator<<(std::ostream& out, const repr& nodeRepr) {
+  return nodeRepr(out);
+}
 
 //////////////
 // WithHome //

@@ -243,7 +243,7 @@ template <class T>
 inline
 bool matchesStable(VM vm, BuiltinResult& result, StableNode* value, T pattern) {
   UnstableNode temp(vm, *value);
-  return matches(vm, result, RichNode(temp), pattern);
+  return matchesSimple(vm, result, RichNode(temp), pattern);
 }
 
 /** Base case of the below */

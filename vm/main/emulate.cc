@@ -109,14 +109,10 @@ void Thread::constructor(VM vm, StableNode* abstraction,
   StaticArray<StableNode> Ks;
 
   UnstableNode temp(vm, *abstraction);
-#ifndef NDEBUG
-  OpResult result =
-#endif
-  Callable(temp).getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+  MOZART_ASSERT_PROCEED(Callable(temp).getCallInfo(
+    vm, &arity, &body, &start, &Xcount, &Gs, &Ks));
 
-#ifndef NDEBUG
-  assert(result.isProceed() && arity == argc);
-#endif
+  assert(arity == argc);
 
   // Set up
 
@@ -147,6 +143,15 @@ Thread::Thread(GR gr, Thread& from): Runnable(gr, from) {
     stack.push_back_new(vm, gr, *iterator);
   }
 }
+
+#define CHECK_OPRESULT_BREAK(operation) \
+  { \
+    ::mozart::OpResult macroTempOpResult = (operation); \
+    if (!macroTempOpResult.isProceed()) { \
+      applyOpResult(vm, macroTempOpResult, preempted); \
+      break; \
+    } \
+  }
 
 void Thread::run() {
   // Local variable cache of fields
@@ -305,14 +310,9 @@ void Thread::run() {
           args[i] = &XPC(3 + i);
 
         UnstableNode temp(vm, KPC(1));
-        OpResult result =
-          BuiltinCallable(temp).callBuiltin(vm, argc, args);
+        CHECK_OPRESULT_BREAK(BuiltinCallable(temp).callBuiltin(vm, argc, args));
 
-        if (result.isProceed())
-          advancePC(2 + argc);
-        else
-          applyOpResult(vm, result, preempted);
-
+        advancePC(2 + argc);
         break;
       }
 
@@ -365,66 +365,52 @@ void Thread::run() {
       }
 
       case OpCondBranch: {
-        UnstableNode& test = XPC(1);
-        BoolOrNotBool testValue;
+        BoolOrNotBool testValue = bNotBool;
 
-        OpResult result =
-          BooleanValue(test).valueOrNotBool(vm, &testValue);
+        CHECK_OPRESULT_BREAK(
+          BooleanValue(XPC(1)).valueOrNotBool(vm, &testValue));
 
-        if (result.isProceed()) {
-          int distance;
+        int distance;
 
-          switch (testValue) {
-            case bFalse: distance = IntPC(2); break;
-            case bTrue:  distance = IntPC(3); break;
-            default:     distance = IntPC(4);
-          }
-
-          advancePC(4 + distance);
-        } else {
-          applyOpResult(vm, result, preempted);
+        switch (testValue) {
+          case bFalse: distance = IntPC(2); break;
+          case bTrue:  distance = IntPC(3); break;
+          default:     distance = IntPC(4);
         }
 
+        advancePC(4 + distance);
         break;
       }
 
       // Unification
 
       case OpUnifyXX: {
-        OpResult result = unify(vm, XPC(1), XPC(2));
-        if (result.isProceed())
-          advancePC(2);
-        else
-          applyOpResult(vm, result, preempted);
+        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), XPC(2)));
+
+        advancePC(2);
         break;
       }
 
       case OpUnifyXY: {
-        OpResult result = unify(vm, XPC(1), YPC(2));
-        if (result.isProceed())
-          advancePC(2);
-        else
-          applyOpResult(vm, result, preempted);
+        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), YPC(2)));
+
+        advancePC(2);
         break;
       }
 
       case OpUnifyXK: {
         UnstableNode rhs(vm, KPC(2));
-        OpResult result = unify(vm, XPC(1), rhs);
-        if (result.isProceed())
-          advancePC(2);
-        else
-          applyOpResult(vm, result, preempted);
+        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), rhs));
+
+        advancePC(2);
         break;
       }
 
       case OpUnifyXG: {
         UnstableNode rhs(vm, GPC(2));
-        OpResult result = unify(vm, XPC(1), rhs);
-        if (result.isProceed())
-          advancePC(2);
-        else
-          applyOpResult(vm, result, preempted);
+        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), rhs));
+
+        advancePC(2);
         break;
       }
 
@@ -501,65 +487,44 @@ void Thread::run() {
       // Inlines for some builtins
 
       case OpInlineEqualsInteger: {
-        IntegerValue x = XPC(1);
-        nativeint right = IntPC(2);
-        bool resultValue;
+        bool resultValue = false;
 
-        OpResult result = x.equalsInteger(vm, right, &resultValue);
+        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).equalsInteger(
+          vm, IntPC(2), &resultValue));
 
-        if (result.isProceed()) {
-          if (resultValue)
-            advancePC(3);
-          else
-            advancePC(3 + IntPC(3));
-        } else {
-          applyOpResult(vm, result, preempted);
-        }
+        if (resultValue)
+          advancePC(3);
+        else
+          advancePC(3 + IntPC(3));
 
         break;
       }
 
       case OpInlineAdd: {
-        OpResult result = Numeric(XPC(1)).add(vm, &XPC(2), &XPC(3));
+        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).add(vm, &XPC(2), &XPC(3)));
 
-        if (result.isProceed())
-          advancePC(3);
-        else
-          applyOpResult(vm, result, preempted);
-
+        advancePC(3);
         break;
       }
 
       case OpInlineSubtract: {
-        OpResult result = Numeric(XPC(1)).subtract(vm, &XPC(2), &XPC(3));
+        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).subtract(vm, &XPC(2), &XPC(3)));
 
-        if (result.isProceed())
-          advancePC(3);
-        else
-          applyOpResult(vm, result, preempted);
-
+        advancePC(3);
         break;
       }
 
       case OpInlinePlus1: {
-        OpResult result = IntegerValue(XPC(1)).addValue(vm, 1, &XPC(2));
+        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, 1, &XPC(2)));
 
-        if (result.isProceed())
-          advancePC(2);
-        else
-          applyOpResult(vm, result, preempted);
-
+        advancePC(2);
         break;
       }
 
       case OpInlineMinus1: {
-        OpResult result = IntegerValue(XPC(1)).addValue(vm, -1, &XPC(2));
+        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, -1, &XPC(2)));
 
-        if (result.isProceed())
-          advancePC(2);
-        else
-          applyOpResult(vm, result, preempted);
-
+        advancePC(2);
         break;
       }
     }
@@ -600,6 +565,15 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
   stack.remove_front(vm);
 }
 
+#define CHECK_OPRESULT_RETURN(operation) \
+  do { \
+    ::mozart::OpResult macroTempOpResult = (operation); \
+    if (!macroTempOpResult.isProceed()) { \
+      applyOpResult(vm, macroTempOpResult, preempted); \
+      return; \
+    } \
+  } while (false)
+
 void Thread::call(RichNode target, int actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
                   ProgramCounter& PC, size_t& yregCount,
@@ -615,48 +589,40 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  OpResult result = Callable(target).getCallInfo(
-    vm, &formalArity, &body, &start, &Xcount, &Gs, &Ks);
+  CHECK_OPRESULT_RETURN(Callable(target).getCallInfo(
+    vm, &formalArity, &body, &start, &Xcount, &Gs, &Ks));
 
-  if (result.isProceed()) {
-    if (actualArity != formalArity) {
-      applyOpResult(vm, raiseIllegalArity(vm, formalArity, actualArity),
-                    preempted);
-      return;
-    }
-
-    advancePC(2);
-
-    if (!isTailCall) {
-      pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
-    }
-
-    // Setup new frame
-    abstraction = target.getStableRef(vm);
-    PC = start;
-    xregs->grow(vm, Xcount, formalArity);
-    yregCount = 0;
-    yregs = nullptr;
-    gregs = Gs;
-    kregs = Ks;
-
-    // Test for preemption
-    // (there is no infinite execution path that does not traverse a call)
-    if (vm->testPreemption())
-      preempted = true;
-  } else {
-    applyOpResult(vm, result, preempted);
+  if (actualArity != formalArity) {
+    applyOpResult(vm, raiseIllegalArity(vm, formalArity, actualArity),
+                  preempted);
+    return;
   }
+
+  advancePC(2);
+
+  if (!isTailCall) {
+    pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+  }
+
+  // Setup new frame
+  abstraction = target.getStableRef(vm);
+  PC = start;
+  xregs->grow(vm, Xcount, formalArity);
+  yregCount = 0;
+  yregs = nullptr;
+  gregs = Gs;
+  kregs = Ks;
+
+  // Test for preemption
+  // (there is no infinite execution path that does not traverse a call)
+  if (vm->testPreemption())
+    preempted = true;
 }
 
 void Thread::arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                               VM vm, ProgramCounter& PC, bool& preempted) {
-  OpResult result = ArrayInitializer(node).initElement(vm, index, value);
-
-  if (result.isProceed())
-    advancePC(3);
-  else
-    applyOpResult(vm, result, preempted);
+  CHECK_OPRESULT_RETURN(ArrayInitializer(node).initElement(vm, index, value));
+  advancePC(3);
 }
 
 void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {

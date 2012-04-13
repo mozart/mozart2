@@ -63,8 +63,6 @@ private:
     Access::init(type, value, vm, std::forward<Args>(args)...);
   }
 
-  inline void reset(VM vm);
-
   const Type* type;
   MemWord value;
 };
@@ -178,10 +176,6 @@ class StableNode {
 public:
   StableNode() {}
 
-  const Type* type() {
-    return node.type;
-  }
-
   inline void init(VM vm, StableNode& from);
   inline void init(VM vm, UnstableNode& from);
   inline void init(VM vm, RichNode from);
@@ -194,26 +188,22 @@ public:
   NodeBackup makeBackup() {
     return NodeBackup(&node);
   }
-private:
-  // Make this class non-copyable
-  StableNode(const StableNode& from);
-  StableNode& operator=(const StableNode& from);
 public:
-  // But make it movable
+  // Make this class non-copyable and non-movable
+  StableNode(const StableNode& from) = delete;
+  StableNode& operator=(const StableNode& from) = delete;
 
-  StableNode(StableNode&& from) {
-    node = from.node;
-  }
-
-  void init(StableNode&& from) {
-    node = from.node;
-  }
+  StableNode(StableNode&& from) = delete;
+  StableNode& operator=(StableNode&& from) = delete;
 private:
   friend struct NodeBackup;
   friend class UnstableNode;
   friend class RichNode;
   friend class GraphReplicator;
   friend class Space;
+
+  inline
+  bool isCopiable();
 
   union {
     Node node;
@@ -241,13 +231,14 @@ public:
     copy(vm, from);
   }
 
-  const Type* type() {
-    return node.type;
-  }
+  inline void init(VM vm, StableNode& from);
+  inline void init(VM vm, UnstableNode& from);
+  inline void init(VM vm, RichNode from);
 
   inline void copy(VM vm, StableNode& from);
   inline void copy(VM vm, UnstableNode& from);
   inline void copy(VM vm, RichNode from);
+
   inline void swap(UnstableNode& from);
   inline void reset(VM vm);
 
@@ -266,11 +257,11 @@ public:
   NodeBackup makeBackup() {
     return NodeBackup(&node);
   }
-private:
-  // Make this class non-copyable
-  UnstableNode(const UnstableNode& from);
-  UnstableNode& operator=(const UnstableNode& from);
 public:
+  // Make this class non-copyable
+  UnstableNode(const UnstableNode& from) = delete;
+  UnstableNode& operator=(const UnstableNode& from) = delete;
+
   // But make it movable
 
   UnstableNode(UnstableNode&& from) {
@@ -287,6 +278,9 @@ private:
   friend class RichNode;
   friend class GraphReplicator;
   friend class Space;
+
+  inline
+  bool isCopiable();
 
   union {
     Node node;

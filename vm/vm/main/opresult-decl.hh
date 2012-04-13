@@ -91,4 +91,32 @@ private:
 
 }
 
+//////////////////////////////
+// Basic macros on OpResult //
+//////////////////////////////
+
+#define MOZART_CHECK_OPRESULT(operation) \
+  do { \
+    ::mozart::OpResult macroTempOpResult = (operation); \
+    if (!macroTempOpResult.isProceed()) \
+      return macroTempOpResult; \
+  } while (false)
+
+#ifdef NDEBUG
+
+#define MOZART_ASSERT_PROCEED(operation) \
+  do { \
+    operation; \
+  } while (false)
+
+#else
+
+#define MOZART_ASSERT_PROCEED(operation) \
+  do { \
+    ::mozart::OpResult macroTempOpResult = (operation); \
+    assert(macroTempOpResult.isProceed()); \
+  } while (false)
+
+#endif
+
 #endif // __OPRESULT_DECL_H

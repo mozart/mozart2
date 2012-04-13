@@ -58,10 +58,7 @@ OpResult Implementation<SmallInt>::add(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   nativeint rightIntValue = 0;
-
-  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
-  if (!res.isProceed())
-    return res;
+  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
 
   return addValue(self, vm, rightIntValue, result);
 }
@@ -88,10 +85,7 @@ OpResult Implementation<SmallInt>::subtract(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-
-  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
-  if (!res.isProceed())
-    return res;
+  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
 
   return subtractValue(self, vm, rightIntValue, result);
 }
@@ -118,10 +112,7 @@ OpResult Implementation<SmallInt>::multiply(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-
-  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
-  if (!res.isProceed())
-    return res;
+  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
 
   return multiplyValue(self, vm, rightIntValue, result);
 }
@@ -169,10 +160,7 @@ OpResult Implementation<SmallInt>::div(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   nativeint rightIntValue = 0;
-
-  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
-  if (!res.isProceed())
-    return res;
+  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
 
   return divValue(self, vm, rightIntValue, result);
 }
@@ -198,10 +186,7 @@ OpResult Implementation<SmallInt>::mod(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   nativeint rightIntValue = 0;
-
-  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
-  if (!res.isProceed())
-    return res;
+  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
 
   return modValue(self, vm, rightIntValue, result);
 }

@@ -448,7 +448,7 @@ struct BuiltinResult {
 public:
   enum Status {
     brProceed,    // Proceed, aka success
-    brFailed,     // Unification failed
+    brFail,       // Fail, aka failure
     brWaitBefore, // Need an unbound variable, I want you to wait on that one
     brRaise,      // Raise an exception
   };
@@ -457,7 +457,7 @@ public:
   static BuiltinResult proceed();
 
   inline
-  static BuiltinResult failed();
+  static BuiltinResult fail();
 
   inline
   static BuiltinResult waitFor(VM vm, RichNode node);
@@ -467,10 +467,6 @@ public:
 
   bool isProceed() {
     return _status == brProceed;
-  }
-
-  bool isFailed() {
-    return _status == brFailed;
   }
 
   Status status() {

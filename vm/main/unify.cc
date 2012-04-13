@@ -85,7 +85,7 @@ BuiltinResult fullEquals(VM vm, RichNode left, RichNode right,
       return BuiltinResult::proceed();
     }
 
-    case BuiltinResult::brFailed: {
+    case BuiltinResult::brFail: {
       *result = false;
       return BuiltinResult::proceed();
     }
@@ -110,7 +110,7 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
     BuiltinResult pairResult = processPair(vm, left, right);
 
     switch (pairResult.status()) {
-      case BuiltinResult::brFailed:
+      case BuiltinResult::brFail:
       case BuiltinResult::brRaise: {
         stack.clear(vm);
         suspendTrail.clear(vm);
@@ -268,12 +268,12 @@ BuiltinResult StructuralDualWalk::processPair(VM vm, RichNode left,
 
   // If we reach this, both left and right are non-var
   if (leftType != rightType)
-    return BuiltinResult::failed();
+    return BuiltinResult::fail();
 
   switch (leftBehavior) {
     case sbValue: {
       bool success = ValueEquatable(left).equals(vm, right);
-      return success ? BuiltinResult::proceed() : BuiltinResult::failed();
+      return success ? BuiltinResult::proceed() : BuiltinResult::fail();
     }
 
     case sbStructural: {
@@ -282,18 +282,18 @@ BuiltinResult StructuralDualWalk::processPair(VM vm, RichNode left,
         rebind(vm, left, right);
         return BuiltinResult::proceed();
       } else {
-        return BuiltinResult::failed();
+        return BuiltinResult::fail();
       }
     }
 
     case sbTokenEq: {
       assert(!left.isSameNode(right)); // this was tested earlier
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
 
     case sbVariable: {
       assert(false);
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
   }
 

@@ -116,11 +116,10 @@ namespace mozart {
 
 #include "ReifiedSpace-implem.hh"
 
-Implementation<ReifiedSpace>::Implementation(VM vm, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
-
-  gr->copySpace(_space, from->_space);
-  _status = from->_status;
+SpaceRef Implementation<ReifiedSpace>::build(VM vm, GR gr, Self from) {
+  SpaceRef home;
+  gr->copySpace(home, from.get().home());
+  return home;
 }
 
 BuiltinResult Implementation<ReifiedSpace>::isSpace(
@@ -134,127 +133,75 @@ BuiltinResult Implementation<ReifiedSpace>::askSpace(
 
   using namespace patternmatching;
 
-  switch (status()) {
-    case ssFailed: {
-      result->make<Atom>(vm, u"failed");
-      return BuiltinResult::proceed();
-    }
+  Space* space = getSpace();
 
-    case ssMerged: {
-      result->make<Atom>(vm, u"merged");
-      return BuiltinResult::proceed();
-    }
+  if (!space->isAdmissible(vm))
+    return raise(vm, u"spaceAdmissible", self);
 
-    case ssNormal: {
-      Space* space = getSpace();
+  UnstableNode statusVar(vm, *space->getStatusVar());
+  BuiltinResult res = BuiltinResult::proceed();
 
-      if (!space->isAdmissible(vm))
-        return raise(vm, u"spaceAdmissible", self);
-
-      UnstableNode statusVar(vm, *space->getStatusVar());
-      BuiltinResult res = BuiltinResult::proceed();
-
-      if (matchesTuple(vm, res, statusVar, u"succeeded", wildcard())) {
-        result->make<Atom>(vm, u"succeeded");
-      } else if (res.isProceed()) {
-        *result = std::move(statusVar);
-      } else {
-        return res;
-      }
-
-      return BuiltinResult::proceed();
-    }
-
-    default: {
-      assert(false);
-      return BuiltinResult::failed();
-    }
+  if (matchesTuple(vm, res, statusVar, u"succeeded", wildcard())) {
+    result->make<Atom>(vm, u"succeeded");
+  } else if (res.isProceed()) {
+    *result = std::move(statusVar);
+  } else {
+    return res;
   }
+
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(
   Self self, VM vm, UnstableNode* result) {
 
-  switch (status()) {
-    case ssFailed: {
-      result->make<Atom>(vm, u"failed");
-      return BuiltinResult::proceed();
-    }
+  Space* space = getSpace();
 
-    case ssMerged: {
-      result->make<Atom>(vm, u"merged");
-      return BuiltinResult::proceed();
-    }
+  if (!space->isAdmissible(vm))
+    return raise(vm, u"spaceAdmissible", self);
 
-    case ssNormal: {
-      Space* space = getSpace();
+  if (space->isBlocked() && !space->isStable()) {
+    UnstableNode statusVar(vm, *space->getStatusVar());
+    *result = buildTuple(vm, u"suspended", statusVar);
 
-      if (!space->isAdmissible(vm))
-        return raise(vm, u"spaceAdmissible", self);
-
-      if (space->isBlocked() && !space->isStable()) {
-        UnstableNode statusVar(vm, *space->getStatusVar());
-        *result = buildTuple(vm, u"suspended", statusVar);
-
-        return BuiltinResult::proceed();
-      }
-
-      result->copy(vm, *space->getStatusVar());
-      return BuiltinResult::proceed();
-    }
-
-    default: {
-      assert(false);
-      return BuiltinResult::failed();
-    }
+    return BuiltinResult::proceed();
   }
+
+  result->copy(vm, *space->getStatusVar());
+  return BuiltinResult::proceed();
 }
 
 BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
   Self self, VM vm, UnstableNode* result) {
 
-  switch (status()) {
-    case ssFailed:
-      return BuiltinResult::failed();
+  Space* currentSpace = vm->getCurrentSpace();
+  Space* space = getSpace();
 
-    case ssMerged:
-      return raise(vm, u"spaceMerged");
+  if (!space->isAdmissible(currentSpace))
+    return raise(vm, u"spaceAdmissible");
 
-    case ssNormal: {
-      Space* currentSpace = vm->getCurrentSpace();
-      Space* space = getSpace();
-
-      if (!space->isAdmissible(currentSpace))
-        return raise(vm, u"spaceAdmissible");
-
-      if (space->getParent() != currentSpace) {
-        // TODO This is not an error, but I don't know what to do with it yet
-        return raise(vm, u"spaceMergeNotImplemented");
-      }
-
-      // Update status var
-      RichNode statusVar = *space->getStatusVar();
-      if (statusVar.type()->isTransient()) {
-        UnstableNode atomMerged = UnstableNode::build<Atom>(vm, u"merged");
-        DataflowVariable(statusVar).bind(vm, atomMerged);
-      }
-
-      // Extract root var
-      result->copy(vm, *space->getRootVar());
-
-      // Actual merge
-      BuiltinResult res = space->merge(vm, currentSpace);
-
-      this->_status = ssMerged;
-
-      return res;
-    }
-
-    default: {
-      assert(false);
-      return BuiltinResult::failed();
-    }
+  if (space->getParent() != currentSpace) {
+    // TODO This is not an error, but I don't know what to do with it yet
+    return raise(vm, u"spaceMergeNotImplemented");
   }
+
+  // Update status var
+  RichNode statusVar = *space->getStatusVar();
+  if (statusVar.type()->isTransient()) {
+    UnstableNode atomMerged = UnstableNode::build<Atom>(vm, u"merged");
+    DataflowVariable(statusVar).bind(vm, atomMerged);
+  }
+
+  // Extract root var
+  result->copy(vm, *space->getRootVar());
+
+  // Actual merge
+  BuiltinResult res = space->merge(vm, currentSpace);
+
+  // Mutate this into a merged deleted space
+  self.remake<DeletedSpace>(vm, dsMerged);
+
+  return res;
 }
 
 BuiltinResult Implementation<ReifiedSpace>::commitSpace(
@@ -262,37 +209,77 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
 
   using namespace patternmatching;
 
-  switch (status()) {
-    case ssFailed:
+  Space* space = getSpace();
+
+  if (!space->isAdmissible(vm))
+    return raise(vm, u"spaceAdmissible");
+
+  if (!space->hasDistributor())
+    return raise(vm, u"spaceNoChoice", self);
+
+  RichNode val = *value;
+  BuiltinResult res = BuiltinResult::proceed();
+  nativeint left, right;
+
+  if (matches(vm, res, val, capture(left))) {
+    int commitResult = space->commit(vm, left);
+    if (commitResult < 0)
+      return raise(vm, u"spaceAltRange", self, left, -commitResult);
+
+    return BuiltinResult::proceed();
+  } else if (matchesSharp(vm, res, val, capture(left), capture(right))) {
+    return raise(vm, u"notImplemented", u"commitRange");
+  } else {
+    return matchTypeError(vm, res, val, u"int or range");
+  }
+}
+
+BuiltinResult Implementation<ReifiedSpace>::cloneSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  Space* space = getSpace();
+
+  if (!space->isAdmissible(vm))
+    return raise(vm, u"spaceAdmissible");
+
+  RichNode statusVar = *space->getStatusVar();
+  if (statusVar.type()->isTransient())
+    return BuiltinResult::waitFor(vm, statusVar);
+
+  Space* copy = space->clone(vm);
+  result->make<ReifiedSpace>(vm, copy);
+
+  return BuiltinResult::proceed();
+}
+
+//////////////////
+// DeletedSpace //
+//////////////////
+
+#include "DeletedSpace-implem.hh"
+
+DeletedSpaceKind Implementation<DeletedSpace>::build(VM vm, GR gr, Self from) {
+  return from.get().kind();
+}
+
+BuiltinResult Implementation<DeletedSpace>::isSpace(
+  VM vm, UnstableNode* result) {
+  result->make<Boolean>(vm, true);
+  return BuiltinResult::proceed();
+}
+
+BuiltinResult Implementation<DeletedSpace>::askSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  switch (kind()) {
+    case dsFailed: {
+      result->make<Atom>(vm, u"failed");
       return BuiltinResult::proceed();
+    }
 
-    case ssMerged:
-      return raise(vm, u"spaceMerged");
-
-    case ssNormal: {
-      Space* space = getSpace();
-
-      if (!space->isAdmissible(vm))
-        return raise(vm, u"spaceAdmissible");
-
-      if (!space->hasDistributor())
-        return raise(vm, u"spaceNoChoice", self);
-
-      RichNode val = *value;
-      BuiltinResult res = BuiltinResult::proceed();
-      nativeint left, right;
-
-      if (matches(vm, res, val, capture(left))) {
-        int commitResult = space->commit(vm, left);
-        if (commitResult < 0)
-          return raise(vm, u"spaceAltRange", self, left, -commitResult);
-
-        return BuiltinResult::proceed();
-      } else if (matchesSharp(vm, res, val, capture(left), capture(right))) {
-        return raise(vm, u"notImplemented", u"commitRange");
-      } else {
-        return matchTypeError(vm, res, val, u"int or range");
-      }
+    case dsMerged: {
+      result->make<Atom>(vm, u"merged");
+      return BuiltinResult::proceed();
     }
 
     default: {
@@ -302,31 +289,76 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
   }
 }
 
-BuiltinResult Implementation<ReifiedSpace>::cloneSpace(
+BuiltinResult Implementation<DeletedSpace>::askVerboseSpace(
   Self self, VM vm, UnstableNode* result) {
 
-  switch (status()) {
-    case ssFailed:
-      result->make<ReifiedSpace>(vm, ssFailed);
+  switch (kind()) {
+    case dsFailed: {
+      result->make<Atom>(vm, u"failed");
       return BuiltinResult::proceed();
+    }
 
-    case ssMerged:
+    case dsMerged: {
+      result->make<Atom>(vm, u"merged");
+      return BuiltinResult::proceed();
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
+    }
+  }
+}
+
+BuiltinResult Implementation<DeletedSpace>::mergeSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  switch (kind()) {
+    case dsFailed: {
+      return BuiltinResult::failed();
+    }
+
+    case dsMerged: {
       return raise(vm, u"spaceMerged");
+    }
 
-    case ssNormal: {
-      Space* space = getSpace();
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
+    }
+  }
+}
 
-      if (!space->isAdmissible(vm))
-        return raise(vm, u"spaceAdmissible");
+BuiltinResult Implementation<DeletedSpace>::commitSpace(
+  Self self, VM vm, UnstableNode* value) {
 
-      RichNode statusVar = *space->getStatusVar();
-      if (statusVar.type()->isTransient())
-        return BuiltinResult::waitFor(vm, statusVar);
-
-      Space* copy = space->clone(vm);
-      result->make<ReifiedSpace>(vm, copy);
-
+  switch (kind()) {
+    case dsFailed: {
       return BuiltinResult::proceed();
+    }
+
+    case dsMerged: {
+      return raise(vm, u"spaceMerged");
+    }
+
+    default: {
+      assert(false);
+      return BuiltinResult::failed();
+    }
+  }
+}
+
+BuiltinResult Implementation<DeletedSpace>::cloneSpace(
+  Self self, VM vm, UnstableNode* result) {
+
+  switch (kind()) {
+    case dsFailed: {
+      result->make<DeletedSpace>(vm, dsFailed);
+      return BuiltinResult::proceed();
+    }
+
+    case dsMerged: {
+      return raise(vm, u"spaceMerged");
     }
 
     default: {

@@ -40,37 +40,22 @@ class ReifiedSpace;
 #endif
 
 template <>
-class Implementation<ReifiedSpace>: public WithHome {
+class Implementation<ReifiedSpace>: public WithHome, StoredAs<SpaceRef> {
 public:
   typedef SelfType<ReifiedSpace>::Self Self;
-
-  enum Status {
-    ssNormal, ssFailed, ssMerged
-  };
 public:
-  Implementation(VM vm, Space* space):
-    WithHome(vm), _space(space), _status(ssNormal) {}
+  Implementation(SpaceRef space):
+    WithHome(space->getParent()), _space(space) {}
 
-  Implementation(VM vm, Status status):
-    WithHome(vm), _space(nullptr), _status(status) {}
+  static SpaceRef build(VM vm, SpaceRef space) {
+    return space;
+  }
 
   inline
-  Implementation(VM vm, GR gr, Self from);
-
+  static SpaceRef build(VM vm, GR gr, Self from);
+public:
   Space* getSpace() {
     return _space;
-  }
-
-  Status status() {
-    return _status;
-  }
-
-  bool isFailed() {
-    return status() == ssFailed;
-  }
-
-  bool isMerged() {
-    return status() == ssMerged;
   }
 public:
   inline
@@ -92,11 +77,67 @@ public:
   BuiltinResult cloneSpace(Self self, VM vm, UnstableNode* result);
 private:
   SpaceRef _space;
-  Status _status;
 };
 
 #ifndef MOZART_GENERATOR
 #include "ReifiedSpace-implem-decl-after.hh"
+#endif
+
+//////////////////
+// DeletedSpace //
+//////////////////
+
+class DeletedSpace;
+
+enum DeletedSpaceKind {
+  dsFailed, dsMerged
+};
+
+#ifndef MOZART_GENERATOR
+#include "DeletedSpace-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<DeletedSpace>: StoredAs<DeletedSpaceKind> {
+public:
+  typedef SelfType<DeletedSpace>::Self Self;
+public:
+  Implementation(DeletedSpaceKind kind): _kind(kind) {}
+
+  static DeletedSpaceKind build(VM vm, DeletedSpaceKind kind) {
+    return kind;
+  }
+
+  inline
+  static DeletedSpaceKind build(VM vm, GR gr, Self from);
+public:
+  DeletedSpaceKind kind() {
+    return _kind;
+  }
+public:
+  inline
+  BuiltinResult isSpace(VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult askSpace(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult mergeSpace(Self self, VM vm, UnstableNode* result);
+
+  inline
+  BuiltinResult commitSpace(Self self, VM vm, UnstableNode* value);
+
+  inline
+  BuiltinResult cloneSpace(Self self, VM vm, UnstableNode* result);
+private:
+  DeletedSpaceKind _kind;
+};
+
+#ifndef MOZART_GENERATOR
+#include "DeletedSpace-implem-decl-after.hh"
 #endif
 
 }

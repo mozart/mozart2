@@ -260,7 +260,7 @@ struct Interface<ArrayInitializer>:
 
 class SpaceLike;
 template<>
-struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace> {
+struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
   BuiltinResult askSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }

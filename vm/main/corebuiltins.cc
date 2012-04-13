@@ -39,10 +39,10 @@ OpResult equals(VM vm, UnstableNode* args[]) {
   RichNode right = *args[1];
   bool result = false;
 
-  OpResult res = mozart::equals(vm, left, right, &result);
-  if (res.isProceed())
-    args[2]->make<Boolean>(vm, result);
-  return res;
+  MOZART_CHECK_OPRESULT(mozart::equals(vm, left, right, &result));
+
+  args[2]->make<Boolean>(vm, result);
+  return OpResult::proceed();
 }
 
 OpResult notEquals(VM vm, UnstableNode* args[]) {
@@ -50,10 +50,10 @@ OpResult notEquals(VM vm, UnstableNode* args[]) {
   RichNode right = *args[1];
   bool result = false;
 
-  OpResult res = mozart::notEquals(vm, left, right, &result);
-  if (res.isProceed())
-    args[2]->make<Boolean>(vm, result);
-  return res;
+  MOZART_CHECK_OPRESULT(mozart::notEquals(vm, left, right, &result));
+
+  args[2]->make<Boolean>(vm, result);
+  return OpResult::proceed();
 }
 
 //////////////////
@@ -138,9 +138,7 @@ OpResult dot(VM vm, UnstableNode* args[]) {
 OpResult createThread(VM vm, UnstableNode* args[]) {
   RichNode target = *args[0];
 
-  OpResult result = expectCallable(vm, target, 0);
-  if (!result.isProceed())
-    return result;
+  MOZART_CHECK_OPRESULT(expectCallable(vm, target, 0));
 
   new (vm) Thread(vm, vm->getCurrentSpace(), target.getStableRef(vm));
 
@@ -163,9 +161,7 @@ OpResult show(VM vm, UnstableNode* args[]) {
 OpResult newSpace(VM vm, UnstableNode* args[]) {
   RichNode target = *args[0];
 
-  OpResult result = expectCallable(vm, target, 1);
-  if (!result.isProceed())
-    return result;
+  MOZART_CHECK_OPRESULT(expectCallable(vm, target, 1));
 
   Space* currentSpace = vm->getCurrentSpace();
 
@@ -205,11 +201,8 @@ OpResult cloneSpace(VM vm, UnstableNode* args[]) {
 }
 
 OpResult chooseSpace(VM vm, UnstableNode* args[]) {
-  // TODO How come I need 4 lines just to extract an Integer parameter!?
   nativeint alternatives = 0;
-  OpResult res = IntegerValue(*args[0]).intValue(vm, &alternatives);
-  if (!res.isProceed())
-    return res;
+  MOZART_CHECK_OPRESULT(IntegerValue(*args[0]).intValue(vm, &alternatives));
 
   Space* space = vm->getCurrentSpace();
 
@@ -240,11 +233,8 @@ OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  OpResult result = Callable(target).getCallInfo(
-    vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
-
-  if (!result.isProceed())
-    return result;
+  MOZART_CHECK_OPRESULT(Callable(target).getCallInfo(
+    vm, &arity, &body, &start, &Xcount, &Gs, &Ks));
 
   if (arity != expectedArity)
     return raiseIllegalArity(vm, expectedArity, arity);

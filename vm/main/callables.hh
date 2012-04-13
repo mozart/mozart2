@@ -97,12 +97,8 @@ OpResult Implementation<Abstraction>::getCallInfo(
 
   if (!_codeAreaCacheValid) {
     UnstableNode temp(vm, _body);
-    CodeAreaProvider provider = temp;
-    OpResult result = provider.getCodeAreaInfo(
-      vm, &_start, &_Xcount, &_Ks);
-
-    if (!result.isProceed())
-      return result;
+    MOZART_CHECK_OPRESULT(
+      CodeAreaProvider(temp).getCodeAreaInfo(vm, &_start, &_Xcount, &_Ks));
 
     _codeAreaCacheValid = true;
   }

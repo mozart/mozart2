@@ -58,9 +58,9 @@ private:
   friend class WritableSelfType;
 
   template<class T, class... Args>
-  void make(VM vm, Args... args) {
+  void make(VM vm, Args&&... args) {
     typedef Accessor<T, typename Storage<T>::Type> Access;
-    Access::init(type, value, vm, args...);
+    Access::init(type, value, vm, std::forward<Args>(args)...);
   }
 
   inline void reset(VM vm);
@@ -128,8 +128,8 @@ public:
   inline void reinit(VM vm, RichNode from);
 
   template<class T, class... Args>
-  void remake(VM vm, Args... args) {
-    _node->make<T>(vm, args...);
+  void remake(VM vm, Args&&... args) {
+    _node->make<T>(vm, std::forward<Args>(args)...);
   }
 
   NodeBackup makeBackup() {
@@ -187,8 +187,8 @@ public:
   inline void init(VM vm, RichNode from);
 
   template<class T, class... Args>
-  void make(VM vm, Args... args) {
-    node.make<T>(vm, args...);
+  void make(VM vm, Args&&... args) {
+    node.make<T>(vm, std::forward<Args>(args)...);
   }
 
   NodeBackup makeBackup() {
@@ -252,14 +252,14 @@ public:
   inline void reset(VM vm);
 
   template<class T, class... Args>
-  void make(VM vm, Args... args) {
-    node.make<T>(vm, args...);
+  void make(VM vm, Args&&... args) {
+    node.make<T>(vm, std::forward<Args>(args)...);
   }
 
   template<class T, class... Args>
-  static UnstableNode build(VM vm, Args... args) {
+  static UnstableNode build(VM vm, Args&&... args) {
     UnstableNode result;
-    result.make<T>(vm, args...);
+    result.make<T>(vm, std::forward<Args>(args)...);
     return result;
   }
 
@@ -311,8 +311,8 @@ public:
   BaseSelf(RichNode node) : _node(node) {}
 
   template<class U, class... Args>
-  void remake(VM vm, Args... args) {
-    _node.remake<U>(vm, args...);
+  void remake(VM vm, Args&&... args) {
+    _node.remake<U>(vm, std::forward<Args>(args)...);
   }
 
   operator RichNode() {

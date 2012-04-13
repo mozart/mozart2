@@ -75,9 +75,9 @@ template<class T, class U>
 class Accessor {
 public:
   template<class... Args>
-  static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
+  static void init(const Type*& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
-    value.init(vm, Implementation<T>::build(vm, args...));
+    value.init(vm, Implementation<T>::build(vm, std::forward<Args>(args)...));
   }
 
   static Implementation<T> get(MemWord value) {
@@ -91,9 +91,9 @@ public:
   typedef Implementation<T> Impl;
 
   template<class... Args>
-  static void init(const Type*& type, MemWord& value, VM vm, Args... args) {
+  static void init(const Type*& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
-    Impl* val = new (vm) Impl(vm, args...);
+    Impl* val = new (vm) Impl(vm, std::forward<Args>(args)...);
     value.init<Impl*>(vm, val);
   }
 
@@ -109,7 +109,7 @@ public:
 
   template<class... Args>
   static void init(const Type*& type, MemWord& value, VM vm,
-                   size_t elemCount, Args... args) {
+                   size_t elemCount, Args&&... args) {
     // Allocate memory
     void* memory = operator new (sizeof(Impl) + elemCount*sizeof(E), vm);
     ImplWithArray<Impl, E> implWithArray(static_cast<Impl*>(memory));
@@ -120,7 +120,8 @@ public:
 
     // Initialize the impl
     Impl* impl = implWithArray.operator->();
-    new (impl) Impl(vm, elemCount, implWithArray.getArray(elemCount), args...);
+    new (impl) Impl(vm, elemCount, implWithArray.getArray(elemCount),
+                    std::forward<Args>(args)...);
 
     // Fill in output parameters
     type = T::type();

@@ -137,11 +137,11 @@ public:
   }
 
   template <class... Args>
-  void push_back_new(MM mm, Args... args) {
+  void push_back_new(MM mm, Args&&... args) {
     if (last == nullptr) {
-      first = last = newNode_new(mm, nullptr, args...);
+      first = last = newNode_new(mm, nullptr, std::forward<Args>(args)...);
     } else {
-      last->next = newNode_new(mm, nullptr, args...);
+      last->next = newNode_new(mm, nullptr, std::forward<Args>(args)...);
       last = last->next;
     }
   }
@@ -155,11 +155,11 @@ public:
   }
 
   template <class... Args>
-  void push_front_new(MM mm, Args... args) {
+  void push_front_new(MM mm, Args&&... args) {
     if (last == nullptr) {
-      first = last = newNode_new(mm, nullptr, args...);
+      first = last = newNode_new(mm, nullptr, std::forward<Args>(args)...);
     } else {
-      first = newNode_new(mm, first, args...);
+      first = newNode_new(mm, first, std::forward<Args>(args)...);
     }
   }
 
@@ -283,10 +283,10 @@ private:
   }
 
   template <class... Args>
-  ListNode* newNode_new(MM mm, ListNode* next, Args... args) {
+  ListNode* newNode_new(MM mm, ListNode* next, Args&&... args) {
     ListNode* node = mallocNode(mm);
     node->next = next;
-    new (&node->item) T(args...);
+    new (&node->item) T(std::forward<Args>(args)...);
     return node;
   }
 

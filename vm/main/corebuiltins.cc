@@ -34,23 +34,23 @@ namespace builtins {
 // Unification-related //
 /////////////////////////
 
-BuiltinResult equals(VM vm, UnstableNode* args[]) {
+OpResult equals(VM vm, UnstableNode* args[]) {
   RichNode left = *args[0];
   RichNode right = *args[1];
   bool result = false;
 
-  BuiltinResult res = mozart::equals(vm, left, right, &result);
+  OpResult res = mozart::equals(vm, left, right, &result);
   if (res.isProceed())
     args[2]->make<Boolean>(vm, result);
   return res;
 }
 
-BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
+OpResult notEquals(VM vm, UnstableNode* args[]) {
   RichNode left = *args[0];
   RichNode right = *args[1];
   bool result = false;
 
-  BuiltinResult res = mozart::notEquals(vm, left, right, &result);
+  OpResult res = mozart::notEquals(vm, left, right, &result);
   if (res.isProceed())
     args[2]->make<Boolean>(vm, result);
   return res;
@@ -60,55 +60,55 @@ BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
 // Value status //
 //////////////////
 
-BuiltinResult wait(VM vm, UnstableNode* args[]) {
+OpResult wait(VM vm, UnstableNode* args[]) {
   RichNode value = *args[0];
 
   if (value.isTransient())
-    return BuiltinResult::waitFor(vm, value);
+    return OpResult::waitFor(vm, value);
   else
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
 }
 
-BuiltinResult waitOr(VM vm, UnstableNode* args[]) {
+OpResult waitOr(VM vm, UnstableNode* args[]) {
   return RecordLike(*args[0]).waitOr(vm, args[1]);
 }
 
-BuiltinResult isDet(VM vm, UnstableNode* args[]) {
+OpResult isDet(VM vm, UnstableNode* args[]) {
   RichNode value = *args[0];
   args[1]->make<Boolean>(vm, !value.isTransient());
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 ////////////////
 // Arithmetic //
 ////////////////
 
-BuiltinResult add(VM vm, UnstableNode* args[]) {
+OpResult add(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
   return x.add(vm, args[1], args[2]);
 }
 
-BuiltinResult subtract(VM vm, UnstableNode* args[]) {
+OpResult subtract(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
   return x.subtract(vm, args[1], args[2]);
 }
 
-BuiltinResult multiply(VM vm, UnstableNode* args[]) {
+OpResult multiply(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
   return x.multiply(vm, args[1], args[2]);
 }
 
-BuiltinResult divide(VM vm, UnstableNode* args[]) {
+OpResult divide(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
   return x.divide(vm, args[1], args[2]);
 }
 
-BuiltinResult div(VM vm, UnstableNode* args[]) {
+OpResult div(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
   return x.div(vm, args[1], args[2]);
 }
 
-BuiltinResult mod(VM vm, UnstableNode* args[]) {
+OpResult mod(VM vm, UnstableNode* args[]) {
   Numeric x = *args[0];
   return x.mod(vm, args[1], args[2]);
 }
@@ -117,16 +117,16 @@ BuiltinResult mod(VM vm, UnstableNode* args[]) {
 // Records //
 /////////////
 
-BuiltinResult label(VM vm, UnstableNode* args[]) {
+OpResult label(VM vm, UnstableNode* args[]) {
   return RecordLike(*args[0]).label(vm, args[1]);
 }
 
-BuiltinResult width(VM vm, UnstableNode* args[]) {
+OpResult width(VM vm, UnstableNode* args[]) {
   RecordLike x = *args[0];
   return x.width(vm, args[1]);
 }
 
-BuiltinResult dot(VM vm, UnstableNode* args[]) {
+OpResult dot(VM vm, UnstableNode* args[]) {
   RecordLike x = *args[0];
   return x.dot(vm, args[1], args[2]);
 }
@@ -135,37 +135,37 @@ BuiltinResult dot(VM vm, UnstableNode* args[]) {
 // Threads //
 /////////////
 
-BuiltinResult createThread(VM vm, UnstableNode* args[]) {
+OpResult createThread(VM vm, UnstableNode* args[]) {
   RichNode target = *args[0];
 
-  BuiltinResult result = expectCallable(vm, target, 0);
+  OpResult result = expectCallable(vm, target, 0);
   if (!result.isProceed())
     return result;
 
   new (vm) Thread(vm, vm->getCurrentSpace(), target.getStableRef(vm));
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 ///////////////////
 // Miscellaneous //
 ///////////////////
 
-BuiltinResult show(VM vm, UnstableNode* args[]) {
+OpResult show(VM vm, UnstableNode* args[]) {
   RichNode arg = *args[0];
   printReprToStream(vm, arg, std::cout);
   std::cout << std::endl;
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 ////////////
 // Spaces //
 ////////////
 
-BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
+OpResult newSpace(VM vm, UnstableNode* args[]) {
   RichNode target = *args[0];
 
-  BuiltinResult result = expectCallable(vm, target, 1);
+  OpResult result = expectCallable(vm, target, 1);
   if (!result.isProceed())
     return result;
 
@@ -183,33 +183,33 @@ BuiltinResult newSpace(VM vm, UnstableNode* args[]) {
   // Create the reification of the space
   args[1]->make<ReifiedSpace>(vm, space);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult askSpace(VM vm, UnstableNode* args[]) {
+OpResult askSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).askSpace(vm, args[1]);
 }
 
-BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]) {
+OpResult askVerboseSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).askVerboseSpace(vm, args[1]);
 }
 
-BuiltinResult mergeSpace(VM vm, UnstableNode* args[]) {
+OpResult mergeSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).mergeSpace(vm, args[1]);
 }
 
-BuiltinResult commitSpace(VM vm, UnstableNode* args[]) {
+OpResult commitSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).commitSpace(vm, args[1]);
 }
 
-BuiltinResult cloneSpace(VM vm, UnstableNode* args[]) {
+OpResult cloneSpace(VM vm, UnstableNode* args[]) {
   return SpaceLike(*args[0]).cloneSpace(vm, args[1]);
 }
 
-BuiltinResult chooseSpace(VM vm, UnstableNode* args[]) {
+OpResult chooseSpace(VM vm, UnstableNode* args[]) {
   // TODO How come I need 4 lines just to extract an Integer parameter!?
   nativeint alternatives = 0;
-  BuiltinResult res = IntegerValue(*args[0]).intValue(vm, &alternatives);
+  OpResult res = IntegerValue(*args[0]).intValue(vm, &alternatives);
   if (!res.isProceed())
     return res;
 
@@ -227,14 +227,14 @@ BuiltinResult chooseSpace(VM vm, UnstableNode* args[]) {
     args[1]->copy(vm, *distributor->getVar());
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 ///////////
 // Utils //
 ///////////
 
-BuiltinResult expectCallable(VM vm, RichNode target, int expectedArity) {
+OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
   int arity = 0;
   StableNode* body;
   ProgramCounter start;
@@ -242,7 +242,7 @@ BuiltinResult expectCallable(VM vm, RichNode target, int expectedArity) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  BuiltinResult result = Callable(target).getCallInfo(
+  OpResult result = Callable(target).getCallInfo(
     vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
 
   if (!result.isProceed())
@@ -251,7 +251,7 @@ BuiltinResult expectCallable(VM vm, RichNode target, int expectedArity) {
   if (arity != expectedArity)
     return raiseIllegalArity(vm, expectedArity, arity);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 void printReprToStream(VM vm, RichNode arg,

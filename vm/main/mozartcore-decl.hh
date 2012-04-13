@@ -28,6 +28,7 @@
 #include "core-forward-decl.hh"
 
 #include "store-decl.hh"
+#include "opresult-decl.hh"
 #include "type-decl.hh"
 #include "runnable-decl.hh"
 #include "threadpool-decl.hh"

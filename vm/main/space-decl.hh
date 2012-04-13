@@ -28,6 +28,7 @@
 #include "core-forward-decl.hh"
 
 #include "store-decl.hh"
+#include "opresult-decl.hh"
 #include "vmallocatedlist-decl.hh"
 
 namespace mozart {
@@ -161,7 +162,7 @@ public:
   void fail(VM vm);
 
   inline
-  BuiltinResult merge(VM vm, Space* destSpace);
+  OpResult merge(VM vm, Space* destSpace);
 
   inline
   nativeint commit(VM vm, nativeint value);

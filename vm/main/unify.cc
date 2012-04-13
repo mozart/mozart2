@@ -46,10 +46,10 @@ public:
 public:
   StructuralDualWalk(VM vm, Kind kind) : vm(vm), kind(kind) {}
 
-  BuiltinResult run(RichNode left, RichNode right);
+  OpResult run(RichNode left, RichNode right);
 private:
   inline
-  BuiltinResult processPair(VM vm, RichNode left, RichNode right);
+  OpResult processPair(VM vm, RichNode left, RichNode right);
 
   inline
   void rebind(VM vm, RichNode left, RichNode right);
@@ -69,25 +69,24 @@ private:
 // Entry point //
 /////////////////
 
-BuiltinResult fullUnify(VM vm, RichNode left, RichNode right) {
+OpResult fullUnify(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkUnify);
   return walk.run(left, right);
 }
 
-BuiltinResult fullEquals(VM vm, RichNode left, RichNode right,
-                         bool* result) {
+OpResult fullEquals(VM vm, RichNode left, RichNode right, bool* result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkEquals);
-  BuiltinResult res = walk.run(left, right);
+  OpResult res = walk.run(left, right);
 
-  switch (res.status()) {
-    case BuiltinResult::brProceed: {
+  switch (res.kind()) {
+    case OpResult::orProceed: {
       *result = true;
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
-    case BuiltinResult::brFail: {
+    case OpResult::orFail: {
       *result = false;
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     default: {
@@ -100,31 +99,31 @@ BuiltinResult fullEquals(VM vm, RichNode left, RichNode right,
 // The real thing //
 ////////////////////
 
-BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
+OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
   VM vm = this->vm;
 
   UnstableNode unstableLeft, unstableRight;
 
   while (true) {
     // Process the pair
-    BuiltinResult pairResult = processPair(vm, left, right);
+    OpResult pairResult = processPair(vm, left, right);
 
-    switch (pairResult.status()) {
-      case BuiltinResult::brFail:
-      case BuiltinResult::brRaise: {
+    switch (pairResult.kind()) {
+      case OpResult::orFail:
+      case OpResult::orRaise: {
         stack.clear(vm);
         suspendTrail.clear(vm);
         undoBindings(vm);
         return pairResult;
       }
 
-      case BuiltinResult::brWaitBefore: {
+      case OpResult::orWaitBefore: {
         suspendTrail.push_back_new(vm, left.getStableRef(vm),
                                    right.getStableRef(vm));
         break;
       }
 
-      case BuiltinResult::brProceed: {
+      case OpResult::orProceed: {
         // nothing to do
       }
     }
@@ -206,7 +205,7 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
 
     // TODO Replace initial operands by unstableLeft and unstableRight
 
-    return BuiltinResult::waitFor(vm, controlVar);
+    return OpResult::waitFor(vm, controlVar);
   }
 
   /* No need to undo temporary bindings here, even if we are in wkEquals mode.
@@ -219,14 +218,14 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
   if (!vm->isOnTopLevel())
     undoBindings(vm);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult StructuralDualWalk::processPair(VM vm, RichNode left,
-                                              RichNode right) {
+OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
+                                         RichNode right) {
   // Identical nodes
   if (left.isSameNode(right))
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
 
   const Type* leftType = left.type();
   const Type* rightType = right.type();
@@ -256,10 +255,10 @@ BuiltinResult StructuralDualWalk::processPair(VM vm, RichNode left,
     case wkEquals: {
       if (leftBehavior == sbVariable) {
         assert(leftType->isTransient());
-        return BuiltinResult::waitFor(vm, left);
+        return OpResult::waitFor(vm, left);
       } else if (rightBehavior == sbVariable) {
         assert(rightType->isTransient());
-        return BuiltinResult::waitFor(vm, right);
+        return OpResult::waitFor(vm, right);
       }
 
       break;
@@ -268,38 +267,38 @@ BuiltinResult StructuralDualWalk::processPair(VM vm, RichNode left,
 
   // If we reach this, both left and right are non-var
   if (leftType != rightType)
-    return BuiltinResult::fail();
+    return OpResult::fail();
 
   switch (leftBehavior) {
     case sbValue: {
       bool success = ValueEquatable(left).equals(vm, right);
-      return success ? BuiltinResult::proceed() : BuiltinResult::fail();
+      return success ? OpResult::proceed() : OpResult::fail();
     }
 
     case sbStructural: {
       bool success = StructuralEquatable(left).equals(vm, right, stack);
       if (success) {
         rebind(vm, left, right);
-        return BuiltinResult::proceed();
+        return OpResult::proceed();
       } else {
-        return BuiltinResult::fail();
+        return OpResult::fail();
       }
     }
 
     case sbTokenEq: {
       assert(!left.isSameNode(right)); // this was tested earlier
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
 
     case sbVariable: {
       assert(false);
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
   }
 
   // We should not reach this point
   assert(false);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 void StructuralDualWalk::rebind(VM vm, RichNode left, RichNode right) {

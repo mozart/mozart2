@@ -22,23 +22,73 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EXCHELPERS_DECL_H
-#define __EXCHELPERS_DECL_H
+#ifndef __OPRESULT_DECL_H
+#define __OPRESULT_DECL_H
 
-#include "mozartcore-decl.hh"
+#include "core-forward-decl.hh"
+#include "store-decl.hh"
 
 namespace mozart {
 
-template <class LT, class... Args>
-inline
-OpResult raise(VM vm, LT&& label, Args&&... args);
+//////////////
+// OpResult //
+//////////////
 
-inline
-OpResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual);
+/**
+ * Result of an operation acting on Oz values.
+ */
+struct OpResult {
+public:
+  enum Kind {
+    orProceed,    // Proceed, aka success
+    orFail,       // Fail, aka failure
+    orWaitBefore, // Need an unbound variable, I want you to wait on that one
+    orRaise,      // Raise an exception
+  };
+public:
+  static OpResult proceed() {
+    return OpResult(orProceed);
+  }
 
-inline
-OpResult raiseIllegalArity(VM vm, int expected, int actual);
+  static OpResult fail() {
+    return OpResult(orFail);
+  }
+
+  static OpResult waitFor(VM vm, RichNode node) {
+    return OpResult(orWaitBefore, node.getStableRef(vm));
+  }
+
+  static OpResult raise(VM vm, RichNode node) {
+    return OpResult(orRaise, node.getStableRef(vm));
+  }
+
+  bool isProceed() {
+    return _kind == orProceed;
+  }
+
+  Kind kind() {
+    return _kind;
+  }
+
+  /** If kind() == orWaitBefore, the node that must be waited upon */
+  StableNode* getWaiteeNode() {
+    assert(kind() == orWaitBefore);
+    return _node;
+  }
+
+  /** If kind() == orRaise, the node containing the exception to raise */
+  StableNode* getExceptionNode() {
+    assert(kind() == orRaise);
+    return _node;
+  }
+private:
+  OpResult(Kind kind): _kind(kind) {}
+  OpResult(Kind kind, StableNode* node): _kind(kind), _node(node) {}
+
+  Kind _kind;
+  StableNode* _node;
+};
 
 }
 
-#endif // __EXCHELPERS_DECL_H
+#endif // __OPRESULT_DECL_H

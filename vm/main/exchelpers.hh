@@ -30,17 +30,17 @@
 namespace mozart {
 
 template <class LT, class... Args>
-BuiltinResult raise(VM vm, LT&& label, Args&&... args) {
+OpResult raise(VM vm, LT&& label, Args&&... args) {
   UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
                                       std::forward<Args>(args)...);
-  return BuiltinResult::raise(vm, exception);
+  return OpResult::raise(vm, exception);
 }
 
-BuiltinResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
+OpResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
   return raise(vm, u"typeError", expected, actual);
 }
 
-BuiltinResult raiseIllegalArity(VM vm, int expected, int actual) {
+OpResult raiseIllegalArity(VM vm, int expected, int actual) {
   return raise(vm, u"illegalArity", expected, actual);
 }
 

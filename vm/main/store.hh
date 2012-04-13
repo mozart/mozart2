@@ -210,26 +210,6 @@ StableNode* RichNode::destOf(Node* node) {
   return Access::get(node->value).dest();
 }
 
-///////////////////
-// BuiltinResult //
-///////////////////
-
-BuiltinResult BuiltinResult::proceed() {
-  return BuiltinResult(nullptr, brProceed);
-}
-
-BuiltinResult BuiltinResult::fail() {
-  return BuiltinResult(nullptr, brFail);
-}
-
-BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {
-  return BuiltinResult(node.getStableRef(vm), brWaitBefore);
-}
-
-BuiltinResult BuiltinResult::raise(VM vm, RichNode node) {
-  return BuiltinResult(node.getStableRef(vm), brRaise);
-}
-
 }
 
 #endif // MOZART_GENERATOR

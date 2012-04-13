@@ -59,7 +59,7 @@ public:
   void addToSuspendList(Self self, VM vm, RichNode variable);
 
   inline
-  BuiltinResult bind(Self self, VM vm, RichNode src);
+  OpResult bind(Self self, VM vm, RichNode src);
 
   inline
   void transferPendings(VM vm, VMAllocatedList<Runnable*>& srcThreads,
@@ -72,7 +72,7 @@ public:
 private:
   // TODO Might a good candidate for noinline
   inline
-  BuiltinResult bindSubSpace(Self self, VM vm, RichNode src);
+  OpResult bindSubSpace(Self self, VM vm, RichNode src);
 
   inline
   void resumePendings(VM vm);
@@ -124,7 +124,7 @@ public:
   void addToSuspendList(Self self, VM vm, RichNode variable);
 
   inline
-  BuiltinResult bind(Self self, VM vm, RichNode src);
+  OpResult bind(Self self, VM vm, RichNode src);
 };
 
 #ifndef MOZART_GENERATOR

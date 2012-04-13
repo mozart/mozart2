@@ -59,22 +59,22 @@ public:
   }
 public:
   inline
-  BuiltinResult isSpace(VM vm, UnstableNode* result);
+  OpResult isSpace(VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult askSpace(Self self, VM vm, UnstableNode* result);
+  OpResult askSpace(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
+  OpResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult mergeSpace(Self self, VM vm, UnstableNode* result);
+  OpResult mergeSpace(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult commitSpace(Self self, VM vm, UnstableNode* value);
+  OpResult commitSpace(Self self, VM vm, UnstableNode* value);
 
   inline
-  BuiltinResult cloneSpace(Self self, VM vm, UnstableNode* result);
+  OpResult cloneSpace(Self self, VM vm, UnstableNode* result);
 private:
   SpaceRef _space;
 };
@@ -116,22 +116,22 @@ public:
   }
 public:
   inline
-  BuiltinResult isSpace(VM vm, UnstableNode* result);
+  OpResult isSpace(VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult askSpace(Self self, VM vm, UnstableNode* result);
+  OpResult askSpace(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
+  OpResult askVerboseSpace(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult mergeSpace(Self self, VM vm, UnstableNode* result);
+  OpResult mergeSpace(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult commitSpace(Self self, VM vm, UnstableNode* value);
+  OpResult commitSpace(Self self, VM vm, UnstableNode* value);
 
   inline
-  BuiltinResult cloneSpace(Self self, VM vm, UnstableNode* result);
+  OpResult cloneSpace(Self self, VM vm, UnstableNode* result);
 private:
   DeletedSpaceKind _kind;
 };

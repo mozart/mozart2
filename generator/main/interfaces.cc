@@ -120,9 +120,9 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
     }
 
     // Auto-wait handling
-    if (autoWait && (typeToString(m->getResultType()) == "BuiltinResult")) {
+    if (autoWait && (typeToString(m->getResultType()) == "OpResult")) {
       to << "if (_self.isTransient()) {\n";
-      to << "      return BuiltinResult::waitFor(vm, _self);\n";
+      to << "      return OpResult::waitFor(vm, _self);\n";
       to << "    } else ";
     }
 

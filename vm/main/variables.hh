@@ -59,7 +59,7 @@ void Implementation<Variable>::addToSuspendList(Self self, VM vm,
   pendingVariables.push_back(vm, variable.getStableRef(vm));
 }
 
-BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
+OpResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   if (vm->isOnTopLevel()) {
     // The simple, fast binding when on top-level
     RichNode(self).reinit(vm, src);
@@ -76,15 +76,15 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
       resumePendings(vm);
     }
 
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   } else {
     // The complicated, slow binding when in a subspace
     return bindSubSpace(self, vm, src);
   }
 }
 
-BuiltinResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
-                                                     RichNode src) {
+OpResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
+                                                RichNode src) {
   Space* currentSpace = vm->getCurrentSpace();
 
   // Is it a speculative binding?
@@ -110,7 +110,7 @@ BuiltinResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
     resumePendingsSubSpace(vm, currentSpace);
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 void Implementation<Variable>::transferPendings(
@@ -235,7 +235,7 @@ void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
   DataflowVariable(self).addToSuspendList(vm, variable);
 }
 
-BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
+OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
   // Is it a speculative binding?
   Space* currentSpace = vm->getCurrentSpace();
   if (home() != currentSpace) {
@@ -246,7 +246,7 @@ BuiltinResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
   // Actual binding
   RichNode(self).reinit(vm, src);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 }

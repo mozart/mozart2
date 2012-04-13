@@ -35,65 +35,65 @@ namespace builtins {
 // Unification-related //
 /////////////////////////
 
-BuiltinResult equals(VM vm, UnstableNode* args[]);
-BuiltinResult notEquals(VM vm, UnstableNode* args[]);
+OpResult equals(VM vm, UnstableNode* args[]);
+OpResult notEquals(VM vm, UnstableNode* args[]);
 
 //////////////////
 // Value status //
 //////////////////
 
-BuiltinResult wait(VM vm, UnstableNode* args[]);
-BuiltinResult waitOr(VM vm, UnstableNode* args[]);
-BuiltinResult isDet(VM vm, UnstableNode* args[]);
+OpResult wait(VM vm, UnstableNode* args[]);
+OpResult waitOr(VM vm, UnstableNode* args[]);
+OpResult isDet(VM vm, UnstableNode* args[]);
 
 ////////////////
 // Arithmetic //
 ////////////////
 
-BuiltinResult add(VM vm, UnstableNode* args[]);
-BuiltinResult subtract(VM vm, UnstableNode* args[]);
-BuiltinResult multiply(VM vm, UnstableNode* args[]);
-BuiltinResult divide(VM vm, UnstableNode* args[]);
-BuiltinResult div(VM vm, UnstableNode* args[]);
-BuiltinResult mod(VM vm, UnstableNode* args[]);
+OpResult add(VM vm, UnstableNode* args[]);
+OpResult subtract(VM vm, UnstableNode* args[]);
+OpResult multiply(VM vm, UnstableNode* args[]);
+OpResult divide(VM vm, UnstableNode* args[]);
+OpResult div(VM vm, UnstableNode* args[]);
+OpResult mod(VM vm, UnstableNode* args[]);
 
 /////////////
 // Records //
 /////////////
 
-BuiltinResult label(VM vm, UnstableNode* args[]);
-BuiltinResult width(VM vm, UnstableNode* args[]);
-BuiltinResult dot(VM vm, UnstableNode* args[]);
+OpResult label(VM vm, UnstableNode* args[]);
+OpResult width(VM vm, UnstableNode* args[]);
+OpResult dot(VM vm, UnstableNode* args[]);
 
 /////////////
 // Threads //
 /////////////
 
-BuiltinResult createThread(VM vm, UnstableNode* args[]);
+OpResult createThread(VM vm, UnstableNode* args[]);
 
 ///////////////////
 // Miscellaneous //
 ///////////////////
 
-BuiltinResult show(VM vm, UnstableNode* args[]);
+OpResult show(VM vm, UnstableNode* args[]);
 
 ////////////
 // Spaces //
 ////////////
 
-BuiltinResult newSpace(VM vm, UnstableNode* args[]);
-BuiltinResult askSpace(VM vm, UnstableNode* args[]);
-BuiltinResult askVerboseSpace(VM vm, UnstableNode* args[]);
-BuiltinResult mergeSpace(VM vm, UnstableNode* args[]);
-BuiltinResult commitSpace(VM vm, UnstableNode* args[]);
-BuiltinResult cloneSpace(VM vm, UnstableNode* args[]);
-BuiltinResult chooseSpace(VM vm, UnstableNode* args[]);
+OpResult newSpace(VM vm, UnstableNode* args[]);
+OpResult askSpace(VM vm, UnstableNode* args[]);
+OpResult askVerboseSpace(VM vm, UnstableNode* args[]);
+OpResult mergeSpace(VM vm, UnstableNode* args[]);
+OpResult commitSpace(VM vm, UnstableNode* args[]);
+OpResult cloneSpace(VM vm, UnstableNode* args[]);
+OpResult chooseSpace(VM vm, UnstableNode* args[]);
 
 ///////////
 // Utils //
 ///////////
 
-BuiltinResult expectCallable(VM vm, RichNode target, int expectedArity);
+OpResult expectCallable(VM vm, RichNode target, int expectedArity);
 
 void printReprToStream(VM vm, RichNode node,
                        std::ostream& out, int depth = 10);

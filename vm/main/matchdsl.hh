@@ -49,10 +49,10 @@
  *
  * In C++:
  *
- *   BuiltinResult doSomething(VM vm, RichNode value) {
+ *   OpResult doSomething(VM vm, RichNode value) {
  *     using namespace mozart::patternmatching;
  *
- *     BuiltinResult result = BuiltinResult::proceed(); // important!
+ *     OpResult result = OpResult::proceed(); // important!
  *     UnstableNode X, Y;
  *
  *     if (matchesTuple(vm, result, value, u"#",
@@ -70,7 +70,7 @@
  *       return result;
  *     }
  *
- *     return BuiltinResult::proceed();
+ *     return OpResult::proceed();
  *   }
  *
  * The first match can be rewritten with matchesSharp():
@@ -105,10 +105,10 @@
  *
  * The whole example thus looks like this:
  *
- *   BuiltinResult doSomething(VM vm, RichNode value) {
+ *   OpResult doSomething(VM vm, RichNode value) {
  *     using namespace mozart::patternmatching;
  *
- *     BuiltinResult result = BuiltinResult::proceed(); // important!
+ *     OpResult result = OpResult::proceed(); // important!
  *     UnstableNode X, Y;
  *     nativeint intValue;
  *
@@ -121,7 +121,7 @@
  *       return matchTypeError(vm, result, value, u"int or 42-pair");
  *     }
  *
- *     return BuiltinResult::proceed();
+ *     return OpResult::proceed();
  *   }
  *
  *
@@ -166,7 +166,7 @@
  * Upon a failed match, `result` is untouched, and false is returned.
  *
  * Upon an undecidable match (e.g., because of an unbound value), `result` is
- * set to the appropriate BuiltinResult (e.g., a waitFor()), and false is
+ * set to the appropriate OpResult (e.g., a waitFor()), and false is
  * returned.
  *
  * Moreover, if, on entry, result.isProceed() is false, then the match
@@ -218,9 +218,9 @@ struct PrimitiveCapturePattern {
  * Wait for a value if it is a transient
  */
 inline
-void waitForIfTransient(VM vm, BuiltinResult& result, RichNode value) {
+void waitForIfTransient(VM vm, OpResult& result, RichNode value) {
   if (value.isTransient())
-    result = BuiltinResult::waitFor(vm, value);
+    result = OpResult::waitFor(vm, value);
 }
 
 /**
@@ -230,7 +230,7 @@ void waitForIfTransient(VM vm, BuiltinResult& result, RichNode value) {
  */
 template <class T>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value, T pattern) {
+bool matchesSimple(VM vm, OpResult& result, RichNode value, T pattern) {
   static_assert(internal::LateStaticAssert<T>::value,
                 "Invalid type of pattern");
   return false;
@@ -241,7 +241,7 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value, T pattern) {
  */
 template <class T>
 inline
-bool matchesStable(VM vm, BuiltinResult& result, StableNode* value, T pattern) {
+bool matchesStable(VM vm, OpResult& result, StableNode* value, T pattern) {
   UnstableNode temp(vm, *value);
   return matchesSimple(vm, result, RichNode(temp), pattern);
 }
@@ -249,7 +249,7 @@ bool matchesStable(VM vm, BuiltinResult& result, StableNode* value, T pattern) {
 /** Base case of the below */
 template <size_t i, class T>
 inline
-bool matchesElementsAgainstPatternList(VM vm, BuiltinResult& result,
+bool matchesElementsAgainstPatternList(VM vm, OpResult& result,
                                        TypedRichNode<T> aggregate) {
   return result.isProceed();
 }
@@ -263,7 +263,7 @@ bool matchesElementsAgainstPatternList(VM vm, BuiltinResult& result,
 template <size_t i, class T, class U, class... Rest>
 inline
 bool matchesElementsAgainstPatternList(
-  VM vm, BuiltinResult& result, TypedRichNode<T> aggregate,
+  VM vm, OpResult& result, TypedRichNode<T> aggregate,
   U ithPattern, Rest... restPatterns) {
 
   if (!matchesStable(vm, result, aggregate.getElement(i), ithPattern))
@@ -277,8 +277,7 @@ bool matchesElementsAgainstPatternList(
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
-                   nativeint pattern) {
+bool matchesSimple(VM vm, OpResult& result, RichNode value, nativeint pattern) {
   bool res = false;
   result = IntegerValue(value).equalsInteger(vm, pattern, &res);
   return result.isProceed() && res;
@@ -286,22 +285,20 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
-                   size_t pattern) {
+bool matchesSimple(VM vm, OpResult& result, RichNode value, size_t pattern) {
   return matchesSimple(vm, result, value, (nativeint) pattern);
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    ::mozart::internal::intIfDifferentFromNativeInt pattern) {
   return matchesSimple(vm, result, value, (nativeint) pattern);
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
-                   bool pattern) {
+bool matchesSimple(VM vm, OpResult& result, RichNode value, bool pattern) {
   BoolOrNotBool boolValue = bNotBool;
   result = BooleanValue(value).valueOrNotBool(vm, &boolValue);
   return result.isProceed() && (boolValue == (pattern ? bTrue : bFalse));
@@ -309,9 +306,9 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    const char16_t* pattern) {
-  if (value.type() != Atom::type()) {
+  if (!value.is<Atom>()) {
     internal::waitForIfTransient(vm, result, value);
     return false;
   }
@@ -325,8 +322,7 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
-                   RichNode pattern) {
+bool matchesSimple(VM vm, OpResult& result, RichNode value, RichNode pattern) {
   bool res = false;
   result = equals(vm, value, pattern, &res);
   return result.isProceed() && res;
@@ -334,7 +330,7 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <class T>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    WildcardPattern<T> pattern) {
   if (value.is<T>()) {
     return true;
@@ -346,14 +342,14 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    WildcardPattern<AnyType> pattern) {
   return true;
 }
 
 template <class T>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    CapturePattern<T> pattern) {
   if (value.is<T>()) {
     pattern.node.copy(vm, value);
@@ -366,7 +362,7 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    CapturePattern<AnyType> pattern) {
   pattern.node.copy(vm, value);
   return true;
@@ -374,7 +370,7 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    PrimitiveCapturePattern<nativeint> pattern) {
   if (value.is<SmallInt>()) {
     pattern.value = value.as<SmallInt>().value();
@@ -387,7 +383,7 @@ bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    PrimitiveCapturePattern<bool> pattern) {
   if (value.is<Boolean>()) {
     pattern.value = value.as<Boolean>().value();
@@ -443,7 +439,7 @@ internal::PrimitiveCapturePattern<T> capture(T& value) {
  */
 template <class T>
 inline
-bool matches(VM vm, BuiltinResult& result, RichNode value, T pattern) {
+bool matches(VM vm, OpResult& result, RichNode value, T pattern) {
   return result.isProceed() &&
     internal::matchesSimple(vm, result, value, pattern);
 }
@@ -454,7 +450,7 @@ bool matches(VM vm, BuiltinResult& result, RichNode value, T pattern) {
  */
 template <class LT, class... Args>
 inline
-bool matchesTuple(VM vm, BuiltinResult& result, RichNode value,
+bool matchesTuple(VM vm, OpResult& result, RichNode value,
                   LT labelPat, Args... fieldsPats) {
   if (!result.isProceed())
     return false;
@@ -482,7 +478,7 @@ bool matchesTuple(VM vm, BuiltinResult& result, RichNode value,
  */
 template <class HT, class TT>
 inline
-bool matchesCons(VM vm, BuiltinResult& result, RichNode value,
+bool matchesCons(VM vm, OpResult& result, RichNode value,
                  HT head, TT tail) {
   return matchesTuple(vm, result, value, u"|", head, tail);
 }
@@ -493,7 +489,7 @@ bool matchesCons(VM vm, BuiltinResult& result, RichNode value,
  */
 template <class... Args>
 inline
-bool matchesSharp(VM vm, BuiltinResult& result, RichNode value,
+bool matchesSharp(VM vm, OpResult& result, RichNode value,
                   Args... fieldsPats) {
   return matchesTuple(vm, result, value, u"#", fieldsPats...);
 }
@@ -503,8 +499,8 @@ bool matchesSharp(VM vm, BuiltinResult& result, RichNode value,
  * See comments at the beginning of the file for usage.
  */
 inline
-BuiltinResult matchTypeError(VM vm, BuiltinResult& result, RichNode value,
-                             const char16_t* expected) {
+OpResult matchTypeError(VM vm, OpResult& result, RichNode value,
+                        const char16_t* expected) {
   if (result.isProceed())
     return raiseTypeError(vm, expected, value);
   else

@@ -45,102 +45,102 @@ bool Implementation<Float>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-BuiltinResult Implementation<Float>::equalsFloat(Self self, VM vm,
-                                                 double right,
-                                                 bool* result) {
+OpResult Implementation<Float>::equalsFloat(Self self, VM vm,
+                                            double right,
+                                            bool* result) {
   *result = value() == right;
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Float>::add(Self self, VM vm,
-                                         UnstableNode* right,
-                                         UnstableNode* result) {
+OpResult Implementation<Float>::add(Self self, VM vm,
+                                    UnstableNode* right,
+                                    UnstableNode* result) {
   double rightFloatValue = 0.0;
 
-  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
+  OpResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
   return addValue(self, vm, rightFloatValue, result);
 }
 
-BuiltinResult Implementation<Float>::addValue(Self self, VM vm,
-                                              double b,
-                                              UnstableNode* result) {
+OpResult Implementation<Float>::addValue(Self self, VM vm,
+                                         double b,
+                                         UnstableNode* result) {
   result->make<Float>(vm, value() + b);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Float>::subtract(Self self, VM vm,
-                                              UnstableNode* right,
-                                              UnstableNode* result) {
+OpResult Implementation<Float>::subtract(Self self, VM vm,
+                                         UnstableNode* right,
+                                         UnstableNode* result) {
   double rightFloatValue = 0.0;
 
-  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
+  OpResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
   return subtractValue(self, vm, rightFloatValue, result);
 }
 
-BuiltinResult Implementation<Float>::subtractValue(Self self, VM vm,
-                                                   double b,
-                                                   UnstableNode* result) {
+OpResult Implementation<Float>::subtractValue(Self self, VM vm,
+                                              double b,
+                                              UnstableNode* result) {
   result->make<Float>(vm, value() - b);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Float>::multiply(Self self, VM vm,
-                                              UnstableNode* right,
-                                              UnstableNode* result) {
+OpResult Implementation<Float>::multiply(Self self, VM vm,
+                                         UnstableNode* right,
+                                         UnstableNode* result) {
   double rightFloatValue = 0.0;
 
-  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
+  OpResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
   return multiplyValue(self, vm, rightFloatValue, result);
 }
 
-BuiltinResult Implementation<Float>::multiplyValue(Self self, VM vm,
-                                                   double b,
-                                                   UnstableNode* result) {
+OpResult Implementation<Float>::multiplyValue(Self self, VM vm,
+                                              double b,
+                                              UnstableNode* result) {
   result->make<Float>(vm, value() * b);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Float>::divide(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
+OpResult Implementation<Float>::divide(Self self, VM vm,
+                                       UnstableNode* right,
+                                       UnstableNode* result) {
   double rightFloatValue = 0.0;
 
-  BuiltinResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
+  OpResult res = FloatValue(*right).floatValue(vm, &rightFloatValue);
   if (!res.isProceed())
     return res;
 
   return divideValue(self, vm, rightFloatValue, result);
 }
 
-BuiltinResult Implementation<Float>::divideValue(Self self, VM vm,
-                                                 double b,
-                                                 UnstableNode* result) {
+OpResult Implementation<Float>::divideValue(Self self, VM vm,
+                                            double b,
+                                            UnstableNode* result) {
   result->make<Float>(vm, value() / b);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Float>::div(Self self, VM vm,
-                                         UnstableNode* right,
-                                         UnstableNode* result) {
+OpResult Implementation<Float>::div(Self self, VM vm,
+                                    UnstableNode* right,
+                                    UnstableNode* result) {
   return raiseTypeError(vm, u"Integer", self);
 }
 
-BuiltinResult Implementation<Float>::mod(Self self, VM vm,
-                                         UnstableNode* right,
-                                         UnstableNode* result) {
+OpResult Implementation<Float>::mod(Self self, VM vm,
+                                    UnstableNode* right,
+                                    UnstableNode* result) {
   return raiseTypeError(vm, u"Integer", self);
 }
 

@@ -216,10 +216,10 @@ private:
   union {
     Node node;
 
-    // Garbage collector hack
+    // Graph replicator hack
     struct {
-      StableNode* gcNext;
-      StableNode* gcFrom;
+      StableNode* grNext;
+      StableNode* grFrom;
     };
   };
 };
@@ -293,10 +293,10 @@ private:
   union {
     Node node;
 
-    // Garbage collector hack
+    // Graph replicator hack
     struct {
-      UnstableNode* gcNext;
-      UnstableNode* gcFrom;
+      UnstableNode* grNext;
+      UnstableNode* grFrom;
     };
   };
 };

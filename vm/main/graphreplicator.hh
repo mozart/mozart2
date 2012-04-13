@@ -76,14 +76,14 @@ void GraphReplicator::copyThread(Runnable*& to, Runnable* from) {
 }
 
 void GraphReplicator::copyStableNode(StableNode& to, StableNode& from) {
-  to.gcNext = todos.stableNodes;
-  to.gcFrom = &from;
+  to.grNext = todos.stableNodes;
+  to.grFrom = &from;
   todos.stableNodes = &to;
 }
 
 void GraphReplicator::copyUnstableNode(UnstableNode& to, UnstableNode& from) {
-  to.gcNext = todos.unstableNodes;
-  to.gcFrom = &from;
+  to.grNext = todos.unstableNodes;
+  to.grFrom = &from;
   todos.unstableNodes = &to;
 }
 
@@ -123,9 +123,9 @@ void GraphReplicator::processThreadInternal(Runnable*& thread) {
 template <class Self, class NodeType, class GCedType>
 void GraphReplicator::processNodeInternal(NodeType*& list) {
   NodeType* to = list;
-  list = to->gcNext;
+  list = to->grNext;
 
-  UnstableNode temp(vm, *to->gcFrom);
+  UnstableNode temp(vm, *to->grFrom);
   RichNode from = temp;
 
   static_cast<Self*>(this)->template processNode<NodeType, GCedType>(to, from);

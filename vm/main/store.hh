@@ -112,6 +112,10 @@ RichNode::RichNode(UnstableNode& origin) :
   _node(dereference(&origin.node)), _origin(&origin) {
 }
 
+bool RichNode::isTransient() {
+  return type()->isTransient();
+}
+
 StableNode* RichNode::getStableRef(VM vm) {
   return getStableRefFor(vm, *_origin);
 }

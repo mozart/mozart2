@@ -124,7 +124,7 @@ BuiltinResult Implementation<Tuple>::waitOr(Self self, VM vm,
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < _width; i++) {
     UnstableNode field(vm, self[i]);
-    if (!RichNode(field).type()->isTransient()) {
+    if (!RichNode(field).isTransient()) {
       result->make<SmallInt>(vm, i+1);
       return BuiltinResult::proceed();
     }

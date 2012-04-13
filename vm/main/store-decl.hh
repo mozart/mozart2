@@ -104,13 +104,21 @@ public:
     return _node->type;
   }
 
+  inline
+  bool isTransient();
+
   UnstableNode& origin() {
     return *_origin;
   }
 
   template <class T>
+  bool is() {
+    return type() == T::type();
+  }
+
+  template <class T>
   TypedRichNode<T> as() {
-    assert(type() == T::type());
+    assert(is<T>());
     return TypedRichNode<T>(*this);
   }
 

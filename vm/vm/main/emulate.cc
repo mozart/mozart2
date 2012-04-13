@@ -676,7 +676,7 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
       break;
     }
 
-    case BuiltinResult::brFailed: {
+    case BuiltinResult::brFail: {
       if (!vm->isOnTopLevel()) {
         vm->getCurrentSpace()->fail(vm);
         preempted = true;

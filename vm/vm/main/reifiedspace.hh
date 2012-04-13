@@ -284,7 +284,7 @@ BuiltinResult Implementation<DeletedSpace>::askSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
   }
 }
@@ -305,7 +305,7 @@ BuiltinResult Implementation<DeletedSpace>::askVerboseSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
   }
 }
@@ -315,7 +315,7 @@ BuiltinResult Implementation<DeletedSpace>::mergeSpace(
 
   switch (kind()) {
     case dsFailed: {
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
 
     case dsMerged: {
@@ -324,7 +324,7 @@ BuiltinResult Implementation<DeletedSpace>::mergeSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
   }
 }
@@ -343,7 +343,7 @@ BuiltinResult Implementation<DeletedSpace>::commitSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
   }
 }
@@ -363,7 +363,7 @@ BuiltinResult Implementation<DeletedSpace>::cloneSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::failed();
+      return BuiltinResult::fail();
     }
   }
 }

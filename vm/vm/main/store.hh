@@ -218,8 +218,8 @@ BuiltinResult BuiltinResult::proceed() {
   return BuiltinResult(nullptr, brProceed);
 }
 
-BuiltinResult BuiltinResult::failed() {
-  return BuiltinResult(nullptr, brFailed);
+BuiltinResult BuiltinResult::fail() {
+  return BuiltinResult(nullptr, brFail);
 }
 
 BuiltinResult BuiltinResult::waitFor(VM vm, RichNode node) {

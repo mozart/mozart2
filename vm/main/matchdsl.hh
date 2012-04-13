@@ -394,6 +394,19 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
   }
 }
 
+template <>
+inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
+                   PrimitiveCapturePattern<double> pattern) {
+  if (value.is<Float>()) {
+    pattern.value = value.as<Float>().value();
+    return true;
+  } else {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+}
+
 } // namespace internal
 
 //////////////////////////

@@ -56,7 +56,7 @@ OpResult Implementation<Float>::add(Self self, VM vm,
                                     UnstableNode* right,
                                     UnstableNode* result) {
   double rightFloatValue = 0.0;
-  MOZART_CHECK_OPRESULT(FloatValue(*right).floatValue(vm, &rightFloatValue));
+  MOZART_GET_ARG(rightFloatValue, *right, u"float");
 
   return addValue(self, vm, rightFloatValue, result);
 }
@@ -73,7 +73,7 @@ OpResult Implementation<Float>::subtract(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   double rightFloatValue = 0.0;
-  MOZART_CHECK_OPRESULT(FloatValue(*right).floatValue(vm, &rightFloatValue));
+  MOZART_GET_ARG(rightFloatValue, *right, u"float");
 
   return subtractValue(self, vm, rightFloatValue, result);
 }
@@ -90,7 +90,7 @@ OpResult Implementation<Float>::multiply(Self self, VM vm,
                                          UnstableNode* right,
                                          UnstableNode* result) {
   double rightFloatValue = 0.0;
-  MOZART_CHECK_OPRESULT(FloatValue(*right).floatValue(vm, &rightFloatValue));
+  MOZART_GET_ARG(rightFloatValue, *right, u"float");
 
   return multiplyValue(self, vm, rightFloatValue, result);
 }
@@ -107,7 +107,7 @@ OpResult Implementation<Float>::divide(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   double rightFloatValue = 0.0;
-  MOZART_CHECK_OPRESULT(FloatValue(*right).floatValue(vm, &rightFloatValue));
+  MOZART_GET_ARG(rightFloatValue, *right, u"float");
 
   return divideValue(self, vm, rightFloatValue, result);
 }

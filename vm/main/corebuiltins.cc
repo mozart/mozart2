@@ -202,7 +202,7 @@ OpResult cloneSpace(VM vm, UnstableNode* args[]) {
 
 OpResult chooseSpace(VM vm, UnstableNode* args[]) {
   nativeint alternatives = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*args[0]).intValue(vm, &alternatives));
+  MOZART_GET_ARG(alternatives, *args[0], u"integer");
 
   Space* space = vm->getCurrentSpace();
 

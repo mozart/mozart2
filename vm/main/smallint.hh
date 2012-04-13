@@ -58,7 +58,7 @@ OpResult Implementation<SmallInt>::add(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   nativeint rightIntValue = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
+  MOZART_GET_ARG(rightIntValue, *right, u"integer");
 
   return addValue(self, vm, rightIntValue, result);
 }
@@ -85,7 +85,7 @@ OpResult Implementation<SmallInt>::subtract(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
+  MOZART_GET_ARG(rightIntValue, *right, u"integer");
 
   return subtractValue(self, vm, rightIntValue, result);
 }
@@ -112,7 +112,7 @@ OpResult Implementation<SmallInt>::multiply(Self self, VM vm,
                                             UnstableNode* right,
                                             UnstableNode* result) {
   nativeint rightIntValue = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
+  MOZART_GET_ARG(rightIntValue, *right, u"integer");
 
   return multiplyValue(self, vm, rightIntValue, result);
 }
@@ -160,7 +160,7 @@ OpResult Implementation<SmallInt>::div(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   nativeint rightIntValue = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
+  MOZART_GET_ARG(rightIntValue, *right, u"integer");
 
   return divValue(self, vm, rightIntValue, result);
 }
@@ -186,7 +186,7 @@ OpResult Implementation<SmallInt>::mod(Self self, VM vm,
                                        UnstableNode* right,
                                        UnstableNode* result) {
   nativeint rightIntValue = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*right).intValue(vm, &rightIntValue));
+  MOZART_GET_ARG(rightIntValue, *right, u"integer");
 
   return modValue(self, vm, rightIntValue, result);
 }

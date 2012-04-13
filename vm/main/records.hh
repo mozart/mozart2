@@ -97,7 +97,7 @@ OpResult Implementation<Tuple>::dot(Self self, VM vm,
                                     UnstableNode* feature,
                                     UnstableNode* result) {
   nativeint featureIntValue = 0;
-  MOZART_CHECK_OPRESULT(IntegerValue(*feature).intValue(vm, &featureIntValue));
+  MOZART_GET_ARG(featureIntValue, *feature, u"integer");
 
   return dotNumber(self, vm, featureIntValue, result);
 }

@@ -104,6 +104,12 @@ public:
   inline
   OpResult modValue(Self self, VM vm, nativeint b,
                     UnstableNode* result);
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << value();
+  }
 private:
   inline
   bool testMultiplyOverflow(nativeint a, nativeint b);

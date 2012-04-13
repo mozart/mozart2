@@ -99,6 +99,12 @@ public:
   inline
   OpResult mod(Self self, VM vm, UnstableNode* right,
                UnstableNode* result);
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << value();
+  }
 private:
   const double _value;
 };

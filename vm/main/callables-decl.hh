@@ -76,6 +76,12 @@ public:
    */
   inline
   OpResult arity(Self self, VM vm, UnstableNode* result);
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<P/" << _arity << ">";
+  }
 private:
   int _arity;
   OzBuiltin _builtin;
@@ -146,6 +152,12 @@ public:
                        ProgramCounter* start, int* Xcount,
                        StaticArray<StableNode>* Gs,
                        StaticArray<StableNode>* Ks);
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<P/" << _arity << ">";
+  }
 private:
   int _arity;
   StableNode _body;

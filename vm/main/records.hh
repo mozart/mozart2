@@ -26,7 +26,6 @@
 #define __RECORDS_H
 
 #include "mozartcore.hh"
-#include "corebuiltins.hh"
 
 #ifndef MOZART_GENERATOR
 
@@ -148,12 +147,8 @@ OpResult Implementation<Tuple>::waitOr(Self self, VM vm,
 }
 
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,
-                                              std::ostream* _out, int depth) {
-  std::ostream& out = *_out;
-
-  UnstableNode label(vm, _label);
-  builtins::printReprToStream(vm, label, out, depth-1);
-  out << "(";
+                                              std::ostream& out, int depth) {
+  out << repr(vm, _label, depth) << "(";
 
   if (depth <= 1) {
     out << "...";
@@ -161,9 +156,7 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
     for (size_t i = 0; i < _width; i++) {
       if (i > 0)
         out << ", ";
-
-      UnstableNode element(vm, self[i]);
-      builtins::printReprToStream(vm, element, out, depth-1);
+      out << repr(vm, self[i], depth);
     }
   }
 

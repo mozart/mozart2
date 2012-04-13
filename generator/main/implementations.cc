@@ -74,6 +74,7 @@ struct ImplementationDef {
     bindingPriority = 0;
     withHome = false;
     base = "Type";
+    hasPrintReprToStream = false;
     autoGCollect = true;
     autoSClone = true;
   }
@@ -91,6 +92,7 @@ struct ImplementationDef {
   unsigned char bindingPriority;
   bool withHome;
   std::string base;
+  bool hasPrintReprToStream;
   bool autoGCollect;
   bool autoSClone;
   std::vector<ImplemMethodDef> methods;
@@ -151,6 +153,9 @@ void handleImplementation(const SpecDecl* ND) {
     if (isa<CXXConstructorDecl>(m) || (m->getNameAsString() == "build"))
       continue;
 
+    if (m->getNameAsString() == "printReprToStream")
+      definition.hasPrintReprToStream = true;
+
     ImplemMethodDef method(m);
 
     method.hasSelfParam = (m->param_size() > 0) &&
@@ -205,6 +210,13 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
   to << "  static const " << name << "* const type() {\n";
   to << "    return &RawType<" << name << ">::rawType;\n";
   to << "  }\n";
+
+  if (hasPrintReprToStream) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  void printReprToStream(VM vm, RichNode self, std::ostream& out,\n";
+    to << "                         int depth) const;\n";
+  }
 
   if (autoGCollect) {
     to << "\n";
@@ -269,6 +281,16 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     _selfArrow = "_self.get().";
   else
     _selfArrow = "_self->";
+
+  if (hasPrintReprToStream) {
+    to << "\n";
+    to << "void " << name
+       << "::printReprToStream(VM vm, RichNode self, std::ostream& out,\n";
+    to << "                    int depth) const {\n";
+    to << "  assert(self.is<" << name << ">());\n";
+    to << "  self.as<" << name << ">().printReprToStream(vm, out, depth);\n";
+    to << "}\n";
+  }
 
   if (autoGCollect) {
     to << "\n";

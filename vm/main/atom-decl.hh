@@ -83,7 +83,7 @@ public:
   // Miscellaneous
 
   inline
-  void printReprToStream(Self self, VM vm, std::ostream* out, int depth);
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 private:
   const AtomImpl* _value;
 };

@@ -65,6 +65,12 @@ public:
     *result = value() ? bTrue : bFalse;
     return OpResult::proceed();
   }
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << (value() ? "true" : "false");
+  }
 private:
   const bool _value;
 };

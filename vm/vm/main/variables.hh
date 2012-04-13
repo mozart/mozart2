@@ -70,7 +70,7 @@ BuiltinResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
      * Otherwise, we wake up the threads and variables.
      */
     src.update();
-    if (src.type() == Variable::type()) {
+    if (src.is<Variable>()) {
       src.as<Variable>().transferPendings(vm, pendingThreads, pendingVariables);
     } else {
       resumePendings(vm);
@@ -102,7 +102,7 @@ BuiltinResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
    * Otherwise, we wake up the threads and variables.
    */
   src.update();
-  if (src.type() == Variable::type()) {
+  if (src.is<Variable>()) {
     src.as<Variable>().transferPendingsSubSpace(vm, currentSpace,
                                                 pendingThreads,
                                                 pendingVariables);
@@ -140,7 +140,7 @@ void Implementation<Variable>::transferPendingsSubSpace(
     UnstableNode temp(vm, **iter);
     RichNode richTemp = temp;
 
-    if (richTemp.type()->isTransient() &&
+    if (richTemp.isTransient() &&
         DataflowVariable(temp).home()->isAncestor(currentSpace))
       pendingVariables.splice(vm, srcVariables, iter);
     else
@@ -165,7 +165,7 @@ void Implementation<Variable>::resumePendings(VM vm) {
     UnstableNode unstableVar(vm, **iter);
     RichNode variable = unstableVar;
 
-    if (variable.type()->isTransient()) {
+    if (variable.isTransient()) {
       UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
       DataflowVariable(variable).bind(vm, unit);
     }
@@ -199,7 +199,7 @@ void Implementation<Variable>::resumePendingsSubSpace(VM vm,
     UnstableNode unstableVar(vm, **iter);
     RichNode variable = unstableVar;
 
-    if (variable.type()->isTransient()) {
+    if (variable.isTransient()) {
       DataflowVariable df = variable;
       if (df.home()->isAncestor(currentSpace)) {
         UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);

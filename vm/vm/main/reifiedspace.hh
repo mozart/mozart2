@@ -187,7 +187,7 @@ BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
 
   // Update status var
   RichNode statusVar = *space->getStatusVar();
-  if (statusVar.type()->isTransient()) {
+  if (statusVar.isTransient()) {
     UnstableNode atomMerged = UnstableNode::build<Atom>(vm, u"merged");
     DataflowVariable(statusVar).bind(vm, atomMerged);
   }
@@ -243,7 +243,7 @@ BuiltinResult Implementation<ReifiedSpace>::cloneSpace(
     return raise(vm, u"spaceAdmissible");
 
   RichNode statusVar = *space->getStatusVar();
-  if (statusVar.type()->isTransient())
+  if (statusVar.isTransient())
     return BuiltinResult::waitFor(vm, statusVar);
 
   Space* copy = space->clone(vm);

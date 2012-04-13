@@ -137,12 +137,12 @@ void GraphReplicator::processStableRefInternal(StableNode*& ref) {
   temp.make<Reference>(vm, ref);
   RichNode from = temp;
 
-  if (from.type() == GCedToStable::type()) {
+  if (from.is<GCedToStable>()) {
     StableNode* dest = from.as<GCedToStable>().dest();
     UnstableNode temp2;
     temp2.make<Reference>(vm, dest);
     ref = RichNode(temp2).getStableRef(vm);
-  } else if (from.type() == GCedToUnstable::type()) {
+  } else if (from.is<GCedToUnstable>()) {
     UnstableNode* dest = from.as<GCedToUnstable>().dest();
     ref = RichNode(*dest).getStableRef(vm);
   } else {

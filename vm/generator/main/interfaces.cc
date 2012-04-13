@@ -102,7 +102,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
       std::string imp =
         implems->getArg(i).getAsType()->getAsCXXRecordDecl()->getNameAsString();
 
-      to << "if (_self.type() == " << imp << "::type()) {\n";
+      to << "if (_self.is<" << imp << ">()) {\n";
       to << "      return _self.as<" << imp << ">()."
          << m->getNameAsString() << "(";
 
@@ -121,7 +121,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
 
     // Auto-wait handling
     if (autoWait && (typeToString(m->getResultType()) == "BuiltinResult")) {
-      to << "if (_self.type()->isTransient()) {\n";
+      to << "if (_self.isTransient()) {\n";
       to << "      return BuiltinResult::waitFor(vm, _self);\n";
       to << "    } else ";
     }

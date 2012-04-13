@@ -63,7 +63,7 @@ BuiltinResult notEquals(VM vm, UnstableNode* args[]) {
 BuiltinResult wait(VM vm, UnstableNode* args[]) {
   RichNode value = *args[0];
 
-  if (value.type()->isTransient())
+  if (value.isTransient())
     return BuiltinResult::waitFor(vm, value);
   else
     return BuiltinResult::proceed();
@@ -75,7 +75,7 @@ BuiltinResult waitOr(VM vm, UnstableNode* args[]) {
 
 BuiltinResult isDet(VM vm, UnstableNode* args[]) {
   RichNode value = *args[0];
-  args[1]->make<Boolean>(vm, !value.type()->isTransient());
+  args[1]->make<Boolean>(vm, !value.isTransient());
   return BuiltinResult::proceed();
 }
 
@@ -261,17 +261,17 @@ void printReprToStream(VM vm, RichNode arg,
     return;
   }
 
-  if (arg.type() == SmallInt::type()) {
+  if (arg.is<SmallInt>()) {
     out << arg.as<SmallInt>().value();
-  } else if (arg.type() == Boolean::type()) {
+  } else if (arg.is<Boolean>()) {
     out << (arg.as<Boolean>().value() ? "true" : "false");
-  } else if (arg.type() == Float::type()) {
+  } else if (arg.is<Float>()) {
     out << arg.as<Float>().value();
-  } else if (arg.type() == Atom::type()) {
+  } else if (arg.is<Atom>()) {
     arg.as<Atom>().printReprToStream(vm, &out, depth);
-  } else if (arg.type() == Tuple::type()) {
+  } else if (arg.is<Tuple>()) {
     arg.as<Tuple>().printReprToStream(vm, &out, depth);
-  } else if (arg.type()->isTransient()) {
+  } else if (arg.isTransient()) {
     out << "_";
   } else {
     out << "<" << arg.type()->getName() << ">";

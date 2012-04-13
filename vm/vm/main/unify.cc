@@ -168,10 +168,10 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
       left = unstableLeft;
       right = unstableRight;
 
-      if (left.type()->isTransient())
+      if (left.isTransient())
         DataflowVariable(left).addToSuspendList(vm, controlVar);
 
-      if (right.type()->isTransient())
+      if (right.isTransient())
         DataflowVariable(right).addToSuspendList(vm, controlVar);
     } else {
       UnstableNode label;
@@ -190,14 +190,14 @@ BuiltinResult StructuralDualWalk::run(RichNode left, RichNode right) {
         leftTuple.initElement(vm, i, &leftTemp);
 
         RichNode richLeftTemp = leftTemp;
-        if (richLeftTemp.type()->isTransient())
+        if (richLeftTemp.isTransient())
           DataflowVariable(richLeftTemp).addToSuspendList(vm, controlVar);
 
         UnstableNode rightTemp(vm, *iter->right);
         rightTuple.initElement(vm, i, &rightTemp);
 
         RichNode richRightTemp = rightTemp;
-        if (richRightTemp.type()->isTransient())
+        if (richRightTemp.isTransient())
           DataflowVariable(richRightTemp).addToSuspendList(vm, controlVar);
       }
     }

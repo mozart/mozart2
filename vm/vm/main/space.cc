@@ -53,7 +53,7 @@ void Space::clearStatusVar(VM vm) {
 
 void Space::bindStatusVar(VM vm, RichNode value) {
   RichNode statusVar = *getStatusVar();
-  assert(statusVar.type()->isTransient());
+  assert(statusVar.isTransient());
   DataflowVariable(statusVar).bind(vm, value);
 }
 
@@ -154,7 +154,7 @@ namespace {
   void createPropagateThreadOnceAndSuspendItOnVar(VM vm, Space* space,
                                                   Runnable*& propagateThread,
                                                   RichNode variable) {
-    if (variable.type()->isTransient()) {
+    if (variable.isTransient()) {
       if (propagateThread == nullptr)
         propagateThread = new internal::DummyThread(vm, space, true);
       DataflowVariable(variable).addToSuspendList(vm, propagateThread);

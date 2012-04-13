@@ -219,7 +219,7 @@ struct PrimitiveCapturePattern {
  */
 inline
 void waitForIfTransient(VM vm, BuiltinResult& result, RichNode value) {
-  if (value.type()->isTransient())
+  if (value.isTransient())
     result = BuiltinResult::waitFor(vm, value);
 }
 
@@ -336,7 +336,7 @@ template <class T>
 inline
 bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
                    WildcardPattern<T> pattern) {
-  if (value.type() == T::type()) {
+  if (value.is<T>()) {
     return true;
   } else {
     internal::waitForIfTransient(vm, result, value);
@@ -355,7 +355,7 @@ template <class T>
 inline
 bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
                    CapturePattern<T> pattern) {
-  if (value.type() == T::type()) {
+  if (value.is<T>()) {
     pattern.node.copy(vm, value);
     return true;
   } else {
@@ -376,7 +376,7 @@ template <>
 inline
 bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
                    PrimitiveCapturePattern<nativeint> pattern) {
-  if (value.type() == SmallInt::type()) {
+  if (value.is<SmallInt>()) {
     pattern.value = value.as<SmallInt>().value();
     return true;
   } else {
@@ -389,7 +389,7 @@ template <>
 inline
 bool matchesSimple(VM vm, BuiltinResult& result, RichNode value,
                    PrimitiveCapturePattern<bool> pattern) {
-  if (value.type() == Boolean::type()) {
+  if (value.is<Boolean>()) {
     pattern.value = value.as<Boolean>().value();
     return true;
   } else {

@@ -156,7 +156,7 @@ Space::Space(GR gr, Space* from) {
      * determined status variable.
      */
     RichNode fromStatusVar = from->_statusVar;
-    assert(!fromStatusVar.type()->isTransient());
+    assert(!fromStatusVar.isTransient());
   }
 #endif
 

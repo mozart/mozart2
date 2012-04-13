@@ -75,58 +75,58 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
   return true;
 }
 
-BuiltinResult Implementation<Tuple>::label(Self self, VM vm,
-                                           UnstableNode* result) {
+OpResult Implementation<Tuple>::label(Self self, VM vm,
+                                      UnstableNode* result) {
   result->copy(vm, _label);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Tuple>::width(Self self, VM vm,
-                                           UnstableNode* result) {
+OpResult Implementation<Tuple>::width(Self self, VM vm,
+                                      UnstableNode* result) {
   result->make<SmallInt>(vm, _width);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Tuple>::initElement(Self self, VM vm,
-                                                 size_t index,
-                                                 UnstableNode* value) {
+OpResult Implementation<Tuple>::initElement(Self self, VM vm,
+                                            size_t index,
+                                            UnstableNode* value) {
   self[index].init(vm, *value);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Tuple>::dot(Self self, VM vm,
-                                         UnstableNode* feature,
-                                         UnstableNode* result) {
+OpResult Implementation<Tuple>::dot(Self self, VM vm,
+                                    UnstableNode* feature,
+                                    UnstableNode* result) {
   nativeint featureIntValue = 0;
 
-  BuiltinResult res = IntegerValue(*feature).intValue(vm, &featureIntValue);
+  OpResult res = IntegerValue(*feature).intValue(vm, &featureIntValue);
   if (!res.isProceed())
     return res;
 
   return dotNumber(self, vm, featureIntValue, result);
 }
 
-BuiltinResult Implementation<Tuple>::dotNumber(Self self, VM vm,
-                                               nativeint feature,
-                                               UnstableNode* result) {
+OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
+                                          nativeint feature,
+                                          UnstableNode* result) {
   if ((feature > 0) && ((size_t) feature <= _width)) {
     // Inside bounds
     result->copy(vm, self[(size_t) feature - 1]);
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   } else {
     // Out of bounds
     return raise(vm, u"illegalFieldSelection", self, feature);
   }
 }
 
-BuiltinResult Implementation<Tuple>::waitOr(Self self, VM vm,
-                                            UnstableNode* result) {
+OpResult Implementation<Tuple>::waitOr(Self self, VM vm,
+                                       UnstableNode* result) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < _width; i++) {
     UnstableNode field(vm, self[i]);
     if (!RichNode(field).isTransient()) {
       result->make<SmallInt>(vm, i+1);
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
   }
 
@@ -144,7 +144,7 @@ BuiltinResult Implementation<Tuple>::waitOr(Self self, VM vm,
   }
 
   // Wait for the control variable
-  return BuiltinResult::waitFor(vm, controlVar);
+  return OpResult::waitFor(vm, controlVar);
 }
 
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,

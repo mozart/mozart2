@@ -55,7 +55,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
    * Precondition:
    *   self.type()->getStructuralBehavior() == sbVariable
    */
-  BuiltinResult bind(RichNode self, VM vm, RichNode src) {
+  OpResult bind(RichNode self, VM vm, RichNode src) {
     assert(self.type()->getStructuralBehavior() == sbVariable);
     assert(false);
     return raiseTypeError(vm, u"Variable", self);
@@ -101,8 +101,8 @@ struct Interface<StructuralEquatable>:
 class BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
-  BuiltinResult callBuiltin(RichNode self, VM vm, int argc,
-                            UnstableNode* args[]) {
+  OpResult callBuiltin(RichNode self, VM vm, int argc,
+                       UnstableNode* args[]) {
     return raiseTypeError(vm, u"BuiltinProcedure", self);
   }
 };
@@ -110,10 +110,10 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
 class Callable;
 template<>
 struct Interface<Callable>: ImplementedBy<Abstraction> {
-  BuiltinResult getCallInfo(RichNode self, VM vm, int* arity, StableNode** body,
-                            ProgramCounter* start, int* Xcount,
-                            StaticArray<StableNode>* Gs,
-                            StaticArray<StableNode>* Ks) {
+  OpResult getCallInfo(RichNode self, VM vm, int* arity, StableNode** body,
+                       ProgramCounter* start, int* Xcount,
+                       StaticArray<StableNode>* Gs,
+                       StaticArray<StableNode>* Ks) {
     *arity = 0;
     *body = nullptr;
     *start = nullptr;
@@ -127,8 +127,8 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
 class CodeAreaProvider;
 template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
-  BuiltinResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter* start,
-                                int* Xcount, StaticArray<StableNode>* Ks) {
+  OpResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter* start,
+                           int* Xcount, StaticArray<StableNode>* Ks) {
     *start = nullptr;
     *Xcount = 0;
     *Ks = nullptr;
@@ -139,33 +139,33 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 class Numeric;
 template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
-  BuiltinResult add(RichNode self, VM vm, UnstableNode* right,
+  OpResult add(RichNode self, VM vm, UnstableNode* right,
+               UnstableNode* result) {
+    return raiseTypeError(vm, u"Numeric", self);
+  }
+
+  OpResult subtract(RichNode self, VM vm, UnstableNode* right,
                     UnstableNode* result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  BuiltinResult subtract(RichNode self, VM vm, UnstableNode* right,
-                         UnstableNode* result) {
-    return raiseTypeError(vm, u"Numeric", self);
-  }
-
-  BuiltinResult multiply(RichNode self, VM vm, UnstableNode* right,
-                         UnstableNode* result) {
-    return raiseTypeError(vm, u"Numeric", self);
-  }
-
-  BuiltinResult divide(RichNode self, VM vm, UnstableNode* right,
-                       UnstableNode* result) {
-    return raiseTypeError(vm, u"Numeric", self);
-  }
-
-  BuiltinResult div(RichNode self, VM vm, UnstableNode* right,
+  OpResult multiply(RichNode self, VM vm, UnstableNode* right,
                     UnstableNode* result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  BuiltinResult mod(RichNode self, VM vm, UnstableNode* right,
-                    UnstableNode* result) {
+  OpResult divide(RichNode self, VM vm, UnstableNode* right,
+                  UnstableNode* result) {
+    return raiseTypeError(vm, u"Numeric", self);
+  }
+
+  OpResult div(RichNode self, VM vm, UnstableNode* right,
+               UnstableNode* result) {
+    return raiseTypeError(vm, u"Numeric", self);
+  }
+
+  OpResult mod(RichNode self, VM vm, UnstableNode* right,
+               UnstableNode* result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 };
@@ -173,18 +173,18 @@ struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
 class IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
-  BuiltinResult intValue(RichNode self, VM vm, nativeint* result) {
+  OpResult intValue(RichNode self, VM vm, nativeint* result) {
     return raiseTypeError(vm, u"Integer", self);
   }
 
-  BuiltinResult equalsInteger(RichNode self, VM vm,
-                              nativeint right, bool* result) {
+  OpResult equalsInteger(RichNode self, VM vm,
+                         nativeint right, bool* result) {
     *result = false;
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
-  BuiltinResult addValue(RichNode self, VM vm,
-                         nativeint b, UnstableNode* result) {
+  OpResult addValue(RichNode self, VM vm,
+                    nativeint b, UnstableNode* result) {
     return raiseTypeError(vm, u"Integer", self);
   }
 };
@@ -192,18 +192,18 @@ struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
 class FloatValue;
 template<>
 struct Interface<FloatValue>: ImplementedBy<Float> {
-  BuiltinResult floatValue(RichNode self, VM vm, double* result) {
+  OpResult floatValue(RichNode self, VM vm, double* result) {
     return raiseTypeError(vm, u"Float", self);
   }
 
-  BuiltinResult equalsFloat(RichNode self, VM vm,
-                            double right, bool* result) {
+  OpResult equalsFloat(RichNode self, VM vm,
+                       double right, bool* result) {
     *result = false;
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
-  BuiltinResult addValue(RichNode self, VM vm,
-                         double b, UnstableNode* result) {
+  OpResult addValue(RichNode self, VM vm,
+                    double b, UnstableNode* result) {
     return raiseTypeError(vm, u"Float", self);
   }
 };
@@ -211,38 +211,38 @@ struct Interface<FloatValue>: ImplementedBy<Float> {
 class BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
-  BuiltinResult boolValue(RichNode self, VM vm, bool* result) {
+  OpResult boolValue(RichNode self, VM vm, bool* result) {
     return raiseTypeError(vm, u"Boolean", self);
   }
 
-  BuiltinResult valueOrNotBool(RichNode self, VM vm, BoolOrNotBool* result) {
+  OpResult valueOrNotBool(RichNode self, VM vm, BoolOrNotBool* result) {
     *result = bNotBool;
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 };
 
 class RecordLike;
 template<>
 struct Interface<RecordLike>: ImplementedBy<Tuple, Atom> {
-  BuiltinResult label(RichNode self, VM vm, UnstableNode* result) {
+  OpResult label(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  BuiltinResult width(RichNode self, VM vm, UnstableNode* result) {
+  OpResult width(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  BuiltinResult dot(RichNode self, VM vm, UnstableNode* feature,
-                    UnstableNode* result) {
+  OpResult dot(RichNode self, VM vm, UnstableNode* feature,
+               UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  BuiltinResult dotNumber(RichNode self, VM vm, nativeint feature,
-                          UnstableNode* result) {
+  OpResult dotNumber(RichNode self, VM vm, nativeint feature,
+                     UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  BuiltinResult waitOr(RichNode self, VM vm, UnstableNode* result) {
+  OpResult waitOr(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Record", self);
   }
 };
@@ -252,8 +252,8 @@ template<>
 struct Interface<ArrayInitializer>:
   ImplementedBy<Tuple, Abstraction, CodeArea> {
 
-  BuiltinResult initElement(RichNode self, VM vm, size_t index,
-                            UnstableNode* value) {
+  OpResult initElement(RichNode self, VM vm, size_t index,
+                       UnstableNode* value) {
     return raiseTypeError(vm, u"Array initializer", self);
   }
 };
@@ -261,23 +261,23 @@ struct Interface<ArrayInitializer>:
 class SpaceLike;
 template<>
 struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
-  BuiltinResult askSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult askSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  BuiltinResult askVerboseSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult askVerboseSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  BuiltinResult mergeSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult mergeSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  BuiltinResult commitSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult commitSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  BuiltinResult cloneSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult cloneSpace(RichNode self, VM vm, UnstableNode* result) {
     return raiseTypeError(vm, u"Space", self);
   }
 };

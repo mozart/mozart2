@@ -65,13 +65,13 @@ void WalkStack::clear(VM vm) {
 // Global routines //
 /////////////////////
 
-BuiltinResult fullUnify(VM vm, RichNode left, RichNode right);
+OpResult fullUnify(VM vm, RichNode left, RichNode right);
 
-BuiltinResult fullEquals(VM vm, RichNode left, RichNode right, bool* result);
+OpResult fullEquals(VM vm, RichNode left, RichNode right, bool* result);
 
 #ifndef MOZART_GENERATOR
 
-BuiltinResult unify(VM vm, RichNode left, RichNode right) {
+OpResult unify(VM vm, RichNode left, RichNode right) {
   const Type* leftType = left.type();
   const Type* rightType = right.type();
 
@@ -95,10 +95,10 @@ BuiltinResult unify(VM vm, RichNode left, RichNode right) {
   return fullUnify(vm, left, right);
 }
 
-BuiltinResult equals(VM vm, RichNode left, RichNode right, bool* result) {
+OpResult equals(VM vm, RichNode left, RichNode right, bool* result) {
   if (left.isSameNode(right)) {
     *result = true;
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
   const Type* leftType = left.type();
@@ -110,17 +110,17 @@ BuiltinResult equals(VM vm, RichNode left, RichNode right, bool* result) {
   if (leftBehavior != sbVariable && rightBehavior != sbVariable) {
     if (leftType != rightType) {
       *result = false;
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     switch (leftBehavior) {
       case sbValue:
         *result = ValueEquatable(left).equals(vm, right);
-        return BuiltinResult::proceed();
+        return OpResult::proceed();
 
       case sbTokenEq:
         *result = false;
-        return BuiltinResult::proceed();
+        return OpResult::proceed();
 
       default: ; // fall through
     }
@@ -129,8 +129,8 @@ BuiltinResult equals(VM vm, RichNode left, RichNode right, bool* result) {
   return fullEquals(vm, left, right, result);
 }
 
-BuiltinResult notEquals(VM vm, RichNode left, RichNode right, bool* result) {
-  BuiltinResult res = equals(vm, left, right, result);
+OpResult notEquals(VM vm, RichNode left, RichNode right, bool* result) {
+  OpResult res = equals(vm, left, right, result);
 
   if (res.isProceed())
     *result = !*result;

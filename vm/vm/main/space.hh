@@ -234,7 +234,7 @@ void Space::makeBackupForSpeculativeBinding(StableNode* node) {
 
 // Operations
 
-BuiltinResult Space::merge(VM vm, Space* dest) {
+OpResult Space::merge(VM vm, Space* dest) {
   Space* src = this;
 
   assert(vm->getCurrentSpace() == dest);
@@ -253,7 +253,7 @@ BuiltinResult Space::merge(VM vm, Space* dest) {
   // Merge constraints
   bool res = src->installThis(/* isMerge = */ true);
 
-  return res ? BuiltinResult::proceed() : BuiltinResult::fail();
+  return res ? OpResult::proceed() : OpResult::fail();
 }
 
 nativeint Space::commit(VM vm, nativeint value) {

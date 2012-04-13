@@ -30,13 +30,13 @@
 namespace mozart {
 
 inline
-BuiltinResult unify(VM vm, RichNode left, RichNode right);
+OpResult unify(VM vm, RichNode left, RichNode right);
 
 inline
-BuiltinResult equals(VM vm, RichNode left, RichNode right, bool* result);
+OpResult equals(VM vm, RichNode left, RichNode right, bool* result);
 
 inline
-BuiltinResult notEquals(VM vm, RichNode left, RichNode right, bool* result);
+OpResult notEquals(VM vm, RichNode left, RichNode right, bool* result);
 
 /////////////////////
 // Data structures //

@@ -122,13 +122,12 @@ SpaceRef Implementation<ReifiedSpace>::build(VM vm, GR gr, Self from) {
   return home;
 }
 
-BuiltinResult Implementation<ReifiedSpace>::isSpace(
-  VM vm, UnstableNode* result) {
+OpResult Implementation<ReifiedSpace>::isSpace(VM vm, UnstableNode* result) {
   result->make<Boolean>(vm, true);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<ReifiedSpace>::askSpace(
+OpResult Implementation<ReifiedSpace>::askSpace(
   Self self, VM vm, UnstableNode* result) {
 
   using namespace patternmatching;
@@ -139,7 +138,7 @@ BuiltinResult Implementation<ReifiedSpace>::askSpace(
     return raise(vm, u"spaceAdmissible", self);
 
   UnstableNode statusVar(vm, *space->getStatusVar());
-  BuiltinResult res = BuiltinResult::proceed();
+  OpResult res = OpResult::proceed();
 
   if (matchesTuple(vm, res, statusVar, u"succeeded", wildcard())) {
     result->make<Atom>(vm, u"succeeded");
@@ -149,10 +148,10 @@ BuiltinResult Implementation<ReifiedSpace>::askSpace(
     return res;
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(
+OpResult Implementation<ReifiedSpace>::askVerboseSpace(
   Self self, VM vm, UnstableNode* result) {
 
   Space* space = getSpace();
@@ -164,14 +163,14 @@ BuiltinResult Implementation<ReifiedSpace>::askVerboseSpace(
     UnstableNode statusVar(vm, *space->getStatusVar());
     *result = buildTuple(vm, u"suspended", statusVar);
 
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
   result->copy(vm, *space->getStatusVar());
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
+OpResult Implementation<ReifiedSpace>::mergeSpace(
   Self self, VM vm, UnstableNode* result) {
 
   Space* currentSpace = vm->getCurrentSpace();
@@ -196,7 +195,7 @@ BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
   result->copy(vm, *space->getRootVar());
 
   // Actual merge
-  BuiltinResult res = space->merge(vm, currentSpace);
+  OpResult res = space->merge(vm, currentSpace);
 
   // Mutate this into a merged deleted space
   self.remake<DeletedSpace>(vm, dsMerged);
@@ -204,7 +203,7 @@ BuiltinResult Implementation<ReifiedSpace>::mergeSpace(
   return res;
 }
 
-BuiltinResult Implementation<ReifiedSpace>::commitSpace(
+OpResult Implementation<ReifiedSpace>::commitSpace(
   Self self, VM vm, UnstableNode* value) {
 
   using namespace patternmatching;
@@ -218,7 +217,7 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
     return raise(vm, u"spaceNoChoice", self);
 
   RichNode val = *value;
-  BuiltinResult res = BuiltinResult::proceed();
+  OpResult res = OpResult::proceed();
   nativeint left, right;
 
   if (matches(vm, res, val, capture(left))) {
@@ -226,7 +225,7 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
     if (commitResult < 0)
       return raise(vm, u"spaceAltRange", self, left, -commitResult);
 
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   } else if (matchesSharp(vm, res, val, capture(left), capture(right))) {
     return raise(vm, u"notImplemented", u"commitRange");
   } else {
@@ -234,7 +233,7 @@ BuiltinResult Implementation<ReifiedSpace>::commitSpace(
   }
 }
 
-BuiltinResult Implementation<ReifiedSpace>::cloneSpace(
+OpResult Implementation<ReifiedSpace>::cloneSpace(
   Self self, VM vm, UnstableNode* result) {
 
   Space* space = getSpace();
@@ -244,12 +243,12 @@ BuiltinResult Implementation<ReifiedSpace>::cloneSpace(
 
   RichNode statusVar = *space->getStatusVar();
   if (statusVar.isTransient())
-    return BuiltinResult::waitFor(vm, statusVar);
+    return OpResult::waitFor(vm, statusVar);
 
   Space* copy = space->clone(vm);
   result->make<ReifiedSpace>(vm, copy);
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 //////////////////
@@ -262,60 +261,59 @@ DeletedSpaceKind Implementation<DeletedSpace>::build(VM vm, GR gr, Self from) {
   return from.get().kind();
 }
 
-BuiltinResult Implementation<DeletedSpace>::isSpace(
-  VM vm, UnstableNode* result) {
+OpResult Implementation<DeletedSpace>::isSpace(VM vm, UnstableNode* result) {
   result->make<Boolean>(vm, true);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<DeletedSpace>::askSpace(
+OpResult Implementation<DeletedSpace>::askSpace(
   Self self, VM vm, UnstableNode* result) {
 
   switch (kind()) {
     case dsFailed: {
       result->make<Atom>(vm, u"failed");
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     case dsMerged: {
       result->make<Atom>(vm, u"merged");
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     default: {
       assert(false);
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
   }
 }
 
-BuiltinResult Implementation<DeletedSpace>::askVerboseSpace(
+OpResult Implementation<DeletedSpace>::askVerboseSpace(
   Self self, VM vm, UnstableNode* result) {
 
   switch (kind()) {
     case dsFailed: {
       result->make<Atom>(vm, u"failed");
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     case dsMerged: {
       result->make<Atom>(vm, u"merged");
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     default: {
       assert(false);
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
   }
 }
 
-BuiltinResult Implementation<DeletedSpace>::mergeSpace(
+OpResult Implementation<DeletedSpace>::mergeSpace(
   Self self, VM vm, UnstableNode* result) {
 
   switch (kind()) {
     case dsFailed: {
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
 
     case dsMerged: {
@@ -324,17 +322,17 @@ BuiltinResult Implementation<DeletedSpace>::mergeSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
   }
 }
 
-BuiltinResult Implementation<DeletedSpace>::commitSpace(
+OpResult Implementation<DeletedSpace>::commitSpace(
   Self self, VM vm, UnstableNode* value) {
 
   switch (kind()) {
     case dsFailed: {
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     case dsMerged: {
@@ -343,18 +341,18 @@ BuiltinResult Implementation<DeletedSpace>::commitSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
   }
 }
 
-BuiltinResult Implementation<DeletedSpace>::cloneSpace(
+OpResult Implementation<DeletedSpace>::cloneSpace(
   Self self, VM vm, UnstableNode* result) {
 
   switch (kind()) {
     case dsFailed: {
       result->make<DeletedSpace>(vm, dsFailed);
-      return BuiltinResult::proceed();
+      return OpResult::proceed();
     }
 
     case dsMerged: {
@@ -363,7 +361,7 @@ BuiltinResult Implementation<DeletedSpace>::cloneSpace(
 
     default: {
       assert(false);
-      return BuiltinResult::fail();
+      return OpResult::fail();
     }
   }
 }

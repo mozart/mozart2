@@ -50,14 +50,14 @@ Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
     gr->copyStableNode(_Ks[i], from[i]);
 }
 
-BuiltinResult Implementation<CodeArea>::initElement(Self self, VM vm,
-                                                    size_t index,
-                                                    UnstableNode* value) {
+OpResult Implementation<CodeArea>::initElement(Self self, VM vm,
+                                               size_t index,
+                                               UnstableNode* value) {
   self[index].init(vm, *value);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult
+OpResult
 Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
                                           ProgramCounter* start,
                                           int* Xcount,
@@ -66,7 +66,7 @@ Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
   *Xcount = _Xcount;
   *Ks = self.getArray();
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 }

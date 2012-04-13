@@ -52,53 +52,53 @@ public:
   inline
   bool equals(VM vm, Self right);
 
-  BuiltinResult floatValue(Self self, VM vm, double* result) {
+  OpResult floatValue(Self self, VM vm, double* result) {
     *result = value();
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
   inline
-  BuiltinResult equalsFloat(Self self, VM vm, double right, bool* result);
+  OpResult equalsFloat(Self self, VM vm, double right, bool* result);
 
   inline
-  BuiltinResult add(Self self, VM vm, UnstableNode* right,
+  OpResult add(Self self, VM vm, UnstableNode* right,
+               UnstableNode* result);
+
+  inline
+  OpResult addValue(Self self, VM vm, double b,
                     UnstableNode* result);
 
   inline
-  BuiltinResult addValue(Self self, VM vm, double b,
+  OpResult subtract(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  OpResult subtractValue(Self self, VM vm, double b,
                          UnstableNode* result);
 
   inline
-  BuiltinResult subtract(Self self, VM vm, UnstableNode* right,
+  OpResult multiply(Self self, VM vm, UnstableNode* right,
+                    UnstableNode* result);
+
+  inline
+  OpResult multiplyValue(Self self, VM vm, double b,
                          UnstableNode* result);
 
   inline
-  BuiltinResult subtractValue(Self self, VM vm, double b,
-                              UnstableNode* result);
+  OpResult divide(Self self, VM vm, UnstableNode* right,
+                  UnstableNode* result);
 
   inline
-  BuiltinResult multiply(Self self, VM vm, UnstableNode* right,
-                         UnstableNode* result);
-
-  inline
-  BuiltinResult multiplyValue(Self self, VM vm, double b,
-                              UnstableNode* result);
-
-  inline
-  BuiltinResult divide(Self self, VM vm, UnstableNode* right,
+  OpResult divideValue(Self self, VM vm, double b,
                        UnstableNode* result);
 
   inline
-  BuiltinResult divideValue(Self self, VM vm, double b,
-                            UnstableNode* result);
+  OpResult div(Self self, VM vm, UnstableNode* right,
+               UnstableNode* result);
 
   inline
-  BuiltinResult div(Self self, VM vm, UnstableNode* right,
-                    UnstableNode* result);
-
-  inline
-  BuiltinResult mod(Self self, VM vm, UnstableNode* right,
-                    UnstableNode* result);
+  OpResult mod(Self self, VM vm, UnstableNode* right,
+               UnstableNode* result);
 private:
   const double _value;
 };

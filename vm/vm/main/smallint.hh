@@ -47,28 +47,28 @@ bool Implementation<SmallInt>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-BuiltinResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
-                                                      nativeint right,
-                                                      bool* result) {
+OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
+                                                 nativeint right,
+                                                 bool* result) {
   *result = value() == right;
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<SmallInt>::add(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
+OpResult Implementation<SmallInt>::add(Self self, VM vm,
+                                       UnstableNode* right,
+                                       UnstableNode* result) {
   nativeint rightIntValue = 0;
 
-  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
+  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
   return addValue(self, vm, rightIntValue, result);
 }
 
-BuiltinResult Implementation<SmallInt>::addValue(Self self, VM vm,
-                                                 nativeint b,
-                                                 UnstableNode* result) {
+OpResult Implementation<SmallInt>::addValue(Self self, VM vm,
+                                            nativeint b,
+                                            UnstableNode* result) {
   nativeint a = value();
   nativeint c = a + b;
 
@@ -81,24 +81,24 @@ BuiltinResult Implementation<SmallInt>::addValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<SmallInt>::subtract(Self self, VM vm,
-                                                 UnstableNode* right,
-                                                 UnstableNode* result) {
+OpResult Implementation<SmallInt>::subtract(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
   nativeint rightIntValue = 0;
 
-  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
+  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
   return subtractValue(self, vm, rightIntValue, result);
 }
 
-BuiltinResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
-                                                      nativeint b,
-                                                      UnstableNode* result) {
+OpResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
+                                                 nativeint b,
+                                                 UnstableNode* result) {
   nativeint a = value();
   nativeint c = a - b;
 
@@ -111,15 +111,15 @@ BuiltinResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<SmallInt>::multiply(Self self, VM vm,
-                                                 UnstableNode* right,
-                                                 UnstableNode* result) {
+OpResult Implementation<SmallInt>::multiply(Self self, VM vm,
+                                            UnstableNode* right,
+                                            UnstableNode* result) {
   nativeint rightIntValue = 0;
 
-  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
+  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
@@ -142,9 +142,9 @@ bool Implementation<SmallInt>::testMultiplyOverflow(nativeint a, nativeint b) {
   return (b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb);
 }
 
-BuiltinResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
-                                                      nativeint b,
-                                                      UnstableNode* result) {
+OpResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
+                                                 nativeint b,
+                                                 UnstableNode* result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -156,30 +156,30 @@ BuiltinResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<SmallInt>::divide(Self self, VM vm,
-                                               UnstableNode* right,
-                                               UnstableNode* result) {
+OpResult Implementation<SmallInt>::divide(Self self, VM vm,
+                                          UnstableNode* right,
+                                          UnstableNode* result) {
   return raiseTypeError(vm, u"Float", self);
 }
 
-BuiltinResult Implementation<SmallInt>::div(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
+OpResult Implementation<SmallInt>::div(Self self, VM vm,
+                                       UnstableNode* right,
+                                       UnstableNode* result) {
   nativeint rightIntValue = 0;
 
-  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
+  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
   return divValue(self, vm, rightIntValue, result);
 }
 
-BuiltinResult Implementation<SmallInt>::divValue(Self self, VM vm,
-                                                 nativeint b,
-                                                 UnstableNode* result) {
+OpResult Implementation<SmallInt>::divValue(Self self, VM vm,
+                                            nativeint b,
+                                            UnstableNode* result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -191,24 +191,24 @@ BuiltinResult Implementation<SmallInt>::divValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<SmallInt>::mod(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
+OpResult Implementation<SmallInt>::mod(Self self, VM vm,
+                                       UnstableNode* right,
+                                       UnstableNode* result) {
   nativeint rightIntValue = 0;
 
-  BuiltinResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
+  OpResult res = IntegerValue(*right).intValue(vm, &rightIntValue);
   if (!res.isProceed())
     return res;
 
   return modValue(self, vm, rightIntValue, result);
 }
 
-BuiltinResult Implementation<SmallInt>::modValue(Self self, VM vm,
-                                                 nativeint b,
-                                                 UnstableNode* result) {
+OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
+                                            nativeint b,
+                                            UnstableNode* result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -220,7 +220,7 @@ BuiltinResult Implementation<SmallInt>::modValue(Self self, VM vm,
     result->make<SmallInt>(vm, 0);
   }
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 }

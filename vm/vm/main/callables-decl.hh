@@ -38,7 +38,7 @@ namespace mozart {
 /**
  * Type of a builtin function
  */
-typedef BuiltinResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
+typedef OpResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
 
 class BuiltinProcedure;
 
@@ -69,13 +69,13 @@ public:
    * @param args   Actual parameters
    */
   inline
-  BuiltinResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]);
+  OpResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]);
 
   /**
    * Get the arity of the builtin in a node
    */
   inline
-  BuiltinResult arity(Self self, VM vm, UnstableNode* result);
+  OpResult arity(Self self, VM vm, UnstableNode* result);
 private:
   int _arity;
   OzBuiltin _builtin;
@@ -125,11 +125,11 @@ public:
    * Get the arity of the abstraction in a node
    */
   inline
-  BuiltinResult arity(Self self, VM vm, UnstableNode* result);
+  OpResult arity(Self self, VM vm, UnstableNode* result);
 
   inline
-  BuiltinResult initElement(Self self, VM vm, size_t index,
-                            UnstableNode* value);
+  OpResult initElement(Self self, VM vm, size_t index,
+                       UnstableNode* value);
 
   /**
    * Get the information needed to call this abstraction
@@ -142,10 +142,10 @@ public:
    * @param Ks       Output: K registers
    */
   inline
-  BuiltinResult getCallInfo(Self self, VM vm, int* arity, StableNode** body,
-                            ProgramCounter* start, int* Xcount,
-                            StaticArray<StableNode>* Gs,
-                            StaticArray<StableNode>* Ks);
+  OpResult getCallInfo(Self self, VM vm, int* arity, StableNode** body,
+                       ProgramCounter* start, int* Xcount,
+                       StaticArray<StableNode>* Gs,
+                       StaticArray<StableNode>* Ks);
 private:
   int _arity;
   StableNode _body;

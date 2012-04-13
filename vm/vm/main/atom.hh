@@ -46,37 +46,37 @@ bool Implementation<Atom>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-BuiltinResult Implementation<Atom>::label(Self self, VM vm,
-                                          UnstableNode* result) {
+OpResult Implementation<Atom>::label(Self self, VM vm,
+                                     UnstableNode* result) {
   result->copy(vm, self);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Atom>::width(Self self, VM vm,
-                                          UnstableNode* result) {
+OpResult Implementation<Atom>::width(Self self, VM vm,
+                                     UnstableNode* result) {
   result->make<SmallInt>(vm, 0);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Atom>::dot(Self self, VM vm,
-                                        UnstableNode* feature,
-                                        UnstableNode* result) {
+OpResult Implementation<Atom>::dot(Self self, VM vm,
+                                   UnstableNode* feature,
+                                   UnstableNode* result) {
   // Always out of bounds
   return raise(vm, u"illegalFieldSelection", self, *feature);
 }
 
-BuiltinResult Implementation<Atom>::dotNumber(Self self, VM vm,
-                                              nativeint feature,
-                                              UnstableNode* result) {
+OpResult Implementation<Atom>::dotNumber(Self self, VM vm,
+                                         nativeint feature,
+                                         UnstableNode* result) {
   // Always out of bounds
   return raise(vm, u"illegalFieldSelection", self, feature);
 }
 
-BuiltinResult Implementation<Atom>::waitOr(Self self, VM vm,
-                                           UnstableNode* result) {
+OpResult Implementation<Atom>::waitOr(Self self, VM vm,
+                                      UnstableNode* result) {
   // Wait forever
   UnstableNode dummyVar = UnstableNode::build<Variable>(vm);
-  return BuiltinResult::waitFor(vm, dummyVar);
+  return OpResult::waitFor(vm, dummyVar);
 }
 
 void Implementation<Atom>::printReprToStream(Self self, VM vm,

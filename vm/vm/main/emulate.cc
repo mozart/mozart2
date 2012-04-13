@@ -110,7 +110,7 @@ void Thread::constructor(VM vm, StableNode* abstraction,
 
   UnstableNode temp(vm, *abstraction);
 #ifndef NDEBUG
-  BuiltinResult result =
+  OpResult result =
 #endif
   Callable(temp).getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
 
@@ -305,13 +305,13 @@ void Thread::run() {
           args[i] = &XPC(3 + i);
 
         UnstableNode temp(vm, KPC(1));
-        BuiltinResult result =
+        OpResult result =
           BuiltinCallable(temp).callBuiltin(vm, argc, args);
 
         if (result.isProceed())
           advancePC(2 + argc);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
 
         break;
       }
@@ -368,7 +368,7 @@ void Thread::run() {
         UnstableNode& test = XPC(1);
         BoolOrNotBool testValue;
 
-        BuiltinResult result =
+        OpResult result =
           BooleanValue(test).valueOrNotBool(vm, &testValue);
 
         if (result.isProceed()) {
@@ -382,7 +382,7 @@ void Thread::run() {
 
           advancePC(4 + distance);
         } else {
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
         }
 
         break;
@@ -391,40 +391,40 @@ void Thread::run() {
       // Unification
 
       case OpUnifyXX: {
-        BuiltinResult result = unify(vm, XPC(1), XPC(2));
+        OpResult result = unify(vm, XPC(1), XPC(2));
         if (result.isProceed())
           advancePC(2);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
         break;
       }
 
       case OpUnifyXY: {
-        BuiltinResult result = unify(vm, XPC(1), YPC(2));
+        OpResult result = unify(vm, XPC(1), YPC(2));
         if (result.isProceed())
           advancePC(2);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
         break;
       }
 
       case OpUnifyXK: {
         UnstableNode rhs(vm, KPC(2));
-        BuiltinResult result = unify(vm, XPC(1), rhs);
+        OpResult result = unify(vm, XPC(1), rhs);
         if (result.isProceed())
           advancePC(2);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
         break;
       }
 
       case OpUnifyXG: {
         UnstableNode rhs(vm, GPC(2));
-        BuiltinResult result = unify(vm, XPC(1), rhs);
+        OpResult result = unify(vm, XPC(1), rhs);
         if (result.isProceed())
           advancePC(2);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
         break;
       }
 
@@ -505,7 +505,7 @@ void Thread::run() {
         nativeint right = IntPC(2);
         bool resultValue;
 
-        BuiltinResult result = x.equalsInteger(vm, right, &resultValue);
+        OpResult result = x.equalsInteger(vm, right, &resultValue);
 
         if (result.isProceed()) {
           if (resultValue)
@@ -513,52 +513,52 @@ void Thread::run() {
           else
             advancePC(3 + IntPC(3));
         } else {
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
         }
 
         break;
       }
 
       case OpInlineAdd: {
-        BuiltinResult result = Numeric(XPC(1)).add(vm, &XPC(2), &XPC(3));
+        OpResult result = Numeric(XPC(1)).add(vm, &XPC(2), &XPC(3));
 
         if (result.isProceed())
           advancePC(3);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
 
         break;
       }
 
       case OpInlineSubtract: {
-        BuiltinResult result = Numeric(XPC(1)).subtract(vm, &XPC(2), &XPC(3));
+        OpResult result = Numeric(XPC(1)).subtract(vm, &XPC(2), &XPC(3));
 
         if (result.isProceed())
           advancePC(3);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
 
         break;
       }
 
       case OpInlinePlus1: {
-        BuiltinResult result = IntegerValue(XPC(1)).addValue(vm, 1, &XPC(2));
+        OpResult result = IntegerValue(XPC(1)).addValue(vm, 1, &XPC(2));
 
         if (result.isProceed())
           advancePC(2);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
 
         break;
       }
 
       case OpInlineMinus1: {
-        BuiltinResult result = IntegerValue(XPC(1)).addValue(vm, -1, &XPC(2));
+        OpResult result = IntegerValue(XPC(1)).addValue(vm, -1, &XPC(2));
 
         if (result.isProceed())
           advancePC(2);
         else
-          applyBuiltinResult(vm, result, preempted);
+          applyOpResult(vm, result, preempted);
 
         break;
       }
@@ -615,13 +615,13 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  BuiltinResult result = Callable(target).getCallInfo(
+  OpResult result = Callable(target).getCallInfo(
     vm, &formalArity, &body, &start, &Xcount, &Gs, &Ks);
 
   if (result.isProceed()) {
     if (actualArity != formalArity) {
-      applyBuiltinResult(vm, raiseIllegalArity(vm, formalArity, actualArity),
-                         preempted);
+      applyOpResult(vm, raiseIllegalArity(vm, formalArity, actualArity),
+                    preempted);
       return;
     }
 
@@ -645,28 +645,28 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
     if (vm->testPreemption())
       preempted = true;
   } else {
-    applyBuiltinResult(vm, result, preempted);
+    applyOpResult(vm, result, preempted);
   }
 }
 
 void Thread::arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                               VM vm, ProgramCounter& PC, bool& preempted) {
-  BuiltinResult result = ArrayInitializer(node).initElement(vm, index, value);
+  OpResult result = ArrayInitializer(node).initElement(vm, index, value);
 
   if (result.isProceed())
     advancePC(3);
   else
-    applyBuiltinResult(vm, result, preempted);
+    applyOpResult(vm, result, preempted);
 }
 
-void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
-  switch (result.status()) {
-    case BuiltinResult::brProceed: {
+void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {
+  switch (result.kind()) {
+    case OpResult::orProceed: {
       // Do nothing
       break;
     }
 
-    case BuiltinResult::brWaitBefore: {
+    case OpResult::orWaitBefore: {
       UnstableNode waitee(vm, *result.getWaiteeNode());
       DataflowVariable(waitee).addToSuspendList(vm, this);
 
@@ -676,7 +676,7 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
       break;
     }
 
-    case BuiltinResult::brFail: {
+    case OpResult::orFail: {
       if (!vm->isOnTopLevel()) {
         vm->getCurrentSpace()->fail(vm);
         preempted = true;
@@ -687,7 +687,7 @@ void Thread::applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted) {
       // fall through
     }
 
-    case BuiltinResult::brRaise: {
+    case OpResult::orRaise: {
       // TODO Allow to catch an exception
       UnstableNode exception(vm, *result.getExceptionNode());
       std::cout << "Exception" << std::endl;

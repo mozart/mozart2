@@ -56,14 +56,14 @@ public:
   inline
   bool equals(VM vm, Self right);
 
-  BuiltinResult boolValue(Self self, VM vm, bool* result) {
+  OpResult boolValue(Self self, VM vm, bool* result) {
     *result = value();
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
-  BuiltinResult valueOrNotBool(Self self, VM vm, BoolOrNotBool* result) {
+  OpResult valueOrNotBool(Self self, VM vm, BoolOrNotBool* result) {
     *result = value() ? bTrue : bFalse;
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 private:
   const bool _value;

@@ -53,57 +53,57 @@ public:
   inline
   bool equals(VM vm, Self right);
 
-  BuiltinResult intValue(Self self, VM vm, nativeint* result) {
+  OpResult intValue(Self self, VM vm, nativeint* result) {
     *result = value();
-    return BuiltinResult::proceed();
+    return OpResult::proceed();
   }
 
   inline
-  BuiltinResult equalsInteger(Self self, VM vm, nativeint right, bool* result);
+  OpResult equalsInteger(Self self, VM vm, nativeint right, bool* result);
 
   inline
-  BuiltinResult add(Self self, VM vm, UnstableNode* right,
+  OpResult add(Self self, VM vm, UnstableNode* right,
+               UnstableNode* result);
+
+  inline
+  OpResult addValue(Self self, VM vm, nativeint b,
                     UnstableNode* result);
 
   inline
-  BuiltinResult addValue(Self self, VM vm, nativeint b,
-                         UnstableNode* result);
-
-  inline
-  BuiltinResult subtract(Self self, VM vm, UnstableNode* right,
-                         UnstableNode* result);
-
-  inline
-  BuiltinResult subtractValue(Self self, VM vm, nativeint b,
-                              UnstableNode* result);
-
-  inline
-  BuiltinResult multiply(Self self, VM vm, UnstableNode* right,
-                         UnstableNode* result);
-
-  inline
-  BuiltinResult multiplyValue(Self self, VM vm, nativeint b,
-                              UnstableNode* result);
-
-  inline
-  BuiltinResult divide(Self self, VM vm, UnstableNode* right,
-                       UnstableNode* result);
-
-  inline
-  BuiltinResult div(Self self, VM vm, UnstableNode* right,
+  OpResult subtract(Self self, VM vm, UnstableNode* right,
                     UnstableNode* result);
 
   inline
-  BuiltinResult divValue(Self self, VM vm, nativeint b,
+  OpResult subtractValue(Self self, VM vm, nativeint b,
                          UnstableNode* result);
 
   inline
-  BuiltinResult mod(Self self, VM vm, UnstableNode* right,
+  OpResult multiply(Self self, VM vm, UnstableNode* right,
                     UnstableNode* result);
 
   inline
-  BuiltinResult modValue(Self self, VM vm, nativeint b,
+  OpResult multiplyValue(Self self, VM vm, nativeint b,
                          UnstableNode* result);
+
+  inline
+  OpResult divide(Self self, VM vm, UnstableNode* right,
+                  UnstableNode* result);
+
+  inline
+  OpResult div(Self self, VM vm, UnstableNode* right,
+               UnstableNode* result);
+
+  inline
+  OpResult divValue(Self self, VM vm, nativeint b,
+                    UnstableNode* result);
+
+  inline
+  OpResult mod(Self self, VM vm, UnstableNode* right,
+               UnstableNode* result);
+
+  inline
+  OpResult modValue(Self self, VM vm, nativeint b,
+                    UnstableNode* result);
 private:
   inline
   bool testMultiplyOverflow(nativeint a, nativeint b);

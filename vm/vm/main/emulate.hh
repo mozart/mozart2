@@ -207,7 +207,7 @@ private:
   void arrayInitElement(RichNode node, size_t index, UnstableNode* value,
                         VM vm, ProgramCounter& PC, bool& preempted);
 
-  void applyBuiltinResult(VM vm, BuiltinResult result, bool& preempted);
+  void applyOpResult(VM vm, OpResult result, bool& preempted);
 
   XRegArray xregs;
   VMAllocatedList<StackEntry> stack;

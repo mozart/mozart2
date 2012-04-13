@@ -197,7 +197,7 @@ bool Space::installThis(bool isMerge) {
   bool result = true;
 
   for (auto iter = script.begin(); iter != script.end(); ++iter) {
-    BuiltinResult res = unify(vm, iter->left, iter->right);
+    OpResult res = unify(vm, iter->left, iter->right);
 
     if (!res.isProceed()) {
       assert(res.isFailed());

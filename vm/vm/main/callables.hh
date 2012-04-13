@@ -42,7 +42,7 @@ Implementation<BuiltinProcedure>::Implementation(VM vm, GR gr, Self from) {
   _builtin = from->_builtin;
 }
 
-BuiltinResult Implementation<BuiltinProcedure>::callBuiltin(
+OpResult Implementation<BuiltinProcedure>::callBuiltin(
   Self self, VM vm, int argc, UnstableNode* args[]) {
 
   if (argc == _arity)
@@ -51,10 +51,10 @@ BuiltinResult Implementation<BuiltinProcedure>::callBuiltin(
     return raiseIllegalArity(vm, _arity, argc);
 }
 
-BuiltinResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
-                                                      UnstableNode* result) {
+OpResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
+                                                 UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 /////////////////
@@ -78,27 +78,27 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
     gr->copyStableNode(_Gs[i], from[i]);
 }
 
-BuiltinResult Implementation<Abstraction>::arity(Self self, VM vm,
-                                                 UnstableNode* result) {
+OpResult Implementation<Abstraction>::arity(Self self, VM vm,
+                                            UnstableNode* result) {
   result->make<SmallInt>(vm, _arity);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Abstraction>::initElement(Self self, VM vm,
-                                                       size_t index,
-                                                       UnstableNode* value) {
+OpResult Implementation<Abstraction>::initElement(Self self, VM vm,
+                                                  size_t index,
+                                                  UnstableNode* value) {
   self[index].init(vm, *value);
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
-BuiltinResult Implementation<Abstraction>::getCallInfo(
+OpResult Implementation<Abstraction>::getCallInfo(
   Self self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
   int* Xcount, StaticArray<StableNode>* Gs, StaticArray<StableNode>* Ks) {
 
   if (!_codeAreaCacheValid) {
     UnstableNode temp(vm, _body);
     CodeAreaProvider provider = temp;
-    BuiltinResult result = provider.getCodeAreaInfo(
+    OpResult result = provider.getCodeAreaInfo(
       vm, &_start, &_Xcount, &_Ks);
 
     if (!result.isProceed())
@@ -114,7 +114,7 @@ BuiltinResult Implementation<Abstraction>::getCallInfo(
   *Gs = self.getArray();
   *Ks = _Ks;
 
-  return BuiltinResult::proceed();
+  return OpResult::proceed();
 }
 
 }

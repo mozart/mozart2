@@ -27,8 +27,6 @@
 
 #include "mozartcore-decl.hh"
 
-#include "unify-decl.hh"
-
 namespace mozart {
 
 ///////////

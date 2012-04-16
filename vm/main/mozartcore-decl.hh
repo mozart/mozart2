@@ -36,9 +36,7 @@
 #include "graphreplicator-decl.hh"
 #include "gcollect-decl.hh"
 #include "sclone-decl.hh"
+#include "unify-decl.hh"
 #include "vm-decl.hh"
-
-#include "reference-decl.hh"
-#include "gctypes-decl.hh"
 
 #endif // __MOZARTCORE_DECL_H

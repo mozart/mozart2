@@ -25,7 +25,10 @@
 #ifndef __UNIFY_DECL_H
 #define __UNIFY_DECL_H
 
-#include "mozartcore-decl.hh"
+#include "core-forward-decl.hh"
+
+#include "store-decl.hh"
+#include "vmallocatedlist-decl.hh"
 
 namespace mozart {
 

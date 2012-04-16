@@ -417,28 +417,36 @@ void Thread::run() {
       // Creation of data structures
 
       case OpArrayInitElementX: {
-        arrayInitElement(XPC(1), IntPC(2), &XPC(3),
-                         vm, PC, preempted);
+        CHECK_OPRESULT_BREAK(
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &XPC(3)));
+
+        advancePC(3);
         break;
       }
 
       case OpArrayInitElementY: {
-        arrayInitElement(XPC(1), IntPC(2), &YPC(3),
-                         vm, PC, preempted);
+        CHECK_OPRESULT_BREAK(
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &YPC(3)));
+
+        advancePC(3);
         break;
       }
 
       case OpArrayInitElementG: {
         UnstableNode value(vm, GPC(3));
-        arrayInitElement(XPC(1), IntPC(2), &value,
-                         vm, PC, preempted);
+        CHECK_OPRESULT_BREAK(
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &value));
+
+        advancePC(3);
         break;
       }
 
       case OpArrayInitElementK: {
         UnstableNode value(vm, KPC(3));
-        arrayInitElement(XPC(1), IntPC(2), &value,
-                         vm, PC, preempted);
+        CHECK_OPRESULT_BREAK(
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &value));
+
+        advancePC(3);
         break;
       }
 
@@ -617,12 +625,6 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
   // (there is no infinite execution path that does not traverse a call)
   if (vm->testPreemption())
     preempted = true;
-}
-
-void Thread::arrayInitElement(RichNode node, size_t index, UnstableNode* value,
-                              VM vm, ProgramCounter& PC, bool& preempted) {
-  CHECK_OPRESULT_RETURN(ArrayInitializer(node).initElement(vm, index, value));
-  advancePC(3);
 }
 
 void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {

@@ -27,8 +27,6 @@
 
 #include "mozartcore.hh"
 
-#include "ozlimits.hh"
-
 #include <utility>
 #include <stack>
 #include <cassert>
@@ -133,6 +131,8 @@ private:
 class Thread : public Runnable {
 private:
   typedef Runnable Super;
+
+  static constexpr int InitXRegisters = 64;
 public:
   Thread(VM vm, Space* space, StableNode* abstraction,
          bool createSuspended = false);

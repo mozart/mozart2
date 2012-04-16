@@ -36,5 +36,7 @@
 #include "atom-decl.hh"
 #include "records-decl.hh"
 #include "reifiedspace-decl.hh"
+#include "reference-decl.hh"
+#include "gctypes-decl.hh"
 
 #endif // __COREDATATYPES_DECL_H

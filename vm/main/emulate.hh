@@ -203,10 +203,6 @@ private:
             StaticArray<StableNode>& kregs,
             bool& preempted);
 
-  inline
-  void arrayInitElement(RichNode node, size_t index, UnstableNode* value,
-                        VM vm, ProgramCounter& PC, bool& preempted);
-
   void applyOpResult(VM vm, OpResult result, bool& preempted);
 
   XRegArray xregs;

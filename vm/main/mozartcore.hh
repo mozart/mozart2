@@ -33,4 +33,18 @@
 #include "coreinterfaces.hh"
 #include "matchdsl.hh"
 
+//////////////////////
+// Some more macros //
+//////////////////////
+
+#define MOZART_GET_ARG(argVar, argValue, expectedType) \
+  do { \
+    using namespace ::mozart; \
+    using namespace ::mozart::patternmatching; \
+    OpResult _macroOpResult = OpResult::proceed(); \
+    RichNode _macroValue = (argValue); \
+    if (!matches(vm, _macroOpResult, _macroValue, capture(argVar))) \
+      return matchTypeError(vm, _macroOpResult, _macroValue, (expectedType)); \
+  } while (false)
+
 #endif // __MOZARTCORE_H

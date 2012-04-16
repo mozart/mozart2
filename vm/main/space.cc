@@ -200,7 +200,7 @@ bool Space::installThis(bool isMerge) {
     OpResult res = unify(vm, iter->left, iter->right);
 
     if (!res.isProceed()) {
-      assert(res.isFailed());
+      assert(res.kind() == OpResult::orFail);
       fail(vm);
       result = false;
       break;

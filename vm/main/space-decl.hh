@@ -76,7 +76,7 @@ public:
 class Space {
 public:
   enum Status {
-    ssNormal, ssReference, ssFailed
+    ssReference, ssNormal, ssFailed
   };
 public:
   /** Construct the top-level space */
@@ -288,6 +288,9 @@ public:
   inline
   bool install();
 private:
+  inline
+  bool doInstall(Space* from);
+
   inline
   Space* findCommonAncestor(Space* other);
 

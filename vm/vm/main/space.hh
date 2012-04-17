@@ -475,6 +475,10 @@ bool Space::install() {
   if (!isAlive())
     return false;
 
+  return doInstall(from);
+}
+
+bool Space::doInstall(Space* from) {
   Space* ancestor = findCommonAncestor(from);
 
   from->deinstallTo(ancestor);

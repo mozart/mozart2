@@ -169,8 +169,6 @@ public:
 
   inline
   Space* clone(VM vm);
-private:
-  void failInternal(VM vm);
 
 // Distributor
 
@@ -190,6 +188,7 @@ public:
 // Status variable
 
 private:
+  inline
   void clearStatusVar(VM vm);
 
   inline
@@ -197,9 +196,6 @@ private:
 
   inline
   void bindStatusVar(VM vm, UnstableNode&& value);
-
-  inline
-  UnstableNode newStatusVar(VM vm);
 
   inline
   UnstableNode genSucceeded(VM vm, bool isEntailed);
@@ -271,9 +267,10 @@ private:
   inline
   bool hasRunnableThreads();
 
+  inline
   void checkStability();
 
-// Commit
+// Reference
 
 private:
   void setReference(Space* ref) {
@@ -288,6 +285,7 @@ public:
    * Try to install this space. Returns true on success and false on failure.
    * Upon failure, the highest space that could be installed is installed.
    */
+  inline
   bool install();
 private:
   inline
@@ -305,7 +303,12 @@ private:
   inline
   void deinstallThisFailed();
 
+  inline
   bool installThis(bool isMerge = false);
+
+  inline
+  void createPropagateThreadOnceAndSuspendItOnVar(
+    VM vm, Runnable*& propagateThread, RichNode variable);
 
 // The mark
 

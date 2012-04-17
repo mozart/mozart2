@@ -75,7 +75,6 @@ public:
     free(memory, size * sizeof(T));
   }
 
-  inline
   void run();
 
   inline

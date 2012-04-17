@@ -129,6 +129,9 @@ public:
   inline
   void update();
 
+  inline
+  void ensureStable(VM vm);
+
   inline void reinit(VM vm, StableNode& from);
   inline void reinit(VM vm, UnstableNode& from);
   inline void reinit(VM vm, RichNode from);
@@ -236,6 +239,10 @@ public:
   }
 
   UnstableNode(VM vm, UnstableNode& from) {
+    copy(vm, from);
+  }
+
+  UnstableNode(VM vm, RichNode from) {
     copy(vm, from);
   }
 

@@ -29,6 +29,8 @@
 
 #include "coredatatypes-decl.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 /**
@@ -45,12 +47,12 @@ namespace mozart {
 
 inline
 UnstableNode trivialBuild(VM vm, nativeint value) {
-  return UnstableNode::build<SmallInt>(vm, value);
+  return SmallInt::build(vm, value);
 }
 
 inline
 UnstableNode trivialBuild(VM vm, size_t value) {
-  return UnstableNode::build<SmallInt>(vm, value);
+  return SmallInt::build(vm, value);
 }
 
 namespace internal {
@@ -65,22 +67,22 @@ namespace internal {
 
 inline
 UnstableNode trivialBuild(VM vm, internal::intIfDifferentFromNativeInt value) {
-  return UnstableNode::build<SmallInt>(vm, value);
+  return SmallInt::build(vm, value);
 }
 
 inline
 UnstableNode trivialBuild(VM vm, bool value) {
-  return UnstableNode::build<Boolean>(vm, value);
+  return Boolean::build(vm, value);
 }
 
 inline
 UnstableNode trivialBuild(VM vm, double value) {
-  return UnstableNode::build<Float>(vm, value);
+  return Float::build(vm, value);
 }
 
 inline
 UnstableNode trivialBuild(VM vm, const char16_t* value) {
-  return UnstableNode::build<Atom>(vm, value);
+  return Atom::build(vm, value);
 }
 
 inline
@@ -95,7 +97,7 @@ UnstableNode trivialBuild(VM vm, UnstableNode& node) {
 
 inline
 UnstableNode trivialBuild(VM vm, RichNode node) {
-  return UnstableNode(vm, node.origin());
+  return UnstableNode(vm, node);
 }
 
 // Initialize the elements of an aggregate
@@ -153,13 +155,14 @@ template <class LT, class... Args>
 inline
 UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
   UnstableNode labelNode = trivialBuild(vm, std::forward<LT>(label));
-  UnstableNode result = UnstableNode::build<Tuple>(
-    vm, sizeof...(args), &labelNode);
+  UnstableNode result = Tuple::build(vm, sizeof...(args), &labelNode);
   staticInitElements<Tuple>(vm, RichNode(result).as<Tuple>(),
                             std::forward<Args>(args)...);
   return result;
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __COREBUILDERS_H

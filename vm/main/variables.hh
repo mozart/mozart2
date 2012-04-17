@@ -166,7 +166,7 @@ void Implementation<Variable>::resumePendings(VM vm) {
     RichNode variable = unstableVar;
 
     if (variable.isTransient()) {
-      UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
+      UnstableNode unit = SmallInt::build(vm, 0);
       DataflowVariable(variable).bind(vm, unit);
     }
   }
@@ -202,7 +202,7 @@ void Implementation<Variable>::resumePendingsSubSpace(VM vm,
     if (variable.isTransient()) {
       DataflowVariable df = variable;
       if (df.home()->isAncestor(currentSpace)) {
-        UnstableNode unit = UnstableNode::build<SmallInt>(vm, 0);
+        UnstableNode unit = SmallInt::build(vm, 0);
         df.bind(vm, unit);
       }
     }

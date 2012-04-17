@@ -210,6 +210,12 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
   to << "  static const " << name << "* const type() {\n";
   to << "    return &RawType<" << name << ">::rawType;\n";
   to << "  }\n";
+  to << "\n";
+  to << "  template <class... Args>\n";
+  to << "  static UnstableNode build(VM vm, Args&&... args) {\n";
+  to << "    return UnstableNode::build<" << name
+     << ">(vm, std::forward<Args>(args)...);\n";
+  to << "  }\n";
 
   if (hasPrintReprToStream) {
     to << "\n";

@@ -127,11 +127,9 @@ OpResult Implementation<Tuple>::waitOr(Self self, VM vm,
   }
 
   // Create the control variable
-  UnstableNode unstableControlVar;
-  unstableControlVar.make<Variable>(vm);
+  UnstableNode unstableControlVar = Variable::build(vm);
   RichNode controlVar = unstableControlVar;
-  controlVar.getStableRef(vm);
-  controlVar.update();
+  controlVar.ensureStable(vm);
 
   // Add the control variable to the suspension list of all the fields
   for (size_t i = 0; i < _width; i++) {

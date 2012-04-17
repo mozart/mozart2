@@ -151,11 +151,9 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
 
     // Create the control variable
 
-    UnstableNode unstableControlVar;
-    unstableControlVar.make<Variable>(vm);
+    UnstableNode unstableControlVar = Variable::build(vm);
     RichNode controlVar = unstableControlVar;
-    controlVar.getStableRef(vm);
-    controlVar.update();
+    controlVar.ensureStable(vm);
 
     // Reduce the remaining unifications
     size_t count = suspendTrail.size();
@@ -173,8 +171,7 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
       if (right.isTransient())
         DataflowVariable(right).addToSuspendList(vm, controlVar);
     } else {
-      UnstableNode label;
-      label.make<Atom>(vm, u"#");
+      UnstableNode label = Atom::build(vm, u"#");
 
       unstableLeft.make<Tuple>(vm, count, &label);
       unstableRight.make<Tuple>(vm, count, &label);

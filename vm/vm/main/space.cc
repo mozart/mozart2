@@ -90,7 +90,7 @@ void Space::checkStability() {
     if (!hasRunnableThreads()) {
       // No runnable threads: suspended
 
-      UnstableNode newStatusVar = UnstableNode::build<Unbound>(vm, parent);
+      UnstableNode newStatusVar = Unbound::build(vm, parent);
       bindStatusVar(vm, buildTuple(vm, u"suspended", newStatusVar));
       _statusVar = std::move(newStatusVar);
     }

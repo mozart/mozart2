@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 ///////////////////////
@@ -103,12 +105,6 @@ private:
   nativeint _alternatives;
   UnstableNode _var;
 };
-
-}
-
-#ifndef MOZART_GENERATOR
-
-namespace mozart {
 
 //////////////////
 // ReifiedSpace //
@@ -187,7 +183,7 @@ OpResult Implementation<ReifiedSpace>::mergeSpace(
   // Update status var
   RichNode statusVar = *space->getStatusVar();
   if (statusVar.isTransient()) {
-    UnstableNode atomMerged = UnstableNode::build<Atom>(vm, u"merged");
+    UnstableNode atomMerged = Atom::build(vm, u"merged");
     DataflowVariable(statusVar).bind(vm, atomMerged);
   }
 

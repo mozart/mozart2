@@ -75,7 +75,7 @@ OpResult Implementation<Atom>::dotNumber(Self self, VM vm,
 OpResult Implementation<Atom>::waitOr(Self self, VM vm,
                                       UnstableNode* result) {
   // Wait forever
-  UnstableNode dummyVar = UnstableNode::build<Variable>(vm);
+  UnstableNode dummyVar = Variable::build(vm);
   return OpResult::waitFor(vm, dummyVar);
 }
 

@@ -124,6 +124,14 @@ void RichNode::update() {
   _node = dereference(_node);
 }
 
+void RichNode::ensureStable(VM vm) {
+  if (_origin->node.type != Reference::type()) {
+    StableNode* stable = new (vm) StableNode;
+    stable->init(vm, *_origin);
+    _node = &stable->node;
+  }
+}
+
 void RichNode::reinit(VM vm, StableNode& from) {
   if (from.isCopiable()) {
     *_node = from.node;

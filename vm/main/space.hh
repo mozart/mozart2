@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 //////////////
@@ -234,6 +236,19 @@ void Space::makeBackupForSpeculativeBinding(StableNode* node) {
 
 // Operations
 
+void Space::fail(VM vm) {
+  assert(!isTopLevel());
+
+  Space* parent = getParent();
+  _status = ssFailed;
+  parent->decRunnableThreadCount();
+
+  deinstallThisFailed();
+  vm->setCurrentSpace(parent);
+
+  bindStatusVar(vm, trivialBuild(vm, u"failed"));
+}
+
 OpResult Space::merge(VM vm, Space* dest) {
   Space* src = this;
 
@@ -272,8 +287,24 @@ Space* Space::clone(VM vm) {
   return vm->cloneSpace(this);
 }
 
-void Space::fail(VM vm) {
-  failInternal(vm);
+// Status variable
+
+void Space::clearStatusVar(VM vm) {
+  _statusVar.make<Unbound>(vm);
+}
+
+void Space::bindStatusVar(VM vm, RichNode value) {
+  RichNode statusVar = *getStatusVar();
+  assert(statusVar.isTransient());
+  DataflowVariable(statusVar).bind(vm, value);
+}
+
+void Space::bindStatusVar(VM vm, UnstableNode&& value) {
+  bindStatusVar(vm, RichNode(value));
+}
+
+UnstableNode Space::genSucceeded(VM vm, bool isEntailed) {
+  return buildTuple(vm, u"succeeded", isEntailed ? u"entailed" : u"stuck");
 }
 
 // Garbage collection and cloning
@@ -404,6 +435,151 @@ bool Space::hasRunnableThreads() {
   return cascadedRunnableThreadCount > 0;
 }
 
+void Space::checkStability() {
+  assert(!isTopLevel());
+  assert(status() == ssNormal);
+
+  Space* parent = getParent();
+
+  if (isStable()) {
+    // Succeeded
+    vm->setCurrentSpace(parent);
+
+    if (hasDistributor()) {
+      nativeint alternatives = getDistributor()->getAlternatives();
+      UnstableNode newStatus = buildTuple(vm, u"alternatives", alternatives);
+      bindStatusVar(vm, newStatus);
+    } else {
+      bindStatusVar(vm, genSucceeded(vm, getThreadCount() == 0));
+    }
+  } else {
+    deinstallTo(parent); // TODO Why !?
+
+    if (!hasRunnableThreads()) {
+      // No runnable threads: suspended
+
+      UnstableNode newStatusVar = Unbound::build(vm, parent);
+      bindStatusVar(vm, buildTuple(vm, u"suspended", newStatusVar));
+      _statusVar = std::move(newStatusVar);
+    }
+  }
 }
+
+// Installation and deinstallation
+
+bool Space::install() {
+  Space* from = vm->getCurrentSpace();
+  if (from == this)
+    return true;
+
+  if (!isAlive())
+    return false;
+
+  Space* ancestor = findCommonAncestor(from);
+
+  from->deinstallTo(ancestor);
+  return this->installFrom(ancestor);
+}
+
+Space* Space::findCommonAncestor(Space* other) {
+  // Set marks in all ancestors of other
+  for (Space* s = other; s != nullptr; s = s->getParent())
+    s->setMark();
+
+  // Find the common ancestor, it's the first of my ancestors which is marked
+  Space* result = this;
+  while (!result->hasMark())
+    result = result->getParent();
+
+  // Unset marks
+  for (Space* s = other; s != nullptr; s = s->getParent())
+    s->unsetMark();
+
+  return result;
+}
+
+void Space::deinstallTo(Space* ancestor) {
+  for (Space* s = this; s != ancestor; ) {
+    s->deinstallThis();
+    s = s->getParent();
+    vm->setCurrentSpace(s);
+  }
+}
+
+bool Space::installFrom(Space* ancestor) {
+  if (this == ancestor)
+    return true;
+
+  if (!getParent()->installFrom(ancestor))
+    return false;
+
+  vm->setCurrentSpace(this);
+
+  return installThis();
+}
+
+void Space::deinstallThis() {
+  bool hasNoRunnableThreads = !hasRunnableThreads();
+  Runnable* propagateThread = nullptr;
+
+  while (!trail.empty()) {
+    TrailEntry& trailEntry = trail.front();
+    ScriptEntry& scriptEntry = script.append(vm);
+
+    scriptEntry.left.node = trailEntry.node->node;
+    trailEntry.node->node = trailEntry.saved;
+    scriptEntry.right.make<Reference>(vm, trailEntry.node);
+
+    if (hasNoRunnableThreads) {
+      createPropagateThreadOnceAndSuspendItOnVar(vm, propagateThread,
+                                                 scriptEntry.left);
+      createPropagateThreadOnceAndSuspendItOnVar(vm, propagateThread,
+                                                 scriptEntry.right);
+    }
+
+    trail.remove_front(vm);
+  }
+}
+
+void Space::deinstallThisFailed() {
+  while (!trail.empty()) {
+    TrailEntry& trailEntry = trail.front();
+    trailEntry.node->node = trailEntry.saved;
+    trail.remove_front(vm);
+  }
+}
+
+bool Space::installThis(bool isMerge) {
+  bool result = true;
+
+  for (auto iter = script.begin(); iter != script.end(); ++iter) {
+    OpResult res = unify(vm, iter->left, iter->right);
+
+    if (!res.isProceed()) {
+      assert(res.kind() == OpResult::orFail);
+      fail(vm);
+      result = false;
+      break;
+    }
+  }
+
+  script.clear(vm);
+
+  return result;
+}
+
+void Space::createPropagateThreadOnceAndSuspendItOnVar(
+  VM vm, Runnable*& propagateThread, RichNode variable) {
+
+  if (variable.isTransient()) {
+    if (propagateThread == nullptr)
+      propagateThread = new internal::DummyThread(vm, this, true);
+    DataflowVariable(variable).addToSuspendList(vm, propagateThread);
+  }
+}
+
+}
+
+#endif // MOZART_GENERATOR
 
 #endif // __SPACE_H

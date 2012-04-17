@@ -22,10 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_H
-#define __VM_H
-
-#include "mozartcore.hh"
+#include "mozart.hh"
 
 namespace mozart {
 
@@ -33,44 +30,41 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
-VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
-                               void* preemptionTestData) :
-  _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
-  gc(this), sc(this) {
+void VirtualMachine::run() {
+  while (true) {
+    if (gc.isGCRequired()) {
+      getTopLevelSpace()->install();
+      gc.doGC();
+    }
 
-  memoryManager.init();
+    Runnable* currentThread;
 
-  _topLevelSpace = new (this) Space(this);
-  _currentSpace = _topLevelSpace;
+    // Select a thread
+    do {
+      currentThread = threadPool.popNext();
+
+      if (currentThread == nullptr) {
+        // All remaining threads are suspended
+        // TODO Is there something special to do in that case?
+        return;
+      }
+    } while (currentThread->isTerminated());
+
+    // Install the thread's space
+    if (!currentThread->getSpace()->install()) {
+      // The space is failed, kill the thread now
+      currentThread->kill();
+      continue;
+    }
+
+    // Run the thread
+    assert(currentThread->isRunnable());
+    currentThread->run();
+
+    // Schedule the thread anew if it is still runnable
+    if (currentThread->isRunnable())
+      threadPool.schedule(currentThread);
+  }
 }
 
-bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
 }
-
-void VirtualMachine::scheduleThread(Runnable* thread) {
-  threadPool.schedule(thread);
-}
-
-void VirtualMachine::setCurrentSpace(Space* space) {
-  _currentSpace = space;
-  _isOnTopLevel = space->isTopLevel();
-}
-
-Space* VirtualMachine::cloneSpace(Space* space) {
-  return sc.doCloneSpace(space);
-}
-
-}
-
-// new operators must be declared outside of any namespace
-
-void* operator new (size_t size, mozart::VM vm) {
-  return vm->getMemory(size);
-}
-
-void* operator new[] (size_t size, mozart::VM vm) {
-  return vm->getMemory(size);
-}
-
-#endif // __VM_H

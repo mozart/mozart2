@@ -57,7 +57,7 @@ class BuiltinSymbol(name: String, val ccName: String,
   val arity = in + out
 
   def ccFullName =
-    "builtins::" + ccName
+    "builtins::" + ccName + "::builtin()"
 }
 
 object NoSymbol extends Symbol("<NoSymbol>") {

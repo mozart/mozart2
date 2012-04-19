@@ -94,7 +94,7 @@ class Program(var rawCode: Statement) {
        |  topLevelAbstraction.make<Abstraction>(vm, 0, 0, %s);
        |
        |  UnstableNode* initialThreadParams[] = { &topLevelAbstraction };
-       |  builtins::createThread(vm, initialThreadParams);
+       |  builtins::ModThread::Create::builtin().call(vm, initialThreadParams);
        |
        |  vm->run();
        |}

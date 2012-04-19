@@ -148,7 +148,7 @@ class CodeArea(val abstraction: Abstraction) {
     constant match {
       case builtin:BuiltinSymbol =>
         out << "  temp.make<BuiltinProcedure>(vm, "
-        out << "%d, (OzBuiltin) &%s);\n" % (builtin.arity, builtin.ccFullName)
+        out << "%s);\n" % builtin.ccFullName
 
       case codeArea:CodeArea =>
         out << "  temp.copy(vm, *%s);\n" % codeArea.ccCodeArea

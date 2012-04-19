@@ -37,23 +37,22 @@ namespace mozart {
 
 #include "BuiltinProcedure-implem.hh"
 
-Implementation<BuiltinProcedure>::Implementation(VM vm, GR gr, Self from) {
-  _arity = from->_arity;
-  _builtin = from->_builtin;
+Implementation<BuiltinProcedure>::Implementation(VM vm, GR gr, Self from):
+  _builtin(from->_builtin) {
 }
 
 OpResult Implementation<BuiltinProcedure>::callBuiltin(
   Self self, VM vm, int argc, UnstableNode* args[]) {
 
-  if (argc == _arity)
-    return _builtin(vm, args);
+  if (argc == getArity())
+    return _builtin.call(vm, args);
   else
-    return raiseIllegalArity(vm, _arity, argc);
+    return raiseIllegalArity(vm, getArity(), argc);
 }
 
 OpResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                  UnstableNode* result) {
-  result->make<SmallInt>(vm, _arity);
+  result->make<SmallInt>(vm, getArity());
   return OpResult::proceed();
 }
 

@@ -105,6 +105,11 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
                        UnstableNode* args[]) {
     return raiseTypeError(vm, u"BuiltinProcedure", self);
   }
+
+  template <class... Args>
+  OpResult callBuiltin(RichNode self, VM vm, Args&&... args) {
+    return raiseTypeError(vm, u"BuiltinProcedure", self);
+  }
 };
 
 class Callable;

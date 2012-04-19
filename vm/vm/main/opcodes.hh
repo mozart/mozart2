@@ -58,14 +58,21 @@ const OpCode OpCreateVarY = 0x10;
 const OpCode OpCreateVarMoveX = 0x11;
 const OpCode OpCreateVarMoveY = 0x12;
 
-const OpCode OpCallBuiltin = 0x20;
-const OpCode OpCallX = 0x21;
-const OpCode OpCallG = 0x22;
-const OpCode OpTailCallX = 0x23;
-const OpCode OpTailCallG = 0x24;
-const OpCode OpReturn = 0x25;
-const OpCode OpBranch = 0x26;
-const OpCode OpCondBranch = 0x27;
+const OpCode OpCallBuiltin0 = 0x20;
+const OpCode OpCallBuiltin1 = 0x21;
+const OpCode OpCallBuiltin2 = 0x22;
+const OpCode OpCallBuiltin3 = 0x23;
+const OpCode OpCallBuiltin4 = 0x24;
+const OpCode OpCallBuiltin5 = 0x25;
+const OpCode OpCallBuiltinN = 0x26;
+
+const OpCode OpCallX = 0x27;
+const OpCode OpCallG = 0x28;
+const OpCode OpTailCallX = 0x29;
+const OpCode OpTailCallG = 0x2A;
+const OpCode OpReturn = 0x2B;
+const OpCode OpBranch = 0x2C;
+const OpCode OpCondBranch = 0x2D;
 
 const OpCode OpUnifyXX = 0x30;
 const OpCode OpUnifyXY = 0x31;

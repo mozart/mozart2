@@ -303,14 +303,69 @@ void Thread::run() {
 
       // Control
 
-      case OpCallBuiltin: {
-        int argc = PC[2];
+      case OpCallBuiltin0: {
+        UnstableNode target(vm, KPC(1));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(vm));
+
+        advancePC(1);
+        break;
+      }
+
+      case OpCallBuiltin1: {
+        UnstableNode target(vm, KPC(1));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+          vm, XPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
+      case OpCallBuiltin2: {
+        UnstableNode target(vm, KPC(1));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+          vm, XPC(2), XPC(3)));
+
+        advancePC(3);
+        break;
+      }
+
+      case OpCallBuiltin3: {
+        UnstableNode target(vm, KPC(1));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+          vm, XPC(2), XPC(3), XPC(4)));
+
+        advancePC(4);
+        break;
+      }
+
+      case OpCallBuiltin4: {
+        UnstableNode target(vm, KPC(1));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+          vm, XPC(2), XPC(3), XPC(4), XPC(5)));
+
+        advancePC(5);
+        break;
+      }
+
+      case OpCallBuiltin5: {
+        UnstableNode target(vm, KPC(1));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+          vm, XPC(2), XPC(3), XPC(4), XPC(5), XPC(6)));
+
+        advancePC(6);
+        break;
+      }
+
+      case OpCallBuiltinN: {
+        UnstableNode target(vm, KPC(1));
+        size_t argc = IntPC(2);
+
         UnstableNode* args[argc];
-        for (int i = 0; i < argc; i++)
+        for (size_t i = 0; i < argc; i++)
           args[i] = &XPC(3 + i);
 
-        UnstableNode temp(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(temp).callBuiltin(vm, argc, args));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+          vm, argc, args));
 
         advancePC(2 + argc);
         break;

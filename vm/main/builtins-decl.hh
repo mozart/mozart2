@@ -72,7 +72,61 @@ public:
     return _arity;
   }
 
-  virtual OpResult call(VM vm, UnstableNode* args[]) = 0;
+  virtual OpResult call(VM vm, UnstableNode* args[]) {
+    switch (getArity()) {
+      case 0: return call(vm);
+      case 1: return call(vm, *args[0]);
+      case 2: return call(vm, *args[0], *args[1]);
+      case 3: return call(vm, *args[0], *args[1], *args[2]);
+      case 4: return call(vm, *args[0], *args[1], *args[2], *args[3]);
+      case 5: return call(vm, *args[0], *args[1], *args[2], *args[3], *args[4]);
+
+      default: {
+        assert(false);
+        return OpResult::proceed();
+      }
+    }
+  }
+
+  virtual OpResult call(VM vm) {
+    assert(getArity() == 0);
+    assert(false);
+    return OpResult::proceed();
+  }
+
+  virtual OpResult call(VM vm, UnstableNode& arg0) {
+    assert(getArity() == 1);
+    assert(false);
+    return OpResult::proceed();
+  }
+
+  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1) {
+    assert(getArity() == 2);
+    assert(false);
+    return OpResult::proceed();
+  }
+
+  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
+                        UnstableNode& arg2) {
+    assert(getArity() == 3);
+    assert(false);
+    return OpResult::proceed();
+  }
+
+  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
+                        UnstableNode& arg2, UnstableNode& arg3) {
+    assert(getArity() == 4);
+    assert(false);
+    return OpResult::proceed();
+  }
+
+  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
+                        UnstableNode& arg2, UnstableNode& arg3,
+                        UnstableNode& arg4) {
+    assert(getArity() == 5);
+    assert(false);
+    return OpResult::proceed();
+  }
 private:
   std::string _name;
   size_t _arity;
@@ -113,6 +167,27 @@ public:
   }
 };
 
+template <class T, size_t arity, size_t argc>
+class BuiltinEntryPointSpec {
+public:
+  template <class... Args>
+  static OpResult call(T& builtin, VM vm, Args&&... args) {
+    static_assert(sizeof...(args) == argc, "Argument count mismatch");
+    assert(false);
+    return OpResult::proceed();
+  }
+};
+
+template <class T, size_t arity>
+class BuiltinEntryPointSpec<T, arity, arity> {
+public:
+  template <class... Args>
+  static OpResult call(T& builtin, VM vm, Args&&... args) {
+    static_assert(sizeof...(args) == arity, "Argument count mismatch");
+    return builtin(vm, std::forward<Args>(args)...);
+  }
+};
+
 }
 
 /////////////
@@ -141,6 +216,39 @@ public:
   OpResult call(VM vm, UnstableNode* args[]) {
     return internal::BuiltinEntryPoint<Self, arity>::call(
       *static_cast<Self*>(this), vm, args);
+  }
+
+  OpResult call(VM vm) {
+    return internal::BuiltinEntryPointSpec<Self, arity, 0>::call(
+      *static_cast<Self*>(this), vm);
+  }
+
+  OpResult call(VM vm, UnstableNode& arg0) {
+    return internal::BuiltinEntryPointSpec<Self, arity, 1>::call(
+      *static_cast<Self*>(this), vm, arg0);
+  }
+
+  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1) {
+    return internal::BuiltinEntryPointSpec<Self, arity, 2>::call(
+      *static_cast<Self*>(this), vm, arg0, arg1);
+  }
+
+  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
+                UnstableNode& arg2) {
+    return internal::BuiltinEntryPointSpec<Self, arity, 3>::call(
+      *static_cast<Self*>(this), vm, arg0, arg1, arg2);
+  }
+
+  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
+                UnstableNode& arg2, UnstableNode& arg3) {
+    return internal::BuiltinEntryPointSpec<Self, arity, 4>::call(
+      *static_cast<Self*>(this), vm, arg0, arg1, arg2, arg3);
+  }
+
+  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
+                UnstableNode& arg2, UnstableNode& arg3, UnstableNode& arg4) {
+    return internal::BuiltinEntryPointSpec<Self, arity, 5>::call(
+      *static_cast<Self*>(this), vm, arg0, arg1, arg2, arg3, arg4);
   }
 public:
   static const size_t arity = ExtractArity<decltype(&Self::operator())>::arity;

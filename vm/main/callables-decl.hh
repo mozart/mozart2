@@ -78,6 +78,10 @@ public:
   inline
   OpResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]);
 
+  template <class... Args>
+  inline
+  OpResult callBuiltin(Self self, VM vm, Args&&... args);
+
   /**
    * Get the arity of the builtin in a node
    */

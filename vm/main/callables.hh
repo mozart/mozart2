@@ -51,6 +51,16 @@ OpResult Implementation<BuiltinProcedure>::callBuiltin(
     return raiseIllegalArity(vm, getArity(), argc);
 }
 
+template <class... Args>
+OpResult Implementation<BuiltinProcedure>::callBuiltin(
+  Self self, VM vm, Args&&... args) {
+
+  if (sizeof...(args) == getArity())
+    return _builtin->call(vm, std::forward<Args>(args)...);
+  else
+    return raiseIllegalArity(vm, getArity(), sizeof...(args));
+}
+
 OpResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                  UnstableNode* result) {
   result->make<SmallInt>(vm, getArity());

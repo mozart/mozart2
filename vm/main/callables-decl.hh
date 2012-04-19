@@ -43,21 +43,31 @@ class BuiltinProcedure;
 #endif
 
 template <>
-class Implementation<BuiltinProcedure> {
+class Implementation<BuiltinProcedure>: StoredAs<builtins::BaseBuiltin*> {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
 private:
   typedef builtins::BaseBuiltin Builtin;
 public:
-  Implementation(VM vm, Builtin& builtin): _builtin(builtin) {}
+  Implementation(Builtin* builtin): _builtin(builtin) {}
+
+  static Builtin* build(VM vm, Builtin* builtin) {
+    return builtin;
+  }
+
+  static Builtin* build(VM vm, Builtin& builtin) {
+    return &builtin;
+  }
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  static Builtin* build(VM vm, GR gr, Self from);
 
   /**
    * Arity of this builtin
    */
-  int getArity() const { return _builtin.getArity(); }
+  int getArity() {
+    return _builtin->getArity();
+  }
 
   /**
    * Call the builtin
@@ -77,10 +87,10 @@ public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
-    out << "<P/" << _builtin.getArity() << ">";
+    out << "<P/" << _builtin->getArity() << ">";
   }
 private:
-  Builtin& _builtin;
+  Builtin* _builtin;
 };
 
 #ifndef MOZART_GENERATOR

@@ -35,25 +35,11 @@ namespace builtins {
 /////////////////////////
 
 OpResult equals(VM vm, UnstableNode* args[]) {
-  RichNode left = *args[0];
-  RichNode right = *args[1];
-  bool result = false;
-
-  MOZART_CHECK_OPRESULT(mozart::equals(vm, left, right, &result));
-
-  args[2]->make<Boolean>(vm, result);
-  return OpResult::proceed();
+  return Value::EqEq::entryPoint(vm, args);
 }
 
 OpResult notEquals(VM vm, UnstableNode* args[]) {
-  RichNode left = *args[0];
-  RichNode right = *args[1];
-  bool result = false;
-
-  MOZART_CHECK_OPRESULT(mozart::notEquals(vm, left, right, &result));
-
-  args[2]->make<Boolean>(vm, result);
-  return OpResult::proceed();
+  return Value::NotEqEq::entryPoint(vm, args);
 }
 
 //////////////////
@@ -61,22 +47,15 @@ OpResult notEquals(VM vm, UnstableNode* args[]) {
 //////////////////
 
 OpResult wait(VM vm, UnstableNode* args[]) {
-  RichNode value = *args[0];
-
-  if (value.isTransient())
-    return OpResult::waitFor(vm, value);
-  else
-    return OpResult::proceed();
+  return Value::Wait::entryPoint(vm, args);
 }
 
 OpResult waitOr(VM vm, UnstableNode* args[]) {
-  return RecordLike(*args[0]).waitOr(vm, args[1]);
+  return Record::WaitOr::entryPoint(vm, args);
 }
 
 OpResult isDet(VM vm, UnstableNode* args[]) {
-  RichNode value = *args[0];
-  args[1]->make<Boolean>(vm, !value.isTransient());
-  return OpResult::proceed();
+  return Value::IsDet::entryPoint(vm, args);
 }
 
 ////////////////
@@ -84,33 +63,27 @@ OpResult isDet(VM vm, UnstableNode* args[]) {
 ////////////////
 
 OpResult add(VM vm, UnstableNode* args[]) {
-  Numeric x = *args[0];
-  return x.add(vm, args[1], args[2]);
+  return Number::Add::entryPoint(vm, args);
 }
 
 OpResult subtract(VM vm, UnstableNode* args[]) {
-  Numeric x = *args[0];
-  return x.subtract(vm, args[1], args[2]);
+  return Number::Subtract::entryPoint(vm, args);
 }
 
 OpResult multiply(VM vm, UnstableNode* args[]) {
-  Numeric x = *args[0];
-  return x.multiply(vm, args[1], args[2]);
+  return Number::Multiply::entryPoint(vm, args);
 }
 
 OpResult divide(VM vm, UnstableNode* args[]) {
-  Numeric x = *args[0];
-  return x.divide(vm, args[1], args[2]);
+  return Float::Divide::entryPoint(vm, args);
 }
 
 OpResult div(VM vm, UnstableNode* args[]) {
-  Numeric x = *args[0];
-  return x.div(vm, args[1], args[2]);
+  return Int::Div::entryPoint(vm, args);
 }
 
 OpResult mod(VM vm, UnstableNode* args[]) {
-  Numeric x = *args[0];
-  return x.mod(vm, args[1], args[2]);
+  return Int::Mod::entryPoint(vm, args);
 }
 
 /////////////
@@ -118,17 +91,15 @@ OpResult mod(VM vm, UnstableNode* args[]) {
 /////////////
 
 OpResult label(VM vm, UnstableNode* args[]) {
-  return RecordLike(*args[0]).label(vm, args[1]);
+  return Record::Label::entryPoint(vm, args);
 }
 
 OpResult width(VM vm, UnstableNode* args[]) {
-  RecordLike x = *args[0];
-  return x.width(vm, args[1]);
+  return Record::Width::entryPoint(vm, args);
 }
 
 OpResult dot(VM vm, UnstableNode* args[]) {
-  RecordLike x = *args[0];
-  return x.dot(vm, args[1], args[2]);
+  return Value::Dot::entryPoint(vm, args);
 }
 
 /////////////
@@ -136,13 +107,7 @@ OpResult dot(VM vm, UnstableNode* args[]) {
 /////////////
 
 OpResult createThread(VM vm, UnstableNode* args[]) {
-  RichNode target = *args[0];
-
-  MOZART_CHECK_OPRESULT(expectCallable(vm, target, 0));
-
-  new (vm) Thread(vm, vm->getCurrentSpace(), target.getStableRef(vm));
-
-  return OpResult::proceed();
+  return ModThread::Create::entryPoint(vm, args);
 }
 
 ///////////////////
@@ -150,8 +115,7 @@ OpResult createThread(VM vm, UnstableNode* args[]) {
 ///////////////////
 
 OpResult show(VM vm, UnstableNode* args[]) {
-  std::cout << repr(vm, *args[0]) << std::endl;
-  return OpResult::proceed();
+  return System::Show::entryPoint(vm, args);
 }
 
 ////////////
@@ -159,87 +123,31 @@ OpResult show(VM vm, UnstableNode* args[]) {
 ////////////
 
 OpResult newSpace(VM vm, UnstableNode* args[]) {
-  RichNode target = *args[0];
-
-  MOZART_CHECK_OPRESULT(expectCallable(vm, target, 1));
-
-  Space* currentSpace = vm->getCurrentSpace();
-
-  // Create the space
-  Space* space = new (vm) Space(vm, currentSpace);
-
-  // Create the thread {Proc Root}
-  UnstableNode rootVar(vm, *space->getRootVar());
-  UnstableNode* threadArgs[] = { &rootVar };
-
-  new (vm) Thread(vm, space, target.getStableRef(vm), 1, threadArgs);
-
-  // Create the reification of the space
-  args[1]->make<ReifiedSpace>(vm, space);
-
-  return OpResult::proceed();
+  return ModSpace::New::entryPoint(vm, args);
 }
 
 OpResult askSpace(VM vm, UnstableNode* args[]) {
-  return SpaceLike(*args[0]).askSpace(vm, args[1]);
+  return ModSpace::Ask::entryPoint(vm, args);
 }
 
 OpResult askVerboseSpace(VM vm, UnstableNode* args[]) {
-  return SpaceLike(*args[0]).askVerboseSpace(vm, args[1]);
+  return ModSpace::AskVerbose::entryPoint(vm, args);
 }
 
 OpResult mergeSpace(VM vm, UnstableNode* args[]) {
-  return SpaceLike(*args[0]).mergeSpace(vm, args[1]);
+  return ModSpace::Merge::entryPoint(vm, args);
 }
 
 OpResult commitSpace(VM vm, UnstableNode* args[]) {
-  return SpaceLike(*args[0]).commitSpace(vm, args[1]);
+  return ModSpace::Commit::entryPoint(vm, args);
 }
 
 OpResult cloneSpace(VM vm, UnstableNode* args[]) {
-  return SpaceLike(*args[0]).cloneSpace(vm, args[1]);
+  return ModSpace::Clone::entryPoint(vm, args);
 }
 
 OpResult chooseSpace(VM vm, UnstableNode* args[]) {
-  nativeint alternatives = 0;
-  MOZART_GET_ARG(alternatives, *args[0], u"integer");
-
-  Space* space = vm->getCurrentSpace();
-
-  if (space->isTopLevel()) {
-    args[1]->make<Unbound>(vm);
-  } else if (space->hasDistributor()) {
-    return raise(vm, u"spaceDistributor");
-  } else {
-    ChooseDistributor* distributor =
-      new (vm) ChooseDistributor(vm, space, alternatives);
-
-    space->setDistributor(distributor);
-    args[1]->copy(vm, *distributor->getVar());
-  }
-
-  return OpResult::proceed();
-}
-
-///////////
-// Utils //
-///////////
-
-OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
-  int arity = 0;
-  StableNode* body;
-  ProgramCounter start;
-  int Xcount;
-  StaticArray<StableNode> Gs;
-  StaticArray<StableNode> Ks;
-
-  MOZART_CHECK_OPRESULT(Callable(target).getCallInfo(
-    vm, &arity, &body, &start, &Xcount, &Gs, &Ks));
-
-  if (arity != expectedArity)
-    return raiseIllegalArity(vm, expectedArity, arity);
-
-  return OpResult::proceed();
+  return ModSpace::Choose::entryPoint(vm, args);
 }
 
 }

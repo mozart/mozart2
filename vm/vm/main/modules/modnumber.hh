@@ -22,37 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __MODNUMBER_H
+#define __MODNUMBER_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "coredatatypes.hh"
-#include "corebuiltins.hh"
+#ifndef MOZART_GENERATOR
 
-#include "builtinutils.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+namespace mozart {
 
-#include "emulate.hh"
+namespace builtins {
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+///////////////////
+// Number module //
+///////////////////
 
-#endif // __MOZART_H
+class Number: public Module {
+public:
+  Number(): Module("Number") {}
+
+  class Add: public Builtin<Add> {
+  public:
+    Add(): Builtin("+") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return Numeric(left).add(vm, &right.origin(), &result);
+    }
+  };
+
+  class Subtract: public Builtin<Subtract> {
+  public:
+    Subtract(): Builtin("-") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return Numeric(left).subtract(vm, &right.origin(), &result);
+    }
+  };
+
+  class Multiply: public Builtin<Multiply> {
+  public:
+    Multiply(): Builtin("*") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return Numeric(left).multiply(vm, &right.origin(), &result);
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODNUMBER_H

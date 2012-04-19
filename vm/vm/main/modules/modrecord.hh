@@ -22,37 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __MODRECORD_H
+#define __MODRECORD_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "coredatatypes.hh"
-#include "corebuiltins.hh"
+#ifndef MOZART_GENERATOR
 
-#include "builtinutils.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+namespace mozart {
 
-#include "emulate.hh"
+namespace builtins {
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+///////////////////
+// Record module //
+///////////////////
 
-#endif // __MOZART_H
+class Record: public Module {
+public:
+  Record(): Module("Record") {}
+
+  class Label: public Builtin<Label> {
+  public:
+    Label(): Builtin("label") {}
+
+    OpResult operator()(VM vm, In record, Out result) {
+      return RecordLike(record).label(vm, &result);
+    }
+  };
+
+  class Width: public Builtin<Width> {
+  public:
+    Width(): Builtin("width") {}
+
+    OpResult operator()(VM vm, In record, Out result) {
+      return RecordLike(record).width(vm, &result);
+    }
+  };
+
+  class WaitOr: public Builtin<WaitOr> {
+  public:
+    WaitOr(): Builtin("waitOr") {}
+
+    OpResult operator()(VM vm, In record, Out result) {
+      return RecordLike(record).waitOr(vm, &result);
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODRECORD_H

@@ -22,37 +22,66 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __MODINT_H
+#define __MODINT_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "coredatatypes.hh"
-#include "corebuiltins.hh"
+#ifndef MOZART_GENERATOR
 
-#include "builtinutils.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+namespace mozart {
 
-#include "emulate.hh"
+namespace builtins {
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+////////////////
+// Int module //
+////////////////
 
-#endif // __MOZART_H
+class Int: public Module {
+public:
+  Int(): Module("Int") {}
+
+  class Div: public Builtin<Div> {
+  public:
+    Div(): Builtin("div") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return Numeric(left).div(vm, &right.origin(), &result);
+    }
+  };
+
+  class Mod: public Builtin<Mod> {
+  public:
+    Mod(): Builtin("mod") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return Numeric(left).mod(vm, &right.origin(), &result);
+    }
+  };
+
+  class Plus1: public Builtin<Plus1> {
+  public:
+    Plus1(): Builtin("+1") {}
+
+    OpResult operator()(VM vm, In operand, Out result) {
+      return IntegerValue(operand).addValue(vm, 1, &result);
+    }
+  };
+
+  class Minus1: public Builtin<Minus1> {
+  public:
+    Minus1(): Builtin("-1") {}
+
+    OpResult operator()(VM vm, In operand, Out result) {
+      return IntegerValue(operand).addValue(vm, -1, &result);
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODINT_H

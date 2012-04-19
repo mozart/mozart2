@@ -28,17 +28,13 @@
 #include "mozartcore-decl.hh"
 
 #include "opcodes.hh"
+#include "builtins-decl.hh"
 
 namespace mozart {
 
 //////////////////////
 // BuiltinProcedure //
 //////////////////////
-
-/**
- * Type of a builtin function
- */
-typedef OpResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
 
 class BuiltinProcedure;
 
@@ -50,9 +46,10 @@ template <>
 class Implementation<BuiltinProcedure> {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
+private:
+  typedef builtins::BaseBuiltin Builtin;
 public:
-  Implementation(VM, int arity, OzBuiltin builtin) :
-    _arity(arity), _builtin(builtin) {}
+  Implementation(VM vm, Builtin& builtin): _builtin(builtin) {}
 
   inline
   Implementation(VM vm, GR gr, Self from);
@@ -60,7 +57,7 @@ public:
   /**
    * Arity of this builtin
    */
-  int getArity() const { return _arity; }
+  int getArity() const { return _builtin.getArity(); }
 
   /**
    * Call the builtin
@@ -80,11 +77,10 @@ public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
-    out << "<P/" << _arity << ">";
+    out << "<P/" << _builtin.getArity() << ">";
   }
 private:
-  int _arity;
-  OzBuiltin _builtin;
+  Builtin& _builtin;
 };
 
 #ifndef MOZART_GENERATOR

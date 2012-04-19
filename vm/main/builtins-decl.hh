@@ -71,6 +71,8 @@ public:
   size_t getArity() {
     return _arity;
   }
+
+  virtual OpResult call(VM vm, UnstableNode* args[]) = 0;
 private:
   std::string _name;
   size_t _arity;
@@ -136,10 +138,15 @@ private:
 public:
   Builtin(const std::string& name): BaseBuiltin(name, arity) {}
 
+  OpResult call(VM vm, UnstableNode* args[]) {
+    return internal::BuiltinEntryPoint<Self, arity>::call(
+      *static_cast<Self*>(this), vm, args);
+  }
+public:
   static const size_t arity = ExtractArity<decltype(&Self::operator())>::arity;
 
   static OpResult entryPoint(VM vm, UnstableNode* args[]) {
-    return internal::BuiltinEntryPoint<Self, arity>::call(builtin(), vm, args);
+    return builtin().call(vm, args);
   }
 
   static Self& builtin() {

@@ -89,12 +89,6 @@ OpResult commitSpace(VM vm, UnstableNode* args[]);
 OpResult cloneSpace(VM vm, UnstableNode* args[]);
 OpResult chooseSpace(VM vm, UnstableNode* args[]);
 
-///////////
-// Utils //
-///////////
-
-OpResult expectCallable(VM vm, RichNode target, int expectedArity);
-
 }
 
 }

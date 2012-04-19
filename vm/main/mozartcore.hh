@@ -32,6 +32,8 @@
 #include "exchelpers-decl.hh"
 #include "coreinterfaces.hh"
 #include "matchdsl.hh"
+#include "builtins-decl.hh"
+#include "builtinutils-decl.hh"
 
 //////////////////////
 // Some more macros //

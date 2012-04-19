@@ -22,37 +22,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __MODSYSTEM_H
+#define __MODSYSTEM_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "coredatatypes.hh"
-#include "corebuiltins.hh"
+#include <iostream>
 
-#include "builtinutils.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+#ifndef MOZART_GENERATOR
 
-#include "emulate.hh"
+namespace mozart {
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+namespace builtins {
 
-#endif // __MOZART_H
+///////////////////
+// System module //
+///////////////////
+
+class System: public Module {
+public:
+  System(): Module("System") {}
+
+  class Show: public Builtin<Show> {
+  public:
+    Show(): Builtin("show") {}
+
+    OpResult operator()(VM vm, In value) {
+      std::cout << repr(vm, value) << std::endl;
+      return OpResult::proceed();
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODSYSTEM_H

@@ -22,37 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __BUILTINUTILS_DECL_H
+#define __BUILTINUTILS_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#include "coredatatypes.hh"
-#include "corebuiltins.hh"
+namespace mozart {
 
-#include "builtinutils.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+namespace builtins {
 
-#include "emulate.hh"
+inline
+OpResult expectCallable(VM vm, RichNode target, int expectedArity);
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+}
 
-#endif // __MOZART_H
+}
+
+#endif // __BUILTINUTILS_DECL_H

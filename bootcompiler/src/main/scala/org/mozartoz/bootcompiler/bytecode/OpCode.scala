@@ -48,9 +48,20 @@ case class OpCreateVarY(dest: YReg) extends OpCode
 /** Call the `builtin` whose arity is `arity` with the arguments `args` */
 case class OpCallBuiltin(builtin: KReg, arity: ImmInt,
     args: List[XReg]) extends OpCode {
-  override def argumentCount = 2 + arity.value
+  private val argc = arity.value
+  private val isSpec = argc <= 5
 
-  override def arguments = builtin :: arity :: args
+  override val name =
+    if (isSpec) "OpCallBuiltin" + argc.toString()
+    else "OpCallBuiltinN"
+
+  override def argumentCount =
+    if (isSpec) 1 + argc
+    else 2 + argc
+
+  override def arguments =
+    if (isSpec) builtin :: args
+    else builtin :: arity :: args
 }
 
 /** Call the `target` whose arity is supposed to be `arity`

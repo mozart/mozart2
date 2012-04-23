@@ -52,53 +52,43 @@ public:
   inline
   bool equals(VM vm, Self right);
 
-  OpResult floatValue(Self self, VM vm, double* result) {
-    *result = value();
+  OpResult floatValue(Self self, VM vm, double& result) {
+    result = value();
     return OpResult::proceed();
   }
 
   inline
-  OpResult equalsFloat(Self self, VM vm, double right, bool* result);
+  OpResult equalsFloat(Self self, VM vm, double right, bool& result);
 
   inline
-  OpResult add(Self self, VM vm, UnstableNode* right,
-               UnstableNode* result);
+  OpResult add(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult addValue(Self self, VM vm, double b,
-                    UnstableNode* result);
+  OpResult addValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult subtract(Self self, VM vm, UnstableNode* right,
-                    UnstableNode* result);
+  OpResult subtract(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult subtractValue(Self self, VM vm, double b,
-                         UnstableNode* result);
+  OpResult subtractValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult multiply(Self self, VM vm, UnstableNode* right,
-                    UnstableNode* result);
+  OpResult multiply(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult multiplyValue(Self self, VM vm, double b,
-                         UnstableNode* result);
+  OpResult multiplyValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult divide(Self self, VM vm, UnstableNode* right,
-                  UnstableNode* result);
+  OpResult divide(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult divideValue(Self self, VM vm, double b,
-                       UnstableNode* result);
+  OpResult divideValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult div(Self self, VM vm, UnstableNode* right,
-               UnstableNode* result);
+  OpResult div(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult mod(Self self, VM vm, UnstableNode* right,
-               UnstableNode* result);
+  OpResult mod(Self self, VM vm, RichNode right, UnstableNode& result);
 public:
   // Miscellaneous
 

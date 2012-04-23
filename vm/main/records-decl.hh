@@ -50,7 +50,7 @@ public:
 public:
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 UnstableNode* label);
+                 RichNode label);
 
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
@@ -73,28 +73,25 @@ public:
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
   inline
-  OpResult label(Self self, VM vm, UnstableNode* result);
+  OpResult label(Self self, VM vm, UnstableNode& result);
 
   /**
    * Get the width of the tuple in a node
    */
   inline
-  OpResult width(Self self, VM vm, UnstableNode* result);
+  OpResult width(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index,
-                       UnstableNode* value);
+  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
 
   inline
-  OpResult dot(Self self, VM vm, UnstableNode* feature,
-               UnstableNode* result);
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
 
   inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature,
-                     UnstableNode* result);
+  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
 
   inline
-  OpResult waitOr(Self self, VM vm, UnstableNode* result);
+  OpResult waitOr(Self self, VM vm, UnstableNode& result);
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);

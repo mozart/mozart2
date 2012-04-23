@@ -74,18 +74,18 @@ OpResult fullUnify(VM vm, RichNode left, RichNode right) {
   return walk.run(left, right);
 }
 
-OpResult fullEquals(VM vm, RichNode left, RichNode right, bool* result) {
+OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkEquals);
   OpResult res = walk.run(left, right);
 
   switch (res.kind()) {
     case OpResult::orProceed: {
-      *result = true;
+      result = true;
       return OpResult::proceed();
     }
 
     case OpResult::orFail: {
-      *result = false;
+      result = false;
       return OpResult::proceed();
     }
 
@@ -173,8 +173,8 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
     } else {
       UnstableNode label = Atom::build(vm, u"#");
 
-      unstableLeft.make<Tuple>(vm, count, &label);
-      unstableRight.make<Tuple>(vm, count, &label);
+      unstableLeft.make<Tuple>(vm, count, label);
+      unstableRight.make<Tuple>(vm, count, label);
 
       auto leftTuple = RichNode(unstableLeft).as<Tuple>();
       auto rightTuple = RichNode(unstableRight).as<Tuple>();
@@ -183,14 +183,14 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
       for (auto iter = suspendTrail.begin();
            iter != suspendTrail.end(); i++, ++iter) {
         UnstableNode leftTemp(vm, *iter->left);
-        leftTuple.initElement(vm, i, &leftTemp);
+        leftTuple.initElement(vm, i, leftTemp);
 
         RichNode richLeftTemp = leftTemp;
         if (richLeftTemp.isTransient())
           DataflowVariable(richLeftTemp).addToSuspendList(vm, controlVar);
 
         UnstableNode rightTemp(vm, *iter->right);
-        rightTuple.initElement(vm, i, &rightTemp);
+        rightTuple.initElement(vm, i, rightTemp);
 
         RichNode richRightTemp = rightTemp;
         if (richRightTemp.isTransient())

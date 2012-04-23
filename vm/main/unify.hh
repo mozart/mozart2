@@ -67,7 +67,7 @@ void WalkStack::clear(VM vm) {
 
 OpResult fullUnify(VM vm, RichNode left, RichNode right);
 
-OpResult fullEquals(VM vm, RichNode left, RichNode right, bool* result);
+OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result);
 
 #ifndef MOZART_GENERATOR
 
@@ -95,9 +95,9 @@ OpResult unify(VM vm, RichNode left, RichNode right) {
   return fullUnify(vm, left, right);
 }
 
-OpResult equals(VM vm, RichNode left, RichNode right, bool* result) {
+OpResult equals(VM vm, RichNode left, RichNode right, bool& result) {
   if (left.isSameNode(right)) {
-    *result = true;
+    result = true;
     return OpResult::proceed();
   }
 
@@ -109,17 +109,17 @@ OpResult equals(VM vm, RichNode left, RichNode right, bool* result) {
 
   if (leftBehavior != sbVariable && rightBehavior != sbVariable) {
     if (leftType != rightType) {
-      *result = false;
+      result = false;
       return OpResult::proceed();
     }
 
     switch (leftBehavior) {
       case sbValue:
-        *result = ValueEquatable(left).equals(vm, right);
+        result = ValueEquatable(left).equals(vm, right);
         return OpResult::proceed();
 
       case sbTokenEq:
-        *result = false;
+        result = false;
         return OpResult::proceed();
 
       default: ; // fall through
@@ -129,11 +129,11 @@ OpResult equals(VM vm, RichNode left, RichNode right, bool* result) {
   return fullEquals(vm, left, right, result);
 }
 
-OpResult notEquals(VM vm, RichNode left, RichNode right, bool* result) {
+OpResult notEquals(VM vm, RichNode left, RichNode right, bool& result) {
   OpResult res = equals(vm, left, right, result);
 
   if (res.isProceed())
-    *result = !*result;
+    result = !result;
 
   return res;
 }

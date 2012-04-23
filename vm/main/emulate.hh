@@ -134,10 +134,10 @@ private:
 
   static constexpr int InitXRegisters = 64;
 public:
-  Thread(VM vm, Space* space, StableNode* abstraction,
+  Thread(VM vm, Space* space, RichNode abstraction,
          bool createSuspended = false);
 
-  Thread(VM vm, Space* space, StableNode* abstraction,
+  Thread(VM vm, Space* space, RichNode abstraction,
          size_t argc, UnstableNode* args[],
          bool createSuspended = false);
 
@@ -174,7 +174,7 @@ protected:
   }
 private:
   inline
-  void constructor(VM vm, StableNode* abstraction,
+  void constructor(VM vm, RichNode abstraction,
                    size_t argc, UnstableNode* args[],
                    bool createSuspended);
 

@@ -279,7 +279,7 @@ template <>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value, nativeint pattern) {
   bool res = false;
-  result = IntegerValue(value).equalsInteger(vm, pattern, &res);
+  result = IntegerValue(value).equalsInteger(vm, pattern, res);
   return result.isProceed() && res;
 }
 
@@ -300,7 +300,7 @@ template <>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value, bool pattern) {
   BoolOrNotBool boolValue = bNotBool;
-  result = BooleanValue(value).valueOrNotBool(vm, &boolValue);
+  result = BooleanValue(value).valueOrNotBool(vm, boolValue);
   return result.isProceed() && (boolValue == (pattern ? bTrue : bFalse));
 }
 
@@ -324,7 +324,7 @@ template <>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value, RichNode pattern) {
   bool res = false;
-  result = equals(vm, value, pattern, &res);
+  result = equals(vm, value, pattern, res);
   return result.isProceed() && res;
 }
 

@@ -46,89 +46,78 @@ bool Implementation<Float>::equals(VM vm, Self right) {
 }
 
 OpResult Implementation<Float>::equalsFloat(Self self, VM vm,
-                                            double right,
-                                            bool* result) {
-  *result = value() == right;
+                                            double right, bool& result) {
+  result = value() == right;
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::add(Self self, VM vm,
-                                    UnstableNode* right,
-                                    UnstableNode* result) {
+                                    RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, *right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, u"float");
 
   return addValue(self, vm, rightFloatValue, result);
 }
 
 OpResult Implementation<Float>::addValue(Self self, VM vm,
-                                         double b,
-                                         UnstableNode* result) {
-  result->make<Float>(vm, value() + b);
+                                         double b, UnstableNode& result) {
+  result.make<Float>(vm, value() + b);
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::subtract(Self self, VM vm,
-                                         UnstableNode* right,
-                                         UnstableNode* result) {
+                                         RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, *right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, u"float");
 
   return subtractValue(self, vm, rightFloatValue, result);
 }
 
 OpResult Implementation<Float>::subtractValue(Self self, VM vm,
-                                              double b,
-                                              UnstableNode* result) {
-  result->make<Float>(vm, value() - b);
+                                              double b, UnstableNode& result) {
+  result.make<Float>(vm, value() - b);
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::multiply(Self self, VM vm,
-                                         UnstableNode* right,
-                                         UnstableNode* result) {
+                                         RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, *right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, u"float");
 
   return multiplyValue(self, vm, rightFloatValue, result);
 }
 
 OpResult Implementation<Float>::multiplyValue(Self self, VM vm,
-                                              double b,
-                                              UnstableNode* result) {
-  result->make<Float>(vm, value() * b);
+                                              double b, UnstableNode& result) {
+  result.make<Float>(vm, value() * b);
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::divide(Self self, VM vm,
-                                       UnstableNode* right,
-                                       UnstableNode* result) {
+                                       RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, *right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, u"float");
 
   return divideValue(self, vm, rightFloatValue, result);
 }
 
 OpResult Implementation<Float>::divideValue(Self self, VM vm,
-                                            double b,
-                                            UnstableNode* result) {
-  result->make<Float>(vm, value() / b);
+                                            double b, UnstableNode& result) {
+  result.make<Float>(vm, value() / b);
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::div(Self self, VM vm,
-                                    UnstableNode* right,
-                                    UnstableNode* result) {
+                                    RichNode right, UnstableNode& result) {
   return raiseTypeError(vm, u"Integer", self);
 }
 
 OpResult Implementation<Float>::mod(Self self, VM vm,
-                                    UnstableNode* right,
-                                    UnstableNode* result) {
+                                    RichNode right, UnstableNode& result) {
   return raiseTypeError(vm, u"Integer", self);
 }
 

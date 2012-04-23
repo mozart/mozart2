@@ -39,8 +39,8 @@ namespace mozart {
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
                                       StaticArray<StableNode> _elements,
-                                      UnstableNode* label) {
-  _label.init(vm, *label);
+                                      RichNode label) {
+  _label.init(vm, label);
   _width = width;
 
   // Initialize elements with non-random data
@@ -75,39 +75,37 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
 }
 
 OpResult Implementation<Tuple>::label(Self self, VM vm,
-                                      UnstableNode* result) {
-  result->copy(vm, _label);
+                                      UnstableNode& result) {
+  result.copy(vm, _label);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Tuple>::width(Self self, VM vm,
-                                      UnstableNode* result) {
-  result->make<SmallInt>(vm, _width);
+                                      UnstableNode& result) {
+  result.make<SmallInt>(vm, _width);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Tuple>::initElement(Self self, VM vm,
-                                            size_t index,
-                                            UnstableNode* value) {
-  self[index].init(vm, *value);
+                                            size_t index, RichNode value) {
+  self[index].init(vm, value);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Tuple>::dot(Self self, VM vm,
-                                    UnstableNode* feature,
-                                    UnstableNode* result) {
+                                    RichNode feature, UnstableNode& result) {
   nativeint featureIntValue = 0;
-  MOZART_GET_ARG(featureIntValue, *feature, u"integer");
+  MOZART_GET_ARG(featureIntValue, feature, u"integer");
 
   return dotNumber(self, vm, featureIntValue, result);
 }
 
 OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
                                           nativeint feature,
-                                          UnstableNode* result) {
+                                          UnstableNode& result) {
   if ((feature > 0) && ((size_t) feature <= _width)) {
     // Inside bounds
-    result->copy(vm, self[(size_t) feature - 1]);
+    result.copy(vm, self[(size_t) feature - 1]);
     return OpResult::proceed();
   } else {
     // Out of bounds
@@ -116,12 +114,12 @@ OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
 }
 
 OpResult Implementation<Tuple>::waitOr(Self self, VM vm,
-                                       UnstableNode* result) {
+                                       UnstableNode& result) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < _width; i++) {
     UnstableNode field(vm, self[i]);
     if (!RichNode(field).isTransient()) {
-      result->make<SmallInt>(vm, i+1);
+      result.make<SmallInt>(vm, i+1);
       return OpResult::proceed();
     }
   }

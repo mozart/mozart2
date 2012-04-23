@@ -62,8 +62,8 @@ OpResult Implementation<BuiltinProcedure>::callBuiltin(
 }
 
 OpResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
-                                                 UnstableNode* result) {
-  result->make<SmallInt>(vm, getArity());
+                                                 UnstableNode& result) {
+  result.make<SmallInt>(vm, getArity());
   return OpResult::proceed();
 }
 
@@ -89,36 +89,36 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
 }
 
 OpResult Implementation<Abstraction>::arity(Self self, VM vm,
-                                            UnstableNode* result) {
-  result->make<SmallInt>(vm, _arity);
+                                            UnstableNode& result) {
+  result.make<SmallInt>(vm, _arity);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Abstraction>::initElement(Self self, VM vm,
                                                   size_t index,
-                                                  UnstableNode* value) {
-  self[index].init(vm, *value);
+                                                  RichNode value) {
+  self[index].init(vm, value);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Abstraction>::getCallInfo(
-  Self self, VM vm, int* arity, StableNode** body, ProgramCounter* start,
-  int* Xcount, StaticArray<StableNode>* Gs, StaticArray<StableNode>* Ks) {
+  Self self, VM vm, int& arity, StableNode*& body, ProgramCounter& start,
+  int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (!_codeAreaCacheValid) {
     UnstableNode temp(vm, _body);
     MOZART_CHECK_OPRESULT(
-      CodeAreaProvider(temp).getCodeAreaInfo(vm, &_start, &_Xcount, &_Ks));
+      CodeAreaProvider(temp).getCodeAreaInfo(vm, _start, _Xcount, _Ks));
 
     _codeAreaCacheValid = true;
   }
 
-  *arity = _arity;
-  *body = &_body;
-  *start = _start;
-  *Xcount = _Xcount;
-  *Gs = self.getArray();
-  *Ks = _Ks;
+  arity = _arity;
+  body = &_body;
+  start = _start;
+  Xcount = _Xcount;
+  Gs = self.getArray();
+  Ks = _Ks;
 
   return OpResult::proceed();
 }

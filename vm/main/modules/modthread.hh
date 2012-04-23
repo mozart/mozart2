@@ -48,7 +48,7 @@ public:
     OpResult operator()(VM vm, In target) {
       MOZART_CHECK_OPRESULT(expectCallable(vm, target, 0));
 
-      new (vm) Thread(vm, vm->getCurrentSpace(), target.getStableRef(vm));
+      new (vm) Thread(vm, vm->getCurrentSpace(), target);
 
       return OpResult::proceed();
     }

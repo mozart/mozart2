@@ -46,7 +46,7 @@ public:
     Dot(): Builtin(".") {}
 
     OpResult operator()(VM vm, In record, In feature, Out result) {
-      return RecordLike(record).dot(vm, &feature.origin(), &result);
+      return RecordLike(record).dot(vm, feature, result);
     }
   };
 
@@ -56,7 +56,7 @@ public:
 
     OpResult operator()(VM vm, In left, In right, Out result) {
       bool res = false;
-      MOZART_CHECK_OPRESULT(equals(vm, left, right, &res));
+      MOZART_CHECK_OPRESULT(equals(vm, left, right, res));
 
       result.make<Boolean>(vm, res);
       return OpResult::proceed();
@@ -69,7 +69,7 @@ public:
 
     OpResult operator()(VM vm, In left, In right, Out result) {
       bool res = false;
-      MOZART_CHECK_OPRESULT(notEquals(vm, left, right, &res));
+      MOZART_CHECK_OPRESULT(notEquals(vm, left, right, res));
 
       result.make<Boolean>(vm, res);
       return OpResult::proceed();

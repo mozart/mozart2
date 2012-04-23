@@ -64,21 +64,19 @@ public:
   // RecordLike interface
 
   inline
-  OpResult label(Self self, VM vm, UnstableNode* result);
+  OpResult label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult width(Self self, VM vm, UnstableNode* result);
+  OpResult width(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult dot(Self self, VM vm, UnstableNode* feature,
-               UnstableNode* result);
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
 
   inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature,
-                     UnstableNode* result);
+  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
 
   inline
-  OpResult waitOr(Self self, VM vm, UnstableNode* result);
+  OpResult waitOr(Self self, VM vm, UnstableNode& result);
 public:
   // Miscellaneous
 

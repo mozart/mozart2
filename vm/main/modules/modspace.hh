@@ -57,7 +57,7 @@ public:
       UnstableNode rootVar(vm, *space->getRootVar());
       UnstableNode* threadArgs[] = { &rootVar };
 
-      new (vm) Thread(vm, space, target.getStableRef(vm), 1, threadArgs);
+      new (vm) Thread(vm, space, target, 1, threadArgs);
 
       // Create the reification of the space
       result.make<ReifiedSpace>(vm, space);
@@ -71,7 +71,7 @@ public:
     Ask(): Builtin("ask") {}
 
     OpResult operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).askSpace(vm, &result);
+      return SpaceLike(space).askSpace(vm, result);
     }
   };
 
@@ -80,7 +80,7 @@ public:
     AskVerbose(): Builtin("askVerbose") {}
 
     OpResult operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).askVerboseSpace(vm, &result);
+      return SpaceLike(space).askVerboseSpace(vm, result);
     }
   };
 
@@ -89,7 +89,7 @@ public:
     Merge(): Builtin("merge") {}
 
     OpResult operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).mergeSpace(vm, &result);
+      return SpaceLike(space).mergeSpace(vm, result);
     }
   };
 
@@ -98,7 +98,7 @@ public:
     Clone(): Builtin("clone") {}
 
     OpResult operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).cloneSpace(vm, &result);
+      return SpaceLike(space).cloneSpace(vm, result);
     }
   };
 
@@ -107,7 +107,7 @@ public:
     Commit(): Builtin("commit") {}
 
     OpResult operator()(VM vm, In space, In value) {
-      return SpaceLike(space).commitSpace(vm, &value.origin());
+      return SpaceLike(space).commitSpace(vm, value);
     }
   };
 

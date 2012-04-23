@@ -49,70 +49,68 @@ bool Implementation<SmallInt>::equals(VM vm, Self right) {
 
 OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                  nativeint right,
-                                                 bool* result) {
-  *result = value() == right;
+                                                 bool& result) {
+  result = value() == right;
   return OpResult::proceed();
 }
 
 OpResult Implementation<SmallInt>::add(Self self, VM vm,
-                                       UnstableNode* right,
-                                       UnstableNode* result) {
+                                       RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, *right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, u"integer");
 
   return addValue(self, vm, rightIntValue, result);
 }
 
 OpResult Implementation<SmallInt>::addValue(Self self, VM vm,
-                                            nativeint b,
-                                            UnstableNode* result) {
+                                            nativeint b, UnstableNode& result) {
   nativeint a = value();
   nativeint c = a + b;
 
   // Detecting overflow - platform dependent (2's complement)
   if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
-    result->make<SmallInt>(vm, c);
+    result.make<SmallInt>(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    result->make<SmallInt>(vm, 0);
+    result.make<SmallInt>(vm, 0);
   }
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<SmallInt>::subtract(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
+                                            RichNode right,
+                                            UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, *right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, u"integer");
 
   return subtractValue(self, vm, rightIntValue, result);
 }
 
 OpResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
                                                  nativeint b,
-                                                 UnstableNode* result) {
+                                                 UnstableNode& result) {
   nativeint a = value();
   nativeint c = a - b;
 
   // Detecting overflow - platform dependent (2's complement)
   if ((((a ^ c) & (-b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
-    result->make<SmallInt>(vm, c);
+    result.make<SmallInt>(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    result->make<SmallInt>(vm, 0);
+    result.make<SmallInt>(vm, 0);
   }
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<SmallInt>::multiply(Self self, VM vm,
-                                            UnstableNode* right,
-                                            UnstableNode* result) {
+                                            RichNode right,
+                                            UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, *right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, u"integer");
 
   return multiplyValue(self, vm, rightIntValue, result);
 }
@@ -135,74 +133,70 @@ bool Implementation<SmallInt>::testMultiplyOverflow(nativeint a, nativeint b) {
 
 OpResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
                                                  nativeint b,
-                                                 UnstableNode* result) {
+                                                 UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
   if (!testMultiplyOverflow(a, b)) {
     // No overflow
-    result->make<SmallInt>(vm, a * b);
+    result.make<SmallInt>(vm, a * b);
   } else {
     // Overflow - TODO: create a BigInt
-    result->make<SmallInt>(vm, 0);
+    result.make<SmallInt>(vm, 0);
   }
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<SmallInt>::divide(Self self, VM vm,
-                                          UnstableNode* right,
-                                          UnstableNode* result) {
+                                          RichNode right,
+                                          UnstableNode& result) {
   return raiseTypeError(vm, u"Float", self);
 }
 
 OpResult Implementation<SmallInt>::div(Self self, VM vm,
-                                       UnstableNode* right,
-                                       UnstableNode* result) {
+                                       RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, *right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, u"integer");
 
   return divValue(self, vm, rightIntValue, result);
 }
 
 OpResult Implementation<SmallInt>::divValue(Self self, VM vm,
-                                            nativeint b,
-                                            UnstableNode* result) {
+                                            nativeint b, UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
     // No overflow
-    result->make<SmallInt>(vm, a / b);
+    result.make<SmallInt>(vm, a / b);
   } else {
     // Overflow - TODO: create a BigInt
-    result->make<SmallInt>(vm, 0);
+    result.make<SmallInt>(vm, 0);
   }
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<SmallInt>::mod(Self self, VM vm,
-                                       UnstableNode* right,
-                                       UnstableNode* result) {
+                                       RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, *right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, u"integer");
 
   return modValue(self, vm, rightIntValue, result);
 }
 
 OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
-                                            nativeint b,
-                                            UnstableNode* result) {
+                                            nativeint b, UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
     // No overflow
-    result->make<SmallInt>(vm, a % b);
+    result.make<SmallInt>(vm, a % b);
   } else {
     // Overflow - TODO: create a BigInt
-    result->make<SmallInt>(vm, 0);
+    result.make<SmallInt>(vm, 0);
   }
 
   return OpResult::proceed();

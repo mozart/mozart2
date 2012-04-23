@@ -52,19 +52,19 @@ Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
 
 OpResult Implementation<CodeArea>::initElement(Self self, VM vm,
                                                size_t index,
-                                               UnstableNode* value) {
-  self[index].init(vm, *value);
+                                               RichNode value) {
+  self[index].init(vm, value);
   return OpResult::proceed();
 }
 
 OpResult
 Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
-                                          ProgramCounter* start,
-                                          int* Xcount,
-                                          StaticArray<StableNode>* Ks) {
-  *start = _codeBlock;
-  *Xcount = _Xcount;
-  *Ks = self.getArray();
+                                          ProgramCounter& start,
+                                          int& Xcount,
+                                          StaticArray<StableNode>& Ks) {
+  start = _codeBlock;
+  Xcount = _Xcount;
+  Ks = self.getArray();
 
   return OpResult::proceed();
 }

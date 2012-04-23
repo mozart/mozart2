@@ -64,13 +64,12 @@ public:
   }
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index,
-                       UnstableNode* value);
+  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
 
   inline
   OpResult getCodeAreaInfo(Self self, VM vm,
-                           ProgramCounter* start, int* Xcount,
-                           StaticArray<StableNode>* Ks);
+                           ProgramCounter& start, int& Xcount,
+                           StaticArray<StableNode>& Ks);
 private:
   void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {
     _codeBlock = new (vm) ByteCode[size / sizeof(ByteCode)];

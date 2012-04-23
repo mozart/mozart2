@@ -46,7 +46,7 @@ public:
     Add(): Builtin("+") {}
 
     OpResult operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).add(vm, &right.origin(), &result);
+      return Numeric(left).add(vm, right, result);
     }
   };
 
@@ -55,7 +55,7 @@ public:
     Subtract(): Builtin("-") {}
 
     OpResult operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).subtract(vm, &right.origin(), &result);
+      return Numeric(left).subtract(vm, right, result);
     }
   };
 
@@ -64,7 +64,7 @@ public:
     Multiply(): Builtin("*") {}
 
     OpResult operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).multiply(vm, &right.origin(), &result);
+      return Numeric(left).multiply(vm, right, result);
     }
   };
 };

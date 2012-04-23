@@ -47,33 +47,31 @@ bool Implementation<Atom>::equals(VM vm, Self right) {
 }
 
 OpResult Implementation<Atom>::label(Self self, VM vm,
-                                     UnstableNode* result) {
-  result->copy(vm, self);
+                                     UnstableNode& result) {
+  result.copy(vm, self);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Atom>::width(Self self, VM vm,
-                                     UnstableNode* result) {
-  result->make<SmallInt>(vm, 0);
+                                     UnstableNode& result) {
+  result.make<SmallInt>(vm, 0);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Atom>::dot(Self self, VM vm,
-                                   UnstableNode* feature,
-                                   UnstableNode* result) {
+OpResult Implementation<Atom>::dot(Self self, VM vm, RichNode feature,
+                                   UnstableNode& result) {
   // Always out of bounds
-  return raise(vm, u"illegalFieldSelection", self, *feature);
+  return raise(vm, u"illegalFieldSelection", self, feature);
 }
 
-OpResult Implementation<Atom>::dotNumber(Self self, VM vm,
-                                         nativeint feature,
-                                         UnstableNode* result) {
+OpResult Implementation<Atom>::dotNumber(Self self, VM vm, nativeint feature,
+                                         UnstableNode& result) {
   // Always out of bounds
   return raise(vm, u"illegalFieldSelection", self, feature);
 }
 
 OpResult Implementation<Atom>::waitOr(Self self, VM vm,
-                                      UnstableNode* result) {
+                                      UnstableNode& result) {
   // Wait forever
   UnstableNode dummyVar = Variable::build(vm);
   return OpResult::waitFor(vm, dummyVar);

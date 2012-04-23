@@ -42,7 +42,7 @@ OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
   StaticArray<StableNode> Ks;
 
   MOZART_CHECK_OPRESULT(Callable(target).getCallInfo(
-    vm, &arity, &body, &start, &Xcount, &Gs, &Ks));
+    vm, arity, body, start, Xcount, Gs, Ks));
 
   if (arity != expectedArity)
     return raiseIllegalArity(vm, expectedArity, arity);

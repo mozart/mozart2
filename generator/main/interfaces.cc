@@ -24,6 +24,8 @@
 
 #include "generator.hh"
 
+#include <sstream>
+
 using namespace clang;
 
 struct InterfaceDef {
@@ -74,28 +76,38 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   to << "  template <class T>\n";
   to << "  " << name << "(BaseSelf<T> self) : _self(self) {}\n";
 
-  // For every method in Interface<T>
-  for (auto iter = ND->method_begin(), e = ND->method_end(); iter != e; ++iter) {
-    CXXMethodDecl* m = *iter;
-    if (!m->isUserProvided())
+  for (auto iter = ND->decls_begin(), e = ND->decls_end(); iter != e; ++iter) {
+    const Decl* decl = *iter;
+
+    if (decl->isImplicit())
+      continue;
+    if (!decl->isFunctionOrFunctionTemplate())
+      continue;
+    if (decl->getAccess() != AS_public)
       continue;
 
-    /* We will iterate several times over all parameters of the method,
-     * excluding the self param, which is the first parameter. */
-    auto param_begin = m->param_begin() + 1;
-    auto param_end = m->param_end();
+    const FunctionDecl* function;
+
+    if ((function = dyn_cast<FunctionDecl>(decl))) {
+      // Do nothing
+    } else if (const FunctionTemplateDecl* funTemplate =
+               dyn_cast<FunctionTemplateDecl>(decl)) {
+      function = funTemplate->getTemplatedDecl();
+      TemplateParameterList* params = funTemplate->getTemplateParameters();
+
+      to << "\n  ";
+      printTemplateParameters(to, params);
+    }
+
+    if (!function->isCXXInstanceMember())
+      continue;
+
+    std::string funName, resultType, formals, actuals;
+    parseFunction(function, funName, resultType, formals, actuals, true);
 
     // Declaration of the procedure
-    to << "\n  " << m->getResultType().getAsString(context->getPrintingPolicy());
-    to << " " << m->getNameAsString() << "(";
-    // For every parameter of that method, excluding the self param
-    for (auto iter = param_begin; iter != param_end; ++iter) {
-      ParmVarDecl* param = *iter;
-      to << typeToString(param->getType()) << " " << param->getNameAsString();
-      if (iter+1 != param_end)
-        to << ", ";
-    }
-    to << ") {\n    ";
+    to << "\n  " << resultType << " " << funName
+       << "(" << formals << ") {\n"    ;
 
     // For every implementation that implements this interface (ImplementedBy)
     for (int i = 0; i < (int) implems->getNumArgs(); ++i) {
@@ -104,23 +116,12 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
 
       to << "if (_self.is<" << imp << ">()) {\n";
       to << "      return _self.as<" << imp << ">()."
-         << m->getNameAsString() << "(";
-
-      // For every parameter of the method, excluding the self param
-      for (auto iter = param_begin; iter != param_end; ++iter) {
-        if (iter != param_begin)
-          to << ", ";
-
-        ParmVarDecl* param = *iter;
-        to << param->getNameAsString();
-      }
-
-      to << ");\n";
+         << funName << "(" << actuals << ");\n";
       to << "    } else ";
     }
 
     // Auto-wait handling
-    if (autoWait && (typeToString(m->getResultType()) == "OpResult")) {
+    if (autoWait && (typeToString(function->getResultType()) == "OpResult")) {
       to << "if (_self.isTransient()) {\n";
       to << "      return OpResult::waitFor(vm, _self);\n";
       to << "    } else ";
@@ -128,13 +129,9 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
 
     // Default behavior
     to << "{\n";
-    to << "      return Interface<" << name << ">().";
-    to << m->getNameAsString() << "(_self";
-    // For every parameter of the method, excluding the self param
-    for (auto iter = param_begin; iter != param_end; ++iter) {
-      ParmVarDecl* param = *iter;
-      to << ", " << param->getNameAsString();
-    }
+    to << "      return Interface<" << name << ">()." << funName << "(_self";
+    if (!actuals.empty())
+      to << ", " << actuals;
     to << ");\n";
     to << "    }\n";
 

@@ -24,6 +24,8 @@
 
 #include "generator.hh"
 
+#include <sstream>
+
 using namespace clang;
 
 std::string typeToString(QualType type) {
@@ -44,4 +46,131 @@ std::string getTypeParamAsString(const SpecDecl* specDecl) {
 
 std::string getTypeParamAsString(CXXRecordDecl* arg) {
   return getTypeParamAsString(dyn_cast<SpecDecl>(arg));
+}
+
+void printTemplateParameters(llvm::raw_fd_ostream& Out,
+  const TemplateParameterList *Params, const TemplateArgumentList *Args) {
+
+  assert(Params);
+  assert(!Args || Params->size() == Args->size());
+
+  ASTContext& Context = *context;
+  PrintingPolicy Policy = Context.getPrintingPolicy();
+  const int Indentation = 0;
+
+  Out << "template <";
+
+  for (unsigned i = 0, e = Params->size(); i != e; ++i) {
+    if (i != 0)
+      Out << ", ";
+
+    const Decl *Param = Params->getParam(i);
+    if (const TemplateTypeParmDecl *TTP =
+          dyn_cast<TemplateTypeParmDecl>(Param)) {
+
+      if (TTP->wasDeclaredWithTypename())
+        Out << "typename ";
+      else
+        Out << "class ";
+
+      if (TTP->isParameterPack())
+        Out << "... ";
+
+      Out << TTP->getNameAsString();
+
+      if (Args) {
+        Out << " = ";
+        Args->get(i).print(Policy, Out);
+      } else if (TTP->hasDefaultArgument()) {
+        Out << " = ";
+        Out << TTP->getDefaultArgument().getAsString(Policy);
+      };
+    } else if (const NonTypeTemplateParmDecl *NTTP =
+                 dyn_cast<NonTypeTemplateParmDecl>(Param)) {
+      Out << NTTP->getType().getAsString(Policy);
+
+      if (NTTP->isParameterPack() && !isa<PackExpansionType>(NTTP->getType()))
+        Out << "...";
+
+      if (IdentifierInfo *Name = NTTP->getIdentifier()) {
+        Out << ' ';
+        Out << Name->getName();
+      }
+
+      if (Args) {
+        Out << " = ";
+        Args->get(i).print(Policy, Out);
+      } else if (NTTP->hasDefaultArgument()) {
+        Out << " = ";
+        NTTP->getDefaultArgument()->printPretty(Out, Context, 0, Policy,
+                                                Indentation);
+      }
+    } else if (const TemplateTemplateParmDecl *TTPD =
+                 dyn_cast<TemplateTemplateParmDecl>(Param)) {
+      (void) TTPD;
+      assert(false);
+    }
+  }
+
+  Out << "> ";
+}
+
+void parseFunction(const clang::FunctionDecl* function,
+                   std::string& name, std::string& resultType,
+                   std::string& formalParams, std::string& actualParams,
+                   bool hasSelfParam) {
+
+  name = function->getNameAsString();
+  resultType = function->getResultType().getAsString(
+    context->getPrintingPolicy());
+
+  auto param_begin = function->param_begin() + (hasSelfParam ? 1 : 0);
+  auto param_end = function->param_end();
+
+  std::stringstream formals;
+  std::stringstream actuals;
+
+  for (auto iter = param_begin; iter != param_end; ++iter) {
+    if (iter != param_begin) {
+      formals << ", ";
+      actuals << ", ";
+    }
+
+    ParmVarDecl* param = *iter;
+    auto paramType = param->getType();
+    auto paramName = param->getNameAsString();
+
+    // Formals is easy
+    formals << typeToString(paramType) << " " << paramName;
+
+    // Handle pack expansion
+    bool isPackExpansion = false;
+    if (const PackExpansionType* packType = paramType->getAs<PackExpansionType>()) {
+      isPackExpansion = true;
+      paramType = packType->getPattern();
+    }
+
+    // Handle std::forward
+    bool needForward = false;
+    std::string forwardArg;
+    if (paramType->isRValueReferenceType()) {
+      auto nonRefType = paramType.getNonReferenceType();
+      if (nonRefType->isTemplateTypeParmType()) {
+        needForward = true;
+        forwardArg = nonRefType.getAsString();
+      }
+    }
+
+    // Print it
+    if (needForward)
+      actuals << "std::forward<" << forwardArg << ">(" << paramName << ")";
+    else
+      actuals << paramName;
+
+    if (isPackExpansion)
+      actuals << "...";
+  }
+
+  formalParams = formals.str();
+  actualParams = actuals.str();
 }

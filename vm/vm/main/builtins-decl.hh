@@ -34,6 +34,85 @@ namespace builtins {
 typedef RichNode In;
 typedef UnstableNode& Out;
 
+struct SpecializedBuiltinEntryPoint {
+public:
+  SpecializedBuiltinEntryPoint(): _pointer(nullptr) {}
+
+  template <class... Args>
+  SpecializedBuiltinEntryPoint(OpResult (*pointer)(VM, Args...)):
+    _pointer((void (*)()) pointer) {}
+
+  template <class... Args>
+  OpResult operator()(VM vm, Args&&... args) {
+    typedef OpResult (*type)(VM, Args...);
+    type pointer = (type) _pointer;
+    return pointer(vm, std::forward<Args>(args)...);
+  }
+private:
+  void (*_pointer)();
+};
+
+typedef OpResult (*GenericBuiltinEntryPoint)(VM vm, UnstableNode* args[]);
+
+namespace internal {
+
+/////////////////////////
+// Builtin entry point //
+/////////////////////////
+
+template <class T, size_t arity, size_t i = 0, class... Args>
+struct BuiltinEntryPointGeneric {
+  static_assert(i == sizeof...(Args), "i != sizeof...(Args)");
+
+  static OpResult call(VM vm, UnstableNode* args[], Args&&... argsDone) {
+    return BuiltinEntryPointGeneric<T, arity, i+1, Args..., UnstableNode&>::call(
+      vm, args, std::forward<Args>(argsDone)..., *args[i]);
+  }
+};
+
+template <class T, size_t arity, class... Args>
+struct BuiltinEntryPointGeneric<T, arity, arity, Args...> {
+  static OpResult call(VM vm, UnstableNode* args[], Args&&... argsDone) {
+    return T::builtin()(vm, std::forward<Args>(argsDone)...);
+  }
+};
+
+template <class T, size_t arity, size_t i = 0, class... Args>
+struct BuiltinEntryPoint {
+private:
+  typedef BuiltinEntryPoint<T, arity, i+1, UnstableNode&, Args...> Next;
+public:
+  static SpecializedBuiltinEntryPoint getEntryPoint() {
+    return Next::getEntryPoint();
+  }
+
+  static GenericBuiltinEntryPoint getGenericEntryPoint() {
+    return Next::getGenericEntryPoint();
+  }
+};
+
+template <class T, size_t arity, class... Args>
+struct BuiltinEntryPoint<T, arity, arity, Args...> {
+private:
+  static OpResult entryPoint(VM vm, Args... args) {
+    return T::builtin()(vm, args...);
+  }
+
+  static OpResult genericEntryPoint(VM vm, UnstableNode* args[]) {
+    return BuiltinEntryPointGeneric<T, arity>::call(vm, args);
+  }
+public:
+  static SpecializedBuiltinEntryPoint getEntryPoint() {
+    return &entryPoint;
+  }
+
+  static GenericBuiltinEntryPoint getGenericEntryPoint() {
+    return &genericEntryPoint;
+  }
+};
+
+}
+
 ////////////
 // Module //
 ////////////
@@ -61,8 +140,11 @@ private:
  */
 class BaseBuiltin {
 public:
-  BaseBuiltin(const std::string& name, size_t arity):
-    _name(name), _arity(arity) {}
+  BaseBuiltin(const std::string& name, size_t arity,
+              SpecializedBuiltinEntryPoint entryPoint,
+              GenericBuiltinEntryPoint genericEntryPoint):
+    _name(name), _arity(arity), _entryPoint(entryPoint),
+    _genericEntryPoint(genericEntryPoint) {}
 
   const std::string& getName() {
     return _name;
@@ -72,123 +154,21 @@ public:
     return _arity;
   }
 
-  virtual OpResult call(VM vm, UnstableNode* args[]) {
-    switch (getArity()) {
-      case 0: return call(vm);
-      case 1: return call(vm, *args[0]);
-      case 2: return call(vm, *args[0], *args[1]);
-      case 3: return call(vm, *args[0], *args[1], *args[2]);
-      case 4: return call(vm, *args[0], *args[1], *args[2], *args[3]);
-      case 5: return call(vm, *args[0], *args[1], *args[2], *args[3], *args[4]);
-
-      default: {
-        assert(false);
-        return OpResult::proceed();
-      }
-    }
+  OpResult call(VM vm, UnstableNode* args[]) {
+    return _genericEntryPoint(vm, args);
   }
 
-  virtual OpResult call(VM vm) {
-    assert(getArity() == 0);
-    assert(false);
-    return OpResult::proceed();
-  }
-
-  virtual OpResult call(VM vm, UnstableNode& arg0) {
-    assert(getArity() == 1);
-    assert(false);
-    return OpResult::proceed();
-  }
-
-  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1) {
-    assert(getArity() == 2);
-    assert(false);
-    return OpResult::proceed();
-  }
-
-  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
-                        UnstableNode& arg2) {
-    assert(getArity() == 3);
-    assert(false);
-    return OpResult::proceed();
-  }
-
-  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
-                        UnstableNode& arg2, UnstableNode& arg3) {
-    assert(getArity() == 4);
-    assert(false);
-    return OpResult::proceed();
-  }
-
-  virtual OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
-                        UnstableNode& arg2, UnstableNode& arg3,
-                        UnstableNode& arg4) {
-    assert(getArity() == 5);
-    assert(false);
-    return OpResult::proceed();
+  template <class... Args>
+  OpResult call(VM vm, Args&&... args) {
+    assert(sizeof...(args) == _arity);
+    return _entryPoint(vm, std::forward<Args>(args)...);
   }
 private:
   std::string _name;
   size_t _arity;
+  SpecializedBuiltinEntryPoint _entryPoint;
+  GenericBuiltinEntryPoint _genericEntryPoint;
 };
-
-namespace internal {
-
-/////////////////////////
-// Builtin entry point //
-/////////////////////////
-
-template <class T, size_t arity, size_t i, class... Args>
-class BuiltinEntryPointRec {
-public:
-  static_assert(i == sizeof...(Args), "i != sizeof...(Args)");
-
-  static OpResult call(T& builtin, VM vm, UnstableNode* args[],
-                       Args&&... argsDone) {
-    return BuiltinEntryPointRec<T, arity, i+1, Args..., UnstableNode&>::call(
-      builtin, vm, args, std::forward<Args>(argsDone)..., *args[i]);
-  }
-};
-
-template <class T, size_t arity, class... Args>
-class BuiltinEntryPointRec<T, arity, arity, Args...> {
-public:
-  static OpResult call(T& builtin, VM vm, UnstableNode* args[],
-                       Args&&... argsDone) {
-    return builtin(vm, std::forward<Args>(argsDone)...);
-  }
-};
-
-template <class T, size_t arity>
-class BuiltinEntryPoint {
-public:
-  static OpResult call(T& builtin, VM vm, UnstableNode* args[]) {
-    return BuiltinEntryPointRec<T, arity, 0>::call(builtin, vm, args);
-  }
-};
-
-template <class T, size_t arity, size_t argc>
-class BuiltinEntryPointSpec {
-public:
-  template <class... Args>
-  static OpResult call(T& builtin, VM vm, Args&&... args) {
-    static_assert(sizeof...(args) == argc, "Argument count mismatch");
-    assert(false);
-    return OpResult::proceed();
-  }
-};
-
-template <class T, size_t arity>
-class BuiltinEntryPointSpec<T, arity, arity> {
-public:
-  template <class... Args>
-  static OpResult call(T& builtin, VM vm, Args&&... args) {
-    static_assert(sizeof...(args) == arity, "Argument count mismatch");
-    return builtin(vm, std::forward<Args>(args)...);
-  }
-};
-
-}
 
 /////////////
 // Builtin //
@@ -211,54 +191,21 @@ private:
     static const size_t arity = sizeof...(Args);
   };
 public:
-  Builtin(const std::string& name): BaseBuiltin(name, arity) {}
-
-  OpResult call(VM vm, UnstableNode* args[]) {
-    return internal::BuiltinEntryPoint<Self, arity>::call(
-      *static_cast<Self*>(this), vm, args);
-  }
-
-  OpResult call(VM vm) {
-    return internal::BuiltinEntryPointSpec<Self, arity, 0>::call(
-      *static_cast<Self*>(this), vm);
-  }
-
-  OpResult call(VM vm, UnstableNode& arg0) {
-    return internal::BuiltinEntryPointSpec<Self, arity, 1>::call(
-      *static_cast<Self*>(this), vm, arg0);
-  }
-
-  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1) {
-    return internal::BuiltinEntryPointSpec<Self, arity, 2>::call(
-      *static_cast<Self*>(this), vm, arg0, arg1);
-  }
-
-  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
-                UnstableNode& arg2) {
-    return internal::BuiltinEntryPointSpec<Self, arity, 3>::call(
-      *static_cast<Self*>(this), vm, arg0, arg1, arg2);
-  }
-
-  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
-                UnstableNode& arg2, UnstableNode& arg3) {
-    return internal::BuiltinEntryPointSpec<Self, arity, 4>::call(
-      *static_cast<Self*>(this), vm, arg0, arg1, arg2, arg3);
-  }
-
-  OpResult call(VM vm, UnstableNode& arg0, UnstableNode& arg1,
-                UnstableNode& arg2, UnstableNode& arg3, UnstableNode& arg4) {
-    return internal::BuiltinEntryPointSpec<Self, arity, 5>::call(
-      *static_cast<Self*>(this), vm, arg0, arg1, arg2, arg3, arg4);
-  }
+  Builtin(const std::string& name): BaseBuiltin(
+    name, arity, getEntryPoint(), getGenericEntryPoint()) {}
 public:
   static const size_t arity = ExtractArity<decltype(&Self::operator())>::arity;
 
-  static OpResult entryPoint(VM vm, UnstableNode* args[]) {
-    return builtin().call(vm, args);
-  }
-
   static Self& builtin() {
     return rawBuiltin;
+  }
+private:
+  static SpecializedBuiltinEntryPoint getEntryPoint() {
+    return internal::BuiltinEntryPoint<Self, arity>::getEntryPoint();
+  }
+
+  static GenericBuiltinEntryPoint getGenericEntryPoint() {
+    return internal::BuiltinEntryPoint<Self, arity>::getGenericEntryPoint();
   }
 private:
   static Self rawBuiltin;

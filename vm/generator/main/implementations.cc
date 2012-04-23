@@ -53,14 +53,27 @@ std::string sb2s(StructuralBehavior behavior) {
 }
 
 struct ImplemMethodDef {
-  ImplemMethodDef(CXXMethodDecl* method) : method(method) {
+  ImplemMethodDef() {}
+
+  ImplemMethodDef(const FunctionDecl* function,
+                  const FunctionTemplateDecl* funTemplate = nullptr) {
+    this->function = function;
+    this->funTemplate = funTemplate;
     hasSelfParam = false;
   }
 
-  CXXMethodDecl* method;
+  void parseTheFunction() {
+    parseFunction(function, name, resultType, formals, actuals, hasSelfParam);
+  }
+
+  const FunctionDecl* function;
+  const FunctionTemplateDecl* funTemplate;
+
   bool hasSelfParam;
-  FunctionDecl::param_iterator param_begin;
-  FunctionDecl::param_iterator param_end;
+  std::string name;
+  std::string resultType;
+  std::string formals;
+  std::string actuals;
 };
 
 struct ImplementationDef {
@@ -144,25 +157,39 @@ void handleImplementation(const SpecDecl* ND) {
   }
 
   // For every method in Implementation<T>
-  for (auto iter = ND->method_begin(), e = ND->method_end(); iter != e; ++iter) {
-    CXXMethodDecl* m = *iter;
-    if (!m->isUserProvided() || !m->isInstance())
+  for (auto iter = ND->decls_begin(), e = ND->decls_end(); iter != e; ++iter) {
+    const Decl* decl = *iter;
+
+    if (decl->isImplicit())
       continue;
-    if (m->getAccess() != AS_public)
+    if (!decl->isFunctionOrFunctionTemplate())
       continue;
-    if (isa<CXXConstructorDecl>(m) || (m->getNameAsString() == "build"))
+    if (decl->getAccess() != AS_public)
       continue;
 
-    if (m->getNameAsString() == "printReprToStream")
+    ImplemMethodDef method;
+    const FunctionDecl* function;
+
+    if ((function = dyn_cast<FunctionDecl>(decl))) {
+      method = ImplemMethodDef(function);
+    } else if (const FunctionTemplateDecl* funTemplate =
+               dyn_cast<FunctionTemplateDecl>(decl)) {
+      function = funTemplate->getTemplatedDecl();
+      method = ImplemMethodDef(function, funTemplate);
+    }
+
+    if (!function->isCXXInstanceMember())
+      continue;
+    if (isa<CXXConstructorDecl>(function))
+      continue;
+
+    if (function->getNameAsString() == "printReprToStream")
       definition.hasPrintReprToStream = true;
 
-    ImplemMethodDef method(m);
+    method.hasSelfParam = (function->param_size() > 0) &&
+      ((*function->param_begin())->getNameAsString() == "self");
 
-    method.hasSelfParam = (m->param_size() > 0) &&
-      ((*m->param_begin())->getNameAsString() == "self");
-
-    method.param_begin = m->param_begin() + (method.hasSelfParam ? 1 : 0);
-    method.param_end = m->param_end();
+    method.parseTheFunction();
 
     definition.methods.push_back(method);
   }
@@ -260,22 +287,17 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   }
 
   for (auto method = methods.begin(); method != methods.end(); ++method) {
-    CXXMethodDecl* m = method->method;
-
     to << "\n";
-    to << "  inline\n";
-    to << "  " << m->getResultType().getAsString(context->getPrintingPolicy());
-    to << " " << m->getNameAsString() << "(";
 
-    // For every parameter of that method, excluding the self param
-    for (auto iter = method->param_begin; iter != method->param_end; ++iter) {
-      ParmVarDecl* param = *iter;
-      to << typeToString(param->getType()) << " " << param->getNameAsString();
-      if (iter+1 != method->param_end)
-        to << ", ";
+    if (method->funTemplate != nullptr) {
+      to << "  ";
+      printTemplateParameters(to, method->funTemplate->getTemplateParameters());
+      to << "\n";
     }
 
-    to << ");\n";
+    to << "  inline\n";
+    to << "  " << method->resultType << " " << method->name << "("
+       << method->formals << ");\n";
   }
 
   to << "};\n";
@@ -333,38 +355,31 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   }
 
   for (auto method = methods.begin(); method != methods.end(); ++method) {
-    CXXMethodDecl* m = method->method;
-
     to << "\n";
-    to << m->getResultType().getAsString(context->getPrintingPolicy());
-    to << " TypedRichNode<" << name << ">::" << m->getNameAsString() << "(";
 
-    // For every parameter of that method, excluding the self param
-    for (auto iter = method->param_begin; iter != method->param_end; ++iter) {
-      ParmVarDecl* param = *iter;
-      to << typeToString(param->getType()) << " " << param->getNameAsString();
-      if (iter+1 != method->param_end)
-        to << ", ";
+    if (method->funTemplate != nullptr) {
+      printTemplateParameters(to, method->funTemplate->getTemplateParameters());
+      to << "\n";
     }
 
-    to << ") {\n  ";
+    to << "inline\n";
+    to << method->resultType << " "
+       << " TypedRichNode<" << name << ">::" << method->name << "("
+       << method->formals << ") {\n";
 
-    if (!m->getResultType().getTypePtr()->isVoidType())
+    to << "  ";
+    if (!method->function->getResultType().getTypePtr()->isVoidType())
       to << "return ";
 
-    to << _selfArrow << m->getNameAsString() << "(";
+    to << _selfArrow << method->name << "(";
 
-    if (method->hasSelfParam)
+    if (method->hasSelfParam) {
       to << "_self";
-
-    // For every parameter of that method, excluding the self param
-    for (auto iter = method->param_begin; iter != method->param_end; ++iter) {
-      if (method->hasSelfParam || iter != method->param_begin)
+      if (!method->actuals.empty())
         to << ", ";
-
-      ParmVarDecl* param = *iter;
-      to << param->getNameAsString();
     }
+
+    to << method->actuals;
 
     to << ");\n";
 

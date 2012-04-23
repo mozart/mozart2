@@ -32,6 +32,15 @@ std::string typeToString(clang::QualType type);
 std::string getTypeParamAsString(const SpecDecl* specDecl);
 std::string getTypeParamAsString(clang::CXXRecordDecl* arg);
 
+void printTemplateParameters(llvm::raw_fd_ostream& Out,
+  const clang::TemplateParameterList *Params,
+  const clang::TemplateArgumentList *Args = 0);
+
+void parseFunction(const clang::FunctionDecl* function,
+                   std::string& name, std::string& resultType,
+                   std::string& formalParams, std::string& actualParams,
+                   bool hasSelfParam);
+
 template <class T>
 T getValueParamAsIntegral(const SpecDecl* specDecl) {
   const clang::TemplateArgumentList& templateArgs = specDecl->getTemplateArgs();

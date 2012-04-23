@@ -132,7 +132,7 @@ class CodeArea(val abstraction: Abstraction) {
 
       for ((constant, index) <- constants.zipWithIndex) {
         produceCCInitConstant(out, constant)
-        out << "  initializer.initElement(vm, %d, &temp);\n" % (
+        out << "  initializer.initElement(vm, %d, temp);\n" % (
             index, index)
       }
     }

@@ -60,7 +60,7 @@ void StackEntry::beforeGR(VM vm) {
   StaticArray<StableNode> Ks;
 
   UnstableNode temp(vm, *abstraction);
-  Callable(temp).getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+  Callable(temp).getCallInfo(vm, arity, body, start, Xcount, Gs, Ks);
 
   PCOffset = PC - start;
 }
@@ -74,7 +74,7 @@ void StackEntry::afterGR(VM vm) {
   StaticArray<StableNode> Ks;
 
   UnstableNode temp(vm, *abstraction);
-  Callable(temp).getCallInfo(vm, &arity, &body, &start, &Xcount, &Gs, &Ks);
+  Callable(temp).getCallInfo(vm, arity, body, start, Xcount, Gs, Ks);
 
   PC = start + PCOffset;
   gregs = Gs;
@@ -85,18 +85,18 @@ void StackEntry::afterGR(VM vm) {
 // Thread //
 ////////////
 
-Thread::Thread(VM vm, Space* space, StableNode* abstraction,
+Thread::Thread(VM vm, Space* space, RichNode abstraction,
                bool createSuspended): Runnable(vm, space) {
   constructor(vm, abstraction, 0, nullptr, createSuspended);
 }
 
-Thread::Thread(VM vm, Space* space, StableNode* abstraction,
+Thread::Thread(VM vm, Space* space, RichNode abstraction,
                size_t argc, UnstableNode* args[],
                bool createSuspended): Runnable(vm, space) {
   constructor(vm, abstraction, argc, args, createSuspended);
 }
 
-void Thread::constructor(VM vm, StableNode* abstraction,
+void Thread::constructor(VM vm, RichNode abstraction,
                          size_t argc, UnstableNode* args[],
                          bool createSuspended) {
   // getCallInfo
@@ -108,9 +108,8 @@ void Thread::constructor(VM vm, StableNode* abstraction,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  UnstableNode temp(vm, *abstraction);
-  MOZART_ASSERT_PROCEED(Callable(temp).getCallInfo(
-    vm, &arity, &body, &start, &Xcount, &Gs, &Ks));
+  MOZART_ASSERT_PROCEED(Callable(abstraction).getCallInfo(
+    vm, arity, body, start, Xcount, Gs, Ks));
 
   assert(arity == argc);
 
@@ -121,7 +120,7 @@ void Thread::constructor(VM vm, StableNode* abstraction,
   for (size_t i = 0; i < argc; i++)
     xregs[i].copy(vm, *args[i]);
 
-  pushFrame(vm, abstraction, start, 0, nullptr, Gs, Ks);
+  pushFrame(vm, abstraction.getStableRef(vm), start, 0, nullptr, Gs, Ks);
 
   // Resume the thread unless createSuspended
   if (!createSuspended)
@@ -423,7 +422,7 @@ void Thread::run() {
         BoolOrNotBool testValue = bNotBool;
 
         CHECK_OPRESULT_BREAK(
-          BooleanValue(XPC(1)).valueOrNotBool(vm, &testValue));
+          BooleanValue(XPC(1)).valueOrNotBool(vm, testValue));
 
         int distance;
 
@@ -473,7 +472,7 @@ void Thread::run() {
 
       case OpArrayInitElementX: {
         CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &XPC(3)));
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), XPC(3)));
 
         advancePC(3);
         break;
@@ -481,7 +480,7 @@ void Thread::run() {
 
       case OpArrayInitElementY: {
         CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &YPC(3)));
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), YPC(3)));
 
         advancePC(3);
         break;
@@ -490,7 +489,7 @@ void Thread::run() {
       case OpArrayInitElementG: {
         UnstableNode value(vm, GPC(3));
         CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &value));
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), value));
 
         advancePC(3);
         break;
@@ -499,7 +498,7 @@ void Thread::run() {
       case OpArrayInitElementK: {
         UnstableNode value(vm, KPC(3));
         CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), &value));
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), value));
 
         advancePC(3);
         break;
@@ -510,7 +509,7 @@ void Thread::run() {
         UnstableNode& body = XPC(2);
         size_t Gc = IntPC(3);
 
-        XPC(4).make<Abstraction>(vm, Gc, arity, &body);
+        XPC(4).make<Abstraction>(vm, Gc, arity, body);
 
         advancePC(4);
         break;
@@ -521,7 +520,7 @@ void Thread::run() {
         UnstableNode body(vm, KPC(2));
         size_t Gc = IntPC(3);
 
-        XPC(4).make<Abstraction>(vm, Gc, arity, &body);
+        XPC(4).make<Abstraction>(vm, Gc, arity, body);
 
         advancePC(4);
         break;
@@ -531,7 +530,7 @@ void Thread::run() {
         UnstableNode label(vm, XPC(1));
         size_t width = IntPC(2);
 
-        XPC(3).make<Tuple>(vm, width, &label);
+        XPC(3).make<Tuple>(vm, width, label);
 
         advancePC(3);
         break;
@@ -541,7 +540,7 @@ void Thread::run() {
         UnstableNode label(vm, KPC(1));
         size_t width = IntPC(2);
 
-        XPC(3).make<Tuple>(vm, width, &label);
+        XPC(3).make<Tuple>(vm, width, label);
 
         advancePC(3);
         break;
@@ -553,7 +552,7 @@ void Thread::run() {
         bool resultValue = false;
 
         CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).equalsInteger(
-          vm, IntPC(2), &resultValue));
+          vm, IntPC(2), resultValue));
 
         if (resultValue)
           advancePC(3);
@@ -564,28 +563,28 @@ void Thread::run() {
       }
 
       case OpInlineAdd: {
-        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).add(vm, &XPC(2), &XPC(3)));
+        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).add(vm, XPC(2), XPC(3)));
 
         advancePC(3);
         break;
       }
 
       case OpInlineSubtract: {
-        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).subtract(vm, &XPC(2), &XPC(3)));
+        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).subtract(vm, XPC(2), XPC(3)));
 
         advancePC(3);
         break;
       }
 
       case OpInlinePlus1: {
-        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, 1, &XPC(2)));
+        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, 1, XPC(2)));
 
         advancePC(2);
         break;
       }
 
       case OpInlineMinus1: {
-        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, -1, &XPC(2)));
+        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, -1, XPC(2)));
 
         advancePC(2);
         break;
@@ -653,7 +652,7 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
   StaticArray<StableNode> Ks;
 
   CHECK_OPRESULT_RETURN(Callable(target).getCallInfo(
-    vm, &formalArity, &body, &start, &Xcount, &Gs, &Ks));
+    vm, formalArity, body, start, Xcount, Gs, Ks));
 
   if (actualArity != formalArity) {
     applyOpResult(vm, raiseIllegalArity(vm, formalArity, actualArity),

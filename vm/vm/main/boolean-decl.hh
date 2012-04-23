@@ -56,13 +56,13 @@ public:
   inline
   bool equals(VM vm, Self right);
 
-  OpResult boolValue(Self self, VM vm, bool* result) {
-    *result = value();
+  OpResult boolValue(Self self, VM vm, bool& result) {
+    result = value();
     return OpResult::proceed();
   }
 
-  OpResult valueOrNotBool(Self self, VM vm, BoolOrNotBool* result) {
-    *result = value() ? bTrue : bFalse;
+  OpResult valueOrNotBool(Self self, VM vm, BoolOrNotBool& result) {
+    result = value() ? bTrue : bFalse;
     return OpResult::proceed();
   }
 public:

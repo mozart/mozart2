@@ -36,10 +36,10 @@ inline
 OpResult unify(VM vm, RichNode left, RichNode right);
 
 inline
-OpResult equals(VM vm, RichNode left, RichNode right, bool* result);
+OpResult equals(VM vm, RichNode left, RichNode right, bool& result);
 
 inline
-OpResult notEquals(VM vm, RichNode left, RichNode right, bool* result);
+OpResult notEquals(VM vm, RichNode left, RichNode right, bool& result);
 
 /////////////////////
 // Data structures //

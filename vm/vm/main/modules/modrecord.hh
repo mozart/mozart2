@@ -46,7 +46,7 @@ public:
     Label(): Builtin("label") {}
 
     OpResult operator()(VM vm, In record, Out result) {
-      return RecordLike(record).label(vm, &result);
+      return RecordLike(record).label(vm, result);
     }
   };
 
@@ -55,7 +55,7 @@ public:
     Width(): Builtin("width") {}
 
     OpResult operator()(VM vm, In record, Out result) {
-      return RecordLike(record).width(vm, &result);
+      return RecordLike(record).width(vm, result);
     }
   };
 
@@ -64,7 +64,7 @@ public:
     WaitOr(): Builtin("waitOr") {}
 
     OpResult operator()(VM vm, In record, Out result) {
-      return RecordLike(record).waitOr(vm, &result);
+      return RecordLike(record).waitOr(vm, result);
     }
   };
 };

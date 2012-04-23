@@ -46,7 +46,7 @@ public:
     Divide(): Builtin("/") {}
 
     OpResult operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).divide(vm, &right.origin(), &result);
+      return Numeric(left).divide(vm, right, result);
     }
   };
 };

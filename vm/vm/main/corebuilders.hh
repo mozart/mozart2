@@ -106,7 +106,7 @@ template <size_t i, class T, class U>
 inline
 void staticInitElement(VM vm, TypedRichNode<T> aggregate, U&& value) {
   UnstableNode valueNode = trivialBuild(vm, std::forward<U>(value));
-  aggregate.initElement(vm, i, &valueNode);
+  aggregate.initElement(vm, i, valueNode);
 }
 
 template <size_t i, class T>
@@ -155,7 +155,7 @@ template <class LT, class... Args>
 inline
 UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
   UnstableNode labelNode = trivialBuild(vm, std::forward<LT>(label));
-  UnstableNode result = Tuple::build(vm, sizeof...(args), &labelNode);
+  UnstableNode result = Tuple::build(vm, sizeof...(args), labelNode);
   staticInitElements<Tuple>(vm, RichNode(result).as<Tuple>(),
                             std::forward<Args>(args)...);
   return result;

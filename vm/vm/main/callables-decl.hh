@@ -86,7 +86,7 @@ public:
    * Get the arity of the builtin in a node
    */
   inline
-  OpResult arity(Self self, VM vm, UnstableNode* result);
+  OpResult arity(Self self, VM vm, UnstableNode& result);
 public:
   // Miscellaneous
 
@@ -121,9 +121,9 @@ public:
   typedef SelfType<Abstraction>::Self Self;
 public:
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 int arity, UnstableNode* body)
+                 int arity, RichNode body)
     : WithHome(vm), _arity(arity), _Gc(Gc) {
-    _body.init(vm, *body);
+    _body.init(vm, body);
     _codeAreaCacheValid = false;
   }
 
@@ -141,11 +141,10 @@ public:
    * Get the arity of the abstraction in a node
    */
   inline
-  OpResult arity(Self self, VM vm, UnstableNode* result);
+  OpResult arity(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index,
-                       UnstableNode* value);
+  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
 
   /**
    * Get the information needed to call this abstraction
@@ -158,10 +157,10 @@ public:
    * @param Ks       Output: K registers
    */
   inline
-  OpResult getCallInfo(Self self, VM vm, int* arity, StableNode** body,
-                       ProgramCounter* start, int* Xcount,
-                       StaticArray<StableNode>* Gs,
-                       StaticArray<StableNode>* Ks);
+  OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
+                       ProgramCounter& start, int& Xcount,
+                       StaticArray<StableNode>& Gs,
+                       StaticArray<StableNode>& Ks);
 public:
   // Miscellaneous
 

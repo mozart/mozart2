@@ -115,16 +115,16 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
 class Callable;
 template<>
 struct Interface<Callable>: ImplementedBy<Abstraction> {
-  OpResult getCallInfo(RichNode self, VM vm, int* arity, StableNode** body,
-                       ProgramCounter* start, int* Xcount,
-                       StaticArray<StableNode>* Gs,
-                       StaticArray<StableNode>* Ks) {
-    *arity = 0;
-    *body = nullptr;
-    *start = nullptr;
-    *Xcount = 0;
-    *Gs = nullptr;
-    *Ks = nullptr;
+  OpResult getCallInfo(RichNode self, VM vm, int& arity, StableNode*& body,
+                       ProgramCounter& start, int& Xcount,
+                       StaticArray<StableNode>& Gs,
+                       StaticArray<StableNode>& Ks) {
+    arity = 0;
+    body = nullptr;
+    start = nullptr;
+    Xcount = 0;
+    Gs = nullptr;
+    Ks = nullptr;
     return raiseTypeError(vm, u"Abstraction", self);
   }
 };
@@ -132,11 +132,11 @@ struct Interface<Callable>: ImplementedBy<Abstraction> {
 class CodeAreaProvider;
 template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
-  OpResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter* start,
-                           int* Xcount, StaticArray<StableNode>* Ks) {
-    *start = nullptr;
-    *Xcount = 0;
-    *Ks = nullptr;
+  OpResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter& start,
+                           int& Xcount, StaticArray<StableNode>& Ks) {
+    start = nullptr;
+    Xcount = 0;
+    Ks = nullptr;
     return raiseTypeError(vm, u"CodeArea", self);
   }
 };
@@ -144,33 +144,33 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 class Numeric;
 template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
-  OpResult add(RichNode self, VM vm, UnstableNode* right,
-               UnstableNode* result) {
+  OpResult add(RichNode self, VM vm,
+               RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  OpResult subtract(RichNode self, VM vm, UnstableNode* right,
-                    UnstableNode* result) {
+  OpResult subtract(RichNode self, VM vm,
+                    RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  OpResult multiply(RichNode self, VM vm, UnstableNode* right,
-                    UnstableNode* result) {
+  OpResult multiply(RichNode self, VM vm,
+                    RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  OpResult divide(RichNode self, VM vm, UnstableNode* right,
-                  UnstableNode* result) {
+  OpResult divide(RichNode self, VM vm,
+                  RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  OpResult div(RichNode self, VM vm, UnstableNode* right,
-               UnstableNode* result) {
+  OpResult div(RichNode self, VM vm,
+               RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 
-  OpResult mod(RichNode self, VM vm, UnstableNode* right,
-               UnstableNode* result) {
+  OpResult mod(RichNode self, VM vm,
+               RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
 };
@@ -178,18 +178,18 @@ struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
 class IntegerValue;
 template<>
 struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
-  OpResult intValue(RichNode self, VM vm, nativeint* result) {
+  OpResult intValue(RichNode self, VM vm, nativeint& result) {
     return raiseTypeError(vm, u"Integer", self);
   }
 
   OpResult equalsInteger(RichNode self, VM vm,
-                         nativeint right, bool* result) {
-    *result = false;
+                         nativeint right, bool& result) {
+    result = false;
     return OpResult::proceed();
   }
 
   OpResult addValue(RichNode self, VM vm,
-                    nativeint b, UnstableNode* result) {
+                    nativeint b, UnstableNode& result) {
     return raiseTypeError(vm, u"Integer", self);
   }
 };
@@ -197,18 +197,18 @@ struct Interface<IntegerValue>: ImplementedBy<SmallInt> {
 class FloatValue;
 template<>
 struct Interface<FloatValue>: ImplementedBy<Float> {
-  OpResult floatValue(RichNode self, VM vm, double* result) {
+  OpResult floatValue(RichNode self, VM vm, double& result) {
     return raiseTypeError(vm, u"Float", self);
   }
 
   OpResult equalsFloat(RichNode self, VM vm,
-                       double right, bool* result) {
-    *result = false;
+                       double right, bool& result) {
+    result = false;
     return OpResult::proceed();
   }
 
   OpResult addValue(RichNode self, VM vm,
-                    double b, UnstableNode* result) {
+                    double b, UnstableNode& result) {
     return raiseTypeError(vm, u"Float", self);
   }
 };
@@ -216,12 +216,12 @@ struct Interface<FloatValue>: ImplementedBy<Float> {
 class BooleanValue;
 template<>
 struct Interface<BooleanValue>: ImplementedBy<Boolean> {
-  OpResult boolValue(RichNode self, VM vm, bool* result) {
+  OpResult boolValue(RichNode self, VM vm, bool& result) {
     return raiseTypeError(vm, u"Boolean", self);
   }
 
-  OpResult valueOrNotBool(RichNode self, VM vm, BoolOrNotBool* result) {
-    *result = bNotBool;
+  OpResult valueOrNotBool(RichNode self, VM vm, BoolOrNotBool& result) {
+    result = bNotBool;
     return OpResult::proceed();
   }
 };
@@ -229,25 +229,25 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 class RecordLike;
 template<>
 struct Interface<RecordLike>: ImplementedBy<Tuple, Atom> {
-  OpResult label(RichNode self, VM vm, UnstableNode* result) {
+  OpResult label(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  OpResult width(RichNode self, VM vm, UnstableNode* result) {
+  OpResult width(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  OpResult dot(RichNode self, VM vm, UnstableNode* feature,
-               UnstableNode* result) {
+  OpResult dot(RichNode self, VM vm, RichNode feature,
+               UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
   OpResult dotNumber(RichNode self, VM vm, nativeint feature,
-                     UnstableNode* result) {
+                     UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 
-  OpResult waitOr(RichNode self, VM vm, UnstableNode* result) {
+  OpResult waitOr(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 };
@@ -257,8 +257,7 @@ template<>
 struct Interface<ArrayInitializer>:
   ImplementedBy<Tuple, Abstraction, CodeArea> {
 
-  OpResult initElement(RichNode self, VM vm, size_t index,
-                       UnstableNode* value) {
+  OpResult initElement(RichNode self, VM vm, size_t index, RichNode value) {
     return raiseTypeError(vm, u"Array initializer", self);
   }
 };
@@ -266,23 +265,23 @@ struct Interface<ArrayInitializer>:
 class SpaceLike;
 template<>
 struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
-  OpResult askSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult askSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  OpResult askVerboseSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult askVerboseSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  OpResult mergeSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult mergeSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  OpResult commitSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult commitSpace(RichNode self, VM vm, RichNode value) {
     return raiseTypeError(vm, u"Space", self);
   }
 
-  OpResult cloneSpace(RichNode self, VM vm, UnstableNode* result) {
+  OpResult cloneSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
   }
 };

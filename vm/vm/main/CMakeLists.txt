@@ -2,14 +2,19 @@ set(interface_headers mozart.hh)
 
 foreach(header ${interface_headers})
 add_custom_command(
-  OUTPUT ${header}.gen
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast -o${header}.ast -DMOZART_GENERATOR ${CMAKE_CURRENT_SOURCE_DIR}/${header}
-  COMMAND generator ${header}.ast
-  COMMAND ${CMAKE_COMMAND} -E touch ${header}.gen
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${header}.gen
+  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+    -o ${CMAKE_CURRENT_BINARY_DIR}/${header}.ast
+    -DMOZART_GENERATOR
+    ${CMAKE_CURRENT_SOURCE_DIR}/${header}
+  COMMAND generator
+    ${CMAKE_CURRENT_BINARY_DIR}/${header}.ast
+    ${CMAKE_CURRENT_BINARY_DIR}/
+  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/${header}.gen
   DEPENDS generator
   IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/${header}"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT Generating Interfaces for ${header}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT Processing ${header}
   VERBATIM)
 endforeach(header)
 

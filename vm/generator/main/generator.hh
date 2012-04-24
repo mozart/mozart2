@@ -64,7 +64,7 @@ std::string b2s(bool value) {
   return value ? "true" : "false";
 }
 
-void handleInterface(const SpecDecl* ND);
-void handleImplementation(const SpecDecl* ND);
+void handleInterface(const std::string outputDir, const SpecDecl* ND);
+void handleImplementation(const std::string outputDir, const SpecDecl* ND);
 
 extern clang::ASTContext* context;

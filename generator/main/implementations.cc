@@ -115,7 +115,7 @@ private:
                                 bool toStableNode);
 };
 
-void handleImplementation(const SpecDecl* ND) {
+void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
   const std::string name = getTypeParamAsString(ND);
 
   ImplementationDef definition;
@@ -196,21 +196,21 @@ void handleImplementation(const SpecDecl* ND) {
 
   {
     std::string err;
-    llvm::raw_fd_ostream to((name+"-implem-decl.hh").c_str(), err);
+    llvm::raw_fd_ostream to((outputDir+name+"-implem-decl.hh").c_str(), err);
     assert(err == "");
     definition.makeOutputDeclBefore(to);
   }
 
   {
     std::string err;
-    llvm::raw_fd_ostream to((name+"-implem-decl-after.hh").c_str(), err);
+    llvm::raw_fd_ostream to((outputDir+name+"-implem-decl-after.hh").c_str(), err);
     assert(err == "");
     definition.makeOutputDeclAfter(to);
   }
 
   {
     std::string err;
-    llvm::raw_fd_ostream to((name+"-implem.hh").c_str(), err);
+    llvm::raw_fd_ostream to((outputDir+name+"-implem.hh").c_str(), err);
     assert(err == "");
     definition.makeOutput(to);
   }

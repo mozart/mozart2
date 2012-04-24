@@ -42,7 +42,7 @@ struct InterfaceDef {
   bool autoWait;
 };
 
-void handleInterface(const SpecDecl* ND) {
+void handleInterface(const std::string outputDir, const SpecDecl* ND) {
   const std::string name = getTypeParamAsString(ND);
 
   InterfaceDef definition;
@@ -62,7 +62,7 @@ void handleInterface(const SpecDecl* ND) {
   }
 
   std::string err;
-  llvm::raw_fd_ostream to((name+"-interf.hh").c_str(), err);
+  llvm::raw_fd_ostream to((outputDir+name+"-interf.hh").c_str(), err);
   assert(err == "");
   definition.makeOutput(ND, to);
 }

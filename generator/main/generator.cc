@@ -28,7 +28,7 @@ using namespace clang;
 
 clang::ASTContext* context;
 
-void processDeclContext(const DeclContext* ds) {
+void processDeclContext(const std::string outputDir, const DeclContext* ds) {
   for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
     Decl* decl = *iter;
 
@@ -36,13 +36,13 @@ void processDeclContext(const DeclContext* ds) {
       /* It's a template specialization decl, might be an
        * Interface<T> or an Implementation<T> that we must process. */
       if (ND->getNameAsString() == "Interface") {
-        handleInterface(ND);
+        handleInterface(outputDir, ND);
       } else if (ND->getNameAsString() == "Implementation") {
-        handleImplementation(ND);
+        handleImplementation(outputDir, ND);
       }
     } else if (const NamespaceDecl* nsDecl = dyn_cast<NamespaceDecl>(decl)) {
       /* It's a namespace, recurse in it. */
-      processDeclContext(nsDecl);
+      processDeclContext(outputDir, nsDecl);
     }
   }
 }
@@ -51,8 +51,11 @@ int main(int argc, char* argv[]) {
   llvm::IntrusiveRefCntPtr<DiagnosticsEngine> Diags;
   FileSystemOptions FileSystemOpts;
 
+  std::string astFile = argv[1];
+  std::string outputDir = argv[2];
+
   // Parse source file
-  ASTUnit *unit = ASTUnit::LoadFromASTFile(std::string(argv[1]),
+  ASTUnit *unit = ASTUnit::LoadFromASTFile(astFile,
                                            Diags, FileSystemOpts,
                                            false, 0, 0, true);
 
@@ -64,5 +67,5 @@ int main(int argc, char* argv[]) {
   context->setPrintingPolicy(policy);
 
   // Process
-  processDeclContext(context->getTranslationUnitDecl());
+  processDeclContext(outputDir, context->getTranslationUnitDecl());
 }

@@ -26,6 +26,7 @@
 #include <clang/AST/DeclTemplate.h>
 
 typedef clang::ClassTemplateSpecializationDecl SpecDecl;
+typedef clang::CXXRecordDecl ClassDecl;
 
 std::string typeToString(clang::QualType type);
 
@@ -66,5 +67,8 @@ std::string b2s(bool value) {
 
 void handleInterface(const std::string outputDir, const SpecDecl* ND);
 void handleImplementation(const std::string outputDir, const SpecDecl* ND);
+
+bool isModuleClass(const ClassDecl* cls);
+void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD);
 
 extern clang::ASTContext* context;

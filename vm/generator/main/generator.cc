@@ -24,21 +24,41 @@
 
 #include "generator.hh"
 
+#include <iostream>
+
 using namespace clang;
 
 clang::ASTContext* context;
+
+enum GenMode {
+  gmIntfImpl, gmBuiltins
+};
+
+GenMode mode;
+
+bool baseIsNotModule(const CXXRecordDecl* base, void* data) {
+  return base->getNameAsString() != "Module";
+}
 
 void processDeclContext(const std::string outputDir, const DeclContext* ds) {
   for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
     Decl* decl = *iter;
 
     if (const SpecDecl* ND = dyn_cast<SpecDecl>(decl)) {
-      /* It's a template specialization decl, might be an
-       * Interface<T> or an Implementation<T> that we must process. */
-      if (ND->getNameAsString() == "Interface") {
-        handleInterface(outputDir, ND);
-      } else if (ND->getNameAsString() == "Implementation") {
-        handleImplementation(outputDir, ND);
+      if (mode == gmIntfImpl) {
+        /* It's a template specialization decl, might be an
+         * Interface<T> or an Implementation<T> that we must process. */
+        if (ND->getNameAsString() == "Interface") {
+          handleInterface(outputDir, ND);
+        } else if (ND->getNameAsString() == "Implementation") {
+          handleImplementation(outputDir, ND);
+        }
+      }
+    } else if (const ClassDecl* CD = dyn_cast<ClassDecl>(decl)) {
+      if (mode == gmBuiltins) {
+        if (isModuleClass(CD)) {
+          handleBuiltinModule(outputDir, CD);
+        }
       }
     } else if (const NamespaceDecl* nsDecl = dyn_cast<NamespaceDecl>(decl)) {
       /* It's a namespace, recurse in it. */
@@ -51,8 +71,19 @@ int main(int argc, char* argv[]) {
   llvm::IntrusiveRefCntPtr<DiagnosticsEngine> Diags;
   FileSystemOptions FileSystemOpts;
 
-  std::string astFile = argv[1];
-  std::string outputDir = argv[2];
+  std::string modeStr = argv[1];
+  std::string astFile = argv[2];
+  std::string outputDir = argv[3];
+
+  // Parse mode
+  if (modeStr == "intfimpl") {
+    mode = gmIntfImpl;
+  } else if (modeStr == "builtins") {
+    mode = gmBuiltins;
+  } else {
+    std::cerr << "Unknown generator mode: " << modeStr << std::endl;
+    return 1;
+  }
 
   // Parse source file
   ASTUnit *unit = ASTUnit::LoadFromASTFile(astFile,

@@ -192,20 +192,24 @@ private:
   };
 public:
   Builtin(const std::string& name): BaseBuiltin(
-    name, arity, getEntryPoint(), getGenericEntryPoint()) {}
+    name, arity(), getEntryPoint(), getGenericEntryPoint()) {}
 public:
-  static const size_t arity = ExtractArity<decltype(&Self::operator())>::arity;
+  static constexpr size_t arity() {
+    return ExtractArity<decltype(&Self::operator())>::arity;
+  }
 
   static Self& builtin() {
     return rawBuiltin;
   }
 private:
   static SpecializedBuiltinEntryPoint getEntryPoint() {
-    return internal::BuiltinEntryPoint<Self, arity>::getEntryPoint();
+    constexpr size_t ar = arity(); // work around a limitation of the compiler
+    return internal::BuiltinEntryPoint<Self, ar>::getEntryPoint();
   }
 
   static GenericBuiltinEntryPoint getGenericEntryPoint() {
-    return internal::BuiltinEntryPoint<Self, arity>::getGenericEntryPoint();
+    constexpr size_t ar = arity(); // work around a limitation of the compiler
+    return internal::BuiltinEntryPoint<Self, ar>::getGenericEntryPoint();
   }
 private:
   static Self rawBuiltin;

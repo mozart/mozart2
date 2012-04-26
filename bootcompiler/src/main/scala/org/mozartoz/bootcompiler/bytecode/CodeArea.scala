@@ -19,7 +19,9 @@ class CodeArea(val abstraction: Abstraction) {
   override def toString() = "<CodeArea %s>" format (abstraction.fullName)
 
   def dump(includeByteCode: Boolean = true) {
-    println("constants: " + (constants mkString " "))
+    println("constants:")
+    for ((constant, index) <- constants.zipWithIndex)
+      println("  K(%d) = %s" format (index, constant))
 
     if (includeByteCode) {
       println()

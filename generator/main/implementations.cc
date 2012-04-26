@@ -115,6 +115,55 @@ private:
                                 bool toStableNode);
 };
 
+void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
+  // Recurse into base classes
+  for (auto iter = CD->bases_begin(), e = CD->bases_end();
+       iter != e; ++iter) {
+    CXXBaseSpecifier base = *iter;
+
+    if (base.getAccessSpecifier() == AS_public)
+      collectMethods(definition, base.getType()->getAsCXXRecordDecl());
+  }
+
+  // Process the methods in this class
+  for (auto iter = CD->decls_begin(), e = CD->decls_end(); iter != e; ++iter) {
+    const Decl* decl = *iter;
+
+    if (decl->isImplicit())
+      continue;
+    if (!decl->isFunctionOrFunctionTemplate())
+      continue;
+    if (decl->getAccess() != AS_public)
+      continue;
+
+    ImplemMethodDef method;
+    const FunctionDecl* function;
+
+    if ((function = dyn_cast<FunctionDecl>(decl))) {
+      method = ImplemMethodDef(function);
+    } else if (const FunctionTemplateDecl* funTemplate =
+               dyn_cast<FunctionTemplateDecl>(decl)) {
+      function = funTemplate->getTemplatedDecl();
+      method = ImplemMethodDef(function, funTemplate);
+    }
+
+    if (!function->isCXXInstanceMember())
+      continue;
+    if (isa<CXXConstructorDecl>(function))
+      continue;
+
+    if (function->getNameAsString() == "printReprToStream")
+      definition.hasPrintReprToStream = true;
+
+    method.hasSelfParam = (function->param_size() > 0) &&
+      ((*function->param_begin())->getNameAsString() == "self");
+
+    method.parseTheFunction();
+
+    definition.methods.push_back(method);
+  }
+}
+
 void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
   const std::string name = getTypeParamAsString(ND);
 
@@ -156,43 +205,8 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
     } else {}
   }
 
-  // For every method in Implementation<T>
-  for (auto iter = ND->decls_begin(), e = ND->decls_end(); iter != e; ++iter) {
-    const Decl* decl = *iter;
-
-    if (decl->isImplicit())
-      continue;
-    if (!decl->isFunctionOrFunctionTemplate())
-      continue;
-    if (decl->getAccess() != AS_public)
-      continue;
-
-    ImplemMethodDef method;
-    const FunctionDecl* function;
-
-    if ((function = dyn_cast<FunctionDecl>(decl))) {
-      method = ImplemMethodDef(function);
-    } else if (const FunctionTemplateDecl* funTemplate =
-               dyn_cast<FunctionTemplateDecl>(decl)) {
-      function = funTemplate->getTemplatedDecl();
-      method = ImplemMethodDef(function, funTemplate);
-    }
-
-    if (!function->isCXXInstanceMember())
-      continue;
-    if (isa<CXXConstructorDecl>(function))
-      continue;
-
-    if (function->getNameAsString() == "printReprToStream")
-      definition.hasPrintReprToStream = true;
-
-    method.hasSelfParam = (function->param_size() > 0) &&
-      ((*function->param_begin())->getNameAsString() == "self");
-
-    method.parseTheFunction();
-
-    definition.methods.push_back(method);
-  }
+  // Collect methods
+  collectMethods(definition, ND);
 
   {
     std::string err;
@@ -279,13 +293,6 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "public:\n";
   to << "  TypedRichNode(Self self) : BaseTypedRichNode(self) {}\n";
 
-  // Special-casing the method WithHome::home() until we find a better solution
-  if (withHome) {
-    to << "\n";
-    to << "  inline\n";
-    to << "  Space* home();\n";
-  }
-
   for (auto method = methods.begin(); method != methods.end(); ++method) {
     to << "\n";
 
@@ -343,14 +350,6 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "void " << name
        << "::sClone(SC sc, RichNode from, UnstableNode& to) const {\n";
     makeContentsOfAutoSClone(to, false);
-    to << "}\n";
-  }
-
-  // Special-casing the method WithHome::home() until we find a better solution
-  if (withHome) {
-    to << "\n";
-    to << "Space* TypedRichNode<" << name << ">::home() {\n";
-    to << "  return " << _selfArrow << "home();\n";
     to << "}\n";
   }
 

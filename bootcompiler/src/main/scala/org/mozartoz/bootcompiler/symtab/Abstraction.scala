@@ -54,7 +54,7 @@ class Abstraction(val owner: Abstraction, val name: String) {
     })
   }
 
-  def dump() {
+  def dump(includeByteCode: Boolean = true) {
     println(fullName + ": P/" + arity.toString())
     println("  formals: " + (formals mkString " "))
     println("  locals: " + (locals mkString " "))
@@ -65,7 +65,7 @@ class Abstraction(val owner: Abstraction, val name: String) {
 
     if (codeArea.isDefined) {
       println()
-      codeArea.dump()
+      codeArea.dump(includeByteCode)
     }
   }
 }

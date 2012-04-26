@@ -18,11 +18,14 @@ class CodeArea(val abstraction: Abstraction) {
 
   override def toString() = "<CodeArea %s>" format (abstraction.fullName)
 
-  def dump() {
+  def dump(includeByteCode: Boolean = true) {
     println("constants: " + (constants mkString " "))
-    println()
-    for (opCode <- opCodes)
-      println(opCode.code)
+
+    if (includeByteCode) {
+      println()
+      for (opCode <- opCodes)
+        println(opCode.code)
+    }
   }
 
   private val YCounter = new RegCounter(YReg)
@@ -103,7 +106,7 @@ class CodeArea(val abstraction: Abstraction) {
        |""".stripMargin
 
     Console.withOut(out.underlying) {
-      abstraction.dump()
+      abstraction.dump(includeByteCode = false)
     }
 
     out << """

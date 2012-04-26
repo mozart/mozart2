@@ -11,8 +11,8 @@ set(MOZART_BUILD_DIR "${MOZART_DIR}/build"
 set(BOOTCOMPILER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2-bootcompiler"
     CACHE PATH "Path to Mozart2 boot compiler directory")
 
-set(SCALA "/usr/bin/scala"
-    CACHE PATH "Scala executable")
+set(JAVA "/usr/bin/java"
+    CACHE PATH "Java executable")
 
 
 # Configure compiler
@@ -25,17 +25,18 @@ add_library(mozartvm STATIC IMPORTED)
 set_property(TARGET mozartvm PROPERTY
              IMPORTED_LOCATION "${MOZART_DIR}/build/vm/main/libmozartvm.a")
 
-include_directories("${MOZART_DIR}/vm/main" "${MOZART_DIR}/build/vm/main")
+include_directories("${MOZART_DIR}/vm/main" "${MOZART_BUILD_DIR}/vm/main")
 
 
 # Generate main.cc from Main.oz
 
 add_custom_command(
   OUTPUT main.cc
-  COMMAND ${SCALA}
-    "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT.jar"
+  COMMAND ${JAVA} -jar
+    "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar"
+    -o "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
+    -m "${MOZART_BUILD_DIR}/vm/main/"
     "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz"
-    "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
   DEPENDS Main.oz
   COMMENT Compiling Main.oz
   VERBATIM)

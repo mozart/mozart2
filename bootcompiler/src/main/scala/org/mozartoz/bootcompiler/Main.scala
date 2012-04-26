@@ -12,21 +12,43 @@ import transform._
 import symtab._
 import util._
 
+case class Config(
+    fileName: String = "",
+    outputStream: PrintStream = Console.out
+)
+
 object Main {
   def main(args: Array[String]) {
-    val fileName = args(0)
-    val outputStream =
-      if (args.size > 1) new PrintStream(args(1))
-      else Console.out
+    // Define command-line options
+    val optParser = new scopt.immutable.OptionParser[Config]("scopt", "2.x") {
+      def options = Seq(
+        opt("o", "output", "output file") {
+          (v: String, c: Config) => c.copy(outputStream = new PrintStream(v))
+        },
+        arg("<file>", "input file") {
+          (v: String, c: Config) => c.copy(fileName = v)
+        }
+      )
+    }
 
-    val reader = new PagedSeqReader(PagedSeq.fromReader(
-        new BufferedReader(new FileReader(fileName))))
-    val parser = new OzParser()
+    // Parse the options
+    optParser.parse(args, Config()) map { config =>
+      // OK, we're good to go
+      import config._
 
-    parser.parse(reader) match {
-      case parser.Success(rawCode, _) => produce(rawCode, outputStream)
-      case parser.NoSuccess(msg, _) =>
-        Console.err.println(msg)
+      val reader = new PagedSeqReader(PagedSeq.fromReader(
+          new BufferedReader(new FileReader(fileName))))
+      val parser = new OzParser()
+
+      parser.parse(reader) match {
+        case parser.Success(rawCode, _) =>
+          produce(rawCode, outputStream)
+        case parser.NoSuccess(msg, _) =>
+          Console.err.println(msg)
+      }
+    } getOrElse {
+      // Bad command-line arguments
+      optParser.showUsage
     }
   }
 

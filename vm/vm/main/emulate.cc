@@ -546,6 +546,16 @@ void Thread::run() {
         break;
       }
 
+      case OpCreateRecordK: {
+        UnstableNode arity(vm, KPC(1));
+        size_t width = IntPC(2);
+
+        XPC(3).make<Record>(vm, width, arity);
+
+        advancePC(3);
+        break;
+      }
+
       // Inlines for some builtins
 
       case OpInlineEqualsInteger: {

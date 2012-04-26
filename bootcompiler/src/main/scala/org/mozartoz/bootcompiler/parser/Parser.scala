@@ -232,7 +232,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   private def sharp(first: Expression, rest: List[Expression]) =
-    Record(Atom("#"), first :: rest)
+    Record(Atom("#"), (first :: rest) map expr2recordField)
 
   // X+Y   X-Y   (left-associative)
   lazy val expression8: PackratParser[Expression] = (
@@ -319,8 +319,13 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val recordLabel: PackratParser[Expression] =
     atomLitLabel ^^ Atom
 
-  lazy val recordFields: PackratParser[List[Expression]] =
-    rep(expression)
+  lazy val recordFields: PackratParser[List[RecordField]] =
+    rep(recordField)
+
+  lazy val recordField: PackratParser[RecordField] = (
+      expression ~ (":" ~> expression) ^^ RecordField
+    | expression ^^ (expr => RecordField(AutoFeature(), expr))
+  )
 
   // List expressions
 

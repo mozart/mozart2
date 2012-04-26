@@ -71,7 +71,14 @@ object Unnester extends Transformer with TreeDSL {
       transformStat((v === lhs2) ~ (v === rhs2))
 
     case record @ Record(label, fields) =>
-      withSimplifiedHeaderAndArgs(label, fields) { (newLabel, newFields) =>
+      val args = fields.map(_.feature) ::: fields.map(_.value)
+
+      withSimplifiedHeaderAndArgs(label, args) { (newLabel, newArgs) =>
+        val (newFeatures, newValues) = newArgs.splitAt(fields.size)
+
+        val newFields = for ((feature, value) <- newFeatures zip newValues)
+          yield treeCopy.RecordField(value, feature, value)
+
         v === treeCopy.Record(record, newLabel, newFields)
       }
 
@@ -95,12 +102,16 @@ object Unnester extends Transformer with TreeDSL {
       makeStatement: List[Expression] => Statement) = {
     val argsAndTheirTemps =
       for (arg <- args) yield arg match {
-        case v:Variable => v -> v
+        case v:VarOrConst => v -> v
         case _ => arg -> Variable(Symbol.newSynthetic())
       }
 
-    val argsNeedingTempsAndTheirTemps =
-      argsAndTheirTemps filter (x => x._1 ne x._2)
+    val argsNeedingTempsAndTheirTemps = for {
+      argAndTemp @ (arg, temp) <- argsAndTheirTemps
+      if arg ne temp
+    } yield {
+      (arg, temp.asInstanceOf[Variable])
+    }
 
     val tempArgs = argsNeedingTempsAndTheirTemps map (_._2)
 

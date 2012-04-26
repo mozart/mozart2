@@ -49,6 +49,14 @@ class CodeArea(val abstraction: Abstraction) {
   def registerFor(constant: Constant) =
     innerRegisterFor(constant).asInstanceOf[KReg]
 
+  def registerFor(arity: ConstantArity) =
+    innerRegisterFor(arity).asInstanceOf[KReg]
+
+  def registerFor(expr: VarOrConst): Register = expr match {
+    case variable:Variable => registerFor(variable.symbol)
+    case constant:Constant => registerFor(constant)
+  }
+
   private def innerRegisterFor(key: Any) = {
     registerAllocs.getOrElseUpdate(key, {
       key match {
@@ -56,7 +64,7 @@ class CodeArea(val abstraction: Abstraction) {
           if (sym.isGlobal) GReg(sym.owner.globals.indexOf(sym))
           else YCounter.next()
 
-        case _:BuiltinSymbol | _:CodeArea | _:Constant =>
+        case _:BuiltinSymbol | _:CodeArea | _:Constant | _:ConstantArity =>
           constants += key
           KReg(constants.size - 1)
       }
@@ -151,31 +159,51 @@ class CodeArea(val abstraction: Abstraction) {
     import Output._
 
     constant match {
+      case ConstantArity(label, features) =>
+        out << "  temp = buildArity(vm, "
+        produceCCForConstant(out, label)
+
+        for (feature <- features) {
+          out << ", "
+          produceCCForConstant(out, feature)
+        }
+
+        out << ");\n"
+
+      case _ =>
+        out << "  temp = trivialBuild(vm, "
+        produceCCForConstant(out, constant)
+        out << ");\n"
+    }
+  }
+
+  private def produceCCForConstant(out: Output, constant: Any) {
+    import Output._
+
+    constant match {
       case builtin:BuiltinSymbol =>
-        out << "  temp.make<BuiltinProcedure>(vm, "
-        out << "::%s::builtin());\n" % builtin.ccFullName
+        out << "::%s::builtin()" % builtin.ccFullName
 
       case codeArea:CodeArea =>
-        out << "  temp.copy(vm, *%s);\n" % codeArea.ccCodeArea
+        out << "*%s" % codeArea.ccCodeArea
 
       case IntLiteral(value) =>
-        out << "  temp.make<SmallInt>(vm, %d);\n" % value
+        out << value.toString()
 
       case FloatLiteral(value) =>
-        out << "  temp.make<Float>(vm, %s);\n" % value.toString()
+        out << value.toString()
 
       case Atom(value) =>
-        out << "  temp.make<Atom>(vm, %d, u\"%s\");\n" % (
-            value.length(), value)
+        out << "u\"%s\"" % value
 
       case True() =>
-        out << "  temp.make<Boolean>(vm, true);\n"
+        out << "true"
 
       case False() =>
-        out << "  temp.make<Boolean>(vm, false);\n"
+        out << "false"
 
       case UnitVal() =>
-        out << "  temp.make<Unit>(vm);\n"
+        out << "unit"
     }
   }
 }

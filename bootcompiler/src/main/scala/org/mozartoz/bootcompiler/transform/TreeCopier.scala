@@ -104,7 +104,10 @@ class TreeCopier {
 
   // Records
 
-  def Record(tree: Node, label: Expression, fields: List[Expression]) =
+  def RecordField(tree: Node, feature: Expression, value: Expression) =
+    new RecordField(feature, value).copyAttrs(tree)
+
+  def Record(tree: Node, label: Expression, fields: List[RecordField]) =
     new Record(label, fields).copyAttrs(tree)
 
   // Synthetic-only

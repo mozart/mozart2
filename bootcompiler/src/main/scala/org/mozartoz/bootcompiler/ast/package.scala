@@ -12,4 +12,10 @@ package object ast {
     }
     result.toString
   }
+
+  implicit def pair2recordField(pair: (Expression, Expression)) =
+    RecordField(pair._1, pair._2)
+
+  implicit def expr2recordField(expr: Expression) =
+    RecordField(AutoFeature(), expr)
 }

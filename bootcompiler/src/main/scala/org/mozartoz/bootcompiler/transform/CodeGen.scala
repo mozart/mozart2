@@ -17,6 +17,9 @@ object CodeGen extends Transformer with TreeDSL {
   private implicit def symbol2reg(symbol: Symbol) =
     code.registerFor(symbol)
 
+  private implicit def varorconst2reg(expr: VarOrConst) =
+    code.registerFor(expr)
+
   private implicit def reg2ops[A <: Register](self: A) = new {
     def := (source: Register)(implicit ev: A <:< XOrYReg) {
       (source, self:XOrYReg) match {
@@ -52,8 +55,8 @@ object CodeGen extends Transformer with TreeDSL {
     }
 
     def initArrayWith(values: List[Expression])(implicit ev: A <:< XReg) {
-      for ((value:Variable, index) <- values.zipWithIndex)
-        array(index) := value.symbol
+      for ((value:VarOrConst, index) <- values.zipWithIndex)
+        array(index) := value
     }
   }
 
@@ -101,11 +104,12 @@ object CodeGen extends Transformer with TreeDSL {
         XReg(0) := code.registerFor(rhs)
         XReg(0) === lhs.symbol
 
-      case ((lhs:Variable) === (rhs @ Record(label:Variable, fields))) =>
+      case ((lhs:Variable) === (rhs @ Record(label:VarOrConst, fields)))
+      if rhs.isTuple =>
         val fieldCount = fields.size
         val dest = XReg(0)
 
-        code.registerFor(label.symbol) match {
+        code.registerFor(label) match {
           case reg:XReg =>
             code += OpCreateTupleX(reg, fieldCount, dest)
           case reg:KReg => reg
@@ -115,7 +119,20 @@ object CodeGen extends Transformer with TreeDSL {
             code += OpCreateTupleX(XReg(1), fieldCount, dest)
         }
 
-        dest.initArrayWith(fields)
+        dest.initArrayWith(fields map (_.value))
+        dest === lhs.symbol
+
+      case ((lhs:Variable) === (rhs @ Record(label:Constant, fields)))
+      if rhs.hasConstantArity =>
+        val fieldCount = fields.size
+        val dest = XReg(0)
+
+        val arityReg = code.registerFor(
+            ConstantArity(label, fields map (_.feature.asInstanceOf[Constant])))
+
+        code += OpCreateRecordK(arityReg, fieldCount, dest)
+
+        dest.initArrayWith(fields map (_.value))
         dest === lhs.symbol
 
       case ((lhs:Variable) === (rhs @ CreateAbstraction(abs, globals))) =>
@@ -155,8 +172,8 @@ object CodeGen extends Transformer with TreeDSL {
 
         (callable.symbol: @unchecked) match {
           case symbol:VariableSymbol =>
-            for ((arg:Variable, index) <- args.zipWithIndex)
-              XReg(index) := arg.symbol
+            for ((arg:VarOrConst, index) <- args.zipWithIndex)
+              XReg(index) := arg
 
             symbol.toReg match {
               case reg:XReg => code += OpCallX(reg, argCount)
@@ -176,10 +193,10 @@ object CodeGen extends Transformer with TreeDSL {
             val argsWithKindAndIndex = args.zip(paramKinds).zipWithIndex
 
             for {
-              ((arg:Variable, kind), index) <- argsWithKindAndIndex
+              ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
               if kind == BuiltinSymbol.ParamKind.In
             } {
-              XReg(index) := arg.symbol
+              XReg(index) := arg
             }
 
             val argsRegs = (0 until argCount).toList map XReg
@@ -192,10 +209,10 @@ object CodeGen extends Transformer with TreeDSL {
             }
 
             for {
-              ((arg:Variable, kind), index) <- argsWithKindAndIndex
+              ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
               if kind == BuiltinSymbol.ParamKind.Out
             } {
-              XReg(index) === arg.symbol
+              XReg(index) === arg
             }
         }
     }

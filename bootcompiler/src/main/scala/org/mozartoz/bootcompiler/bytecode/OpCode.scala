@@ -129,6 +129,11 @@ case class OpCreateTupleX(label: XReg, width: ImmInt,
 case class OpCreateTupleK(label: KReg, width: ImmInt,
     dest: XReg) extends OpCode
 
+/** Create a record of given `arity' and `width'
+ *  Elements must be initialized with `OpArrayInitElement_' afterwards. */
+case class OpCreateRecordK(arity: KReg, width: ImmInt,
+    dest: XReg) extends OpCode
+
 // Special
 
 /** Dummy used by `CodeArea.addHole()` (not a true opcode) */

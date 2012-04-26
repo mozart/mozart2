@@ -72,7 +72,9 @@ case class ShortCircuitBinaryOp(left: Expression, operator: String,
 
 // Trivial expressions
 
-case class Variable(name: String) extends Expression with SymbolNode
+trait VarOrConst extends Expression
+
+case class Variable(name: String) extends VarOrConst with SymbolNode
     with FormalArg with Declaration {
   def syntax(indent: String) = name
 }
@@ -90,7 +92,7 @@ case class UnboundExpression() extends Expression {
   def syntax(indent: String) = "_"
 }
 
-trait Constant extends Expression
+sealed trait Constant extends VarOrConst
 
 case class IntLiteral(value: Long) extends Constant {
   def syntax(indent: String) = value.toString()
@@ -106,7 +108,7 @@ case class Atom(value: String) extends AtomLike {
   def syntax(indent: String) = "'" + escapePseudoChars(value, '\'') + "'"
 }
 
-abstract class BuiltinName(tag: String) extends AtomLike {
+abstract class BuiltinName(val tag: String) extends AtomLike {
   def syntax(indent: String) = tag
 }
 
@@ -114,10 +116,27 @@ case class True() extends BuiltinName("true")
 case class False() extends BuiltinName("false")
 case class UnitVal() extends BuiltinName("unit")
 
+case class AutoFeature() extends Constant {
+  def syntax(indent: String) = ""
+}
+
 // Records
 
+case class RecordField(feature: Expression, value: Expression) extends Node {
+  def syntax(indent: String) = {
+    val featSyntax = feature.syntax(indent)
+    featSyntax + ":" + value.syntax(indent + " " + " "*featSyntax.length())
+  }
+
+  def hasAutoFeature =
+    feature.isInstanceOf[AutoFeature]
+
+  def hasConstantFeature =
+    feature.isInstanceOf[Constant]
+}
+
 case class Record(label: Expression,
-    fields: List[Expression]) extends Expression {
+    fields: List[RecordField]) extends Expression {
   def syntax(indent: String) = fields.toList match {
     case Nil => label.syntax()
 
@@ -130,6 +149,16 @@ case class Record(label: Expression,
       otherFields.foldLeft(firstLine) {
         _ + "\n" + subIndent + _.syntax(subIndent)
       } + ")"
+    }
+  }
+
+  def hasConstantArity =
+    label.isInstanceOf[Constant] && (fields forall (_.hasConstantFeature))
+
+  def isTuple = {
+    fields.zipWithIndex.forall {
+      case (RecordField(IntLiteral(feat), _), index) if feat == index+1 => true
+      case _ => false
     }
   }
 }

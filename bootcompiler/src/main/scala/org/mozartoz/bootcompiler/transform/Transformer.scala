@@ -125,12 +125,13 @@ abstract class Transformer extends (Program => Unit) {
     case True() => expression
     case False() => expression
     case UnitVal() => expression
+    case AutoFeature() => expression
 
     // Records
 
     case Record(label, fields) =>
       treeCopy.Record(expression, transformExpr(label),
-          fields map transformExpr)
+          fields map transformRecordField)
 
     // Synthetic-only
 
@@ -149,4 +150,8 @@ abstract class Transformer extends (Program => Unit) {
 
   def transformActualArgs(args: List[Expression]): List[Expression] =
     args map transformExpr
+
+  def transformRecordField(field: RecordField): RecordField =
+    treeCopy.RecordField(field,
+        transformExpr(field.feature), transformExpr(field.value))
 }

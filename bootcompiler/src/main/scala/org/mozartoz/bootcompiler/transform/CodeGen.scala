@@ -172,9 +172,12 @@ object CodeGen extends Transformer with TreeDSL {
               throw new IllegalArgumentException(
                   "Wrong arity for builtin application of %s" format symbol)
 
+            val paramKinds = symbol.paramKinds
+            val argsWithKindAndIndex = args.zip(paramKinds).zipWithIndex
+
             for {
-              (arg:Variable, index) <- args.zipWithIndex
-              if index < symbol.inputArity
+              ((arg:Variable, kind), index) <- argsWithKindAndIndex
+              if kind == BuiltinSymbol.ParamKind.In
             } {
               XReg(index) := arg.symbol
             }
@@ -185,8 +188,8 @@ object CodeGen extends Transformer with TreeDSL {
                 (0 until argCount).toList map XReg)
 
             for {
-              (arg:Variable, index) <- args.zipWithIndex
-              if index >= symbol.inputArity
+              ((arg:Variable, kind), index) <- argsWithKindAndIndex
+              if kind == BuiltinSymbol.ParamKind.Out
             } {
               XReg(index) === arg.symbol
             }

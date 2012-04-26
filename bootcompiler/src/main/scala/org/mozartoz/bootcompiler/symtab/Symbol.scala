@@ -48,16 +48,19 @@ class VariableSymbol(name: String, formal: Boolean = false,
     new VariableSymbol(name, false, true, true)
 }
 
-class BuiltinSymbol(name: String, val ccName: String,
-    in: Int, out: Int) extends Symbol(name) {
+object BuiltinSymbol {
+  object ParamKind extends Enumeration {
+    val In, Out = Value
+  }
+
+  type ParamKind = ParamKind.Value
+}
+
+class BuiltinSymbol(name: String, val ccFullName: String,
+    val paramKinds: List[BuiltinSymbol.ParamKind]) extends Symbol(name) {
   override val isBuiltin = true
 
-  val inputArity = in
-  val outputArity = out
-  val arity = in + out
-
-  def ccFullName =
-    "builtins::" + ccName + "::builtin()"
+  val arity = paramKinds.size
 }
 
 object NoSymbol extends Symbol("<NoSymbol>") {

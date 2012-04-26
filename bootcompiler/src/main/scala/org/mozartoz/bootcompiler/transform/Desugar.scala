@@ -11,7 +11,7 @@ object Desugar extends Transformer with TreeDSL {
         transformStat(body)
       }
 
-      builtins.CreateThread call (proc)
+      builtins.createThread call (proc)
 
     case _ =>
       super.transformStat(statement)

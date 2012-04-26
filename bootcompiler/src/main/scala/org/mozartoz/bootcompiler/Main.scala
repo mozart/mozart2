@@ -5,6 +5,7 @@ import java.io.{ Console => _, _ }
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.combinator._
 import scala.util.parsing.input._
+import scala.util.parsing.json._
 
 import parser._
 import ast._
@@ -14,7 +15,8 @@ import util._
 
 case class Config(
     fileName: String = "",
-    outputStream: PrintStream = Console.out
+    outputStream: PrintStream = Console.out,
+    moduleDefs: List[String] = Nil
 )
 
 object Main {
@@ -24,6 +26,9 @@ object Main {
       def options = Seq(
         opt("o", "output", "output file") {
           (v: String, c: Config) => c.copy(outputStream = new PrintStream(v))
+        },
+        opt("m", "module", "module definition file") {
+          (v: String, c: Config) => c.copy(moduleDefs = v :: c.moduleDefs)
         },
         arg("<file>", "input file") {
           (v: String, c: Config) => c.copy(fileName = v)
@@ -42,7 +47,7 @@ object Main {
 
       parser.parse(reader) match {
         case parser.Success(rawCode, _) =>
-          produce(rawCode, outputStream)
+          produce(rawCode, outputStream, moduleDefs)
         case parser.NoSuccess(msg, _) =>
           Console.err.println(msg)
       }
@@ -52,18 +57,100 @@ object Main {
     }
   }
 
-  def produce(rawCode: Statement, outputStream: PrintStream) {
+  def produce(rawCode: Statement, outputStream: PrintStream,
+      moduleDefs: List[String]) {
     val prog = new Program(rawCode)
+    loadModuleDefs(prog, moduleDefs)
+    loadBaseEnvironment(prog)
     applyTransforms(prog)
 
     prog.produceCC(new Output(outputStream))
   }
 
-  def applyTransforms(prog: Program) {
+  private def loadModuleDefs(prog: Program, moduleDefs: List[String]) {
+    for (moduleDef <- moduleDefs) {
+      val file = new File(moduleDef)
+
+      if (file.isFile())
+        loadModuleDef(prog, file)
+      else {
+        val pattern = """.*-builtin\.json$""".r
+        for {
+          f <- file.listFiles()
+          if (pattern.findFirstIn(f.getName).isDefined)
+        } {
+          loadModuleDef(prog, f)
+        }
+      }
+    }
+  }
+
+  private def loadModuleDef(prog: Program, moduleDef: File) {
+    class CC[T] {
+      def unapply(a: Any): Option[T] = Some(a.asInstanceOf[T])
+    }
+
+    object M extends CC[Map[String, Any]]
+    object L extends CC[List[Any]]
+    object S extends CC[String]
+    object D extends CC[Double]
+    object B extends CC[Boolean]
+
+    val modules = JSON.parseFull(readFileToString(moduleDef)).toList
+
+    for {
+      M(module) <- modules
+      S(modName) = module("name")
+      L(builtins) = module("builtins")
+      M(builtin) <- builtins
+      S(biFullCppName) = builtin("fullCppName")
+      S(biName) = builtin("name")
+      L(params) = builtin("params")
+    } {
+      val paramKinds = for {
+        M(param) <- params
+        S(paramKind) = param("kind")
+      } yield {
+        BuiltinSymbol.ParamKind.withName(paramKind)
+      }
+
+      val fullName = modName + "." + (
+          if (biName.charAt(0).isLetter) biName
+          else "'" + biName + "'")
+
+      val builtinSym = new BuiltinSymbol(fullName, biFullCppName, paramKinds)
+
+      prog.builtins.builtinByName.put(fullName, builtinSym)
+    }
+  }
+
+  private def loadBaseEnvironment(prog: Program) {
+    val in = getClass.getResourceAsStream("/BaseEnvironment.txt")
+    val source = io.Source.fromInputStream(in)
+    val UsefulLine = """(\w+)\s*=\s*([^\s].*)""".r
+
+    for (line <- source.getLines()) {
+      line match {
+        case UsefulLine(key, fullName) =>
+          val builtin = prog.builtins.builtinByName(fullName)
+          prog.builtins.baseEnvironment.put(key, builtin)
+
+        case _ => // ignore
+      }
+    }
+  }
+
+  private def applyTransforms(prog: Program) {
     Namer(prog)
     Desugar(prog)
     Unnester(prog)
     Flattener(prog)
     CodeGen(prog)
+  }
+
+  private def readFileToString(file: File) = {
+    val source = io.Source.fromFile(file)
+    try source.mkString
+    finally source.close()
   }
 }

@@ -29,6 +29,41 @@
 
 namespace mozart {
 
+////////////////
+// BaseRecord //
+////////////////
+
+template <class T>
+class BaseRecord {
+private:
+  typedef typename SelfType<T>::Self Self;
+public:
+  nativeint getWidth() {
+    return static_cast<Implementation<T>*>(this)->_width;
+  }
+
+  size_t getArraySize() {
+    return static_cast<Implementation<T>*>(this)->_width;
+  }
+
+  inline
+  StableNode* getElement(Self self, size_t index);
+public:
+  inline
+  OpResult width(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+
+  inline
+  OpResult waitOr(Self self, VM vm, UnstableNode& result);
+protected:
+  /* To be implemented in subclasses
+  inline
+  void getFeatureAt(Self self, size_t index);
+  */
+};
+
 ///////////
 // Tuple //
 ///////////
@@ -43,8 +78,8 @@ class Tuple;
  * Tuple (specialization of Record)
  */
 template <>
-class Implementation<Tuple>: StoredWithArrayOf<StableNode>,
-  WithStructuralBehavior {
+class Implementation<Tuple>: public BaseRecord<Tuple>,
+  StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Tuple>::Self Self;
 public:
@@ -56,33 +91,23 @@ public:
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
                  GR gr, Self from);
 
-  size_t getArraySize() {
-    return _width;
-  }
-
+public:
   StableNode* getLabel() {
     return &_label;
   }
 
-  int getWidth() { return _width; }
-
-  inline
-  StableNode* getElement(Self self, size_t index);
-
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
+protected:
+  inline
+  void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
+
+public:
+  // RecordLike interface
+
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
-
-  /**
-   * Get the width of the tuple in a node
-   */
-  inline
-  OpResult width(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
 
   inline
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
@@ -90,18 +115,140 @@ public:
   inline
   OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
 
-  inline
-  OpResult waitOr(Self self, VM vm, UnstableNode& result);
-
+public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
 private:
+  friend class BaseRecord<Tuple>;
+
   StableNode _label;
   size_t _width;
 };
 
 #ifndef MOZART_GENERATOR
 #include "Tuple-implem-decl-after.hh"
+#endif
+
+///////////
+// Arity //
+///////////
+
+class Arity;
+
+#ifndef MOZART_GENERATOR
+#include "Arity-implem-decl.hh"
+#endif
+
+/**
+ * Arity (of a record)
+ */
+template <>
+class Implementation<Arity>: WithStructuralBehavior {
+public:
+  typedef SelfType<Arity>::Self Self;
+public:
+  inline
+  Implementation(VM vm, RichNode tuple);
+
+  inline
+  Implementation(VM vm, GR gr, Self from);
+
+public:
+  StableNode* getTuple() {
+    return &_tuple;
+  }
+
+public:
+  inline
+  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+
+public:
+  inline
+  OpResult label(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult lookupFeature(VM vm, RichNode feature, size_t& result);
+
+  inline
+  void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
+
+public:
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
+private:
+  StableNode _tuple;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Arity-implem-decl-after.hh"
+#endif
+
+////////////
+// Record //
+////////////
+
+class Record;
+
+#ifndef MOZART_GENERATOR
+#include "Record-implem-decl.hh"
+#endif
+
+/**
+ * Record
+ */
+template <>
+class Implementation<Record>: public BaseRecord<Record>,
+  StoredWithArrayOf<StableNode>, WithStructuralBehavior {
+public:
+  typedef SelfType<Record>::Self Self;
+public:
+  inline
+  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
+                 RichNode arity);
+
+  inline
+  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
+                 GR gr, Self from);
+
+public:
+  StableNode* getArity() {
+    return &_arity;
+  }
+
+  inline
+  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+
+protected:
+  inline
+  void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
+
+public:
+  // RecordLike interface
+
+  inline
+  OpResult label(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
+
+public:
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
+private:
+  friend class BaseRecord<Record>;
+
+  StableNode _arity;
+  size_t _width;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Record-implem-decl-after.hh"
 #endif
 
 }

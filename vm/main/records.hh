@@ -31,6 +31,56 @@
 
 namespace mozart {
 
+////////////////
+// BaseRecord //
+////////////////
+
+template <class T>
+StableNode* BaseRecord<T>::getElement(Self self, size_t index) {
+  return &self[index];
+}
+
+template <class T>
+OpResult BaseRecord<T>::width(Self self, VM vm,
+                              UnstableNode& result) {
+  result.make<SmallInt>(vm, getWidth());
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult BaseRecord<T>::initElement(Self self, VM vm,
+                                    size_t index, RichNode value) {
+  self[index].init(vm, value);
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult BaseRecord<T>::waitOr(Self self, VM vm,
+                               UnstableNode& result) {
+  // If there is a field which is bound, then return its feature
+  for (size_t i = 0; i < getArraySize(); i++) {
+    UnstableNode field(vm, self[i]);
+    if (!RichNode(field).isTransient()) {
+      static_cast<Implementation<T>*>(this)->getFeatureAt(self, vm, i, result);
+      return OpResult::proceed();
+    }
+  }
+
+  // Create the control variable
+  UnstableNode unstableControlVar = Variable::build(vm);
+  RichNode controlVar = unstableControlVar;
+  controlVar.ensureStable(vm);
+
+  // Add the control variable to the suspension list of all the fields
+  for (size_t i = 0; i < getArraySize(); i++) {
+    UnstableNode field(vm, self[i]);
+    DataflowVariable(field).addToSuspendList(vm, controlVar);
+  }
+
+  // Wait for the control variable
+  return OpResult::waitFor(vm, controlVar);
+}
+
 ///////////
 // Tuple //
 ///////////
@@ -59,10 +109,6 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StableNode* Implementation<Tuple>::getElement(Self self, size_t index) {
-  return &self[index];
-}
-
 bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
                                    WalkStack& stack) {
   if (_width != right->_width)
@@ -74,21 +120,14 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
   return true;
 }
 
+void Implementation<Tuple>::getFeatureAt(Self self, VM vm, size_t index,
+                                         UnstableNode& result) {
+  result = SmallInt::build(vm, index+1);
+}
+
 OpResult Implementation<Tuple>::label(Self self, VM vm,
                                       UnstableNode& result) {
   result.copy(vm, _label);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Tuple>::width(Self self, VM vm,
-                                      UnstableNode& result) {
-  result.make<SmallInt>(vm, _width);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Tuple>::initElement(Self self, VM vm,
-                                            size_t index, RichNode value) {
-  self[index].init(vm, value);
   return OpResult::proceed();
 }
 
@@ -113,32 +152,6 @@ OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
   }
 }
 
-OpResult Implementation<Tuple>::waitOr(Self self, VM vm,
-                                       UnstableNode& result) {
-  // If there is a field which is bound, then return its feature
-  for (size_t i = 0; i < _width; i++) {
-    UnstableNode field(vm, self[i]);
-    if (!RichNode(field).isTransient()) {
-      result.make<SmallInt>(vm, i+1);
-      return OpResult::proceed();
-    }
-  }
-
-  // Create the control variable
-  UnstableNode unstableControlVar = Variable::build(vm);
-  RichNode controlVar = unstableControlVar;
-  controlVar.ensureStable(vm);
-
-  // Add the control variable to the suspension list of all the fields
-  for (size_t i = 0; i < _width; i++) {
-    UnstableNode field(vm, self[i]);
-    DataflowVariable(field).addToSuspendList(vm, controlVar);
-  }
-
-  // Wait for the control variable
-  return OpResult::waitFor(vm, controlVar);
-}
-
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,
                                               std::ostream& out, int depth) {
   out << repr(vm, _label, depth) << "(";
@@ -150,6 +163,164 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
       if (i > 0)
         out << ", ";
       out << repr(vm, self[i], depth);
+    }
+  }
+
+  out << ")";
+}
+
+///////////
+// Arity //
+///////////
+
+#include "Arity-implem.hh"
+
+Implementation<Arity>::Implementation(VM vm, RichNode tuple) {
+  assert(tuple.is<Tuple>());
+
+  _tuple.init(vm, tuple);
+}
+
+Implementation<Arity>::Implementation(VM vm, GR gr, Self from) {
+  gr->copyStableNode(_tuple, from->_tuple);
+}
+
+bool Implementation<Arity>::equals(Self self, VM vm, Self right,
+                                   WalkStack& stack) {
+  stack.push(vm, &_tuple, &right->_tuple);
+
+  return true;
+}
+
+OpResult Implementation<Arity>::label(Self self, VM vm,
+                                      UnstableNode& result) {
+  UnstableNode temp(vm, _tuple);
+  return RichNode(temp).as<Tuple>().label(vm, result);
+}
+
+OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
+                                              size_t& result) {
+  UnstableNode tempTuple(vm, _tuple);
+  auto tuple = RichNode(tempTuple).as<Tuple>();
+
+  for (size_t i = 0; i < tuple.getArraySize(); i++) {
+    UnstableNode temp(vm, *tuple.getElement(i));
+
+    bool res;
+    MOZART_CHECK_OPRESULT(mozart::equals(vm, feature, temp, res));
+
+    if (res) {
+      result = i;
+      return OpResult::proceed();
+    }
+  }
+
+  return raise(vm, u"illegalFieldSelection", feature);
+}
+
+void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
+                                         UnstableNode& result) {
+  UnstableNode tempTuple(vm, _tuple);
+  MOZART_ASSERT_PROCEED(RichNode(tempTuple).as<Tuple>().dotNumber(
+    vm, index+1, result));
+}
+
+void Implementation<Arity>::printReprToStream(Self self, VM vm,
+                                              std::ostream& out, int depth) {
+  UnstableNode label;
+  out << "<Arity/" << repr(vm, label, depth) << ">";
+}
+
+////////////
+// Record //
+////////////
+
+#include "Record-implem.hh"
+
+Implementation<Record>::Implementation(VM vm, size_t width,
+                                       StaticArray<StableNode> _elements,
+                                       RichNode arity) {
+  assert(arity.is<Arity>());
+
+  _arity.init(vm, arity);
+  _width = width;
+
+  // Initialize elements with non-random data
+  // TODO An Uninitialized type?
+  for (size_t i = 0; i < width; i++)
+    _elements[i].make<SmallInt>(vm, 0);
+}
+
+Implementation<Record>::Implementation(VM vm, size_t width,
+                                       StaticArray<StableNode> _elements,
+                                       GR gr, Self from) {
+  gr->copyStableNode(_arity, from->_arity);
+  _width = width;
+
+  for (size_t i = 0; i < width; i++)
+    gr->copyStableNode(_elements[i], from[i]);
+}
+
+bool Implementation<Record>::equals(Self self, VM vm, Self right,
+                                    WalkStack& stack) {
+  if (_width != right->_width)
+    return false;
+
+  stack.pushArray(vm, self.getArray(), right.getArray(), _width);
+  stack.push(vm, &_arity, &right->_arity);
+
+  return true;
+}
+
+void Implementation<Record>::getFeatureAt(Self self, VM vm, size_t index,
+                                          UnstableNode& result) {
+  UnstableNode temp(vm, _arity);
+  RichNode(temp).as<Arity>().getFeatureAt(vm, index, result);
+}
+
+OpResult Implementation<Record>::label(Self self, VM vm,
+                                       UnstableNode& result) {
+  UnstableNode temp(vm, _arity);
+  return RichNode(temp).as<Arity>().label(vm, result);
+}
+
+OpResult Implementation<Record>::dot(Self self, VM vm,
+                                     RichNode feature, UnstableNode& result) {
+  UnstableNode temp(vm, _arity);
+
+  size_t index = 0;
+  MOZART_CHECK_OPRESULT(RichNode(temp).as<Arity>().lookupFeature(
+    vm, feature, index));
+
+  result.copy(vm, self[index]);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Record>::dotNumber(Self self, VM vm,
+                                           nativeint feature,
+                                           UnstableNode& result) {
+  UnstableNode featureNode = SmallInt::build(vm, feature);
+  return dot(self, vm, featureNode, result);
+}
+
+void Implementation<Record>::printReprToStream(Self self, VM vm,
+                                               std::ostream& out, int depth) {
+  UnstableNode label;
+  MOZART_ASSERT_PROCEED(this->label(self, vm, label));
+
+  out << repr(vm, label, depth) << "(";
+
+  if (depth <= 1) {
+    out << "...";
+  } else {
+    for (size_t i = 0; i < _width; i++) {
+      if (i > 0)
+        out << ", ";
+
+      UnstableNode feature;
+      getFeatureAt(self, vm, i, feature);
+
+      out << repr(vm, feature, depth) << ":" << repr(vm, self[i], depth);
     }
   }
 

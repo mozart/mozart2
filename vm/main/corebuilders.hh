@@ -86,6 +86,11 @@ UnstableNode trivialBuild(VM vm, const char16_t* value) {
 }
 
 inline
+UnstableNode trivialBuild(VM vm, builtins::BaseBuiltin& builtin) {
+  return BuiltinProcedure::build(vm, builtin);
+}
+
+inline
 UnstableNode trivialBuild(VM vm, UnstableNode&& node) {
   return std::move(node);
 }
@@ -159,6 +164,21 @@ UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
   staticInitElements<Tuple>(vm, RichNode(result).as<Tuple>(),
                             std::forward<Args>(args)...);
   return result;
+}
+
+/**
+ * Build a constant arity, with its label and features
+ * The label and the features can be in any form supported by trivialBuild().
+ * @param vm        Contextual VM
+ * @param label     Label of the arity
+ * @param args...   Features of the arity
+ */
+template <class LT, class... Args>
+inline
+UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
+  UnstableNode tuple = buildTuple(vm, std::forward<LT>(label),
+                                  std::forward<Args>(args)...);
+  return Arity::build(vm, tuple);
 }
 
 }

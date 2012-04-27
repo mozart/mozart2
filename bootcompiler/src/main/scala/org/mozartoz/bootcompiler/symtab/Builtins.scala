@@ -33,4 +33,7 @@ class Builtins {
   )
 
   lazy val createThread = builtinByName("Thread.create")
+
+  lazy val plus1 = builtinByName("Int.'+1'")
+  lazy val minus1 = builtinByName("Int.'-1'")
 }

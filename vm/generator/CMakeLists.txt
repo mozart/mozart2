@@ -1,13 +1,13 @@
 if("${LLVM_SRC_DIR}" STREQUAL "${DEFAULT_LLVM_SRC_DIR}" AND
    NOT EXISTS "${LLVM_BUILD_DIR}/bin/clang++")
   ExternalProject_Add(llvm
-    SVN_REPOSITORY http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_30/final
+    SVN_REPOSITORY http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_31/rc1
     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release
     INSTALL_COMMAND ""
     TEST_COMMAND ""
     )
   ExternalProject_Add_Step(llvm download_clang
-    COMMAND svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_30/final ${ep_base}/Source/llvm/tools/clang
+    COMMAND svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_31/rc1 ${ep_base}/Source/llvm/tools/clang
     DEPENDEES download
     DEPENDERS update
     )

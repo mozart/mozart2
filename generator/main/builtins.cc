@@ -48,6 +48,7 @@ struct BuiltinDef {
   }
 
   void makeOutput(llvm::raw_fd_ostream& to);
+  void makeEmulateInlinesOutput(llvm::raw_fd_ostream& to);
 
   const ClassDecl* classDecl;
   std::string fullCppName;
@@ -66,6 +67,7 @@ struct ModuleDef {
   }
 
   void makeOutput(llvm::raw_fd_ostream& to);
+  void makeEmulateInlinesOutput(llvm::raw_fd_ostream& to);
 
   const ClassDecl* classDecl;
   std::string fullCppName;
@@ -196,7 +198,8 @@ void handleBuiltin(BuiltinDef& definition, const ClassDecl* CD) {
   }
 }
 
-void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD) {
+void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD,
+                         llvm::raw_fd_ostream& emulateInlinesTo) {
   std::string name = CD->getNameAsString();
 
   ModuleDef definition(CD);
@@ -228,6 +231,8 @@ void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD) {
     assert(err == "");
     definition.makeOutput(to);
   }
+
+  definition.makeEmulateInlinesOutput(emulateInlinesTo);
 }
 
 void BuiltinParam::makeOutput(llvm::raw_fd_ostream& to) {
@@ -285,4 +290,28 @@ void ModuleDef::makeOutput(llvm::raw_fd_ostream& to) {
 
   to << "\n  ]\n";
   to << "}\n";
+}
+
+void BuiltinDef::makeEmulateInlinesOutput(llvm::raw_fd_ostream& to) {
+  if (!inlineable)
+    return;
+
+  to << "\n";
+  to << "case " << inlineOpCode << ": {\n";
+  to << "  CHECK_OPRESULT_BREAK(\n";
+  to << "    ::" << fullCppName << "::builtin()(\n";
+  to << "      vm";
+
+  for (size_t i = 1; i <= params.size(); i++)
+    to << ", XPC(" << i << ")";
+
+  to << "));\n";
+  to << "  advancePC(" << params.size() << ");\n";
+  to << "  break;\n";
+  to << "}\n";
+}
+
+void ModuleDef::makeEmulateInlinesOutput(llvm::raw_fd_ostream& to) {
+  for (auto iter = builtins.begin(); iter != builtins.end(); ++iter)
+    iter->makeEmulateInlinesOutput(to);
 }

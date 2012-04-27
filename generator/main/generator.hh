@@ -69,6 +69,7 @@ void handleInterface(const std::string outputDir, const SpecDecl* ND);
 void handleImplementation(const std::string outputDir, const SpecDecl* ND);
 
 bool isModuleClass(const ClassDecl* cls);
-void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD);
+void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD,
+                         llvm::raw_fd_ostream& emulateInlinesTo);
 
 extern clang::ASTContext* context;

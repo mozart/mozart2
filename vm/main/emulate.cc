@@ -562,33 +562,7 @@ void Thread::run() {
         break;
       }
 
-      case OpInlineAdd: {
-        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).add(vm, XPC(2), XPC(3)));
-
-        advancePC(3);
-        break;
-      }
-
-      case OpInlineSubtract: {
-        CHECK_OPRESULT_BREAK(Numeric(XPC(1)).subtract(vm, XPC(2), XPC(3)));
-
-        advancePC(3);
-        break;
-      }
-
-      case OpInlinePlus1: {
-        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, 1, XPC(2)));
-
-        advancePC(2);
-        break;
-      }
-
-      case OpInlineMinus1: {
-        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).addValue(vm, -1, XPC(2)));
-
-        advancePC(2);
-        break;
-      }
+#include "emulate-inline.cc"
     }
   }
 

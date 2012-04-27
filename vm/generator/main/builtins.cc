@@ -43,6 +43,8 @@ struct BuiltinDef {
   BuiltinDef(const ClassDecl* classDecl): classDecl(classDecl) {
     fullCppName = classDecl->getQualifiedNameAsString();
     nameExpr = nullptr;
+    inlineable = false;
+    inlineOpCode = 0;
   }
 
   void makeOutput(llvm::raw_fd_ostream& to);
@@ -52,6 +54,9 @@ struct BuiltinDef {
   const Expr* nameExpr;
 
   std::vector<BuiltinParam> params;
+
+  bool inlineable;
+  size_t inlineOpCode;
 };
 
 struct ModuleDef {
@@ -161,6 +166,17 @@ void processBuiltinCallOperator(BuiltinDef& definition,
 void handleBuiltin(BuiltinDef& definition, const ClassDecl* CD) {
   std::string name = CD->getNameAsString();
 
+  // For every marker, i.e. base class
+  for (auto iter = CD->bases_begin(), e = CD->bases_end(); iter != e; ++iter) {
+    CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
+    std::string markerLabel = marker->getNameAsString();
+
+    if (markerLabel == "InlineAs") {
+      definition.inlineable = true;
+      definition.inlineOpCode = getValueParamAsIntegral<size_t>(marker);
+    }
+  }
+
   for (auto iter = CD->decls_begin(), e = CD->decls_end(); iter != e; ++iter) {
     auto decl = *iter;
 
@@ -235,6 +251,10 @@ void BuiltinDef::makeOutput(llvm::raw_fd_ostream& to) {
   to << "      \"name\": ";
   nameExpr->printPretty(to, nullptr, context->getPrintingPolicy());
   to << ",\n";
+
+  to << "      \"inlineable\": " << b2s(inlineable) << ",\n";
+  if (inlineable)
+    to << "      \"inlineOpCode\": " << inlineOpCode << ",\n";
 
   to << "      \"params\": [\n";
   for (auto iter = params.begin(); iter != params.end(); ++iter) {

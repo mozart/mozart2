@@ -218,6 +218,13 @@ private:
 template <class Self>
 Self Builtin<Self>::rawBuiltin;
 
+//////////////////////////
+// Markers for builtins //
+//////////////////////////
+
+template <size_t opCode>
+struct InlineAs {};
+
 }
 
 }

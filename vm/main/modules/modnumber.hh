@@ -41,7 +41,7 @@ class Number: public Module {
 public:
   Number(): Module("Number") {}
 
-  class Add: public Builtin<Add> {
+  class Add: public Builtin<Add>, InlineAs<OpInlineAdd> {
   public:
     Add(): Builtin("+") {}
 
@@ -50,7 +50,7 @@ public:
     }
   };
 
-  class Subtract: public Builtin<Subtract> {
+  class Subtract: public Builtin<Subtract>, InlineAs<OpInlineSubtract> {
   public:
     Subtract(): Builtin("-") {}
 

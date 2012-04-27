@@ -68,6 +68,8 @@ object Main {
   }
 
   private def loadModuleDefs(prog: Program, moduleDefs: List[String]) {
+    JSON.globalNumberParser = (_.toInt)
+
     for (moduleDef <- moduleDefs) {
       val file = new File(moduleDef)
 
@@ -105,8 +107,13 @@ object Main {
       M(builtin) <- builtins
       S(biFullCppName) = builtin("fullCppName")
       S(biName) = builtin("name")
+      B(inlineable) = builtin("inlineable")
       L(params) = builtin("params")
     } {
+      val inlineAs =
+        if (inlineable) Some(builtin("inlineOpCode").asInstanceOf[Int])
+        else None
+
       val paramKinds = for {
         M(param) <- params
         S(paramKind) = param("kind")
@@ -118,7 +125,8 @@ object Main {
           if (biName.charAt(0).isLetter) biName
           else "'" + biName + "'")
 
-      val builtinSym = new BuiltinSymbol(fullName, biFullCppName, paramKinds)
+      val builtinSym = new BuiltinSymbol(
+          fullName, biFullCppName, paramKinds, inlineAs)
 
       prog.builtins.builtinByName.put(fullName, builtinSym)
     }

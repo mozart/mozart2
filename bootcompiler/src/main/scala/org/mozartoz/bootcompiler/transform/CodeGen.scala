@@ -182,10 +182,14 @@ object CodeGen extends Transformer with TreeDSL {
               XReg(index) := arg.symbol
             }
 
-            val reg = code.registerFor(symbol)
+            val argsRegs = (0 until argCount).toList map XReg
 
-            code += OpCallBuiltin(reg, argCount,
-                (0 until argCount).toList map XReg)
+            if (symbol.inlineable)
+              code += OpCallBuiltinInline(symbol.inlineOpCode, argsRegs)
+            else {
+              val builtinReg = code.registerFor(symbol)
+              code += OpCallBuiltin(builtinReg, argCount, argsRegs)
+            }
 
             for {
               ((arg:Variable, kind), index) <- argsWithKindAndIndex

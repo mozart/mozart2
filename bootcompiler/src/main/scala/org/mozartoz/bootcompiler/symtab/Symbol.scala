@@ -57,10 +57,14 @@ object BuiltinSymbol {
 }
 
 class BuiltinSymbol(name: String, val ccFullName: String,
-    val paramKinds: List[BuiltinSymbol.ParamKind]) extends Symbol(name) {
+    val paramKinds: List[BuiltinSymbol.ParamKind],
+    val inlineAs: Option[Int]) extends Symbol(name) {
   override val isBuiltin = true
 
   val arity = paramKinds.size
+
+  val inlineable = inlineAs.isDefined
+  def inlineOpCode = inlineAs.get
 }
 
 object NoSymbol extends Symbol("<NoSymbol>") {

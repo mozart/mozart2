@@ -64,6 +64,15 @@ case class OpCallBuiltin(builtin: KReg, arity: ImmInt,
     else builtin :: arity :: args
 }
 
+/** Call an inline builtin */
+case class OpCallBuiltinInline(opCode: Int, args: List[XReg]) extends OpCode {
+  private val argc = args.size
+
+  override val name = opCode.toString()
+  override def argumentCount = argc
+  override def arguments = args
+}
+
 /** Call the `target` whose arity is supposed to be `arity`
  *  Upon return, all X registers are invalidated */
 case class OpCallX(target: XReg, arity: ImmInt) extends OpCode

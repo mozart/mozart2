@@ -40,7 +40,8 @@ bool baseIsNotModule(const CXXRecordDecl* base, void* data) {
   return base->getNameAsString() != "Module";
 }
 
-void processDeclContext(const std::string outputDir, const DeclContext* ds) {
+void processDeclContext(const std::string outputDir, const DeclContext* ds,
+                        llvm::raw_fd_ostream* emulateInlineTo) {
   for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
     Decl* decl = *iter;
 
@@ -57,12 +58,12 @@ void processDeclContext(const std::string outputDir, const DeclContext* ds) {
     } else if (const ClassDecl* CD = dyn_cast<ClassDecl>(decl)) {
       if (mode == gmBuiltins) {
         if (isModuleClass(CD)) {
-          handleBuiltinModule(outputDir, CD);
+          handleBuiltinModule(outputDir, CD, *emulateInlineTo);
         }
       }
     } else if (const NamespaceDecl* nsDecl = dyn_cast<NamespaceDecl>(decl)) {
       /* It's a namespace, recurse in it. */
-      processDeclContext(outputDir, nsDecl);
+      processDeclContext(outputDir, nsDecl, emulateInlineTo);
     }
   }
 }
@@ -75,11 +76,18 @@ int main(int argc, char* argv[]) {
   std::string astFile = argv[2];
   std::string outputDir = argv[3];
 
+  std::unique_ptr<llvm::raw_fd_ostream> emulateInlineTo = nullptr;
+
   // Parse mode
   if (modeStr == "intfimpl") {
     mode = gmIntfImpl;
   } else if (modeStr == "builtins") {
     mode = gmBuiltins;
+
+    std::string err;
+    emulateInlineTo = std::unique_ptr<llvm::raw_fd_ostream>(
+      new llvm::raw_fd_ostream((outputDir + "emulate-inline.cc").c_str(), err));
+    assert(err == "");
   } else {
     std::cerr << "Unknown generator mode: " << modeStr << std::endl;
     return 1;
@@ -98,5 +106,6 @@ int main(int argc, char* argv[]) {
   context->setPrintingPolicy(policy);
 
   // Process
-  processDeclContext(outputDir, context->getTranslationUnitDecl());
+  processDeclContext(outputDir, context->getTranslationUnitDecl(),
+                     emulateInlineTo.get());
 }

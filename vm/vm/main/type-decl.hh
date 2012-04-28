@@ -49,13 +49,15 @@ enum StructuralBehavior {
 class Type {
 public:
   Type(std::string name, const UUID& uuid,
-       bool copiable, bool transient,
+       bool copiable, bool transient, bool feature,
        StructuralBehavior structuralBehavior,
        unsigned char bindingPriority) :
     _name(name), _uuid(uuid), _hasUUID(!(uuid.is_nil())),
-    _copiable(copiable), _transient(transient),
+    _copiable(copiable), _transient(transient), _feature(feature),
     _structuralBehavior(structuralBehavior),
     _bindingPriority(bindingPriority) {
+
+    assert(!_feature || _hasUUID);
   }
 
   const std::string& getName() const { return _name; }
@@ -75,6 +77,7 @@ public:
 
   bool isCopiable() const { return _copiable; }
   bool isTransient() const { return _transient; }
+  bool isFeature() const { return _feature; }
 
   StructuralBehavior getStructuralBehavior() const {
     return _structuralBehavior;
@@ -94,6 +97,13 @@ public:
 
   virtual void sClone(SC sc, RichNode from, StableNode& to) const = 0;
   virtual void sClone(SC sc, RichNode from, UnstableNode& to) const = 0;
+
+  virtual int compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {
+    assert(lhs.type() == this && rhs.type() == this);
+    assert(isFeature());
+    assert(false);
+    return 0;
+  }
 private:
   const std::string _name;
   const UUID _uuid;
@@ -101,6 +111,8 @@ private:
 
   const bool _copiable;
   const bool _transient;
+  const bool _feature;
+
   const StructuralBehavior _structuralBehavior;
   const unsigned char _bindingPriority;
 };
@@ -112,6 +124,27 @@ struct RawType {
 
 template <class T>
 const T RawType<T>::rawType;
+
+//////////////
+// Features //
+//////////////
+
+inline
+int compareFeatures(VM vm, RichNode lhs, RichNode rhs) {
+  assert(lhs.isFeature() && rhs.isFeature());
+
+  const Type* lhsType = lhs.type();
+  const Type* rhsType = rhs.type();
+
+  if (lhsType == rhsType) {
+    return lhsType->compareFeatures(vm, lhs, rhs);
+  } else {
+    if (lhsType->getUUID() < rhsType->getUUID())
+      return -1;
+    else
+      return 1;
+  }
+}
 
 //////////////////
 // << for nodes //

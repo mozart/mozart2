@@ -49,4 +49,16 @@
       return matchTypeError(vm, _macroOpResult, _macroValue, (expectedType)); \
   } while (false)
 
+#define MOZART_REQUIRE_FEATURE(featureValue) \
+  do { \
+    using namespace ::mozart; \
+    RichNode _macroValue = (featureValue); \
+    if (!_macroValue.isFeature()) { \
+      if (_macroValue.isTransient()) \
+        return OpResult::waitFor(vm, _macroValue); \
+      else \
+        return raiseTypeError(vm, u"feature", _macroValue); \
+    } \
+  } while (false)
+
 #endif // __MOZARTCORE_H

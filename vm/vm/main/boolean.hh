@@ -45,6 +45,15 @@ bool Implementation<Boolean>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
+int Implementation<Boolean>::compareFeatures(VM vm, Self right) {
+  if (value() == right.get().value())
+    return 0;
+  else if (value())
+    return 1;
+  else
+    return -1;
+}
+
 }
 
 #endif // MOZART_GENERATOR

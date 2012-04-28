@@ -116,6 +116,10 @@ bool RichNode::isTransient() {
   return type()->isTransient();
 }
 
+bool RichNode::isFeature() {
+  return type()->isFeature();
+}
+
 StableNode* RichNode::getStableRef(VM vm) {
   return getStableRefFor(vm, *_origin);
 }

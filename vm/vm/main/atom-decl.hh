@@ -58,10 +58,15 @@ public:
   inline
   static AtomImpl* build(VM vm, GR gr, Self from);
 
+public:
+  const AtomImpl* value() const { return _value; }
+
   inline
   bool equals(VM vm, Self right);
 
-  const AtomImpl* value() const { return _value; }
+  inline
+  int compareFeatures(VM vm, Self right);
+
 public:
   // RecordLike interface
 
@@ -79,11 +84,13 @@ public:
 
   inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
+
 public:
   // Miscellaneous
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
 private:
   const AtomImpl* _value;
 };

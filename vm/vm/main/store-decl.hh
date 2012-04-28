@@ -107,6 +107,9 @@ public:
   inline
   bool isTransient();
 
+  inline
+  bool isFeature();
+
   UnstableNode& origin() {
     return *_origin;
   }

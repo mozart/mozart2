@@ -133,10 +133,18 @@ OpResult Implementation<Tuple>::label(Self self, VM vm,
 
 OpResult Implementation<Tuple>::dot(Self self, VM vm,
                                     RichNode feature, UnstableNode& result) {
-  nativeint featureIntValue = 0;
-  MOZART_GET_ARG(featureIntValue, feature, u"integer");
+  using namespace patternmatching;
 
-  return dotNumber(self, vm, featureIntValue, result);
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    return dotNumber(self, vm, featureIntValue, result);
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    return raise(vm, u"illegalFieldSelection", self, feature);
+  }
 }
 
 OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
@@ -198,24 +206,34 @@ OpResult Implementation<Arity>::label(Self self, VM vm,
   return RichNode(temp).as<Tuple>().label(vm, result);
 }
 
-OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
+OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode record,
+                                              RichNode feature,
                                               size_t& result) {
+  MOZART_REQUIRE_FEATURE(feature);
+
   UnstableNode tempTuple(vm, _tuple);
   auto tuple = RichNode(tempTuple).as<Tuple>();
 
-  for (size_t i = 0; i < tuple.getArraySize(); i++) {
-    UnstableNode temp(vm, *tuple.getElement(i));
+  // Dichotomic search
+  size_t lo = 0;
+  size_t hi = tuple.getArraySize();
 
-    bool res;
-    MOZART_CHECK_OPRESULT(mozart::equals(vm, feature, temp, res));
+  while (lo < hi) {
+    size_t mid = (lo + hi) / 2; // no need to worry about overflow, here
+    UnstableNode temp(vm, *tuple.getElement(mid));
+    int comparison = compareFeatures(vm, feature, temp);
 
-    if (res) {
-      result = i;
+    if (comparison == 0) {
+      result = mid;
       return OpResult::proceed();
+    } else if (comparison < 0) {
+      hi = mid;
+    } else {
+      lo = mid+1;
     }
   }
 
-  return raise(vm, u"illegalFieldSelection", feature);
+  return raise(vm, u"illegalFieldSelection", record, feature);
 }
 
 void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
@@ -290,7 +308,7 @@ OpResult Implementation<Record>::dot(Self self, VM vm,
 
   size_t index = 0;
   MOZART_CHECK_OPRESULT(RichNode(temp).as<Arity>().lookupFeature(
-    vm, feature, index));
+    vm, self, feature, index));
 
   result.copy(vm, self[index]);
   return OpResult::proceed();

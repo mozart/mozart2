@@ -81,6 +81,7 @@ struct ImplementationDef {
     name = "";
     copiable = false;
     transient = false;
+    feature = false;
     storageKind = skDefault;
     storage = "";
     structuralBehavior = sbTokenEq;
@@ -100,6 +101,7 @@ struct ImplementationDef {
   std::string name;
   bool copiable;
   bool transient;
+  bool feature;
   StorageKind storageKind;
   std::string storage;
   StructuralBehavior structuralBehavior;
@@ -156,6 +158,8 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
 
     if (function->getNameAsString() == "printReprToStream")
       definition.hasPrintReprToStream = true;
+    else if (function->getNameAsString() == "compareFeatures")
+      definition.feature = true;
 
     method.hasSelfParam = (function->param_size() > 0) &&
       ((*function->param_begin())->getNameAsString() == "self");
@@ -254,7 +258,7 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "  }\n";
   to << "public:\n";
   to << "  " << name << "() : " << base << "(\"" << name << "\", uuid(), "
-     << b2s(copiable) << ", " << b2s(transient) << ", "
+     << b2s(copiable) << ", " << b2s(transient) << ", " << b2s(feature) << ", "
      << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
      << ") {}\n";
   to << "\n";
@@ -291,6 +295,12 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
     to << "\n";
     to << "  inline\n";
     to << "  void sClone(SC sc, RichNode from, UnstableNode& to) const;\n";
+  }
+
+  if (feature) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  int compareFeatures(VM vm, RichNode lhs, RichNode rhs) const;\n";
   }
 
   to << "};\n";
@@ -361,6 +371,14 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
        << "::sClone(SC sc, RichNode from, UnstableNode& to) const {\n";
     makeContentsOfAutoSClone(to, false);
     to << "}\n";
+  }
+
+  if (feature) {
+    to << "\n";
+    to << "int " << name
+       << "::compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {\n";
+    to << "  return lhs.as<" << name << ">().compareFeatures(vm, rhs);\n";
+    to << "}\n\n";
   }
 
   for (auto method = methods.begin(); method != methods.end(); ++method) {

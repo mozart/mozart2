@@ -53,10 +53,17 @@ public:
   inline
   static bool build(VM vm, GR gr, Self from);
 
+public:
   bool value() const { return _value; }
 
   inline
   bool equals(VM vm, Self right);
+
+  inline
+  int compareFeatures(VM vm, Self right);
+
+public:
+  // BooleanValue interface
 
   OpResult boolValue(Self self, VM vm, bool& result) {
     result = value();
@@ -67,12 +74,14 @@ public:
     result = value() ? bTrue : bFalse;
     return OpResult::proceed();
   }
+
 public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
     out << (value() ? "true" : "false");
   }
+
 private:
   const bool _value;
 };

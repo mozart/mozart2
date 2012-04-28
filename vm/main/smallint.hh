@@ -47,6 +47,15 @@ bool Implementation<SmallInt>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
+int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
+  if (value() == right.get().value())
+    return 0;
+  else if (value() < right.get().value())
+    return -1;
+  else
+    return 1;
+}
+
 OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                  nativeint right,
                                                  bool& result) {

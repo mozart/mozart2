@@ -168,7 +168,8 @@ public:
   OpResult label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult lookupFeature(VM vm, RichNode feature, size_t& result);
+  OpResult lookupFeature(VM vm, RichNode record, RichNode feature,
+                         size_t& result);
 
   inline
   void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);

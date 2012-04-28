@@ -50,10 +50,17 @@ public:
   inline
   static nativeint build(VM vm, GR gr, Self from);
 
+public:
   nativeint value() const { return _value; }
 
   inline
   bool equals(VM vm, Self right);
+
+  inline
+  int compareFeatures(VM vm, Self right);
+
+public:
+  // IntegerValue inteface
 
   OpResult intValue(Self self, VM vm, nativeint& result) {
     result = value();
@@ -62,6 +69,9 @@ public:
 
   inline
   OpResult equalsInteger(Self self, VM vm, nativeint right, bool& result);
+
+public:
+  // Numeric inteface
 
   inline
   OpResult add(Self self, VM vm, RichNode right, UnstableNode& result);
@@ -95,12 +105,14 @@ public:
 
   inline
   OpResult modValue(Self self, VM vm, nativeint b, UnstableNode& result);
+
 public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
     out << value();
   }
+
 private:
   inline
   bool testMultiplyOverflow(nativeint a, nativeint b);

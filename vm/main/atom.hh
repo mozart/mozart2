@@ -46,6 +46,18 @@ bool Implementation<Atom>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
+int Implementation<Atom>::compareFeatures(VM vm, Self right) {
+  const AtomImpl* lhs = value();
+  const AtomImpl* rhs = right.get().value();
+
+  if (lhs == rhs) {
+    return 0;
+  } else {
+    return std::char_traits<char16_t>::compare(
+      lhs->contents(), rhs->contents(), lhs->length()+1);
+  }
+}
+
 OpResult Implementation<Atom>::label(Self self, VM vm,
                                      UnstableNode& result) {
   result.copy(vm, self);

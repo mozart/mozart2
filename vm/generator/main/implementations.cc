@@ -208,26 +208,15 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
   // Collect methods
   collectMethods(definition, ND);
 
-  {
-    std::string err;
-    llvm::raw_fd_ostream to((outputDir+name+"-implem-decl.hh").c_str(), err);
-    assert(err == "");
-    definition.makeOutputDeclBefore(to);
-  }
+  // Write output
+  withFileOutputStream(outputDir + name + "-implem-decl.hh",
+    [&] (ostream& to) { definition.makeOutputDeclBefore(to); });
 
-  {
-    std::string err;
-    llvm::raw_fd_ostream to((outputDir+name+"-implem-decl-after.hh").c_str(), err);
-    assert(err == "");
-    definition.makeOutputDeclAfter(to);
-  }
+  withFileOutputStream(outputDir + name + "-implem-decl-after.hh",
+    [&] (ostream& to) { definition.makeOutputDeclAfter(to); });
 
-  {
-    std::string err;
-    llvm::raw_fd_ostream to((outputDir+name+"-implem.hh").c_str(), err);
-    assert(err == "");
-    definition.makeOutput(to);
-  }
+  withFileOutputStream(outputDir + name + "-implem.hh",
+    [&] (ostream& to) { definition.makeOutput(to); });
 }
 
 void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {

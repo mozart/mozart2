@@ -76,18 +76,14 @@ int main(int argc, char* argv[]) {
   std::string astFile = argv[2];
   std::string outputDir = argv[3];
 
-  std::unique_ptr<llvm::raw_fd_ostream> emulateInlineTo = nullptr;
+  std::unique_ptr<ostream> emulateInlineTo = nullptr;
 
   // Parse mode
   if (modeStr == "intfimpl") {
     mode = gmIntfImpl;
   } else if (modeStr == "builtins") {
     mode = gmBuiltins;
-
-    std::string err;
-    emulateInlineTo = std::unique_ptr<llvm::raw_fd_ostream>(
-      new llvm::raw_fd_ostream((outputDir + "emulate-inline.cc").c_str(), err));
-    assert(err == "");
+    emulateInlineTo = openFileOutputStream(outputDir + "emulate-inline.cc");
   } else {
     std::cerr << "Unknown generator mode: " << modeStr << std::endl;
     return 1;

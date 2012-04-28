@@ -37,10 +37,12 @@ class GCedToStable;
 
 class GCedToStableBase: public Type {
 public:
-  GCedToStableBase(std::string name, bool copiable, bool transient,
+  GCedToStableBase(std::string name, const UUID& uuid,
+                   bool copiable, bool transient,
                    StructuralBehavior structuralBehavior,
                    unsigned char bindingPriority) :
-    Type(name, copiable, transient, structuralBehavior, bindingPriority) {}
+    Type(name, uuid, copiable, transient, structuralBehavior,
+         bindingPriority) {}
 
   inline
   void gCollect(GC gc, RichNode from, StableNode& to) const;
@@ -86,10 +88,12 @@ class GCedToUnstable;
 
 class GCedToUnstableBase: public Type {
 public:
-  GCedToUnstableBase(std::string name, bool copiable, bool transient,
+  GCedToUnstableBase(std::string name, const UUID& uuid,
+                     bool copiable, bool transient,
                      StructuralBehavior structuralBehavior,
                      unsigned char bindingPriority) :
-    Type(name, copiable, transient, structuralBehavior, bindingPriority) {}
+    Type(name, uuid, copiable, transient, structuralBehavior,
+         bindingPriority) {}
 
   inline
   void gCollect(GC gc, RichNode from, StableNode& to) const;

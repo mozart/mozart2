@@ -41,6 +41,8 @@ class Implementation<SmallInt>: Copiable, StoredAs<nativeint>,
 public:
   typedef SelfType<SmallInt>::Self Self;
 public:
+  static constexpr UUID uuid = "{00000000-0000-4f00-0000-000000000001}";
+
   Implementation(nativeint value) : _value(value) {}
 
   static nativeint build(VM, nativeint value) { return value; }

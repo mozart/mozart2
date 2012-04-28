@@ -22,11 +22,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <cstdlib>
+#include <iostream>
+#include <functional>
+#include <string>
+
 #include <clang/Frontend/ASTUnit.h>
 #include <clang/AST/DeclTemplate.h>
 
 typedef clang::ClassTemplateSpecializationDecl SpecDecl;
 typedef clang::CXXRecordDecl ClassDecl;
+
+typedef llvm::raw_fd_ostream ostream;
+
+inline
+void checkErrString(const std::string& err) {
+  if (!err.empty()) {
+    llvm::errs() << err << "\n";
+    exit(1);
+  }
+}
+
+inline
+std::unique_ptr<ostream> openFileOutputStream(const std::string& fileName) {
+  std::string err;
+  auto result = std::unique_ptr<ostream>(new ostream(fileName.c_str(), err));
+  checkErrString(err);
+
+  return result;
+}
+
+inline
+void withFileOutputStream(const std::string& fileName,
+                          std::function<void (ostream&)> body) {
+  std::string err;
+  ostream stream(fileName.c_str(), err);
+  checkErrString(err);
+
+  body(stream);
+}
 
 std::string typeToString(clang::QualType type);
 

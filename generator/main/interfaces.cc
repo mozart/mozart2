@@ -61,10 +61,9 @@ void handleInterface(const std::string outputDir, const SpecDecl* ND) {
     } else {}
   }
 
-  std::string err;
-  llvm::raw_fd_ostream to((outputDir+name+"-interf.hh").c_str(), err);
-  assert(err == "");
-  definition.makeOutput(ND, to);
+  // Write output
+  withFileOutputStream(outputDir + name + "-interf.hh",
+    [&] (ostream& to) { definition.makeOutput(ND, to); });
 }
 
 void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {

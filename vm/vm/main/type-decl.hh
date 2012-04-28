@@ -31,6 +31,7 @@
 #include "core-forward-decl.hh"
 
 #include "store-decl.hh"
+#include "uuid-decl.hh"
 
 namespace mozart {
 
@@ -47,15 +48,25 @@ enum StructuralBehavior {
 
 class Type {
 public:
-  Type(std::string name, bool copiable, bool transient,
+  Type(std::string name, const UUID& uuid,
+       bool copiable, bool transient,
        StructuralBehavior structuralBehavior,
        unsigned char bindingPriority) :
-    _name(name), _copiable(copiable), _transient(transient),
+    _name(name), _uuid(uuid), _hasUUID(!(uuid.is_nil())),
+    _copiable(copiable), _transient(transient),
     _structuralBehavior(structuralBehavior),
     _bindingPriority(bindingPriority) {
   }
 
   const std::string& getName() const { return _name; }
+
+  bool hasUUID() const {
+    return _hasUUID;
+  }
+
+  const UUID& getUUID() const {
+    return _uuid;
+  }
 
   virtual void* getInterface(void* intfID) {
     // TODO
@@ -85,6 +96,8 @@ public:
   virtual void sClone(SC sc, RichNode from, UnstableNode& to) const = 0;
 private:
   const std::string _name;
+  const UUID _uuid;
+  const bool _hasUUID;
 
   const bool _copiable;
   const bool _transient;

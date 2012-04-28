@@ -43,6 +43,8 @@ class Implementation<Atom>: Copiable, StoredAs<AtomImpl*>, WithValueBehavior {
 public:
   typedef SelfType<Atom>::Self Self;
 public:
+  static constexpr UUID uuid = "{55ed333b-1eaf-4c8a-a151-626d3f96efe8}";
+
   Implementation(const AtomImpl* value) : _value(value) {}
 
   static AtomImpl* build(VM vm, std::size_t length, const char16_t* contents) {

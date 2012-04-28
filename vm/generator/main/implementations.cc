@@ -87,6 +87,7 @@ struct ImplementationDef {
     bindingPriority = 0;
     withHome = false;
     base = "Type";
+    hasUUID = false;
     hasPrintReprToStream = false;
     autoGCollect = true;
     autoSClone = true;
@@ -105,6 +106,7 @@ struct ImplementationDef {
   unsigned char bindingPriority;
   bool withHome;
   std::string base;
+  bool hasUUID;
   bool hasPrintReprToStream;
   bool autoGCollect;
   bool autoSClone;
@@ -208,6 +210,16 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
   // Collect methods
   collectMethods(definition, ND);
 
+  // Look for a UUID
+  for (auto iter = ND->decls_begin(), e = ND->decls_end(); iter != e; ++iter) {
+    const Decl* decl = *iter;
+
+    if (const NamedDecl* named = dyn_cast<NamedDecl>(decl)) {
+      if (named->getNameAsString() == "uuid")
+        definition.hasUUID = true;
+    }
+  }
+
   // Write output
   withFileOutputStream(outputDir + name + "-implem-decl.hh",
     [&] (ostream& to) { definition.makeOutputDeclBefore(to); });
@@ -227,12 +239,21 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
     to << "  typedef " << storage << " Type;\n";
     to << "};\n\n";
   }
+}
 
+void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "class " << name << ": public " << base << " {\n";
   to << "private:\n";
   to << "  typedef SelfType<" << name << ">::Self Self;\n";
+  to << "\n";
+  to << "  static constexpr UUID uuid() {\n";
+  if (hasUUID)
+    to << "    return Implementation<" << name << ">::uuid;\n";
+  else
+    to << "    return UUID();\n";
+  to << "  }\n";
   to << "public:\n";
-  to << "  " << name << "() : " << base << "(\"" << name << "\", "
+  to << "  " << name << "() : " << base << "(\"" << name << "\", uuid(), "
      << b2s(copiable) << ", " << b2s(transient) << ", "
      << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
      << ") {}\n";
@@ -273,9 +294,9 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
   }
 
   to << "};\n";
-}
 
-void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
+  to << "\n";
+
   to << "template <>\n";
   to << "class TypedRichNode<" << name << "> "
      << ": public BaseTypedRichNode<" << name << "> {\n";

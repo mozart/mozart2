@@ -22,65 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_DECL_H
-#define __BOOLEAN_DECL_H
-
-#include "mozartcore-decl.hh"
+#include "mozart.hh"
 
 namespace mozart {
 
-class Boolean;
-
-typedef enum BOOL_OR_NOT_BOOL {
-  bFalse, bTrue, bNotBool
-} BoolOrNotBool;
-
-#ifndef MOZART_GENERATOR
-#include "Boolean-implem-decl.hh"
-#endif
-
-template <>
-class Implementation<Boolean>: Copiable, StoredAs<bool>, WithValueBehavior {
-public:
-  typedef SelfType<Boolean>::Self Self;
-public:
-  constexpr static UUID uuid = "{ce34f46e-4751-4f2d-b6fd-0522198a4810}";
-
-  Implementation(bool value) : _value(value) {}
-
-  static bool build(VM, bool value) { return value; }
-
-  inline
-  static bool build(VM vm, GR gr, Self from);
-
-  bool value() const { return _value; }
-
-  inline
-  bool equals(VM vm, Self right);
-
-  OpResult boolValue(Self self, VM vm, bool& result) {
-    result = value();
-    return OpResult::proceed();
-  }
-
-  OpResult valueOrNotBool(Self self, VM vm, BoolOrNotBool& result) {
-    result = value() ? bTrue : bFalse;
-    return OpResult::proceed();
-  }
-public:
-  // Miscellaneous
-
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
-    out << (value() ? "true" : "false");
-  }
-private:
-  const bool _value;
-};
-
-#ifndef MOZART_GENERATOR
-#include "Boolean-implem-decl-after.hh"
-#endif
+// Definitions of the uuid's of data types
+constexpr UUID Implementation<Boolean>::uuid;
+constexpr UUID Implementation<SmallInt>::uuid;
+constexpr UUID Implementation<Atom>::uuid;
 
 }
-
-#endif // __BOOLEAN_DECL_H

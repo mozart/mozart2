@@ -57,11 +57,11 @@ object Desugar extends Transformer with TreeDSL {
       super.transformExpr(expression)
   }
 
-  private def transformRecord(record: Record): Record = {
+  private def transformRecord(record: Record): Expression = {
     val fieldsNoAuto = fillAutoFeatures(record.fields)
 
     if (!record.hasConstantArity) {
-      treeCopy.Record(record, record.label, fieldsNoAuto)
+      makeDynamicRecord(record, record.label, fieldsNoAuto)
     } else {
       val sortedFields = fieldsNoAuto.sortWith { (leftField, rightField) =>
         val left = leftField.feature.asInstanceOf[Constant]
@@ -105,6 +105,22 @@ object Desugar extends Transformer with TreeDSL {
         }
       }
     }
+  }
+
+  private def makeDynamicRecord(record: Record, label: Expression,
+      fields: List[RecordField]): Expression = {
+    val elementsOfTheTuple = for {
+      RecordField(feature, value) <- fields
+      elem <- List(feature, value)
+    } yield elem
+
+    val fieldsOfTheTuple =
+      for ((elem, index) <- elementsOfTheTuple.zipWithIndex)
+        yield treeCopy.RecordField(elem, IntLiteral(index+1), elem)
+
+    val tupleWithFields = treeCopy.Record(record, Atom("#"), fieldsOfTheTuple)
+
+    builtins.makeRecordDynamic callExpr (label, tupleWithFields)
   }
 
   private def featureLessThan(left: Constant, right: Constant): Boolean = {

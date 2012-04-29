@@ -83,7 +83,7 @@ struct Interface<ValueEquatable>:
 class StructuralEquatable;
 template<>
 struct Interface<StructuralEquatable>:
-  ImplementedBy<Tuple, Record, Arity> {
+  ImplementedBy<Tuple, Cons, Record, Arity> {
 
   /**
    * Precondition:
@@ -228,7 +228,7 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 
 class RecordLike;
 template<>
-struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Atom> {
+struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
   OpResult label(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }

@@ -104,6 +104,15 @@ object CodeGen extends Transformer with TreeDSL {
         XReg(0) := code.registerFor(rhs)
         XReg(0) === lhs.symbol
 
+      case ((lhs:Variable) === (rhs @ Record(_, fields))) if rhs.isCons =>
+        val List(RecordField(_, head:VarOrConst),
+            RecordField(_, tail:VarOrConst)) = fields
+
+        XReg(0) := code.registerFor(head)
+        XReg(1) := code.registerFor(tail)
+        code += OpCreateConsXX(XReg(0), XReg(1), XReg(2))
+        XReg(2) === lhs.symbol
+
       case ((lhs:Variable) === (rhs @ Record(label:VarOrConst, fields)))
       if rhs.isTuple =>
         val fieldCount = fields.size

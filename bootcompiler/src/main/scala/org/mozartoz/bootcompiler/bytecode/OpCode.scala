@@ -134,6 +134,9 @@ case class OpCreateTupleK(label: KReg, width: ImmInt,
 case class OpCreateRecordK(arity: KReg, width: ImmInt,
     dest: XReg) extends OpCode
 
+/** Create a cons with given `head' and `tail' */
+case class OpCreateConsXX(head: XReg, tail: XReg, dest: XReg) extends OpCode
+
 // Special
 
 /** Dummy used by `CodeArea.addHole()` (not a true opcode) */

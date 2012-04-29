@@ -155,6 +155,15 @@ case class Record(label: Expression,
   def hasConstantArity =
     label.isInstanceOf[Constant] && (fields forall (_.hasConstantFeature))
 
+  def isCons = {
+    (label, fields) match {
+      case (Atom("|"), List(
+          RecordField(IntLiteral(1), _),
+          RecordField(IntLiteral(2), _))) => true
+      case _ => false;
+    }
+  }
+
   def isTuple = {
     fields.zipWithIndex.forall {
       case (RecordField(IntLiteral(feat), _), index) if feat == index+1 => true

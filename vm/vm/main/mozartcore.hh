@@ -34,6 +34,7 @@
 #include "matchdsl.hh"
 #include "builtins-decl.hh"
 #include "builtinutils-decl.hh"
+#include "dynbuilders-decl.hh"
 
 //////////////////////
 // Some more macros //

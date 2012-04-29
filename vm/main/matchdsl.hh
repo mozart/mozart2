@@ -495,7 +495,18 @@ template <class HT, class TT>
 inline
 bool matchesCons(VM vm, OpResult& result, RichNode value,
                  HT head, TT tail) {
-  return matchesTuple(vm, result, value, u"|", head, tail);
+  if (!result.isProceed())
+    return false;
+
+  if (value.type() != Cons::type()) {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+
+  auto cons = value.as<Cons>();
+
+  return internal::matchesStable(vm, result, cons.getHead(), head) &&
+    internal::matchesStable(vm, result, cons.getTail(), tail);
 }
 
 /**

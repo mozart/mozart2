@@ -178,6 +178,114 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
 }
 
 ///////////
+// Cons //
+///////////
+
+#include "Cons-implem.hh"
+
+Implementation<Cons>::Implementation(VM vm, RichNode head, RichNode tail) {
+  _head.init(vm, head);
+  _tail.init(vm, tail);
+}
+
+Implementation<Cons>::Implementation(VM vm, GR gr, Self from) {
+  gr->copyStableNode(_head, from->_head);
+  gr->copyStableNode(_tail, from->_tail);
+}
+
+bool Implementation<Cons>::equals(Self self, VM vm, Self right,
+                                  WalkStack& stack) {
+  stack.push(vm, &_tail, &right->_tail);
+  stack.push(vm, &_head, &right->_head);
+
+  return true;
+}
+
+OpResult Implementation<Cons>::label(Self self, VM vm,
+                                     UnstableNode& result) {
+  result = Atom::build(vm, u"|");
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::width(Self self, VM vm,
+                                     UnstableNode& result) {
+  result = SmallInt::build(vm, 2);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::dot(Self self, VM vm,
+                                   RichNode feature, UnstableNode& result) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    return dotNumber(self, vm, featureIntValue, result);
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    return raise(vm, u"illegalFieldSelection", self, feature);
+  }
+}
+
+OpResult Implementation<Cons>::dotNumber(Self self, VM vm,
+                                         nativeint feature,
+                                         UnstableNode& result) {
+  switch (feature) {
+    case 1: {
+      result.copy(vm, _head);
+      return OpResult::proceed();
+    }
+
+    case 2: {
+      result.copy(vm, _tail);
+      return OpResult::proceed();
+    }
+
+    default: {
+      // Out of bounds
+      return raise(vm, u"illegalFieldSelection", self, feature);
+    }
+  }
+}
+
+OpResult Implementation<Cons>::waitOr(Self self, VM vm,
+                                      UnstableNode& result) {
+  UnstableNode tempHead(vm, _head);
+  UnstableNode tempTail(vm, _tail);
+
+  RichNode head = tempHead;
+  RichNode tail = tempTail;
+
+  // If there is a field which is bound, then return its feature
+  if (!head.isTransient()) {
+    result = SmallInt::build(vm, 1);
+    return OpResult::proceed();
+  } else if (!tail.isTransient()) {
+    result = SmallInt::build(vm, 2);
+    return OpResult::proceed();
+  }
+
+  // Create the control variable
+  UnstableNode unstableControlVar = Variable::build(vm);
+  RichNode controlVar = unstableControlVar;
+  controlVar.ensureStable(vm);
+
+  // Add the control variable to the suspension list of both fields
+  DataflowVariable(head).addToSuspendList(vm, controlVar);
+  DataflowVariable(tail).addToSuspendList(vm, controlVar);
+
+  // Wait for the control variable
+  return OpResult::waitFor(vm, controlVar);
+}
+
+void Implementation<Cons>::printReprToStream(Self self, VM vm,
+                                             std::ostream& out, int depth) {
+  out << repr(vm, _head, depth) << "|" << repr(vm, _tail, depth);
+}
+
+///////////
 // Arity //
 ///////////
 

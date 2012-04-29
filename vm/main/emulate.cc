@@ -556,6 +556,13 @@ void Thread::run() {
         break;
       }
 
+      case OpCreateConsXX: {
+        XPC(3).make<Cons>(vm, XPC(1), XPC(2));
+
+        advancePC(3);
+        break;
+      }
+
       // Inlines for some builtins
 
       case OpInlineEqualsInteger: {

@@ -130,6 +130,73 @@ private:
 #include "Tuple-implem-decl-after.hh"
 #endif
 
+//////////
+// Cons //
+//////////
+
+class Cons;
+
+#ifndef MOZART_GENERATOR
+#include "Cons-implem-decl.hh"
+#endif
+
+/**
+ * Cons (specialization of Tuple with label '|' and width 2)
+ */
+template <>
+class Implementation<Cons>: WithStructuralBehavior {
+public:
+  typedef SelfType<Cons>::Self Self;
+public:
+  inline
+  Implementation(VM vm, RichNode head, RichNode tail);
+
+  inline
+  Implementation(VM vm, GR gr, Self from);
+
+public:
+  StableNode* getHead() {
+    return &_head;
+  }
+
+  StableNode* getTail() {
+    return &_tail;
+  }
+
+  inline
+  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+
+public:
+  // RecordLike interface
+
+  inline
+  OpResult label(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult width(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
+
+  inline
+  OpResult waitOr(Self self, VM vm, UnstableNode& result);
+
+public:
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
+private:
+  StableNode _head;
+  StableNode _tail;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Cons-implem-decl-after.hh"
+#endif
+
 ///////////
 // Arity //
 ///////////

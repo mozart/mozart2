@@ -67,6 +67,35 @@ public:
       return RecordLike(record).waitOr(vm, result);
     }
   };
+
+  class MakeDynamic: public Builtin<MakeDynamic> {
+  public:
+    MakeDynamic(): Builtin("makeDynamic") {}
+
+    OpResult operator()(VM vm, In label, In contents, Out result) {
+      using namespace patternmatching;
+
+      OpResult res = OpResult::proceed();
+      size_t contentsWidth;
+      std::unique_ptr<UnstableNode[]> contentsData;
+
+      if (matchesVariadicSharp(vm, res, contents, contentsWidth,
+                               contentsData) && (contentsWidth % 2 == 0)) {
+        size_t width = contentsWidth / 2;
+        std::unique_ptr<UnstableField[]> elements(new UnstableField[width]);
+
+        for (size_t i = 0; i < width; i++) {
+          // Moves are OK because we do not use contentsData afterwards
+          elements[i].feature = std::move(contentsData[i*2]);
+          elements[i].value = std::move(contentsData[i*2+1]);
+        }
+
+        return buildRecordDynamic(vm, result, label, width, elements.get());
+      } else {
+        return matchTypeError(vm, res, contents, u"#-tuple with even arity");
+      }
+    }
+  };
 };
 
 }

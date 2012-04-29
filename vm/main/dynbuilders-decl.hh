@@ -22,37 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __DYNBUILDERS_DECL_H
+#define __DYNBUILDERS_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#include "coredatatypes.hh"
+namespace mozart {
 
-#include "builtinutils.hh"
-#include "dynbuilders.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+template <class T>
+inline
+T identity(T it) {
+  return it;
+}
 
-#include "emulate.hh"
+////////////
+// Tuples //
+////////////
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+template <class T>
+inline
+OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
+                           size_t width, T elements[]);
 
-#endif // __MOZART_H
+template <class T, class ElemToValue>
+inline
+OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
+                           size_t width, T elements[],
+                           ElemToValue elemToValue);
+
+/////////////
+// Records //
+/////////////
+
+struct UnstableField {
+  UnstableNode feature;
+  UnstableNode value;
+};
+
+template <class T>
+inline
+void sortFeatures(VM vm, size_t width, T features[]);
+
+template <class T>
+inline
+OpResult buildArityDynamic(VM vm, UnstableNode& result,
+                           RichNode label, size_t width, T elements[]);
+
+inline
+OpResult buildRecordDynamic(VM vm, UnstableNode& result,
+                            RichNode label, size_t width,
+                            UnstableField elements[]);
+
+}
+
+#endif // __DYNBUILDERS_DECL_H

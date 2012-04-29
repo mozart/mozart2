@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include <memory>
+
 #include "coredatatypes-decl.hh"
 #include "coreinterfaces.hh"
 
@@ -505,6 +507,70 @@ inline
 bool matchesSharp(VM vm, OpResult& result, RichNode value,
                   Args... fieldsPats) {
   return matchesTuple(vm, result, value, u"#", fieldsPats...);
+}
+
+/**
+ * Pattern matching for variadic tuples
+ * See comments at the beginning of the file for usage.
+ */
+template <class LT, class... Args>
+inline
+bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
+                          size_t& argc, std::unique_ptr<UnstableNode[]>& args,
+                          LT labelPat, Args... fieldsPats) {
+  if (!result.isProceed())
+    return false;
+
+  constexpr size_t fixedArgc = sizeof...(Args);
+
+  if (value.type() != Tuple::type()) {
+    if (fixedArgc == 0) {
+      // If we expect 0 fixed arguments, then an atom is a valid input
+      if (internal::matchesSimple(vm, result, value, labelPat)) {
+        argc = 0;
+        args = nullptr;
+        return true;
+      }
+    }
+
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+
+  // Actual matching
+  auto tuple = value.as<Tuple>();
+
+  if (tuple.getWidth() < fixedArgc)
+    return false;
+
+  if (!internal::matchesStable(vm, result, tuple.getLabel(), labelPat))
+    return false;
+
+  if (!internal::matchesElementsAgainstPatternList<0>(
+      vm, result, tuple, fieldsPats...))
+    return false;
+
+  // Fill the captured variadic arguments
+  argc = tuple.getWidth() - fixedArgc;
+  args = std::unique_ptr<UnstableNode[]>(new UnstableNode[argc]);
+
+  for (size_t i = 0; i < argc; i++)
+    args[i].copy(vm, *tuple.getElement(i+fixedArgc));
+
+  return true;
+}
+
+/**
+ * Pattern matching for variadic # tuples
+ * See comments at the beginning of the file for usage.
+ */
+template <class... Args>
+inline
+bool matchesVariadicSharp(VM vm, OpResult& result, RichNode value,
+                          size_t& argc, std::unique_ptr<UnstableNode[]>& args,
+                          Args... fieldsPats) {
+  return matchesVariadicTuple(vm, result, value,
+                              argc, args, u"#", fieldsPats...);
 }
 
 /**

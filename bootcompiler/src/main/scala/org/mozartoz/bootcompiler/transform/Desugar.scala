@@ -62,6 +62,8 @@ object Desugar extends Transformer with TreeDSL {
 
     if (!record.hasConstantArity) {
       makeDynamicRecord(record, record.label, fieldsNoAuto)
+    } else if (fieldsNoAuto.isEmpty) {
+      record.label
     } else {
       val sortedFields = fieldsNoAuto.sortWith { (leftField, rightField) =>
         val left = leftField.feature.asInstanceOf[Constant]

@@ -15,7 +15,7 @@ import util._
 
 case class Config(
     fileName: String = "",
-    outputStream: PrintStream = Console.out,
+    outputStream: () => PrintStream = () => Console.out,
     moduleDefs: List[String] = Nil
 )
 
@@ -25,7 +25,8 @@ object Main {
     val optParser = new scopt.immutable.OptionParser[Config]("scopt", "2.x") {
       def options = Seq(
         opt("o", "output", "output file") {
-          (v: String, c: Config) => c.copy(outputStream = new PrintStream(v))
+          (v: String, c: Config) => c.copy(
+              outputStream = () => new PrintStream(v))
         },
         opt("m", "module", "module definition file") {
           (v: String, c: Config) => c.copy(moduleDefs = v :: c.moduleDefs)
@@ -41,30 +42,38 @@ object Main {
       // OK, we're good to go
       import config._
 
-      val reader = new PagedSeqReader(PagedSeq.fromReader(
-          new BufferedReader(new FileReader(fileName))))
-      val parser = new OzParser()
+      try {
+        val reader = new PagedSeqReader(PagedSeq.fromReader(
+            new BufferedReader(new FileReader(fileName))))
+        val parser = new OzParser()
 
-      parser.parse(reader) match {
-        case parser.Success(rawCode, _) =>
-          produce(rawCode, outputStream, moduleDefs)
-        case parser.NoSuccess(msg, _) =>
-          Console.err.println(msg)
+        parser.parse(reader) match {
+          case parser.Success(rawCode, _) =>
+            produce(rawCode, outputStream, moduleDefs)
+          case parser.NoSuccess(msg, _) =>
+            Console.err.println(msg)
+            sys.exit(2)
+        }
+      } catch {
+        case th: Throwable =>
+          th.printStackTrace()
+          sys.exit(2)
       }
     } getOrElse {
       // Bad command-line arguments
       optParser.showUsage
+      sys.exit(1)
     }
   }
 
-  def produce(rawCode: Statement, outputStream: PrintStream,
+  def produce(rawCode: Statement, outputStream: () => PrintStream,
       moduleDefs: List[String]) {
     val prog = new Program(rawCode)
     loadModuleDefs(prog, moduleDefs)
     loadBaseEnvironment(prog)
     applyTransforms(prog)
 
-    prog.produceCC(new Output(outputStream))
+    prog.produceCC(new Output(outputStream()))
   }
 
   private def loadModuleDefs(prog: Program, moduleDefs: List[String]) {

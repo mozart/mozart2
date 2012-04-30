@@ -316,8 +316,10 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val recordExpression: PackratParser[Expression] =
     recordLabel ~ recordFields <~ ")" ^^ Record
 
-  lazy val recordLabel: PackratParser[Expression] =
-    atomLitLabel ^^ Atom
+  lazy val recordLabel: PackratParser[Expression] = (
+      atomLitLabel ^^ Atom
+    | identLabel ^^ Variable
+  )
 
   lazy val recordFields: PackratParser[List[RecordField]] =
     rep(recordField)

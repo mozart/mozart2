@@ -79,7 +79,7 @@ case class Variable(name: String) extends VarOrConst with SymbolNode
   def syntax(indent: String) = name
 }
 
-object Variable {
+object Variable extends (String => Variable) {
   def apply(symbol: Symbol) =
     new Variable(symbol.name) withSymbol symbol
 }

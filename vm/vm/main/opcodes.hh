@@ -87,10 +87,9 @@ const OpCode OpArrayInitElementK = 0x43;
 const OpCode OpCreateAbstractionX = 0x44;
 const OpCode OpCreateAbstractionK = 0x45;
 
-const OpCode OpCreateTupleX = 0x46;
-const OpCode OpCreateTupleK = 0x47;
-const OpCode OpCreateRecordK = 0x48;
-const OpCode OpCreateConsXX = 0x49;
+const OpCode OpCreateTupleK = 0x46;
+const OpCode OpCreateRecordK = 0x47;
+const OpCode OpCreateConsXX = 0x48;
 
 // Inlines for some builtins
 const OpCode OpInlineEqualsInteger = 0x50;

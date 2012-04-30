@@ -37,6 +37,30 @@ namespace mozart {
 // Tuples //
 ////////////
 
+OpResult requireLiteral(VM vm, RichNode label) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+
+  if (matches(vm, res, label, wildcard<Atom>())) {
+    return OpResult::proceed();
+  } else if (matches(vm, res, label, wildcard<Boolean>())) {
+    return OpResult::proceed();
+  } else {
+    return matchTypeError(vm, res, label, u"literal");
+  }
+}
+
+namespace internal {
+  inline
+  bool isPipeAtom(VM vm, RichNode label) {
+    using namespace patternmatching;
+
+    OpResult res = OpResult::proceed();
+    return matches(vm, res, label, u"|");
+  }
+}
+
 template <class T>
 inline
 OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
@@ -49,6 +73,21 @@ inline
 OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
                            size_t width, T elements[],
                            ElemToValue elemToValue) {
+  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+
+  if (width == 0) {
+    result.copy(vm, label);
+    return OpResult::proceed();
+  }
+
+  if ((width == 2) && internal::isPipeAtom(vm, label)) {
+    UnstableNode head(vm, elemToValue(elements[0]));
+    UnstableNode tail(vm, elemToValue(elements[1]));
+    result.make<Cons>(vm, head, tail);
+
+    return OpResult::proceed();
+  }
+
   result.make<Tuple>(vm, width, label);
   auto tuple = RichNode(result).as<Tuple>();
 
@@ -72,6 +111,21 @@ namespace internal {
   UnstableNode& featureOf(const UnstableField& element) {
     return const_cast<UnstableNode&>(element.feature);
   }
+
+  template <class T>
+  inline
+  bool isTupleFeatureArray(VM vm, size_t width, T elements[]) {
+    using namespace patternmatching;
+
+    OpResult res = OpResult::proceed();
+
+    for (size_t i = 0; i < width; i++) {
+      if (!matches(vm, res, featureOf(elements[i]), i+1))
+        return false;
+    }
+
+    return true;
+  }
 }
 
 template <class T>
@@ -86,7 +140,7 @@ void sortFeatures(VM vm, size_t width, T features[]) {
 }
 
 template <class T>
-OpResult buildArityDynamic(VM vm, UnstableNode& result,
+OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
                            RichNode label, size_t width, T elements[]) {
   using internal::featureOf;
 
@@ -96,6 +150,11 @@ OpResult buildArityDynamic(VM vm, UnstableNode& result,
 
   // Sort the features
   sortFeatures(vm, width, elements);
+
+  // Check if the corresponding record should be a Tuple instead
+  isTuple = internal::isTupleFeatureArray(vm, width, elements);
+  if (isTuple)
+    return OpResult::proceed();
 
   // Make the tuple
   UnstableNode tuple;
@@ -112,10 +171,19 @@ OpResult buildArityDynamic(VM vm, UnstableNode& result,
 OpResult buildRecordDynamic(VM vm, UnstableNode& result,
                             RichNode label, size_t width,
                             UnstableField elements[]) {
+  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+
   // Make the arity - this sorts elements along the way
+  bool isTuple;
   UnstableNode arity;
   MOZART_CHECK_OPRESULT(buildArityDynamic(
-    vm, arity, label, width, elements));
+    vm, isTuple, arity, label, width, elements));
+
+  // Optimized representation for tuples
+  if (isTuple) {
+    return buildTupleDynamic(vm, result, label, width, elements,
+      [] (UnstableField& element) -> UnstableNode& { return element.value; });
+  }
 
   // Allocate the record
   result.make<Record>(vm, width, arity);

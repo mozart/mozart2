@@ -526,16 +526,6 @@ void Thread::run() {
         break;
       }
 
-      case OpCreateTupleX: {
-        UnstableNode label(vm, XPC(1));
-        size_t width = IntPC(2);
-
-        XPC(3).make<Tuple>(vm, width, label);
-
-        advancePC(3);
-        break;
-      }
-
       case OpCreateTupleK: {
         UnstableNode label(vm, KPC(1));
         size_t width = IntPC(2);

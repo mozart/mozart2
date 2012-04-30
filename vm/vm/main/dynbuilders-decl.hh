@@ -39,6 +39,9 @@ T identity(T it) {
 // Tuples //
 ////////////
 
+inline
+OpResult requireLiteral(VM vm, RichNode label);
+
 template <class T>
 inline
 OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
@@ -65,7 +68,7 @@ void sortFeatures(VM vm, size_t width, T features[]);
 
 template <class T>
 inline
-OpResult buildArityDynamic(VM vm, UnstableNode& result,
+OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
                            RichNode label, size_t width, T elements[]);
 
 inline

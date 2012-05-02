@@ -54,6 +54,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | funStatement
     | callStatement
     | ifStatement
+    | caseStatement
     | threadStatement
     | bindStatement
     | skipStatement
@@ -144,24 +145,67 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val ifStatement: PackratParser[Statement] =
     "if" ~> innerIfStatement <~ "end"
 
-  lazy val innerIfStatement: PackratParser[Statement] =
-    expression ~ ("then" ~> inStatement) ~ elseStatement ^^ IfStatement
-
-  lazy val elseStatement: PackratParser[Statement] = (
-      "else" ~> inStatement
-    | "elseif" ~> innerIfStatement
-    | success(SkipStatement())
-  )
-
   lazy val ifExpression: PackratParser[Expression] =
     "if" ~> innerIfExpression <~ "end"
+
+  lazy val innerIfStatement: PackratParser[Statement] =
+    expression ~ ("then" ~> inStatement) ~ elseStatement ^^ IfStatement
 
   lazy val innerIfExpression: PackratParser[Expression] =
     expression ~ ("then" ~> inExpression) ~ elseExpression ^^ IfExpression
 
+  // case of
+
+  lazy val caseStatement: PackratParser[Statement] =
+    "case" ~> innerCaseStatement <~ "end"
+
+  lazy val caseExpression: PackratParser[Expression] =
+    "case" ~> innerCaseExpression <~ "end"
+
+  lazy val innerCaseStatement: PackratParser[Statement] = (
+      expression ~ ("of" ~> caseStatementClauses) ~ elseStatement
+          ^^ MatchStatement
+  )
+
+  lazy val innerCaseExpression: PackratParser[Expression] = (
+      expression ~ ("of" ~> caseExpressionClauses) ~ elseExpressionCase
+          ^^ MatchExpression
+  )
+
+  lazy val caseStatementClauses: PackratParser[List[MatchStatementClause]] =
+    rep1(caseStatementClause, "[]" ~> caseStatementClause)
+
+  lazy val caseStatementClause: PackratParser[MatchStatementClause] = (
+      expression ~ opt("if" ~> expression) ~ ("then" ~> inStatement)
+          ^^ MatchStatementClause
+  )
+
+  lazy val caseExpressionClauses: PackratParser[List[MatchExpressionClause]] =
+    rep1(caseExpressionClause, "[]" ~> caseExpressionClause)
+
+  lazy val caseExpressionClause: PackratParser[MatchExpressionClause] = (
+      expression ~ opt("if" ~> expression) ~ ("then" ~> inExpression)
+          ^^ MatchExpressionClause
+  )
+
+  // else clauses of if and case
+
+  lazy val elseStatement: PackratParser[Statement] = (
+      "else" ~> inStatement
+    | "elseif" ~> innerIfStatement
+    | "elsecase" ~> innerCaseStatement
+    | success(SkipStatement())
+  )
+
   lazy val elseExpression: PackratParser[Expression] = (
       "else" ~> inExpression
     | "elseif" ~> innerIfExpression
+    | "elsecase" ~> innerCaseExpression
+  )
+
+  lazy val elseExpressionCase: PackratParser[Expression] = (
+      elseExpression
+    | success(Atom("matchError"))
   )
 
   // Thread
@@ -272,6 +316,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | funExpression
     | callExpression
     | ifExpression
+    | caseExpression
     | threadExpression
     | trivialExpression
     | recordExpression

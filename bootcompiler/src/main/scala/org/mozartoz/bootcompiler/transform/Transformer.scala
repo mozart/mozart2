@@ -56,6 +56,10 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.IfStatement(statement, transformExpr(condition),
           transformStat(trueStatement), transformStat(falseStatement))
 
+    case MatchStatement(value, clauses, elseStatement) =>
+      treeCopy.MatchStatement(statement, transformExpr(value),
+          transformClausesStat(clauses), transformStat(elseStatement))
+
     case ThreadStatement(statement) =>
       treeCopy.ThreadStatement(statement, transformStat(statement))
 
@@ -94,6 +98,10 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.IfExpression(expression, transformExpr(condition),
           transformExpr(trueExpression), transformExpr(falseExpression))
 
+    case MatchExpression(value, clauses, elseExpression) =>
+      treeCopy.MatchExpression(expression, transformExpr(value),
+          transformClausesExpr(clauses), transformExpr(elseExpression))
+
     case ThreadExpression(expression) =>
       treeCopy.ThreadExpression(expression, transformExpr(expression))
 
@@ -119,13 +127,10 @@ abstract class Transformer extends (Program => Unit) {
     case Variable(name) => expression
     case EscapedVariable(variable) => expression
     case UnboundExpression() => expression
-    case IntLiteral(value) => expression
-    case FloatLiteral(value) => expression
-    case Atom(value) => expression
-    case True() => expression
-    case False() => expression
-    case UnitVal() => expression
-    case AutoFeature() => expression
+
+    // Constants
+
+    case constant:Constant => transformConst(constant)
 
     // Records
 
@@ -136,6 +141,20 @@ abstract class Transformer extends (Program => Unit) {
     // Synthetic-only
 
     case CreateAbstraction(abstraction, globals) => expression
+  }
+
+  def transformConst(constant: Constant): Constant = constant match {
+    case IntLiteral(value) => constant
+    case FloatLiteral(value) => constant
+    case Atom(value) => constant
+    case True() => constant
+    case False() => constant
+    case UnitVal() => constant
+    case AutoFeature() => constant
+
+    case ConstantRecord(label, fields) =>
+      treeCopy.ConstantRecord(constant, transformConst(label),
+          fields map transformConstRecordField)
   }
 
   def transformDecl(declaration: Declaration): Declaration = declaration match {
@@ -154,4 +173,23 @@ abstract class Transformer extends (Program => Unit) {
   def transformRecordField(field: RecordField): RecordField =
     treeCopy.RecordField(field,
         transformExpr(field.feature), transformExpr(field.value))
+
+  def transformConstRecordField(
+      field: ConstantRecordField): ConstantRecordField =
+    treeCopy.ConstantRecordField(field,
+        transformConst(field.feature), transformConst(field.value))
+
+  def transformClausesStat(clauses: List[MatchStatementClause]) =
+    clauses map transformClauseStat
+
+  def transformClauseStat(clause: MatchStatementClause) =
+    treeCopy.MatchStatementClause(clause, transformExpr(clause.pattern),
+        clause.guard map transformExpr, transformStat(clause.body))
+
+  def transformClausesExpr(clauses: List[MatchExpressionClause]) =
+    clauses map transformClauseExpr
+
+  def transformClauseExpr(clause: MatchExpressionClause) =
+    treeCopy.MatchExpressionClause(clause, transformExpr(clause.pattern),
+        clause.guard map transformExpr, transformExpr(clause.body))
 }

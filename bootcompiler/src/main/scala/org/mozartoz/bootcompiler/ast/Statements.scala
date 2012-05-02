@@ -27,6 +27,16 @@ case class IfStatement(condition: Expression,
   protected val falsePart = falseStatement
 }
 
+case class MatchStatement(value: Expression,
+    clauses: List[MatchStatementClause],
+    elseStatement: Statement) extends Statement with MatchCommon {
+  protected val elsePart = elseStatement
+}
+
+case class MatchStatementClause(pattern: Expression, guard: Option[Expression],
+    body: Statement) extends MatchClauseCommon {
+}
+
 case class ThreadStatement(
     statement: Statement) extends Statement with ThreadCommon {
   protected val body = statement

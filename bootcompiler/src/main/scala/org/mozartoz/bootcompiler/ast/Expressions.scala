@@ -43,6 +43,16 @@ case class IfExpression(condition: Expression,
   protected val falsePart = falseExpression
 }
 
+case class MatchExpression(value: Expression,
+    clauses: List[MatchExpressionClause],
+    elseExpression: Expression) extends Expression with MatchCommon {
+  protected val elsePart = elseExpression
+}
+
+case class MatchExpressionClause(pattern: Expression, guard: Option[Expression],
+    body: Expression) extends MatchClauseCommon {
+}
+
 case class ThreadExpression(
     expression: Expression) extends Expression with ThreadCommon {
   protected val body = expression
@@ -122,7 +132,10 @@ case class AutoFeature() extends Constant {
 
 // Records
 
-case class RecordField(feature: Expression, value: Expression) extends Node {
+trait BaseRecordField extends Node {
+  val feature: Expression
+  val value: Expression
+
   def syntax(indent: String) = {
     val featSyntax = feature.syntax(indent)
     featSyntax + ":" + value.syntax(indent + " " + " "*featSyntax.length())
@@ -135,8 +148,15 @@ case class RecordField(feature: Expression, value: Expression) extends Node {
     feature.isInstanceOf[Constant]
 }
 
-case class Record(label: Expression,
-    fields: List[RecordField]) extends Expression {
+object BaseRecordField {
+  def unapply(field: BaseRecordField) =
+    Some((field.feature, field.value))
+}
+
+trait BaseRecord extends Expression {
+  val label: Expression
+  val fields: List[BaseRecordField]
+
   def syntax(indent: String) = fields.toList match {
     case Nil => label.syntax()
 
@@ -158,17 +178,99 @@ case class Record(label: Expression,
   def isCons = {
     (label, fields) match {
       case (Atom("|"), List(
-          RecordField(IntLiteral(1), _),
-          RecordField(IntLiteral(2), _))) => true
+          BaseRecordField(IntLiteral(1), _),
+          BaseRecordField(IntLiteral(2), _))) => true
       case _ => false;
     }
   }
 
   def isTuple = {
     fields.zipWithIndex.forall {
-      case (RecordField(IntLiteral(feat), _), index) if feat == index+1 => true
+      case (BaseRecordField(IntLiteral(feat), _), index) if feat == index+1 =>
+        true
       case _ => false
     }
+  }
+}
+
+object BaseRecord {
+  def unapply(record: BaseRecord) =
+    Some((record.label, record.fields))
+}
+
+case class RecordField(feature: Expression,
+    value: Expression) extends BaseRecordField {
+}
+
+case class Record(label: Expression,
+    fields: List[RecordField]) extends BaseRecord {
+}
+
+object Tuple extends ((Expression, List[Expression]) => Record) {
+  def apply(label: Expression, fields: List[Expression]) = {
+    val recordFields =
+      for ((value, index) <- fields.zipWithIndex)
+        yield RecordField(IntLiteral(index+1), value)
+    Record(label, recordFields)
+  }
+
+  def unapply(record: Record) = {
+    if (record.isTuple) Some((record.label, record.fields map (_.value)))
+    else None
+  }
+}
+
+object Cons extends ((Expression, Expression) => Record) {
+  def apply(head: Expression, tail: Expression) =
+    Tuple(Atom("|"), List(head, tail))
+
+  def unapply(record: Record) = record match {
+    case Tuple(Atom("|"), List(head, tail)) => Some((head, tail))
+    case _ => None
+  }
+}
+
+case class ConstantRecordField(feature: Constant,
+    value: Constant) extends BaseRecordField {
+  override def hasConstantFeature = true
+}
+
+case class ConstantRecord(label: Constant,
+    fields: List[ConstantRecordField]) extends BaseRecord with Constant {
+  override def hasConstantArity = true
+}
+
+object ConstantTuple extends ((Constant, List[Constant]) => ConstantRecord) {
+  def apply(label: Constant, fields: List[Constant]) = {
+    val recordFields =
+      for ((value, index) <- fields.zipWithIndex)
+        yield ConstantRecordField(IntLiteral(index+1), value)
+    ConstantRecord(label, recordFields)
+  }
+
+  def unapply(record: ConstantRecord) = {
+    if (record.isTuple) Some((record.label, record.fields map (_.value)))
+    else None
+  }
+}
+
+object ConstantCons extends ((Constant, Constant) => ConstantRecord) {
+  def apply(head: Constant, tail: Constant) =
+    ConstantTuple(Atom("|"), List(head, tail))
+
+  def unapply(record: ConstantRecord) = record match {
+    case ConstantTuple(Atom("|"), List(head, tail)) => Some((head, tail))
+    case _ => None
+  }
+}
+
+object ConstantSharp extends (List[Constant] => ConstantRecord) {
+  def apply(fields: List[Constant]) =
+    ConstantTuple(Atom("#"), fields)
+
+  def unapply(record: ConstantRecord) = record match {
+    case ConstantTuple(Atom("#"), fields) => Some(fields)
+    case _ => None
   }
 }
 

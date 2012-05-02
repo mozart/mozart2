@@ -21,6 +21,10 @@ class TreeCopier {
       trueStatement: Statement, falseStatement: Statement) =
     new IfStatement(condition, trueStatement, falseStatement).copyAttrs(tree)
 
+  def MatchStatement(tree: Node, value: Expression,
+      clauses: List[MatchStatementClause], elseStatement: Statement) =
+    new MatchStatement(value, clauses, elseStatement).copyAttrs(tree)
+
   def ThreadStatement(tree: Node, statement: Statement) =
     new ThreadStatement(statement).copyAttrs(tree)
 
@@ -56,6 +60,10 @@ class TreeCopier {
   def IfExpression(tree: Node, condition: Expression,
       trueExpression: Expression, falseExpression: Expression) =
     new IfExpression(condition, trueExpression, falseExpression).copyAttrs(tree)
+
+  def MatchExpression(tree: Node, value: Expression,
+      clauses: List[MatchExpressionClause], elseExpression: Expression) =
+    new MatchExpression(value, clauses, elseExpression).copyAttrs(tree)
 
   def ThreadExpression(tree: Node, expression: Expression) =
     new ThreadExpression(expression).copyAttrs(tree)
@@ -109,6 +117,23 @@ class TreeCopier {
 
   def Record(tree: Node, label: Expression, fields: List[RecordField]) =
     new Record(label, fields).copyAttrs(tree)
+
+  def ConstantRecordField(tree: Node, feature: Constant, value: Constant) =
+    new ConstantRecordField(feature, value).copyAttrs(tree)
+
+  def ConstantRecord(tree: Node, label: Constant,
+      fields: List[ConstantRecordField]) =
+    new ConstantRecord(label, fields).copyAttrs(tree)
+
+  // Match clauses
+
+  def MatchStatementClause(tree: Node, pattern: Expression,
+      guard: Option[Expression], body: Statement) =
+    new MatchStatementClause(pattern, guard, body).copyAttrs(tree)
+
+  def MatchExpressionClause(tree: Node, pattern: Expression,
+      guard: Option[Expression], body: Expression) =
+    new MatchExpressionClause(pattern, guard, body).copyAttrs(tree)
 
   // Synthetic-only
 

@@ -80,6 +80,44 @@ trait IfCommon extends StatOrExpr {
   }
 }
 
+trait MatchCommon extends StatOrExpr {
+  protected val value: Expression
+  protected val clauses: List[MatchClauseCommon]
+  protected val elsePart: StatOrExpr
+
+  def syntax(indent: String) = {
+    val header = "case " + value.syntax(indent + "     ")
+
+    val untilClauses = clauses.foldLeft(header) { (prev, clause) =>
+      prev + "\n" + indent + clause.syntax(indent)
+    }
+
+    val untilElse = untilClauses + "\n" + indent + "else"
+    val untilElseBody =
+      untilElse + "\n" + indent + "   " + elsePart.syntax(indent + "   ")
+
+    untilElseBody + "\n" + indent + "end"
+  }
+}
+
+trait MatchClauseCommon extends Node {
+  val pattern: Expression
+  protected val guard: Option[Expression]
+  protected val body: StatOrExpr
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+
+    val untilPattern = "[] " + pattern.syntax(subIndent)
+    val untilGuard =
+      if (guard.isDefined) untilPattern + " if " + guard.get.syntax(subIndent)
+      else untilPattern
+    val allButBody = untilGuard + " then\n" + subIndent
+
+    allButBody + body.syntax(subIndent)
+  }
+}
+
 trait ThreadCommon extends StatOrExpr {
   protected val body: StatOrExpr
 

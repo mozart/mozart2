@@ -161,6 +161,7 @@ object Main {
     Namer(prog)
     Desugar(prog)
     Unnester(prog)
+    PatternMatcher(prog)
     Flattener(prog)
     CodeGen(prog)
   }

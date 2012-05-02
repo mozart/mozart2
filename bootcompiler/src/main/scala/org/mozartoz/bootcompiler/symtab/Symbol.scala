@@ -30,6 +30,7 @@ sealed abstract class Symbol(val name: String) {
   val isDefined = true
   val isBuiltin = false
   val isFormal = false
+  val isCapture = false
   val isSynthetic = false
   val isGlobal = false
 
@@ -39,13 +40,16 @@ sealed abstract class Symbol(val name: String) {
 }
 
 class VariableSymbol(name: String, formal: Boolean = false,
-    synthetic: Boolean = false, global: Boolean = false) extends Symbol(name) {
+    capture: Boolean = false, synthetic: Boolean = false,
+    global: Boolean = false) extends Symbol(name) {
   override val isFormal = formal
+  override val isCapture = capture
   override val isSynthetic = synthetic
   override val isGlobal = global
 
   def copyAsGlobal() =
-    new VariableSymbol(name, false, true, true)
+    new VariableSymbol(name, formal = false, capture = false,
+        synthetic = true, global = true)
 }
 
 object BuiltinSymbol {

@@ -176,6 +176,49 @@ object CodeGen extends Transformer with TreeDSL {
 
         branchHole fillWith OpBranch(falseBranchSize)
 
+      case MatchStatement(value:Variable, clauses, elseStat) =>
+        XReg(0) := value.symbol
+        val matchHole = code.addHole()
+
+        val clauseCount = clauses.size
+        val patterns = new Array[Constant](clauseCount)
+        val branchToAfterHoles = new Array[CodeArea#Hole](clauseCount+1)
+        val jumpOffsets = new Array[Int](clauseCount+1)
+
+        jumpOffsets(0) = code.counting {
+          generate(elseStat)
+          if (clauseCount > 0)
+            branchToAfterHoles(0) = code.addHole(2)
+        }
+
+        for ((clause, index) <- clauses.zipWithIndex) {
+          // Pattern, which must be constant at this point
+          val pattern = clause.pattern.asInstanceOf[Constant]
+          patterns(index) = ConstantSharp(List(
+              pattern, IntLiteral(jumpOffsets(index))))
+
+          // The guard must be empty at this point
+          assert(clause.guard.isEmpty)
+
+          // Body
+          jumpOffsets(index+1) = jumpOffsets(index) + code.counting {
+            generate(clause.body)
+            if (index+1 < clauseCount)
+              branchToAfterHoles(index+1) = code.addHole(2)
+          }
+        }
+
+        val totalSize = jumpOffsets(clauseCount)
+        val patternsInfo = ConstantSharp(patterns.toList)
+
+        matchHole fillWith OpPatternMatch(
+            XReg(0), code.registerFor(patternsInfo))
+
+        for (index <- 0 until clauseCount) {
+          branchToAfterHoles(index) fillWith OpBranch(
+              totalSize - jumpOffsets(index))
+        }
+
       case CallStatement(callable:Variable, args) =>
         val argCount = args.size
 

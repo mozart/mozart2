@@ -40,6 +40,15 @@ object Namer extends Transformer with TransformUtils {
         else treeCopy.LocalStatement(local, decls, transformStat(stat))
       }
 
+    case matchStat @ MatchStatement(value, clauses, elseStat) =>
+      val decls = extractDecls(clauses)
+
+      withEnvironmentFromDecls(decls) {
+        val transformedStat = super.transformStat(matchStat)
+        if (decls.isEmpty) transformedStat
+        else treeCopy.LocalStatement(matchStat, decls, transformedStat)
+      }
+
     case _ =>
       super.transformStat(statement)
   }
@@ -52,6 +61,15 @@ object Namer extends Transformer with TransformUtils {
       withEnvironmentFromDecls(decls) {
         if (decls.isEmpty) transformExpr(expr)
         else treeCopy.LocalExpression(local, decls, transformExpr(expr))
+      }
+
+    case matchExpr @ MatchExpression(value, clauses, elseExpr) =>
+      val decls = extractDecls(clauses)
+
+      withEnvironmentFromDecls(decls) {
+        val transformedExpr = super.transformExpr(matchExpr)
+        if (decls.isEmpty) transformedExpr
+        else treeCopy.LocalExpression(matchExpr, decls, transformedExpr)
       }
 
     case proc @ ProcExpression(name, args, body, flags) =>
@@ -118,18 +136,40 @@ object Namer extends Transformer with TransformUtils {
 
     process(declarations)
 
-    val namedDecls = for (v@Variable(name) <- decls.toList)
-      yield treeCopy.Variable(v, name) withSymbol new VariableSymbol(name)
+    val namedDecls = nameDecls(decls.toList)
 
     (namedDecls, statements.toList)
   }
 
-  def extractDeclsInExpression(expr: Expression) = expr match {
+  def extractDecls(clauses: List[MatchClauseCommon]) = {
+    // Extract the captures in all clauses
+    val captures = clauses flatMap {
+      clause => extractDeclsInExpression(clause.pattern)
+    }
+
+    // Name the captures
+    nameDecls(captures, capture = true)
+  }
+
+  def extractDeclsInExpression(expr: Expression): List[Variable] = expr match {
     case variable:Variable =>
       List(variable)
 
+    case Record(label, fields) =>
+      for {
+        RecordField(_, value) <- fields
+        variable <- extractDeclsInExpression(value)
+      } yield variable
+
     case _ =>
       Nil
+  }
+
+  def nameDecls(decls: List[Variable], capture: Boolean = false) = {
+    for (v @ Variable(name) <- decls) yield {
+      val symbol = new VariableSymbol(name, capture = capture)
+      treeCopy.Variable(v, name) withSymbol symbol
+    }
   }
 
   def nameFormals(args: List[FormalArg]) = {

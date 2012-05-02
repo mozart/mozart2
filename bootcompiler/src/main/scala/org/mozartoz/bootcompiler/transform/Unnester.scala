@@ -40,6 +40,22 @@ object Unnester extends Transformer with TreeDSL {
           }
       }
 
+    case matchStat @ MatchStatement(value, clauses, elseStat) =>
+      val newClauses = transformClausesStat(clauses)
+      val newElseStat = transformStat(elseStat)
+
+      value match {
+        case v:Variable =>
+          treeCopy.MatchStatement(matchStat, v, newClauses, newElseStat)
+
+        case _ =>
+          statementWithTemp { temp =>
+            transformStat(temp === value) ~ {
+              treeCopy.MatchStatement(matchStat, temp, newClauses, newElseStat)
+            }
+          }
+      }
+
     case _ =>
       super.transformStat(statement)
   }
@@ -66,6 +82,17 @@ object Unnester extends Transformer with TreeDSL {
     case IfExpression(cond, trueExpr, falseExpr) =>
       val statement = IF (cond) THEN (v === trueExpr) ELSE (v === falseExpr)
       transformStat(statement)
+
+    case MatchExpression(value, clauses, elseExpr) =>
+      val newClauses = {
+        for (clause @ MatchExpressionClause(pattern, guard, body) <- clauses)
+          yield treeCopy.MatchStatementClause(
+              clause, pattern, guard, v === body)
+      }
+
+      val newElse = (v === elseExpr)
+
+      transformStat(treeCopy.MatchStatement(rhs, value, newClauses, newElse))
 
     case BindExpression(lhs2, rhs2) =>
       transformStat((v === lhs2) ~ (v === rhs2))

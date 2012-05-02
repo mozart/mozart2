@@ -158,23 +158,19 @@ class CodeArea(val abstraction: Abstraction) {
   private def produceCCInitConstant(out: Output, constant: Any) {
     import Output._
 
+    out << "  temp = ";
+
     constant match {
-      case ConstantArity(label, features) =>
-        out << "  temp = buildArity(vm, "
-        produceCCForConstant(out, label)
-
-        for (feature <- features) {
-          out << ", "
-          produceCCForConstant(out, feature)
-        }
-
-        out << ");\n"
+      case _:ConstantArity | _:ConstantRecord =>
+        produceCCForConstant(out, constant)
 
       case _ =>
-        out << "  temp = trivialBuild(vm, "
+        out << "trivialBuild(vm, "
         produceCCForConstant(out, constant)
-        out << ");\n"
+        out << ")"
     }
+
+    out << ";\n"
   }
 
   private def produceCCForConstant(out: Output, constant: Any) {
@@ -204,6 +200,48 @@ class CodeArea(val abstraction: Abstraction) {
 
       case UnitVal() =>
         out << "unit"
+
+      case ConstantArity(label, features) =>
+        out << "buildArity(vm, "
+        produceCCForConstant(out, label)
+
+        for (feature <- features) {
+          out << ", "
+          produceCCForConstant(out, feature)
+        }
+
+        out << ")"
+
+      case ConstantCons(head, tail) =>
+        out << "buildCons(vm, "
+        produceCCForConstant(out, head)
+        out << ", "
+        produceCCForConstant(out, tail)
+        out << ")"
+
+      case ConstantTuple(label, fields) =>
+        out << "buildTuple(vm, "
+        produceCCForConstant(out, label)
+
+        for (field <- fields) {
+          out << ", "
+          produceCCForConstant(out, field)
+        }
+
+        out << ")"
+
+      case ConstantRecord(label, fields) =>
+        val arity = ConstantArity(label, fields map (_.feature))
+
+        out << "buildRecord(vm, "
+        produceCCForConstant(out, arity)
+
+        for (ConstantRecordField(feature, value) <- fields) {
+          out << ", "
+          produceCCForConstant(out, value)
+        }
+
+        out << ")"
     }
   }
 }

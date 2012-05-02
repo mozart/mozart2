@@ -436,6 +436,12 @@ void Thread::run() {
         break;
       }
 
+      case OpPatternMatch: {
+        UnstableNode patterns(vm, KPC(2));
+        patternMatch(vm, XPC(1), patterns, PC, xregs, preempted);
+        break;
+      }
+
       // Unification
 
       case OpUnifyXX: {
@@ -660,6 +666,42 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
   // (there is no infinite execution path that does not traverse a call)
   if (vm->testPreemption())
     preempted = true;
+}
+
+void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
+                          ProgramCounter& PC, XRegArray* xregs,
+                          bool& preempted) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  size_t patternCount = 0;
+  std::unique_ptr<UnstableNode[]> patternList;
+
+  if (!matchesVariadicSharp(vm, res, patterns, patternCount, patternList))
+    CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patterns, u"patterns"));
+
+  for (size_t index = 0; index < patternCount; index++) {
+    UnstableNode pattern;
+    nativeint jumpOffset = 0;
+
+    if (!matchesSharp(vm, res, patternList[index],
+                      capture(pattern), capture(jumpOffset))) {
+      CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patternList[index],
+                                           u"pattern"));
+    }
+
+    assert(jumpOffset >= 0);
+
+    bool equalsResult;
+    CHECK_OPRESULT_RETURN(equals(vm, value, pattern, equalsResult));
+
+    if (equalsResult) {
+      advancePC(2 + jumpOffset);
+      return;
+    }
+  }
+
+  advancePC(2);
 }
 
 void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {

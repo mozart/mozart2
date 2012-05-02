@@ -203,6 +203,9 @@ private:
             StaticArray<StableNode>& kregs,
             bool& preempted);
 
+  void patternMatch(VM vm, RichNode value, RichNode patterns,
+                    ProgramCounter& PC, XRegArray* xregs, bool& preempted);
+
   void applyOpResult(VM vm, OpResult result, bool& preempted);
 
   XRegArray xregs;

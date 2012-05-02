@@ -73,6 +73,7 @@ const OpCode OpTailCallG = 0x2A;
 const OpCode OpReturn = 0x2B;
 const OpCode OpBranch = 0x2C;
 const OpCode OpCondBranch = 0x2D;
+const OpCode OpPatternMatch = 0x2E;
 
 const OpCode OpUnifyXX = 0x30;
 const OpCode OpUnifyXY = 0x31;

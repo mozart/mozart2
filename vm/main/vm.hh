@@ -48,10 +48,6 @@ bool VirtualMachine::testPreemption() {
   return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
 }
 
-void VirtualMachine::scheduleThread(Runnable* thread) {
-  threadPool.schedule(thread);
-}
-
 void VirtualMachine::setCurrentSpace(Space* space) {
   _currentSpace = space;
   _isOnTopLevel = space->isTopLevel();

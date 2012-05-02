@@ -111,7 +111,6 @@ private:
   friend class GarbageCollector;
   friend class SpaceCloner;
   friend class Runnable;
-  friend class Thread;
   friend class Implementation<Atom>;
 
   friend void* ::operator new (size_t size, mozart::VM vm);
@@ -120,10 +119,6 @@ private:
   void* getMemory(size_t size) {
     return memoryManager.getMemory(size);
   }
-
-  // Called from the constructor of Thread
-  inline
-  void scheduleThread(Runnable* thread);
 
   ThreadPool threadPool;
   AtomTable atomTable;

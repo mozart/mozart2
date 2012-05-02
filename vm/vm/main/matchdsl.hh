@@ -57,7 +57,7 @@
  *     OpResult result = OpResult::proceed(); // important!
  *     UnstableNode X, Y;
  *
- *     if (matchesTuple(vm, result, value, u"#",
+ *     if (matchesTuple(vm, result, value, vm->coreatoms.sharp,
  *                      capture(X), 42, capture(Y))) {
  *       show(X);
  *       show(Y);
@@ -137,13 +137,15 @@
  *   bool matchesTuple(vm, result, value, labelPattern, fieldsPatterns...)
  *     which matches a tuple whose label and fields match the given patterns
  *
- * The following two methods conveniently match on usual tuples:
- *
- *   bool matchesCons(vm, result, value, headPattern, tailPattern)
- *     ::= matchesTuple(vm, result, value, u"|", headPattern, tailPattern)
+ * The following method conveniently match on #-tuples:
  *
  *   bool matchesSharp(vm, result, value, fieldsPatterns...)
- *     ::= matchesTuple(vm, result, value, u"#", fieldsPatterns...)
+ *     ::= matchesTuple(vm, result, value, vm->coreatoms.sharp,
+ *                      fieldsPatterns...)
+ *
+ * To match a |-pair (H|T), use the following method instead:
+ *
+ *   bool matchesCons(vm, result, value, headPattern, tailPattern)
  *
  * All the patterns can be one of the following:
  *
@@ -320,6 +322,17 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
 
   return std::char_traits<char16_t>::compare(
     valueContents, pattern, length) == 0;
+}
+
+template <>
+inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value, AtomImpl* pattern) {
+  if (!value.is<Atom>()) {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+
+  return value.as<Atom>().value() == pattern;
 }
 
 template <>
@@ -517,7 +530,7 @@ template <class... Args>
 inline
 bool matchesSharp(VM vm, OpResult& result, RichNode value,
                   Args... fieldsPats) {
-  return matchesTuple(vm, result, value, u"#", fieldsPats...);
+  return matchesTuple(vm, result, value, vm->coreatoms.sharp, fieldsPats...);
 }
 
 /**
@@ -581,7 +594,7 @@ bool matchesVariadicSharp(VM vm, OpResult& result, RichNode value,
                           size_t& argc, std::unique_ptr<UnstableNode[]>& args,
                           Args... fieldsPats) {
   return matchesVariadicTuple(vm, result, value,
-                              argc, args, u"#", fieldsPats...);
+                              argc, args, vm->coreatoms.sharp, fieldsPats...);
 }
 
 /**

@@ -37,11 +37,11 @@ OpResult raise(VM vm, LT&& label, Args&&... args) {
 }
 
 OpResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
-  return raise(vm, u"typeError", expected, actual);
+  return raise(vm, vm->coreatoms.typeError, expected, actual);
 }
 
 OpResult raiseIllegalArity(VM vm, int expected, int actual) {
-  return raise(vm, u"illegalArity", expected, actual);
+  return raise(vm, vm->coreatoms.illegalArity, expected, actual);
 }
 
 }

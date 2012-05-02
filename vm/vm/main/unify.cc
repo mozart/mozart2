@@ -171,7 +171,7 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
       if (right.isTransient())
         DataflowVariable(right).addToSuspendList(vm, controlVar);
     } else {
-      UnstableNode label = Atom::build(vm, u"#");
+      UnstableNode label = Atom::build(vm, vm->coreatoms.pipe);
 
       unstableLeft.make<Tuple>(vm, count, label);
       unstableRight.make<Tuple>(vm, count, label);

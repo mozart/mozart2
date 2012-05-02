@@ -55,6 +55,9 @@ void GarbageCollector::doGC() {
   vm->atomTable = AtomTable();
   vm->aliveThreads = RunnableList();
 
+  // Reinitialize the VM
+  vm->initialize();
+
   // Always keep the top-level space
   SpaceRef topLevelSpaceRef = vm->_topLevelSpace;
   copySpace(topLevelSpaceRef, topLevelSpaceRef);

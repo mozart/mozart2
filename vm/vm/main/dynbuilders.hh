@@ -57,7 +57,7 @@ namespace internal {
     using namespace patternmatching;
 
     OpResult res = OpResult::proceed();
-    return matches(vm, res, label, u"|");
+    return matches(vm, res, label, vm->coreatoms.pipe);
   }
 }
 

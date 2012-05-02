@@ -246,7 +246,7 @@ void Space::fail(VM vm) {
   deinstallThisFailed();
   vm->setCurrentSpace(parent);
 
-  bindStatusVar(vm, trivialBuild(vm, u"failed"));
+  bindStatusVar(vm, trivialBuild(vm, vm->coreatoms.failed));
 }
 
 OpResult Space::merge(VM vm, Space* dest) {
@@ -304,7 +304,8 @@ void Space::bindStatusVar(VM vm, UnstableNode&& value) {
 }
 
 UnstableNode Space::genSucceeded(VM vm, bool isEntailed) {
-  return buildTuple(vm, u"succeeded", isEntailed ? u"entailed" : u"stuck");
+  return buildTuple(vm, vm->coreatoms.succeeded,
+                    isEntailed ? vm->coreatoms.entailed : vm->coreatoms.stuck);
 }
 
 // Garbage collection and cloning
@@ -447,7 +448,8 @@ void Space::checkStability() {
 
     if (hasDistributor()) {
       nativeint alternatives = getDistributor()->getAlternatives();
-      UnstableNode newStatus = buildTuple(vm, u"alternatives", alternatives);
+      UnstableNode newStatus = buildTuple(vm, vm->coreatoms.alternatives,
+                                          alternatives);
       bindStatusVar(vm, newStatus);
     } else {
       bindStatusVar(vm, genSucceeded(vm, getThreadCount() == 0));
@@ -459,7 +461,7 @@ void Space::checkStability() {
       // No runnable threads: suspended
 
       UnstableNode newStatusVar = Unbound::build(vm, parent);
-      bindStatusVar(vm, buildTuple(vm, u"suspended", newStatusVar));
+      bindStatusVar(vm, buildTuple(vm, vm->coreatoms.suspended, newStatusVar));
       _statusVar = std::move(newStatusVar);
     }
   }

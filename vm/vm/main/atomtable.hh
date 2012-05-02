@@ -28,6 +28,7 @@
 #include "core-forward-decl.hh"
 
 #include <cstring>
+#include <string>
 
 namespace mozart {
 
@@ -68,6 +69,10 @@ private:
 class AtomTable {
 public:
   AtomTable() : root(nullptr), _count(0) {}
+
+  AtomImpl* get(VM vm, const char16_t* data) {
+    return get(vm, std::char_traits<char16_t>::length(data), data);
+  }
 
   __attribute__((noinline))
   AtomImpl* get(VM vm, size_t size, const char16_t* data) {

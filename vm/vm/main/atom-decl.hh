@@ -52,7 +52,11 @@ public:
   }
 
   static AtomImpl* build(VM vm, const char16_t* contents) {
-    return build(vm, std::char_traits<char16_t>::length(contents), contents);
+    return vm->atomTable.get(vm, contents);
+  }
+
+  static AtomImpl* build(VM vm, AtomImpl* value) {
+    return value;
   }
 
   inline

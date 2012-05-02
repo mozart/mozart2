@@ -42,6 +42,8 @@ VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
 
   _topLevelSpace = new (this) Space(this);
   _currentSpace = _topLevelSpace;
+
+  initialize();
 }
 
 bool VirtualMachine::testPreemption() {
@@ -55,6 +57,10 @@ void VirtualMachine::setCurrentSpace(Space* space) {
 
 Space* VirtualMachine::cloneSpace(Space* space) {
   return sc.doCloneSpace(space);
+}
+
+void VirtualMachine::initialize() {
+  coreatoms.initialize(this, atomTable);
 }
 
 }

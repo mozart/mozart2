@@ -86,6 +86,11 @@ UnstableNode trivialBuild(VM vm, const char16_t* value) {
 }
 
 inline
+UnstableNode trivialBuild(VM vm, AtomImpl* value) {
+  return Atom::build(vm, value);
+}
+
+inline
 UnstableNode trivialBuild(VM vm, builtins::BaseBuiltin& builtin) {
   return BuiltinProcedure::build(vm, builtin);
 }

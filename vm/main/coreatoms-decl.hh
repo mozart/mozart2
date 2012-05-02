@@ -22,38 +22,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __COREATOMS_DECL_H
+#define __COREATOMS_DECL_H
 
-#include "mozartcore.hh"
+#include "core-forward-decl.hh"
 
-#include "coredatatypes.hh"
+#include "atomtable.hh"
 
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "dynbuilders.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+namespace mozart {
 
-#include "emulate.hh"
+struct CoreAtoms {
+  inline
+  void initialize(VM vm, AtomTable& atomTable);
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+  // '|' and '#'
+  AtomImpl* pipe;
+  AtomImpl* sharp;
 
-#endif // __MOZART_H
+  // Space status
+  AtomImpl* succeeded;
+  AtomImpl* entailed;
+  AtomImpl* stuck;
+  AtomImpl* suspended;
+  AtomImpl* alternatives;
+  AtomImpl* failed;
+  AtomImpl* merged;
+
+  // Exceptions
+  AtomImpl* failure;
+  AtomImpl* typeError;
+  AtomImpl* illegalFieldSelection;
+  AtomImpl* illegalArity;
+  AtomImpl* spaceAdmissible;
+  AtomImpl* spaceNoChoice;
+  AtomImpl* spaceAltRange;
+  AtomImpl* spaceMerged;
+};
+
+}
+
+#endif // __COREATOMS_DECL_H

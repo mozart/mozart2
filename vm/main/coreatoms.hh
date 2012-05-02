@@ -22,38 +22,34 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __COREATOMS_H
+#define __COREATOMS_H
 
 #include "mozartcore.hh"
 
-#include "coredatatypes.hh"
+namespace mozart {
 
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "dynbuilders.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
+  pipe = atomTable.get(vm, u"|");
+  sharp = atomTable.get(vm, u"#");
 
-#include "emulate.hh"
+  succeeded = atomTable.get(vm, u"succeeded");
+  entailed = atomTable.get(vm, u"entailed");
+  stuck = atomTable.get(vm, u"stuck");
+  alternatives = atomTable.get(vm, u"alternatives");
+  failed = atomTable.get(vm, u"failed");
+  merged = atomTable.get(vm, u"merged");
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
+  failure = atomTable.get(vm, u"failure");
+  typeError = atomTable.get(vm, u"typeError");
+  illegalFieldSelection = atomTable.get(vm, u"illegalFieldSelection");
+  illegalArity = atomTable.get(vm, u"illegalArity");
+  spaceAdmissible = atomTable.get(vm, u"spaceAdmissible");
+  spaceNoChoice = atomTable.get(vm, u"spaceNoChoice");
+  spaceAltRange = atomTable.get(vm, u"spaceAltRange");
+  spaceMerged = atomTable.get(vm, u"spaceMerged");
+}
 
-#endif // __MOZART_H
+}
+
+#endif // __COREATOMS_H

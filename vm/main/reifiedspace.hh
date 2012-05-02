@@ -131,13 +131,13 @@ OpResult Implementation<ReifiedSpace>::askSpace(
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
-    return raise(vm, u"spaceAdmissible", self);
+    return raise(vm, vm->coreatoms.spaceAdmissible, self);
 
   UnstableNode statusVar(vm, *space->getStatusVar());
   OpResult res = OpResult::proceed();
 
-  if (matchesTuple(vm, res, statusVar, u"succeeded", wildcard())) {
-    result.make<Atom>(vm, u"succeeded");
+  if (matchesTuple(vm, res, statusVar, vm->coreatoms.succeeded, wildcard())) {
+    result.make<Atom>(vm, vm->coreatoms.succeeded);
   } else if (res.isProceed()) {
     result = std::move(statusVar);
   } else {
@@ -153,11 +153,11 @@ OpResult Implementation<ReifiedSpace>::askVerboseSpace(
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
-    return raise(vm, u"spaceAdmissible", self);
+    return raise(vm, vm->coreatoms.spaceAdmissible, self);
 
   if (space->isBlocked() && !space->isStable()) {
     UnstableNode statusVar(vm, *space->getStatusVar());
-    result = buildTuple(vm, u"suspended", statusVar);
+    result = buildTuple(vm, vm->coreatoms.suspended, statusVar);
 
     return OpResult::proceed();
   }
@@ -173,7 +173,7 @@ OpResult Implementation<ReifiedSpace>::mergeSpace(
   Space* space = getSpace();
 
   if (!space->isAdmissible(currentSpace))
-    return raise(vm, u"spaceAdmissible");
+    return raise(vm, vm->coreatoms.spaceAdmissible);
 
   if (space->getParent() != currentSpace) {
     // TODO This is not an error, but I don't know what to do with it yet
@@ -183,7 +183,7 @@ OpResult Implementation<ReifiedSpace>::mergeSpace(
   // Update status var
   RichNode statusVar = *space->getStatusVar();
   if (statusVar.isTransient()) {
-    UnstableNode atomMerged = Atom::build(vm, u"merged");
+    UnstableNode atomMerged = Atom::build(vm, vm->coreatoms.merged);
     DataflowVariable(statusVar).bind(vm, atomMerged);
   }
 
@@ -207,10 +207,10 @@ OpResult Implementation<ReifiedSpace>::commitSpace(
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
-    return raise(vm, u"spaceAdmissible");
+    return raise(vm, vm->coreatoms.spaceAdmissible);
 
   if (!space->hasDistributor())
-    return raise(vm, u"spaceNoChoice", self);
+    return raise(vm, vm->coreatoms.spaceNoChoice, self);
 
   OpResult res = OpResult::proceed();
   nativeint left, right;
@@ -218,7 +218,7 @@ OpResult Implementation<ReifiedSpace>::commitSpace(
   if (matches(vm, res, value, capture(left))) {
     int commitResult = space->commit(vm, left);
     if (commitResult < 0)
-      return raise(vm, u"spaceAltRange", self, left, -commitResult);
+      return raise(vm, vm->coreatoms.spaceAltRange, self, left, -commitResult);
 
     return OpResult::proceed();
   } else if (matchesSharp(vm, res, value, capture(left), capture(right))) {
@@ -234,7 +234,7 @@ OpResult Implementation<ReifiedSpace>::cloneSpace(
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
-    return raise(vm, u"spaceAdmissible");
+    return raise(vm, vm->coreatoms.spaceAdmissible);
 
   RichNode statusVar = *space->getStatusVar();
   if (statusVar.isTransient())
@@ -266,12 +266,12 @@ OpResult Implementation<DeletedSpace>::askSpace(
 
   switch (kind()) {
     case dsFailed: {
-      result.make<Atom>(vm, u"failed");
+      result.make<Atom>(vm, vm->coreatoms.failed);
       return OpResult::proceed();
     }
 
     case dsMerged: {
-      result.make<Atom>(vm, u"merged");
+      result.make<Atom>(vm, vm->coreatoms.merged);
       return OpResult::proceed();
     }
 
@@ -287,12 +287,12 @@ OpResult Implementation<DeletedSpace>::askVerboseSpace(
 
   switch (kind()) {
     case dsFailed: {
-      result.make<Atom>(vm, u"failed");
+      result.make<Atom>(vm, vm->coreatoms.failed);
       return OpResult::proceed();
     }
 
     case dsMerged: {
-      result.make<Atom>(vm, u"merged");
+      result.make<Atom>(vm, vm->coreatoms.merged);
       return OpResult::proceed();
     }
 
@@ -312,7 +312,7 @@ OpResult Implementation<DeletedSpace>::mergeSpace(
     }
 
     case dsMerged: {
-      return raise(vm, u"spaceMerged");
+      return raise(vm, vm->coreatoms.spaceMerged);
     }
 
     default: {
@@ -331,7 +331,7 @@ OpResult Implementation<DeletedSpace>::commitSpace(
     }
 
     case dsMerged: {
-      return raise(vm, u"spaceMerged");
+      return raise(vm, vm->coreatoms.spaceMerged);
     }
 
     default: {
@@ -351,7 +351,7 @@ OpResult Implementation<DeletedSpace>::cloneSpace(
     }
 
     case dsMerged: {
-      return raise(vm, u"spaceMerged");
+      return raise(vm, vm->coreatoms.spaceMerged);
     }
 
     default: {

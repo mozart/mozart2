@@ -73,13 +73,13 @@ OpResult Implementation<Atom>::width(Self self, VM vm,
 OpResult Implementation<Atom>::dot(Self self, VM vm, RichNode feature,
                                    UnstableNode& result) {
   // Always out of bounds
-  return raise(vm, u"illegalFieldSelection", self, feature);
+  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
 }
 
 OpResult Implementation<Atom>::dotNumber(Self self, VM vm, nativeint feature,
                                          UnstableNode& result) {
   // Always out of bounds
-  return raise(vm, u"illegalFieldSelection", self, feature);
+  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
 }
 
 OpResult Implementation<Atom>::waitOr(Self self, VM vm,

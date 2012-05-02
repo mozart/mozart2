@@ -38,6 +38,7 @@
 #include "space-decl.hh"
 
 #include "atomtable.hh"
+#include "coreatoms-decl.hh"
 
 namespace mozart {
 
@@ -107,6 +108,8 @@ public:
 
   inline
   Space* cloneSpace(Space* space);
+public:
+  CoreAtoms coreatoms;
 private:
   friend class GarbageCollector;
   friend class SpaceCloner;
@@ -119,6 +122,9 @@ private:
   void* getMemory(size_t size) {
     return memoryManager.getMemory(size);
   }
+
+  inline
+  void initialize();
 
   ThreadPool threadPool;
   AtomTable atomTable;

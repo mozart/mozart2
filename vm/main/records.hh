@@ -143,7 +143,7 @@ OpResult Implementation<Tuple>::dot(Self self, VM vm,
     return dotNumber(self, vm, featureIntValue, result);
   } else {
     MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, u"illegalFieldSelection", self, feature);
+    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
   }
 }
 
@@ -156,7 +156,7 @@ OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
     return OpResult::proceed();
   } else {
     // Out of bounds
-    return raise(vm, u"illegalFieldSelection", self, feature);
+    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
   }
 }
 
@@ -203,7 +203,7 @@ bool Implementation<Cons>::equals(Self self, VM vm, Self right,
 
 OpResult Implementation<Cons>::label(Self self, VM vm,
                                      UnstableNode& result) {
-  result = Atom::build(vm, u"|");
+  result = Atom::build(vm, vm->coreatoms.pipe);
   return OpResult::proceed();
 }
 
@@ -225,7 +225,7 @@ OpResult Implementation<Cons>::dot(Self self, VM vm,
     return dotNumber(self, vm, featureIntValue, result);
   } else {
     MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, u"illegalFieldSelection", self, feature);
+    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
   }
 }
 
@@ -245,7 +245,7 @@ OpResult Implementation<Cons>::dotNumber(Self self, VM vm,
 
     default: {
       // Out of bounds
-      return raise(vm, u"illegalFieldSelection", self, feature);
+      return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
     }
   }
 }
@@ -341,7 +341,7 @@ OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode record,
     }
   }
 
-  return raise(vm, u"illegalFieldSelection", record, feature);
+  return raise(vm, vm->coreatoms.illegalFieldSelection, record, feature);
 }
 
 void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
@@ -353,8 +353,7 @@ void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
 
 void Implementation<Arity>::printReprToStream(Self self, VM vm,
                                               std::ostream& out, int depth) {
-  UnstableNode label;
-  out << "<Arity/" << repr(vm, label, depth) << ">";
+  out << "<Arity/" << repr(vm, _tuple, depth) << ">";
 }
 
 ////////////

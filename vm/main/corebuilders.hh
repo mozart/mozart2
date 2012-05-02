@@ -172,6 +172,21 @@ UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
 }
 
 /**
+ * Build an Oz cons pair, with a head and a tail
+ * The head and tail can be in any form supported by trivialBuild().
+ * @param vm     Contextual VM
+ * @param head   Head of the cons
+ * @param tail   Tail of the cons
+ */
+template <class HT, class TT>
+inline
+UnstableNode buildCons(VM vm, HT&& head, TT&& tail) {
+  UnstableNode headNode = trivialBuild(vm, std::forward<HT>(head));
+  UnstableNode tailNode = trivialBuild(vm, std::forward<TT>(tail));
+  return Cons::build(vm, headNode, tailNode);
+}
+
+/**
  * Build a constant arity, with its label and features
  * The label and the features can be in any form supported by trivialBuild().
  * @param vm        Contextual VM
@@ -184,6 +199,23 @@ UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
   UnstableNode tuple = buildTuple(vm, std::forward<LT>(label),
                                   std::forward<Args>(args)...);
   return Arity::build(vm, tuple);
+}
+
+/**
+ * Build an Oz record inside a node, with its arity and fields
+ * The arity and the arguments can be in any form supported by trivialBuild().
+ * @param vm        Contextual VM
+ * @param arity     Arity of the record
+ * @param args...   Fields of the record
+ */
+template <class AT, class... Args>
+inline
+UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
+  UnstableNode arityNode = trivialBuild(vm, std::forward<AT>(arity));
+  UnstableNode result = Record::build(vm, sizeof...(args), arityNode);
+  staticInitElements<Record>(vm, RichNode(result).as<Record>(),
+                             std::forward<Args>(args)...);
+  return result;
 }
 
 }

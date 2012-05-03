@@ -206,10 +206,10 @@ object Cons extends ((Expression, Expression) => Record) {
 
 /** Synthetic-only expressions */
 
-case class CreateAbstraction(abstraction: Abstraction,
-    globals: List[Variable]) extends Expression {
+case class CreateAbstraction(arity: Expression, body: Expression,
+    globals: List[Expression]) extends Expression {
   def syntax(indent: String) = {
-    "{CreateAbstraction '%s' [%s]}" format (abstraction.fullName,
-        globals mkString " ")
+    "{CreateAbstraction %s %s [%s]}" format (
+        arity.syntax(indent), body.syntax(indent), globals mkString " ")
   }
 }

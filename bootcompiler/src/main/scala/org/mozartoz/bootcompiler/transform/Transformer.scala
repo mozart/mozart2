@@ -142,7 +142,9 @@ abstract class Transformer extends (Program => Unit) {
 
     // Synthetic-only
 
-    case CreateAbstraction(abstraction, globals) => expression
+    case CreateAbstraction(arity, body, globals) =>
+      treeCopy.CreateAbstraction(expression, transformExpr(arity),
+          transformExpr(body), globals map transformExpr)
   }
 
   def transformDecl(declaration: Declaration): Declaration = declaration match {

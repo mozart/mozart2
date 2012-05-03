@@ -127,3 +127,7 @@ object OzSharp extends (List[OzValue] => OzRecord) {
 case class OzBuiltin(builtin: symtab.Builtin) extends OzValue {
   def syntax() = builtin.toString()
 }
+
+case class OzCodeArea(codeArea: bytecode.CodeArea) extends OzValue {
+  def syntax() = codeArea.toString()
+}

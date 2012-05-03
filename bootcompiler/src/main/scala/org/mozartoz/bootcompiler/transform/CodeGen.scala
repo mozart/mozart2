@@ -134,11 +134,23 @@ object CodeGen extends Transformer with TreeDSL {
         dest.initArrayWith(fields map (_.value))
         dest === lhs.symbol
 
-      case ((lhs:Variable) === (rhs @ CreateAbstraction(abs, globals))) =>
+      case ((lhs:Variable) === (rhs @ CreateAbstraction(
+          Constant(OzInt(arity)), body:VarOrConst, globals))) =>
+
+        val globalCount = globals.size
         val dest = XReg(0)
 
-        val bodyReg = code.registerFor(abs.codeArea)
-        code += OpCreateAbstractionK(abs.arity, bodyReg, globals.size, dest)
+        code.registerFor(body) match {
+          case reg:XReg =>
+            code += OpCreateAbstractionX(arity.toInt, reg, globalCount, dest)
+          case reg:KReg =>
+            code += OpCreateAbstractionK(arity.toInt, reg, globalCount, dest)
+
+          case reg =>
+            XReg(1) := reg
+            code += OpCreateAbstractionX(arity.toInt, XReg(1),
+                globalCount, dest)
+        }
 
         dest.initArrayWith(globals)
         dest === lhs.symbol

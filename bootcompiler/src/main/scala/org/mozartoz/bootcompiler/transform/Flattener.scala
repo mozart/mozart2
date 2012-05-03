@@ -3,10 +3,11 @@ package transform
 
 import scala.collection.mutable._
 
+import oz._
 import ast._
 import symtab._
 
-object Flattener extends Transformer {
+object Flattener extends Transformer with TreeDSL {
   private var globalToFreeVar: Map[VariableSymbol, VariableSymbol] = _
 
   override def apply() {
@@ -76,7 +77,8 @@ object Flattener extends Transformer {
         g => transformExpr(g).asInstanceOf[Variable]
       }
 
-      treeCopy.CreateAbstraction(proc, abs, newGlobalArgs)
+      treeCopy.CreateAbstraction(proc, OzInt(abs.arity),
+          OzCodeArea(abs.codeArea), newGlobalArgs)
 
     case v @ FreeVar(name, sym) =>
       val global = abstraction.freeVarToGlobal(sym)

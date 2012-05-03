@@ -692,10 +692,11 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
 
     assert(jumpOffset >= 0);
 
-    bool equalsResult;
-    CHECK_OPRESULT_RETURN(equals(vm, value, pattern, equalsResult));
+    bool matchResult;
+    CHECK_OPRESULT_RETURN(mozart::patternMatch(
+      vm, value, pattern, xregs->getArray(), matchResult));
 
-    if (equalsResult) {
+    if (matchResult) {
       advancePC(2 + jumpOffset);
       return;
     }

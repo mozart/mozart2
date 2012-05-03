@@ -69,6 +69,9 @@ OpResult fullUnify(VM vm, RichNode left, RichNode right);
 
 OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result);
 
+OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
+                          StaticArray<UnstableNode> captures, bool& result);
+
 #ifndef MOZART_GENERATOR
 
 OpResult unify(VM vm, RichNode left, RichNode right) {
@@ -136,6 +139,11 @@ OpResult notEquals(VM vm, RichNode left, RichNode right, bool& result) {
     result = !result;
 
   return res;
+}
+
+OpResult patternMatch(VM vm, RichNode value, RichNode pattern,
+                      StaticArray<UnstableNode> captures, bool& result) {
+  return fullPatternMatch(vm, value, pattern, captures, result);
 }
 
 #endif // MOZART_GENERATOR

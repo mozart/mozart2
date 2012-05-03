@@ -41,10 +41,12 @@ typedef VMAllocatedList<NodeBackup> RebindTrail;
 struct StructuralDualWalk {
 public:
   enum Kind {
-    wkUnify, wkEquals
+    wkUnify, wkEquals, wkPatternMatch
   };
 public:
-  StructuralDualWalk(VM vm, Kind kind) : vm(vm), kind(kind) {}
+  StructuralDualWalk(VM vm, Kind kind,
+                     StaticArray<UnstableNode> captures = nullptr):
+    vm(vm), kind(kind), captures(captures) {}
 
   OpResult run(RichNode left, RichNode right);
 private:
@@ -57,17 +59,46 @@ private:
   inline
   void undoBindings(VM vm);
 
+  inline
+  void doCapture(VM vm, RichNode value, RichNode capture);
+
+  inline
+  void doConjunction(VM vm, RichNode value, RichNode conjunction);
+
   VM vm;
   Kind kind;
 
   WalkStack stack;
   RebindTrail rebindTrail;
   SuspendTrail suspendTrail;
+
+  StaticArray<UnstableNode> captures;
 };
 
 /////////////////
 // Entry point //
 /////////////////
+
+namespace internal {
+  inline
+  OpResult proceedFailToTrueFalse(OpResult res, bool& result) {
+    switch (res.kind()) {
+      case OpResult::orProceed: {
+        result = true;
+        return OpResult::proceed();
+      }
+
+      case OpResult::orFail: {
+        result = false;
+        return OpResult::proceed();
+      }
+
+      default: {
+        return res;
+      }
+    }
+  }
+}
 
 OpResult fullUnify(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkUnify);
@@ -77,22 +108,14 @@ OpResult fullUnify(VM vm, RichNode left, RichNode right) {
 OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkEquals);
   OpResult res = walk.run(left, right);
+  return internal::proceedFailToTrueFalse(res, result);
+}
 
-  switch (res.kind()) {
-    case OpResult::orProceed: {
-      result = true;
-      return OpResult::proceed();
-    }
-
-    case OpResult::orFail: {
-      result = false;
-      return OpResult::proceed();
-    }
-
-    default: {
-      return res;
-    }
-  }
+OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
+                          StaticArray<UnstableNode> captures, bool& result) {
+  StructuralDualWalk walk(vm, StructuralDualWalk::wkPatternMatch, captures);
+  OpResult res = walk.run(value, pattern);
+  return internal::proceedFailToTrueFalse(res, result);
 }
 
 ////////////////////
@@ -211,6 +234,9 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
    *
    * However, the above is *wrong* when in a subspace, because of speculative
    * bindings.
+   *
+   * The above would also be *wrong* when in wkPatternMatch mode. But in that
+   * mode we do not perform temporary bindings in the first place.
    */
   if (!vm->isOnTopLevel())
     undoBindings(vm);
@@ -229,6 +255,17 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
 
   StructuralBehavior leftBehavior = leftType->getStructuralBehavior();
   StructuralBehavior rightBehavior = rightType->getStructuralBehavior();
+
+  // Handle captures
+  if (kind == wkPatternMatch) {
+    if (rightType == PatMatCapture::type()) {
+      doCapture(vm, left, right);
+      return OpResult::proceed();
+    } else if (rightType == PatMatConjunction::type()) {
+      doConjunction(vm, left, right);
+      return OpResult::proceed();
+    }
+  }
 
   // One of them is a variable
   switch (kind) {
@@ -249,7 +286,8 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
       break;
     }
 
-    case wkEquals: {
+    case wkEquals:
+    case wkPatternMatch: {
       if (leftBehavior == sbVariable) {
         assert(leftType->isTransient());
         return OpResult::waitFor(vm, left);
@@ -275,7 +313,8 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
     case sbStructural: {
       bool success = StructuralEquatable(left).equals(vm, right, stack);
       if (success) {
-        rebind(vm, left, right);
+        if (kind != wkPatternMatch)
+          rebind(vm, left, right);
         return OpResult::proceed();
       } else {
         return OpResult::fail();
@@ -308,6 +347,22 @@ void StructuralDualWalk::undoBindings(VM vm) {
     rebindTrail.front().restore();
     rebindTrail.remove_front(vm);
   }
+}
+
+void StructuralDualWalk::doCapture(VM vm, RichNode value, RichNode capture) {
+  nativeint index = capture.as<PatMatCapture>().index();
+
+  if (index >= 0)
+    captures[(size_t) index].copy(vm, value);
+}
+
+void StructuralDualWalk::doConjunction(VM vm, RichNode value,
+                                       RichNode conjunction) {
+  auto conj = conjunction.as<PatMatConjunction>();
+  StableNode* stableValue = value.getStableRef(vm);
+
+  for (size_t i = conj.getCount(); i > 0; i--)
+    stack.push(vm, stableValue, conj.getElement(i));
 }
 
 }

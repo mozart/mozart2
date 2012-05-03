@@ -29,6 +29,7 @@
 
 #include "reference.hh"
 #include "gctypes.hh"
+#include "patmattypes.hh"
 
 #include "variables.hh"
 #include "boolean.hh"

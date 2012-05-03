@@ -41,6 +41,10 @@ OpResult equals(VM vm, RichNode left, RichNode right, bool& result);
 inline
 OpResult notEquals(VM vm, RichNode left, RichNode right, bool& result);
 
+inline
+OpResult patternMatch(VM vm, RichNode value, RichNode pattern,
+                      StaticArray<UnstableNode> captures, bool& result);
+
 /////////////////////
 // Data structures //
 /////////////////////

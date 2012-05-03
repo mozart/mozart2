@@ -38,5 +38,6 @@
 #include "reifiedspace-decl.hh"
 #include "reference-decl.hh"
 #include "gctypes-decl.hh"
+#include "patmattypes-decl.hh"
 
 #endif // __COREDATATYPES_DECL_H

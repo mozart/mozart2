@@ -109,6 +109,10 @@ public:
   UnstableNode& operator[](size_t index) {
     return _array[index];
   }
+
+  StaticArray<UnstableNode> getArray() {
+    return _array;
+  }
 private:
   void allocArray(VM vm, size_t size) {
     _array = vm->newStaticArray<UnstableNode>(size);

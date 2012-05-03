@@ -3,16 +3,21 @@ package transform
 
 import scala.collection.mutable.ListBuffer
 
+import oz._
 import ast._
 import symtab._
 
 object Namer extends Transformer with TransformUtils {
-  type Env = Map[String, Symbol]
+  type EnvValue = Symbol Either OzValue
+  type Env = Map[String, EnvValue]
 
   private var env: Env = _
 
   override def apply(prog: Program) {
-    withEnvironment(prog.builtins.topLevelEnvironment) {
+    val topLevelEnvironemnt: Env =
+      prog.builtins.topLevelEnvironment.mapValues(v => Right(v))
+
+    withEnvironment(topLevelEnvironemnt) {
       super.apply(prog)
     }
   }
@@ -26,7 +31,7 @@ object Namer extends Transformer with TransformUtils {
 
   private def withEnvironmentFromDecls[A](
       decls: List[Variable])(f: => A) = {
-    val newEnv = (decls map (decl => decl.name -> decl.symbol))
+    val newEnv = (decls map (decl => decl.name -> Left(decl.symbol)))
     withEnvironment(env ++ newEnv)(f)
   }
 
@@ -95,7 +100,10 @@ object Namer extends Transformer with TransformUtils {
       }
 
     case v @ Variable(name) =>
-      treeCopy.Variable(v, name) withSymbol env(name)
+      env(name) match {
+        case Left(symbol) => treeCopy.Variable(v, name) withSymbol symbol
+        case Right(value) => treeCopy.Constant(v, value)
+      }
 
     case EscapedVariable(v) =>
       transformExpr(v)

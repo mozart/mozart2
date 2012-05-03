@@ -43,6 +43,10 @@ trait TreeDSL {
   implicit def symbol2variable(symbol: Symbol) =
     Variable(symbol)
 
+  /** Operations on Builtins */
+  implicit def builtin2ops(builtin: Builtin) =
+    expression2ops(OzBuiltin(builtin))
+
   /** Apply operations on Expressions directly on Symbols */
   implicit def symbol2ops(symbol: Symbol) =
     expression2ops(symbol)

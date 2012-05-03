@@ -28,7 +28,6 @@ sealed abstract class Symbol(val name: String) {
   }
 
   val isDefined = true
-  val isBuiltin = false
   val isFormal = false
   val isCapture = false
   val isSynthetic = false
@@ -50,25 +49,6 @@ class VariableSymbol(name: String, formal: Boolean = false,
   def copyAsGlobal() =
     new VariableSymbol(name, formal = false, capture = false,
         synthetic = true, global = true)
-}
-
-object BuiltinSymbol {
-  object ParamKind extends Enumeration {
-    val In, Out = Value
-  }
-
-  type ParamKind = ParamKind.Value
-}
-
-class BuiltinSymbol(name: String, val ccFullName: String,
-    val paramKinds: List[BuiltinSymbol.ParamKind],
-    val inlineAs: Option[Int]) extends Symbol(name) {
-  override val isBuiltin = true
-
-  val arity = paramKinds.size
-
-  val inlineable = inlineAs.isDefined
-  def inlineOpCode = inlineAs.get
 }
 
 object NoSymbol extends Symbol("<NoSymbol>") {

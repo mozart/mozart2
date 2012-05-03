@@ -12,9 +12,6 @@ object CodeGen extends Transformer with TreeDSL {
   private implicit def symbol2reg(symbol: VariableSymbol) =
     code.registerFor(symbol)
 
-  private implicit def symbol2reg(symbol: BuiltinSymbol) =
-    code.registerFor(symbol)
-
   private implicit def symbol2reg(symbol: Symbol) =
     code.registerFor(symbol)
 
@@ -212,6 +209,39 @@ object CodeGen extends Transformer with TreeDSL {
               totalSize - jumpOffsets(index))
         }
 
+      case CallStatement(Constant(callable @ OzBuiltin(builtin)), args) =>
+        val argCount = args.size
+
+        if (argCount != builtin.arity)
+          throw new IllegalArgumentException(
+              "Wrong arity for builtin application of %s" format builtin)
+
+        val paramKinds = builtin.paramKinds
+        val argsWithKindAndIndex = args.zip(paramKinds).zipWithIndex
+
+        for {
+          ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
+          if kind == Builtin.ParamKind.In
+        } {
+          XReg(index) := arg
+        }
+
+        val argsRegs = (0 until argCount).toList map XReg
+
+        if (builtin.inlineable)
+          code += OpCallBuiltinInline(builtin.inlineOpCode, argsRegs)
+        else {
+          val builtinReg = code.registerFor(callable)
+          code += OpCallBuiltin(builtinReg, argCount, argsRegs)
+        }
+
+        for {
+          ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
+          if kind == Builtin.ParamKind.Out
+        } {
+          XReg(index) === arg
+        }
+
       case CallStatement(callable:Variable, args) =>
         val argCount = args.size
 
@@ -227,37 +257,6 @@ object CodeGen extends Transformer with TreeDSL {
                 val reg = XReg(argCount)
                 reg := symbol
                 code += OpCallX(reg, argCount)
-            }
-
-          case symbol:BuiltinSymbol =>
-            if (argCount != symbol.arity)
-              throw new IllegalArgumentException(
-                  "Wrong arity for builtin application of %s" format symbol)
-
-            val paramKinds = symbol.paramKinds
-            val argsWithKindAndIndex = args.zip(paramKinds).zipWithIndex
-
-            for {
-              ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
-              if kind == BuiltinSymbol.ParamKind.In
-            } {
-              XReg(index) := arg
-            }
-
-            val argsRegs = (0 until argCount).toList map XReg
-
-            if (symbol.inlineable)
-              code += OpCallBuiltinInline(symbol.inlineOpCode, argsRegs)
-            else {
-              val builtinReg = code.registerFor(symbol)
-              code += OpCallBuiltin(builtinReg, argCount, argsRegs)
-            }
-
-            for {
-              ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
-              if kind == BuiltinSymbol.ParamKind.Out
-            } {
-              XReg(index) === arg
             }
         }
     }

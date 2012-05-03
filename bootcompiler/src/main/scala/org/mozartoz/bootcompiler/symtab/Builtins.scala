@@ -1,11 +1,13 @@
 package org.mozartoz.bootcompiler
 package symtab
 
+import oz._
+
 import scala.collection.mutable.HashMap
 
 class Builtins {
-  val builtinByName = new HashMap[String, BuiltinSymbol]
-  val baseEnvironment = new HashMap[String, BuiltinSymbol]
+  val builtinByName = new HashMap[String, Builtin]
+  val baseEnvironment = new HashMap[String, OzValue]
 
   lazy val topLevelEnvironment = Map.empty ++ baseEnvironment
 

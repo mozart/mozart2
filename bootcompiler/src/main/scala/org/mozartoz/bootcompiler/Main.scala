@@ -7,6 +7,7 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.input._
 import scala.util.parsing.json._
 
+import oz._
 import parser._
 import ast._
 import transform._
@@ -127,14 +128,14 @@ object Main {
         M(param) <- params
         S(paramKind) = param("kind")
       } yield {
-        BuiltinSymbol.ParamKind.withName(paramKind)
+        Builtin.ParamKind.withName(paramKind)
       }
 
       val fullName = modName + "." + (
           if (biName.charAt(0).isLetter) biName
           else "'" + biName + "'")
 
-      val builtinSym = new BuiltinSymbol(
+      val builtinSym = new Builtin(
           fullName, biFullCppName, paramKinds, inlineAs)
 
       prog.builtins.builtinByName.put(fullName, builtinSym)
@@ -150,7 +151,7 @@ object Main {
       line match {
         case UsefulLine(key, fullName) =>
           val builtin = prog.builtins.builtinByName(fullName)
-          prog.builtins.baseEnvironment.put(key, builtin)
+          prog.builtins.baseEnvironment.put(key, OzBuiltin(builtin))
 
         case _ => // ignore
       }

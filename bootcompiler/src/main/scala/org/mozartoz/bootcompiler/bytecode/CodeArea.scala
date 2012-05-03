@@ -38,9 +38,6 @@ class CodeArea(val abstraction: Abstraction) {
   def registerFor(symbol: VariableSymbol): YOrGReg =
     innerRegisterFor(symbol).asInstanceOf[YOrGReg]
 
-  def registerFor(symbol: BuiltinSymbol): KReg =
-    innerRegisterFor(symbol).asInstanceOf[KReg]
-
   def registerFor(symbol: Symbol) =
     innerRegisterFor(symbol)
 
@@ -62,7 +59,7 @@ class CodeArea(val abstraction: Abstraction) {
           if (sym.isGlobal) GReg(sym.owner.globals.indexOf(sym))
           else YCounter.next()
 
-        case _:BuiltinSymbol | _:CodeArea | _:OzValue =>
+        case _:CodeArea | _:OzValue =>
           constants += key
           KReg(constants.size - 1)
       }
@@ -175,7 +172,7 @@ class CodeArea(val abstraction: Abstraction) {
     import Output._
 
     constant match {
-      case builtin:BuiltinSymbol =>
+      case OzBuiltin(builtin) =>
         out << "::%s::builtin()" % builtin.ccFullName
 
       case codeArea:CodeArea =>

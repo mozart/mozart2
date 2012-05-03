@@ -123,3 +123,7 @@ object OzSharp extends (List[OzValue] => OzRecord) {
     case _ => None
   }
 }
+
+case class OzBuiltin(builtin: symtab.Builtin) extends OzValue {
+  def syntax() = builtin.toString()
+}

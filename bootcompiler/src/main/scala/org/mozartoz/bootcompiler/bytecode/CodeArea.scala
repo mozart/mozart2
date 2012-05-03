@@ -11,7 +11,12 @@ import util._
 class CodeArea(val abstraction: Abstraction) {
   val opCodes = new ArrayBuffer[OpCode]
 
-  private val registerAllocs = new HashMap[Any, Register]
+  private val symbolRegisterAllocs = new HashMap[Symbol, YOrGReg]
+  private val constantRegisterAllocs = new HashMap[OzValue, KReg]
+
+  private val YCounter = new RegCounter(YReg)
+
+  val constants = new ArrayBuffer[OzValue]
 
   def isDefined = !opCodes.isEmpty
 
@@ -31,36 +36,26 @@ class CodeArea(val abstraction: Abstraction) {
     }
   }
 
-  private val YCounter = new RegCounter(YReg)
-
-  val constants = new ArrayBuffer[Any]
-
-  def registerFor(symbol: VariableSymbol): YOrGReg =
-    innerRegisterFor(symbol).asInstanceOf[YOrGReg]
-
-  def registerFor(symbol: Symbol) =
-    innerRegisterFor(symbol)
-
-  def registerFor(constant: OzValue) =
-    innerRegisterFor(constant).asInstanceOf[KReg]
-
-  def registerFor(expr: VarOrConst): Register = expr match {
-    case variable:Variable => registerFor(variable.symbol)
-    case constant:Constant => registerFor(constant.value)
+  def registerFor(symbol: VariableSymbol): YOrGReg = {
+    symbolRegisterAllocs.getOrElseUpdate(symbol, {
+      if (symbol.isGlobal) GReg(symbol.owner.globals.indexOf(symbol))
+      else YCounter.next()
+    })
   }
 
-  private def innerRegisterFor(key: Any) = {
-    registerAllocs.getOrElseUpdate(key, {
-      key match {
-        case sym:VariableSymbol =>
-          if (sym.isGlobal) GReg(sym.owner.globals.indexOf(sym))
-          else YCounter.next()
-
-        case _:OzValue =>
-          constants += key
-          KReg(constants.size - 1)
-      }
+  def registerFor(value: OzValue): KReg = {
+    constantRegisterAllocs.getOrElseUpdate(value, {
+      constants += value
+      KReg(constants.size - 1)
     })
+  }
+
+  def registerFor(expr: VarOrConst): Register = expr match {
+    case variable:Variable =>
+      registerFor(variable.symbol.asInstanceOf[VariableSymbol])
+
+    case constant:Constant =>
+      registerFor(constant.value)
   }
 
   def += (opCode: OpCode) =
@@ -147,7 +142,7 @@ class CodeArea(val abstraction: Abstraction) {
        |""".stripMargin
   }
 
-  private def produceCCInitConstant(out: Output, constant: Any) {
+  private def produceCCInitConstant(out: Output, constant: OzValue) {
     import Output._
 
     out << "  temp = ";
@@ -165,7 +160,7 @@ class CodeArea(val abstraction: Abstraction) {
     out << ";\n"
   }
 
-  private def produceCCForConstant(out: Output, constant: Any) {
+  private def produceCCForConstant(out: Output, constant: OzValue) {
     import Output._
 
     constant match {

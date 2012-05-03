@@ -1,6 +1,7 @@
 package org.mozartoz.bootcompiler
 package transform
 
+import oz._
 import ast._
 import symtab._
 
@@ -47,11 +48,11 @@ class TreeCopier {
   // Complex expressions
 
   def ProcExpression(tree: Node, name: String, args: List[FormalArg],
-      body: Statement, flags: List[Atom]) =
+      body: Statement, flags: List[String]) =
     new ProcExpression(name, args, body, flags).copyAttrs(tree)
 
   def FunExpression(tree: Node, name: String, args: List[FormalArg],
-      body: Expression, flags: List[Atom]) =
+      body: Expression, flags: List[String]) =
     new FunExpression(name, args, body, flags).copyAttrs(tree)
 
   def CallExpression(tree: Node, callable: Expression, args: List[Expression]) =
@@ -95,20 +96,8 @@ class TreeCopier {
   def UnboundExpression(tree: Node) =
     new UnboundExpression().copyAttrs(tree)
 
-  def IntLiteral(tree: Node, value: Long) =
-    new IntLiteral(value).copyAttrs(tree)
-
-  def Atom(tree: Node, value: String) =
-    new Atom(value).copyAttrs(tree)
-
-  def True(tree: Node) =
-    new True().copyAttrs(tree)
-
-  def False(tree: Node) =
-    new False().copyAttrs(tree)
-
-  def UnitVal(tree: Node) =
-    new UnitVal().copyAttrs(tree)
+  def Constant(tree: Node, value: OzValue) =
+    new Constant(value).copyAttrs(tree)
 
   // Records
 
@@ -117,13 +106,6 @@ class TreeCopier {
 
   def Record(tree: Node, label: Expression, fields: List[RecordField]) =
     new Record(label, fields).copyAttrs(tree)
-
-  def ConstantRecordField(tree: Node, feature: Constant, value: Constant) =
-    new ConstantRecordField(feature, value).copyAttrs(tree)
-
-  def ConstantRecord(tree: Node, label: Constant,
-      fields: List[ConstantRecordField]) =
-    new ConstantRecord(label, fields).copyAttrs(tree)
 
   // Match clauses
 

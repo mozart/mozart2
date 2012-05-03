@@ -3,6 +3,7 @@ package bytecode
 
 import scala.collection.mutable._
 
+import oz._
 import ast._
 import symtab._
 import util._
@@ -46,15 +47,12 @@ class CodeArea(val abstraction: Abstraction) {
   def registerFor(codeArea: CodeArea) =
     innerRegisterFor(codeArea).asInstanceOf[KReg]
 
-  def registerFor(constant: Constant) =
+  def registerFor(constant: OzValue) =
     innerRegisterFor(constant).asInstanceOf[KReg]
-
-  def registerFor(arity: ConstantArity) =
-    innerRegisterFor(arity).asInstanceOf[KReg]
 
   def registerFor(expr: VarOrConst): Register = expr match {
     case variable:Variable => registerFor(variable.symbol)
-    case constant:Constant => registerFor(constant)
+    case constant:Constant => registerFor(constant.value)
   }
 
   private def innerRegisterFor(key: Any) = {
@@ -64,7 +62,7 @@ class CodeArea(val abstraction: Abstraction) {
           if (sym.isGlobal) GReg(sym.owner.globals.indexOf(sym))
           else YCounter.next()
 
-        case _:BuiltinSymbol | _:CodeArea | _:Constant | _:ConstantArity =>
+        case _:BuiltinSymbol | _:CodeArea | _:OzValue =>
           constants += key
           KReg(constants.size - 1)
       }
@@ -161,7 +159,7 @@ class CodeArea(val abstraction: Abstraction) {
     out << "  temp = ";
 
     constant match {
-      case _:ConstantArity | _:ConstantRecord =>
+      case _:OzArity | _:OzRecord =>
         produceCCForConstant(out, constant)
 
       case _ =>
@@ -183,13 +181,13 @@ class CodeArea(val abstraction: Abstraction) {
       case codeArea:CodeArea =>
         out << "*%s" % codeArea.ccCodeArea
 
-      case IntLiteral(value) =>
+      case OzInt(value) =>
         out << value.toString()
 
-      case FloatLiteral(value) =>
+      case OzFloat(value) =>
         out << value.toString()
 
-      case Atom(value) =>
+      case OzAtom(value) =>
         out << "u\"%s\"" % value
 
       case True() =>
@@ -201,7 +199,7 @@ class CodeArea(val abstraction: Abstraction) {
       case UnitVal() =>
         out << "unit"
 
-      case ConstantArity(label, features) =>
+      case OzArity(label, features) =>
         out << "buildArity(vm, "
         produceCCForConstant(out, label)
 
@@ -212,14 +210,14 @@ class CodeArea(val abstraction: Abstraction) {
 
         out << ")"
 
-      case ConstantCons(head, tail) =>
+      case OzCons(head, tail) =>
         out << "buildCons(vm, "
         produceCCForConstant(out, head)
         out << ", "
         produceCCForConstant(out, tail)
         out << ")"
 
-      case ConstantTuple(label, fields) =>
+      case OzTuple(label, fields) =>
         out << "buildTuple(vm, "
         produceCCForConstant(out, label)
 
@@ -230,13 +228,11 @@ class CodeArea(val abstraction: Abstraction) {
 
         out << ")"
 
-      case ConstantRecord(label, fields) =>
-        val arity = ConstantArity(label, fields map (_.feature))
-
+      case record @ OzRecord(label, fields) =>
         out << "buildRecord(vm, "
-        produceCCForConstant(out, arity)
+        produceCCForConstant(out, record.arity)
 
-        for (ConstantRecordField(feature, value) <- fields) {
+        for (OzRecordField(feature, value) <- fields) {
           out << ", "
           produceCCForConstant(out, value)
         }

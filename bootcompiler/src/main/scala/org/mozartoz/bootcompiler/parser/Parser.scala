@@ -5,6 +5,7 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input._
 
+import oz._
 import syntactical._
 import ast._
 
@@ -122,7 +123,7 @@ class OzParser extends OzTokenParsers with PackratParsers
       case flags ~ args ~ body => FunExpression("", args, body, flags)
     }
 
-  lazy val procFlags = rep(atom)
+  lazy val procFlags = rep(atom ^^ (_.value))
 
   lazy val formalArgs = rep(formalArg)
 
@@ -205,7 +206,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val elseExpressionCase: PackratParser[Expression] = (
       elseExpression
-    | success(Atom("matchError"))
+    | success(Constant(OzAtom("matchError")))
   )
 
   // Thread
@@ -267,7 +268,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   private def cons(head: Expression, tail: Expression) =
-    Record(Atom("|"), List(head, tail))
+    Record(Constant(OzAtom("|")), List(head, tail))
 
   // X#Y#...#Z   (mixin)
   lazy val expression7: PackratParser[Expression] = (
@@ -276,7 +277,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   private def sharp(first: Expression, rest: List[Expression]) =
-    Record(Atom("#"), (first :: rest) map expr2recordField)
+    Record(Constant(OzAtom("#")), (first :: rest) map expr2recordField)
 
   // X+Y   X-Y   (left-associative)
   lazy val expression8: PackratParser[Expression] = (
@@ -329,29 +330,29 @@ class OzParser extends OzTokenParsers with PackratParsers
       variable
     | "!!" ~> variable ^^ EscapedVariable
     | unboundExpression
-    | integerConst
-    | floatConst
-    | atomLike
+    | integerConst ^^ Constant
+    | floatConst ^^ Constant
+    | atomLike ^^ Constant
   )
 
   lazy val unboundExpression: PackratParser[UnboundExpression] =
     "_" ^^^ UnboundExpression()
 
-  lazy val integerConst: PackratParser[IntLiteral] =
-    numericLit ^^ (chars => IntLiteral(chars.toInt))
+  lazy val integerConst: PackratParser[OzInt] =
+    numericLit ^^ (chars => OzInt(chars.toInt))
 
-  lazy val floatConst: PackratParser[FloatLiteral] =
-    floatLit ^^ (chars => FloatLiteral(chars.toInt))
+  lazy val floatConst: PackratParser[OzFloat] =
+    floatLit ^^ (chars => OzFloat(chars.toInt))
 
-  lazy val atomLike: PackratParser[AtomLike] = (
+  lazy val atomLike: PackratParser[OzLiteral] = (
       "true" ^^^ True()
     | "false" ^^^ False()
     | "unit" ^^^ UnitVal()
     | atom
   )
 
-  lazy val atom: PackratParser[Atom] =
-    atomLit ^^ (chars => Atom(chars))
+  lazy val atom: PackratParser[OzAtom] =
+    atomLit ^^ (chars => OzAtom(chars))
 
   lazy val variable: PackratParser[Variable] =
     ident ^^ (chars => Variable(chars))
@@ -362,7 +363,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     recordLabel ~ recordFields <~ ")" ^^ Record
 
   lazy val recordLabel: PackratParser[Expression] = (
-      atomLitLabel ^^ Atom
+      atomLitLabel ^^ (chars => Constant(OzAtom(chars)))
     | identLabel ^^ Variable
   )
 
@@ -380,6 +381,9 @@ class OzParser extends OzTokenParsers with PackratParsers
     "[" ~> (expression+) <~ "]" ^^ exprListToListExpr
 
   def exprListToListExpr(elems: List[Expression]): Expression =
-    if (elems.isEmpty) Atom("nil")
-    else Record(Atom("|"), List(elems.head, exprListToListExpr(elems.tail)))
+    if (elems.isEmpty) Constant(OzAtom("nil"))
+    else {
+      Record(Constant(OzAtom("|")),
+          List(elems.head, exprListToListExpr(elems.tail)))
+    }
 }

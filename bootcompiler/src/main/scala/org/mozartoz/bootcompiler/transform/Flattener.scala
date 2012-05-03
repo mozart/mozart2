@@ -58,7 +58,7 @@ object Flattener extends Transformer {
       for (v @ Variable(_) <- args)
         abs.acquire(v.symbol.asInstanceOf[VariableSymbol])
 
-      abs.flags ++= flags map (_.value)
+      abs.flags ++= flags
 
       val (newBody, globalArgs) = withAbstraction(abs) {
         val newBody = transformStat(body)

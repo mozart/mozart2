@@ -1,6 +1,7 @@
 package org.mozartoz.bootcompiler
 package ast
 
+import oz._
 import symtab._
 import transform._
 
@@ -34,6 +35,10 @@ trait TreeDSL {
       treeCopy.CallExpression(self, self, args.toList)
   }
 
+  /** Wrap an Oz value inside a Constant */
+  implicit def value2constant(value: OzValue) =
+    Constant(value)
+
   /** Convert a Symbol into a Variable */
   implicit def symbol2variable(symbol: Symbol) =
     Variable(symbol)
@@ -65,7 +70,7 @@ trait TreeDSL {
 
   /** Construct ProcExpressions */
   def PROC(name: String, args: List[FormalArg],
-      flags: List[Atom] = Nil)(body: Statement) = {
+      flags: List[String] = Nil)(body: Statement) = {
     treeCopy.ProcExpression(body, name, args, body, flags)
   }
 

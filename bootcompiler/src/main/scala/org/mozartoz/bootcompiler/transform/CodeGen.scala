@@ -1,6 +1,7 @@
 package org.mozartoz.bootcompiler
 package transform
 
+import oz._
 import ast._
 import bytecode._
 import symtab._
@@ -101,7 +102,7 @@ object CodeGen extends Transformer with TreeDSL {
         XReg(0) === rhs.symbol
 
       case ((lhs:Variable) === (rhs:Constant)) =>
-        XReg(0) := code.registerFor(rhs)
+        XReg(0) := code.registerFor(rhs.value)
         XReg(0) === lhs.symbol
 
       case ((lhs:Variable) === (rhs @ Record(_, fields))) if rhs.isCons =>
@@ -113,31 +114,23 @@ object CodeGen extends Transformer with TreeDSL {
         code += OpCreateConsXX(XReg(0), XReg(1), XReg(2))
         XReg(2) === lhs.symbol
 
-      case ((lhs:Variable) === (rhs @ Record(label:VarOrConst, fields)))
+      case ((lhs:Variable) === (rhs @ Record(Constant(label), fields)))
       if rhs.isTuple =>
+        val labelReg = code.registerFor(label)
         val fieldCount = fields.size
         val dest = XReg(0)
 
-        code.registerFor(label) match {
-          case reg:XReg =>
-            code += OpCreateTupleX(reg, fieldCount, dest)
-          case reg:KReg => reg
-            code += OpCreateTupleK(reg, fieldCount, dest)
-          case reg =>
-            XReg(1) := reg
-            code += OpCreateTupleX(XReg(1), fieldCount, dest)
-        }
+        code += OpCreateTupleK(labelReg, fieldCount, dest)
 
         dest.initArrayWith(fields map (_.value))
         dest === lhs.symbol
 
-      case ((lhs:Variable) === (rhs @ Record(label:Constant, fields)))
+      case ((lhs:Variable) === (rhs @ Record(_, fields)))
       if rhs.hasConstantArity =>
         val fieldCount = fields.size
         val dest = XReg(0)
 
-        val arityReg = code.registerFor(
-            ConstantArity(label, fields map (_.feature.asInstanceOf[Constant])))
+        val arityReg = code.registerFor(rhs.getConstantArity)
 
         code += OpCreateRecordK(arityReg, fieldCount, dest)
 
@@ -181,7 +174,7 @@ object CodeGen extends Transformer with TreeDSL {
         val matchHole = code.addHole()
 
         val clauseCount = clauses.size
-        val patterns = new Array[Constant](clauseCount)
+        val patterns = new Array[OzValue](clauseCount)
         val branchToAfterHoles = new Array[CodeArea#Hole](clauseCount+1)
         val jumpOffsets = new Array[Int](clauseCount+1)
 
@@ -193,9 +186,9 @@ object CodeGen extends Transformer with TreeDSL {
 
         for ((clause, index) <- clauses.zipWithIndex) {
           // Pattern, which must be constant at this point
-          val pattern = clause.pattern.asInstanceOf[Constant]
-          patterns(index) = ConstantSharp(List(
-              pattern, IntLiteral(jumpOffsets(index))))
+          val Constant(pattern) = clause.pattern
+          patterns(index) = OzSharp(List(
+              pattern, OzInt(jumpOffsets(index))))
 
           // The guard must be empty at this point
           assert(clause.guard.isEmpty)
@@ -209,7 +202,7 @@ object CodeGen extends Transformer with TreeDSL {
         }
 
         val totalSize = jumpOffsets(clauseCount)
-        val patternsInfo = ConstantSharp(patterns.toList)
+        val patternsInfo = OzSharp(patterns.toList)
 
         matchHole fillWith OpPatternMatch(
             XReg(0), code.registerFor(patternsInfo))

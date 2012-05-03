@@ -1,6 +1,7 @@
 package org.mozartoz.bootcompiler
 package transform
 
+import oz._
 import ast._
 import symtab._
 
@@ -32,10 +33,10 @@ object Desugar extends Transformer with TreeDSL {
         transformStat(THREAD (temp === body)) ~> temp
       }
 
-    case BinaryOp(lhs, "+", IntLiteral(1)) =>
+    case BinaryOp(lhs, "+", Constant(OzInt(1))) =>
       transformExpr(builtins.plus1 callExpr (lhs))
 
-    case BinaryOp(lhs, "-", IntLiteral(1)) =>
+    case BinaryOp(lhs, "-", Constant(OzInt(1))) =>
       transformExpr(builtins.minus1 callExpr (lhs))
 
     case UnaryOp(op, arg) =>
@@ -66,12 +67,15 @@ object Desugar extends Transformer with TreeDSL {
       record.label
     } else {
       val sortedFields = fieldsNoAuto.sortWith { (leftField, rightField) =>
-        val left = leftField.feature.asInstanceOf[Constant]
-        val right = rightField.feature.asInstanceOf[Constant]
-        featureLessThan(left, right)
+        val Constant(left:OzFeature) = leftField.feature
+        val Constant(right:OzFeature) = rightField.feature
+        left feature_< right
       }
 
-      treeCopy.Record(record, record.label, sortedFields)
+      val newRecord = treeCopy.Record(record, record.label, sortedFields)
+
+      if (newRecord.isConstant) newRecord.getAsConstant
+      else newRecord
     }
   }
 
@@ -82,13 +86,13 @@ object Desugar extends Transformer with TreeDSL {
     } else if (fields forall (_.hasAutoFeature)) {
       // Next-to-trivial case: all features are auto
       for ((field, index) <- fields.zipWithIndex)
-        yield treeCopy.RecordField(field, IntLiteral(index+1), field.value)
+        yield treeCopy.RecordField(field, OzInt(index+1), field.value)
     } else {
       // Complex case: mix of auto and non-auto features
 
       // Collect used integer features
       val usedFeatures = (for {
-        RecordField(IntLiteral(feature), _) <- fields
+        RecordField(Constant(OzInt(feature)), _) <- fields
       } yield feature).toSet
 
       // Actual filling
@@ -100,7 +104,7 @@ object Desugar extends Transformer with TreeDSL {
             nextFeature += 1
           nextFeature += 1
 
-          val newFeature = treeCopy.IntLiteral(feature, nextFeature-1)
+          val newFeature = treeCopy.Constant(feature, OzInt(nextFeature-1))
           treeCopy.RecordField(field, newFeature, value)
         } else {
           field
@@ -118,28 +122,10 @@ object Desugar extends Transformer with TreeDSL {
 
     val fieldsOfTheTuple =
       for ((elem, index) <- elementsOfTheTuple.zipWithIndex)
-        yield treeCopy.RecordField(elem, IntLiteral(index+1), elem)
+        yield treeCopy.RecordField(elem, OzInt(index+1), elem)
 
-    val tupleWithFields = treeCopy.Record(record, Atom("#"), fieldsOfTheTuple)
+    val tupleWithFields = treeCopy.Record(record, OzAtom("#"), fieldsOfTheTuple)
 
     builtins.makeRecordDynamic callExpr (label, tupleWithFields)
-  }
-
-  private def featureLessThan(left: Constant, right: Constant): Boolean = {
-    (left, right) match {
-      case (IntLiteral(l), IntLiteral(r)) => l < r
-      case (Atom(l), Atom(r)) => l.compareTo(r) < 0
-      case (l:BuiltinName, r:BuiltinName) => l.tag.compareTo(r.tag) < 0
-
-      case _ => featureTypeRank(left) < featureTypeRank(right)
-    }
-  }
-
-  private def featureTypeRank(feature: Constant): Int = {
-    (feature: @unchecked) match {
-      case _:IntLiteral => 1
-      case _:Atom => 2
-      case _:BuiltinName => 3
-    }
   }
 }

@@ -27,10 +27,10 @@ trait ProcFunExpression extends StatOrExpr {
 
   protected val args: List[FormalArg]
   protected val body: StatOrExpr
-  protected val flags: List[Atom]
+  protected val flags: List[String]
 
   def syntax(indent: String) = {
-    val flagsSyntax = flags.foldLeft("") { _ + " " + _.syntax(indent) }
+    val flagsSyntax = flags.foldLeft("") { _ + " " + _ }
     val argsSyntax = args.foldLeft("") { _ + " " + _.syntax(indent) }
 
     val header0 = keyword + flagsSyntax + " {$"

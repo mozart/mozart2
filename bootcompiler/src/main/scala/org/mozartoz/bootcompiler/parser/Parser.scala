@@ -6,7 +6,6 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input._
 
 import oz._
-import syntactical._
 import ast._
 
 /**

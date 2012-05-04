@@ -1,13 +1,10 @@
-package org.mozartoz.bootcompiler.parser
-package syntactical
+package org.mozartoz.bootcompiler
+package parser
 
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.token._
 
 import collection.mutable.HashMap
-
-import token._
-import lexical._
 
 trait OzTokenParsers extends StdTokenParsers {
   type Tokens = OzTokens

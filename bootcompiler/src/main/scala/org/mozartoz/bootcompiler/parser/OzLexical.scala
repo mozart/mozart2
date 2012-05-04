@@ -1,11 +1,9 @@
-package org.mozartoz.bootcompiler.parser
-package lexical
+package org.mozartoz.bootcompiler
+package parser
 
 import scala.util.parsing.input.CharArrayReader.EofCh
 import scala.util.parsing.combinator.lexical._
 import collection.mutable.HashSet
-
-import token._
 
 class OzLexical extends Lexical with OzTokens {
   // see `token' in `Scanners'

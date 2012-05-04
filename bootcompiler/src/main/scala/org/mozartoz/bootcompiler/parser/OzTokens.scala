@@ -1,5 +1,5 @@
-package org.mozartoz.bootcompiler.parser
-package token
+package org.mozartoz.bootcompiler
+package parser
 
 import scala.util.parsing.combinator.token._
 

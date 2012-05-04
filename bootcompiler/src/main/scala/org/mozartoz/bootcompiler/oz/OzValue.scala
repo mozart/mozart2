@@ -131,3 +131,11 @@ case class OzBuiltin(builtin: symtab.Builtin) extends OzValue {
 case class OzCodeArea(codeArea: bytecode.CodeArea) extends OzValue {
   def syntax() = codeArea.toString()
 }
+
+case class OzPatMatWildcard() extends OzValue {
+  def syntax() = "_"
+}
+
+case class OzPatMatCapture(variable: symtab.VariableSymbol) extends OzValue {
+  def syntax() = variable.toString()
+}

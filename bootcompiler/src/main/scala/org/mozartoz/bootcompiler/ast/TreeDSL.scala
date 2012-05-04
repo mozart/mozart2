@@ -106,4 +106,15 @@ trait TreeDSL {
     val temp = Symbol.newSynthetic()
     LOCAL (temp) IN expression(temp)
   }
+
+  def statementWithValIn[A >: Variable <: Expression](value: Expression)(
+      statement: A => Statement)(implicit m: Manifest[A]) = {
+    if (m.erasure.isInstance(value)) {
+      statement(value.asInstanceOf[A])
+    } else {
+      statementWithTemp { temp =>
+        (temp === value) ~ statement(temp)
+      }
+    }
+  }
 }

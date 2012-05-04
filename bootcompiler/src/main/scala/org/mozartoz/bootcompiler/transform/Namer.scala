@@ -46,13 +46,26 @@ object Namer extends Transformer with TransformUtils {
       }
 
     case matchStat @ MatchStatement(value, clauses, elseStat) =>
-      val decls = extractDecls(clauses)
-
-      withEnvironmentFromDecls(decls) {
-        val transformedStat = super.transformStat(matchStat)
-        if (decls.isEmpty) transformedStat
-        else treeCopy.LocalStatement(matchStat, decls, transformedStat)
+      val declsBuilder = new ListBuffer[Variable]
+      val newClauses = {
+        for {
+          clause @ MatchStatementClause(pattern, guard, body) <- clauses
+          (patternDecls, newPattern) = processPattern(pattern)
+        } yield {
+          declsBuilder ++= patternDecls
+          withEnvironmentFromDecls(patternDecls) {
+            transformClauseStat(
+                treeCopy.MatchStatementClause(clause, newPattern, guard, body))
+          }
+        }
       }
+      val decls = declsBuilder.toList
+
+      val newMatchStat = treeCopy.MatchStatement(
+          matchStat, transformExpr(value), newClauses, transformStat(elseStat))
+
+      if (decls.isEmpty) newMatchStat
+      else treeCopy.LocalStatement(newMatchStat, decls, newMatchStat)
 
     case _ =>
       super.transformStat(statement)
@@ -69,13 +82,26 @@ object Namer extends Transformer with TransformUtils {
       }
 
     case matchExpr @ MatchExpression(value, clauses, elseExpr) =>
-      val decls = extractDecls(clauses)
-
-      withEnvironmentFromDecls(decls) {
-        val transformedExpr = super.transformExpr(matchExpr)
-        if (decls.isEmpty) transformedExpr
-        else treeCopy.LocalExpression(matchExpr, decls, transformedExpr)
+      val declsBuilder = new ListBuffer[Variable]
+      val newClauses = {
+        for {
+          clause @ MatchExpressionClause(pattern, guard, body) <- clauses
+          (patternDecls, newPattern) = processPattern(pattern)
+        } yield {
+          declsBuilder ++= patternDecls
+          withEnvironmentFromDecls(patternDecls) {
+            transformClauseExpr(
+                treeCopy.MatchExpressionClause(clause, newPattern, guard, body))
+          }
+        }
       }
+      val decls = declsBuilder.toList
+
+      val newMatchExpr = treeCopy.MatchExpression(
+          matchExpr, transformExpr(value), newClauses, transformExpr(elseExpr))
+
+      if (decls.isEmpty) newMatchExpr
+      else treeCopy.LocalExpression(newMatchExpr, decls, newMatchExpr)
 
     case proc @ ProcExpression(name, args, body, flags) =>
       val namedFormals = nameFormals(args)
@@ -149,14 +175,31 @@ object Namer extends Transformer with TransformUtils {
     (namedDecls, statements.toList)
   }
 
-  def extractDecls(clauses: List[MatchClauseCommon]) = {
-    // Extract the captures in all clauses
-    val captures = clauses flatMap {
-      clause => extractDeclsInExpression(clause.pattern)
-    }
+  def processPattern(pattern: Expression): (List[Variable], Expression) = {
+    pattern match {
+      case UnboundExpression() =>
+        (Nil, treeCopy.Constant(pattern, OzPatMatWildcard()))
 
-    // Name the captures
-    nameDecls(captures, capture = true)
+      case v @ Variable(name) =>
+        val symbol = new VariableSymbol(name, capture = true)
+        val variable = treeCopy.Variable(v, name) withSymbol symbol
+        (List(variable), treeCopy.Constant(pattern, OzPatMatCapture(symbol)))
+
+      case record @ Record(label, fields) =>
+        val variables = new ListBuffer[Variable]
+        val newFields = {
+          for (field @ RecordField(feature, value) <- fields) yield {
+            val (subVars, newValue) = processPattern(value)
+            variables ++= subVars
+            treeCopy.RecordField(field, feature, newValue)
+          }
+        }
+        val newRecord = treeCopy.Record(record, label, newFields)
+        (variables.toList, newRecord)
+
+      case _ =>
+        (Nil, pattern)
+    }
   }
 
   def extractDeclsInExpression(expr: Expression): List[Variable] = expr match {

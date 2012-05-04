@@ -46,6 +46,8 @@ class VariableSymbol(name: String, formal: Boolean = false,
   override val isSynthetic = synthetic
   override val isGlobal = global
 
+  var captureIndex: Long = -1
+
   def copyAsGlobal() =
     new VariableSymbol(name, formal = false, capture = false,
         synthetic = true, global = true)

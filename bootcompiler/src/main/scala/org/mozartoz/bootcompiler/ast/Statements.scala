@@ -35,6 +35,7 @@ case class MatchStatement(value: Expression,
 
 case class MatchStatementClause(pattern: Expression, guard: Option[Expression],
     body: Statement) extends MatchClauseCommon {
+  def hasGuard = guard.isDefined
 }
 
 case class ThreadStatement(

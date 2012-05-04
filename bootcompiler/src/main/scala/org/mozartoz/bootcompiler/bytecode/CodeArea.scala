@@ -227,6 +227,12 @@ class CodeArea(val abstraction: Abstraction) {
         }
 
         out << ")"
+
+      case OzPatMatWildcard() =>
+        out << "PatMatCapture::build(vm, -1)"
+
+      case OzPatMatCapture(symbol) =>
+        out << "PatMatCapture::build(vm, %d)" % symbol.captureIndex
     }
   }
 }

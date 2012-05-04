@@ -204,6 +204,25 @@ object CodeGen extends Transformer with TreeDSL {
 
           // Body
           jumpOffsets(index+1) = jumpOffsets(index) + code.counting {
+            // Captures
+            var captureIndex = 0
+            def walk(value: OzValue): Unit = value match {
+              case OzPatMatCapture(symbol) =>
+                captureIndex += 1
+                symbol.captureIndex = captureIndex
+                val reg = code.registerFor(symbol).asInstanceOf[YReg]
+                reg := XReg(captureIndex)
+
+              case OzRecord(label, fields) =>
+                for (OzRecordField(_, fieldValue) <- fields)
+                  walk(fieldValue)
+
+              case _ => ()
+            }
+
+            walk(pattern)
+
+            // Actual body
             generate(clause.body)
             if (index+1 < clauseCount)
               branchToAfterHoles(index+1) = code.addHole(2)

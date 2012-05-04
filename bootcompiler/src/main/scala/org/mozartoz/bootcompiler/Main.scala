@@ -161,8 +161,8 @@ object Main {
   private def applyTransforms(prog: Program) {
     Namer(prog)
     Desugar(prog)
-    Unnester(prog)
     PatternMatcher(prog)
+    Unnester(prog)
     Flattener(prog)
     CodeGen(prog)
   }

@@ -117,4 +117,15 @@ trait TreeDSL {
       }
     }
   }
+
+  def expressionWithValIn[A >: Variable <: Expression](value: Expression)(
+      expression: A => Expression)(implicit m: Manifest[A]) = {
+    if (m.erasure.isInstance(value)) {
+      expression(value.asInstanceOf[A])
+    } else {
+      expressionWithTemp { temp =>
+        (temp === value) ~> expression(temp)
+      }
+    }
+  }
 }

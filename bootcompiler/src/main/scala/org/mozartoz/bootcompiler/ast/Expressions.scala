@@ -52,6 +52,7 @@ case class MatchExpression(value: Expression,
 
 case class MatchExpressionClause(pattern: Expression, guard: Option[Expression],
     body: Expression) extends MatchClauseCommon {
+  def hasGuard = guard.isDefined
 }
 
 case class ThreadExpression(

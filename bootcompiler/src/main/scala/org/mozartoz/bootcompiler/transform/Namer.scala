@@ -7,7 +7,7 @@ import oz._
 import ast._
 import symtab._
 
-object Namer extends Transformer with TransformUtils {
+object Namer extends Transformer with TransformUtils with TreeDSL {
   type EnvValue = Symbol Either OzValue
   type Env = Map[String, EnvValue]
 
@@ -126,9 +126,13 @@ object Namer extends Transformer with TransformUtils {
       }
 
     case v @ Variable(name) =>
-      env(name) match {
-        case Left(symbol) => treeCopy.Variable(v, name) withSymbol symbol
-        case Right(value) => treeCopy.Constant(v, value)
+      env.get(name) match {
+        case Some(Left(symbol)) => treeCopy.Variable(v, name) withSymbol symbol
+        case Some(Right(value)) => treeCopy.Constant(v, value)
+
+        case _ =>
+          program.reportError("Undeclared variable "+name, v.pos)
+          transformExpr(LOCAL (v) IN (v))
       }
 
     case EscapedVariable(v) =>

@@ -69,17 +69,17 @@ class OzParser extends OzTokenParsers with PackratParsers
   // Declarations
 
   lazy val inStatement: PackratParser[Statement] = (
-      (declarations <~ "in") ~ statement ^^ LocalStatement
+      positioned((declarations <~ "in") ~ statement ^^ LocalStatement)
     | statement
   )
 
   lazy val inExpression: PackratParser[Expression] = (
-      (declarations <~ "in") ~ statExpression ^^ LocalExpression
+      positioned((declarations <~ "in") ~ statExpression ^^ LocalExpression)
     | statExpression
   )
 
   lazy val statExpression: PackratParser[Expression] = (
-      statement ~ expression ^^ StatAndExpression
+      positioned(statement ~ expression ^^ StatAndExpression)
     | expression
   )
 
@@ -93,7 +93,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // Procedure and function definition
 
-  lazy val procStatement: PackratParser[Statement] =
+  lazy val procStatement: PackratParser[Statement] = positioned {
     (("proc" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
       case flags ~ left ~ args ~ body =>
         val name = left match {
@@ -102,8 +102,9 @@ class OzParser extends OzTokenParsers with PackratParsers
         }
         BindStatement(left, ProcExpression(name, args, body, flags))
     }
+  }
 
-  lazy val funStatement: PackratParser[Statement] =
+  lazy val funStatement: PackratParser[Statement] = positioned {
     (("fun" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
       case flags ~ left ~ args ~ body =>
         val name = left match {
@@ -112,16 +113,19 @@ class OzParser extends OzTokenParsers with PackratParsers
         }
         BindStatement(left, FunExpression(name, args, body, flags))
     }
+  }
 
-  lazy val procExpression: PackratParser[Expression] =
-    (("proc" ~> procFlags <~ "{" ~ dollar) ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
+  lazy val procExpression: PackratParser[Expression] = positioned {
+    (("proc" ~> procFlags <~ "{" ~ "$") ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
       case flags ~ args ~ body => ProcExpression("", args, body, flags)
     }
+  }
 
-  lazy val funExpression: PackratParser[Expression] =
-    (("fun" ~> procFlags <~ "{" ~ dollar) ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
+  lazy val funExpression: PackratParser[Expression] = positioned {
+    (("fun" ~> procFlags <~ "{" ~ "$") ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
       case flags ~ args ~ body => FunExpression("", args, body, flags)
     }
+  }
 
   lazy val procFlags = rep(atom ^^ (_.value))
 
@@ -129,46 +133,50 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val formalArg = variable
 
-  lazy val dollar = "$"
-
   // Call
 
-  lazy val callStatement: PackratParser[Statement] =
+  lazy val callStatement: PackratParser[Statement] = positioned {
     "{" ~> expression ~ actualArgs <~ "}" ^^ CallStatement
+  }
 
-  lazy val callExpression: PackratParser[Expression] =
+  lazy val callExpression: PackratParser[Expression] = positioned {
     "{" ~> expression ~ actualArgs <~ "}" ^^ CallExpression
+  }
 
   lazy val actualArgs = rep(expression)
 
   // If then else end
 
-  lazy val ifStatement: PackratParser[Statement] =
+  lazy val ifStatement: PackratParser[Statement] = positioned {
     "if" ~> innerIfStatement <~ "end"
+  }
 
-  lazy val ifExpression: PackratParser[Expression] =
+  lazy val ifExpression: PackratParser[Expression] = positioned {
     "if" ~> innerIfExpression <~ "end"
+  }
 
-  lazy val innerIfStatement: PackratParser[Statement] =
+  lazy val innerIfStatement: PackratParser[Statement] = // !positioned
     expression ~ ("then" ~> inStatement) ~ elseStatement ^^ IfStatement
 
-  lazy val innerIfExpression: PackratParser[Expression] =
+  lazy val innerIfExpression: PackratParser[Expression] = // !positioned
     expression ~ ("then" ~> inExpression) ~ elseExpression ^^ IfExpression
 
   // case of
 
-  lazy val caseStatement: PackratParser[Statement] =
+  lazy val caseStatement: PackratParser[Statement] = positioned {
     "case" ~> innerCaseStatement <~ "end"
+  }
 
-  lazy val caseExpression: PackratParser[Expression] =
+  lazy val caseExpression: PackratParser[Expression] = positioned {
     "case" ~> innerCaseExpression <~ "end"
+  }
 
-  lazy val innerCaseStatement: PackratParser[Statement] = (
+  lazy val innerCaseStatement: PackratParser[Statement] = ( // !positioned
       expression ~ ("of" ~> caseStatementClauses) ~ elseStatement
           ^^ MatchStatement
   )
 
-  lazy val innerCaseExpression: PackratParser[Expression] = (
+  lazy val innerCaseExpression: PackratParser[Expression] = ( // !positioned
       expression ~ ("of" ~> caseExpressionClauses) ~ elseExpressionCase
           ^^ MatchExpression
   )
@@ -177,60 +185,66 @@ class OzParser extends OzTokenParsers with PackratParsers
     rep1(caseStatementClause, "[]" ~> caseStatementClause)
 
   lazy val caseStatementClause: PackratParser[MatchStatementClause] = (
-      expression ~ opt("if" ~> expression) ~ ("then" ~> inStatement)
-          ^^ MatchStatementClause
+      positioned(
+          expression ~ opt("if" ~> expression) ~ ("then" ~> inStatement)
+              ^^ MatchStatementClause)
   )
 
   lazy val caseExpressionClauses: PackratParser[List[MatchExpressionClause]] =
     rep1(caseExpressionClause, "[]" ~> caseExpressionClause)
 
   lazy val caseExpressionClause: PackratParser[MatchExpressionClause] = (
-      expression ~ opt("if" ~> expression) ~ ("then" ~> inExpression)
-          ^^ MatchExpressionClause
+      positioned(
+          expression ~ opt("if" ~> expression) ~ ("then" ~> inExpression)
+              ^^ MatchExpressionClause)
   )
 
   // else clauses of if and case
 
   lazy val elseStatement: PackratParser[Statement] = (
       "else" ~> inStatement
-    | "elseif" ~> innerIfStatement
-    | "elsecase" ~> innerCaseStatement
-    | success(SkipStatement())
+    | positioned("elseif" ~> innerIfStatement)
+    | positioned("elsecase" ~> innerCaseStatement)
+    | positioned(success(SkipStatement()))
   )
 
   lazy val elseExpression: PackratParser[Expression] = (
       "else" ~> inExpression
-    | "elseif" ~> innerIfExpression
-    | "elsecase" ~> innerCaseExpression
+    | positioned("elseif" ~> innerIfExpression)
+    | positioned("elsecase" ~> innerCaseExpression)
   )
 
   lazy val elseExpressionCase: PackratParser[Expression] = (
       elseExpression
-    | success(Constant(OzAtom("matchError")))
+    | positioned(success(Constant(OzAtom("matchError"))))
   )
 
   // Thread
 
-  lazy val threadStatement: PackratParser[Statement] =
+  lazy val threadStatement: PackratParser[Statement] = positioned {
     "thread" ~> inStatement <~ "end" ^^ ThreadStatement
+  }
 
-  lazy val threadExpression: PackratParser[Expression] =
+  lazy val threadExpression: PackratParser[Expression] = positioned {
     "thread" ~> inExpression <~ "end" ^^ ThreadExpression
+  }
 
   // Bind
 
-  lazy val bindStatement: PackratParser[Statement] =
+  lazy val bindStatement: PackratParser[Statement] = positioned {
     (expression1 <~ "=") ~ expression0 ^^ BindStatement
+  }
 
   // Skip
 
-  lazy val skipStatement: PackratParser[Statement] =
+  lazy val skipStatement: PackratParser[Statement] = positioned {
     "skip" ^^^ SkipStatement()
+  }
 
   // Operations with precedence
 
   lazy val expression0: PackratParser[Expression] = (
-      (expression1 <~ "=") ~ expression0 ^^ BindExpression
+      positioned((expression1 <~ "=") ~ expression0 ^^ BindExpression)
     | expression1
   )
 
@@ -239,20 +253,20 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // X orelse Y   (right-associative)
   lazy val expression2: PackratParser[Expression] = (
-      expression3 ~ "orelse" ~ expression2 ^^ ShortCircuitBinaryOp
+      positioned(expression3 ~ "orelse" ~ expression2 ^^ ShortCircuitBinaryOp)
     | expression3
   )
 
   // X andthen Y   (right-associative)
   lazy val expression3: PackratParser[Expression] = (
-      expression4 ~ "andthen" ~ expression3 ^^ ShortCircuitBinaryOp
+      positioned(expression4 ~ "andthen" ~ expression3 ^^ ShortCircuitBinaryOp)
     | expression4
   )
 
   // X==Y   X\=Y     X<Y    X=<Y     X>Y    X>=Y   (non-associative)
   // X=:Y   X\=:Y    X<:Y   X=<:Y    X>:Y   X>=:Y
   lazy val expression4: PackratParser[Expression] = (
-      expression5 ~ operator4 ~ expression5 ^^ BinaryOp
+      positioned(expression5 ~ operator4 ~ expression5 ^^ BinaryOp)
     | expression5
   )
 
@@ -263,7 +277,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // X|Y   (right-associative)
   lazy val expression6: PackratParser[Expression] = (
-      (expression7 <~ "|") ~ expression6 ^^ cons
+      positioned((expression7 <~ "|") ~ expression6 ^^ cons)
     | expression7
   )
 
@@ -272,7 +286,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // X#Y#...#Z   (mixin)
   lazy val expression7: PackratParser[Expression] = (
-      expression8 ~ rep1("#" ~> expression8) ^^ sharp
+      positioned(expression8 ~ rep1("#" ~> expression8) ^^ sharp)
     | expression8
   )
 
@@ -281,28 +295,30 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // X+Y   X-Y   (left-associative)
   lazy val expression8: PackratParser[Expression] = (
-      expression8 ~ ("+" | "-") ~ expression9 ^^ BinaryOp
+      positioned(expression8 ~ ("+" | "-") ~ expression9 ^^ BinaryOp)
     | expression9
   )
 
   // X*Y   X/Y    X div Y   X mod Y   (left-associative)
   lazy val expression9: PackratParser[Expression] = (
-      expression9 ~ ("*" | "/" | "div" | "mod") ~ expression10 ^^ BinaryOp
+      positioned(expression9 ~ operator9 ~ expression10 ^^ BinaryOp)
     | expression10
   )
+
+  lazy val operator9 = "*" | "/" | "div" | "mod"
 
   // X,Y   (right-associative)
   lazy val expression10: PackratParser[Expression] = expression11
 
   // ~X   (prefix)
   lazy val expression11: PackratParser[Expression] = (
-      "~" ~ expression11 ^^ UnaryOp
+      positioned("~" ~ expression11 ^^ UnaryOp)
     | expression12
   )
 
   // X.Y   X^Y   (left-associative)
   lazy val expression12: PackratParser[Expression] = (
-      expression12 ~ "." ~ expression13 ^^ BinaryOp
+      positioned(expression12 ~ "." ~ expression13 ^^ BinaryOp)
     | expression13
   )
 
@@ -328,15 +344,15 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val trivialExpression: PackratParser[Expression] = (
       variable
-    | "!!" ~> variable ^^ EscapedVariable
+    | positioned("!!" ~> variable ^^ EscapedVariable)
     | unboundExpression
-    | integerConst ^^ Constant
-    | floatConst ^^ Constant
-    | atomLike ^^ Constant
+    | positioned(integerConst ^^ Constant)
+    | positioned(floatConst ^^ Constant)
+    | positioned(atomLike ^^ Constant)
   )
 
   lazy val unboundExpression: PackratParser[UnboundExpression] =
-    "_" ^^^ UnboundExpression()
+    positioned("_" ^^^ UnboundExpression())
 
   lazy val integerConst: PackratParser[OzInt] =
     numericLit ^^ (chars => OzInt(chars.toInt))
@@ -355,30 +371,30 @@ class OzParser extends OzTokenParsers with PackratParsers
     atomLit ^^ (chars => OzAtom(chars))
 
   lazy val variable: PackratParser[Variable] =
-    ident ^^ (chars => Variable(chars))
+    positioned(ident ^^ (chars => Variable(chars)))
 
   // Record expressions
 
   lazy val recordExpression: PackratParser[Expression] =
-    recordLabel ~ recordFields <~ ")" ^^ Record
+    positioned(recordLabel ~ recordFields <~ ")" ^^ Record)
 
   lazy val recordLabel: PackratParser[Expression] = (
-      atomLitLabel ^^ (chars => Constant(OzAtom(chars)))
-    | identLabel ^^ Variable
+      positioned(atomLitLabel ^^ (chars => Constant(OzAtom(chars))))
+    | positioned(identLabel ^^ Variable)
   )
 
   lazy val recordFields: PackratParser[List[RecordField]] =
     rep(recordField)
 
   lazy val recordField: PackratParser[RecordField] = (
-      expression ~ (":" ~> expression) ^^ RecordField
-    | expression ^^ (expr => RecordField(AutoFeature(), expr))
+      positioned(expression ~ (":" ~> expression) ^^ RecordField)
+    | positioned(expression ^^ (expr => RecordField(AutoFeature(), expr)))
   )
 
   // List expressions
 
   lazy val listExpression: PackratParser[Expression] =
-    "[" ~> (expression+) <~ "]" ^^ exprListToListExpr
+    positioned("[" ~> (expression+) <~ "]" ^^ exprListToListExpr)
 
   def exprListToListExpr(elems: List[Expression]): Expression =
     if (elems.isEmpty) Constant(OzAtom("nil"))

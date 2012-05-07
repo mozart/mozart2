@@ -243,34 +243,37 @@ object CodeGen extends Transformer with TreeDSL {
       case CallStatement(Constant(callable @ OzBuiltin(builtin)), args) =>
         val argCount = args.size
 
-        if (argCount != builtin.arity)
-          throw new IllegalArgumentException(
-              "Wrong arity for builtin application of %s" format builtin)
+        if (argCount != builtin.arity) {
+          program.reportError(
+              "Wrong arity for builtin application of " + builtin +
+              " (%d expected but %d found)".format(builtin.arity, argCount),
+              statement.pos)
+        } else {
+          val paramKinds = builtin.paramKinds
+          val argsWithKindAndIndex = args.zip(paramKinds).zipWithIndex
 
-        val paramKinds = builtin.paramKinds
-        val argsWithKindAndIndex = args.zip(paramKinds).zipWithIndex
+          for {
+            ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
+            if kind == Builtin.ParamKind.In
+          } {
+            XReg(index) := arg
+          }
 
-        for {
-          ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
-          if kind == Builtin.ParamKind.In
-        } {
-          XReg(index) := arg
-        }
+          val argsRegs = (0 until argCount).toList map XReg
 
-        val argsRegs = (0 until argCount).toList map XReg
+          if (builtin.inlineable)
+            code += OpCallBuiltinInline(builtin.inlineOpCode, argsRegs)
+          else {
+            val builtinReg = code.registerFor(callable)
+            code += OpCallBuiltin(builtinReg, argCount, argsRegs)
+          }
 
-        if (builtin.inlineable)
-          code += OpCallBuiltinInline(builtin.inlineOpCode, argsRegs)
-        else {
-          val builtinReg = code.registerFor(callable)
-          code += OpCallBuiltin(builtinReg, argCount, argsRegs)
-        }
-
-        for {
-          ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
-          if kind == Builtin.ParamKind.Out
-        } {
-          XReg(index) === arg
+          for {
+            ((arg:VarOrConst, kind), index) <- argsWithKindAndIndex
+            if kind == Builtin.ParamKind.Out
+          } {
+            XReg(index) === arg
+          }
         }
 
       case CallStatement(callable:Variable, args) =>

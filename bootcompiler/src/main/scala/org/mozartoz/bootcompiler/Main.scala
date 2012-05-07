@@ -51,8 +51,12 @@ object Main {
         parser.parse(reader) match {
           case parser.Success(rawCode, _) =>
             produce(rawCode, outputStream, moduleDefs)
-          case parser.NoSuccess(msg, _) =>
-            Console.err.println(msg)
+          case parser.NoSuccess(msg, next) =>
+            Console.err.println(
+                "Parse error (line %d, col %d)\n".format(
+                    next.pos.line, next.pos.column) +
+                msg + "\n" +
+                next.pos.longString)
             sys.exit(2)
         }
       } catch {
@@ -74,7 +78,18 @@ object Main {
     loadBaseEnvironment(prog)
     applyTransforms(prog)
 
-    prog.produceCC(new Output(outputStream()))
+    if (prog.hasErrors) {
+      for ((message, pos) <- prog.errors) {
+        Console.err.println(
+            "Error at line %d, column %d\n".format(pos.line, pos.column) +
+            message + "\n" +
+            pos.longString)
+      }
+
+      sys.exit(2)
+    } else {
+      prog.produceCC(new Output(outputStream()))
+    }
   }
 
   private def loadModuleDefs(prog: Program, moduleDefs: List[String]) {

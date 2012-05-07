@@ -1,29 +1,15 @@
 package org.mozartoz.bootcompiler
 package ast
 
+import scala.util.parsing.input.Positional
+
 /** This class represents a node of the intermediate AST code.
  *  Each case subclass will represent a specific operation.
  */
-abstract class Node extends Product with Cloneable {
-
-  /** The corresponding position in the source file */
-  private var _pos: Position = NoPosition
-
-  def pos: Position = _pos
-
-  def setPos(p: Position): this.type = {
-    _pos = p
-    this
-  }
-
-  def setDefaultPos(p: Position): this.type = {
-    if (!pos.isDefined)
-      setPos(p)
-    this
-  }
+abstract class Node extends Product with Cloneable with Positional {
 
   private[bootcompiler] def copyAttrs(tree: Node): this.type = {
-    _pos = tree.pos
+    pos = tree.pos
     this
   }
 

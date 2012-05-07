@@ -1,7 +1,8 @@
 package org.mozartoz.bootcompiler
 package symtab
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
+import scala.util.parsing.input.{ Position, NoPosition }
 
 import ast._
 import util._
@@ -15,6 +16,14 @@ class Program(var rawCode: Statement) {
 
   val abstractions = new ListBuffer[Abstraction]
   abstractions += topLevelAbstraction
+
+  val errors = new ArrayBuffer[(String, Position)]
+
+  def hasErrors = !errors.isEmpty
+
+  def reportError(message: String, pos: Position = NoPosition) {
+    errors += ((message, pos))
+  }
 
   def dump() {
     if (isRawCode)

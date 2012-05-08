@@ -34,6 +34,25 @@ namespace builtins {
 typedef RichNode In;
 typedef UnstableNode& Out;
 
+struct ParamInfo {
+  enum Kind { pkIn, pkOut };
+
+  Kind kind;
+};
+
+template <class T>
+struct ParamTypeToKind {};
+
+template <>
+struct ParamTypeToKind<In> {
+  static constexpr ParamInfo::Kind value = ParamInfo::pkIn;
+};
+
+template <>
+struct ParamTypeToKind<Out> {
+  static constexpr ParamInfo::Kind value = ParamInfo::pkOut;
+};
+
 struct SpecializedBuiltinEntryPoint {
 public:
   SpecializedBuiltinEntryPoint(): _pointer(nullptr) {}
@@ -144,7 +163,10 @@ public:
               SpecializedBuiltinEntryPoint entryPoint,
               GenericBuiltinEntryPoint genericEntryPoint):
     _name(name), _arity(arity), _entryPoint(entryPoint),
-    _genericEntryPoint(genericEntryPoint) {}
+    _genericEntryPoint(genericEntryPoint) {
+
+    _params = StaticArray<ParamInfo>(new ParamInfo[arity], arity);
+  }
 
   const std::string& getName() {
     return _name;
@@ -152,6 +174,14 @@ public:
 
   size_t getArity() {
     return _arity;
+  }
+
+  ParamInfo& getParams(size_t i) {
+    return _params[i];
+  }
+
+  StaticArray<ParamInfo> getParamArray() {
+    return _params;
   }
 
   OpResult call(VM vm, UnstableNode* args[]) {
@@ -166,6 +196,9 @@ public:
 private:
   std::string _name;
   size_t _arity;
+  StaticArray<ParamInfo> _params;
+
+  // Entry points
   SpecializedBuiltinEntryPoint _entryPoint;
   GenericBuiltinEntryPoint _genericEntryPoint;
 };
@@ -183,16 +216,40 @@ private:
 template <class Self>
 class Builtin: public BaseBuiltin {
 private:
+  template <size_t ar, size_t i, class... Args>
+  struct ParamsInitializer {};
+
+  template <size_t ar>
+  struct ParamsInitializer<ar, ar> {
+    static void initParams(StaticArray<ParamInfo> params) {}
+  };
+
+  template <size_t ar, size_t i, class T, class... Args>
+  struct ParamsInitializer<ar, i, T, Args...> {
+    static void initParams(StaticArray<ParamInfo> params) {
+      params[i].kind = ParamTypeToKind<T>::value;
+      ParamsInitializer<ar, i+1, Args...>::initParams(params);
+    }
+  };
+
   template <class Signature>
   struct ExtractArity {};
 
   template <class Class, class... Args>
   struct ExtractArity<OpResult (Class::*)(VM vm, Args...)> {
     static const size_t arity = sizeof...(Args);
+
+    static void initParams(StaticArray<ParamInfo> params) {
+      ParamsInitializer<arity, 0, Args...>::initParams(params);
+    }
   };
 public:
   Builtin(const std::string& name): BaseBuiltin(
-    name, arity(), getEntryPoint(), getGenericEntryPoint()) {}
+    name, arity(), getEntryPoint(), getGenericEntryPoint()) {
+
+    ExtractArity<decltype(&Self::operator())>::initParams(
+      this->getParamArray());
+  }
 public:
   static constexpr size_t arity() {
     return ExtractArity<decltype(&Self::operator())>::arity;

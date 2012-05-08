@@ -114,7 +114,7 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
 
 class Callable;
 template<>
-struct Interface<Callable>: ImplementedBy<Abstraction> {
+struct Interface<Callable>: ImplementedBy<Abstraction, BuiltinProcedure> {
   OpResult getCallInfo(RichNode self, VM vm, int& arity, StableNode*& body,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,

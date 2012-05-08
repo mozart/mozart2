@@ -51,32 +51,13 @@ object Desugar extends Transformer with TreeDSL {
     case ShortCircuitBinaryOp(lhs, "orelse", rhs) =>
       transformExpr(IF (lhs) THEN (True()) ELSE (rhs))
 
-    case record:Record =>
-      transformRecord(super.transformExpr(record).asInstanceOf[Record])
+    case Record(label, fields) =>
+      val fieldsNoAuto = fillAutoFeatures(fields)
+      val newRecord = treeCopy.Record(expression, label, fieldsNoAuto)
+      super.transformExpr(newRecord)
 
     case _ =>
       super.transformExpr(expression)
-  }
-
-  private def transformRecord(record: Record): Expression = {
-    val fieldsNoAuto = fillAutoFeatures(record.fields)
-
-    if (!record.hasConstantArity) {
-      makeDynamicRecord(record, record.label, fieldsNoAuto)
-    } else if (fieldsNoAuto.isEmpty) {
-      record.label
-    } else {
-      val sortedFields = fieldsNoAuto.sortWith { (leftField, rightField) =>
-        val Constant(left:OzFeature) = leftField.feature
-        val Constant(right:OzFeature) = rightField.feature
-        left feature_< right
-      }
-
-      val newRecord = treeCopy.Record(record, record.label, sortedFields)
-
-      if (newRecord.isConstant) newRecord.getAsConstant
-      else newRecord
-    }
   }
 
   private def fillAutoFeatures(fields: List[RecordField]) = {
@@ -111,21 +92,5 @@ object Desugar extends Transformer with TreeDSL {
         }
       }
     }
-  }
-
-  private def makeDynamicRecord(record: Record, label: Expression,
-      fields: List[RecordField]): Expression = {
-    val elementsOfTheTuple = for {
-      RecordField(feature, value) <- fields
-      elem <- List(feature, value)
-    } yield elem
-
-    val fieldsOfTheTuple =
-      for ((elem, index) <- elementsOfTheTuple.zipWithIndex)
-        yield treeCopy.RecordField(elem, OzInt(index+1), elem)
-
-    val tupleWithFields = treeCopy.Record(record, OzAtom("#"), fieldsOfTheTuple)
-
-    builtins.makeRecordDynamic callExpr (label, tupleWithFields)
   }
 }

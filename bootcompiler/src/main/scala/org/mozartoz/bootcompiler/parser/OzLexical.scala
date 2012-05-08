@@ -44,10 +44,15 @@ class OzLexical extends Lexical with OzTokens {
       case first ~ rest => NumericLit(first :: rest mkString "")
     }
 
-  def atomLiteral =
-    lowerCaseLetter ~ rep(identChar) ^^ {
-      case first ~ rest => processKeyword(first :: rest mkString "")
-    }
+  def atomLiteral = (
+      lowerCaseLetter ~ rep(identChar) ^^ {
+        case first ~ rest => processKeyword(first :: rest mkString "")
+      }
+
+    | '\'' ~> rep( chrExcept('\'', '\n', EofCh) ) <~ '\'' ^^ {
+        chars => AtomLit(chars mkString "")
+      }
+  )
 
   /** A character-parser that matches a lowercase letter (and returns it)*/
   def lowerCaseLetter = elem("letter", _.isLower)

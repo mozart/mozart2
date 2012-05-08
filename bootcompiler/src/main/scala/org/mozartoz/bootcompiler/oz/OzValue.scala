@@ -88,6 +88,11 @@ case class OzRecord(label: OzLiteral,
 
   def isTuple = arity.isTupleArity
   def isCons = arity.isConsArity
+
+  private lazy val map = Map((fields map (x => x.feature -> x.value)):_*)
+
+  def select(feature: OzFeature): Option[OzValue] =
+    map.get(feature)
 }
 
 object OzTuple extends ((OzLiteral, List[OzValue]) => OzRecord) {

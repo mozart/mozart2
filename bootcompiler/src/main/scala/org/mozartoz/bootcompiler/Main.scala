@@ -2,6 +2,7 @@ package org.mozartoz.bootcompiler
 
 import java.io.{ Console => _, _ }
 
+import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.combinator._
 import scala.util.parsing.input._
@@ -129,31 +130,41 @@ object Main {
       M(module) <- modules
       S(modName) = module("name")
       L(builtins) = module("builtins")
-      M(builtin) <- builtins
-      S(biFullCppName) = builtin("fullCppName")
-      S(biName) = builtin("name")
-      B(inlineable) = builtin("inlineable")
-      L(params) = builtin("params")
     } {
-      val inlineAs =
-        if (inlineable) Some(builtin("inlineOpCode").asInstanceOf[Int])
-        else None
+      val exportFields = new ListBuffer[OzRecordField]
 
-      val paramKinds = for {
-        M(param) <- params
-        S(paramKind) = param("kind")
-      } yield {
-        Builtin.ParamKind.withName(paramKind)
+      for {
+        M(builtin) <- builtins
+        S(biFullCppName) = builtin("fullCppName")
+        S(biName) = builtin("name")
+        B(inlineable) = builtin("inlineable")
+        L(params) = builtin("params")
+      } {
+        val inlineAs =
+          if (inlineable) Some(builtin("inlineOpCode").asInstanceOf[Int])
+          else None
+
+        val paramKinds = for {
+          M(param) <- params
+          S(paramKind) = param("kind")
+        } yield {
+          Builtin.ParamKind.withName(paramKind)
+        }
+
+        val fullName = modName + "." + (
+            if (biName.charAt(0).isLetter) biName
+            else "'" + biName + "'")
+
+        val builtinSym = new Builtin(
+            fullName, biFullCppName, paramKinds, inlineAs)
+
+        prog.builtins.builtinByName.put(fullName, builtinSym)
+
+        exportFields += OzRecordField(OzAtom(biName), OzBuiltin(builtinSym))
       }
 
-      val fullName = modName + "." + (
-          if (biName.charAt(0).isLetter) biName
-          else "'" + biName + "'")
-
-      val builtinSym = new Builtin(
-          fullName, biFullCppName, paramKinds, inlineAs)
-
-      prog.builtins.builtinByName.put(fullName, builtinSym)
+      val moduleExport = OzRecord(OzAtom("export"), exportFields.toList)
+      prog.builtins.baseEnvironment.put(modName, moduleExport)
     }
   }
 

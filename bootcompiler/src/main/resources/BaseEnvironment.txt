@@ -5,12 +5,3 @@ IsDet = Value.isDet
 
 Label = Record.label
 Width = Record.width
-WaitOr = Record.waitOr
-
-NewSpace = Space.new
-AskSpace = Space.ask
-AskVerboseSpace = Space.askVerbose
-MergeSpace = Space.merge
-CommitSpace = Space.commit
-CloneSpace = Space.clone
-ChooseSpace = Space.choose

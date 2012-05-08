@@ -61,6 +61,13 @@ OpResult Implementation<BuiltinProcedure>::callBuiltin(
     return raiseIllegalArity(vm, getArity(), sizeof...(args));
 }
 
+OpResult Implementation<BuiltinProcedure>::getCallInfo(
+  Self self, VM vm, int& arity, StableNode*& body, ProgramCounter& start,
+  int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
+
+  return _builtin->getCallInfo(self, vm, arity, body, start, Xcount, Gs, Ks);
+}
+
 OpResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
                                                  UnstableNode& result) {
   result.make<SmallInt>(vm, getArity());

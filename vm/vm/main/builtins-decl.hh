@@ -26,6 +26,7 @@
 #define __BUILTINS_DECL_H
 
 #include "mozartcore-decl.hh"
+#include "opcodes.hh"
 
 namespace mozart {
 
@@ -163,7 +164,7 @@ public:
               SpecializedBuiltinEntryPoint entryPoint,
               GenericBuiltinEntryPoint genericEntryPoint):
     _name(name), _arity(arity), _entryPoint(entryPoint),
-    _genericEntryPoint(genericEntryPoint) {
+    _genericEntryPoint(genericEntryPoint), _codeBlock(nullptr) {
 
     _params = StaticArray<ParamInfo>(new ParamInfo[arity], arity);
   }
@@ -193,6 +194,17 @@ public:
     assert(sizeof...(args) == _arity);
     return _entryPoint(vm, std::forward<Args>(args)...);
   }
+
+  inline
+  OpResult getCallInfo(RichNode self, VM vm, int& arity, StableNode*& body,
+                       ProgramCounter& start, int& Xcount,
+                       StaticArray<StableNode>& Gs,
+                       StaticArray<StableNode>& Ks);
+
+private:
+  inline
+  void buildCodeBlock(VM vm, RichNode self);
+
 private:
   std::string _name;
   size_t _arity;
@@ -201,6 +213,10 @@ private:
   // Entry points
   SpecializedBuiltinEntryPoint _entryPoint;
   GenericBuiltinEntryPoint _genericEntryPoint;
+
+  // CodeArea-like data
+  ByteCode* _codeBlock;
+  StableNode _selfKs[1];
 };
 
 /////////////

@@ -69,6 +69,9 @@ public:
     return _builtin->getArity();
   }
 
+public:
+  // BuiltinCallable interface
+
   /**
    * Call the builtin
    * @param vm     Contextual VM
@@ -81,6 +84,15 @@ public:
   template <class... Args>
   inline
   OpResult callBuiltin(Self self, VM vm, Args&&... args);
+
+public:
+  // Callable interface
+
+  inline
+  OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
+                       ProgramCounter& start, int& Xcount,
+                       StaticArray<StableNode>& Gs,
+                       StaticArray<StableNode>& Ks);
 
   /**
    * Get the arity of the builtin in a node

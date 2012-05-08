@@ -29,6 +29,7 @@
 
 #include "coredatatypes.hh"
 
+#include "builtins.hh"
 #include "builtinutils.hh"
 #include "coreatoms.hh"
 #include "dynbuilders.hh"

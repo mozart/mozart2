@@ -65,7 +65,7 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
 class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
-  ImplementedBy<SmallInt, Atom, Boolean, Float> {
+  ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure> {
 
   /**
    * Precondition:

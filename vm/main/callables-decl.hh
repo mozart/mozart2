@@ -43,7 +43,8 @@ class BuiltinProcedure;
 #endif
 
 template <>
-class Implementation<BuiltinProcedure>: StoredAs<builtins::BaseBuiltin*> {
+class Implementation<BuiltinProcedure>: Copiable,
+  StoredAs<builtins::BaseBuiltin*>, WithValueBehavior {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
 private:
@@ -62,12 +63,16 @@ public:
   inline
   static Builtin* build(VM vm, GR gr, Self from);
 
+public:
   /**
    * Arity of this builtin
    */
   int getArity() {
     return _builtin->getArity();
   }
+
+  inline
+  bool equals(VM vm, Self right);
 
 public:
   // BuiltinCallable interface

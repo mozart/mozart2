@@ -42,6 +42,10 @@ builtins::BaseBuiltin* Implementation<BuiltinProcedure>::build(
   return from.get()._builtin;
 }
 
+bool Implementation<BuiltinProcedure>::equals(VM vm, Self right) {
+  return _builtin == right.get()._builtin;
+}
+
 OpResult Implementation<BuiltinProcedure>::callBuiltin(
   Self self, VM vm, int argc, UnstableNode* args[]) {
 

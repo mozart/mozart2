@@ -33,6 +33,7 @@
 
 #include "variables.hh"
 #include "boolean.hh"
+#include "cell.hh"
 #include "smallint.hh"
 #include "float.hh"
 #include "codearea.hh"

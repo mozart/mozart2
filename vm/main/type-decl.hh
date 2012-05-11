@@ -194,6 +194,9 @@ public:
   Space* home() {
     return _home;
   }
+protected:
+  inline
+  bool isHomedInCurrentSpace(VM vm);
 private:
   SpaceRef _home;
 };

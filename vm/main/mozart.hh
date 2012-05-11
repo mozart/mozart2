@@ -56,5 +56,6 @@
 #include "modules/modsystem.hh"
 #include "modules/modthread.hh"
 #include "modules/modspace.hh"
+#include "modules/modcell.hh"
 
 #endif // __MOZART_H

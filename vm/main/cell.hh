@@ -22,23 +22,58 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __CELL_H
+#define __CELL_H
 
-#include "mozartcore-decl.hh"
+#include "mozartcore.hh"
 
-#include "variables-decl.hh"
-#include "boolean-decl.hh"
-#include "smallint-decl.hh"
-#include "float-decl.hh"
-#include "codearea-decl.hh"
-#include "callables-decl.hh"
-#include "atom-decl.hh"
-#include "records-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "cell-decl.hh"
-#include "reference-decl.hh"
-#include "gctypes-decl.hh"
-#include "patmattypes-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#endif // __COREDATATYPES_DECL_H
+namespace mozart {
+
+//////////
+// Cell //
+//////////
+
+#include "Cell-implem.hh"
+
+Implementation<Cell>::Implementation(VM vm, GR gr, Self from):
+  WithHome(vm, gr, from->home()) {
+
+  gr->copyUnstableNode(_value, from->_value);
+}
+
+OpResult Implementation<Cell>::exchange(RichNode self, VM vm,
+                                        RichNode newValue,
+                                        UnstableNode& oldValue) {
+  if (!isHomedInCurrentSpace(vm))
+    return raise(vm, u"globalState", "cell");
+
+  oldValue = std::move(_value);
+  _value.copy(vm, newValue);
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cell>::access(RichNode self, VM vm,
+                                      UnstableNode& result) {
+  result.copy(vm, _value);
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cell>::assign(RichNode self, VM vm,
+                                      RichNode newValue) {
+  if (!isHomedInCurrentSpace(vm))
+    return raise(vm, u"globalState", "cell");
+
+  _value.copy(vm, newValue);
+
+  return OpResult::proceed();
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __CELL_H

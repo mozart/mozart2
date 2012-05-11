@@ -186,6 +186,7 @@ object Main {
 
   private def applyTransforms(prog: Program) {
     Namer(prog)
+    DesugarFunctor(prog)
     Desugar(prog)
     ConstantFolding(prog)
     PatternMatcher(prog)

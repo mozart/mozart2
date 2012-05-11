@@ -21,17 +21,24 @@ abstract class Node extends Product with Cloneable with Positional {
   override def clone: Node =
     super.clone.asInstanceOf[Node]
 
-  def walk[U](handler: Node => U) {
-    handler(this)
-
-    def inner(element: Any) {
-      element match {
-        case node:Node => node.walk(handler)
-        case seq:Seq[_] => seq foreach inner
-        case _ => ()
+  def walkBreak(handler: Node => Boolean) {
+    if (handler(this)) {
+      def inner(element: Any) {
+        element match {
+          case node:Node => node.walk(handler)
+          case seq:Seq[_] => seq foreach inner
+          case _ => ()
+        }
       }
-    }
 
-    productIterator foreach inner
+      productIterator foreach inner
+    }
+  }
+
+  def walk[U](handler: Node => U) {
+    walkBreak { node =>
+      handler(node)
+      true
+    }
   }
 }

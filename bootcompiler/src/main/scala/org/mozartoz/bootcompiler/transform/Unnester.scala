@@ -109,9 +109,9 @@ object Unnester extends Transformer with TreeDSL {
         v === treeCopy.Record(record, newLabel, newFields)
       }
 
-    case _:FunExpression | _:ThreadExpression | _:EscapedVariable |
-        _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp | _:AutoFeature |
-        _:CreateAbstraction =>
+    case _:FunExpression | _:ThreadExpression | _:FunctorExpression |
+        _:EscapedVariable | _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
+        _:AutoFeature | _:CreateAbstraction =>
       throw new Exception(
           "illegal tree in Unnester.transformBindVarToExpression")
   }

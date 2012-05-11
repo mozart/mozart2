@@ -113,6 +113,15 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.BindExpression(expression, transformExpr(left),
           transformExpr(right))
 
+    case FunctorExpression(name, require, prepare, imports, define, exports) =>
+      def transformDefine(stat: LocalStatement) =
+        transformStat(stat).asInstanceOf[LocalStatement]
+
+      treeCopy.FunctorExpression(expression, name,
+          require, prepare map transformDefine,
+          imports, define map transformDefine,
+          exports)
+
     // Operations
 
     case UnaryOp(operator, operand) =>

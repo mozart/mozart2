@@ -125,6 +125,9 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
             flags)
       }
 
+    case functor: FunctorExpression =>
+      transformFunctor(functor)
+
     case v @ Variable(name) =>
       env.get(name) match {
         case Some(Left(symbol)) => treeCopy.Variable(v, name) withSymbol symbol
@@ -140,6 +143,95 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
 
     case _ =>
       super.transformExpr(expression)
+  }
+
+  private def transformFunctor(functor: FunctorExpression): Expression = {
+    val FunctorExpression(name,
+        require, prepare,
+        imports, define,
+        exports) = functor
+
+    val (requireDecls, newRequire) = transformFunctorImports(require)
+
+    withEnvironmentFromDecls(requireDecls) {
+      val (prepareDecls, newPrepare) = transformFunctorDefine(prepare)
+
+      withEnvironmentFromDecls(prepareDecls) {
+        val (importsDecls, newImports) = transformFunctorImports(imports)
+
+        withEnvironmentFromDecls(importsDecls) {
+          val (defineDecls, newDefine) = transformFunctorDefine(define)
+
+          withEnvironmentFromDecls(defineDecls) {
+            val newExports = transformFunctorExports(exports)
+
+            treeCopy.FunctorExpression(functor, name, newRequire,
+                newPrepare, newImports, newDefine, newExports)
+          }
+        }
+      }
+    }
+  }
+
+  def transformFunctorImports(imports: List[FunctorImport]) = {
+    val decls = new ListBuffer[Variable]
+    val newImports = new ListBuffer[FunctorImport]
+
+    def nameDecl(variable: Variable) = {
+      val symbol = new VariableSymbol(variable.name)
+      val decl = treeCopy.Variable(variable, variable.name) withSymbol symbol
+      decls += decl
+      decl
+    }
+
+    for (imp @ FunctorImport(module, aliases, location) <- imports) {
+      val newModule = nameDecl(module)
+
+      val newAliases = {
+        for (aliased @ AliasedFeature(feature, alias) <- aliases) yield {
+          treeCopy.AliasedFeature(aliased, feature, alias map nameDecl)
+        }
+      }
+
+      newImports += treeCopy.FunctorImport(imp, newModule,
+          newAliases, location)
+    }
+
+    (decls.toList, newImports.toList)
+  }
+
+  def transformFunctorDefine(define: Option[LocalStatement]) = {
+    if (define.isEmpty) (Nil, define)
+    else transformFunctionDefineInner(define.get)
+  }
+
+  def transformFunctionDefineInner(define: LocalStatement) = {
+    val LocalStatement(declarations, body) = define
+
+    val (decls, stats) = extractDecls(declarations)
+    val stat = statsAndStatToStat(stats, body)
+
+    val newDefine = withEnvironmentFromDecls(decls) {
+      treeCopy.LocalStatement(define, decls, transformStat(stat))
+    }
+
+    (decls, Some(newDefine))
+  }
+
+  def transformFunctorExports(exports: List[FunctorExport]) = {
+    for (export @ FunctorExport(feature, value: Variable) <- exports) yield {
+      val newFeature = feature match {
+        case AutoFeature() =>
+          val strFeature = value.name.head.toLower + value.name.tail
+          treeCopy.Constant(feature, OzAtom(strFeature))
+        case _ =>
+          feature
+      }
+
+      val newValue = transformExpr(value)
+
+      treeCopy.FunctorExport(export, newFeature, newValue)
+    }
   }
 
   def extractDecls(

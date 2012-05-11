@@ -10,15 +10,13 @@ trait LocalCommon extends StatOrExpr {
   def syntax(indent: String) = {
     val subIndent = indent + "   "
 
-    val head :: tail = declarations.toList
-    val declsSyntax = tail.foldLeft(head.syntax(subIndent)) {
+    val untilDecls = declarations.foldLeft("local") {
       _ + "\n" + subIndent + _.syntax(subIndent)
     }
 
-    val bodySyntax = "in\n" + subIndent + body.syntax(subIndent)
+    val untilIn = untilDecls + "\n" + indent + "in"
 
-    ("local\n" + subIndent + declsSyntax + "\n" + indent +
-        bodySyntax + "\n" + indent + "end")
+    untilIn + "\n" + subIndent + body.syntax(subIndent) + "\n" + indent + "end"
   }
 }
 

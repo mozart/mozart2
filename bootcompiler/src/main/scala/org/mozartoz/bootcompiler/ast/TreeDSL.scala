@@ -15,12 +15,20 @@ trait TreeDSL {
       case CompoundStatement(selfStats) =>
         treeCopy.CompoundStatement(self, selfStats :+ right)
 
+      case SkipStatement() =>
+        right
+
       case _ =>
         treeCopy.CompoundStatement(self, List(self, right))
     }
 
-    def ~> (right: Expression) =
-      treeCopy.StatAndExpression(self, self, right)
+    def ~> (right: Expression) = self match {
+      case SkipStatement() =>
+        right
+
+      case _ =>
+        treeCopy.StatAndExpression(self, self, right)
+    }
   }
 
   /** Operations on Expressions */
@@ -33,6 +41,9 @@ trait TreeDSL {
 
     def callExpr(args: Expression*) =
       treeCopy.CallExpression(self, self, args.toList)
+
+    def dot(rhs: Expression) =
+      treeCopy.BinaryOp(self, self, ".", rhs)
   }
 
   /** Wrap an Oz value inside a Constant */
@@ -76,6 +87,12 @@ trait TreeDSL {
   def PROC(name: String, args: List[FormalArg],
       flags: List[String] = Nil)(body: Statement) = {
     treeCopy.ProcExpression(body, name, args, body, flags)
+  }
+
+  /** Construct FunExpressions */
+  def FUN(name: String, args: List[FormalArg],
+      flags: List[String] = Nil)(body: Expression) = {
+    treeCopy.FunExpression(body, name, args, body, flags)
   }
 
   /** Construct ThreadStatements */

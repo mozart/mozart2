@@ -76,6 +76,8 @@ case class OzRecordField(feature: OzFeature, value: OzValue) {
 
 case class OzRecord(label: OzLiteral,
     fields: List[OzRecordField]) extends OzValue {
+  require(!fields.isEmpty)
+
   def syntax() = {
     val untilFirstField = label.syntax() + "(" + fields.head.syntax()
 
@@ -127,6 +129,12 @@ object OzSharp extends (List[OzValue] => OzRecord) {
     case OzTuple(OzAtom("#"), fields) => Some(fields)
     case _ => None
   }
+}
+
+object OzList extends (List[OzValue] => OzValue) {
+  def apply(elems: List[OzValue]): OzValue =
+    if (elems.isEmpty) OzAtom("nil")
+    else OzCons(elems.head, OzList(elems.tail))
 }
 
 case class OzBuiltin(builtin: symtab.Builtin) extends OzValue {

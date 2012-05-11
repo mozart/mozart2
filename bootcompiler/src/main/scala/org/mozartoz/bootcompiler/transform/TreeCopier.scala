@@ -75,6 +75,26 @@ class TreeCopier {
   def BindExpression(tree: Node, left: Expression, right: Expression) =
     new BindExpression(left, right).copyAttrs(tree)
 
+  // Functors
+
+  def AliasedFeature(tree: Node, feature: Constant, alias: Option[Variable]) =
+    new AliasedFeature(feature, alias).copyAttrs(tree)
+
+  def FunctorImport(tree: Node, module: Variable, aliases: List[AliasedFeature],
+      location: Option[String]) =
+    new FunctorImport(module, aliases, location).copyAttrs(tree)
+
+  def FunctorExport(tree: Node, feature: Expression, value: Expression) =
+    new FunctorExport(feature, value).copyAttrs(tree)
+
+  def FunctorExpression(tree: Node, name: String,
+      require: List[FunctorImport], prepare: Option[LocalStatement],
+      imports: List[FunctorImport], define: Option[LocalStatement],
+      exports: List[FunctorExport]) = {
+    new FunctorExpression(name, require, prepare, imports,
+        define, exports).copyAttrs(tree)
+  }
+
   // Operations
 
   def UnaryOp(tree: Node, operator: String, operand: Expression) =

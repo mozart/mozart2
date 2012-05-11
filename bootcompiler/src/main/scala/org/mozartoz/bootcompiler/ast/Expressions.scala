@@ -65,6 +65,59 @@ case class BindExpression(left: Expression,
   protected val opSyntax = " = "
 }
 
+// Functors
+
+case class AliasedFeature(feature: Constant,
+    alias: Option[Variable]) extends Node {
+  def syntax(indent: String) = {
+    feature.syntax() + (alias map (":" + _.syntax()) getOrElse (""))
+  }
+}
+
+case class FunctorImport(module: Variable, aliases: List[AliasedFeature],
+    location: Option[String]) extends Node {
+  def syntax(indent: String) = {
+    val aliasesSyntax = aliases map (_.syntax(indent)) mkString " "
+    val locationSyntax = location map (" at '"+_+"'") getOrElse ("")
+    module.syntax(indent) + "(" + aliasesSyntax + ")" + locationSyntax
+  }
+}
+
+case class FunctorExport(feature: Expression,
+    value: Expression) extends Node {
+  def syntax(indent: String) = {
+    feature.syntax(indent) + ":" + value.syntax(indent)
+  }
+}
+
+case class FunctorExpression(name: String,
+    require: List[FunctorImport], prepare: Option[LocalStatement],
+    imports: List[FunctorImport], define: Option[LocalStatement],
+    exports: List[FunctorExport]) extends Expression {
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+
+    def sectionSyntax(sectionKw: String, elems: Traversable[Node]) = {
+      if (elems.isEmpty) ""
+      else {
+        (("\n\n" + indent + sectionKw) /: elems) {
+          (prev, elem) => prev + "\n" + subIndent + elem.syntax(subIndent)
+        }
+      }
+    }
+
+    val firstLine = "functor % " + name
+    val untilRequire = firstLine + sectionSyntax("require", require)
+    val untilPrepare = untilRequire + sectionSyntax("prepare", prepare)
+    val untilImports = untilPrepare + sectionSyntax("import", imports)
+    val untilExports = untilImports + sectionSyntax("export", exports)
+    val untilDefine = untilExports + sectionSyntax("define", define)
+
+    untilDefine + "\n\n" + indent + "end"
+  }
+}
+
 // Operations
 
 case class UnaryOp(operator: String, operand: Expression) extends Expression {
@@ -88,7 +141,9 @@ trait VarOrConst extends Expression
 
 case class Variable(name: String) extends VarOrConst with SymbolNode
     with FormalArg with Declaration {
-  def syntax(indent: String) = name
+  def syntax(indent: String) =
+    if (symbol.isDefined) name + "~" + symbol.id
+    else name
 }
 
 object Variable extends (String => Variable) {

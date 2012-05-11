@@ -1,5 +1,7 @@
 package org.mozartoz.bootcompiler
 
+import scala.util.parsing.input.{ Position, NoPosition, Positional }
+
 package object ast {
   // Utils
 
@@ -18,4 +20,19 @@ package object ast {
 
   implicit def expr2recordField(expr: Expression) =
     RecordField(AutoFeature(), expr)
+
+  def atPos[A <: Node](pos: Position)(node: A): A = {
+    node walkBreak { subNode =>
+      if (subNode.pos ne NoPosition) false
+      else {
+        subNode.setPos(pos)
+        true
+      }
+    }
+
+    node
+  }
+
+  def atPos[A <: Node](positional: Positional)(node: A): A =
+    atPos(positional.pos)(node)
 }

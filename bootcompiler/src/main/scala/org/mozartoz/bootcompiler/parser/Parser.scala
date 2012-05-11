@@ -57,6 +57,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifStatement
     | caseStatement
     | threadStatement
+    | functorStatement
     | skipStatement
   )
 
@@ -235,6 +236,74 @@ class OzParser extends OzTokenParsers with PackratParsers
     | (expression2 <~ ":=") ~ expression1 ^^ AssignStatement
   )
 
+  // Functor
+
+  lazy val functorStatement: PackratParser[Statement] = positioned {
+    "functor" ~> expression ~ innerFunctor <~ "end" ^^ {
+      case lhs ~ functor =>
+        val name = lhs match {
+          case Variable(name) => name
+          case _ => ""
+        }
+        BindStatement(lhs, functor.copy(name = name))
+    }
+  }
+
+  lazy val functorExpression: PackratParser[Expression] =
+    "functor" ~> opt("$") ~> innerFunctor <~ "end"
+
+  lazy val innerFunctor: PackratParser[FunctorExpression] = positioned {
+    require ~ prepare ~ imports ~ exports ~ define ^^ {
+      case r ~ p ~ i ~ e ~ d => FunctorExpression("", r, p, i, d, e)
+    }
+  }
+
+  lazy val require: PackratParser[List[FunctorImport]] =
+    opt("require" ~> rep(importElem)) ^^ (_.getOrElse(Nil))
+
+  lazy val prepare: PackratParser[Option[LocalStatement]] =
+    opt("prepare" ~> defineBody)
+
+  lazy val imports: PackratParser[List[FunctorImport]] =
+    opt("import" ~> rep(importElem)) ^^ (_.getOrElse(Nil))
+
+  lazy val exports: PackratParser[List[FunctorExport]] =
+    opt("export" ~> rep(exportElem)) ^^ (_.getOrElse(Nil))
+
+  lazy val define: PackratParser[Option[LocalStatement]] =
+    opt("define" ~> defineBody)
+
+  lazy val importElem: PackratParser[FunctorImport] = positioned(
+      variable ~ success(Nil) ~ opt(importLocation) ^^ FunctorImport
+    | variableLabel ~ (rep(importAlias) <~ ")") ~ opt(importLocation) ^^ FunctorImport
+  )
+
+  lazy val variableLabel: PackratParser[Variable] = positioned {
+    identLabel ^^ Variable
+  }
+
+  lazy val importAlias: PackratParser[AliasedFeature] = positioned {
+    featureNoVar ~ opt(":" ~> variable) ^^ AliasedFeature
+  }
+
+  lazy val importLocation: PackratParser[String] =
+    "at" ~> atom ^^ (_.value)
+
+  lazy val exportElem: PackratParser[FunctorExport] = positioned {
+    exportFeature ~ variable ^^ FunctorExport
+  }
+
+  lazy val exportFeature: PackratParser[Expression] = positioned {
+    opt(featureNoVar <~ ":") ^^ (_ getOrElse AutoFeature())
+  }
+
+  lazy val defineBody: PackratParser[LocalStatement] = positioned {
+    declarations ~ opt("in" ~> statement) ^^ {
+      case decls ~ optStat =>
+        LocalStatement(decls, optStat getOrElse SkipStatement())
+    }
+  }
+
   // Skip
 
   lazy val skipStatement: PackratParser[Statement] = positioned {
@@ -341,6 +410,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifExpression
     | caseExpression
     | threadExpression
+    | functorExpression
     | trivialExpression
     | recordExpression
     | listExpression
@@ -378,6 +448,11 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val variable: PackratParser[Variable] =
     positioned(ident ^^ (chars => Variable(chars)))
+
+  lazy val featureNoVar = positioned(featureNoVarConst ^^ Constant)
+
+  lazy val featureNoVarConst: PackratParser[OzFeature] =
+    integerConst | atomLike
 
   // Record expressions
 

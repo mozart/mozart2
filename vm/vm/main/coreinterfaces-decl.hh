@@ -286,6 +286,23 @@ struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
   }
 };
 
+class CellLike;
+template<>
+struct Interface<CellLike>: ImplementedBy<Cell> {
+  OpResult exchange(RichNode self, VM vm, RichNode newValue,
+                    UnstableNode& oldValue) {
+    return raiseTypeError(vm, u"Cell", self);
+  }
+
+  OpResult access(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"Cell", self);
+  }
+
+  OpResult assign(RichNode self, VM vm, RichNode newValue) {
+    return raiseTypeError(vm, u"Cell", self);
+  }
+};
+
 }
 
 #endif // __COREINTERFACES_DECL_H

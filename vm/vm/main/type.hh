@@ -41,6 +41,10 @@ WithHome::WithHome(VM vm, GR gr, SpaceRef fromHome) {
   gr->copySpace(_home, fromHome);
 }
 
+bool WithHome::isHomedInCurrentSpace(VM vm) {
+  return ((Space*) _home) == vm->getCurrentSpace();
+}
+
 }
 
 #endif // __TYPE_H

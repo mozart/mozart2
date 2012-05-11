@@ -22,23 +22,67 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __MODCELL_H
+#define __MODCELL_H
 
-#include "mozartcore-decl.hh"
+#include "../mozartcore.hh"
 
-#include "variables-decl.hh"
-#include "boolean-decl.hh"
-#include "smallint-decl.hh"
-#include "float-decl.hh"
-#include "codearea-decl.hh"
-#include "callables-decl.hh"
-#include "atom-decl.hh"
-#include "records-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "cell-decl.hh"
-#include "reference-decl.hh"
-#include "gctypes-decl.hh"
-#include "patmattypes-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#endif // __COREDATATYPES_DECL_H
+namespace mozart {
+
+namespace builtins {
+
+/////////////////
+// Cell module //
+/////////////////
+
+class ModCell: public Module {
+public:
+  ModCell(): Module("Cell") {}
+
+  class New: public Builtin<New> {
+  public:
+    New(): Builtin("new") {}
+
+    OpResult operator()(VM vm, In initial, Out result) {
+      result = Cell::build(vm, initial);
+      return OpResult::proceed();
+    }
+  };
+
+  class ExchangeFun: public Builtin<ExchangeFun> {
+  public:
+    ExchangeFun(): Builtin("exchangeFun") {}
+
+    OpResult operator()(VM vm, In cell, In newValue, Out oldValue) {
+      return CellLike(cell).exchange(vm, newValue, oldValue);
+    }
+  };
+
+  class Access: public Builtin<Access> {
+  public:
+    Access(): Builtin("access") {}
+
+    OpResult operator()(VM vm, In cell, Out result) {
+      return CellLike(cell).access(vm, result);
+    }
+  };
+
+  class Assign: public Builtin<Assign> {
+  public:
+    Assign(): Builtin("assign") {}
+
+    OpResult operator()(VM vm, In cell, In newValue) {
+      return CellLike(cell).assign(vm, newValue);
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODCELL_H

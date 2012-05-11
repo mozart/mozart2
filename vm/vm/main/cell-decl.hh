@@ -22,23 +22,63 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __CELL_DECL_H
+#define __CELL_DECL_H
 
 #include "mozartcore-decl.hh"
 
-#include "variables-decl.hh"
-#include "boolean-decl.hh"
-#include "smallint-decl.hh"
-#include "float-decl.hh"
-#include "codearea-decl.hh"
-#include "callables-decl.hh"
-#include "atom-decl.hh"
-#include "records-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "cell-decl.hh"
-#include "reference-decl.hh"
-#include "gctypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#endif // __COREDATATYPES_DECL_H
+//////////
+// Cell //
+//////////
+
+class Cell;
+
+#ifndef MOZART_GENERATOR
+#include "Cell-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<Cell>: public WithHome {
+public:
+  typedef SelfType<Cell>::Self Self;
+public:
+  Implementation(VM vm, RichNode initial): WithHome(vm) {
+    _value.init(vm, initial);
+  }
+
+  inline
+  Implementation(VM vm, GR gr, Self from);
+
+public:
+  // CellLike interface
+
+  inline
+  OpResult exchange(RichNode self, VM vm, RichNode newValue,
+                    UnstableNode& oldValue);
+
+  inline
+  OpResult access(RichNode self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult assign(RichNode self, VM vm, RichNode newValue);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<Cell: " << repr(vm, _value, depth) << ">";
+  }
+
+private:
+  UnstableNode _value;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Cell-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __CELL_DECL_H

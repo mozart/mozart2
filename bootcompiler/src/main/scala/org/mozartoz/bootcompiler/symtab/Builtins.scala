@@ -12,7 +12,9 @@ class Builtins {
   lazy val topLevelEnvironment = Map.empty ++ baseEnvironment
 
   lazy val unaryOpToBuiltin = Map(
-      "~" -> builtinByName("Number.'~'")
+      //"~" -> builtinByName("Number.'~'"),
+
+      "@" -> builtinByName("Cell.access")
   )
 
   lazy val binaryOpToBuiltin = Map(
@@ -31,7 +33,9 @@ class Builtins {
       ">" -> builtinByName("Value.'>'"),
       ">=" -> builtinByName("Value.'>='"),*/
 
-      "." -> builtinByName("Value.'.'")
+      "." -> builtinByName("Value.'.'"),
+
+      ":=" -> builtinByName("Cell.exchangeFun")
   )
 
   lazy val createThread = builtinByName("Thread.create")
@@ -40,4 +44,8 @@ class Builtins {
 
   lazy val plus1 = builtinByName("Int.'+1'")
   lazy val minus1 = builtinByName("Int.'-1'")
+
+  lazy val cellExchange = builtinByName("Cell.exchangeFun")
+  lazy val cellAccess = builtinByName("Cell.access")
+  lazy val cellAssign = builtinByName("Cell.assign")
 }

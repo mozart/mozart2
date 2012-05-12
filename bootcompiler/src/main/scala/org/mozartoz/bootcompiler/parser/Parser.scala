@@ -228,11 +228,12 @@ class OzParser extends OzTokenParsers with PackratParsers
     "thread" ~> inExpression <~ "end" ^^ ThreadExpression
   }
 
-  // Bind
+  // Bind and similar
 
-  lazy val bindStatement: PackratParser[Statement] = positioned {
-    (expression1 <~ "=") ~ expression0 ^^ BindStatement
-  }
+  lazy val bindStatement: PackratParser[Statement] = positioned(
+      (expression1 <~ "=") ~ expression0 ^^ BindStatement
+    | (expression2 <~ ":=") ~ expression1 ^^ AssignStatement
+  )
 
   // Skip
 
@@ -248,7 +249,10 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   // X<-Y   X:=Y   X.Y:=Z   (right-associative)
-  lazy val expression1: PackratParser[Expression] = expression2
+  lazy val expression1: PackratParser[Expression] = (
+      positioned(expression2 ~ ":=" ~ expression1 ^^ BinaryOp)
+    | expression2
+  )
 
   // X orelse Y   (right-associative)
   lazy val expression2: PackratParser[Expression] = (
@@ -322,7 +326,10 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   // @X   !!X   (prefix)
-  lazy val expression13: PackratParser[Expression] = expression14
+  lazy val expression13: PackratParser[Expression] = (
+      positioned("@" ~ expression13 ^^ UnaryOp)
+    | expression14
+  )
 
   // elementary
   lazy val expression14: PackratParser[Expression] = (

@@ -48,6 +48,11 @@ case class BindStatement(left: Expression,
   protected val opSyntax = " = "
 }
 
+case class AssignStatement(left: Expression,
+    right: Expression) extends Statement with InfixSyntax {
+  protected val opSyntax = " := "
+}
+
 case class SkipStatement() extends Statement {
   def syntax(indent: String) = "skip"
 }

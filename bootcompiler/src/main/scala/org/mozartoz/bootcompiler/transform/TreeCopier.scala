@@ -32,6 +32,9 @@ class TreeCopier {
   def BindStatement(tree: Node, left: Expression, right: Expression) =
     new BindStatement(left, right).copyAttrs(tree)
 
+  def AssignStatement(tree: Node, left: Expression, right: Expression) =
+    new AssignStatement(left, right).copyAttrs(tree)
+
   def SkipStatement(tree: Node) =
     new SkipStatement().copyAttrs(tree)
 

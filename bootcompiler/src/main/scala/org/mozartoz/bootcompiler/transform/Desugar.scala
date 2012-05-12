@@ -7,6 +7,9 @@ import symtab._
 
 object Desugar extends Transformer with TreeDSL {
   override def transformStat(statement: Statement) = statement match {
+    case assign @ AssignStatement(lhs, rhs) =>
+      builtins.cellAssign call (transformExpr(lhs), transformExpr(rhs))
+
     case thread @ ThreadStatement(body) =>
       val proc = PROC("", Nil) {
         transformStat(body)

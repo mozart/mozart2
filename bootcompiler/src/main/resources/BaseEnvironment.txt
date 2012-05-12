@@ -5,3 +5,7 @@ IsDet = Value.isDet
 
 Label = Record.label
 Width = Record.width
+
+NewCell = Cell.new
+Access = Cell.access
+Assign = Cell.assign

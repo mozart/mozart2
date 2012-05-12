@@ -48,7 +48,8 @@ class OzParser extends OzTokenParsers with PackratParsers
     rep1(oneStatement) ^^ CompoundStatement
 
   lazy val oneStatement: PackratParser[Statement] = (
-      "local" ~> inStatement <~ "end"
+      bindStatement
+    | "local" ~> inStatement <~ "end"
     | "(" ~> inStatement <~ ")"
     | procStatement
     | funStatement
@@ -56,7 +57,6 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifStatement
     | caseStatement
     | threadStatement
-    | bindStatement
     | skipStatement
   )
 
@@ -77,9 +77,9 @@ class OzParser extends OzTokenParsers with PackratParsers
     | statExpression
   )
 
-  lazy val statExpression: PackratParser[Expression] = (
-      positioned(statement ~ expression ^^ StatAndExpression)
-    | expression
+  lazy val statExpression: PackratParser[Expression] = positioned(
+      expression
+  ||| positioned(oneStatement ~ statExpression ^^ StatAndExpression)
   )
 
   lazy val declarations: PackratParser[List[Declaration]] =

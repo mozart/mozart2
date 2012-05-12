@@ -15,6 +15,7 @@ class OzLexical extends Lexical with OzTokens {
     | atomLiteral
     | EofCh ^^^ EOF
     | delim
+    | '?' ~> token
     | failure("illegal character")
   )
 
@@ -49,9 +50,18 @@ class OzLexical extends Lexical with OzTokens {
         case first ~ rest => processKeyword(first :: rest mkString "")
       }
 
-    | '\'' ~> rep( chrExcept('\'', '\n', EofCh) ) <~ '\'' ^^ {
+    | '\'' ~> rep(inQuoteChar) <~ '\'' ^^ {
         chars => AtomLit(chars mkString "")
       }
+  )
+
+  def inQuoteChar = (
+      '\\' ~> escapeChar
+    | chrExcept('\\', '\'', '\n', EofCh)
+  )
+
+  def escapeChar = (
+      elem('\'') | '"' | '\\'
   )
 
   /** A character-parser that matches a lowercase letter (and returns it)*/

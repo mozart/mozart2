@@ -42,6 +42,9 @@ T identity(T it) {
 inline
 OpResult requireLiteral(VM vm, RichNode label);
 
+inline
+OpResult makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width);
+
 template <class T>
 inline
 OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,

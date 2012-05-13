@@ -70,6 +70,18 @@ OpResult Implementation<Atom>::width(Self self, VM vm,
   return OpResult::proceed();
 }
 
+OpResult Implementation<Atom>::arityList(Self self, VM vm,
+                                         UnstableNode& result) {
+  result = trivialBuild(vm, vm->coreatoms.nil);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Atom>::clone(Self self, VM vm,
+                                     UnstableNode& result) {
+  result.copy(vm, self);
+  return OpResult::proceed();
+}
+
 OpResult Implementation<Atom>::dot(Self self, VM vm, RichNode feature,
                                    UnstableNode& result) {
   // Always out of bounds

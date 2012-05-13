@@ -81,6 +81,12 @@ public:
   OpResult width(Self self, VM vm, UnstableNode& result);
 
   inline
+  OpResult arityList(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult clone(Self self, VM vm, UnstableNode& result);
+
+  inline
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
 
   inline

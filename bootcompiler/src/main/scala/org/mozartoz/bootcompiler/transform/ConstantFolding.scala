@@ -26,6 +26,12 @@ object ConstantFolding extends Transformer with TreeDSL {
           expression
         }
 
+      case (record @ Record(_, fields)) dot (feature @ Constant(_:OzFeature)) =>
+        fields.find(_.feature == feature) match {
+          case Some(RecordField(_, value)) => value
+          case None => expression
+        }
+
       case _ =>
         expression
     }

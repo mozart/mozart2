@@ -34,13 +34,11 @@ class OzParser extends OzTokenParsers with PackratParsers
       ">=", "=:", "\\=:", "<:", "=<:", ">:", ">=:", "::", ":::"
   )
 
-  def parse(input: Reader[Char]) =
-    phrase(root)(new lexical.Scanner(input))
+  def parseStatement(input: Reader[Char]) =
+    phrase(statement)(new lexical.Scanner(input))
 
-  def parse(input: String) =
-    phrase(root)(new lexical.Scanner(input))
-
-  lazy val root = statement
+  def parseExpression(input: Reader[Char]) =
+    phrase(expression)(new lexical.Scanner(input))
 
   // Statements
 

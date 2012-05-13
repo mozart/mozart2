@@ -18,6 +18,7 @@ import util._
 case class Config(
     fileName: String = "",
     outputStream: () => PrintStream = () => Console.out,
+    baseModule: String = "",
     moduleDefs: List[String] = Nil
 )
 
@@ -33,6 +34,9 @@ object Main {
         opt("m", "module", "module definition file") {
           (v: String, c: Config) => c.copy(moduleDefs = v :: c.moduleDefs)
         },
+        opt("b", "base", "path to the base functor") {
+          (v: String, c: Config) => c.copy(baseModule = v)
+        },
         arg("<file>", "input file") {
           (v: String, c: Config) => c.copy(fileName = v)
         }
@@ -45,21 +49,12 @@ object Main {
       import config._
 
       try {
-        val reader = new PagedSeqReader(PagedSeq.fromReader(
-            new BufferedReader(new FileReader(fileName))))
-        val parser = new OzParser()
+        val baseFunctor = parseExpression(readerForFile(baseModule))
+        val programStat = parseStatement(readerForFile(fileName))
 
-        parser.parse(reader) match {
-          case parser.Success(rawCode, _) =>
-            produce(rawCode, outputStream, moduleDefs)
-          case parser.NoSuccess(msg, next) =>
-            Console.err.println(
-                "Parse error (line %d, col %d)\n".format(
-                    next.pos.line, next.pos.column) +
-                msg + "\n" +
-                next.pos.longString)
-            sys.exit(2)
-        }
+        val program = buildProgram(moduleDefs, baseFunctor, programStat)
+
+        produce(program, outputStream)
       } catch {
         case th: Throwable =>
           th.printStackTrace()
@@ -72,11 +67,58 @@ object Main {
     }
   }
 
-  def produce(rawCode: Statement, outputStream: () => PrintStream,
-      moduleDefs: List[String]) {
-    val prog = new Program(rawCode)
-    loadModuleDefs(prog, moduleDefs)
-    loadBaseEnvironment(prog)
+  private def parseStatement(reader: PagedSeqReader) =
+    new ParserWrapper().parseStatement(reader)
+
+  private def parseExpression(reader: PagedSeqReader) =
+    new ParserWrapper().parseExpression(reader)
+
+  class ParserWrapper {
+    private val parser = new OzParser()
+
+    def parseStatement(reader: PagedSeqReader) =
+      processResult(parser.parseStatement(reader))
+
+    def parseExpression(reader: PagedSeqReader) =
+      processResult(parser.parseExpression(reader))
+
+    private def processResult[A](result: parser.ParseResult[A]): A = {
+      result match {
+        case parser.Success(rawCode, _) =>
+          rawCode
+
+        case parser.NoSuccess(msg, next) =>
+          Console.err.println(
+              "Parse error (line %d, col %d)\n".format(
+                  next.pos.line, next.pos.column) +
+              msg + "\n" +
+              next.pos.longString)
+          sys.exit(2)
+      }
+    }
+  }
+
+  private def readerForFile(fileName: String) = {
+    new PagedSeqReader(PagedSeq.fromReader(
+        new BufferedReader(new FileReader(fileName))))
+  }
+
+  private def readerForResource(resourceName: String) = {
+    new PagedSeqReader(PagedSeq.fromSource(io.Source.fromInputStream(
+        getClass.getResourceAsStream(resourceName))))
+  }
+
+  private def buildProgram(moduleDefs: List[String], baseFunctor: Expression,
+      programStat: Statement): Program = {
+    val prog = new Program(SkipStatement())
+
+    val bootModulesMap = loadModuleDefs(prog, moduleDefs)
+    ProgramBuilder.build(prog, bootModulesMap, baseFunctor, programStat)
+
+    prog
+  }
+
+  def produce(prog: Program, outputStream: () => PrintStream) {
     applyTransforms(prog)
 
     if (prog.hasErrors) {
@@ -93,27 +135,31 @@ object Main {
     }
   }
 
-  private def loadModuleDefs(prog: Program, moduleDefs: List[String]) {
+  private def loadModuleDefs(prog: Program, moduleDefs: List[String]) = {
     JSON.globalNumberParser = (_.toInt)
+
+    val result = new scala.collection.mutable.HashMap[String, Expression]
 
     for (moduleDef <- moduleDefs) {
       val file = new File(moduleDef)
 
       if (file.isFile())
-        loadModuleDef(prog, file)
+        result ++= loadModuleDef(prog, file)
       else {
         val pattern = """.*-builtin\.json$""".r
         for {
           f <- file.listFiles()
           if (pattern.findFirstIn(f.getName).isDefined)
         } {
-          loadModuleDef(prog, f)
+          result ++= loadModuleDef(prog, f)
         }
       }
     }
+
+    Map.empty ++ result
   }
 
-  private def loadModuleDef(prog: Program, moduleDef: File) {
+  private def loadModuleDef(prog: Program, moduleDef: File) = {
     class CC[T] {
       def unapply(a: Any): Option[T] = Some(a.asInstanceOf[T])
     }
@@ -130,8 +176,8 @@ object Main {
       M(module) <- modules
       S(modName) = module("name")
       L(builtins) = module("builtins")
-    } {
-      val exportFields = new ListBuffer[OzRecordField]
+    } yield {
+      val exportFields = new ListBuffer[RecordField]
 
       for {
         M(builtin) <- builtins
@@ -160,27 +206,14 @@ object Main {
 
         prog.builtins.builtinByName.put(fullName, builtinSym)
 
-        exportFields += OzRecordField(OzAtom(biName), OzBuiltin(builtinSym))
+        exportFields += RecordField(
+            Constant(OzAtom(biName)), Constant(OzBuiltin(builtinSym)))
       }
 
-      val moduleExport = OzRecord(OzAtom("export"), exportFields.toList)
-      prog.builtins.baseEnvironment.put(modName, moduleExport)
-    }
-  }
+      val moduleURL = "x-oz://boot/" + modName
+      val moduleExport = Record(Constant(OzAtom("export")), exportFields.toList)
 
-  private def loadBaseEnvironment(prog: Program) {
-    val in = getClass.getResourceAsStream("/BaseEnvironment.txt")
-    val source = io.Source.fromInputStream(in)
-    val UsefulLine = """(\w+)\s*=\s*([^\s].*)""".r
-
-    for (line <- source.getLines()) {
-      line match {
-        case UsefulLine(key, fullName) =>
-          val builtin = prog.builtins.builtinByName(fullName)
-          prog.builtins.baseEnvironment.put(key, OzBuiltin(builtin))
-
-        case _ => // ignore
-      }
+      moduleURL -> moduleExport
     }
   }
 

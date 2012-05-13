@@ -20,9 +20,10 @@ For this reason, a design goal of this bootstrap compiler is to stay minimal. In
 
 See [sjrd/mozart-app-test](https://github.com/sjrd/mozart-app-test) for an integrated way of using this bootcompiler.
 
-Roughly, the program must be executed with exactly 3 command-line arguments:
+Roughly, the program must be executed with exactly 4 command-line arguments:
 
 *   Under option `-m`, the path to a directory where it can find builtin information, i.e., the build directory of your Mozart2 installation,
+*   Under option `-b`, the path to the base module `Base.oz`,
 *   Under option `-o`, the output file (a `.cc` file),
 *   The `.oz` file to process.
 
@@ -30,6 +31,7 @@ For example:
 
     $ java -jar "./target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar" \
         -m "/path/to/mozart/build/vm/main/" \
+        -b "/path/to/mozart/build/lib/base/BaseBuilt.oz" \
         -o output.cc \
         Input.oz
 

@@ -53,6 +53,9 @@ public:
   OpResult width(Self self, VM vm, UnstableNode& result);
 
   inline
+  OpResult arityList(Self self, VM vm, UnstableNode& result);
+
+  inline
   OpResult initElement(Self self, VM vm, size_t index, RichNode value);
 
   inline
@@ -60,7 +63,7 @@ public:
 protected:
   /* To be implemented in subclasses
   inline
-  void getFeatureAt(Self self, size_t index);
+  void getFeatureAt(Self self, size_t index, UnstableNode& result);
   */
 };
 
@@ -108,6 +111,9 @@ public:
 
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult clone(Self self, VM vm, UnstableNode& result);
 
   inline
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
@@ -174,6 +180,12 @@ public:
 
   inline
   OpResult width(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult arityList(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult clone(Self self, VM vm, UnstableNode& result);
 
   inline
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
@@ -297,6 +309,9 @@ public:
 
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult clone(Self self, VM vm, UnstableNode& result);
 
   inline
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);

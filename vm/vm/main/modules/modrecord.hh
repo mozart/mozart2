@@ -59,6 +59,24 @@ public:
     }
   };
 
+  class Arity: public Builtin<Arity> {
+  public:
+    Arity(): Builtin("arity") {}
+
+    OpResult operator()(VM vm, In record, Out result) {
+      return RecordLike(record).arityList(vm, result);
+    }
+  };
+
+  class Clone: public Builtin<Clone> {
+  public:
+    Clone(): Builtin("clone") {}
+
+    OpResult operator()(VM vm, In record, Out result) {
+      return RecordLike(record).clone(vm, result);
+    }
+  };
+
   class WaitOr: public Builtin<WaitOr> {
   public:
     WaitOr(): Builtin("waitOr") {}

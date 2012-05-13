@@ -30,6 +30,7 @@
 namespace mozart {
 
 void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
+  nil = atomTable.get(vm, u"nil");
   pipe = atomTable.get(vm, u"|");
   sharp = atomTable.get(vm, u"#");
 

@@ -61,6 +61,32 @@ namespace internal {
   }
 }
 
+inline
+OpResult makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
+  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+
+  if (width == 0) {
+    result.copy(vm, label);
+    return OpResult::proceed();
+  }
+
+  if ((width == 2) && internal::isPipeAtom(vm, label)) {
+    UnstableNode head = Unbound::build(vm);
+    UnstableNode tail = Unbound::build(vm);
+    result.make<Cons>(vm, head, tail);
+
+    return OpResult::proceed();
+  }
+
+  result.make<Tuple>(vm, width, label);
+  auto tuple = RichNode(result).as<Tuple>();
+
+  for (size_t i = 0; i < width; i++)
+    tuple.getElement(i)->make<Unbound>(vm);
+
+  return OpResult::proceed();
+}
+
 template <class T>
 inline
 OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,

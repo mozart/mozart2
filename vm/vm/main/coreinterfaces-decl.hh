@@ -237,6 +237,14 @@ struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
     return raiseTypeError(vm, u"Record", self);
   }
 
+  OpResult arityList(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"Record", self);
+  }
+
+  OpResult clone(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"Record", self);
+  }
+
   OpResult dot(RichNode self, VM vm, RichNode feature,
                UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);

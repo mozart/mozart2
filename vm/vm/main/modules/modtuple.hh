@@ -22,44 +22,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREATOMS_DECL_H
-#define __COREATOMS_DECL_H
+#ifndef __MODTUPLE_H
+#define __MODTUPLE_H
 
-#include "core-forward-decl.hh"
+#include "../mozartcore.hh"
 
-#include "atomtable.hh"
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-struct CoreAtoms {
-  inline
-  void initialize(VM vm, AtomTable& atomTable);
+namespace builtins {
 
-  // nil, '|' and '#'
-  AtomImpl* nil;
-  AtomImpl* pipe;
-  AtomImpl* sharp;
+//////////////////
+// Tuple module //
+//////////////////
 
-  // Space status
-  AtomImpl* succeeded;
-  AtomImpl* entailed;
-  AtomImpl* stuck;
-  AtomImpl* suspended;
-  AtomImpl* alternatives;
-  AtomImpl* failed;
-  AtomImpl* merged;
+class ModTuple: public Module {
+public:
+  ModTuple(): Module("Tuple") {}
 
-  // Exceptions
-  AtomImpl* failure;
-  AtomImpl* typeError;
-  AtomImpl* illegalFieldSelection;
-  AtomImpl* illegalArity;
-  AtomImpl* spaceAdmissible;
-  AtomImpl* spaceNoChoice;
-  AtomImpl* spaceAltRange;
-  AtomImpl* spaceMerged;
+  class Make: public Builtin<Make> {
+  public:
+    Make(): Builtin("make") {}
+
+    OpResult operator()(VM vm, In label, In width, Out result) {
+      nativeint intWidth;
+      MOZART_GET_ARG(intWidth, width, u"integer");
+
+      return makeTuple(vm, result, label, intWidth);
+    }
+  };
 };
 
 }
 
-#endif // __COREATOMS_DECL_H
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODTUPLE_H

@@ -48,6 +48,23 @@ OpResult BaseRecord<T>::width(Self self, VM vm,
 }
 
 template <class T>
+OpResult BaseRecord<T>::arityList(Self self, VM vm,
+                                  UnstableNode& result) {
+  UnstableNode res = trivialBuild(vm, vm->coreatoms.nil);
+
+  for (size_t i = getWidth(); i > 0; i--) {
+    UnstableNode feature;
+    static_cast<Implementation<T>*>(this)->getFeatureAt(self, vm, i-1, feature);
+
+    UnstableNode temp = buildCons(vm, std::move(feature), std::move(res));
+    res = std::move(temp);
+  }
+
+  result = std::move(res);
+  return OpResult::proceed();
+}
+
+template <class T>
 OpResult BaseRecord<T>::initElement(Self self, VM vm,
                                     size_t index, RichNode value) {
   self[index].init(vm, value);
@@ -131,6 +148,18 @@ OpResult Implementation<Tuple>::label(Self self, VM vm,
   return OpResult::proceed();
 }
 
+OpResult Implementation<Tuple>::clone(Self self, VM vm,
+                                      UnstableNode& result) {
+  UnstableNode tempLabel(vm, _label);
+  result.make<Tuple>(vm, _width, tempLabel);
+
+  auto tuple = RichNode(result).as<Tuple>();
+  for (size_t i = 0; i < _width; i++)
+    tuple.getElement(i)->make<Unbound>(vm);
+
+  return OpResult::proceed();
+}
+
 OpResult Implementation<Tuple>::dot(Self self, VM vm,
                                     RichNode feature, UnstableNode& result) {
   using namespace patternmatching;
@@ -210,6 +239,18 @@ OpResult Implementation<Cons>::label(Self self, VM vm,
 OpResult Implementation<Cons>::width(Self self, VM vm,
                                      UnstableNode& result) {
   result = SmallInt::build(vm, 2);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::arityList(Self self, VM vm,
+                                         UnstableNode& result) {
+  result = buildCons(vm, 1, buildCons(vm, 2, vm->coreatoms.nil));
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::clone(Self self, VM vm,
+                                     UnstableNode& result) {
+  result = buildCons(vm, Unbound::build(vm), Unbound::build(vm));
   return OpResult::proceed();
 }
 
@@ -407,6 +448,18 @@ OpResult Implementation<Record>::label(Self self, VM vm,
                                        UnstableNode& result) {
   UnstableNode temp(vm, _arity);
   return RichNode(temp).as<Arity>().label(vm, result);
+}
+
+OpResult Implementation<Record>::clone(Self self, VM vm,
+                                       UnstableNode& result) {
+  UnstableNode tempArity(vm, _arity);
+  result.make<Record>(vm, _width, tempArity);
+
+  auto record = RichNode(result).as<Record>();
+  for (size_t i = 0; i < _width; i++)
+    record.getElement(i)->make<Unbound>(vm);
+
+  return OpResult::proceed();
 }
 
 OpResult Implementation<Record>::dot(Self self, VM vm,

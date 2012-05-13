@@ -53,6 +53,7 @@
 #include "modules/modint.hh"
 #include "modules/modfloat.hh"
 #include "modules/modrecord.hh"
+#include "modules/modtuple.hh"
 #include "modules/modsystem.hh"
 #include "modules/modthread.hh"
 #include "modules/modspace.hh"

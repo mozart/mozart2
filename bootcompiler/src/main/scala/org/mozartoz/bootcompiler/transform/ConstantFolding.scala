@@ -12,6 +12,21 @@ object ConstantFolding extends Transformer with TreeDSL {
     val expression = super.transformExpr(expression0)
 
     expression match {
+      case variable:Variable if variable.symbol.isConstant =>
+        treeCopy.Constant(variable, variable.symbol.constant.get)
+
+      case local @ LocalExpression(decls,
+          sae @ StatAndExpression(stat, expr)) =>
+        processConstAssignments(decls, stat) match {
+          case None => local
+
+          case Some((newDecls, newStat)) =>
+            transformExpr {
+              treeCopy.LocalExpression(local, newDecls,
+                  treeCopy.StatAndExpression(sae, newStat, expr))
+            }
+        }
+
       case record:Record =>
         transformRecord(record)
 
@@ -34,6 +49,25 @@ object ConstantFolding extends Transformer with TreeDSL {
 
       case _ =>
         expression
+    }
+  }
+
+  override def transformStat(statement0: Statement) = {
+    val statement = super.transformStat(statement0)
+
+    statement match {
+      case local @ LocalStatement(decls, stat) =>
+        processConstAssignments(decls, stat) match {
+          case None => local
+
+          case Some((newDecls, newStat)) =>
+            transformStat {
+              treeCopy.LocalStatement(local, newDecls, newStat)
+            }
+        }
+
+      case _ =>
+        statement
     }
   }
 
@@ -72,6 +106,67 @@ object ConstantFolding extends Transformer with TreeDSL {
     val tupleWithFields = treeCopy.Record(record, OzAtom("#"), fieldsOfTheTuple)
 
     builtins.makeRecordDynamic callExpr (label, tupleWithFields)
+  }
+
+  private def processConstAssignments(decls: List[Declaration],
+      statement: Statement): Option[(List[Declaration], Statement)] = {
+    var touched: Boolean = false
+
+    def inner(statement: Statement): Statement = {
+      val statements = foldCompoundStatements(statement)
+
+      val newStatements = statements flatMap { stat => stat match {
+        case (lhs:Variable) === Constant(rhs) if decls contains lhs =>
+          val symbol = lhs.symbol
+
+          symbol.constant match {
+            case Some(const) if const == rhs =>
+              ()
+
+            case Some(const) =>
+              program.reportError("Duplicate constant assignment", lhs)
+
+            case None =>
+              symbol.setConstant(rhs)
+          }
+
+          touched = true
+          None
+
+        case local @ LocalStatement(subDecls, subStat) =>
+          Some(treeCopy.LocalStatement(local, subDecls, inner(subStat)))
+
+        case _ =>
+          Some(stat)
+      }}
+
+      treeCopy.CompoundStatement(statement, newStatements)
+    }
+
+    val newStatement = inner(statement)
+
+    if (touched) {
+      val newDecls = for {
+        decl @ Variable(name) <- decls
+        if !decl.symbol.isConstant
+      } yield decl
+      Some((newDecls, newStatement))
+    } else {
+      None
+    }
+  }
+
+  private def foldCompoundStatements(statement: Statement): List[Statement] = {
+    statement match {
+      case CompoundStatement(stats) =>
+        stats flatMap foldCompoundStatements
+
+      case SkipStatement() =>
+        Nil
+
+      case _ =>
+        List(statement)
+    }
   }
 
   private object Utils {

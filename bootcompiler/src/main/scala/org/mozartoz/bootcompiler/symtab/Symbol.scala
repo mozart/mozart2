@@ -1,6 +1,8 @@
 package org.mozartoz.bootcompiler
 package symtab
 
+import oz._
+
 object Symbol {
   private var _lastID = 0
 
@@ -36,6 +38,10 @@ sealed abstract class Symbol(val name: String) {
   def fullName = name + "~" + id
 
   override def toString() = fullName
+
+  var constant: Option[OzValue] = None
+  def isConstant = constant.isDefined
+  def setConstant(value: OzValue) = constant = Some(value)
 }
 
 class VariableSymbol(name: String, formal: Boolean = false,

@@ -18,3 +18,5 @@ add_subdirectory(generator)
 
 set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG")
 add_subdirectory(vm)
+
+add_subdirectory(lib)

@@ -45,9 +45,26 @@ bool Implementation<Float>::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
+OpResult Implementation<Float>::compare(Self self, VM vm,
+                                        RichNode right, int& result) {
+  double rightFloatValue = 0.0;
+  MOZART_GET_ARG(rightFloatValue, right, u"float");
+
+  result = (value() < rightFloatValue) ? -1 :
+    (value() > rightFloatValue) ? 1 : 0;
+
+  return OpResult::proceed();
+}
+
 OpResult Implementation<Float>::equalsFloat(Self self, VM vm,
                                             double right, bool& result) {
   result = value() == right;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Float>::opposite(Self self, VM vm,
+                                         UnstableNode& result) {
+  result.make<Float>(vm, -value());
   return OpResult::proceed();
 }
 

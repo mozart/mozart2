@@ -399,6 +399,19 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
 template <>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value,
+                   PrimitiveCapturePattern<const AtomImpl*> pattern) {
+  if (value.is<Atom>()) {
+    pattern.value = value.as<Atom>().value();
+    return true;
+  } else {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+}
+
+template <>
+inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    PrimitiveCapturePattern<bool> pattern) {
   if (value.is<Boolean>()) {
     pattern.value = value.as<Boolean>().value();

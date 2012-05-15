@@ -44,6 +44,15 @@ public:
   const char16_t* contents() const {
     return data;
   }
+
+  int compare(const AtomImpl* rhs) const {
+    if (this == rhs) {
+      return 0;
+    } else {
+      return std::char_traits<char16_t>::compare(
+        this->contents(), rhs->contents(), this->length()+1);
+    }
+  }
 private:
   friend class AtomTable;
 

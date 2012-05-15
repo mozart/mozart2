@@ -56,10 +56,36 @@ int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
     return 1;
 }
 
+OpResult Implementation<SmallInt>::compare(Self self, VM vm,
+                                           RichNode right,
+                                           int& result) {
+  nativeint rightIntValue = 0;
+  MOZART_GET_ARG(rightIntValue, right, u"integer");
+
+  result = (value() == rightIntValue) ? 0 :
+    (value() < rightIntValue) ? -1 : 1;
+
+  return OpResult::proceed();
+}
+
 OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                  nativeint right,
                                                  bool& result) {
   result = value() == right;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
+                                            UnstableNode& result) {
+  // Detecting overflow - platform dependent (2's complement)
+  if (value() != std::numeric_limits<nativeint>::min()) {
+    // No overflow
+    result.make<SmallInt>(vm, -value());
+  } else {
+    // Overflow - TODO: create a BigInt
+    result.make<SmallInt>(vm, 0);
+  }
+
   return OpResult::proceed();
 }
 

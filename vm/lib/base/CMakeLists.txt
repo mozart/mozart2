@@ -1,0 +1,16 @@
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/BaseBuilt.oz
+  COMMAND ${CMAKE_CXX_COMPILER} -E -P
+    -o ${CMAKE_CURRENT_BINARY_DIR}/BaseBuilt.oz
+    -x c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Base.oz
+  IMPLICIT_DEPENDS C "${CMAKE_CURRENT_SOURCE_DIR}/Base.oz"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT Preprocessing Base.oz
+  VERBATIM)
+
+add_custom_target(baseenv
+  ALL
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/BaseBuilt.oz
+  VERBATIM)

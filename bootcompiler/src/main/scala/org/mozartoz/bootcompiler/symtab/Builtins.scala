@@ -12,7 +12,7 @@ class Builtins {
   lazy val topLevelEnvironment = Map.empty ++ baseEnvironment
 
   lazy val unaryOpToBuiltin = Map(
-      //"~" -> builtinByName("Number.'~'"),
+      "~" -> builtinByName("Number.'~'"),
 
       "@" -> builtinByName("Cell.access")
   )
@@ -28,10 +28,10 @@ class Builtins {
       "div" -> builtinByName("Int.div"),
       "mod" -> builtinByName("Int.mod"),
 
-      /*"<" -> builtinByName("Value.'<'"),
       "=<" -> builtinByName("Value.'=<'"),
+      "<" -> builtinByName("Value.'<'"),
+      ">=" -> builtinByName("Value.'>='"),
       ">" -> builtinByName("Value.'>'"),
-      ">=" -> builtinByName("Value.'>='"),*/
 
       "." -> builtinByName("Value.'.'"),
 

@@ -52,6 +52,15 @@ public:
   inline
   bool equals(VM vm, Self right);
 
+public:
+  // Comparable interface
+
+  inline
+  OpResult compare(Self self, VM vm, RichNode right, int& result);
+
+public:
+  // FloatValue inteface
+
   OpResult floatValue(Self self, VM vm, double& result) {
     result = value();
     return OpResult::proceed();
@@ -59,6 +68,12 @@ public:
 
   inline
   OpResult equalsFloat(Self self, VM vm, double right, bool& result);
+
+public:
+  // Numeric inteface
+
+  inline
+  OpResult opposite(Self self, VM vm, UnstableNode& result);
 
   inline
   OpResult add(Self self, VM vm, RichNode right, UnstableNode& result);

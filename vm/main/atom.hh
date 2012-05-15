@@ -50,12 +50,17 @@ int Implementation<Atom>::compareFeatures(VM vm, Self right) {
   const AtomImpl* lhs = value();
   const AtomImpl* rhs = right.get().value();
 
-  if (lhs == rhs) {
-    return 0;
-  } else {
-    return std::char_traits<char16_t>::compare(
-      lhs->contents(), rhs->contents(), lhs->length()+1);
-  }
+  return lhs->compare(rhs);
+}
+
+OpResult Implementation<Atom>::compare(Self self, VM vm,
+                                       RichNode right, int& result) {
+  const AtomImpl* rightAtomValue = 0;
+  MOZART_GET_ARG(rightAtomValue, right, u"atom");
+
+  result = value()->compare(rightAtomValue);
+
+  return OpResult::proceed();
 }
 
 OpResult Implementation<Atom>::label(Self self, VM vm,

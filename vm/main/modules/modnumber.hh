@@ -41,6 +41,15 @@ class Number: public Module {
 public:
   Number(): Module("Number") {}
 
+  class Opposite: public Builtin<Opposite> {
+  public:
+    Opposite(): Builtin("~") {}
+
+    OpResult operator()(VM vm, In operand, Out result) {
+      return Numeric(operand).opposite(vm, result);
+    }
+  };
+
   class Add: public Builtin<Add>, InlineAs<OpInlineAdd> {
   public:
     Add(): Builtin("+") {}

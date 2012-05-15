@@ -97,6 +97,58 @@ public:
       return OpResult::proceed();
     }
   };
+
+  class LowerEqual: public Builtin<LowerEqual> {
+  public:
+    LowerEqual(): Builtin("=<") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      int res = 0;
+      MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
+
+      result.make<Boolean>(vm, res <= 0);
+      return OpResult::proceed();
+    }
+  };
+
+  class LowerThan: public Builtin<LowerThan> {
+  public:
+    LowerThan(): Builtin("<") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      int res = 0;
+      MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
+
+      result.make<Boolean>(vm, res < 0);
+      return OpResult::proceed();
+    }
+  };
+
+  class GreaterEqual: public Builtin<GreaterEqual> {
+  public:
+    GreaterEqual(): Builtin(">=") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      int res = 0;
+      MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
+
+      result.make<Boolean>(vm, res >= 0);
+      return OpResult::proceed();
+    }
+  };
+
+  class GreaterThan: public Builtin<GreaterThan> {
+  public:
+    GreaterThan(): Builtin(">") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      int res = 0;
+      MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
+
+      result.make<Boolean>(vm, res > 0);
+      return OpResult::proceed();
+    }
+  };
 };
 
 }

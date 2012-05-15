@@ -72,6 +72,12 @@ public:
   int compareFeatures(VM vm, Self right);
 
 public:
+  // Comparable interface
+
+  inline
+  OpResult compare(Self self, VM vm, RichNode right, int& result);
+
+public:
   // RecordLike interface
 
   inline

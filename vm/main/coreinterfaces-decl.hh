@@ -98,6 +98,16 @@ struct Interface<StructuralEquatable>:
   }
 };
 
+class Comparable;
+template<>
+struct Interface<Comparable>:
+  ImplementedBy<SmallInt, Atom, Float> {
+
+  OpResult compare(RichNode self, VM vm, RichNode right, int& result) {
+    return raiseTypeError(vm, u"comparable", self);
+  }
+};
+
 class BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
@@ -144,6 +154,10 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 class Numeric;
 template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
+  OpResult opposite(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"Numeric", self);
+  }
+
   OpResult add(RichNode self, VM vm,
                RichNode right, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);

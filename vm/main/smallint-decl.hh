@@ -60,6 +60,12 @@ public:
   int compareFeatures(VM vm, Self right);
 
 public:
+  // Comparable interface
+
+  inline
+  OpResult compare(Self self, VM vm, RichNode right, int& result);
+
+public:
   // IntegerValue inteface
 
   OpResult intValue(Self self, VM vm, nativeint& result) {
@@ -72,6 +78,9 @@ public:
 
 public:
   // Numeric inteface
+
+  inline
+  OpResult opposite(Self self, VM vm, UnstableNode& result);
 
   inline
   OpResult add(Self self, VM vm, RichNode right, UnstableNode& result);

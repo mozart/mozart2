@@ -1,7 +1,10 @@
 package org.mozartoz.bootcompiler
 package transform
 
+import scala.collection.mutable.ListBuffer
+
 import ast._
+import oz._
 import symtab._
 
 object Unnester extends Transformer with TreeDSL {
@@ -76,8 +79,9 @@ object Unnester extends Transformer with TreeDSL {
       transformStat(treeCopy.LocalStatement(rhs, decls, v === expr))
 
     case CallExpression(callable, args) =>
+      val newArgs = putVarInArgs(args, v)
       transformStat(treeCopy.CallStatement(
-          rhs, callable, args :+ v))
+          rhs, callable, newArgs))
 
     case IfExpression(cond, trueExpr, falseExpr) =>
       val statement = IF (cond) THEN (v === trueExpr) ELSE (v === falseExpr)
@@ -108,6 +112,10 @@ object Unnester extends Transformer with TreeDSL {
 
         v === treeCopy.Record(record, newLabel, newFields)
       }
+
+    case NestingMarker() =>
+      program.reportError("Illegal use of nesting marker", rhs)
+      treeCopy.SkipStatement(rhs)
 
     case _:FunExpression | _:ThreadExpression | _:FunctorExpression |
         _:EscapedVariable | _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
@@ -155,5 +163,43 @@ object Unnester extends Transformer with TreeDSL {
         CompoundStatement(computeTemps) ~ newStatement
       }
     }
+  }
+
+  private def putVarInArgs(args: List[Expression], v: Variable) = {
+    var nestingMarkerFound = false
+
+    def replaceNestingMarkerIn(expr: Expression): Expression = expr match {
+      case NestingMarker() =>
+        if (nestingMarkerFound) {
+          program.reportError("Duplicate nesting marker", expr)
+          treeCopy.UnboundExpression(expr)
+        } else {
+          nestingMarkerFound = true
+          v
+        }
+
+      case Record(label, fields) =>
+        val newFields = for {
+          field @ RecordField(feature, value) <- fields
+        } yield {
+          treeCopy.RecordField(field, feature, replaceNestingMarkerIn(value))
+        }
+        treeCopy.Record(expr, label, newFields)
+
+      // yurk ...
+      case CallExpression(callable @ Constant(OzBuiltin(builtin)),
+          List(label, fieldTuple:Record))
+          if builtin == builtins.makeRecordDynamic =>
+        val newFieldTuple = replaceNestingMarkerIn(fieldTuple)
+        treeCopy.CallExpression(expr, callable, List(label, newFieldTuple))
+
+      case _ =>
+        expr
+    }
+
+    val newArgs = args map replaceNestingMarkerIn
+
+    if (nestingMarkerFound) newArgs
+    else newArgs :+ v
   }
 }

@@ -420,6 +420,7 @@ class OzParser extends OzTokenParsers with PackratParsers
       variable
     | positioned("!" ~> variable ^^ EscapedVariable)
     | unboundExpression
+    | positioned("$" ^^^ NestingMarker())
     | positioned(integerConst ^^ Constant)
     | positioned(floatConst ^^ Constant)
     | positioned(atomLike ^^ Constant)

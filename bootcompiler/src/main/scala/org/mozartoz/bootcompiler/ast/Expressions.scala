@@ -167,6 +167,10 @@ case class AutoFeature() extends Expression {
   def syntax(indent: String) = ""
 }
 
+case class NestingMarker() extends Expression {
+  def syntax(indent: String) = "$"
+}
+
 // Records
 
 case class RecordField(feature: Expression, value: Expression) extends Node {

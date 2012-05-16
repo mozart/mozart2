@@ -140,6 +140,7 @@ abstract class Transformer extends (Program => Unit) {
     case Variable(name) => expression
     case EscapedVariable(variable) => expression
     case UnboundExpression() => expression
+    case NestingMarker() => expression
 
     // Constants
 

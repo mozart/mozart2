@@ -115,7 +115,8 @@ void Thread::constructor(VM vm, RichNode abstraction,
 
   // Set up
 
-  xregs.init(vm, std::max(Xcount, InitXRegisters));
+  auto initXRegisters = InitXRegisters; // work around for limitation of clang
+  xregs.init(vm, std::max(Xcount, initXRegisters));
 
   for (size_t i = 0; i < argc; i++)
     xregs[i].copy(vm, *args[i]);

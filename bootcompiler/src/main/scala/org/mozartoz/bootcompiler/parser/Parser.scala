@@ -418,7 +418,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val trivialExpression: PackratParser[Expression] = (
       variable
-    | positioned("!!" ~> variable ^^ EscapedVariable)
+    | positioned("!" ~> variable ^^ EscapedVariable)
     | unboundExpression
     | positioned(integerConst ^^ Constant)
     | positioned(floatConst ^^ Constant)

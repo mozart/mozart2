@@ -152,7 +152,7 @@ object Variable extends (String => Variable) {
 }
 
 case class EscapedVariable(variable: Variable) extends Expression {
-  def syntax(indent: String) = "!!" + variable.syntax(indent+"  ")
+  def syntax(indent: String) = "!" + variable.syntax(indent+"  ")
 }
 
 case class UnboundExpression() extends Expression {

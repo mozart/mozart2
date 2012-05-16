@@ -177,14 +177,10 @@ local
    fun {DoSort N Xs Ys P}
       case N
       of 0 then Ys=nil Ys
-      [] 1 then X in
-         X|Ys=Xs
-         [X]
-      [] 2 then X1 X2 in
-         X1|X2|Ys=Xs
+      [] 1 then X|!Ys=Xs in [X]
+      [] 2 then X1|X2|!Ys=Xs in
          if {P X1 X2} then [X1 X2] else [X2 X1] end
-      [] 3 then X1 X2 X3 in
-         X1|X2|X3|Ys=Xs
+      [] 3 then X1|X2|X3|!Ys=Xs in
          if {P X1 X2} then
             if {P X2 X3} then [X1 X2 X3]
             elseif {P X1 X3} then [X1 X3 X2]
@@ -267,10 +263,7 @@ local
    proc {TakeDrop Xs N ?Ys ?Zs}
       if N>0 then
          case Xs of nil then Ys=nil Zs=nil
-         [] X|Xr then Tail in
-            Ys=X|Tail
-            {TakeDrop Xr N-1 Tail Zs}
-         end
+         [] X|Xr then Ys=X|{TakeDrop Xr N-1 $ Zs} end
       else N=0 Ys=nil Zs=Xs end
    end
 
@@ -280,12 +273,8 @@ local
    proc {Partition Xs F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         if {F X} then Tail in
-            Ys=X|Tail
-            {Partition Xr F Tail Zs}
-         else Tail in
-            Zs=X|Tail
-            {Partition Xr F Ys Tail}
+         if {F X} then Ys=X|{Partition Xr F $ Zs}
+         else Zs=X|{Partition Xr F Ys $}
          end
       end
    end
@@ -305,11 +294,8 @@ local
    proc {TakeDropWhile Xs F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         if {F X} then Tail in
-            Ys=X|Tail
-            {TakeDropWhile Xr F Tail Zs}
-         else
-            Ys=nil Zs=Xs
+         if {F X} then  Ys=X|{TakeDropWhile Xr F $ Zs}
+         else Ys=nil Zs=Xs
          end
       end
    end
@@ -389,12 +375,8 @@ local
    proc {PartitionInd Xs I F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         if {F I X} then Tail in
-            Ys=X|Tail
-            {PartitionInd Xr I+1 F Tail Zs}
-         else Tail in
-            Zs=X|Tail
-            {PartitionInd Xr I+1 F Ys Tail}
+         if {F I X} then Ys=X|{PartitionInd Xr I+1 F $ Zs}
+         else Zs=X|{PartitionInd Xr I+1 F Ys $}
          end
       end
    end
@@ -414,11 +396,8 @@ local
    proc {TakeDropWhileInd Xs I F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         if {F I X} then Tail in
-            Ys=X|Tail
-            {TakeDropWhileInd Xr I+1 F Tail Zs}
-         else
-            Ys=nil Zs=Xs
+         if {F I X} then Ys=X|{TakeDropWhileInd Xr I+1 F $ Zs}
+         else Ys=nil Zs=Xs
          end
       end
    end

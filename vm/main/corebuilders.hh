@@ -76,6 +76,11 @@ UnstableNode trivialBuild(VM vm, bool value) {
 }
 
 inline
+UnstableNode trivialBuild(VM vm, unit_t value) {
+  return Unit::build(vm);
+}
+
+inline
 UnstableNode trivialBuild(VM vm, double value) {
   return Float::build(vm, value);
 }

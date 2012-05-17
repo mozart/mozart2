@@ -46,6 +46,8 @@ OpResult requireLiteral(VM vm, RichNode label) {
     return OpResult::proceed();
   } else if (matches(vm, res, label, wildcard<Boolean>())) {
     return OpResult::proceed();
+  } else if (matches(vm, res, label, wildcard<Unit>())) {
+    return OpResult::proceed();
   } else {
     return matchTypeError(vm, res, label, u"literal");
   }

@@ -28,6 +28,11 @@ prepare
    ByNeed     = proc {$ P X} thread {WaitNeeded X} {P X} end end
 
    %%
+   %% Unit
+   %%
+   IsUnit = fun {$ X} X == unit end
+
+   %%
    %% Cell
    %%
    NewCell  = Boot_Cell.new

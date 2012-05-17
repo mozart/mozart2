@@ -99,6 +99,10 @@ public:
     return _currentSpace;
   }
 
+  Runnable* getCurrentThread() {
+    return _currentThread;
+  }
+
   bool isOnTopLevel() {
     return _isOnTopLevel;
   }
@@ -137,6 +141,7 @@ private:
 
   Space* _topLevelSpace;
   Space* _currentSpace;
+  Runnable* _currentThread;
   bool _isOnTopLevel;
 
   RunnableList aliveThreads;

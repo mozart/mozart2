@@ -42,6 +42,7 @@ VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
 
   _topLevelSpace = new (this) Space(this);
   _currentSpace = _topLevelSpace;
+  _currentThread = nullptr;
 
   initialize();
 }

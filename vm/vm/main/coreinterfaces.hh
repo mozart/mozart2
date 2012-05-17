@@ -48,6 +48,7 @@ namespace mozart {
 #include "RecordLike-interf.hh"
 #include "ArrayInitializer-interf.hh"
 #include "SpaceLike-interf.hh"
+#include "ThreadLike-interf.hh"
 #include "CellLike-interf.hh"
 
 #endif // MOZART_GENERATOR

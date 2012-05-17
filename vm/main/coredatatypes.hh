@@ -31,15 +31,16 @@
 #include "gctypes.hh"
 #include "patmattypes.hh"
 
-#include "variables.hh"
-#include "boolean.hh"
-#include "cell.hh"
-#include "smallint.hh"
-#include "float.hh"
-#include "codearea.hh"
-#include "callables.hh"
 #include "atom.hh"
+#include "boolean.hh"
+#include "callables.hh"
+#include "cell.hh"
+#include "codearea.hh"
+#include "float.hh"
 #include "records.hh"
 #include "reifiedspace.hh"
+#include "reifiedthread.hh"
+#include "smallint.hh"
+#include "variables.hh"
 
 #endif // __COREDATATYPES_H

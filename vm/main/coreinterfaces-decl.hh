@@ -65,7 +65,8 @@ struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait
 class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
-  ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure> {
+  ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
+                ReifiedThread> {
 
   /**
    * Precondition:
@@ -305,6 +306,25 @@ struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
 
   OpResult cloneSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
+  }
+};
+
+class ThreadLike;
+template<>
+struct Interface<ThreadLike>: ImplementedBy<ReifiedThread> {
+  OpResult isThread(RichNode self, VM vm, UnstableNode& result) {
+#ifndef MOZART_GENERATOR
+    result = Boolean::build(vm, false);
+#endif
+    return OpResult::proceed();
+  }
+
+  OpResult getThreadPriority(RichNode self, VM vm, ThreadPriority& result) {
+    return raiseTypeError(vm, u"Thread", self);
+  }
+
+  OpResult setThreadPriority(RichNode self, VM vm, ThreadPriority priority) {
+    return raiseTypeError(vm, u"Thread", self);
   }
 };
 

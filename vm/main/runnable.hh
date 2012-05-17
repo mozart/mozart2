@@ -51,6 +51,15 @@ Runnable::Runnable(GR gr, Runnable& from) :
     vm->aliveThreads.insert(this);
 }
 
+void Runnable::setPriority(ThreadPriority priority) {
+  if (priority != _priority) {
+    _priority = priority;
+
+    if (_runnable && vm->getCurrentThread() != this)
+      vm->threadPool.reschedule(this);
+  }
+}
+
 void Runnable::resume(bool skipSchedule) {
   assert(!_dead && !_terminated);
   assert(!_runnable);

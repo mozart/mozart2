@@ -44,6 +44,11 @@ prepare
    Width  = Boot_Record.width
 
    %%
+   %% Thread
+   %%
+   IsThread = Boot_Thread.is
+
+   %%
    %% System
    %%
    Show = Boot_System.show
@@ -126,5 +131,6 @@ prepare
    )
 
 #include "List.oz"
+#include "Thread.oz"
 
 end

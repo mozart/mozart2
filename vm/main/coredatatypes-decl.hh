@@ -27,18 +27,20 @@
 
 #include "mozartcore-decl.hh"
 
-#include "variables-decl.hh"
-#include "boolean-decl.hh"
-#include "smallint-decl.hh"
-#include "float-decl.hh"
-#include "codearea-decl.hh"
-#include "callables-decl.hh"
-#include "atom-decl.hh"
-#include "records-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "cell-decl.hh"
 #include "reference-decl.hh"
 #include "gctypes-decl.hh"
 #include "patmattypes-decl.hh"
+
+#include "atom-decl.hh"
+#include "boolean-decl.hh"
+#include "callables-decl.hh"
+#include "cell-decl.hh"
+#include "codearea-decl.hh"
+#include "float-decl.hh"
+#include "records-decl.hh"
+#include "reifiedspace-decl.hh"
+#include "reifiedthread-decl.hh"
+#include "smallint-decl.hh"
+#include "variables-decl.hh"
 
 #endif // __COREDATATYPES_DECL_H

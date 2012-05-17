@@ -51,6 +51,9 @@ public:
 
   ThreadPriority getPriority() { return _priority; }
 
+  inline
+  void setPriority(ThreadPriority priority);
+
   virtual void run() = 0;
 
   bool isTerminated() { return _terminated; }

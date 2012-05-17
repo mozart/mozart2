@@ -53,6 +53,69 @@ public:
       return OpResult::proceed();
     }
   };
+
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      return ThreadLike(value).isThread(vm, result);
+    }
+  };
+
+  class This: public Builtin<This> {
+  public:
+    This(): Builtin("this") {}
+
+    OpResult operator()(VM vm, Out result) {
+      result = ReifiedThread::build(vm, vm->getCurrentThread());
+      return OpResult::proceed();
+    }
+  };
+
+  class GetPriority: public Builtin<GetPriority> {
+  public:
+    GetPriority(): Builtin("getPriority") {}
+
+    OpResult operator()(VM vm, In thread, Out result) {
+      ThreadPriority prio = tpMiddle;
+      MOZART_CHECK_OPRESULT(ThreadLike(thread).getThreadPriority(vm, prio));
+
+      switch (prio) {
+        case tpLow: result = trivialBuild(vm, u"low"); break;
+        case tpMiddle: result = trivialBuild(vm, u"medium"); break;
+        case tpHi: result = trivialBuild(vm, u"high"); break;
+
+        default: assert(false);
+      }
+
+      return OpResult::proceed();
+    }
+  };
+
+  class SetPriority: public Builtin<SetPriority> {
+  public:
+    SetPriority(): Builtin("setPriority") {}
+
+    OpResult operator()(VM vm, In thread, In priority) {
+      using namespace patternmatching;
+
+      ThreadPriority prio = tpMiddle;
+      OpResult res = OpResult::proceed();
+
+      if (matches(vm, res, priority, u"low")) {
+        prio = tpLow;
+      } else if (matches(vm, res, priority, u"medium")) {
+        prio = tpMiddle;
+      } else if (matches(vm, res, priority, u"high")) {
+        prio = tpHi;
+      } else {
+        return matchTypeError(vm, res, priority, u"low, medium or high");
+      }
+
+      return ThreadLike(thread).setThreadPriority(vm, prio);
+    }
+  };
 };
 
 }

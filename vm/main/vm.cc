@@ -59,7 +59,9 @@ void VirtualMachine::run() {
 
     // Run the thread
     assert(currentThread->isRunnable());
+    _currentThread = currentThread;
     currentThread->run();
+    _currentThread = nullptr;
 
     // Schedule the thread anew if it is still runnable
     if (currentThread->isRunnable())

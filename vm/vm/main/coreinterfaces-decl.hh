@@ -41,6 +41,15 @@ struct Interface<DataflowVariable>:
     // TODO Should we immediately wake up the variable, here?
   }
 
+  bool isNeeded(RichNode self, VM vm) {
+    // Determined variables are always needed
+    return true;
+  }
+
+  void markNeeded(RichNode self, VM vm) {
+    // Nothing to do
+  }
+
   /**
    * Precondition:
    *   self.type()->getStructuralBehavior() == sbVariable

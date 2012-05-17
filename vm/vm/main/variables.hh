@@ -62,6 +62,14 @@ void Implementation<Variable>::addToSuspendList(Self self, VM vm,
   pendings.push_back(vm, variable.getStableRef(vm));
 }
 
+void Implementation<Variable>::markNeeded(Self self, VM vm) {
+  // TODO What's supposed to happen if we're in a subspace?
+  if (!_needed) {
+    _needed = true;
+    wakeUpPendings(vm);
+  }
+}
+
 OpResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   if (vm->isOnTopLevel()) {
     // The simple, fast binding when on top-level
@@ -177,6 +185,11 @@ void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
                                                RichNode variable) {
   self.remake<Variable>(vm);
   DataflowVariable(self).addToSuspendList(vm, variable);
+}
+
+void Implementation<Unbound>::markNeeded(Self self, VM vm) {
+  self.remake<Variable>(vm);
+  DataflowVariable(self).markNeeded(vm);
 }
 
 OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {

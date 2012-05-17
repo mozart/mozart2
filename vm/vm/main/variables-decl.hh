@@ -67,6 +67,13 @@ public:
   inline
   void addToSuspendList(Self self, VM vm, RichNode variable);
 
+  bool isNeeded(VM vm) {
+    return _needed;
+  }
+
+  inline
+  void markNeeded(Self self, VM vm);
+
   inline
   OpResult bind(Self self, VM vm, RichNode src);
 
@@ -97,6 +104,10 @@ private:
   void wakeUpPendingsSubSpace(VM vm, Space* currentSpace);
 
   VMAllocatedList<StableNode*> pendings;
+
+  /* TODO maybe we can squeeze this bit of information into pendings
+   * Idea: a leading `nullptr` element in pendings? */
+  bool _needed;
 };
 
 #ifndef MOZART_GENERATOR
@@ -137,6 +148,13 @@ public:
 
   inline
   void addToSuspendList(Self self, VM vm, RichNode variable);
+
+  bool isNeeded(VM vm) {
+    return false;
+  }
+
+  inline
+  void markNeeded(Self self, VM vm);
 
   inline
   OpResult bind(Self self, VM vm, RichNode src);

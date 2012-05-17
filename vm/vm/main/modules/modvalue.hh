@@ -88,6 +88,40 @@ public:
     }
   };
 
+  class WaitQuiet: public Builtin<WaitQuiet> {
+  public:
+    WaitQuiet(): Builtin("waitQuiet") {}
+
+    OpResult operator()(VM vm, In value) {
+      if (value.isTransient())
+        return OpResult::waitQuietFor(vm, value);
+      else
+        return OpResult::proceed();
+    }
+  };
+
+  class WaitNeeded: public Builtin<WaitNeeded> {
+  public:
+    WaitNeeded(): Builtin("waitNeeded") {}
+
+    OpResult operator()(VM vm, In value) {
+      if (!DataflowVariable(value).isNeeded(vm))
+        return OpResult::waitQuietFor(vm, value);
+      else
+        return OpResult::proceed();
+    }
+  };
+
+  class MakeNeeded: public Builtin<MakeNeeded> {
+  public:
+    MakeNeeded(): Builtin("makeNeeded") {}
+
+    OpResult operator()(VM vm, In value) {
+      DataflowVariable(value).markNeeded(vm);
+      return OpResult::proceed();
+    }
+  };
+
   class IsDet: public Builtin<IsDet> {
   public:
     IsDet(): Builtin("isDet") {}

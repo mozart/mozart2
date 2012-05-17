@@ -18,10 +18,14 @@ prepare
    %%
    %% Value
    %%
-   Wait   = Boot_Value.wait
-   IsDet  = Boot_Value.isDet
-   Max    = fun {$ A B} if A < B then B else A end end
-   Min    = fun {$ A B} if A < B then A else B end end
+   Wait       = Boot_Value.wait
+   IsDet      = Boot_Value.isDet
+   WaitQuiet  = Boot_Value.waitQuiet
+   WaitNeeded = Boot_Value.waitNeeded
+   MakeNeeded = Boot_Value.makeNeeded
+   Max        = fun {$ A B} if A < B then B else A end end
+   Min        = fun {$ A B} if A < B then A else B end end
+   ByNeed     = proc {$ P X} thread {WaitNeeded X} {P X} end end
 
    %%
    %% Cell
@@ -56,25 +60,6 @@ prepare
    %%
    %% Modules
    %%
-
-   Value = value(
-      wait:            Wait
-
-      '==':            Boot_Value.'=='
-      '=':             proc {$ L R} L = R end
-      '\\=':           Boot_Value.'\\='
-
-      '.':             Boot_Value.'.'
-
-      isDet:           IsDet
-
-      '=<':            Boot_Value.'=<'
-      '<':             Boot_Value.'<'
-      '>=':            Boot_Value.'>='
-      '>':             Boot_Value.'>'
-      max:             Max
-      min:             Min
-   )
 
    Cell = cell(
       new:      NewCell
@@ -130,6 +115,7 @@ prepare
       choose: Boot_Space.choose
    )
 
+#include "Value.oz"
 #include "List.oz"
 #include "Thread.oz"
 

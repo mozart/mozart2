@@ -40,10 +40,11 @@ namespace mozart {
 struct OpResult {
 public:
   enum Kind {
-    orProceed,    // Proceed, aka success
-    orFail,       // Fail, aka failure
-    orWaitBefore, // Need an unbound variable, I want you to wait on that one
-    orRaise,      // Raise an exception
+    orProceed,         // Proceed, aka success
+    orFail,            // Fail, aka failure
+    orWaitBefore,      // I need an unbound variable, wait on it
+    orWaitQuietBefore, // Same as above, but don't mark the variable as needed
+    orRaise,           // Raise an exception
   };
 public:
   static OpResult proceed() {
@@ -58,6 +59,10 @@ public:
     return OpResult(orWaitBefore, node.getStableRef(vm));
   }
 
+  static OpResult waitQuietFor(VM vm, RichNode node) {
+    return OpResult(orWaitQuietBefore, node.getStableRef(vm));
+  }
+
   static OpResult raise(VM vm, RichNode node) {
     return OpResult(orRaise, node.getStableRef(vm));
   }
@@ -70,9 +75,9 @@ public:
     return _kind;
   }
 
-  /** If kind() == orWaitBefore, the node that must be waited upon */
+  /** If kind() == orWait(Quiet)Before, the node that must be waited upon */
   StableNode* getWaiteeNode() {
-    assert(kind() == orWaitBefore);
+    assert(kind() == orWaitBefore || kind() == orWaitQuietBefore);
     return _node;
   }
 

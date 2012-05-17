@@ -580,7 +580,7 @@ void Space::createPropagateThreadOnceAndSuspendItOnVar(
   if (variable.isTransient()) {
     if (propagateThread == nullptr)
       propagateThread = new internal::DummyThread(vm, this, true);
-    DataflowVariable(variable).addToSuspendList(vm, propagateThread);
+    propagateThread->suspendOnVar(vm, variable);
   }
 }
 

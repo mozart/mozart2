@@ -38,6 +38,7 @@ namespace mozart {
 #include "ValueEquatable-interf.hh"
 #include "StructuralEquatable-interf.hh"
 #include "Comparable-interf.hh"
+#include "Wakeable-interf.hh"
 #include "BuiltinCallable-interf.hh"
 #include "Callable-interf.hh"
 #include "CodeAreaProvider-interf.hh"

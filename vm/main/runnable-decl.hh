@@ -66,6 +66,9 @@ public:
   virtual void suspend(bool skipUnschedule = false);
 
   inline
+  void suspendOnVar(VM vm, RichNode variable, bool skipUnschedule = true);
+
+  inline
   virtual void kill();
 
   virtual void beforeGR() {}
@@ -100,6 +103,8 @@ private:
   bool _runnable;
   bool _terminated;
   bool _dead;
+
+  StableNode _reification;
 
   Runnable* _replicate;
 

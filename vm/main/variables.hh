@@ -40,23 +40,26 @@ namespace mozart {
 Implementation<Variable>::Implementation(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
-  for (auto iterator = from->pendingThreads.begin();
-       iterator != from->pendingThreads.end();
-       iterator++) {
-    pendingThreads.push_back(vm, *iterator);
-    gr->copyThread(pendingThreads.back(), pendingThreads.back());
+  for (auto iter = from->pendings.begin();
+       iter != from->pendings.end();
+       ++iter) {
+    pendings.push_back(vm, *iter);
+    gr->copyStableRef(pendings.back(), pendings.back());
   }
 }
 
-void Implementation<Variable>::addToSuspendList(Self self, VM vm,
-                                                Runnable* thread) {
-  thread->suspend(/* skipUnschedule = */ true);
-  pendingThreads.push_back(vm, thread);
+OpResult Implementation<Variable>::wakeUp(Self self, VM vm) {
+  UnstableNode temp = SmallInt::build(vm, 0); // TODO Replace by unit
+  return bind(self, vm, temp);
+}
+
+bool Implementation<Variable>::shouldWakeUpUnderSpace(VM vm, Space* space) {
+  return home()->isAncestor(space);
 }
 
 void Implementation<Variable>::addToSuspendList(Self self, VM vm,
                                                 RichNode variable) {
-  pendingVariables.push_back(vm, variable.getStableRef(vm));
+  pendings.push_back(vm, variable.getStableRef(vm));
 }
 
 OpResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
@@ -65,15 +68,14 @@ OpResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
     RichNode(self).reinit(vm, src);
 
     /* If the value we were bound to is a Variable too, we have to transfer the
-     * threads and variables waiting for this so that they wait for the other
-     * Variable.
-     * Otherwise, we wake up the threads and variables.
+     * variables waiting for this so that they wait for the other Variable.
+     * Otherwise, we wake up the variables.
      */
     src.update();
     if (src.is<Variable>()) {
-      src.as<Variable>().transferPendings(vm, pendingThreads, pendingVariables);
+      src.as<Variable>().transferPendings(vm, pendings);
     } else {
-      resumePendings(vm);
+      wakeUpPendings(vm);
     }
 
     return OpResult::proceed();
@@ -97,118 +99,66 @@ OpResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
   RichNode(self).reinit(vm, src);
 
   /* If the value we were bound to is a Variable too, we have to transfer the
-   * threads and variables waiting for this so that they wait for the other
-   * Variable.
-   * Otherwise, we wake up the threads and variables.
+   * variables waiting for this so that they wait for the other Variable.
+   * Otherwise, we wake up the variables.
    */
   src.update();
   if (src.is<Variable>()) {
-    src.as<Variable>().transferPendingsSubSpace(vm, currentSpace,
-                                                pendingThreads,
-                                                pendingVariables);
+    src.as<Variable>().transferPendingsSubSpace(vm, currentSpace, pendings);
   } else {
-    resumePendingsSubSpace(vm, currentSpace);
+    wakeUpPendingsSubSpace(vm, currentSpace);
   }
 
   return OpResult::proceed();
 }
 
 void Implementation<Variable>::transferPendings(
-  VM vm, VMAllocatedList<Runnable*>& srcThreads,
-  VMAllocatedList<StableNode*>& srcVariables) {
+  VM vm, VMAllocatedList<StableNode*>& src) {
 
-  pendingThreads.splice(vm, srcThreads);
-  pendingVariables.splice(vm, srcVariables);
+  pendings.splice(vm, src);
 }
 
 void Implementation<Variable>::transferPendingsSubSpace(
-  VM vm, Space* currentSpace, VMAllocatedList<Runnable*>& srcThreads,
-  VMAllocatedList<StableNode*>& srcVariables) {
+  VM vm, Space* currentSpace, VMAllocatedList<StableNode*>& src) {
 
-  // Transfer threads
-  for (auto iter = srcThreads.removable_begin();
-        iter != srcThreads.removable_end(); ) {
-    if ((*iter)->getSpace()->isAncestor(currentSpace))
-      pendingThreads.splice(vm, srcThreads, iter);
-    else
-      ++iter;
-  }
-
-  // Transfer variables
-  for (auto iter = srcVariables.removable_begin();
-        iter != srcVariables.removable_end(); ) {
+  for (auto iter = src.removable_begin();
+       iter != src.removable_end(); ) {
     UnstableNode temp(vm, **iter);
     RichNode richTemp = temp;
 
-    if (richTemp.isTransient() &&
-        DataflowVariable(temp).home()->isAncestor(currentSpace))
-      pendingVariables.splice(vm, srcVariables, iter);
+    if (Wakeable(richTemp).shouldWakeUpUnderSpace(vm, currentSpace))
+      pendings.splice(vm, src, iter);
     else
       ++iter;
   }
 }
 
-void Implementation<Variable>::resumePendings(VM vm) {
-  // Wake up threads
-
-  for (auto iter = pendingThreads.begin();
-       iter != pendingThreads.end(); iter++) {
-    (*iter)->resume();
+void Implementation<Variable>::wakeUpPendings(VM vm) {
+  for (auto iter = pendings.begin();
+       iter != pendings.end(); iter++) {
+    UnstableNode temp(vm, **iter);
+    Wakeable(temp).wakeUp(vm);
   }
 
-  pendingThreads.clear(vm);
-
-  // "Wake up", i.e., bind control variables
-
-  for (auto iter = pendingVariables.begin();
-       iter != pendingVariables.end(); iter++) {
-    UnstableNode unstableVar(vm, **iter);
-    RichNode variable = unstableVar;
-
-    if (variable.isTransient()) {
-      UnstableNode unit = SmallInt::build(vm, 0);
-      DataflowVariable(variable).bind(vm, unit);
-    }
-  }
-
-  pendingVariables.clear(vm);
+  pendings.clear(vm);
 }
 
-void Implementation<Variable>::resumePendingsSubSpace(VM vm,
+void Implementation<Variable>::wakeUpPendingsSubSpace(VM vm,
                                                       Space* currentSpace) {
   /* The general idea here is to wake up things whose home space is the current
    * space or any of its children, but not the others.
    */
 
-  // Wake up threads
+  for (auto iter = pendings.begin();
+       iter != pendings.end(); iter++) {
+    UnstableNode temp(vm, **iter);
+    RichNode richTemp = temp;
 
-  for (auto iter = pendingThreads.begin();
-       iter != pendingThreads.end(); iter++) {
-
-    if ((*iter)->getSpace()->isAncestor(currentSpace)) {
-      (*iter)->resume();
-    }
+    if (Wakeable(richTemp).shouldWakeUpUnderSpace(vm, currentSpace))
+      Wakeable(richTemp).wakeUp(vm);
   }
 
-  pendingThreads.clear(vm);
-
-  // "Wake up", i.e., bind control variables
-
-  for (auto iter = pendingVariables.begin();
-       iter != pendingVariables.end(); iter++) {
-    UnstableNode unstableVar(vm, **iter);
-    RichNode variable = unstableVar;
-
-    if (variable.isTransient()) {
-      DataflowVariable df = variable;
-      if (df.home()->isAncestor(currentSpace)) {
-        UnstableNode unit = SmallInt::build(vm, 0);
-        df.bind(vm, unit);
-      }
-    }
-  }
-
-  pendingVariables.clear(vm);
+  pendings.clear(vm);
 }
 
 /////////////
@@ -221,12 +171,6 @@ SpaceRef Implementation<Unbound>::build(VM vm, GR gr, Self from) {
   SpaceRef home;
   gr->copySpace(home, from.get().home());
   return home;
-}
-
-void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
-                                               Runnable* thread) {
-  self.remake<Variable>(vm);
-  DataflowVariable(self).addToSuspendList(vm, thread);
 }
 
 void Implementation<Unbound>::addToSuspendList(Self self, VM vm,

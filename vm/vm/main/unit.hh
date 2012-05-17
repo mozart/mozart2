@@ -22,14 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#ifndef __UNIT_H
+#define __UNIT_H
+
+#include "mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-// Definitions of the uuid's of data types
-constexpr UUID Implementation<Atom>::uuid;
-constexpr UUID Implementation<Boolean>::uuid;
-constexpr UUID Implementation<SmallInt>::uuid;
-constexpr UUID Implementation<Unit>::uuid;
+//////////
+// Unit //
+//////////
+
+#include "Unit-implem.hh"
+
+unit_t Implementation<Unit>::build(VM vm, GR gr, Self from) {
+  return unit;
+}
+
+bool Implementation<Unit>::equals(VM vm, Self right) {
+  return true;
+}
+
+int Implementation<Unit>::compareFeatures(VM vm, Self right) {
+  return 0;
+}
 
 }
+
+#endif // MOZART_GENERATOR
+
+#endif // __UNIT_H

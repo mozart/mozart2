@@ -41,6 +41,7 @@
 #include "reifiedspace.hh"
 #include "reifiedthread.hh"
 #include "smallint.hh"
+#include "unit.hh"
 #include "variables.hh"
 
 #endif // __COREDATATYPES_H

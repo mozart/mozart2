@@ -22,14 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#ifndef __UNIT_DECL_H
+#define __UNIT_DECL_H
+
+#include "mozartcore-decl.hh"
 
 namespace mozart {
 
-// Definitions of the uuid's of data types
-constexpr UUID Implementation<Atom>::uuid;
-constexpr UUID Implementation<Boolean>::uuid;
-constexpr UUID Implementation<SmallInt>::uuid;
-constexpr UUID Implementation<Unit>::uuid;
+class Unit;
+
+#ifndef MOZART_GENERATOR
+#include "Unit-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<Unit>: Copiable, StoredAs<unit_t>, WithValueBehavior {
+public:
+  typedef SelfType<Unit>::Self Self;
+public:
+  constexpr static UUID uuid = "{f08642c3-5b42-4f7f-889f-9f43286973b7}";
+
+  Implementation(unit_t value) {}
+
+  static unit_t build(VM vm) {
+    return unit;
+  }
+
+  inline
+  static unit_t build(VM vm, GR gr, Self from);
+
+public:
+  inline
+  bool equals(VM vm, Self right);
+
+  inline
+  int compareFeatures(VM vm, Self right);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "unit";
+  }
+};
+
+#ifndef MOZART_GENERATOR
+#include "Unit-implem-decl-after.hh"
+#endif
 
 }
+
+#endif // __UNIT_DECL_H

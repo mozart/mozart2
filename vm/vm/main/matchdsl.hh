@@ -310,6 +310,17 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value, bool pattern) {
 
 template <>
 inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value, unit_t pattern) {
+  if (value.is<Unit>()) {
+    return true;
+  } else {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+}
+
+template <>
+inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    const char16_t* pattern) {
   if (!value.is<Atom>()) {

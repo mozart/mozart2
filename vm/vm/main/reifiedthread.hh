@@ -61,6 +61,16 @@ bool Implementation<ReifiedThread>::equals(VM vm, Self right) {
   return _runnable == right.get()._runnable;
 }
 
+OpResult Implementation<ReifiedThread>::wakeUp(VM vm) {
+  _runnable->resume();
+  return OpResult::proceed();
+}
+
+bool Implementation<ReifiedThread>::shouldWakeUpUnderSpace(VM vm,
+                                                           Space* space) {
+  return _runnable->getSpace()->isAncestor(space);
+}
+
 OpResult Implementation<ReifiedThread>::isThread(VM vm, UnstableNode& result) {
   result.make<Boolean>(vm, true);
   return OpResult::proceed();

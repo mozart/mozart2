@@ -52,8 +52,17 @@ public:
   inline
   Implementation(VM vm, GR gr, Self from);
 
+public:
+  // Wakeable interface
+
   inline
-  void addToSuspendList(Self self, VM vm, Runnable* thread);
+  OpResult wakeUp(Self self, VM vm);
+
+  inline
+  bool shouldWakeUpUnderSpace(VM vm, Space* space);
+
+public:
+  // DataflowVariable interface
 
   inline
   void addToSuspendList(Self self, VM vm, RichNode variable);
@@ -61,14 +70,15 @@ public:
   inline
   OpResult bind(Self self, VM vm, RichNode src);
 
+public:
+  // Transfer pendings
+
   inline
-  void transferPendings(VM vm, VMAllocatedList<Runnable*>& srcThreads,
-                        VMAllocatedList<StableNode*>& srcVariables);
+  void transferPendings(VM vm, VMAllocatedList<StableNode*>& src);
 
   inline
   void transferPendingsSubSpace(VM vm, Space* currentSpace,
-                                VMAllocatedList<Runnable*>& srcThreads,
-                                VMAllocatedList<StableNode*>& srcVariables);
+                                VMAllocatedList<StableNode*>& src);
 public:
   // Miscellaneous
 
@@ -81,13 +91,12 @@ private:
   OpResult bindSubSpace(Self self, VM vm, RichNode src);
 
   inline
-  void resumePendings(VM vm);
+  void wakeUpPendings(VM vm);
 
   inline
-  void resumePendingsSubSpace(VM vm, Space* currentSpace);
+  void wakeUpPendingsSubSpace(VM vm, Space* currentSpace);
 
-  VMAllocatedList<Runnable*> pendingThreads;
-  VMAllocatedList<StableNode*> pendingVariables;
+  VMAllocatedList<StableNode*> pendings;
 };
 
 #ifndef MOZART_GENERATOR
@@ -123,14 +132,15 @@ public:
   inline
   static SpaceRef build(VM vm, GR gr, Self from);
 
-  inline
-  void addToSuspendList(Self self, VM vm, Runnable* thread);
+public:
+  // DataflowVariable interface
 
   inline
   void addToSuspendList(Self self, VM vm, RichNode variable);
 
   inline
   OpResult bind(Self self, VM vm, RichNode src);
+
 public:
   // Miscellaneous
 

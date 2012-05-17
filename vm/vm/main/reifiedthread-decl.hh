@@ -84,6 +84,15 @@ public:
   }
 
 public:
+  // Wakeable interface
+
+  inline
+  OpResult wakeUp(VM vm);
+
+  inline
+  bool shouldWakeUpUnderSpace(VM vm, Space* space);
+
+public:
   // ThreadLike interface
 
   inline

@@ -34,11 +34,11 @@ namespace mozart {
 
 class DataflowVariable;
 template<>
-struct Interface<DataflowVariable>: ImplementedBy<Unbound, Variable>, NoAutoWait {
-  void addToSuspendList(RichNode self, VM vm, Runnable* thread) {
-  }
+struct Interface<DataflowVariable>:
+  ImplementedBy<Unbound, Variable>, NoAutoWait {
 
   void addToSuspendList(RichNode self, VM vm, RichNode variable) {
+    // TODO Should we immediately wake up the variable, here?
   }
 
   /**
@@ -106,6 +106,18 @@ struct Interface<Comparable>:
 
   OpResult compare(RichNode self, VM vm, RichNode right, int& result) {
     return raiseTypeError(vm, u"comparable", self);
+  }
+};
+
+class Wakeable;
+template<>
+struct Interface<Wakeable>: ImplementedBy<ReifiedThread, Variable>, NoAutoWait {
+  OpResult wakeUp(RichNode self, VM vm) {
+    return OpResult::proceed();
+  }
+
+  bool shouldWakeUpUnderSpace(RichNode self, VM vm, Space* space) {
+    return false;
   }
 };
 

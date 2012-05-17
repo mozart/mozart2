@@ -715,7 +715,7 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {
 
     case OpResult::orWaitBefore: {
       UnstableNode waitee(vm, *result.getWaiteeNode());
-      DataflowVariable(waitee).addToSuspendList(vm, this);
+      suspendOnVar(vm, waitee);
 
       if (!isRunnable())
         preempted = true;

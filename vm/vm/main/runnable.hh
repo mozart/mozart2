@@ -27,11 +27,15 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
   _runnable(false), _terminated(false), _dead(false), _replicate(nullptr) {
+
+  _reification.make<ReifiedThread>(vm, this);
 
   _space->notifyThreadCreated();
 
@@ -46,6 +50,8 @@ Runnable::Runnable(GR gr, Runnable& from) :
   _runnable = from._runnable;
   _terminated = from._terminated;
   _dead = from._dead;
+
+  _reification.make<ReifiedThread>(gr->vm, this);
 
   if (!_dead)
     vm->aliveThreads.insert(this);
@@ -80,6 +86,13 @@ void Runnable::suspend(bool skipUnschedule) {
 
   if (!skipUnschedule)
     vm->getThreadPool().unschedule(this);
+}
+
+void Runnable::suspendOnVar(VM vm, RichNode variable, bool skipUnschedule) {
+  suspend(skipUnschedule);
+
+  UnstableNode selfRef = Reference::build(vm, &_reification);
+  DataflowVariable(variable).addToSuspendList(vm, selfRef);
 }
 
 void Runnable::kill() {
@@ -132,5 +145,7 @@ void Runnable::dispose() {
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __RUNNABLE_H

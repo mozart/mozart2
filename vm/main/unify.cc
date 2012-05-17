@@ -140,7 +140,9 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
         return pairResult;
       }
 
-      case OpResult::orWaitBefore: {
+      case OpResult::orWaitBefore:
+      case OpResult::orWaitQuietBefore: {
+        // TODO Do we need to actually support the *quiet* here?
         suspendTrail.push_back_new(vm, left.getStableRef(vm),
                                    right.getStableRef(vm));
         break;

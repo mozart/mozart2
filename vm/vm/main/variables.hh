@@ -142,6 +142,9 @@ void Implementation<Variable>::transferPendingsSubSpace(
 }
 
 void Implementation<Variable>::wakeUpPendings(VM vm) {
+  VMAllocatedList<StableNode*> pendings;
+  std::swap(pendings, this->pendings);
+
   for (auto iter = pendings.begin();
        iter != pendings.end(); iter++) {
     UnstableNode temp(vm, **iter);
@@ -156,6 +159,9 @@ void Implementation<Variable>::wakeUpPendingsSubSpace(VM vm,
   /* The general idea here is to wake up things whose home space is the current
    * space or any of its children, but not the others.
    */
+
+  VMAllocatedList<StableNode*> pendings;
+  std::swap(pendings, this->pendings);
 
   for (auto iter = pendings.begin();
        iter != pendings.end(); iter++) {
@@ -204,6 +210,58 @@ OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
   RichNode(self).reinit(vm, src);
 
   return OpResult::proceed();
+}
+
+//////////////
+// ReadOnly //
+//////////////
+
+#include "ReadOnly-implem.hh"
+
+StableNode* Implementation<ReadOnly>::build(VM vm, GR gr, Self from) {
+  StableNode* result = new (gr->vm) StableNode;
+  gr->copyStableNode(*result, *from.get().getUnderlying());
+  return result;
+}
+
+OpResult Implementation<ReadOnly>::wakeUp(Self self, VM vm) {
+  UnstableNode temp(vm, *_underlying);
+  RichNode underlying = temp;
+
+  // TODO Test on something more generic than Variable and Unbound
+  if (underlying.is<Variable>() || underlying.is<Unbound>()) {
+    // Aaah, no. I was waken up for nothing
+    DataflowVariable(underlying).addToSuspendList(vm, self);
+  } else {
+    RichNode(self).reinit(vm, underlying);
+  }
+
+  return OpResult::proceed();
+}
+
+bool Implementation<ReadOnly>::shouldWakeUpUnderSpace(VM vm, Space* space) {
+  return true;
+}
+
+void Implementation<ReadOnly>::addToSuspendList(Self self, VM vm,
+                                                RichNode variable) {
+  UnstableNode underlying(vm, *_underlying);
+  DataflowVariable(underlying).addToSuspendList(vm, variable);
+}
+
+bool Implementation<ReadOnly>::isNeeded(VM vm) {
+  UnstableNode underlying(vm, *_underlying);
+  return DataflowVariable(underlying).isNeeded(vm);
+}
+
+void Implementation<ReadOnly>::markNeeded(Self self, VM vm) {
+  UnstableNode underlying(vm, *_underlying);
+  DataflowVariable(underlying).markNeeded(vm);
+}
+
+OpResult Implementation<ReadOnly>::bind(Self self, VM vm, RichNode src) {
+  UnstableNode underlying(vm, *_underlying);
+  return OpResult::waitFor(vm, underlying);
 }
 
 }

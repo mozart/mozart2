@@ -183,6 +183,26 @@ public:
       return OpResult::proceed();
     }
   };
+
+  class MakeReadOnly: public Builtin<MakeReadOnly> {
+  public:
+    MakeReadOnly(): Builtin("readOnly") {}
+
+    OpResult operator()(VM vm, In variable, Out result) {
+      // TODO Test on something more generic than Variable and Unbound
+      if (variable.is<Variable>() || variable.is<Unbound>()) {
+        StableNode* readOnly = new (vm) StableNode;
+        readOnly->make<ReadOnly>(vm, variable.getStableRef(vm));
+
+        result.copy(vm, *readOnly);
+        DataflowVariable(variable).addToSuspendList(vm, result);
+      } else {
+        result.copy(vm, variable);
+      }
+
+      return OpResult::proceed();
+    }
+  };
 };
 
 }

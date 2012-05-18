@@ -34,7 +34,7 @@ local
       if {IsDet X} andthen {IsDet F} then
          X.F
       else
-         {ByNeed fun {$} X.F end}
+         {ByNeedFuture fun {$} X.F end}
       end
    end
 in
@@ -68,10 +68,10 @@ in
                  waitNeeded:      WaitNeeded
                  makeNeeded:      MakeNeeded
                  byNeed:          ByNeed
-                 %byNeedFuture:    ByNeedFuture
+                 byNeedFuture:    ByNeedFuture
                  byNeedDot:       ByNeedDot
 
-                 %'!!':            Boot_Value.readOnly
+                 '!!':            Boot_Value.readOnly
                  %byNeedFail:      FailedValue
                  %failed:          FailedValue
 

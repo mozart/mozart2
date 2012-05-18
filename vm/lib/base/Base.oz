@@ -26,6 +26,7 @@ prepare
    Max        = fun {$ A B} if A < B then B else A end end
    Min        = fun {$ A B} if A < B then A else B end end
    ByNeed     = proc {$ P X} thread {WaitNeeded X} {P X} end end
+   ByNeedFuture = fun {$ P} !!{ByNeed P} end
 
    %%
    %% Unit

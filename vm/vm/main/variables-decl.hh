@@ -171,6 +171,75 @@ public:
 #include "Unbound-implem-decl-after.hh"
 #endif
 
+/////////////
+// Unbound //
+/////////////
+
+class ReadOnly;
+
+#ifndef MOZART_GENERATOR
+#include "ReadOnly-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<ReadOnly>: Transient, StoredAs<StableNode*>,
+  WithVariableBehavior<80> {
+public:
+  typedef SelfType<ReadOnly>::Self Self;
+public:
+  Implementation(StableNode* underlying): _underlying(underlying) {}
+
+  static StableNode* build(VM vm, StableNode* underlying) {
+    return underlying;
+  }
+
+  inline
+  static StableNode* build(VM vm, GR gr, Self from);
+
+public:
+  StableNode* getUnderlying() {
+    return _underlying;
+  }
+
+public:
+  // Wakeable interface
+
+  inline
+  OpResult wakeUp(Self self, VM vm);
+
+  inline
+  bool shouldWakeUpUnderSpace(VM vm, Space* space);
+
+public:
+  // DataflowVariable interface
+
+  inline
+  void addToSuspendList(Self self, VM vm, RichNode variable);
+
+  inline
+  bool isNeeded(VM vm);
+
+  inline
+  void markNeeded(Self self, VM vm);
+
+  inline
+  OpResult bind(Self self, VM vm, RichNode src);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "!!" << repr(vm, *_underlying, depth);
+  }
+
+private:
+  StableNode* _underlying;
+};
+
+#ifndef MOZART_GENERATOR
+#include "ReadOnly-implem-decl-after.hh"
+#endif
+
 }
 
 #endif // __VARIABLES_DECL_H

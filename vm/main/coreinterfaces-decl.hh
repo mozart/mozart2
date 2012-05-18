@@ -35,7 +35,7 @@ namespace mozart {
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>:
-  ImplementedBy<Unbound, Variable>, NoAutoWait {
+  ImplementedBy<Unbound, Variable, ReadOnly>, NoAutoWait {
 
   void addToSuspendList(RichNode self, VM vm, RichNode variable) {
     // TODO Should we immediately wake up the variable, here?
@@ -48,16 +48,6 @@ struct Interface<DataflowVariable>:
 
   void markNeeded(RichNode self, VM vm) {
     // Nothing to do
-  }
-
-  /**
-   * Precondition:
-   *   self.type()->getStructuralBehavior() == sbVariable
-   */
-  Space* home(RichNode self) {
-    assert(self.type()->getStructuralBehavior() == sbVariable);
-    assert(false);
-    return nullptr;
   }
 
   /**
@@ -120,7 +110,9 @@ struct Interface<Comparable>:
 
 class Wakeable;
 template<>
-struct Interface<Wakeable>: ImplementedBy<ReifiedThread, Variable>, NoAutoWait {
+struct Interface<Wakeable>:
+  ImplementedBy<ReifiedThread, Variable, ReadOnly>, NoAutoWait {
+
   OpResult wakeUp(RichNode self, VM vm) {
     return OpResult::proceed();
   }

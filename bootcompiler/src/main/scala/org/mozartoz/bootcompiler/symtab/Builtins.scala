@@ -14,7 +14,8 @@ class Builtins {
   lazy val unaryOpToBuiltin = Map(
       "~" -> builtinByName("Number.'~'"),
 
-      "@" -> builtinByName("Cell.access")
+      "@" -> builtinByName("Cell.access"),
+      "!!" -> builtinByName("Value.readOnly")
   )
 
   lazy val binaryOpToBuiltin = Map(

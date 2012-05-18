@@ -394,7 +394,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // @X   !!X   (prefix)
   lazy val expression13: PackratParser[Expression] = (
-      positioned("@" ~ expression13 ^^ UnaryOp)
+      positioned(("@" | "!!") ~ expression13 ^^ UnaryOp)
     | expression14
   )
 

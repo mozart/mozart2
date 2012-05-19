@@ -125,3 +125,38 @@ trait ThreadCommon extends StatOrExpr {
     "thread\n" + subIndent + body.syntax(subIndent) + "\n" + indent + "end"
   }
 }
+
+trait TryCommon extends StatOrExpr {
+  protected val body: StatOrExpr
+  protected val exceptionVar: Variable
+  protected val catchBody: StatOrExpr
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+
+    ("try\n" + subIndent + body.syntax(subIndent) + "\n" + indent +
+        "catch " + exceptionVar.syntax(indent + "      ") + " then\n" +
+        subIndent + catchBody.syntax(subIndent) + "\n" + indent + "end")
+  }
+}
+
+trait TryFinallyCommon extends StatOrExpr {
+  protected val body: StatOrExpr
+  protected val finallyBody: Statement
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+
+    ("try\n" + subIndent + body.syntax(subIndent) + "\n" + indent +
+        "finally\n" + subIndent + finallyBody.syntax(subIndent) + "\n" +
+        indent + "end")
+  }
+}
+
+trait RaiseCommon extends StatOrExpr {
+  protected val exception: Expression
+
+  def syntax(indent: String) = {
+    "raise " + exception.syntax(indent + "      ") + " end"
+  }
+}

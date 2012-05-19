@@ -59,6 +59,13 @@ object Unnester extends Transformer with TreeDSL {
           }
       }
 
+    case raiseStat @ RaiseStatement(exception) =>
+      transformStat {
+        atPos(raiseStat) {
+          builtins.raise call (exception)
+        }
+      }
+
     case _ =>
       super.transformStat(statement)
   }
@@ -98,6 +105,14 @@ object Unnester extends Transformer with TreeDSL {
 
       transformStat(treeCopy.MatchStatement(rhs, value, newClauses, newElse))
 
+    case TryExpression(body, exceptionVar, catchBody) =>
+      transformStat {
+        treeCopy.TryStatement(rhs, v === body, exceptionVar, v === catchBody)
+      }
+
+    case RaiseExpression(exception) =>
+      transformStat(treeCopy.RaiseStatement(rhs, exception))
+
     case BindExpression(lhs2, rhs2) =>
       transformStat((v === lhs2) ~ (v === rhs2))
 
@@ -117,7 +132,8 @@ object Unnester extends Transformer with TreeDSL {
       program.reportError("Illegal use of nesting marker", rhs)
       treeCopy.SkipStatement(rhs)
 
-    case _:FunExpression | _:ThreadExpression | _:FunctorExpression |
+    case _:FunExpression | _:ThreadExpression |
+        _:TryFinallyExpression | _:FunctorExpression |
         _:EscapedVariable | _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
         _:AutoFeature | _:CreateAbstraction =>
       throw new Exception(

@@ -43,6 +43,18 @@ case class ThreadStatement(
   protected val body = statement
 }
 
+case class TryStatement(body: Statement, exceptionVar: Variable,
+    catchBody: Statement) extends Statement with TryCommon {
+}
+
+case class TryFinallyStatement(body: Statement,
+    finallyBody: Statement) extends Statement with TryFinallyCommon {
+}
+
+case class RaiseStatement(
+    exception: Expression) extends Statement with RaiseCommon {
+}
+
 case class BindStatement(left: Expression,
     right: Expression) extends Statement with InfixSyntax {
   protected val opSyntax = " = "

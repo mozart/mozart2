@@ -11,11 +11,12 @@ object Symbol {
     _lastID
   }
 
-  def newSynthetic(name: String, formal: Boolean = false): VariableSymbol =
-    new VariableSymbol(name, formal = formal, synthetic = true)
-
-  def newSynthetic(): VariableSymbol =
-    newSynthetic("`x$" + (_lastID+1).toString() + "`")
+  def newSynthetic(name: String = "", formal: Boolean = false,
+      capture: Boolean = false): VariableSymbol = {
+    new VariableSymbol(
+        if (name.isEmpty) "`x$" + (_lastID+1).toString() + "`" else name,
+        formal = formal, capture = capture, synthetic = true)
+  }
 }
 
 sealed abstract class Symbol(val name: String) {

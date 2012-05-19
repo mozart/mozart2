@@ -29,6 +29,17 @@ class TreeCopier {
   def ThreadStatement(tree: Node, statement: Statement) =
     new ThreadStatement(statement).copyAttrs(tree)
 
+  def TryStatement(tree: Node, body: Statement, exceptionVar: Variable,
+      catchBody: Statement) =
+    new TryStatement(body, exceptionVar, catchBody).copyAttrs(tree)
+
+  def TryFinallyStatement(tree: Node, body: Statement,
+      finallyBody: Statement) =
+    new TryFinallyStatement(body, finallyBody).copyAttrs(tree)
+
+  def RaiseStatement(tree: Node, exception: Expression) =
+    new RaiseStatement(exception).copyAttrs(tree)
+
   def BindStatement(tree: Node, left: Expression, right: Expression) =
     new BindStatement(left, right).copyAttrs(tree)
 
@@ -71,6 +82,17 @@ class TreeCopier {
 
   def ThreadExpression(tree: Node, expression: Expression) =
     new ThreadExpression(expression).copyAttrs(tree)
+
+  def TryExpression(tree: Node, body: Expression, exceptionVar: Variable,
+      catchBody: Expression) =
+    new TryExpression(body, exceptionVar, catchBody).copyAttrs(tree)
+
+  def TryFinallyExpression(tree: Node, body: Expression,
+      finallyBody: Statement) =
+    new TryFinallyExpression(body, finallyBody).copyAttrs(tree)
+
+  def RaiseExpression(tree: Node, exception: Expression) =
+    new RaiseExpression(exception).copyAttrs(tree)
 
   def BindExpression(tree: Node, left: Expression, right: Expression) =
     new BindExpression(left, right).copyAttrs(tree)

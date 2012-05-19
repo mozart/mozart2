@@ -63,6 +63,17 @@ abstract class Transformer extends (Program => Unit) {
     case ThreadStatement(statement) =>
       treeCopy.ThreadStatement(statement, transformStat(statement))
 
+    case TryStatement(body, exceptionVar, catchBody) =>
+      treeCopy.TryStatement(statement, transformStat(body),
+          exceptionVar, transformStat(catchBody))
+
+    case TryFinallyStatement(body, finallyBody) =>
+      treeCopy.TryFinallyStatement(statement, transformStat(body),
+          transformStat(finallyBody))
+
+    case RaiseStatement(exception) =>
+      treeCopy.RaiseStatement(statement, transformExpr(exception))
+
     case BindStatement(left, right) =>
       treeCopy.BindStatement(statement, transformExpr(left),
           transformExpr(right))
@@ -108,6 +119,17 @@ abstract class Transformer extends (Program => Unit) {
 
     case ThreadExpression(expression) =>
       treeCopy.ThreadExpression(expression, transformExpr(expression))
+
+    case TryExpression(body, exceptionVar, catchBody) =>
+      treeCopy.TryExpression(expression, transformExpr(body),
+          exceptionVar, transformExpr(catchBody))
+
+    case TryFinallyExpression(body, finallyBody) =>
+      treeCopy.TryFinallyExpression(expression, transformExpr(body),
+          transformStat(finallyBody))
+
+    case RaiseExpression(exception) =>
+      treeCopy.RaiseExpression(expression, transformExpr(exception))
 
     case BindExpression(left, right) =>
       treeCopy.BindExpression(expression, transformExpr(left),

@@ -42,6 +42,9 @@ trait TreeDSL {
     def callExpr(args: Expression*) =
       treeCopy.CallExpression(self, self, args.toList)
 
+    def =?= (rhs: Expression) =
+      treeCopy.BinaryOp(self, self, "==", rhs)
+
     def dot(rhs: Expression) =
       treeCopy.BinaryOp(self, self, ".", rhs)
   }

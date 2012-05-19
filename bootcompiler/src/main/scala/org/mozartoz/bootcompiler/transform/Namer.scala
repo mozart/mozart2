@@ -67,6 +67,20 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       if (decls.isEmpty) newMatchStat
       else treeCopy.LocalStatement(newMatchStat, decls, newMatchStat)
 
+    case tryStat @ TryStatement(body, exceptionVar, catchBody) =>
+      val newBody = transformStat(body)
+      val namedExcVar = nameDecl(exceptionVar, capture = true)
+
+      val newCatchBody = withEnvironmentFromDecls(List(namedExcVar)) {
+        transformStat(catchBody)
+      }
+
+      atPos(tryStat) {
+        LOCAL (namedExcVar) IN {
+          treeCopy.TryStatement(tryStat, newBody, namedExcVar, newCatchBody)
+        }
+      }
+
     case _ =>
       super.transformStat(statement)
   }
@@ -102,6 +116,20 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
 
       if (decls.isEmpty) newMatchExpr
       else treeCopy.LocalExpression(newMatchExpr, decls, newMatchExpr)
+
+    case tryExpr @ TryExpression(body, exceptionVar, catchBody) =>
+      val newBody = transformExpr(body)
+      val namedExcVar = nameDecl(exceptionVar, capture = true)
+
+      val newCatchBody = withEnvironmentFromDecls(List(namedExcVar)) {
+        transformExpr(catchBody)
+      }
+
+      atPos(tryExpr) {
+        LOCAL (namedExcVar) IN {
+          treeCopy.TryExpression(tryExpr, newBody, namedExcVar, newCatchBody)
+        }
+      }
 
     case proc @ ProcExpression(name, args, body, flags) =>
       val namedFormals = nameFormals(args)
@@ -313,10 +341,13 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   def nameDecls(decls: List[Variable], capture: Boolean = false) = {
-    for (v @ Variable(name) <- decls) yield {
-      val symbol = new VariableSymbol(name, capture = capture)
-      treeCopy.Variable(v, name) withSymbol symbol
-    }
+    for (v @ Variable(_) <- decls) yield
+      nameDecl(v)
+  }
+
+  def nameDecl(decl: Variable, capture: Boolean = false) = {
+    val symbol = new VariableSymbol(decl.name, capture = capture)
+    treeCopy.Variable(decl, decl.name) withSymbol symbol
   }
 
   def nameFormals(args: List[FormalArg]) = {

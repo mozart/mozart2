@@ -17,6 +17,26 @@ object Desugar extends Transformer with TreeDSL {
 
       builtins.createThread call (proc)
 
+    case TryFinallyStatement(body, finallyBody) =>
+      transformStat {
+        atPos(statement) {
+          statementWithTemp { tempX =>
+            val tempY = Variable(Symbol.newSynthetic(capture = true))
+
+            (LOCAL (tempY) IN {
+              (tempX === TryExpression(body ~> UnitVal(),
+                  tempY, Tuple(OzAtom("ex"), List(tempY))))
+            }) ~
+            finallyBody ~
+            (IF (tempX =?= UnitVal()) THEN {
+              SkipStatement()
+            } ELSE {
+              RaiseStatement(tempX dot OzInt(1))
+            })
+          }
+        }
+      }
+
     case _ =>
       super.transformStat(statement)
   }
@@ -34,6 +54,27 @@ object Desugar extends Transformer with TreeDSL {
     case thread @ ThreadExpression(body) =>
       expressionWithTemp { temp =>
         transformStat(THREAD (temp === body)) ~> temp
+      }
+
+    case TryFinallyExpression(body, finallyBody) =>
+      transformExpr {
+        atPos(expression) {
+          expressionWithTemp { tempX =>
+            val tempY = Variable(Symbol.newSynthetic(capture = true))
+
+            (LOCAL (tempY) IN {
+              (tempX === TryExpression(
+                  Tuple(OzAtom("ok"), List(body)),
+                  tempY, Tuple(OzAtom("ex"), List(tempY))))
+            }) ~
+            finallyBody ~>
+            (IF ((builtins.label callExpr (tempX)) =?= OzAtom("ok")) THEN {
+              tempX dot OzInt(1)
+            } ELSE {
+              RaiseExpression(tempX dot OzInt(1))
+            })
+          }
+        }
       }
 
     case BinaryOp(lhs, "+", Constant(OzInt(1))) =>

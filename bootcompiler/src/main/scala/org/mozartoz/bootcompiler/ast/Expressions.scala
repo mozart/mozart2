@@ -60,6 +60,18 @@ case class ThreadExpression(
   protected val body = expression
 }
 
+case class TryExpression(body: Expression, exceptionVar: Variable,
+    catchBody: Expression) extends Expression with TryCommon {
+}
+
+case class TryFinallyExpression(body: Expression,
+    finallyBody: Statement) extends Expression with TryFinallyCommon {
+}
+
+case class RaiseExpression(
+    exception: Expression) extends Expression with RaiseCommon {
+}
+
 case class BindExpression(left: Expression,
     right: Expression) extends Expression with InfixSyntax {
   protected val opSyntax = " = "

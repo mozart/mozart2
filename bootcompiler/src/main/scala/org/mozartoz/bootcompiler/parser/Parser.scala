@@ -8,11 +8,20 @@ import scala.util.parsing.input._
 import oz._
 import ast._
 
+object OzParser {
+  private val generatedIdentCounter = new util.Counter
+
+  private def generateExcIdent() =
+    "<exc$" + generatedIdentCounter.next() + ">"
+}
+
 /**
  * The main Oz parser
  */
 class OzParser extends OzTokenParsers with PackratParsers
     with ImplicitConversions {
+
+  import OzParser.generateExcIdent
 
   lexical.reserved ++= List(
       "andthen", "at", "attr", "case", "catch", "choice",
@@ -55,6 +64,8 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifStatement
     | caseStatement
     | threadStatement
+    | tryStatement
+    | raiseStatement
     | functorStatement
     | skipStatement
   )
@@ -225,6 +236,60 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val threadExpression: PackratParser[Expression] = positioned {
     "thread" ~> inExpression <~ "end" ^^ ThreadExpression
+  }
+
+  // Try
+
+  lazy val tryStatement: PackratParser[Statement] = positioned {
+    ("try" ~> inStatement) ~ opt("catch" ~> caseStatementClauses) ~
+      opt("finally" ~> inStatement) <~ "end" ^^ {
+
+      case body ~ optCatchClauses ~ optFinallyBody =>
+        val tryCatch = optCatchClauses match {
+          case None => body
+          case Some(catchClauses) =>
+            val excVar = Variable(generateExcIdent())
+
+            TryStatement(body, excVar,
+              MatchStatement(excVar, catchClauses, RaiseStatement(excVar)))
+        }
+
+        optFinallyBody match {
+          case None => tryCatch
+          case Some(finallyBody) => TryFinallyStatement(tryCatch, finallyBody)
+        }
+    }
+  }
+
+  lazy val tryExpression: PackratParser[Expression] = positioned {
+    ("try" ~> inExpression) ~ opt("catch" ~> caseExpressionClauses) ~
+      opt("finally" ~> inStatement) <~ "end" ^^ {
+
+      case body ~ optCatchClauses ~ optFinallyBody =>
+        val tryCatch = optCatchClauses match {
+          case None => body
+          case Some(catchClauses) =>
+            val excVar = Variable(generateExcIdent())
+
+            TryExpression(body, excVar,
+              MatchExpression(excVar, catchClauses, RaiseExpression(excVar)))
+        }
+
+        optFinallyBody match {
+          case None => tryCatch
+          case Some(finallyBody) => TryFinallyExpression(tryCatch, finallyBody)
+        }
+    }
+  }
+
+  // Raise
+
+  lazy val raiseStatement: PackratParser[Statement] = positioned {
+    "raise" ~> inExpression <~ "end" ^^ RaiseStatement
+  }
+
+  lazy val raiseExpression: PackratParser[Expression] = positioned {
+    "raise" ~> inExpression <~ "end" ^^ RaiseExpression
   }
 
   // Bind and similar
@@ -408,6 +473,8 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifExpression
     | caseExpression
     | threadExpression
+    | tryExpression
+    | raiseExpression
     | functorExpression
     | trivialExpression
     | recordExpression

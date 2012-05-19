@@ -42,6 +42,7 @@ class Builtins {
   lazy val createThread = builtinByName("Thread.create")
 
   lazy val makeRecordDynamic = builtinByName("Record.makeDynamic")
+  lazy val label = builtinByName("Record.label")
 
   lazy val plus1 = builtinByName("Int.'+1'")
   lazy val minus1 = builtinByName("Int.'-1'")
@@ -49,4 +50,6 @@ class Builtins {
   lazy val cellExchange = builtinByName("Cell.exchangeFun")
   lazy val cellAccess = builtinByName("Cell.access")
   lazy val cellAssign = builtinByName("Cell.assign")
+
+  lazy val raise = builtinByName("Exception.raise")
 }

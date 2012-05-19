@@ -45,6 +45,12 @@ case class OpDeallocateY() extends OpCode
 case class OpCreateVarX(dest: XReg) extends OpCode
 case class OpCreateVarY(dest: YReg) extends OpCode
 
+/** Setup an exception handler */
+case class OpSetupExceptionHandler(distance: ImmInt) extends OpCode
+
+/** Pop an exception handler */
+case class OpPopExceptionHandler() extends OpCode
+
 /** Call the `builtin` whose arity is `arity` with the arguments `args` */
 case class OpCallBuiltin(builtin: KReg, arity: ImmInt,
     args: List[XReg]) extends OpCode {

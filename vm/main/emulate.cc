@@ -81,6 +81,35 @@ void StackEntry::afterGR(VM vm) {
   kregs = Ks;
 }
 
+/////////////////
+// ThreadStack //
+/////////////////
+
+bool ThreadStack::findExceptionHandler(VM vm, StableNode*& abstraction,
+                                       ProgramCounter& PC, size_t& yregCount,
+                                       StaticArray<UnstableNode>& yregs,
+                                       StaticArray<StableNode>& gregs,
+                                       StaticArray<StableNode>& kregs) {
+  while (!empty()) {
+    StackEntry& entry = front();
+
+    if (entry.isExceptionHandler()) {
+      PC = entry.PC;
+      remove_front(vm);
+      return true;
+    } else {
+      abstraction = entry.abstraction;
+      yregCount = entry.yregCount;
+      yregs = entry.yregs;
+      gregs = entry.gregs;
+      kregs = entry.kregs;
+      remove_front(vm);
+    }
+  }
+
+  return false;
+}
+
 ////////////
 // Thread //
 ////////////
@@ -148,7 +177,8 @@ Thread::Thread(GR gr, Thread& from): Runnable(gr, from) {
   { \
     ::mozart::OpResult macroTempOpResult = (operation); \
     if (!macroTempOpResult.isProceed()) { \
-      applyOpResult(vm, macroTempOpResult, preempted); \
+      applyOpResult(vm, macroTempOpResult, preempted, \
+                    abstraction, PC, yregCount, xregs, yregs, gregs, kregs); \
       break; \
     } \
   }
@@ -301,6 +331,24 @@ void Thread::run() {
         advancePC(2); break;
       }
 
+      // Exception handlers
+
+      case OpSetupExceptionHandler: {
+        int distance = IntPC(1);
+        advancePC(1);
+
+        ProgramCounter handlerPC = PC + distance;
+        stack.pushExceptionHandler(vm, handlerPC);
+
+        break;
+      }
+
+      case OpPopExceptionHandler: {
+        stack.popExceptionHandler(vm);
+        advancePC(0);
+        break;
+      }
+
       // Control
 
       case OpCallBuiltin0: {
@@ -439,7 +487,9 @@ void Thread::run() {
 
       case OpPatternMatch: {
         UnstableNode patterns(vm, KPC(2));
-        patternMatch(vm, XPC(1), patterns, PC, xregs, preempted);
+        patternMatch(vm, XPC(1), patterns,
+                     abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                     preempted);
         break;
       }
 
@@ -605,6 +655,8 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
                       StaticArray<StableNode>& kregs) {
   StackEntry& entry = stack.front();
 
+  assert(!entry.isExceptionHandler());
+
   abstraction = entry.abstraction;
   PC = entry.PC;
   yregCount = entry.yregCount;
@@ -619,7 +671,8 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
   do { \
     ::mozart::OpResult macroTempOpResult = (operation); \
     if (!macroTempOpResult.isProceed()) { \
-      applyOpResult(vm, macroTempOpResult, preempted); \
+      applyOpResult(vm, macroTempOpResult, preempted, \
+                    abstraction, PC, yregCount, xregs, yregs, gregs, kregs); \
       return; \
     } \
   } while (false)
@@ -643,15 +696,15 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
     vm, formalArity, body, start, Xcount, Gs, Ks));
 
   if (actualArity != formalArity) {
-    applyOpResult(vm, raiseIllegalArity(vm, formalArity, actualArity),
-                  preempted);
-    return;
+    CHECK_OPRESULT_RETURN(raiseIllegalArity(vm, formalArity, actualArity));
   }
 
   advancePC(2);
 
   if (!isTailCall) {
     pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+  } else {
+    assert(stack.empty() || !stack.front().isExceptionHandler());
   }
 
   // Setup new frame
@@ -670,7 +723,12 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
 }
 
 void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
-                          ProgramCounter& PC, XRegArray* xregs,
+                          StableNode*& abstraction,
+                          ProgramCounter& PC, size_t& yregCount,
+                          XRegArray* xregs,
+                          StaticArray<UnstableNode>& yregs,
+                          StaticArray<StableNode>& gregs,
+                          StaticArray<StableNode>& kregs,
                           bool& preempted) {
   using namespace patternmatching;
 
@@ -706,7 +764,13 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
   advancePC(2);
 }
 
-void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {
+void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
+                           StableNode*& abstraction,
+                           ProgramCounter& PC, size_t& yregCount,
+                           XRegArray* xregs,
+                           StaticArray<UnstableNode>& yregs,
+                           StaticArray<StableNode>& gregs,
+                           StaticArray<StableNode>& kregs) {
   switch (result.kind()) {
     case OpResult::orProceed: {
       // Do nothing
@@ -740,12 +804,21 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted) {
     }
 
     case OpResult::orRaise: {
-      // TODO Allow to catch an exception
-      std::cout << "Exception" << std::endl;
-      std::cout << repr(vm, *result.getExceptionNode()) << std::endl;
+      bool handlerFound = stack.findExceptionHandler(
+        vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
-      terminate();
-      preempted = true;
+      if (handlerFound) {
+        // Store the exception value in X(0)
+        (*xregs)[0].copy(vm, *result.getExceptionNode());
+      } else {
+        // Uncaught exception
+        std::cout << "Uncaught exception" << std::endl;
+        std::cout << repr(vm, *result.getExceptionNode()) << std::endl;
+
+        terminate();
+        preempted = true;
+      }
+
       break;
     }
   }

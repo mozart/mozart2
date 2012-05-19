@@ -37,11 +37,17 @@ namespace mozart {
  * Entry of a thread stack
  */
 struct StackEntry {
+  /** Create a regular stack entry */
   StackEntry(StableNode* abstraction, ProgramCounter PC, size_t yregCount,
     StaticArray<UnstableNode> yregs, StaticArray<StableNode> gregs,
-    StaticArray<StableNode> kregs) :
+    StaticArray<StableNode> kregs):
     abstraction(abstraction), PC(PC), yregCount(yregCount),
     yregs(yregs), gregs(gregs), kregs(kregs) {}
+
+  /** Create a catch stack entry */
+  StackEntry(ProgramCounter PC):
+    abstraction(nullptr), PC(PC), yregCount(0),
+    yregs(nullptr), gregs(nullptr), kregs(nullptr) {}
 
   inline
   StackEntry(GR gr, StackEntry& from);
@@ -52,18 +58,46 @@ struct StackEntry {
   inline
   void afterGR(VM vm);
 
-  StableNode* abstraction;
+  bool isExceptionHandler() {
+    return abstraction == nullptr;
+  }
+
+  StableNode* abstraction; // nullptr means this is an exception handler
 
   union {
     ProgramCounter PC;       // Normal
     std::ptrdiff_t PCOffset; // During GR
   };
 
+  // The following is meaningfull only for regular stack entries
+
   size_t yregCount;
   StaticArray<UnstableNode> yregs;
 
   StaticArray<StableNode> gregs; // Irrelevant during GR
   StaticArray<StableNode> kregs; // Irrelevant during GR
+};
+
+/**
+ * Thread stack with frames and exception handlers
+ */
+class ThreadStack: public VMAllocatedList<StackEntry> {
+public:
+  void pushExceptionHandler(VM vm, ProgramCounter PC) {
+    push_front_new(vm, PC);
+  }
+
+  void popExceptionHandler(VM vm) {
+    assert(front().isExceptionHandler());
+    remove_front(vm);
+  }
+
+  inline
+  bool findExceptionHandler(VM vm, StableNode*& abstraction,
+                            ProgramCounter& PC, size_t& yregCount,
+                            StaticArray<UnstableNode>& yregs,
+                            StaticArray<StableNode>& gregs,
+                            StaticArray<StableNode>& kregs);
 };
 
 class XRegArray {
@@ -208,12 +242,24 @@ private:
             bool& preempted);
 
   void patternMatch(VM vm, RichNode value, RichNode patterns,
-                    ProgramCounter& PC, XRegArray* xregs, bool& preempted);
+                    StableNode*& abstraction,
+                    ProgramCounter& PC, size_t& yregCount,
+                    XRegArray* xregs,
+                    StaticArray<UnstableNode>& yregs,
+                    StaticArray<StableNode>& gregs,
+                    StaticArray<StableNode>& kregs,
+                    bool& preempted);
 
-  void applyOpResult(VM vm, OpResult result, bool& preempted);
+  void applyOpResult(VM vm, OpResult result, bool& preempted,
+                     StableNode*& abstraction,
+                     ProgramCounter& PC, size_t& yregCount,
+                     XRegArray* xregs,
+                     StaticArray<UnstableNode>& yregs,
+                     StaticArray<StableNode>& gregs,
+                     StaticArray<StableNode>& kregs);
 
   XRegArray xregs;
-  VMAllocatedList<StackEntry> stack;
+  ThreadStack stack;
 };
 
 }

@@ -58,6 +58,9 @@ const OpCode OpCreateVarY = 0x10;
 const OpCode OpCreateVarMoveX = 0x11;
 const OpCode OpCreateVarMoveY = 0x12;
 
+const OpCode OpSetupExceptionHandler = 0x18;
+const OpCode OpPopExceptionHandler = 0x19;
+
 const OpCode OpCallBuiltin0 = 0x20;
 const OpCode OpCallBuiltin1 = 0x21;
 const OpCode OpCallBuiltin2 = 0x22;

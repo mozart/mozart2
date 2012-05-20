@@ -35,7 +35,7 @@ local
 in
    Value = value(wait:            Wait
                  waitQuiet:       WaitQuiet
-                 %waitOr:          WaitOr
+                 waitOr:          WaitOr
 
                  '=<':            Boot_Value.'=<'
                  '<':             Boot_Value.'<'
@@ -48,18 +48,18 @@ in
                  min:             Min
 
                  '.':             Boot_Value.'.'
-                 %hasFeature:      HasFeature
-                 %condSelect:      CondSelect
+                 hasFeature:      HasFeature
+                 condSelect:      CondSelect
 
-                 %isFree:          IsFree
-                 %isKinded:        IsKinded
-                 %isFuture:        IsFuture
-                 %isFailed:        IsFailed
+                 isFree:          IsFree
+                 isKinded:        IsKinded
+                 isFuture:        IsFuture
+                 isFailed:        IsFailed
                  isDet:           IsDet
-                 %status:          Boot_Value.status
-                 %type:            Boot_Value.type
+                 status:          Boot_Value.status
+                 type:            Boot_Value.type
 
-                 %isNeeded:        IsNeeded
+                 isNeeded:        IsNeeded
                  waitNeeded:      WaitNeeded
                  makeNeeded:      MakeNeeded
                  byNeed:          ByNeed

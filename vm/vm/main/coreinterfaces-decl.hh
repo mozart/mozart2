@@ -283,6 +283,10 @@ struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
     return raiseTypeError(vm, u"Record", self);
   }
 
+  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result) {
+    return raiseTypeError(vm, u"Record", self);
+  }
+
   OpResult waitOr(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }

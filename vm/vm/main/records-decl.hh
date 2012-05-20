@@ -121,6 +121,9 @@ public:
   inline
   OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
 
+  inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
 public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
@@ -194,6 +197,9 @@ public:
   OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
 
   inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
+  inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
 
 public:
@@ -247,8 +253,7 @@ public:
   OpResult label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult lookupFeature(VM vm, RichNode record, RichNode feature,
-                         size_t& result);
+  OpResult lookupFeature(VM vm, RichNode feature, size_t& result);
 
   inline
   void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
@@ -318,6 +323,9 @@ public:
 
   inline
   OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
 public:
   inline

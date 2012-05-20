@@ -19,12 +19,20 @@ prepare
    %% Value
    %%
    Wait         = Boot_Value.wait
-   IsDet        = Boot_Value.isDet
+   WaitOr       = proc {$ X Y} {Boot_Record.waitOr X#Y _} end
    WaitQuiet    = Boot_Value.waitQuiet
    WaitNeeded   = Boot_Value.waitNeeded
    MakeNeeded   = Boot_Value.makeNeeded
+   IsFree       = Boot_Value.isFree
+   IsKinded     = Boot_Value.isKinded
+   IsFuture     = Boot_Value.isFuture
+   IsFailed     = Boot_Value.isFailed
+   IsDet        = Boot_Value.isDet
+   IsNeeded     = Boot_Value.isNeeded
    Max          = fun {$ A B} if A < B then B else A end end
    Min          = fun {$ A B} if A < B then A else B end end
+   CondSelect   = Boot_Value.condSelect
+   HasFeature   = Boot_Value.hasFeature
    FailedValue  = Boot_Value.failedValue
    ByNeed       = proc {$ P X} thread {WaitNeeded X} {P X} end end
    ByNeedFuture = fun {$ P}

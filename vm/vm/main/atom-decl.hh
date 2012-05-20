@@ -99,6 +99,9 @@ public:
   OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
 
   inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
+  inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
 
 public:

@@ -93,7 +93,7 @@ public:
     WaitQuiet(): Builtin("waitQuiet") {}
 
     OpResult operator()(VM vm, In value) {
-      if (value.isTransient())
+      if (value.isTransient() && !value.is<FailedValue>())
         return OpResult::waitQuietFor(vm, value);
       else
         return OpResult::proceed();
@@ -180,6 +180,16 @@ public:
       MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
 
       result.make<Boolean>(vm, res > 0);
+      return OpResult::proceed();
+    }
+  };
+
+  class MakeFailed: public Builtin<MakeFailed> {
+  public:
+    MakeFailed(): Builtin("failedValue") {}
+
+    OpResult operator()(VM vm, In exception, Out result) {
+      result = FailedValue::build(vm, exception.getStableRef(vm));
       return OpResult::proceed();
     }
   };

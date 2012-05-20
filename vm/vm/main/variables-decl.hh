@@ -171,9 +171,9 @@ public:
 #include "Unbound-implem-decl-after.hh"
 #endif
 
-/////////////
-// Unbound //
-/////////////
+//////////////
+// ReadOnly //
+//////////////
 
 class ReadOnly;
 
@@ -238,6 +238,69 @@ private:
 
 #ifndef MOZART_GENERATOR
 #include "ReadOnly-implem-decl-after.hh"
+#endif
+
+/////////////////
+// FailedValue //
+/////////////////
+
+class FailedValue;
+
+#ifndef MOZART_GENERATOR
+#include "FailedValue-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<FailedValue>: Transient, StoredAs<StableNode*>,
+  WithVariableBehavior<10> {
+public:
+  typedef SelfType<FailedValue>::Self Self;
+public:
+  Implementation(StableNode* underlying): _underlying(underlying) {}
+
+  static StableNode* build(VM vm, StableNode* underlying) {
+    return underlying;
+  }
+
+  inline
+  static StableNode* build(VM vm, GR gr, Self from);
+
+public:
+  StableNode* getUnderlying() {
+    return _underlying;
+  }
+
+  inline
+  OpResult raiseUnderlying(VM vm);
+
+public:
+  // DataflowVariable interface
+
+  inline
+  void addToSuspendList(Self self, VM vm, RichNode variable);
+
+  inline
+  bool isNeeded(VM vm);
+
+  inline
+  void markNeeded(Self self, VM vm);
+
+  inline
+  OpResult bind(Self self, VM vm, RichNode src);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<Failed " << repr(vm, *_underlying, depth) << ">";
+  }
+
+private:
+  StableNode* _underlying;
+};
+
+#ifndef MOZART_GENERATOR
+#include "FailedValue-implem-decl-after.hh"
 #endif
 
 }

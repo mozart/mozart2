@@ -18,15 +18,22 @@ prepare
    %%
    %% Value
    %%
-   Wait       = Boot_Value.wait
-   IsDet      = Boot_Value.isDet
-   WaitQuiet  = Boot_Value.waitQuiet
-   WaitNeeded = Boot_Value.waitNeeded
-   MakeNeeded = Boot_Value.makeNeeded
-   Max        = fun {$ A B} if A < B then B else A end end
-   Min        = fun {$ A B} if A < B then A else B end end
-   ByNeed     = proc {$ P X} thread {WaitNeeded X} {P X} end end
-   ByNeedFuture = fun {$ P} !!{ByNeed P} end
+   Wait         = Boot_Value.wait
+   IsDet        = Boot_Value.isDet
+   WaitQuiet    = Boot_Value.waitQuiet
+   WaitNeeded   = Boot_Value.waitNeeded
+   MakeNeeded   = Boot_Value.makeNeeded
+   Max          = fun {$ A B} if A < B then B else A end end
+   Min          = fun {$ A B} if A < B then A else B end end
+   FailedValue  = Boot_Value.failedValue
+   ByNeed       = proc {$ P X} thread {WaitNeeded X} {P X} end end
+   ByNeedFuture = fun {$ P}
+                     !!{ByNeed fun {$}
+                                  try {P}
+                                  catch E then {FailedValue E}
+                                  end
+                               end}
+                  end
 
    %%
    %% Unit

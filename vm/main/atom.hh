@@ -90,6 +90,7 @@ OpResult Implementation<Atom>::clone(Self self, VM vm,
 OpResult Implementation<Atom>::dot(Self self, VM vm, RichNode feature,
                                    UnstableNode& result) {
   // Always out of bounds
+  MOZART_REQUIRE_FEATURE(feature);
   return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
 }
 
@@ -97,6 +98,13 @@ OpResult Implementation<Atom>::dotNumber(Self self, VM vm, nativeint feature,
                                          UnstableNode& result) {
   // Always out of bounds
   return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+}
+
+OpResult Implementation<Atom>::hasFeature(Self self, VM vm, RichNode feature,
+                                          bool& result) {
+  MOZART_REQUIRE_FEATURE(feature);
+  result = false;
+  return OpResult::proceed();
 }
 
 OpResult Implementation<Atom>::waitOr(Self self, VM vm,

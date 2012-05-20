@@ -79,27 +79,6 @@ private:
 // Entry point //
 /////////////////
 
-namespace internal {
-  inline
-  OpResult proceedFailToTrueFalse(OpResult res, bool& result) {
-    switch (res.kind()) {
-      case OpResult::orProceed: {
-        result = true;
-        return OpResult::proceed();
-      }
-
-      case OpResult::orFail: {
-        result = false;
-        return OpResult::proceed();
-      }
-
-      default: {
-        return res;
-      }
-    }
-  }
-}
-
 OpResult fullUnify(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkUnify);
   return walk.run(left, right);
@@ -107,15 +86,13 @@ OpResult fullUnify(VM vm, RichNode left, RichNode right) {
 
 OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkEquals);
-  OpResult res = walk.run(left, right);
-  return internal::proceedFailToTrueFalse(res, result);
+  return walk.run(left, right).mapProceedFailToTrueFalse(result);
 }
 
 OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
                           StaticArray<UnstableNode> captures, bool& result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkPatternMatch, captures);
-  OpResult res = walk.run(value, pattern);
-  return internal::proceedFailToTrueFalse(res, result);
+  return walk.run(value, pattern).mapProceedFailToTrueFalse(result);
 }
 
 ////////////////////

@@ -122,12 +122,104 @@ public:
     }
   };
 
+  class IsFree: public Builtin<IsFree> {
+  public:
+    IsFree(): Builtin("isFree") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool res = value.isTransient() &&
+        !value.is<ReadOnly>() && !value.is<FailedValue>();
+
+      result.make<Boolean>(vm, res);
+      return OpResult::proceed();
+    }
+  };
+
+  class IsKinded: public Builtin<IsKinded> {
+  public:
+    IsKinded(): Builtin("isKinded") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      // TODO Update this when we actually have kinded values
+      result.make<Boolean>(vm, false);
+      return OpResult::proceed();
+    }
+  };
+
+  class IsFuture: public Builtin<IsFuture> {
+  public:
+    IsFuture(): Builtin("isFuture") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      result.make<Boolean>(vm, value.is<ReadOnly>());
+      return OpResult::proceed();
+    }
+  };
+
+  class IsFailed: public Builtin<IsFailed> {
+  public:
+    IsFailed(): Builtin("isFailed") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      result.make<Boolean>(vm, value.is<FailedValue>());
+      return OpResult::proceed();
+    }
+  };
+
   class IsDet: public Builtin<IsDet> {
   public:
     IsDet(): Builtin("isDet") {}
 
     OpResult operator()(VM vm, In value, Out result) {
       result.make<Boolean>(vm, !value.isTransient());
+      return OpResult::proceed();
+    }
+  };
+
+  class Status: public Builtin<Status> {
+  public:
+    Status(): Builtin("status") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      if (value.isTransient()) {
+        if (value.is<ReadOnly>())
+          result = Atom::build(vm, u"future");
+        else if (value.is<FailedValue>())
+          result = Atom::build(vm, u"failed");
+        else
+          result = Atom::build(vm, u"free");
+      } else {
+        UnstableNode type;
+        MOZART_CHECK_OPRESULT(TypeOf::builtin()(vm, value, type));
+
+        result = buildTuple(vm, u"det", std::move(type));
+      }
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TypeOf: public Builtin<TypeOf> {
+  public:
+    TypeOf(): Builtin("type") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      if (value.isTransient())
+        return OpResult::waitFor(vm, value);
+
+      // TODO
+      result = Atom::build(vm, u"value");
+      return OpResult::proceed();
+    }
+  };
+
+  class IsNeeded: public Builtin<IsNeeded> {
+  public:
+    IsNeeded(): Builtin("isNeeded") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = DataflowVariable(value).isNeeded(vm);
+      result.make<Boolean>(vm, boolResult);
       return OpResult::proceed();
     }
   };
@@ -181,6 +273,38 @@ public:
 
       result.make<Boolean>(vm, res > 0);
       return OpResult::proceed();
+    }
+  };
+
+  class HasFeature: public Builtin<HasFeature> {
+  public:
+    HasFeature(): Builtin("hasFeature") {}
+
+    OpResult operator()(VM vm, In record, In feature, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(
+        RecordLike(record).hasFeature(vm, feature, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
+  class CondSelect: public Builtin<CondSelect> {
+  public:
+    CondSelect(): Builtin("condSelect") {}
+
+    OpResult operator()(VM vm, In record, In feature, In def, Out result) {
+      bool hasFeature = false;
+      MOZART_CHECK_OPRESULT(
+        RecordLike(record).hasFeature(vm, feature, hasFeature));
+
+      if (hasFeature) {
+        return RecordLike(record).dot(vm, feature, result);
+      } else {
+        result.copy(vm, def);
+        return OpResult::proceed();
+      }
     }
   };
 

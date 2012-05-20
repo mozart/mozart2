@@ -86,6 +86,24 @@ public:
     assert(kind() == orRaise);
     return _node;
   }
+
+  OpResult mapProceedFailToTrueFalse(bool& result) {
+    switch (kind()) {
+      case orProceed: {
+        result = true;
+        return proceed();
+      }
+
+      case orFail: {
+        result = false;
+        return proceed();
+      }
+
+      default: {
+        return *this;
+      }
+    }
+  }
 private:
   OpResult(Kind kind): _kind(kind) {}
   OpResult(Kind kind, StableNode* node): _kind(kind), _node(node) {}

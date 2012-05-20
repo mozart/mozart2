@@ -189,6 +189,24 @@ OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
   }
 }
 
+OpResult Implementation<Tuple>::hasFeature(Self self, VM vm, RichNode feature,
+                                           bool& result) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    result = (featureIntValue > 0) && ((size_t) featureIntValue <= _width);
+    return OpResult::proceed();
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    result = false;
+    return OpResult::proceed();
+  }
+}
+
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,
                                               std::ostream& out, int depth) {
   out << repr(vm, _label, depth) << "(";
@@ -291,6 +309,24 @@ OpResult Implementation<Cons>::dotNumber(Self self, VM vm,
   }
 }
 
+OpResult Implementation<Cons>::hasFeature(Self self, VM vm, RichNode feature,
+                                          bool& result) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    result = (featureIntValue == 1) || (featureIntValue == 2);
+    return OpResult::proceed();
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    result = false;
+    return OpResult::proceed();
+  }
+}
+
 OpResult Implementation<Cons>::waitOr(Self self, VM vm,
                                       UnstableNode& result) {
   UnstableNode tempHead(vm, _head);
@@ -355,8 +391,7 @@ OpResult Implementation<Arity>::label(Self self, VM vm,
   return RichNode(temp).as<Tuple>().label(vm, result);
 }
 
-OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode record,
-                                              RichNode feature,
+OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
                                               size_t& result) {
   MOZART_REQUIRE_FEATURE(feature);
 
@@ -382,7 +417,7 @@ OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode record,
     }
   }
 
-  return raise(vm, vm->coreatoms.illegalFieldSelection, record, feature);
+  return OpResult::fail();
 }
 
 void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
@@ -467,11 +502,22 @@ OpResult Implementation<Record>::dot(Self self, VM vm,
   UnstableNode temp(vm, _arity);
 
   size_t index = 0;
-  MOZART_CHECK_OPRESULT(RichNode(temp).as<Arity>().lookupFeature(
-    vm, self, feature, index));
+  OpResult res = RichNode(temp).as<Arity>().lookupFeature(vm, feature, index);
 
-  result.copy(vm, self[index]);
-  return OpResult::proceed();
+  switch (res.kind()) {
+    case OpResult::orProceed: {
+      result.copy(vm, self[index]);
+      return OpResult::proceed();
+    }
+
+    case OpResult::orFail: {
+      return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+    }
+
+    default: {
+      return res;
+    }
+  }
 }
 
 OpResult Implementation<Record>::dotNumber(Self self, VM vm,
@@ -479,6 +525,15 @@ OpResult Implementation<Record>::dotNumber(Self self, VM vm,
                                            UnstableNode& result) {
   UnstableNode featureNode = SmallInt::build(vm, feature);
   return dot(self, vm, featureNode, result);
+}
+
+OpResult Implementation<Record>::hasFeature(Self self, VM vm, RichNode feature,
+                                            bool& result) {
+  UnstableNode temp(vm, _arity);
+
+  size_t index = 0;
+  return RichNode(temp).as<Arity>().lookupFeature(
+    vm, feature, index).mapProceedFailToTrueFalse(result);
 }
 
 void Implementation<Record>::printReprToStream(Self self, VM vm,

@@ -27,14 +27,9 @@
 %%
 local
    fun {ByNeedDot X F}
-      /*if {IsDet X} andthen {IsDet F}
+      if {IsDet X} andthen {IsDet F}
       then try X.F catch E then {FailedValue E} end
       else {ByNeedFuture fun {$} X.F end}
-      end*/
-      if {IsDet X} andthen {IsDet F} then
-         X.F
-      else
-         {ByNeedFuture fun {$} X.F end}
       end
    end
 in
@@ -72,8 +67,8 @@ in
                  byNeedDot:       ByNeedDot
 
                  '!!':            Boot_Value.readOnly
-                 %byNeedFail:      FailedValue
-                 %failed:          FailedValue
+                 byNeedFail:      FailedValue
+                 failed:          FailedValue
 
                  %toVirtualString: Boot_Value.toVirtualString
                 )

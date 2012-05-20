@@ -779,10 +779,18 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
 
     case OpResult::orWaitBefore:
     case OpResult::orWaitQuietBefore: {
-      UnstableNode waitee(vm, *result.getWaiteeNode());
+      UnstableNode unstableWaitee(vm, *result.getWaiteeNode());
+      RichNode waitee = unstableWaitee;
 
-      if (result.kind() != OpResult::orWaitQuietBefore)
-        DataflowVariable(waitee).markNeeded(vm);
+      if (result.kind() != OpResult::orWaitQuietBefore) {
+        if (waitee.is<FailedValue>()) {
+          return applyOpResult(vm, waitee.as<FailedValue>().raiseUnderlying(vm),
+                               preempted, abstraction, PC, yregCount,
+                               xregs, yregs, gregs, kregs);
+        } else {
+          DataflowVariable(waitee).markNeeded(vm);
+        }
+      }
 
       suspendOnVar(vm, waitee);
 

@@ -264,6 +264,40 @@ OpResult Implementation<ReadOnly>::bind(Self self, VM vm, RichNode src) {
   return OpResult::waitFor(vm, underlying);
 }
 
+/////////////////
+// FailedValue //
+/////////////////
+
+#include "FailedValue-implem.hh"
+
+StableNode* Implementation<FailedValue>::build(VM vm, GR gr, Self from) {
+  StableNode* result = new (gr->vm) StableNode;
+  gr->copyStableNode(*result, *from.get().getUnderlying());
+  return result;
+}
+
+OpResult Implementation<FailedValue>::raiseUnderlying(VM vm) {
+  UnstableNode underlying(vm, *_underlying);
+  return OpResult::raise(vm, underlying);
+}
+
+void Implementation<FailedValue>::addToSuspendList(Self self, VM vm,
+                                                   RichNode variable) {
+  assert(false);
+}
+
+bool Implementation<FailedValue>::isNeeded(VM vm) {
+  return true;
+}
+
+void Implementation<FailedValue>::markNeeded(Self self, VM vm) {
+  // Nothing to do
+}
+
+OpResult Implementation<FailedValue>::bind(Self self, VM vm, RichNode src) {
+  return raiseUnderlying(vm);
+}
+
 }
 
 #endif // MOZART_GENERATOR

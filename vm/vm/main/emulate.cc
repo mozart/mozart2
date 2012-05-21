@@ -98,6 +98,8 @@ bool ThreadStack::findExceptionHandler(VM vm, StableNode*& abstraction,
       remove_front(vm);
       return true;
     } else {
+      vm->deleteStaticArray<UnstableNode>(yregs, yregCount);
+
       abstraction = entry.abstraction;
       yregCount = entry.yregCount;
       yregs = entry.yregs;

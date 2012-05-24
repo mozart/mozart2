@@ -3,24 +3,35 @@ package ast
 
 import scala.util.parsing.input.Positional
 
-/** This class represents a node of the intermediate AST code.
- *  Each case subclass will represent a specific operation.
+/** Node of an Oz AST
+ *
+ *  There are two important subclasses of `Node`:
+ *  [[org.mozartz.bootcompiler.ast.Statement]] and
+ *  [[org.mozartz.bootcompiler.ast.Expression]], with obvious meanings.
  */
-abstract class Node extends Product with Cloneable with Positional {
+abstract class Node extends Product with Positional {
 
+  /** Copy the attributes of a node into this `Node`. */
   private[bootcompiler] def copyAttrs(tree: Node): this.type = {
     pos = tree.pos
     this
   }
 
+  /** Returns a pretty-printed representation of this `Node`
+   *
+   *  @param indent indentation to use when writing a line feed
+   */
   def syntax(indent: String = ""): String
 
   override def toString = syntax()
 
-  /** Clone this instruction. */
-  override def clone: Node =
-    super.clone.asInstanceOf[Node]
-
+  /** Pre-order walk of the subtree rooted at this `Node`
+   *
+   *  At each node, the `handler` is called. If it returns `true`, then the
+   *  walk dives into the children of this `Node`. Otherwise, it does not.
+   *
+   *  @param handler handler callback
+   */
   def walkBreak(handler: Node => Boolean) {
     if (handler(this)) {
       def inner(element: Any) {
@@ -35,6 +46,12 @@ abstract class Node extends Product with Cloneable with Positional {
     }
   }
 
+  /** Pre-order walk of the subtree rooted at this `Node`
+   *
+   *  At each node, the `handler` is called.
+   *
+   *  @param handler handler callback
+   */
   def walk[U](handler: Node => U) {
     walkBreak { node =>
       handler(node)

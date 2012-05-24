@@ -4,10 +4,20 @@ package ast
 import oz._
 import symtab._
 
+/** Base class for ASTs that represent expressions */
 sealed abstract class Expression extends StatOrExpr
 
 // Compound expressions
 
+/** Sequential composition of a statement and an expression
+ *
+ *  {{{
+ *  (<statement> <expression>)
+ *  }}}
+ *
+ *  The value of this expression is the value of the underlying `expression`
+ *  after execution of the `statement`.
+ */
 case class StatAndExpression(statement: Statement,
     expression: Expression) extends Expression {
   def syntax(indent: String) = {
@@ -15,6 +25,16 @@ case class StatAndExpression(statement: Statement,
   }
 }
 
+/** Local declaration expression
+ *
+ *  {{{
+ *  local
+ *     <declarations>
+ *  in
+ *     <expression>
+ *  end
+ *  }}}
+ */
 case class LocalExpression(declarations: List[Declaration],
     expression: Expression) extends Expression with LocalCommon {
   protected val body = expression
@@ -22,21 +42,53 @@ case class LocalExpression(declarations: List[Declaration],
 
 // Complex expressions
 
+/** Expression that creates a procedure abstraction
+ *
+ *  {{{
+ *  proc <flags> {$ <args>...}
+ *     <body>
+ *  end
+ *  }}}
+ */
 case class ProcExpression(name: String, args: List[FormalArg],
     body: Statement, flags: List[String]) extends Expression
     with ProcFunExpression {
   protected val keyword = "proc"
 }
 
+/** Expression that creates a function abstraction
+ *
+ *  {{{
+ *  fun <flags> {$ <args>...}
+ *     <body>
+ *  end
+ *  }}}
+ */
 case class FunExpression(name: String, args: List[FormalArg],
     body: Expression, flags: List[String]) extends Expression
     with ProcFunExpression {
   protected val keyword = "fun"
 }
 
+/** Call expression
+ *
+ *  {{{
+ *  {<callable> <args>...}
+ *  }}}
+ */
 case class CallExpression(callable: Expression,
     args: List[Expression]) extends Expression with CallCommon
 
+/** If expression
+ *
+ *  {{{
+ *  if <condition> then
+ *     <trueExpression>
+ *  else
+ *     <falseExpression>
+ *  end
+ *  }}}
+ */
 case class IfExpression(condition: Expression,
     trueExpression: Expression,
     falseExpression: Expression) extends Expression with IfCommon {
@@ -44,34 +96,91 @@ case class IfExpression(condition: Expression,
   protected val falsePart = falseExpression
 }
 
+/** Pattern matching expression
+ *
+ *  {{{
+ *  case <value>
+ *  of <clauses>...
+ *  else
+ *     <elseExpression>
+ *  end
+ *  }}}
+ */
 case class MatchExpression(value: Expression,
     clauses: List[MatchExpressionClause],
     elseExpression: Expression) extends Expression with MatchCommon {
   protected val elsePart = elseExpression
 }
 
+/** Clause of a pattern matching expression
+ *
+ *  {{{
+ *  [] <pattern> andthen <guard> then
+ *     <body>
+ *  }}}
+ */
 case class MatchExpressionClause(pattern: Expression, guard: Option[Expression],
     body: Expression) extends MatchClauseCommon {
   def hasGuard = guard.isDefined
 }
 
+/** Thread expression
+ *
+ *  {{{
+ *  thread
+ *     <expression>
+ *  end
+ *  }}}
+ */
 case class ThreadExpression(
     expression: Expression) extends Expression with ThreadCommon {
   protected val body = expression
 }
 
+/** Try-catch expression
+ *
+ *  {{{
+ *  try
+ *     <body>
+ *  catch <exceptionVar> then
+ *     <catchBody>
+ *  end
+ *  }}}
+ */
 case class TryExpression(body: Expression, exceptionVar: Variable,
     catchBody: Expression) extends Expression with TryCommon {
 }
 
+/** Try-finally expression
+ *
+ *  {{{
+ *  try
+ *     <body>
+ *  finally
+ *     <finallyBody>
+ *  end
+ *  }}}
+ */
 case class TryFinallyExpression(body: Expression,
     finallyBody: Statement) extends Expression with TryFinallyCommon {
 }
 
+/** Raise expression
+ *
+ *  {{{
+ *  raise <exception> end
+ *  }}}
+ */
 case class RaiseExpression(
     exception: Expression) extends Expression with RaiseCommon {
 }
 
+/** Bind expression
+ *
+ *  {{{
+ *  <left> = <right>
+ *  }}}
+ */
 case class BindExpression(left: Expression,
     right: Expression) extends Expression with InfixSyntax {
   protected val opSyntax = " = "
@@ -79,6 +188,7 @@ case class BindExpression(left: Expression,
 
 // Functors
 
+/** Feature of an imported functor, with an optional import alias */
 case class AliasedFeature(feature: Constant,
     alias: Option[Variable]) extends Node {
   def syntax(indent: String) = {
@@ -86,6 +196,13 @@ case class AliasedFeature(feature: Constant,
   }
 }
 
+/** Import item of a functor (require or import)
+ *
+ *  {{{
+ *  [import]
+ *     <module>(<aliases>...) at <location>
+ *  }}}
+ */
 case class FunctorImport(module: Variable, aliases: List[AliasedFeature],
     location: Option[String]) extends Node {
   def syntax(indent: String) = {
@@ -95,6 +212,13 @@ case class FunctorImport(module: Variable, aliases: List[AliasedFeature],
   }
 }
 
+/** Export item of a functor (export)
+ *
+ *  {{{
+ *  [export]
+ *     <feature>:<value>
+ *  }}}
+ */
 case class FunctorExport(feature: Expression,
     value: Expression) extends Node {
   def syntax(indent: String) = {
@@ -102,6 +226,23 @@ case class FunctorExport(feature: Expression,
   }
 }
 
+/** Expression that creates a functor
+ *
+ *  {{{
+ *  functor
+ *  require
+ *     <require>...
+ *  prepare
+ *     <prepare>
+ *  import
+ *     <imports>...
+ *  export
+ *     <exports>...
+ *  define
+ *     <define>
+ *  end
+ *  }}}
+ */
 case class FunctorExpression(name: String,
     require: List[FunctorImport], prepare: Option[LocalStatement],
     imports: List[FunctorImport], define: Option[LocalStatement],
@@ -132,16 +273,19 @@ case class FunctorExpression(name: String,
 
 // Operations
 
+/** Unary operation */
 case class UnaryOp(operator: String, operand: Expression) extends Expression {
   def syntax(indent: String) =
     operator + operand.syntax(indent + " "*operator.length)
 }
 
+/** Binary operation */
 case class BinaryOp(left: Expression, operator: String,
     right: Expression) extends Expression with InfixSyntax {
   protected val opSyntax = " " + operator + " "
 }
 
+/** Boolean binary operation with short-circuit semantics */
 case class ShortCircuitBinaryOp(left: Expression, operator: String,
     right: Expression) extends Expression with InfixSyntax {
   protected val opSyntax = operator
@@ -149,8 +293,10 @@ case class ShortCircuitBinaryOp(left: Expression, operator: String,
 
 // Trivial expressions
 
+/** Variable or constant (elementary things that can reach the codegen) */
 trait VarOrConst extends Expression
 
+/** Variable */
 case class Variable(name: String) extends VarOrConst with SymbolNode
     with FormalArg with Declaration {
   def syntax(indent: String) =
@@ -163,44 +309,71 @@ object Variable extends (String => Variable) {
     new Variable(symbol.name) withSymbol symbol
 }
 
+/** Escaped variable (that is not declared when in an lhs) */
 case class EscapedVariable(variable: Variable) extends Expression {
   def syntax(indent: String) = "!" + variable.syntax(indent+"  ")
 }
 
+/** Wildcard `_` */
 case class UnboundExpression() extends Expression {
   def syntax(indent: String) = "_"
 }
 
+/** Constant value */
 case class Constant(value: OzValue) extends VarOrConst {
   def syntax(indent: String) = value.syntax()
 }
 
+/** Dummy placeholder for an implicit feature of a record field */
 case class AutoFeature() extends Expression {
   def syntax(indent: String) = ""
 }
 
+/** Nexting marker $ */
 case class NestingMarker() extends Expression {
   def syntax(indent: String) = "$"
 }
 
 // Records
 
+/** Record field
+ *
+ *  {{{
+ *  <feature>:<value>
+ *  }}}
+ *
+ *  `feature` can be an [[org.mozartoz.bootcompiler.ast.AutoFeature]], in which
+ *  case it is implicit.
+ */
 case class RecordField(feature: Expression, value: Expression) extends Node {
   def syntax(indent: String) = {
     val featSyntax = feature.syntax(indent)
     featSyntax + ":" + value.syntax(indent + " " + " "*featSyntax.length())
   }
 
+  /** Returns true if the feature is an auto feature */
   def hasAutoFeature =
     feature.isInstanceOf[AutoFeature]
 
+  /** Returns true if the feature is constant
+   *
+   *  Note that auto features are constant, since they are desugared into
+   *  constant integers during `Desugar`.
+   */
   def hasConstantFeature =
     feature.isInstanceOf[Constant] || hasAutoFeature
 
+  /** Returns true if the feature and value are both constant */
   def isConstant =
     feature.isInstanceOf[Constant] && value.isInstanceOf[Constant]
 }
 
+/** Record builder
+ *
+ *  {{{
+ *  <label>(<fields>...)
+ *  }}}
+ */
 case class Record(label: Expression,
     fields: List[RecordField]) extends Expression {
   def syntax(indent: String) = fields.toList match {
@@ -218,9 +391,14 @@ case class Record(label: Expression,
     }
   }
 
+  /** Returns true if the arity of the record is a compile-time constant */
   lazy val hasConstantArity =
     label.isInstanceOf[Constant] && (fields forall (_.hasConstantFeature))
 
+  /** Returns the arity of this record as a compile-time constant
+   *
+   *  @require `this.hasConstantArity`
+   */
   lazy val getConstantArity: OzArity = {
     require(hasConstantArity)
 
@@ -232,12 +410,20 @@ case class Record(label: Expression,
     OzArity(ozLabel, ozFeatures)
   }
 
+  /** Returns true if this record should be optimized as a tuple */
   def isTuple = hasConstantArity && getConstantArity.isTupleArity
+
+  /** Returns true if this record should be optimized as a cons */
   def isCons = hasConstantArity && getConstantArity.isConsArity
 
+  /** Returns true if this record is a compile-time constant */
   def isConstant =
     label.isInstanceOf[Constant] && (fields forall (_.isConstant))
 
+  /** Returns this record as a compile-time constant
+   *
+   *  @require `this.isConstant`
+   */
   def getAsConstant: OzValue = {
     require(isConstant)
 
@@ -252,6 +438,7 @@ case class Record(label: Expression,
   }
 }
 
+/** Factory and pattern-matching against Tuple-like records */
 object Tuple extends ((Expression, List[Expression]) => Record) {
   def apply(label: Expression, fields: List[Expression]) = {
     val recordFields =
@@ -266,6 +453,7 @@ object Tuple extends ((Expression, List[Expression]) => Record) {
   }
 }
 
+/** Factory and pattern-matching against Cons-like records */
 object Cons extends ((Expression, Expression) => Record) {
   def apply(head: Expression, tail: Expression) =
     Tuple(Constant(OzAtom("|")), List(head, tail))
@@ -276,8 +464,12 @@ object Cons extends ((Expression, Expression) => Record) {
   }
 }
 
-/** Synthetic-only expressions */
+// Synthetic-only expressions
 
+/** Expressions that creates an abstraction from a code area and globals
+ *
+ *  This class has no correspondence in actual Oz code. It is internal only.
+ */
 case class CreateAbstraction(arity: Expression, body: Expression,
     globals: List[Expression]) extends Expression {
   def syntax(indent: String) = {

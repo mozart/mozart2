@@ -1,13 +1,16 @@
 package org.mozartoz.bootcompiler
 package oz
 
+/** Compile-time constant */
 sealed trait OzValue {
   def syntax(): String
 
   override def toString() = syntax()
 }
 
+/** Compile-time constant that can be used as a feature */
 sealed trait OzFeature extends OzValue {
+  /** Compare two features for their ordering in a record */
   def feature_<(that: OzFeature) = {
     (this, that) match {
       case (OzInt(l), OzInt(r)) => l < r
@@ -18,6 +21,7 @@ sealed trait OzFeature extends OzValue {
     }
   }
 
+  /** Rank of a feature type */
   private def typeRank(feature: OzFeature): Int = {
     feature match {
       case _:OzInt => 1
@@ -27,36 +31,50 @@ sealed trait OzFeature extends OzValue {
   }
 }
 
+/** Oz number */
 sealed trait OzNumber extends OzValue
 
+/** Oz integer */
 case class OzInt(value: Long) extends OzNumber with OzFeature {
   def syntax() = value.toString()
 }
 
+/** Oz float */
 case class OzFloat(value: Double) extends OzNumber {
   def syntax() = value.toString()
 }
 
+/** Oz literal */
 sealed trait OzLiteral extends OzValue with OzFeature
 
+/** Oz atom */
 case class OzAtom(value: String) extends OzLiteral {
   def syntax() = "'" + ast.escapePseudoChars(value, '\'') + "'"
 }
 
+/** Abstract base class for builtin names */
 sealed abstract class BuiltinName(val tag: String) extends OzLiteral {
   def syntax() = tag
 }
 
+/** The `true` value */
 case class True() extends BuiltinName("true")
+
+/** The `false` value */
 case class False() extends BuiltinName("false")
+
+/** The `unit` value */
 case class UnitVal() extends BuiltinName("unit")
 
+/** Arity of a record */
 case class OzArity(label: OzLiteral,
     features: List[OzFeature]) extends OzValue {
   def syntax() = "<Arity/" + toTuple.syntax() + ">"
 
+  /** Width of this arity, aka number of features */
   val width = features.size
 
+  /** Returns true if this is the arity of a tuple */
   val isTupleArity = {
     features.zipWithIndex forall {
       case (OzInt(feature), index) if feature == index+1 => true
@@ -64,16 +82,20 @@ case class OzArity(label: OzLiteral,
     }
   }
 
+  /** Returns true if this is the arity of a cons */
   val isConsArity =
     isTupleArity && (width == 2) && (label == OzAtom("|"))
 
+  /** Returns an Oz tuple that represents this arity */
   lazy val toTuple = OzTuple(label, features)
 }
 
+/** Field of an Oz record */
 case class OzRecordField(feature: OzFeature, value: OzValue) {
   def syntax() = feature.syntax() + ":" + value.syntax()
 }
 
+/** Oz record */
 case class OzRecord(label: OzLiteral,
     fields: List[OzRecordField]) extends OzValue {
   require(!fields.isEmpty)
@@ -86,17 +108,27 @@ case class OzRecord(label: OzLiteral,
     } + ")"
   }
 
+  /** Arity of this record */
   lazy val arity = OzArity(label, fields map (_.feature))
 
+  /** Returns true if this is a tuple */
   def isTuple = arity.isTupleArity
+
+  /** Returns true if this is a cons */
   def isCons = arity.isConsArity
 
+  /** Map from features to values */
   private lazy val map = Map((fields map (x => x.feature -> x.value)):_*)
 
+  /** Returns the value stored at the given `feature` in this record.
+   *
+   *  @return [[scala.None]] if the feature does not belong to this record
+   */
   def select(feature: OzFeature): Option[OzValue] =
     map.get(feature)
 }
 
+/** Factory and pattern matching for Oz tuples */
 object OzTuple extends ((OzLiteral, List[OzValue]) => OzRecord) {
   def apply(label: OzLiteral, fields: List[OzValue]) = {
     val recordFields =
@@ -111,6 +143,7 @@ object OzTuple extends ((OzLiteral, List[OzValue]) => OzRecord) {
   }
 }
 
+/** Factory and pattern matching for Oz conses */
 object OzCons extends ((OzValue, OzValue) => OzRecord) {
   def apply(head: OzValue, tail: OzValue) =
     OzTuple(OzAtom("|"), List(head, tail))
@@ -121,6 +154,7 @@ object OzCons extends ((OzValue, OzValue) => OzRecord) {
   }
 }
 
+/** Factory and pattern matching for #-tuples */
 object OzSharp extends (List[OzValue] => OzRecord) {
   def apply(fields: List[OzValue]) =
     OzTuple(OzAtom("#"), fields)
@@ -131,24 +165,29 @@ object OzSharp extends (List[OzValue] => OzRecord) {
   }
 }
 
+/** Factory for Oz lists */
 object OzList extends (List[OzValue] => OzValue) {
   def apply(elems: List[OzValue]): OzValue =
     if (elems.isEmpty) OzAtom("nil")
     else OzCons(elems.head, OzList(elems.tail))
 }
 
+/** Oz value representing a builtin */
 case class OzBuiltin(builtin: symtab.Builtin) extends OzValue {
   def syntax() = builtin.toString()
 }
 
+/** Oz code area */
 case class OzCodeArea(codeArea: bytecode.CodeArea) extends OzValue {
   def syntax() = codeArea.toString()
 }
 
+/** Special value representing a wildcard in a pattern */
 case class OzPatMatWildcard() extends OzValue {
   def syntax() = "_"
 }
 
+/** Special value representing a capture in a pattern */
 case class OzPatMatCapture(variable: symtab.VariableSymbol) extends OzValue {
   def syntax() = variable.toString()
 }

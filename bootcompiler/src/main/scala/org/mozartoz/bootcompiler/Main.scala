@@ -22,7 +22,9 @@ case class Config(
     moduleDefs: List[String] = Nil
 )
 
+/** Entry point for the Mozart2 bootstrap compiler */
 object Main {
+  /** Executes the Mozart2 bootstrap compiler */
   def main(args: Array[String]) {
     // Define command-line options
     val optParser = new scopt.immutable.OptionParser[Config]("scopt", "2.x") {
@@ -67,13 +69,34 @@ object Main {
     }
   }
 
+  /** Parses an Oz statement from a reader
+   *
+   *  Upon lexical or syntactical error, displays a user-friendly error
+   *  message on stderr and halts the program.
+   *
+   *  @param reader input reader
+   *  @return The statement AST
+   */
   private def parseStatement(reader: PagedSeqReader) =
     new ParserWrapper().parseStatement(reader)
 
+  /** Parses an Oz expression from a reader
+   *
+   *  Upon lexical or syntactical error, displays a user-friendly error
+   *  message on stderr and halts the program.
+   *
+   *  @param reader input reader
+   *  @return The expression AST
+   */
   private def parseExpression(reader: PagedSeqReader) =
     new ParserWrapper().parseExpression(reader)
 
-  class ParserWrapper {
+  /** Utility wrapper for an [[org.mozartoz.bootcompiler.parser.OzParser]]
+   *
+   *  This wrapper provides user-directed error messages.
+   */
+  private class ParserWrapper {
+    /** Underlying parser */
     private val parser = new OzParser()
 
     def parseStatement(reader: PagedSeqReader) =
@@ -82,6 +105,15 @@ object Main {
     def parseExpression(reader: PagedSeqReader) =
       processResult(parser.parseExpression(reader))
 
+    /** Processes a parse result
+     *
+     *  Upon success, returns the underlying AST. Upon failure, displays a
+     *  user-friendly error message on stderr and halts the program.
+     *
+     *  @tparam A type of AST
+     *  @param result parse result to be processed
+     *  @return the underlying AST, upon success only
+     */
     private def processResult[A](result: parser.ParseResult[A]): A = {
       result match {
         case parser.Success(rawCode, _) =>
@@ -98,16 +130,33 @@ object Main {
     }
   }
 
+  /** Builds a [[scala.util.parsing.input.PagedSeqReader]] for a file
+   *
+   *  @param fileName name of the file to be read
+   */
   private def readerForFile(fileName: String) = {
     new PagedSeqReader(PagedSeq.fromReader(
         new BufferedReader(new FileReader(fileName))))
   }
 
+  /** Builds a [[scala.util.parsing.input.PagedSeqReader]] for a resource
+   *
+   *  @param resourceName name of the resource to be read
+   */
   private def readerForResource(resourceName: String) = {
     new PagedSeqReader(PagedSeq.fromSource(io.Source.fromInputStream(
         getClass.getResourceAsStream(resourceName))))
   }
 
+  /** Builds a whole [[org.mozartoz.bootcompiler.symtab.Program]] from its parts
+   *
+   *  See [[org.mozartoz.bootcompiler.ProgramBuilder]] for details on the
+   *  transformation performed.
+   *
+   *  @param moduleDefs list of files that define builtin modules
+   *  @param baseFunctor AST of the base functor
+   *  @param programStat AST of the program main statement
+   */
   private def buildProgram(moduleDefs: List[String], baseFunctor: Expression,
       programStat: Statement): Program = {
     val prog = new Program(SkipStatement())
@@ -118,7 +167,12 @@ object Main {
     prog
   }
 
-  def produce(prog: Program, outputStream: () => PrintStream) {
+  /** Compiles a program and produces the corresponding C++ code
+   *
+   *  @param prog program to compiler
+   *  @param outputStream function returning the output stream
+   */
+  private def produce(prog: Program, outputStream: () => PrintStream) {
     applyTransforms(prog)
 
     if (prog.hasErrors) {
@@ -135,6 +189,11 @@ object Main {
     }
   }
 
+  /** Loads the definitions of builtin modules
+   *
+   *  @param prog program in which the modules must be loaded
+   *  @param moduleDefs list of files that define builtin modules
+   */
   private def loadModuleDefs(prog: Program, moduleDefs: List[String]) = {
     JSON.globalNumberParser = (_.toInt)
 
@@ -159,6 +218,7 @@ object Main {
     Map.empty ++ result
   }
 
+  /** Loads one builtin module definition */
   private def loadModuleDef(prog: Program, moduleDef: File) = {
     class CC[T] {
       def unapply(a: Any): Option[T] = Some(a.asInstanceOf[T])
@@ -217,6 +277,7 @@ object Main {
     }
   }
 
+  /** Applies the successive transformation phases to a program */
   private def applyTransforms(prog: Program) {
     Namer(prog)
     DesugarFunctor(prog)
@@ -228,6 +289,11 @@ object Main {
     CodeGen(prog)
   }
 
+  /** Reads the contents of file
+   *
+   *  @param file file to read
+   *  @return the contents of the file
+   */
   private def readFileToString(file: File) = {
     val source = io.Source.fromFile(file)
     try source.mkString

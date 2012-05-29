@@ -19,14 +19,6 @@ package object ast {
     result.toString
   }
 
-  /** Implicit conversion from a pair of expressions to a record field */
-  implicit def pair2recordField(pair: (Expression, Expression)) =
-    RecordField(pair._1, pair._2)
-
-  /** Implicit conversion from an expression to record/tuple field */
-  implicit def expr2recordField(expr: Expression) =
-    RecordField(AutoFeature(), expr)
-
   /** Gives a position to a subtree
    *
    *  The position `pos` is given to `node` and all its subtrees that do not

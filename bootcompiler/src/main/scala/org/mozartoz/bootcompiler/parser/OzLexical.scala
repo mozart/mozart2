@@ -30,24 +30,24 @@ class OzLexical extends Lexical with OzTokens {
   }
 
   def identifier =
-    upperCaseLetter ~ rep(identChar) ^^ {
-      case first ~ rest => Identifier(first :: rest mkString "")
+    rep1(upperCaseLetter, identChar) ^^ {
+      chars => Identifier(chars mkString "")
     }
 
   def floatLiteral =
-    (digit ~ rep(digit) <~ '.') ~ rep(digit) ^^ {
-      case first ~ rest ~ fract =>
-        FloatLit(first :: rest mkString "" + "." + fract mkString "")
+    (rep1(digit) <~ '.') ~ rep(digit) ^^ {
+      case int ~ fract =>
+        FloatLit(int mkString "" + "." + fract mkString "")
     }
 
   def integerLiteral =
-    digit ~ rep(digit) ^^ {
-      case first ~ rest => NumericLit(first :: rest mkString "")
+    rep1(digit) ^^ {
+      chars => NumericLit(chars mkString "")
     }
 
   def atomLiteral = (
-      lowerCaseLetter ~ rep(identChar) ^^ {
-        case first ~ rest => processKeyword(first :: rest mkString "")
+      rep1(lowerCaseLetter, identChar) ^^ {
+        chars => processKeyword(chars mkString "")
       }
 
     | '\'' ~> rep(inQuoteChar) <~ '\'' ^^ {

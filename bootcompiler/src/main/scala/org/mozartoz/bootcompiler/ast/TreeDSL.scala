@@ -153,6 +153,23 @@ trait TreeDSL {
   def THREAD(body: Statement) =
     treeCopy.ThreadStatement(body, body)
 
+  /** Construct RawLocalStatements and RawLocalExpressions
+   *
+   *  Usage:
+   *  {{{
+   *  RAWLOCAL (<decls>...) IN {
+   *    <body>
+   *  }
+   *  }}}
+   */
+  def RAWLOCAL(decls: RawDeclaration*) = new {
+    def IN(body: Statement) =
+      treeCopy.RawLocalStatement(body, decls.toList, body)
+
+    def IN(body: Expression) =
+      treeCopy.RawLocalExpression(body, decls.toList, body)
+  }
+
   /** Construct LocalStatements and LocalExpressions
    *
    *  Usage:
@@ -162,7 +179,7 @@ trait TreeDSL {
    *  }
    *  }}}
    */
-  def LOCAL(decls: Declaration*) = new {
+  def LOCAL(decls: Variable*) = new {
     def IN(body: Statement) =
       treeCopy.LocalStatement(body, decls.toList, body)
 

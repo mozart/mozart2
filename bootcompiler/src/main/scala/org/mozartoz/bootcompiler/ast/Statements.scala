@@ -2,7 +2,7 @@ package org.mozartoz.bootcompiler
 package ast
 
 /** Base class for ASTs that represent statements */
-sealed abstract class Statement extends StatOrExpr with Declaration
+sealed abstract class Statement extends StatOrExpr with RawDeclaration
 
 /** Sequential composition of several statements */
 case class CompoundStatement(statements: List[Statement]) extends Statement {
@@ -12,6 +12,23 @@ case class CompoundStatement(statements: List[Statement]) extends Statement {
       _ + "\n" + indent + _.syntax(indent)
     }
   }
+}
+
+trait LocalStatementOrRaw extends Statement
+
+/** Raw local declaration statement (before naming)
+ *
+ *  {{{
+ *  local
+ *     <declarations>
+ *  in
+ *     <statement>
+ *  end
+ *  }}}
+ */
+case class RawLocalStatement(declarations: List[RawDeclaration],
+    statement: Statement) extends LocalStatementOrRaw with LocalCommon {
+  protected val body = statement
 }
 
 /** Local declaration statement
@@ -24,8 +41,8 @@ case class CompoundStatement(statements: List[Statement]) extends Statement {
  *  end
  *  }}}
  */
-case class LocalStatement(declarations: List[Declaration],
-    statement: Statement) extends Statement with LocalCommon {
+case class LocalStatement(declarations: List[Variable],
+    statement: Statement) extends LocalStatementOrRaw with LocalCommon {
   protected val body = statement
 }
 
@@ -106,7 +123,7 @@ case class ThreadStatement(
  *  end
  *  }}}
  */
-case class TryStatement(body: Statement, exceptionVar: Variable,
+case class TryStatement(body: Statement, exceptionVar: VariableOrRaw,
     catchBody: Statement) extends Statement with TryCommon {
 }
 

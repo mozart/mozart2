@@ -31,12 +31,12 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
 
   private def withEnvironmentFromDecls[A](
       decls: List[Variable])(f: => A) = {
-    val newEnv = (decls map (decl => decl.name -> Left(decl.symbol)))
+    val newEnv = (decls map (decl => decl.symbol.name -> Left(decl.symbol)))
     withEnvironment(env ++ newEnv)(f)
   }
 
   override def transformStat(statement: Statement) = statement match {
-    case local @ LocalStatement(declarations, body) =>
+    case local @ RawLocalStatement(declarations, body) =>
       val (decls, stats) = extractDecls(declarations)
       val stat = statsAndStatToStat(stats, body)
 
@@ -67,7 +67,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       if (decls.isEmpty) newMatchStat
       else treeCopy.LocalStatement(newMatchStat, decls, newMatchStat)
 
-    case tryStat @ TryStatement(body, exceptionVar, catchBody) =>
+    case tryStat @ TryStatement(body, exceptionVar:RawVariable, catchBody) =>
       val newBody = transformStat(body)
       val namedExcVar = nameDecl(exceptionVar, capture = true)
 
@@ -86,7 +86,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   override def transformExpr(expression: Expression) = expression match {
-    case local @ LocalExpression(declarations, body) =>
+    case local @ RawLocalExpression(declarations, body) =>
       val (decls, stats) = extractDecls(declarations)
       val expr = statsAndExprToExpr(stats, body)
 
@@ -117,7 +117,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       if (decls.isEmpty) newMatchExpr
       else treeCopy.LocalExpression(newMatchExpr, decls, newMatchExpr)
 
-    case tryExpr @ TryExpression(body, exceptionVar, catchBody) =>
+    case tryExpr @ TryExpression(body, exceptionVar:RawVariable, catchBody) =>
       val newBody = transformExpr(body)
       val namedExcVar = nameDecl(exceptionVar, capture = true)
 
@@ -156,14 +156,14 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     case functor: FunctorExpression =>
       transformFunctor(functor)
 
-    case v @ Variable(name) =>
+    case v @ RawVariable(name) =>
       env.get(name) match {
-        case Some(Left(symbol)) => treeCopy.Variable(v, name) withSymbol symbol
+        case Some(Left(symbol)) => treeCopy.Variable(v, symbol)
         case Some(Right(value)) => treeCopy.Constant(v, value)
 
         case _ =>
           program.reportError("Undeclared variable "+name, v.pos)
-          transformExpr(LOCAL (v) IN (v))
+          transformExpr(RAWLOCAL (v) IN (v))
       }
 
     case EscapedVariable(v) =>
@@ -205,9 +205,9 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     val decls = new ListBuffer[Variable]
     val newImports = new ListBuffer[FunctorImport]
 
-    def nameDecl(variable: Variable) = {
-      val symbol = new Symbol(variable.name)
-      val decl = treeCopy.Variable(variable, variable.name) withSymbol symbol
+    def nameDecl(variable: VariableOrRaw) = {
+      val symbol = new Symbol(variable.asInstanceOf[RawVariable].name)
+      val decl = treeCopy.Variable(variable, symbol)
       decls += decl
       decl
     }
@@ -228,13 +228,13 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     (decls.toList, newImports.toList)
   }
 
-  def transformFunctorDefine(define: Option[LocalStatement]) = {
+  def transformFunctorDefine(define: Option[LocalStatementOrRaw]) = {
     if (define.isEmpty) (Nil, define)
     else transformFunctionDefineInner(define.get)
   }
 
-  def transformFunctionDefineInner(define: LocalStatement) = {
-    val LocalStatement(declarations, body) = define
+  def transformFunctionDefineInner(define: LocalStatementOrRaw) = {
+    val RawLocalStatement(declarations, body) = define
 
     val (decls, stats) = extractDecls(declarations)
     val stat = statsAndStatToStat(stats, body)
@@ -247,7 +247,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   def transformFunctorExports(exports: List[FunctorExport]) = {
-    for (export @ FunctorExport(feature, value: Variable) <- exports) yield {
+    for (export @ FunctorExport(feature, value: RawVariable) <- exports) yield {
       val newFeature = feature match {
         case AutoFeature() =>
           val strFeature = value.name.head.toLower + value.name.tail
@@ -263,40 +263,78 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   def extractDecls(
-      declarations: List[Declaration]): (List[Variable], List[Statement]) = {
-    val decls = new ListBuffer[Variable]
-    val statements = new ListBuffer[Statement]
+      declarations: List[RawDeclaration]): (List[Variable], List[Statement]) = {
+    val decls = patternVariables(declarations)
+    val namedDecls = nameDecls(decls)
 
-    def process(declarations: List[Declaration]) {
-      for (declaration <- declarations) {
-        declaration match {
-          case variable:Variable =>
-            decls += variable
+    val statements = for {
+      decl <- declarations
+      if decl.isInstanceOf[Statement]
+    } yield decl.asInstanceOf[Statement]
 
-          case stat @ BindStatement(left, right) =>
-            decls ++= extractDeclsInExpression(left)
-            statements += stat
+    (namedDecls, statements)
+  }
 
-          case stat @ LocalStatement(subDecls, subStat) =>
-            val (declsInside, statsInside) = extractDecls(List(subStat))
-            decls ++= declsInside
-            statements += treeCopy.LocalStatement(stat, subDecls,
-                statementsToStatement(statsInside))
+  /** Compute the PV set for a list of declarations
+   *
+   *  <a href="http://www.mozart-oz.org/documentation/notation/node6.html">
+   *    Definition of the PV set</a>
+   */
+  private def patternVariables(
+      declarations: List[RawDeclaration]): List[RawVariable] = {
+    declarations flatMap patternVariables
+  }
 
-          case stat @ CompoundStatement(subStatements) =>
-            process(subStatements)
+  /** Compute the PV set for a single declaration
+   *
+   *  <a href="http://www.mozart-oz.org/documentation/notation/node6.html">
+   *    Definition of the PV set</a>
+   */
+  private def patternVariables(
+      declaration: RawDeclaration): List[RawVariable] = declaration match {
+    case v: RawVariable =>
+      List(v)
 
-          case stat:Statement =>
-            statements += stat
-        }
-      }
-    }
+    case CompoundStatement(statements) =>
+      patternVariables(statements)
 
-    process(declarations)
+    case RawLocalStatement(decls, stat) =>
+      patternVariables(stat) filterNot (patternVariables(decls) contains)
 
-    val namedDecls = nameDecls(decls.toList)
+    case lhs === rhs =>
+      patternVariables(lhs)
 
-    (namedDecls, statements.toList)
+    case _ =>
+      Nil
+  }
+
+  /** Compute the PV set for an expression
+   *
+   *  <a href="http://www.mozart-oz.org/documentation/notation/node6.html">
+   *    Definition of the PV set</a>
+   */
+  private def patternVariables(
+      expression: Expression): List[RawVariable] = expression match {
+    case v: RawVariable =>
+      List(v)
+
+    case StatAndExpression(statement, expr) =>
+      patternVariables(statement) ++ patternVariables(expr)
+
+    case RawLocalExpression(decls, expr) =>
+      patternVariables(expr) filterNot (patternVariables(decls) contains)
+
+    case BindExpression(lhs, rhs) =>
+      patternVariables(lhs) ++ patternVariables(rhs)
+
+    case Record(_, fields) =>
+      for {
+        RecordField(_, value) <- fields
+        v <- patternVariables(value)
+      } yield v
+
+    case _ =>
+      Nil
   }
 
   def processPattern(pattern: Expression): (List[Variable], Expression) = {
@@ -304,9 +342,9 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       case UnboundExpression() =>
         (Nil, treeCopy.Constant(pattern, OzPatMatWildcard()))
 
-      case v @ Variable(name) =>
+      case v @ RawVariable(name) =>
         val symbol = new Symbol(name, capture = true)
-        val variable = treeCopy.Variable(v, name) withSymbol symbol
+        val variable = treeCopy.Variable(v, symbol)
         (List(variable), treeCopy.Constant(pattern, OzPatMatCapture(symbol)))
 
       case record @ Record(label, fields) =>
@@ -326,34 +364,20 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     }
   }
 
-  def extractDeclsInExpression(expr: Expression): List[Variable] = expr match {
-    case variable:Variable =>
-      List(variable)
-
-    case Record(label, fields) =>
-      for {
-        RecordField(_, value) <- fields
-        variable <- extractDeclsInExpression(value)
-      } yield variable
-
-    case _ =>
-      Nil
-  }
-
-  def nameDecls(decls: List[Variable], capture: Boolean = false) = {
-    for (v @ Variable(_) <- decls) yield
+  def nameDecls(decls: List[RawVariable], capture: Boolean = false) = {
+    for (v <- decls) yield
       nameDecl(v)
   }
 
-  def nameDecl(decl: Variable, capture: Boolean = false) = {
+  def nameDecl(decl: RawVariable, capture: Boolean = false) = {
     val symbol = new Symbol(decl.name, capture = capture)
-    treeCopy.Variable(decl, decl.name) withSymbol symbol
+    treeCopy.Variable(decl, symbol)
   }
 
   def nameFormals(args: List[FormalArg]) = {
-    for (v @ Variable(name) <- args) yield {
+    for (v @ RawVariable(name) <- args) yield {
       val symbol = new Symbol(name, formal = true)
-      treeCopy.Variable(v, name) withSymbol symbol
+      treeCopy.Variable(v, symbol)
     }
   }
 }

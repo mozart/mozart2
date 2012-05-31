@@ -4,7 +4,7 @@ package ast
 trait StatOrExpr extends Node
 
 trait LocalCommon extends StatOrExpr {
-  protected val declarations: List[Declaration]
+  protected val declarations: List[RawDeclarationOrVar]
   protected val body: StatOrExpr
 
   def syntax(indent: String) = {
@@ -128,7 +128,7 @@ trait ThreadCommon extends StatOrExpr {
 
 trait TryCommon extends StatOrExpr {
   protected val body: StatOrExpr
-  protected val exceptionVar: Variable
+  protected val exceptionVar: VariableOrRaw
   protected val catchBody: StatOrExpr
 
   def syntax(indent: String) = {

@@ -60,7 +60,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       baseFunctor: Expression, programStat: Statement) {
 
     val FunctorExpression(_, baseRequire,
-        Some(LocalStatement(baseDecls, baseStat)),
+        Some(RawLocalStatement(baseDecls, baseStat)),
         Nil, None, baseExports) = baseFunctor
 
     val bootModulesDecls = for {
@@ -74,13 +74,13 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     val baseDeclarations = {
       val baseDeclsAsStats = baseDecls map (_.asInstanceOf[Statement])
 
-      LOCAL (bootModulesDecls:_*) IN {
+      RAWLOCAL (bootModulesDecls:_*) IN {
         statsAndStatToStat(baseDeclsAsStats, baseStat)
       }
     }
 
     val wholeProgram = {
-      LOCAL (baseDeclarations) IN {
+      RAWLOCAL (baseDeclarations) IN {
         programStat
       }
     }

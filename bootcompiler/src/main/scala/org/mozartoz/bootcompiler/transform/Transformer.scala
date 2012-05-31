@@ -44,8 +44,12 @@ abstract class Transformer extends (Program => Unit) {
     case CompoundStatement(stats) =>
       treeCopy.CompoundStatement(statement, stats map transformStat)
 
+    case RawLocalStatement(declarations, statement) =>
+      treeCopy.RawLocalStatement(statement, declarations map transformDecl,
+          transformStat(statement))
+
     case LocalStatement(declarations, statement) =>
-      treeCopy.LocalStatement(statement, declarations map transformDecl,
+      treeCopy.LocalStatement(statement, declarations,
           transformStat(statement))
 
     case CallStatement(callable, args) =>
@@ -91,8 +95,12 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.StatAndExpression(statement, transformStat(statement),
           transformExpr(expression))
 
+    case RawLocalExpression(declarations, expression) =>
+      treeCopy.RawLocalExpression(expression, declarations map transformDecl,
+          transformExpr(expression))
+
     case LocalExpression(declarations, expression) =>
-      treeCopy.LocalExpression(expression, declarations map transformDecl,
+      treeCopy.LocalExpression(expression, declarations,
           transformExpr(expression))
 
     // Complex expressions
@@ -136,8 +144,8 @@ abstract class Transformer extends (Program => Unit) {
           transformExpr(right))
 
     case FunctorExpression(name, require, prepare, imports, define, exports) =>
-      def transformDefine(stat: LocalStatement) =
-        transformStat(stat).asInstanceOf[LocalStatement]
+      def transformDefine(stat: LocalStatementOrRaw) =
+        transformStat(stat).asInstanceOf[LocalStatementOrRaw]
 
       treeCopy.FunctorExpression(expression, name,
           require, prepare map transformDefine,
@@ -159,7 +167,8 @@ abstract class Transformer extends (Program => Unit) {
 
     // Trivial expressions
 
-    case Variable(name) => expression
+    case RawVariable(name) => expression
+    case Variable(symbol) => expression
     case EscapedVariable(variable) => expression
     case UnboundExpression() => expression
     case NestingMarker() => expression
@@ -183,7 +192,8 @@ abstract class Transformer extends (Program => Unit) {
           transformExpr(body), globals map transformExpr)
   }
 
-  def transformDecl(declaration: Declaration): Declaration = declaration match {
+  def transformDecl(
+      declaration: RawDeclaration): RawDeclaration = declaration match {
     case stat:Statement => transformStat(stat)
     case _ => declaration
   }

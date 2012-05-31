@@ -78,12 +78,12 @@ class OzParser extends OzTokenParsers with PackratParsers
   // Declarations
 
   lazy val inStatement: PackratParser[Statement] = (
-      positioned((declarations <~ "in") ~ statement ^^ LocalStatement)
+      positioned((declarations <~ "in") ~ statement ^^ RawLocalStatement)
     | statement
   )
 
   lazy val inExpression: PackratParser[Expression] = (
-      positioned((declarations <~ "in") ~ statExpression ^^ LocalExpression)
+      positioned((declarations <~ "in") ~ statExpression ^^ RawLocalExpression)
     | statExpression
   )
 
@@ -92,10 +92,10 @@ class OzParser extends OzTokenParsers with PackratParsers
   ||| positioned(oneStatement ~ statExpression ^^ StatAndExpression)
   )
 
-  lazy val declarations: PackratParser[List[Declaration]] =
+  lazy val declarations: PackratParser[List[RawDeclaration]] =
     declaration+
 
-  lazy val declaration: PackratParser[Declaration] = (
+  lazy val declaration: PackratParser[RawDeclaration] = (
       oneStatement
     | variable
   )
@@ -105,22 +105,14 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val procStatement: PackratParser[Statement] = positioned {
     (("proc" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
       case flags ~ left ~ args ~ body =>
-        val name = left match {
-          case Variable(name) => name
-          case _ => ""
-        }
-        BindStatement(left, ProcExpression(name, args, body, flags))
+        BindStatement(left, ProcExpression(nameOf(left), args, body, flags))
     }
   }
 
   lazy val funStatement: PackratParser[Statement] = positioned {
     (("fun" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
       case flags ~ left ~ args ~ body =>
-        val name = left match {
-          case Variable(name) => name
-          case _ => ""
-        }
-        BindStatement(left, FunExpression(name, args, body, flags))
+        BindStatement(left, FunExpression(nameOf(left), args, body, flags))
     }
   }
 
@@ -248,7 +240,7 @@ class OzParser extends OzTokenParsers with PackratParsers
         val tryCatch = optCatchClauses match {
           case None => body
           case Some(catchClauses) =>
-            val excVar = Variable(generateExcIdent())
+            val excVar = RawVariable(generateExcIdent())
 
             TryStatement(body, excVar,
               MatchStatement(excVar, catchClauses, RaiseStatement(excVar)))
@@ -269,7 +261,7 @@ class OzParser extends OzTokenParsers with PackratParsers
         val tryCatch = optCatchClauses match {
           case None => body
           case Some(catchClauses) =>
-            val excVar = Variable(generateExcIdent())
+            val excVar = RawVariable(generateExcIdent())
 
             TryExpression(body, excVar,
               MatchExpression(excVar, catchClauses, RaiseExpression(excVar)))
@@ -304,11 +296,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val functorStatement: PackratParser[Statement] = positioned {
     "functor" ~> expression ~ innerFunctor <~ "end" ^^ {
       case lhs ~ functor =>
-        val name = lhs match {
-          case Variable(name) => name
-          case _ => ""
-        }
-        BindStatement(lhs, functor.copy(name = name))
+        BindStatement(lhs, functor.copy(name = nameOf(lhs)))
     }
   }
 
@@ -324,7 +312,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val require: PackratParser[List[FunctorImport]] =
     opt("require" ~> rep(importElem)) ^^ (_.getOrElse(Nil))
 
-  lazy val prepare: PackratParser[Option[LocalStatement]] =
+  lazy val prepare: PackratParser[Option[RawLocalStatement]] =
     opt("prepare" ~> defineBody)
 
   lazy val imports: PackratParser[List[FunctorImport]] =
@@ -333,7 +321,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val exports: PackratParser[List[FunctorExport]] =
     opt("export" ~> rep(exportElem)) ^^ (_.getOrElse(Nil))
 
-  lazy val define: PackratParser[Option[LocalStatement]] =
+  lazy val define: PackratParser[Option[RawLocalStatement]] =
     opt("define" ~> defineBody)
 
   lazy val importElem: PackratParser[FunctorImport] = positioned(
@@ -341,8 +329,8 @@ class OzParser extends OzTokenParsers with PackratParsers
     | variableLabel ~ (rep(importAlias) <~ ")") ~ opt(importLocation) ^^ FunctorImport
   )
 
-  lazy val variableLabel: PackratParser[Variable] = positioned {
-    identLabel ^^ Variable
+  lazy val variableLabel: PackratParser[RawVariable] = positioned {
+    identLabel ^^ RawVariable
   }
 
   lazy val importAlias: PackratParser[AliasedFeature] = positioned {
@@ -360,10 +348,10 @@ class OzParser extends OzTokenParsers with PackratParsers
     opt(featureNoVar <~ ":") ^^ (_ getOrElse AutoFeature())
   }
 
-  lazy val defineBody: PackratParser[LocalStatement] = positioned {
+  lazy val defineBody: PackratParser[RawLocalStatement] = positioned {
     declarations ~ opt("in" ~> statement) ^^ {
       case decls ~ optStat =>
-        LocalStatement(decls, optStat getOrElse SkipStatement())
+        RawLocalStatement(decls, optStat getOrElse SkipStatement())
     }
   }
 
@@ -489,8 +477,8 @@ class OzParser extends OzTokenParsers with PackratParsers
     | positioned(literalConst ^^ Constant)
   )
 
-  lazy val variable: PackratParser[Variable] =
-    positioned(ident ^^ (chars => Variable(chars)))
+  lazy val variable: PackratParser[RawVariable] =
+    positioned(ident ^^ (chars => RawVariable(chars)))
 
   // Constants
 
@@ -520,7 +508,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val recordLabel: PackratParser[Expression] = (
       positioned(atomLitLabel ^^ (chars => Constant(OzAtom(chars))))
-    | positioned(identLabel ^^ Variable)
+    | positioned(identLabel ^^ RawVariable)
   )
 
   lazy val recordField: PackratParser[RecordField] = positioned {
@@ -542,6 +530,12 @@ class OzParser extends OzTokenParsers with PackratParsers
     positioned("[" ~> rep1(expression) <~ "]" ^^ exprListToListExpr)
 
   // Helpers
+
+  /** Extracts the name of a RawVariable, or "" if it is not */
+  private def nameOf(expression: Expression) = expression match {
+    case RawVariable(name) => name
+    case _ => ""
+  }
 
   /** Builds an Oz List expression from a list of expressions */
   private def exprListToListExpr(elems: List[Expression]): Expression = {

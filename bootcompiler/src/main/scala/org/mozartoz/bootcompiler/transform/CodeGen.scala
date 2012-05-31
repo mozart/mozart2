@@ -91,24 +91,24 @@ object CodeGen extends Transformer with TreeDSL {
         for (stat <- statements)
           generate(stat)
 
-      case ((lhs:Variable) === (rhs:Variable)) =>
-        XReg(0) := lhs.symbol
-        XReg(0) === rhs.symbol
+      case Variable(lhs) === Variable(rhs) =>
+        XReg(0) := lhs
+        XReg(0) === rhs
 
-      case ((lhs:Variable) === (rhs:Constant)) =>
-        XReg(0) := code.registerFor(rhs.value)
-        XReg(0) === lhs.symbol
+      case Variable(lhs) === Constant(rhs) =>
+        XReg(0) := code.registerFor(rhs)
+        XReg(0) === lhs
 
-      case ((lhs:Variable) === (rhs @ Record(_, fields))) if rhs.isCons =>
+      case Variable(lhs) === (rhs @ Record(_, fields)) if rhs.isCons =>
         val List(RecordField(_, head:VarOrConst),
             RecordField(_, tail:VarOrConst)) = fields
 
         XReg(0) := code.registerFor(head)
         XReg(1) := code.registerFor(tail)
         code += OpCreateConsXX(XReg(0), XReg(1), XReg(2))
-        XReg(2) === lhs.symbol
+        XReg(2) === lhs
 
-      case ((lhs:Variable) === (rhs @ Record(Constant(label), fields)))
+      case Variable(lhs) === (rhs @ Record(Constant(label), fields))
       if rhs.isTuple =>
         val labelReg = code.registerFor(label)
         val fieldCount = fields.size
@@ -117,9 +117,9 @@ object CodeGen extends Transformer with TreeDSL {
         code += OpCreateTupleK(labelReg, fieldCount, dest)
 
         dest.initArrayWith(fields map (_.value))
-        dest === lhs.symbol
+        dest === lhs
 
-      case ((lhs:Variable) === (rhs @ Record(_, fields)))
+      case Variable(lhs) === (rhs @ Record(_, fields))
       if rhs.hasConstantArity =>
         val fieldCount = fields.size
         val dest = XReg(0)
@@ -129,10 +129,10 @@ object CodeGen extends Transformer with TreeDSL {
         code += OpCreateRecordK(arityReg, fieldCount, dest)
 
         dest.initArrayWith(fields map (_.value))
-        dest === lhs.symbol
+        dest === lhs
 
-      case ((lhs:Variable) === (rhs @ CreateAbstraction(
-          Constant(OzInt(arity)), body:VarOrConst, globals))) =>
+      case Variable(lhs) === (rhs @ CreateAbstraction(
+          Constant(OzInt(arity)), body:VarOrConst, globals)) =>
 
         val globalCount = globals.size
         val dest = XReg(0)
@@ -150,7 +150,7 @@ object CodeGen extends Transformer with TreeDSL {
         }
 
         dest.initArrayWith(globals)
-        dest === lhs.symbol
+        dest === lhs
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>
         XReg(0) := cond.symbol
@@ -237,7 +237,7 @@ object CodeGen extends Transformer with TreeDSL {
               totalSize - jumpOffsets(index))
         }
 
-      case TryStatement(body, exceptionVar, catchBody) =>
+      case TryStatement(body, exceptionVar:Variable, catchBody) =>
         val setupHandlerHole = code.addHole()
         var branchHole: CodeArea#Hole = null
 

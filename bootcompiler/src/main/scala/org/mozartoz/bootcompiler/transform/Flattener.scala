@@ -35,8 +35,8 @@ object Flattener extends Transformer with TreeDSL {
 
   override def transformStat(statement: Statement) = statement match {
     case LocalStatement(declarations, stat) =>
-      for (v @ Variable(_) <- declarations)
-        abstraction.acquire(v.symbol)
+      for (variable <- declarations)
+        abstraction.acquire(variable.symbol)
 
       transformStat(stat)
 
@@ -46,8 +46,8 @@ object Flattener extends Transformer with TreeDSL {
 
   override def transformExpr(expression: Expression) = expression match {
     case LocalExpression(declarations, expr) =>
-      for (v @ Variable(_) <- declarations)
-        abstraction.acquire(v.symbol)
+      for (variable <- declarations)
+        abstraction.acquire(variable.symbol)
 
       transformExpr(expr)
 
@@ -56,8 +56,8 @@ object Flattener extends Transformer with TreeDSL {
 
       program.abstractions += abs
 
-      for (v @ Variable(_) <- args)
-        abs.acquire(v.symbol)
+      for (Variable(symbol) <- args)
+        abs.acquire(symbol)
 
       abs.flags ++= flags
 
@@ -80,10 +80,10 @@ object Flattener extends Transformer with TreeDSL {
       treeCopy.CreateAbstraction(proc, OzInt(abs.arity),
           OzCodeArea(abs.codeArea), newGlobalArgs)
 
-    case v @ FreeVar(name, sym) =>
+    case v @ FreeVar(sym) =>
       val global = abstraction.freeVarToGlobal(sym)
       globalToFreeVar += global -> sym
-      treeCopy.Variable(v, name) withSymbol global
+      treeCopy.Variable(v, global)
 
     case _ =>
       super.transformExpr(expression)
@@ -92,7 +92,7 @@ object Flattener extends Transformer with TreeDSL {
   object FreeVar {
     def unapply(v: Variable) = {
       if (v.symbol.owner eq abstraction) None
-      else Some((v.name, v.symbol))
+      else Some(v.symbol)
     }
   }
 }

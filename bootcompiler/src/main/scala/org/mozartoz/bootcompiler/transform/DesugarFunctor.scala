@@ -66,7 +66,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
 
   def makeImportsRec(imports: List[FunctorImport]): Expression = {
     val resultFields = for {
-      FunctorImport(module, aliases, location) <- imports
+      FunctorImport(module:Variable, aliases, location) <- imports
     } yield {
       val typeField = {
         val requiredFeatures =
@@ -82,7 +82,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
 
       val info = Record(OzAtom("info"), List(typeField) ++ fromField)
 
-      RecordField(OzAtom(module.name), info)
+      RecordField(OzAtom(module.symbol.name), info)
     }
 
     Record(OzAtom("import"), resultFields)
@@ -98,7 +98,8 @@ object DesugarFunctor extends Transformer with TreeDSL {
     Record(OzAtom("export"), resultFields)
   }
 
-  def makeApplyFun(define: Option[LocalStatement], imports: List[FunctorImport],
+  def makeApplyFun(define: Option[LocalStatementOrRaw],
+      imports: List[FunctorImport],
       exports: List[FunctorExport]): Expression = {
     val importsParamSym = Symbol.newSynthetic("<Imports>", formal = true)
     val importsParam = Variable(importsParamSym)
@@ -118,8 +119,8 @@ object DesugarFunctor extends Transformer with TreeDSL {
         def exec(statement: Statement) = statements += statement
 
         // Load imported decls
-        for (FunctorImport(module, aliases, _) <- imports) {
-          exec(module === (importsParam dot OzAtom(module.name)))
+        for (FunctorImport(module:Variable, aliases, _) <- imports) {
+          exec(module === (importsParam dot OzAtom(module.symbol.name)))
 
           for (AliasedFeature(feature, Some(variable)) <- aliases) {
             exec(variable === (module dot feature))
@@ -148,10 +149,10 @@ object DesugarFunctor extends Transformer with TreeDSL {
   def extractAllImportedDecls(imports: List[FunctorImport]) = {
     val result = new ListBuffer[Variable]
 
-    for (FunctorImport(module, aliases, _) <- imports) {
+    for (FunctorImport(module:Variable, aliases, _) <- imports) {
       result += module
 
-      for (AliasedFeature(_, Some(variable)) <- aliases)
+      for (AliasedFeature(_, Some(variable:Variable)) <- aliases)
         result += variable
     }
 

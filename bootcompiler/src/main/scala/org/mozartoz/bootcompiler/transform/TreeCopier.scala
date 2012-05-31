@@ -11,7 +11,11 @@ class TreeCopier {
   def CompoundStatement(tree: Node, statements: List[Statement]) =
     new CompoundStatement(statements).copyAttrs(tree)
 
-  def LocalStatement(tree: Node, declarations: List[Declaration],
+  def RawLocalStatement(tree: Node, declarations: List[RawDeclaration],
+      statement: Statement) =
+    new RawLocalStatement(declarations, statement).copyAttrs(tree)
+
+  def LocalStatement(tree: Node, declarations: List[Variable],
       statement: Statement) =
     new LocalStatement(declarations, statement).copyAttrs(tree)
 
@@ -29,7 +33,7 @@ class TreeCopier {
   def ThreadStatement(tree: Node, statement: Statement) =
     new ThreadStatement(statement).copyAttrs(tree)
 
-  def TryStatement(tree: Node, body: Statement, exceptionVar: Variable,
+  def TryStatement(tree: Node, body: Statement, exceptionVar: VariableOrRaw,
       catchBody: Statement) =
     new TryStatement(body, exceptionVar, catchBody).copyAttrs(tree)
 
@@ -55,7 +59,11 @@ class TreeCopier {
       expression: Expression) =
     new StatAndExpression(statement, expression).copyAttrs(tree)
 
-  def LocalExpression(tree: Node, declarations: List[Declaration],
+  def RawLocalExpression(tree: Node, declarations: List[RawDeclaration],
+      expression: Expression) =
+    new RawLocalExpression(declarations, expression).copyAttrs(tree)
+
+  def LocalExpression(tree: Node, declarations: List[Variable],
       expression: Expression) =
     new LocalExpression(declarations, expression).copyAttrs(tree)
 
@@ -83,7 +91,7 @@ class TreeCopier {
   def ThreadExpression(tree: Node, expression: Expression) =
     new ThreadExpression(expression).copyAttrs(tree)
 
-  def TryExpression(tree: Node, body: Expression, exceptionVar: Variable,
+  def TryExpression(tree: Node, body: Expression, exceptionVar: VariableOrRaw,
       catchBody: Expression) =
     new TryExpression(body, exceptionVar, catchBody).copyAttrs(tree)
 
@@ -99,19 +107,20 @@ class TreeCopier {
 
   // Functors
 
-  def AliasedFeature(tree: Node, feature: Constant, alias: Option[Variable]) =
+  def AliasedFeature(tree: Node, feature: Constant,
+      alias: Option[VariableOrRaw]) =
     new AliasedFeature(feature, alias).copyAttrs(tree)
 
-  def FunctorImport(tree: Node, module: Variable, aliases: List[AliasedFeature],
-      location: Option[String]) =
+  def FunctorImport(tree: Node, module: VariableOrRaw,
+      aliases: List[AliasedFeature], location: Option[String]) =
     new FunctorImport(module, aliases, location).copyAttrs(tree)
 
   def FunctorExport(tree: Node, feature: Expression, value: Expression) =
     new FunctorExport(feature, value).copyAttrs(tree)
 
   def FunctorExpression(tree: Node, name: String,
-      require: List[FunctorImport], prepare: Option[LocalStatement],
-      imports: List[FunctorImport], define: Option[LocalStatement],
+      require: List[FunctorImport], prepare: Option[LocalStatementOrRaw],
+      imports: List[FunctorImport], define: Option[LocalStatementOrRaw],
       exports: List[FunctorExport]) = {
     new FunctorExpression(name, require, prepare, imports,
         define, exports).copyAttrs(tree)
@@ -132,10 +141,13 @@ class TreeCopier {
 
   // Trivial expressions
 
-  def Variable(tree: Node, name: String) =
-    new Variable(name).copyAttrs(tree)
+  def RawVariable(tree: Node, name: String) =
+    new RawVariable(name).copyAttrs(tree)
 
-  def EscapedVariable(tree: Node, variable: Variable) =
+  def Variable(tree: Node, symbol: Symbol) =
+    new Variable(symbol).copyAttrs(tree)
+
+  def EscapedVariable(tree: Node, variable: RawVariable) =
     new EscapedVariable(variable).copyAttrs(tree)
 
   def UnboundExpression(tree: Node) =

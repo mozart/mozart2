@@ -12,8 +12,8 @@ object ConstantFolding extends Transformer with TreeDSL {
     val expression = super.transformExpr(expression0)
 
     expression match {
-      case variable:Variable if variable.symbol.isConstant =>
-        treeCopy.Constant(variable, variable.symbol.constant.get)
+      case Variable(symbol) if symbol.isConstant =>
+        treeCopy.Constant(expression, symbol.constant.get)
 
       case local @ LocalExpression(decls,
           sae @ StatAndExpression(stat, expr)) =>
@@ -108,17 +108,15 @@ object ConstantFolding extends Transformer with TreeDSL {
     builtins.makeRecordDynamic callExpr (label, tupleWithFields)
   }
 
-  private def processConstAssignments(decls: List[Declaration],
-      statement: Statement): Option[(List[Declaration], Statement)] = {
+  private def processConstAssignments(decls: List[Variable],
+      statement: Statement): Option[(List[Variable], Statement)] = {
     var touched: Boolean = false
 
     def inner(statement: Statement): Statement = {
       val statements = foldCompoundStatements(statement)
 
       val newStatements = statements flatMap { stat => stat match {
-        case (lhs:Variable) === Constant(rhs) if decls contains lhs =>
-          val symbol = lhs.symbol
-
+        case (lhs @ Variable(symbol)) === Constant(rhs) if decls contains lhs =>
           symbol.constant match {
             case Some(const) if const == rhs =>
               ()
@@ -146,10 +144,7 @@ object ConstantFolding extends Transformer with TreeDSL {
     val newStatement = inner(statement)
 
     if (touched) {
-      val newDecls = for {
-        decl @ Variable(name) <- decls
-        if !decl.symbol.isConstant
-      } yield decl
+      val newDecls = decls filterNot (_.symbol.isConstant)
       Some((newDecls, newStatement))
     } else {
       None

@@ -3,29 +3,10 @@ package ast
 
 import symtab._
 
-trait SymbolNode extends Node {
-  var symbol: Symbol = NoSymbol
+trait FormalArg extends Node
 
-  def withSymbol(sym: Symbol): this.type = {
-    symbol = sym
-    this
-  }
-
-  override def copyAttrs(tree: Node): this.type = {
-    super.copyAttrs(tree)
-
-    tree match {
-      case symTree:SymbolNode => symbol = symTree.symbol
-      case _ => ()
-    }
-
-    this
-  }
-}
-
-trait FormalArg extends Node with SymbolNode
-
-trait Declaration extends Node
+trait RawDeclarationOrVar extends Node
+trait RawDeclaration extends RawDeclarationOrVar
 
 trait InfixSyntax extends Node {
   val left: Node

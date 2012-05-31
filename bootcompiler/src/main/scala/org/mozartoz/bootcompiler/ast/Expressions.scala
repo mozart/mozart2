@@ -25,6 +25,21 @@ case class StatAndExpression(statement: Statement,
   }
 }
 
+/** Raw local declaration expression (before naming)
+ *
+ *  {{{
+ *  local
+ *     <declarations>
+ *  in
+ *     <expression>
+ *  end
+ *  }}}
+ */
+case class RawLocalExpression(declarations: List[RawDeclaration],
+    expression: Expression) extends Expression with LocalCommon {
+  protected val body = expression
+}
+
 /** Local declaration expression
  *
  *  {{{
@@ -35,7 +50,7 @@ case class StatAndExpression(statement: Statement,
  *  end
  *  }}}
  */
-case class LocalExpression(declarations: List[Declaration],
+case class LocalExpression(declarations: List[Variable],
     expression: Expression) extends Expression with LocalCommon {
   protected val body = expression
 }
@@ -147,7 +162,7 @@ case class ThreadExpression(
  *  end
  *  }}}
  */
-case class TryExpression(body: Expression, exceptionVar: Variable,
+case class TryExpression(body: Expression, exceptionVar: VariableOrRaw,
     catchBody: Expression) extends Expression with TryCommon {
 }
 
@@ -190,7 +205,7 @@ case class BindExpression(left: Expression,
 
 /** Feature of an imported functor, with an optional import alias */
 case class AliasedFeature(feature: Constant,
-    alias: Option[Variable]) extends Node {
+    alias: Option[VariableOrRaw]) extends Node {
   def syntax(indent: String) = {
     feature.syntax() + (alias map (":" + _.syntax()) getOrElse (""))
   }
@@ -203,7 +218,7 @@ case class AliasedFeature(feature: Constant,
  *     <module>(<aliases>...) at <location>
  *  }}}
  */
-case class FunctorImport(module: Variable, aliases: List[AliasedFeature],
+case class FunctorImport(module: VariableOrRaw, aliases: List[AliasedFeature],
     location: Option[String]) extends Node {
   def syntax(indent: String) = {
     val aliasesSyntax = aliases map (_.syntax(indent)) mkString " "
@@ -244,8 +259,8 @@ case class FunctorExport(feature: Expression,
  *  }}}
  */
 case class FunctorExpression(name: String,
-    require: List[FunctorImport], prepare: Option[LocalStatement],
-    imports: List[FunctorImport], define: Option[LocalStatement],
+    require: List[FunctorImport], prepare: Option[LocalStatementOrRaw],
+    imports: List[FunctorImport], define: Option[LocalStatementOrRaw],
     exports: List[FunctorExport]) extends Expression {
 
   def syntax(indent: String) = {
@@ -296,21 +311,25 @@ case class ShortCircuitBinaryOp(left: Expression, operator: String,
 /** Variable or constant (elementary things that can reach the codegen) */
 trait VarOrConst extends Expression
 
-/** Variable */
-case class Variable(name: String) extends VarOrConst with SymbolNode
-    with FormalArg with Declaration {
+/** Variable or raw variable */
+trait VariableOrRaw extends Expression
+
+/** Raw variable (unnamed) */
+case class RawVariable(name: String) extends VariableOrRaw
+    with FormalArg with RawDeclaration {
   def syntax(indent: String) =
-    if (symbol.isDefined) name + "~" + symbol.id
-    else name
+    name
 }
 
-object Variable extends (String => Variable) {
-  def apply(symbol: Symbol) =
-    new Variable(symbol.name) withSymbol symbol
+/** Variable */
+case class Variable(symbol: Symbol) extends VarOrConst with VariableOrRaw
+    with FormalArg with RawDeclarationOrVar {
+  def syntax(indent: String) =
+    symbol.fullName
 }
 
 /** Escaped variable (that is not declared when in an lhs) */
-case class EscapedVariable(variable: Variable) extends Expression {
+case class EscapedVariable(variable: RawVariable) extends Expression {
   def syntax(indent: String) = "!" + variable.syntax(indent+"  ")
 }
 

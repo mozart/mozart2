@@ -36,7 +36,7 @@ class CodeArea(val abstraction: Abstraction) {
     }
   }
 
-  def registerFor(symbol: VariableSymbol): YOrGReg = {
+  def registerFor(symbol: Symbol): YOrGReg = {
     symbolRegisterAllocs.getOrElseUpdate(symbol, {
       if (symbol.isGlobal) GReg(symbol.owner.globals.indexOf(symbol))
       else YCounter.next()
@@ -52,7 +52,7 @@ class CodeArea(val abstraction: Abstraction) {
 
   def registerFor(expr: VarOrConst): Register = expr match {
     case variable:Variable =>
-      registerFor(variable.symbol.asInstanceOf[VariableSymbol])
+      registerFor(variable.symbol)
 
     case constant:Constant =>
       registerFor(constant.value)

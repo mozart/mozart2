@@ -8,7 +8,7 @@ import ast._
 import symtab._
 
 object Flattener extends Transformer with TreeDSL {
-  private var globalToFreeVar: Map[VariableSymbol, VariableSymbol] = _
+  private var globalToFreeVar: Map[Symbol, Symbol] = _
 
   override def apply() {
     val rawCode = program.rawCode
@@ -36,7 +36,7 @@ object Flattener extends Transformer with TreeDSL {
   override def transformStat(statement: Statement) = statement match {
     case LocalStatement(declarations, stat) =>
       for (v @ Variable(_) <- declarations)
-        abstraction.acquire(v.symbol.asInstanceOf[VariableSymbol])
+        abstraction.acquire(v.symbol)
 
       transformStat(stat)
 
@@ -47,7 +47,7 @@ object Flattener extends Transformer with TreeDSL {
   override def transformExpr(expression: Expression) = expression match {
     case LocalExpression(declarations, expr) =>
       for (v @ Variable(_) <- declarations)
-        abstraction.acquire(v.symbol.asInstanceOf[VariableSymbol])
+        abstraction.acquire(v.symbol)
 
       transformExpr(expr)
 
@@ -57,7 +57,7 @@ object Flattener extends Transformer with TreeDSL {
       program.abstractions += abs
 
       for (v @ Variable(_) <- args)
-        abs.acquire(v.symbol.asInstanceOf[VariableSymbol])
+        abs.acquire(v.symbol)
 
       abs.flags ++= flags
 
@@ -92,10 +92,7 @@ object Flattener extends Transformer with TreeDSL {
   object FreeVar {
     def unapply(v: Variable) = {
       if (v.symbol.owner eq abstraction) None
-      else (v.symbol match {
-        case sym:VariableSymbol => Some((v.name, sym))
-        case _ => None
-      })
+      else Some((v.name, v.symbol))
     }
   }
 }

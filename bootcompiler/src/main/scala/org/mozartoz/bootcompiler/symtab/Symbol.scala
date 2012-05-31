@@ -3,63 +3,91 @@ package symtab
 
 import oz._
 
+/** Companion object of [[org.mozartoz.bootcompiler.symtab.Symbol]] */
 object Symbol {
-  private var _lastID = 0
+  /** Counter for numeric IDs */
+  private val nextID = (new util.Counter).next _
 
-  private def nextID() = synchronized {
-    _lastID += 1
-    _lastID
-  }
-
+  /** Returns a new synthetic symbol */
   def newSynthetic(name: String = "", formal: Boolean = false,
-      capture: Boolean = false): VariableSymbol = {
-    new VariableSymbol(
-        if (name.isEmpty) "`x$" + (_lastID+1).toString() + "`" else name,
-        formal = formal, capture = capture, synthetic = true)
+      capture: Boolean = false): Symbol = {
+    new Symbol(name, formal = formal, capture = capture, synthetic = true)
   }
 }
 
-sealed abstract class Symbol(val name: String) {
+/** Symbol, i.e., identity of a variable */
+sealed class Symbol(_name: String, formal: Boolean = false,
+    capture: Boolean = false, synthetic: Boolean = false,
+    global: Boolean = false) {
+
+  // Identity
+
+  /** Numeric ID for the symbol (useful for debugging) */
   val id = Symbol.nextID()
 
+  /** Name */
+  val name = if (_name.isEmpty) "`x$" + id.toString() + "`" else _name
+
+  // Owning abstraction
+
+  /** Abstraction that owns this symbol */
   private var _owner: Abstraction = NoAbstraction
+
+  /** Abstraction that owns this symbol */
   def owner = _owner
 
-  def setOwner(owner: Abstraction): this.type = {
+  /** Sets the owning abstraction */
+  def setOwner(owner: Abstraction) {
     _owner = owner
-    this
   }
 
-  val isDefined = true
-  val isFormal = false
-  val isCapture = false
-  val isSynthetic = false
-  val isGlobal = false
+  // Properties
 
+  /** Returns true unless this symbol is NoSymbol */
+  val isDefined = true
+
+  /** Returns true if this symbol is a formal parameter */
+  val isFormal = formal
+
+  /** Returns true if this symbol is a capture in a pattern matching */
+  val isCapture = capture
+
+  /** Returns true if this symbol is synthetic (invented by the compiler) */
+  val isSynthetic = synthetic
+
+  /** Returns true if this symbol is a global variable */
+  val isGlobal = global
+
+  /** Full name (with numeric ID) */
   def fullName = name + "~" + id
 
   override def toString() = fullName
 
+  // Pattern matching management
+
+  /** Capture index (only meaningful if `isCapture == true`) */
+  var captureIndex: Long = -1
+
+  // Global variables management
+
+  /** Copy this symbol as a global variable */
+  def copyAsGlobal() =
+    new Symbol(name, formal = false, capture = false,
+        synthetic = true, global = true)
+
+  // Constant folding
+
+  /** If defined, the constant to which this symbol collapses to */
   var constant: Option[OzValue] = None
+
+  /** Returns true if this symbol collapses to a constant */
   def isConstant = constant.isDefined
+
+  /** Sets a constant that this symbol collapses to */
   def setConstant(value: OzValue) = constant = Some(value)
 }
 
-class VariableSymbol(name: String, formal: Boolean = false,
-    capture: Boolean = false, synthetic: Boolean = false,
-    global: Boolean = false) extends Symbol(name) {
-  override val isFormal = formal
-  override val isCapture = capture
-  override val isSynthetic = synthetic
-  override val isGlobal = global
-
-  var captureIndex: Long = -1
-
-  def copyAsGlobal() =
-    new VariableSymbol(name, formal = false, capture = false,
-        synthetic = true, global = true)
-}
-
+/** Dummy symbol */
 object NoSymbol extends Symbol("<NoSymbol>") {
   override val isDefined = false
 }

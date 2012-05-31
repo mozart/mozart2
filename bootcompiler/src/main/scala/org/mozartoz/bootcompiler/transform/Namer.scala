@@ -206,7 +206,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     val newImports = new ListBuffer[FunctorImport]
 
     def nameDecl(variable: Variable) = {
-      val symbol = new VariableSymbol(variable.name)
+      val symbol = new Symbol(variable.name)
       val decl = treeCopy.Variable(variable, variable.name) withSymbol symbol
       decls += decl
       decl
@@ -305,7 +305,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
         (Nil, treeCopy.Constant(pattern, OzPatMatWildcard()))
 
       case v @ Variable(name) =>
-        val symbol = new VariableSymbol(name, capture = true)
+        val symbol = new Symbol(name, capture = true)
         val variable = treeCopy.Variable(v, name) withSymbol symbol
         (List(variable), treeCopy.Constant(pattern, OzPatMatCapture(symbol)))
 
@@ -346,13 +346,13 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   def nameDecl(decl: Variable, capture: Boolean = false) = {
-    val symbol = new VariableSymbol(decl.name, capture = capture)
+    val symbol = new Symbol(decl.name, capture = capture)
     treeCopy.Variable(decl, decl.name) withSymbol symbol
   }
 
   def nameFormals(args: List[FormalArg]) = {
     for (v @ Variable(name) <- args) yield {
-      val symbol = new VariableSymbol(name, formal = true)
+      val symbol = new Symbol(name, formal = true)
       treeCopy.Variable(v, name) withSymbol symbol
     }
   }

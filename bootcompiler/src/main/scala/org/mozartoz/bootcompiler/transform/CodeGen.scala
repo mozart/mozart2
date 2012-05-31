@@ -9,9 +9,6 @@ import symtab._
 object CodeGen extends Transformer with TreeDSL {
   def code = abstraction.codeArea
 
-  private implicit def symbol2reg(symbol: VariableSymbol) =
-    code.registerFor(symbol)
-
   private implicit def symbol2reg(symbol: Symbol) =
     code.registerFor(symbol)
 
@@ -298,19 +295,16 @@ object CodeGen extends Transformer with TreeDSL {
       case CallStatement(callable:Variable, args) =>
         val argCount = args.size
 
-        (callable.symbol: @unchecked) match {
-          case symbol:VariableSymbol =>
-            for ((arg:VarOrConst, index) <- args.zipWithIndex)
-              XReg(index) := arg
+        for ((arg:VarOrConst, index) <- args.zipWithIndex)
+          XReg(index) := arg
 
-            symbol.toReg match {
-              case reg:XReg => code += OpCallX(reg, argCount)
-              case reg:GReg => code += OpCallG(reg, argCount)
-              case _ =>
-                val reg = XReg(argCount)
-                reg := symbol
-                code += OpCallX(reg, argCount)
-            }
+        callable.symbol.toReg match {
+          case reg:XReg => code += OpCallX(reg, argCount)
+          case reg:GReg => code += OpCallG(reg, argCount)
+          case _ =>
+            val reg = XReg(argCount)
+            reg := callable.symbol
+            code += OpCallX(reg, argCount)
         }
     }
   }

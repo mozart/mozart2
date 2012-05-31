@@ -17,21 +17,21 @@ object Abstraction {
 class Abstraction(val owner: Abstraction, val name: String) {
   val id = Abstraction.nextID()
 
-  val formals = new ArrayBuffer[VariableSymbol]
-  val locals = new ArrayBuffer[VariableSymbol]
-  val globals = new ArrayBuffer[VariableSymbol]
+  val formals = new ArrayBuffer[Symbol]
+  val locals = new ArrayBuffer[Symbol]
+  val globals = new ArrayBuffer[Symbol]
 
   val flags = new ArrayBuffer[String]
 
   var body: Statement = _
 
-  private val _freeVarToGlobal = Map[VariableSymbol, VariableSymbol]()
+  private val _freeVarToGlobal = Map[Symbol, Symbol]()
 
   val codeArea = new CodeArea(this)
 
   def arity = formals.size
 
-  def acquire(symbol: VariableSymbol) {
+  def acquire(symbol: Symbol) {
     symbol.setOwner(this)
     if (symbol.isFormal) formals += symbol
     else if (symbol.isGlobal) globals += symbol
@@ -45,7 +45,7 @@ class Abstraction(val owner: Abstraction, val name: String) {
   def newAbstraction(name: String) =
     new Abstraction(this, name)
 
-  def freeVarToGlobal(symbol: VariableSymbol) = {
+  def freeVarToGlobal(symbol: Symbol) = {
     require(symbol.owner ne this)
     _freeVarToGlobal.getOrElseUpdate(symbol, {
       val global = symbol.copyAsGlobal()

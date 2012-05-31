@@ -188,6 +188,6 @@ case class OzPatMatWildcard() extends OzValue {
 }
 
 /** Special value representing a capture in a pattern */
-case class OzPatMatCapture(variable: symtab.VariableSymbol) extends OzValue {
+case class OzPatMatCapture(variable: symtab.Symbol) extends OzValue {
   def syntax() = variable.toString()
 }

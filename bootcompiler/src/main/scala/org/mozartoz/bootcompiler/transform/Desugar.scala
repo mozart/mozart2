@@ -21,7 +21,7 @@ object Desugar extends Transformer with TreeDSL {
       transformStat {
         atPos(statement) {
           statementWithTemp { tempX =>
-            val tempY = Variable(Symbol.newSynthetic(capture = true))
+            val tempY = Variable.newSynthetic(capture = true)
 
             (LOCAL (tempY) IN {
               (tempX === TryExpression(body ~> UnitVal(),
@@ -43,9 +43,9 @@ object Desugar extends Transformer with TreeDSL {
 
   override def transformExpr(expression: Expression) = expression match {
     case fun @ FunExpression(name, args, body, flags) =>
-      val result = Symbol.newSynthetic("<Result>", formal = true)
+      val result = Variable.newSynthetic("<Result>", formal = true)
 
-      val proc = PROC(name, args :+ Variable(result), flags) {
+      val proc = PROC(name, args :+ result, flags) {
         result === body
       }
 
@@ -60,7 +60,7 @@ object Desugar extends Transformer with TreeDSL {
       transformExpr {
         atPos(expression) {
           expressionWithTemp { tempX =>
-            val tempY = Variable(Symbol.newSynthetic(capture = true))
+            val tempY = Variable.newSynthetic(capture = true)
 
             (LOCAL (tempY) IN {
               (tempX === TryExpression(

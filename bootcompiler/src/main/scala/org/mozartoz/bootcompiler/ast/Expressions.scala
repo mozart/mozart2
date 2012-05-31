@@ -328,6 +328,16 @@ case class Variable(symbol: Symbol) extends VarOrConst with VariableOrRaw
     symbol.fullName
 }
 
+/** Factory for Variable */
+object Variable extends (Symbol => Variable) {
+  /** Returns a Variable for a new synthetic Symbol */
+  def newSynthetic(name: String = "", formal: Boolean = false,
+      capture: Boolean = false) = {
+    Variable(new Symbol(name,
+        formal = formal, capture = capture, synthetic = true))
+  }
+}
+
 /** Escaped variable (that is not declared when in an lhs) */
 case class EscapedVariable(variable: RawVariable) extends Expression {
   def syntax(indent: String) = "!" + variable.syntax(indent+"  ")

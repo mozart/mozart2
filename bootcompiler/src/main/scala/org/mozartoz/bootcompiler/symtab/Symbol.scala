@@ -7,12 +7,6 @@ import oz._
 object Symbol {
   /** Counter for numeric IDs */
   private val nextID = (new util.Counter).next _
-
-  /** Returns a new synthetic symbol */
-  def newSynthetic(name: String = "", formal: Boolean = false,
-      capture: Boolean = false): Symbol = {
-    new Symbol(name, formal = formal, capture = capture, synthetic = true)
-  }
 }
 
 /** Symbol, i.e., identity of a variable */

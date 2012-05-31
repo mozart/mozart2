@@ -15,8 +15,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
       val innerFunctor = treeCopy.FunctorExpression(expression, name,
           Nil, None, imports, define, exports)
 
-      val innerFunctorSym = Symbol.newSynthetic()
-      val innerFunctorVar = Variable(innerFunctorSym)
+      val innerFunctorVar = Variable.newSynthetic()
 
       val outerImports = require
 
@@ -101,8 +100,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
   def makeApplyFun(define: Option[LocalStatementOrRaw],
       imports: List[FunctorImport],
       exports: List[FunctorExport]): Expression = {
-    val importsParamSym = Symbol.newSynthetic("<Imports>", formal = true)
-    val importsParam = Variable(importsParamSym)
+    val importsParam = Variable.newSynthetic("<Imports>", formal = true)
 
     val importedDecls = extractAllImportedDecls(imports)
 

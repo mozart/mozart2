@@ -155,7 +155,7 @@ object Unnester extends Transformer with TreeDSL {
     val argsAndTheirTemps =
       for (arg <- args) yield arg match {
         case v:VarOrConst => v -> v
-        case _ => arg -> Variable(Symbol.newSynthetic())
+        case _ => arg -> Variable.newSynthetic()
       }
 
     val argsNeedingTempsAndTheirTemps = for {

@@ -198,8 +198,8 @@ trait TreeDSL {
    *
    *  In `body` you can use `temp` as a temporary variable.
    */
-  def statementWithTemp(statement: Symbol => Statement) = {
-    val temp = Symbol.newSynthetic()
+  def statementWithTemp(statement: Variable => Statement) = {
+    val temp = Variable.newSynthetic()
     LOCAL (temp) IN statement(temp)
   }
 
@@ -214,9 +214,9 @@ trait TreeDSL {
    *
    *  In `body` you can use `temp1` and `temp2` as a temporary variables.
    */
-  def statementWithTemps(statement: (Symbol, Symbol) => Statement) = {
-    val temp1 = Symbol.newSynthetic()
-    val temp2 = Symbol.newSynthetic()
+  def statementWithTemps(statement: (Variable, Variable) => Statement) = {
+    val temp1 = Variable.newSynthetic()
+    val temp2 = Variable.newSynthetic()
     LOCAL (temp1, temp2) IN statement(temp1, temp2)
   }
 
@@ -231,8 +231,8 @@ trait TreeDSL {
    *
    *  In `body` you can use `temp` as a temporary variable.
    */
-  def expressionWithTemp(expression: Symbol => Expression) = {
-    val temp = Symbol.newSynthetic()
+  def expressionWithTemp(expression: Variable => Expression) = {
+    val temp = Variable.newSynthetic()
     LOCAL (temp) IN expression(temp)
   }
 

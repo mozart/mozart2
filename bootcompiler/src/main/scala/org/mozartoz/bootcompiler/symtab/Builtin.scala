@@ -1,19 +1,24 @@
 package org.mozartoz.bootcompiler
 package symtab
 
+/** Companion object for Builtin */
 object Builtin {
+  /** Parameter kind */
   object ParamKind extends Enumeration {
     val In, Out = Value
   }
 
+  /** Parameter kind */
   type ParamKind = ParamKind.Value
 }
 
-class Builtin(val name: String, val ccFullName: String,
+/** Builtin procedure of the host VM */
+class Builtin(val moduleName: String, val name: String, val ccFullName: String,
     val paramKinds: List[Builtin.ParamKind],
     val inlineAs: Option[Int]) {
 
-  override def toString() = name
+  override def toString() =
+    moduleName + "." + (if (name.charAt(0).isLetter) name else "'" + name + "'")
 
   val arity = paramKinds.size
 

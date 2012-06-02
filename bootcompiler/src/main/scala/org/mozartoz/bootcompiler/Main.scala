@@ -240,14 +240,14 @@ object Main {
       val exportFields = new ListBuffer[RecordField]
 
       for {
-        M(builtin) <- builtins
-        S(biFullCppName) = builtin("fullCppName")
-        S(biName) = builtin("name")
-        B(inlineable) = builtin("inlineable")
-        L(params) = builtin("params")
+        M(bi) <- builtins
+        S(biFullCppName) = bi("fullCppName")
+        S(biName) = bi("name")
+        B(inlineable) = bi("inlineable")
+        L(params) = bi("params")
       } {
         val inlineAs =
-          if (inlineable) Some(builtin("inlineOpCode").asInstanceOf[Int])
+          if (inlineable) Some(bi("inlineOpCode").asInstanceOf[Int])
           else None
 
         val paramKinds = for {
@@ -257,17 +257,13 @@ object Main {
           Builtin.ParamKind.withName(paramKind)
         }
 
-        val fullName = modName + "." + (
-            if (biName.charAt(0).isLetter) biName
-            else "'" + biName + "'")
+        val builtin = new Builtin(
+            modName, biName, biFullCppName, paramKinds, inlineAs)
 
-        val builtinSym = new Builtin(
-            fullName, biFullCppName, paramKinds, inlineAs)
-
-        prog.builtins.builtinByName.put(fullName, builtinSym)
+        prog.builtins.register(builtin)
 
         exportFields += RecordField(
-            Constant(OzAtom(biName)), Constant(OzBuiltin(builtinSym)))
+            Constant(OzAtom(biName)), Constant(OzBuiltin(builtin)))
       }
 
       val moduleURL = "x-oz://boot/" + modName

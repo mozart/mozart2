@@ -11,16 +11,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   type EnvValue = Symbol Either OzValue
   type Env = Map[String, EnvValue]
 
-  private var env: Env = _
-
-  override def apply(prog: Program) {
-    val topLevelEnvironemnt: Env =
-      prog.builtins.topLevelEnvironment.mapValues(v => Right(v))
-
-    withEnvironment(topLevelEnvironemnt) {
-      super.apply(prog)
-    }
-  }
+  private var env: Env = Map.empty
 
   private def withEnvironment[A](newEnv: Env)(f: => A) = {
     val savedEnv = env

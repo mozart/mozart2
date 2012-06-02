@@ -6,31 +6,41 @@ import scala.collection.mutable.{ ArrayBuffer, Map }
 import ast._
 import bytecode._
 
+/** Companion object of [[org.mozartoz.bootcompiler.symtab.Abstraction]] */
 object Abstraction {
-  private var _lastID = 0
-  private def nextID() = {
-    _lastID += 1
-    _lastID
-  }
+  private val nextID = (new util.Counter).next _
 }
 
+/** Abstraction */
 class Abstraction(val owner: Abstraction, val name: String) {
+  /** Numeric ID of the abstraction */
   val id = Abstraction.nextID()
 
+  /** Formal parameters */
   val formals = new ArrayBuffer[Symbol]
+
+  /** Local variables */
   val locals = new ArrayBuffer[Symbol]
+
+  /** Global variables, aka contextual environment */
   val globals = new ArrayBuffer[Symbol]
 
+  /** Flags */
   val flags = new ArrayBuffer[String]
 
-  var body: Statement = _
+  /** AST of the body */
+  var body: Statement = SkipStatement()
 
+  /** Map from free variables to the corresponding global variable */
   private val _freeVarToGlobal = Map[Symbol, Symbol]()
 
+  /** Code area */
   val codeArea = new CodeArea(this)
 
+  /** Arity, i.e., number of formal parameters */
   def arity = formals.size
 
+  /** Acquires a symbol as being declared in this abstraction */
   def acquire(symbol: Symbol) {
     symbol.setOwner(this)
     if (symbol.isFormal) formals += symbol
@@ -38,13 +48,19 @@ class Abstraction(val owner: Abstraction, val name: String) {
     else locals += symbol
   }
 
+  /** Full name of the abstraction, for display purposes */
   def fullName: String =
     if (owner == NoAbstraction) name
     else owner.fullName + "::" + name
 
+  /** Creates a new abstraction that is inner to this abstraction */
   def newAbstraction(name: String) =
     new Abstraction(this, name)
 
+  /** Maps a free variable to the corresponding global variable
+   *
+   *  If no such global variable exists yet, it is created.
+   */
   def freeVarToGlobal(symbol: Symbol) = {
     require(symbol.owner ne this)
     _freeVarToGlobal.getOrElseUpdate(symbol, {
@@ -54,6 +70,10 @@ class Abstraction(val owner: Abstraction, val name: String) {
     })
   }
 
+  /** Dumps the abstraction on standard error
+   *
+   *  @param includeByteCode include the bytecode in the dump
+   */
   def dump(includeByteCode: Boolean = true) {
     println(fullName + ": P/" + arity.toString())
     println("  formals: " + (formals mkString " "))
@@ -70,6 +90,7 @@ class Abstraction(val owner: Abstraction, val name: String) {
   }
 }
 
+/** No abstraction marker */
 object NoAbstraction extends Abstraction(null, "<NoAbstraction>") {
   override val owner = this
 }

@@ -44,7 +44,7 @@ object Unnester extends Transformer with TreeDSL {
       }
 
     case matchStat @ MatchStatement(value, clauses, elseStat) =>
-      val newClauses = transformClausesStat(clauses)
+      val newClauses = clauses map transformClauseStat
       val newElseStat = transformStat(elseStat)
 
       value match {

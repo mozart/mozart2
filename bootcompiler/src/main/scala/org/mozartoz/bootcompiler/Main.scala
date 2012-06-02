@@ -159,7 +159,7 @@ object Main {
    */
   private def buildProgram(moduleDefs: List[String], baseFunctor: Expression,
       programStat: Statement): Program = {
-    val prog = new Program(SkipStatement())
+    val prog = new Program
 
     val bootModulesMap = loadModuleDefs(prog, moduleDefs)
     ProgramBuilder.build(prog, bootModulesMap, baseFunctor, programStat)

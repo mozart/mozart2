@@ -4,14 +4,21 @@ package transform
 import ast._
 import symtab._
 
+/** Base class for transformation phases */
 abstract class Transformer extends (Program => Unit) {
+  /** Program that is being transformed */
   var program: Program = _
+
+  /** Abstraction that is being transformed (only if `!program.isRawCode`) */
   var abstraction: Abstraction = _
 
+  /** Builtin manager of the program */
   def builtins = program.builtins
 
+  /** Tree copier */
   val treeCopy = new TreeCopier
 
+  /** Applies the transformation phase to a program */
   def apply(program: Program) {
     this.program = program
     try {
@@ -21,6 +28,7 @@ abstract class Transformer extends (Program => Unit) {
     }
   }
 
+  /** Applies the transformation phase to the current `program` */
   protected def apply() {
     if (program.isRawCode)
       program.rawCode = transformStat(program.rawCode)
@@ -36,10 +44,12 @@ abstract class Transformer extends (Program => Unit) {
     }
   }
 
+  /** Applies the transformation phase to the current `abstraction` */
   protected def applyToAbstraction() {
     abstraction.body = transformStat(abstraction.body)
   }
 
+  /** Transforms a Statement */
   def transformStat(statement: Statement): Statement = statement match {
     case CompoundStatement(stats) =>
       treeCopy.CompoundStatement(statement, stats map transformStat)
@@ -54,7 +64,7 @@ abstract class Transformer extends (Program => Unit) {
 
     case CallStatement(callable, args) =>
       treeCopy.CallStatement(statement, transformExpr(callable),
-          transformActualArgs(args))
+          args map transformExpr)
 
     case IfStatement(condition, trueStatement, falseStatement) =>
       treeCopy.IfStatement(statement, transformExpr(condition),
@@ -62,7 +72,7 @@ abstract class Transformer extends (Program => Unit) {
 
     case MatchStatement(value, clauses, elseStatement) =>
       treeCopy.MatchStatement(statement, transformExpr(value),
-          transformClausesStat(clauses), transformStat(elseStatement))
+          clauses map transformClauseStat, transformStat(elseStatement))
 
     case ThreadStatement(statement) =>
       treeCopy.ThreadStatement(statement, transformStat(statement))
@@ -90,6 +100,7 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.SkipStatement(statement)
   }
 
+  /** Transforms an expression */
   def transformExpr(expression: Expression): Expression = expression match {
     case StatAndExpression(statement, expression) =>
       treeCopy.StatAndExpression(statement, transformStat(statement),
@@ -106,16 +117,16 @@ abstract class Transformer extends (Program => Unit) {
     // Complex expressions
 
     case ProcExpression(name, args, body, flags) =>
-      treeCopy.ProcExpression(expression, name, transformFormalArgs(args),
+      treeCopy.ProcExpression(expression, name, args,
           transformStat(body), flags)
 
     case FunExpression(name, args, body, flags) =>
-      treeCopy.FunExpression(expression, name, transformFormalArgs(args),
+      treeCopy.FunExpression(expression, name, args,
           transformExpr(body), flags)
 
     case CallExpression(callable, args) =>
       treeCopy.CallExpression(expression, transformExpr(callable),
-          transformActualArgs(args))
+          args map transformExpr)
 
     case IfExpression(condition, trueExpression, falseExpression) =>
       treeCopy.IfExpression(expression, transformExpr(condition),
@@ -123,7 +134,7 @@ abstract class Transformer extends (Program => Unit) {
 
     case MatchExpression(value, clauses, elseExpression) =>
       treeCopy.MatchExpression(expression, transformExpr(value),
-          transformClausesExpr(clauses), transformExpr(elseExpression))
+          clauses map transformClauseExpr, transformExpr(elseExpression))
 
     case ThreadExpression(expression) =>
       treeCopy.ThreadExpression(expression, transformExpr(expression))
@@ -182,6 +193,10 @@ abstract class Transformer extends (Program => Unit) {
     case AutoFeature() => expression
 
     case Record(label, fields) =>
+      def transformRecordField(field: RecordField): RecordField =
+        treeCopy.RecordField(field,
+            transformExpr(field.feature), transformExpr(field.value))
+
       treeCopy.Record(expression, transformExpr(label),
           fields map transformRecordField)
 
@@ -192,34 +207,19 @@ abstract class Transformer extends (Program => Unit) {
           transformExpr(body), globals map transformExpr)
   }
 
+  /** Transforms a declaration */
   def transformDecl(
       declaration: RawDeclaration): RawDeclaration = declaration match {
     case stat:Statement => transformStat(stat)
     case _ => declaration
   }
 
-  def transformFormalArgs(args: List[FormalArg]): List[FormalArg] =
-    args map transformFormalArg
-
-  def transformFormalArg(arg: FormalArg) = arg
-
-  def transformActualArgs(args: List[Expression]): List[Expression] =
-    args map transformExpr
-
-  def transformRecordField(field: RecordField): RecordField =
-    treeCopy.RecordField(field,
-        transformExpr(field.feature), transformExpr(field.value))
-
-  def transformClausesStat(clauses: List[MatchStatementClause]) =
-    clauses map transformClauseStat
-
+  /** Transforms a clause of a match statement */
   def transformClauseStat(clause: MatchStatementClause) =
     treeCopy.MatchStatementClause(clause, transformExpr(clause.pattern),
         clause.guard map transformExpr, transformStat(clause.body))
 
-  def transformClausesExpr(clauses: List[MatchExpressionClause]) =
-    clauses map transformClauseExpr
-
+  /** Transforms a clause of a match expression */
   def transformClauseExpr(clause: MatchExpressionClause) =
     treeCopy.MatchExpressionClause(clause, transformExpr(clause.pattern),
         clause.guard map transformExpr, transformExpr(clause.body))

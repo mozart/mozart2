@@ -75,7 +75,7 @@ object ConstantFolding extends Transformer with TreeDSL {
     val Record(label, fields) = record
 
     if (!record.hasConstantArity) {
-      makeDynamicRecord(record, label, fields)
+      record
     } else if (fields.isEmpty) {
       label
     } else {
@@ -90,22 +90,6 @@ object ConstantFolding extends Transformer with TreeDSL {
       if (newRecord.isConstant) newRecord.getAsConstant
       else newRecord
     }
-  }
-
-  private def makeDynamicRecord(record: Record, label: Expression,
-      fields: List[RecordField]): Expression = {
-    val elementsOfTheTuple = for {
-      RecordField(feature, value) <- fields
-      elem <- List(feature, value)
-    } yield elem
-
-    val fieldsOfTheTuple =
-      for ((elem, index) <- elementsOfTheTuple.zipWithIndex)
-        yield treeCopy.RecordField(elem, OzInt(index+1), elem)
-
-    val tupleWithFields = treeCopy.Record(record, OzAtom("#"), fieldsOfTheTuple)
-
-    builtins.makeRecordDynamic callExpr (label, tupleWithFields)
   }
 
   private def processConstAssignments(decls: List[Variable],

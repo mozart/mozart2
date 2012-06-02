@@ -71,7 +71,7 @@ object Unnester extends Transformer with TreeDSL {
   }
 
   def transformBindVarToExpression(bind: BindStatement,
-      v: Variable, rhs: Expression) = rhs match {
+      v: Variable, rhs: Expression): Statement = rhs match {
 
     case _:Variable | _:Constant | _:ProcExpression =>
       v === transformExpr(rhs)
@@ -116,16 +116,21 @@ object Unnester extends Transformer with TreeDSL {
     case BindExpression(lhs2, rhs2) =>
       transformStat((v === lhs2) ~ (v === rhs2))
 
+    case record:Record if !record.hasConstantArity =>
+      transformBindVarToExpression(bind, v,
+          atPos(record)(makeDynamicRecord(record)))
+
     case record @ Record(label, fields) =>
-      val args = fields.map(_.feature) ::: fields.map(_.value)
+      assert(record.hasConstantArity)
 
-      withSimplifiedHeaderAndArgs(label, args) { (newLabel, newArgs) =>
-        val (newFeatures, newValues) = newArgs.splitAt(fields.size)
+      withSimplifiedArgs(fields map (_.value)) { newValues =>
+        val newFields = for {
+          (field @ RecordField(feature, _), newValue) <- fields zip newValues
+        } yield {
+          treeCopy.RecordField(field, feature, newValue)
+        }
 
-        val newFields = for ((feature, value) <- newFeatures zip newValues)
-          yield treeCopy.RecordField(value, feature, value)
-
-        v === treeCopy.Record(record, newLabel, newFields)
+        v === treeCopy.Record(record, label, newFields)
       }
 
     case NestingMarker() =>
@@ -203,13 +208,6 @@ object Unnester extends Transformer with TreeDSL {
         }
         treeCopy.Record(expr, label, newFields)
 
-      // yurk ...
-      case CallExpression(callable @ Constant(OzBuiltin(builtin)),
-          List(label, fieldTuple:Record))
-          if builtin == builtins.makeRecordDynamic =>
-        val newFieldTuple = replaceNestingMarkerIn(fieldTuple)
-        treeCopy.CallExpression(expr, callable, List(label, newFieldTuple))
-
       case _ =>
         expr
     }
@@ -218,5 +216,20 @@ object Unnester extends Transformer with TreeDSL {
 
     if (nestingMarkerFound) newArgs
     else newArgs :+ v
+  }
+
+  private def makeDynamicRecord(record: Record): Expression = {
+    val elementsOfTheTuple = for {
+      RecordField(feature, value) <- record.fields
+      elem <- List(feature, value)
+    } yield elem
+
+    val fieldsOfTheTuple =
+      for ((elem, index) <- elementsOfTheTuple.zipWithIndex)
+        yield treeCopy.RecordField(elem, OzInt(index+1), elem)
+
+    val tupleWithFields = treeCopy.Record(record, OzAtom("#"), fieldsOfTheTuple)
+
+    builtins.makeRecordDynamic callExpr (record.label, tupleWithFields)
   }
 }

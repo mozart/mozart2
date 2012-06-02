@@ -15,11 +15,11 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *
    *  <ul>
    *    <li>Several builtin modules</li>
-   *    <li>A base functor that defines the Base environment</li>
+   *    <li>One or more base functors that define the Base environment</li>
    *    <li>The actual statement of the program</li>
    *  </ul>
    *
-   *  The base functor must have the following structure:
+   *  The base functors must have the following structure:
    *  {{{
    *  functor
    *
@@ -27,7 +27,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *     BootModA at 'x-oz://boot/ModA'
    *     ...
    *
-   *  define
+   *  prepare
    *     ...
    *
    *  exports
@@ -43,7 +43,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *     BootModA = <constant lookup up in the builtin modules map
    *     ...
    *  in
-   *     <contents of the define section above>
+   *     <contents of the prepare section above>
    *  end
    *  }}}
    *
@@ -57,8 +57,22 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  }}}
    */
   def build(prog: Program, bootModulesMap: Map[String, Expression],
-      baseFunctor: Expression, programStat: Statement) {
+      baseFunctors: List[Expression], programStat: Statement) {
 
+    val baseDeclarations =
+      baseFunctors map (baseFunctorToBaseDeclarations(bootModulesMap, _))
+
+    val wholeProgram = {
+      RAWLOCAL (baseDeclarations:_*) IN {
+        programStat
+      }
+    }
+
+    prog.rawCode = wholeProgram
+  }
+
+  private def baseFunctorToBaseDeclarations(
+      bootModulesMap: Map[String, Expression], baseFunctor: Expression) = {
     val FunctorExpression(_, baseRequire,
         Some(RawLocalStatement(baseDecls, baseStat)),
         Nil, None, baseExports) = baseFunctor
@@ -71,20 +85,10 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       }
     }
 
-    val baseDeclarations = {
-      val baseDeclsAsStats = baseDecls map (_.asInstanceOf[Statement])
+    val baseDeclsAsStats = baseDecls map (_.asInstanceOf[Statement])
 
-      RAWLOCAL (bootModulesDecls:_*) IN {
-        statsAndStatToStat(baseDeclsAsStats, baseStat)
-      }
+    RAWLOCAL (bootModulesDecls:_*) IN {
+      statsAndStatToStat(baseDeclsAsStats, baseStat)
     }
-
-    val wholeProgram = {
-      RAWLOCAL (baseDeclarations) IN {
-        programStat
-      }
-    }
-
-    prog.rawCode = wholeProgram
   }
 }

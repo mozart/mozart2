@@ -18,7 +18,7 @@ import util._
 case class Config(
     fileName: String = "",
     outputStream: () => PrintStream = () => Console.out,
-    baseModule: String = "",
+    baseModules: List[String] = Nil,
     moduleDefs: List[String] = Nil
 )
 
@@ -37,7 +37,7 @@ object Main {
           (v: String, c: Config) => c.copy(moduleDefs = v :: c.moduleDefs)
         },
         opt("b", "base", "path to the base functor") {
-          (v: String, c: Config) => c.copy(baseModule = v)
+          (v: String, c: Config) => c.copy(baseModules = v :: c.baseModules)
         },
         arg("<file>", "input file") {
           (v: String, c: Config) => c.copy(fileName = v)
@@ -51,10 +51,13 @@ object Main {
       import config._
 
       try {
-        val baseFunctor = parseExpression(readerForFile(baseModule))
+        val baseFunctors =
+          for (baseModule <- baseModules.reverse)
+            yield parseExpression(readerForFile(baseModule))
+
         val programStat = parseStatement(readerForFile(fileName))
 
-        val program = buildProgram(moduleDefs, baseFunctor, programStat)
+        val program = buildProgram(moduleDefs, baseFunctors, programStat)
 
         produce(program, outputStream)
       } catch {
@@ -154,15 +157,15 @@ object Main {
    *  transformation performed.
    *
    *  @param moduleDefs list of files that define builtin modules
-   *  @param baseFunctor AST of the base functor
+   *  @param baseFunctors ASTs of the base functors
    *  @param programStat AST of the program main statement
    */
-  private def buildProgram(moduleDefs: List[String], baseFunctor: Expression,
-      programStat: Statement): Program = {
+  private def buildProgram(moduleDefs: List[String],
+      baseFunctors: List[Expression], programStat: Statement): Program = {
     val prog = new Program
 
     val bootModulesMap = loadModuleDefs(prog, moduleDefs)
-    ProgramBuilder.build(prog, bootModulesMap, baseFunctor, programStat)
+    ProgramBuilder.build(prog, bootModulesMap, baseFunctors, programStat)
 
     prog
   }

@@ -36,7 +36,7 @@ OpResult raise(VM vm, LT&& label, Args&&... args) {
   return OpResult::raise(vm, exception);
 }
 
-OpResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
+OpResult raiseTypeError(VM vm, const nchar* expected, RichNode actual) {
   return raise(vm, vm->coreatoms.typeError, expected, actual);
 }
 

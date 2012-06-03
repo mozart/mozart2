@@ -50,11 +50,11 @@ public:
 
   Implementation(const AtomImpl* value) : _value(value) {}
 
-  static AtomImpl* build(VM vm, std::size_t length, const char16_t* contents) {
+  static AtomImpl* build(VM vm, std::size_t length, const nchar* contents) {
     return vm->atomTable.get(vm, length, contents);
   }
 
-  static AtomImpl* build(VM vm, const char16_t* contents) {
+  static AtomImpl* build(VM vm, const nchar* contents) {
     return vm->atomTable.get(vm, contents);
   }
 

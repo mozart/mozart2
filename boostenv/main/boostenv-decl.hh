@@ -207,10 +207,10 @@ inline
 OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result);
 
 inline
-std::unique_ptr<char16_t[]> systemStrToMozartStr(const char* str);
+std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str);
 
 inline
-std::unique_ptr<char16_t[]> systemStrToMozartStr(const std::string& str);
+std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str);
 
 inline
 OpResult raiseOSError(VM vm, int errnum);

@@ -155,7 +155,7 @@ namespace internal {
   template <class T>
   inline
   OpResult ozListForEach(VM vm, RichNode list, size_t index,
-                         const char16_t* expectedType,
+                         const nchar* expectedType,
                          std::function<OpResult (VM, size_t, T)> f) {
     using namespace patternmatching;
 
@@ -230,22 +230,22 @@ OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
   return OpResult::proceed();
 }
 
-std::unique_ptr<char16_t[]> systemStrToMozartStr(const char* str) {
+std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str) {
   size_t len = std::strlen(str);
 
-  auto ustr = std::unique_ptr<char16_t[]>(new char16_t[len+1]);
+  auto ustr = std::unique_ptr<nchar[]>(new nchar[len+1]);
   for (size_t i = 0; i <= len; i++)
-    ustr[i] = (char16_t) str[i];
+    ustr[i] = (nchar) str[i];
 
   return ustr;
 }
 
-std::unique_ptr<char16_t[]> systemStrToMozartStr(const std::string& str) {
+std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str) {
   size_t len = str.length();
 
-  auto ustr = std::unique_ptr<char16_t[]>(new char16_t[len+1]);
+  auto ustr = std::unique_ptr<nchar[]>(new nchar[len+1]);
   for (size_t i = 0; i <= len; i++)
-    ustr[i] = (char16_t) str[i];
+    ustr[i] = (nchar) str[i];
 
   return ustr;
 }

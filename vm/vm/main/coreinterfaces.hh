@@ -47,6 +47,7 @@ namespace mozart {
 #include "FloatValue-interf.hh"
 #include "BooleanValue-interf.hh"
 #include "RecordLike-interf.hh"
+#include "ArrayLike-interf.hh"
 #include "ArrayInitializer-interf.hh"
 #include "SpaceLike-interf.hh"
 #include "ThreadLike-interf.hh"

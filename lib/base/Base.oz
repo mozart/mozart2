@@ -8,6 +8,7 @@ require
    Boot_Number    at 'x-oz://boot/Number'
    Boot_Tuple     at 'x-oz://boot/Tuple'
    Boot_Record    at 'x-oz://boot/Record'
+   Boot_Array     at 'x-oz://boot/Array'
    Boot_Thread    at 'x-oz://boot/Thread'
    Boot_Exception at 'x-oz://boot/Exception'
 
@@ -232,6 +233,14 @@ prepare
    end
 
    %%
+   %% Array
+   %%
+   NewArray = Boot_Array.new
+   %IsArray  = Boot_Array.is
+   Put      = Boot_Array.put
+   Get      = Boot_Array.get
+
+   %%
    %% Thread
    %%
    IsThread = Boot_Thread.is
@@ -270,7 +279,7 @@ prepare
 #include "Record.oz"
 %#include "Chunk.oz"
 %#include "VirtualString.oz"
-%#include "Array.oz"
+#include "Array.oz"
 %#include "Object.oz"
 %#include "BitArray.oz"
 %#include "ForeignPointer.oz"

@@ -31,6 +31,7 @@
 #include "gctypes-decl.hh"
 #include "patmattypes-decl.hh"
 
+#include "array-decl.hh"
 #include "atom-decl.hh"
 #include "boolean-decl.hh"
 #include "callables-decl.hh"

@@ -58,6 +58,7 @@
 #include "modules/modthread.hh"
 #include "modules/modspace.hh"
 #include "modules/modcell.hh"
+#include "modules/modarray.hh"
 #include "modules/modexception.hh"
 
 #endif // __MOZART_H

@@ -292,6 +292,33 @@ struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
   }
 };
 
+class ArrayLike;
+template <>
+struct Interface<ArrayLike>: ImplementedBy<Array> {
+
+  OpResult arrayLow(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"array", self);
+  }
+
+  OpResult arrayHigh(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"array", self);
+  }
+
+  OpResult arrayGet(RichNode self, VM vm, RichNode index,
+                    UnstableNode& result) {
+    return raiseTypeError(vm, u"array", self);
+  }
+
+  OpResult arrayPut(RichNode self, VM vm, RichNode index, RichNode value) {
+    return raiseTypeError(vm, u"array", self);
+  }
+
+  OpResult arrayExchange(RichNode self, VM vm, RichNode index,
+                         RichNode newValue, UnstableNode& oldValue) {
+    return raiseTypeError(vm, u"array", self);
+  }
+};
+
 class ArrayInitializer;
 template<>
 struct Interface<ArrayInitializer>:

@@ -288,6 +288,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val bindStatement: PackratParser[Statement] = positioned(
       (expression1 <~ "=") ~ expression0 ^^ BindStatement
+    | expression12andDot ~ (expression13 <~ ":=") ~ expression1 ^^ DotAssignStatement
     | (expression2 <~ ":=") ~ expression1 ^^ AssignStatement
   )
 
@@ -372,7 +373,9 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // X<-Y   X:=Y   X.Y:=Z   (right-associative)
   lazy val expression1: PackratParser[Expression] = (
-      positioned(expression2 ~ ":=" ~ expression1 ^^ BinaryOp)
+      positioned(expression12andDot ~ (expression13 <~ ":=") ~ expression1
+          ^^ DotAssignExpression)
+    | positioned(expression2 ~ ":=" ~ expression1 ^^ BinaryOp)
     | expression2
   )
 
@@ -439,6 +442,14 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val expression12: PackratParser[Expression] = (
       positioned(expression12 ~ "." ~ expression13 ^^ BinaryOp)
     | expression13
+  )
+
+  // same as above but followed by a '.'
+  lazy val expression12andDot: PackratParser[Expression] = (
+      positioned(expression12andDot ~ expression13 <~ "." ^^ {
+        case left ~ right => BinaryOp(left, ".", right)
+      })
+    | expression13 <~ "."
   )
 
   // @X   !!X   (prefix)

@@ -96,6 +96,10 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.AssignStatement(statement, transformExpr(left),
           transformExpr(right))
 
+    case DotAssignStatement(left, center, right) =>
+      treeCopy.DotAssignStatement(statement, transformExpr(left),
+          transformExpr(center), transformExpr(right))
+
     case SkipStatement() =>
       treeCopy.SkipStatement(statement)
   }
@@ -153,6 +157,10 @@ abstract class Transformer extends (Program => Unit) {
     case BindExpression(left, right) =>
       treeCopy.BindExpression(expression, transformExpr(left),
           transformExpr(right))
+
+    case DotAssignExpression(left, center, right) =>
+      treeCopy.DotAssignExpression(expression, transformExpr(left),
+          transformExpr(center), transformExpr(right))
 
     case FunctorExpression(name, require, prepare, imports, define, exports) =>
       def transformDefine(stat: LocalStatementOrRaw) =

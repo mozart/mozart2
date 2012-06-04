@@ -65,5 +65,8 @@ class Builtins {
   lazy val cellAccess = builtinByName("Cell", "access")
   lazy val cellAssign = builtinByName("Cell", "assign")
 
+  lazy val arrayPut = builtinByName("Array", "put")
+  lazy val arrayExchange = builtinByName("Array", "exchangeFun")
+
   lazy val raise = builtinByName("Exception", "raise")
 }

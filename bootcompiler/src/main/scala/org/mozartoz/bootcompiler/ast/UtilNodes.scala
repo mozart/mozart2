@@ -19,3 +19,17 @@ trait InfixSyntax extends Node {
     untilOp + right.syntax(rightIndent)
   }
 }
+
+trait MultiInfixSyntax extends Node {
+  protected val operands: Seq[Node]
+  protected val operators: Seq[String]
+
+  def syntax(indent: String) = {
+    val first = operands.head.syntax(indent)
+    (operators zip operands.tail).foldLeft(first) {
+      case (prev, (op, operand)) =>
+        val untilOp = prev + op
+        untilOp + operand.syntax(indent + " "*untilOp.length)
+    }
+  }
+}

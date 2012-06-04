@@ -10,6 +10,10 @@ object Desugar extends Transformer with TreeDSL {
     case assign @ AssignStatement(lhs, rhs) =>
       builtins.cellAssign call (transformExpr(lhs), transformExpr(rhs))
 
+    case DotAssignStatement(left, center, right) =>
+      builtins.arrayPut call (transformExpr(left), transformExpr(center),
+          transformExpr(right))
+
     case thread @ ThreadStatement(body) =>
       val proc = PROC("", Nil) {
         transformStat(body)
@@ -76,6 +80,9 @@ object Desugar extends Transformer with TreeDSL {
           }
         }
       }
+
+    case DotAssignExpression(left, center, right) =>
+      transformExpr(builtins.arrayExchange callExpr (left, center, right))
 
     case BinaryOp(lhs, "+", Constant(OzInt(1))) =>
       transformExpr(builtins.plus1 callExpr (lhs))

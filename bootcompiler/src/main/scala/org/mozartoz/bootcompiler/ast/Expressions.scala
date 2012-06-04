@@ -201,6 +201,18 @@ case class BindExpression(left: Expression,
   protected val opSyntax = " = "
 }
 
+/** Dot-assign expression
+ *
+ *  {{{
+ *  <left> . <center> := <right>
+ *  }}}
+ */
+case class DotAssignExpression(left: Expression, center: Expression,
+    right: Expression) extends Expression with MultiInfixSyntax {
+  protected val operands = Seq(left, center, right)
+  protected val operators = Seq(".", " := ")
+}
+
 // Functors
 
 /** Feature of an imported functor, with an optional import alias */

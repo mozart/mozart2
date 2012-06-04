@@ -173,6 +173,18 @@ case class AssignStatement(left: Expression,
   protected val opSyntax = " := "
 }
 
+/** Dot-assign statement
+ *
+ *  {{{
+ *  <left> . <center> := <right>
+ *  }}}
+ */
+case class DotAssignStatement(left: Expression, center: Expression,
+    right: Expression) extends Statement with MultiInfixSyntax {
+  protected val operands = Seq(left, center, right)
+  protected val operators = Seq(".", " := ")
+}
+
 /** Skip statement
  *
  *  {{{

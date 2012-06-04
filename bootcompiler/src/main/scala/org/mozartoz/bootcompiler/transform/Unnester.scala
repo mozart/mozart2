@@ -140,7 +140,8 @@ object Unnester extends Transformer with TreeDSL {
     case _:RawVariable | _:RawLocalExpression |
         _:FunExpression | _:ThreadExpression |
         _:TryFinallyExpression | _:FunctorExpression |
-        _:EscapedVariable | _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
+        _:EscapedVariable | _:DotAssignExpression |
+        _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
         _:AutoFeature | _:CreateAbstraction =>
       throw new Exception(
           "illegal tree in Unnester.transformBindVarToExpression")

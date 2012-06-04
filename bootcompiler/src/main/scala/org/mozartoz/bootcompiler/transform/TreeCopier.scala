@@ -50,6 +50,10 @@ class TreeCopier {
   def AssignStatement(tree: Node, left: Expression, right: Expression) =
     new AssignStatement(left, right).copyAttrs(tree)
 
+  def DotAssignStatement(tree: Node, left: Expression, center: Expression,
+      right: Expression) =
+    new DotAssignStatement(left, center, right).copyAttrs(tree)
+
   def SkipStatement(tree: Node) =
     new SkipStatement().copyAttrs(tree)
 
@@ -104,6 +108,10 @@ class TreeCopier {
 
   def BindExpression(tree: Node, left: Expression, right: Expression) =
     new BindExpression(left, right).copyAttrs(tree)
+
+  def DotAssignExpression(tree: Node, left: Expression, center: Expression,
+      right: Expression) =
+    new DotAssignExpression(left, center, right).copyAttrs(tree)
 
   // Functors
 

@@ -342,6 +342,63 @@ private:
 #include "Record-implem-decl-after.hh"
 #endif
 
+///////////
+// Chunk //
+///////////
+
+class Chunk;
+
+#ifndef MOZART_GENERATOR
+#include "Chunk-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<Chunk>: StoredAs<StableNode*> {
+public:
+  typedef SelfType<Chunk>::Self Self;
+public:
+  Implementation(StableNode* underlying): _underlying(underlying) {}
+
+  static StableNode* build(VM vm, StableNode* underlying) {
+    return underlying;
+  }
+
+  static StableNode* build(VM vm, RichNode underlying) {
+    return underlying.getStableRef(vm);
+  }
+
+  inline
+  static StableNode* build(VM vm, GR gr, Self from);
+
+public:
+  StableNode* getUnderlying() {
+    return _underlying;
+  }
+
+public:
+  // Dottable interface
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<Chunk>";
+  }
+
+private:
+  StableNode* _underlying;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Chunk-implem-decl-after.hh"
+#endif
+
 }
 
 #endif // __RECORDS_DECL_H

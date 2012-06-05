@@ -560,6 +560,30 @@ void Implementation<Record>::printReprToStream(Self self, VM vm,
   out << ")";
 }
 
+///////////
+// Chunk //
+///////////
+
+#include "Chunk-implem.hh"
+
+StableNode* Implementation<Chunk>::build(VM vm, GR gr, Self from) {
+  StableNode* result = new (gr->vm) StableNode;
+  gr->copyStableNode(*result, *from.get().getUnderlying());
+  return result;
+}
+
+OpResult Implementation<Chunk>::dot(Self self, VM vm,
+                                    RichNode feature, UnstableNode& result) {
+  UnstableNode underlying(vm, *_underlying);
+  return Dottable(underlying).dot(vm, feature, result);
+}
+
+OpResult Implementation<Chunk>::hasFeature(Self self, VM vm, RichNode feature,
+                                           bool& result) {
+  UnstableNode underlying(vm, *_underlying);
+  return Dottable(underlying).hasFeature(vm, feature, result);
+}
+
 }
 
 #endif // MOZART_GENERATOR

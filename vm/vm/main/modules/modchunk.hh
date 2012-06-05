@@ -22,45 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __MODCHUNK_H
+#define __MODCHUNK_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "coredatatypes.hh"
+#ifndef MOZART_GENERATOR
 
-#include "builtins.hh"
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "dynbuilders.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+namespace mozart {
 
-#include "emulate.hh"
+namespace builtins {
 
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modrecord.hh"
-#include "modules/modchunk.hh"
-#include "modules/modtuple.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
-#include "modules/modcell.hh"
-#include "modules/modname.hh"
-#include "modules/modarray.hh"
-#include "modules/modexception.hh"
+//////////////////
+// Chunk module //
+//////////////////
 
-#endif // __MOZART_H
+class ModChunk: public Module {
+public:
+  ModChunk(): Module("Chunk") {}
+
+  class New: public Builtin<New> {
+  public:
+    New(): Builtin("new") {}
+
+    OpResult operator()(VM vm, In underlying, Out result) {
+      // TODO Check that `underlying` is a record
+      result = Chunk::build(vm, underlying);
+      return OpResult::proceed();
+    }
+  };
+
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      if (value.isTransient())
+        return OpResult::waitFor(vm, value);
+
+      result = Boolean::build(vm, value.is<Chunk>());
+      return OpResult::proceed();
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODCHUNK_H

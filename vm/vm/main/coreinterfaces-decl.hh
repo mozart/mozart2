@@ -267,7 +267,9 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 
 class Dottable;
 template<>
-struct Interface<Dottable>: ImplementedBy<Tuple, Record, Cons, Array, Atom> {
+struct Interface<Dottable>:
+  ImplementedBy<Tuple, Record, Chunk, Cons, Array, Atom> {
+
   OpResult dot(RichNode self, VM vm, RichNode feature,
                UnstableNode& result) {
     return raiseTypeError(vm, u"Record or Chunk", self);

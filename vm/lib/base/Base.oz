@@ -77,15 +77,10 @@ prepare
    %% Lock
    %%
    local
-      LockUUID = '2435687f-b0e9-47aa-bbfc-7a05e5a95d2b'
+      LockTag = {NewName}
    in
       fun {IsLock X}
-         case X
-         of 'lock'(1:_ 2:ID) then
-            ID == LockUUID
-         else
-            false
-         end
+         {IsChunk X} andthen {HasFeature X LockTag}
       end
 
       fun {NewLock}
@@ -110,7 +105,15 @@ prepare
             end
          end
       in
-         'lock'(1:Lock 2:LockUUID)
+         {NewChunk 'lock'(LockTag:Lock)}
+      end
+
+      proc {LockIn Lock P}
+         if {IsLock Lock} then
+            {Lock.LockTag P}
+         else
+            raise typeError('lock' Lock) end
+         end
       end
    end
 
@@ -118,15 +121,10 @@ prepare
    %% Port
    %%
    local
-      PortUUID = '3732bd80-df5d-482a-9d95-8662cbfcd234'
+      PortTag = {NewName}
    in
       fun {IsPort X}
-         case X
-         of port(1:_ 2:ID) then
-            ID == PortUUID
-         else
-            false
-         end
+         {IsChunk X} andthen {HasFeature X PortTag}
       end
 
       fun {NewPort ?S}
@@ -139,12 +137,12 @@ prepare
          end
       in
          S = !!Head
-         port(1:Send 2:PortUUID)
+         {NewChunk port(PortTag:Send)}
       end
 
       proc {Send P X}
          if {IsPort P} then
-            {P.1 X}
+            {P.PortTag X}
          else
             raise typeError('port' P) end
          end

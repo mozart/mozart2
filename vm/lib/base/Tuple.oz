@@ -30,7 +30,7 @@ local
    proc {Copy N O T1 T2}
       if N>0 then T2.(N+O)=T1.N {Copy N-1 O T1 T2} end
    end
-   /*proc {Append T1 T2 ?T3}
+   proc {Append T1 T2 ?T3}
       W1={Width T1} W2={Width T2}
    in
       if W1==0 then T3=T2
@@ -42,16 +42,16 @@ local
    end
    proc {TupleToArray I T A}
       if I>0 then {Array.put A I T.I} {TupleToArray I-1 T A} end
-   end*/
+   end
 in
    Tuple = tuple(make:    MakeTuple
-                 %append:  Append
+                 append:  Append
                  %is:      IsTuple
-                 /*toArray: fun {$ T}
+                 toArray: fun {$ T}
                              W={Width T}
                              A={Array.new 1 W unit}
                           in
                              {TupleToArray W T A}
                              A
-                          end*/)
+                          end)
 end

@@ -69,18 +69,59 @@ class Program {
        |#include "mozart.hh"
        |
        |#include <iostream>
+       |#include <cstdlib>
+       |#include <ctime>
        |
        |using namespace mozart;
        |
-       |bool simplePreemption(void* data) {
-       |  static int count = 3;
+       |struct EnvironmentData {
+       |  EnvironmentData(): preemptionCount(3) {}
        |
-       |  if (--count == 0) {
-       |    count = 3;
+       |  int preemptionCount;
+       |};
+       |
+       |bool testPreemption(void* _data) {
+       |  EnvironmentData* data = static_cast<EnvironmentData*>(_data);
+       |
+       |  if (--data->preemptionCount == 0) {
+       |    data->preemptionCount = 3;
        |    return true;
        |  } else {
        |    return false;
        |  }
+       |}
+       |
+       |inline
+       |std::uint64_t rand8() {
+       |  return std::rand() % 0x100;
+       |}
+       |
+       |inline
+       |std::uint64_t rand16() {
+       |  return (rand8() << 8) + rand8();
+       |}
+       |
+       |inline
+       |std::uint64_t rand64() {
+       |  return (rand16() << 48) + (rand16() << 32) +
+       |    (rand16() << 16) + rand16();
+       |}
+       |
+       |UUID genUUID(void* _data) {
+       |  std::uint64_t data0 = (rand64() & ~0xf000) | 0x4000;
+       |  std::uint64_t data1 =
+       |    (rand64() & ~((std::uint64_t) 0xf << 60)) |
+       |      ((std::uint64_t) 0x8 << 60);
+       |
+       |  return UUID(data0, data1);
+       |}
+       |
+       |VirtualMachineEnvironment makeEnvironment() {
+       |  VirtualMachineEnvironment env;
+       |  env.data = static_cast<void*>(new EnvironmentData());
+       |  env.testPreemption = &testPreemption;
+       |  env.genUUID = &genUUID;
+       |  return env;
        |}
        |""".stripMargin
 
@@ -110,7 +151,7 @@ class Program {
        |  program.run();
        |}
        |
-       |Program::Program() : virtualMachine(simplePreemption),
+       |Program::Program(): virtualMachine(makeEnvironment()),
        |  vm(&virtualMachine) {
        |
        |""".stripMargin

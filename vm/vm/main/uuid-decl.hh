@@ -80,6 +80,9 @@ public:
   constexpr UUID(const char str[39]):
     data0(makeUInt64FromWordsAt(str, 1, 5, 10, 15)),
     data1(makeUInt64FromWordsAt(str, 20, 25, 29, 33)) {}
+
+  constexpr UUID(std::uint64_t data0, std::uint64_t data1):
+    data0(data0), data1(data1) {}
 public:
   constexpr bool is_nil() const {
     return (data0 == 0) && (data1 == 0);

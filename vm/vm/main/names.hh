@@ -22,15 +22,60 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#ifndef __NAMES_H
+#define __NAMES_H
+
+#include "mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-// Definitions of the uuid's of data types
-constexpr UUID Implementation<Atom>::uuid;
-constexpr UUID Implementation<Boolean>::uuid;
-constexpr UUID Implementation<GlobalName>::uuid;
-constexpr UUID Implementation<SmallInt>::uuid;
-constexpr UUID Implementation<Unit>::uuid;
+/////////////
+// OptName //
+/////////////
+
+#include "OptName-implem.hh"
+
+SpaceRef Implementation<OptName>::build(VM vm, GR gr, Self from) {
+  SpaceRef home;
+  gr->copySpace(home, from.get().home());
+  return home;
+}
+
+OpResult Implementation<OptName>::makeFeature(Self self, VM vm) {
+  self.remake<GlobalName>(vm);
+  return OpResult::proceed();
+}
+
+////////////////
+// GlobalName //
+////////////////
+
+#include "GlobalName-implem.hh"
+
+Implementation<GlobalName>::Implementation(VM vm, GR gr, Self from):
+  WithHome(vm, gr, from->home()) {
+
+  if (gr->kind() == GraphReplicator::grkSpaceCloning)
+    _uuid = vm->genUUID();
+  else
+    _uuid = from->_uuid;
+}
+
+int Implementation<GlobalName>::compareFeatures(VM vm, Self right) {
+  const UUID& rhsUUID = right->getUUID();
+
+  if (_uuid == rhsUUID)
+    return 0;
+  else if (_uuid < rhsUUID)
+    return -1;
+  else
+    return 1;
+}
 
 }
+
+#endif // MOZART_GENERATOR
+
+#endif // __NAMES_H

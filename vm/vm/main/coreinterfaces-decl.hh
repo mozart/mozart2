@@ -122,6 +122,17 @@ struct Interface<Wakeable>:
   }
 };
 
+class PotentialFeature;
+template<>
+struct Interface<PotentialFeature>: ImplementedBy<OptName> {
+  OpResult makeFeature(RichNode self, VM vm) {
+    if (self.isFeature())
+      return OpResult::proceed();
+    else
+      return raiseTypeError(vm, u"feature", self);
+  }
+};
+
 class BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {

@@ -38,6 +38,7 @@
 #include "cell.hh"
 #include "codearea.hh"
 #include "float.hh"
+#include "names.hh"
 #include "records.hh"
 #include "reifiedspace.hh"
 #include "reifiedthread.hh"

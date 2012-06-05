@@ -38,6 +38,7 @@
 #include "cell-decl.hh"
 #include "codearea-decl.hh"
 #include "float-decl.hh"
+#include "names-decl.hh"
 #include "records-decl.hh"
 #include "reifiedspace-decl.hh"
 #include "reifiedthread-decl.hh"

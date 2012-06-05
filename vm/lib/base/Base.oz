@@ -3,6 +3,7 @@ functor
 require
    Boot_Value     at 'x-oz://boot/Value'
    Boot_Cell      at 'x-oz://boot/Cell'
+   Boot_Name      at 'x-oz://boot/Name'
    Boot_Int       at 'x-oz://boot/Int'
    Boot_Float     at 'x-oz://boot/Float'
    Boot_Number    at 'x-oz://boot/Number'
@@ -57,6 +58,13 @@ prepare
    Exchange = proc {$ C Old New} Old = {Boot_Cell.exchangeFun C New} end
    Assign = Boot_Cell.assign
    Access = Boot_Cell.access
+
+   %%
+   %% Name
+   %%
+   %IsName        = Boot_Name.is
+   NewName       = Boot_Name.new
+   %NewUniqueName = Boot_Name.newUnique % not exported
 
    %%
    %% Lock
@@ -263,7 +271,7 @@ prepare
 #include "Cell.oz"
 #include "Port.oz"
 %#include "Atom.oz"
-%#include "Name.oz"
+#include "Name.oz"
 #include "Bool.oz"
 %#include "String.oz"
 %#include "Char.oz"

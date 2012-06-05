@@ -22,15 +22,40 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#ifndef __MODNAME_H
+#define __MODNAME_H
+
+#include "../mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-// Definitions of the uuid's of data types
-constexpr UUID Implementation<Atom>::uuid;
-constexpr UUID Implementation<Boolean>::uuid;
-constexpr UUID Implementation<GlobalName>::uuid;
-constexpr UUID Implementation<SmallInt>::uuid;
-constexpr UUID Implementation<Unit>::uuid;
+namespace builtins {
+
+/////////////////
+// Name module //
+/////////////////
+
+class ModName: public Module {
+public:
+  ModName(): Module("Name") {}
+
+  class New: public Builtin<New> {
+  public:
+    New(): Builtin("new") {}
+
+    OpResult operator()(VM vm, Out result) {
+      result = OptName::build(vm);
+      return OpResult::proceed();
+    }
+  };
+};
 
 }
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODNAME_H

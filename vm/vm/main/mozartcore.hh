@@ -55,10 +55,7 @@
     using namespace ::mozart; \
     RichNode _macroValue = (featureValue); \
     if (!_macroValue.isFeature()) { \
-      if (_macroValue.isTransient()) \
-        return OpResult::waitFor(vm, _macroValue); \
-      else \
-        return raiseTypeError(vm, u"feature", _macroValue); \
+      MOZART_CHECK_OPRESULT(PotentialFeature(_macroValue).makeFeature(vm)); \
     } \
   } while (false)
 

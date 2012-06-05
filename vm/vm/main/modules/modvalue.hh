@@ -46,7 +46,7 @@ public:
     Dot(): Builtin(".") {}
 
     OpResult operator()(VM vm, In record, In feature, Out result) {
-      return RecordLike(record).dot(vm, feature, result);
+      return Dottable(record).dot(vm, feature, result);
     }
   };
 
@@ -283,7 +283,7 @@ public:
     OpResult operator()(VM vm, In record, In feature, Out result) {
       bool boolResult = false;
       MOZART_CHECK_OPRESULT(
-        RecordLike(record).hasFeature(vm, feature, boolResult));
+        Dottable(record).hasFeature(vm, feature, boolResult));
 
       result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
@@ -297,10 +297,10 @@ public:
     OpResult operator()(VM vm, In record, In feature, In def, Out result) {
       bool hasFeature = false;
       MOZART_CHECK_OPRESULT(
-        RecordLike(record).hasFeature(vm, feature, hasFeature));
+        Dottable(record).hasFeature(vm, feature, hasFeature));
 
       if (hasFeature) {
-        return RecordLike(record).dot(vm, feature, result);
+        return Dottable(record).dot(vm, feature, result);
       } else {
         result.copy(vm, def);
         return OpResult::proceed();

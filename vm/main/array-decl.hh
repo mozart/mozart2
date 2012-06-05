@@ -73,6 +73,17 @@ public:
   }
 
 public:
+  // Dottable interface
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
   // ArrayLike interface
 
   inline
@@ -94,7 +105,16 @@ public:
 
 private:
   inline
-  OpResult getIntIndex(Self self, VM vm, RichNode index, size_t& intIndex);
+  OpResult getOffset(Self self, VM vm, RichNode index, size_t& offset);
+
+  bool isIndexInRange(nativeint index) {
+    return (index >= getLow()) && (index <= getHigh());
+  }
+
+  size_t indexToOffset(nativeint index) {
+    assert(isIndexInRange(index));
+    return (size_t) (index - _low);
+  }
 
 public:
   inline

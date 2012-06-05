@@ -254,6 +254,19 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
   }
 };
 
+class Dottable;
+template<>
+struct Interface<Dottable>: ImplementedBy<Tuple, Record, Cons, Array, Atom> {
+  OpResult dot(RichNode self, VM vm, RichNode feature,
+               UnstableNode& result) {
+    return raiseTypeError(vm, u"Record or Chunk", self);
+  }
+
+  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result) {
+    return raiseTypeError(vm, u"Record or Chunk", self);
+  }
+};
+
 class RecordLike;
 template<>
 struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
@@ -270,20 +283,6 @@ struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
   }
 
   OpResult clone(RichNode self, VM vm, UnstableNode& result) {
-    return raiseTypeError(vm, u"Record", self);
-  }
-
-  OpResult dot(RichNode self, VM vm, RichNode feature,
-               UnstableNode& result) {
-    return raiseTypeError(vm, u"Record", self);
-  }
-
-  OpResult dotNumber(RichNode self, VM vm, nativeint feature,
-                     UnstableNode& result) {
-    return raiseTypeError(vm, u"Record", self);
-  }
-
-  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 

@@ -61,6 +61,53 @@ Implementation<Array>::Implementation(VM vm, size_t width,
     gr->copyUnstableNode(_elements[i], from[i]);
 }
 
+OpResult Implementation<Array>::dot(Self self, VM vm,
+                                    RichNode feature, UnstableNode& result) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    return dotNumber(self, vm, featureIntValue, result);
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+  }
+}
+
+OpResult Implementation<Array>::dotNumber(Self self, VM vm,
+                                          nativeint feature,
+                                          UnstableNode& result) {
+  if (isIndexInRange(feature)) {
+    // Inside bounds
+    result.copy(vm, self[indexToOffset(feature)]);
+    return OpResult::proceed();
+  } else {
+    // Out of bounds
+    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+  }
+}
+
+OpResult Implementation<Array>::hasFeature(Self self, VM vm, RichNode feature,
+                                           bool& result) {
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    result = isIndexInRange(featureIntValue);
+    return OpResult::proceed();
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    result = false;
+    return OpResult::proceed();
+  }
+}
+
 OpResult Implementation<Array>::arrayLow(Self self, VM vm,
                                          UnstableNode& result) {
   result = SmallInt::build(vm, getLow());
@@ -76,10 +123,10 @@ OpResult Implementation<Array>::arrayHigh(Self self, VM vm,
 OpResult Implementation<Array>::arrayGet(Self self, VM vm,
                                          RichNode index,
                                          UnstableNode& result) {
-  size_t intIndex;
-  MOZART_CHECK_OPRESULT(getIntIndex(self, vm, index, intIndex));
+  size_t offset;
+  MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
-  result.copy(vm, self[intIndex]);
+  result.copy(vm, self[offset]);
   return OpResult::proceed();
 }
 
@@ -89,10 +136,10 @@ OpResult Implementation<Array>::arrayPut(Self self, VM vm,
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, u"globalState", "array");
 
-  size_t intIndex;
-  MOZART_CHECK_OPRESULT(getIntIndex(self, vm, index, intIndex));
+  size_t offset;
+  MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
-  self[intIndex].copy(vm, value);
+  self[offset].copy(vm, value);
   return OpResult::proceed();
 }
 
@@ -102,27 +149,23 @@ OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, u"globalState", "array");
 
-  size_t intIndex;
-  MOZART_CHECK_OPRESULT(getIntIndex(self, vm, index, intIndex));
+  size_t offset;
+  MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
-  oldValue.copy(vm, self[intIndex]);
-  self[intIndex].copy(vm, newValue);
+  oldValue.copy(vm, self[offset]);
+  self[offset].copy(vm, newValue);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Array>::getIntIndex(Self self, VM vm,
-                                            RichNode index, size_t& intIndex) {
+OpResult Implementation<Array>::getOffset(Self self, VM vm,
+                                          RichNode index, size_t& offset) {
   nativeint indexIntValue;
   MOZART_GET_ARG(indexIntValue, index, u"integer");
 
-  if (indexIntValue < _low)
+  if (!isIndexInRange(indexIntValue))
     return raise(vm, u"arrayIndexOutOfBounds", self, index);
 
-  intIndex = (size_t) (indexIntValue - _low);
-
-  if (intIndex >= _width)
-    return raise(vm, u"arrayIndexOutOfBounds", self, index);
-
+  offset = indexToOffset(indexIntValue);
   return OpResult::proceed();
 }
 

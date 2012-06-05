@@ -36,6 +36,7 @@
 #include "gcollect-decl.hh"
 #include "sclone-decl.hh"
 #include "space-decl.hh"
+#include "uuid-decl.hh"
 
 #include "atomtable.hh"
 #include "coreatoms-decl.hh"
@@ -48,11 +49,16 @@ namespace mozart {
 
 typedef bool (*PreemptionTest)(void* data);
 
+struct VirtualMachineEnvironment {
+  void* data;
+  bool (*testPreemption)(void* data);
+  UUID (*genUUID)(void* data);
+};
+
 class VirtualMachine {
 public:
   inline
-  VirtualMachine(PreemptionTest preemptionTest,
-                 void* preemptionTestData = nullptr);
+  VirtualMachine(const VirtualMachineEnvironment& environment);
 
   VirtualMachine(const VirtualMachine& src) = delete;
 
@@ -112,6 +118,9 @@ public:
 
   inline
   Space* cloneSpace(Space* space);
+
+  inline
+  UUID genUUID();
 public:
   CoreAtoms coreatoms;
 private:
@@ -133,8 +142,7 @@ private:
   ThreadPool threadPool;
   AtomTable atomTable;
 
-  PreemptionTest _preemptionTest;
-  void* _preemptionTestData;
+  VirtualMachineEnvironment environment;
 
   MemoryManager memoryManager;
   MemoryManager secondMemoryManager;

@@ -2,11 +2,13 @@
 
 #include <gtest/gtest.h>
 
+#include "testutils.hh"
+
 using namespace mozart;
 
 class FloatTest : public ::testing::Test {
 protected:
-  FloatTest() : virtualMachine(nullptr, nullptr), vm(&virtualMachine) {}
+  FloatTest() : virtualMachine(makeTestEnvironment()), vm(&virtualMachine) {}
 
   virtual void SetUp() {
   }

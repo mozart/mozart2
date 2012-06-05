@@ -33,10 +33,8 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
-VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
-                               void* preemptionTestData) :
-  _preemptionTest(preemptionTest), _preemptionTestData(preemptionTestData),
-  gc(this), sc(this) {
+VirtualMachine::VirtualMachine(const VirtualMachineEnvironment& environment):
+  environment(environment), gc(this), sc(this) {
 
   memoryManager.init();
 
@@ -49,7 +47,7 @@ VirtualMachine::VirtualMachine(PreemptionTest preemptionTest,
 }
 
 bool VirtualMachine::testPreemption() {
-  return _preemptionTest(_preemptionTestData) || gc.isGCRequired();
+  return environment.testPreemption(environment.data) || gc.isGCRequired();
 }
 
 void VirtualMachine::setCurrentSpace(Space* space) {
@@ -59,6 +57,10 @@ void VirtualMachine::setCurrentSpace(Space* space) {
 
 Space* VirtualMachine::cloneSpace(Space* space) {
   return sc.doCloneSpace(space);
+}
+
+UUID VirtualMachine::genUUID() {
+  return environment.genUUID(environment.data);
 }
 
 void VirtualMachine::initialize() {

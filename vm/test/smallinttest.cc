@@ -2,11 +2,13 @@
 
 #include <gtest/gtest.h>
 
+#include "testutils.hh"
+
 using namespace mozart;
 
 class SmallIntTest : public ::testing::Test {
 protected:
-  SmallIntTest() : virtualMachine(nullptr, nullptr), vm(&virtualMachine) {}
+  SmallIntTest() : virtualMachine(makeTestEnvironment()), vm(&virtualMachine) {}
 
   virtual void SetUp() {
   }

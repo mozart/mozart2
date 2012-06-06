@@ -39,6 +39,7 @@
 #include "callables.hh"
 #include "cell.hh"
 #include "codearea.hh"
+#include "dictionary.hh"
 #include "float.hh"
 #include "names.hh"
 #include "records.hh"

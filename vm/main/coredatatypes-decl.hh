@@ -39,6 +39,7 @@
 #include "callables-decl.hh"
 #include "cell-decl.hh"
 #include "codearea-decl.hh"
+#include "dictionary-decl.hh"
 #include "float-decl.hh"
 #include "names-decl.hh"
 #include "records-decl.hh"

@@ -62,6 +62,7 @@
 #include "modules/modcell.hh"
 #include "modules/modname.hh"
 #include "modules/modarray.hh"
+#include "modules/moddictionary.hh"
 #include "modules/modexception.hh"
 
 #endif // __MOZART_H

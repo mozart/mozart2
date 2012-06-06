@@ -63,57 +63,6 @@ OpResult Implementation<Atom>::compare(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Atom>::label(Self self, VM vm,
-                                     UnstableNode& result) {
-  result.copy(vm, self);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Atom>::width(Self self, VM vm,
-                                     UnstableNode& result) {
-  result.make<SmallInt>(vm, 0);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Atom>::arityList(Self self, VM vm,
-                                         UnstableNode& result) {
-  result = trivialBuild(vm, vm->coreatoms.nil);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Atom>::clone(Self self, VM vm,
-                                     UnstableNode& result) {
-  result.copy(vm, self);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Atom>::dot(Self self, VM vm, RichNode feature,
-                                   UnstableNode& result) {
-  // Always out of bounds
-  MOZART_REQUIRE_FEATURE(feature);
-  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-}
-
-OpResult Implementation<Atom>::dotNumber(Self self, VM vm, nativeint feature,
-                                         UnstableNode& result) {
-  // Always out of bounds
-  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-}
-
-OpResult Implementation<Atom>::hasFeature(Self self, VM vm, RichNode feature,
-                                          bool& result) {
-  MOZART_REQUIRE_FEATURE(feature);
-  result = false;
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Atom>::waitOr(Self self, VM vm,
-                                      UnstableNode& result) {
-  // Wait forever
-  UnstableNode dummyVar = Variable::build(vm);
-  return OpResult::waitFor(vm, dummyVar);
-}
-
 void Implementation<Atom>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
   out << "'";

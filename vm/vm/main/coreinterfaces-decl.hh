@@ -122,6 +122,17 @@ struct Interface<Wakeable>:
   }
 };
 
+class Literal;
+template<>
+struct Interface<Literal>:
+  ImplementedBy<Atom, OptName, GlobalName, Boolean, Unit> {
+
+  OpResult isLiteral(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+};
+
 class PotentialFeature;
 template<>
 struct Interface<PotentialFeature>: ImplementedBy<OptName> {
@@ -268,7 +279,8 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 class Dottable;
 template<>
 struct Interface<Dottable>:
-  ImplementedBy<Tuple, Record, Chunk, Cons, Array, Atom> {
+  ImplementedBy<Tuple, Record, Chunk, Cons, Array,
+    Atom, OptName, GlobalName, Boolean, Unit> {
 
   OpResult dot(RichNode self, VM vm, RichNode feature,
                UnstableNode& result) {
@@ -282,7 +294,10 @@ struct Interface<Dottable>:
 
 class RecordLike;
 template<>
-struct Interface<RecordLike>: ImplementedBy<Tuple, Record, Cons, Atom> {
+struct Interface<RecordLike>:
+  ImplementedBy<Tuple, Record, Cons,
+    Atom, OptName, GlobalName, Boolean, Unit> {
+
   OpResult label(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }

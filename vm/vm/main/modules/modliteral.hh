@@ -22,42 +22,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREINTERFACES_H
-#define __COREINTERFACES_H
+#ifndef __MODLITERAL_H
+#define __MODLITERAL_H
 
-#include "mozartcore-decl.hh"
-
-#include "coreinterfaces-decl.hh"
-#include "coredatatypes-decl.hh"
-
-namespace mozart {
+#include "../mozartcore.hh"
 
 #ifndef MOZART_GENERATOR
 
-#include "DataflowVariable-interf.hh"
-#include "ValueEquatable-interf.hh"
-#include "StructuralEquatable-interf.hh"
-#include "Comparable-interf.hh"
-#include "Wakeable-interf.hh"
-#include "Literal-interf.hh"
-#include "PotentialFeature-interf.hh"
-#include "BuiltinCallable-interf.hh"
-#include "Callable-interf.hh"
-#include "CodeAreaProvider-interf.hh"
-#include "Numeric-interf.hh"
-#include "IntegerValue-interf.hh"
-#include "FloatValue-interf.hh"
-#include "BooleanValue-interf.hh"
-#include "Dottable-interf.hh"
-#include "RecordLike-interf.hh"
-#include "ArrayLike-interf.hh"
-#include "ArrayInitializer-interf.hh"
-#include "SpaceLike-interf.hh"
-#include "ThreadLike-interf.hh"
-#include "CellLike-interf.hh"
+namespace mozart {
 
-#endif // MOZART_GENERATOR
+namespace builtins {
+
+////////////////////
+// Literal module //
+////////////////////
+
+class ModLiteral: public Module {
+public:
+  ModLiteral(): Module("Literal") {}
+
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult;
+      MOZART_CHECK_OPRESULT(Literal(value).isLiteral(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+};
 
 }
 
-#endif // __COREINTERFACES_H
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODLITERAL_H

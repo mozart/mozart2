@@ -31,6 +31,68 @@
 
 namespace mozart {
 
+///////////////////
+// LiteralHelper //
+///////////////////
+
+template <class T>
+OpResult LiteralHelper<T>::isLiteral(Self self, VM vm, bool& result) {
+  result = true;
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult LiteralHelper<T>::dot(Self self, VM vm,
+                               RichNode feature, UnstableNode& result) {
+  MOZART_REQUIRE_FEATURE(feature);
+  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+}
+
+template <class T>
+OpResult LiteralHelper<T>::dotNumber(Self self, VM vm,
+                                     nativeint feature, UnstableNode& result) {
+  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+}
+
+template <class T>
+OpResult LiteralHelper<T>::hasFeature(Self self, VM vm,
+                                      RichNode feature, bool& result) {
+  MOZART_REQUIRE_FEATURE(feature);
+  result = false;
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult LiteralHelper<T>::label(Self self, VM vm, UnstableNode& result) {
+  result.copy(vm, self);
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult LiteralHelper<T>::width(Self self, VM vm, UnstableNode& result) {
+  result = trivialBuild(vm, 0);
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult LiteralHelper<T>::arityList(Self self, VM vm, UnstableNode& result) {
+  result = trivialBuild(vm, vm->coreatoms.nil);
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult LiteralHelper<T>::clone(Self self, VM vm, UnstableNode& result) {
+  result.copy(vm, self);
+  return OpResult::proceed();
+}
+
+template <class T>
+OpResult LiteralHelper<T>::waitOr(Self self, VM vm, UnstableNode& result) {
+  // Wait forever
+  UnstableNode dummyVar = Variable::build(vm);
+  return OpResult::waitFor(vm, dummyVar);
+}
+
 ///////////////////////////
 // IntegerDottableHelper //
 ///////////////////////////

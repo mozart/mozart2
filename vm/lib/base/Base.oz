@@ -2,6 +2,7 @@ functor
 
 require
    Boot_Value     at 'x-oz://boot/Value'
+   Boot_Literal   at 'x-oz://boot/Literal'
    Boot_Cell      at 'x-oz://boot/Cell'
    Boot_Name      at 'x-oz://boot/Name'
    Boot_Int       at 'x-oz://boot/Int'
@@ -46,6 +47,11 @@ prepare
                                   end
                                end}
                   end
+
+   %%
+   %% Literal
+   %%
+   IsLiteral = Boot_Literal.is
 
    %%
    %% Unit
@@ -270,7 +276,7 @@ prepare
 
 #include "Exception.oz"
 #include "Value.oz"
-%#include "Literal.oz"
+#include "Literal.oz"
 #include "Unit.oz"
 #include "Lock.oz"
 #include "Cell.oz"

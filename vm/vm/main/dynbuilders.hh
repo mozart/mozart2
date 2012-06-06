@@ -38,19 +38,13 @@ namespace mozart {
 ////////////
 
 OpResult requireLiteral(VM vm, RichNode label) {
-  using namespace patternmatching;
+  bool isLiteral;
+  MOZART_CHECK_OPRESULT(Literal(label).isLiteral(vm, isLiteral));
 
-  OpResult res = OpResult::proceed();
-
-  if (matches(vm, res, label, wildcard<Atom>())) {
+  if (isLiteral)
     return OpResult::proceed();
-  } else if (matches(vm, res, label, wildcard<Boolean>())) {
-    return OpResult::proceed();
-  } else if (matches(vm, res, label, wildcard<Unit>())) {
-    return OpResult::proceed();
-  } else {
-    return matchTypeError(vm, res, label, u"literal");
-  }
+  else
+    return raiseTypeError(vm, u"literal", label);
 }
 
 namespace internal {

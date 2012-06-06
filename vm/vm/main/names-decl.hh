@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 /////////////
@@ -40,7 +42,8 @@ class OptName;
 #endif
 
 template <>
-class Implementation<OptName>: public WithHome, StoredAs<SpaceRef> {
+class Implementation<OptName>: public WithHome,
+  public LiteralHelper<OptName>, StoredAs<SpaceRef> {
 public:
   typedef SelfType<OptName>::Self Self;
 public:
@@ -80,7 +83,8 @@ class GlobalName;
 #endif
 
 template <>
-class Implementation<GlobalName>: public WithHome {
+class Implementation<GlobalName>: public WithHome,
+  public LiteralHelper<GlobalName> {
 public:
   typedef SelfType<GlobalName>::Self Self;
 public:

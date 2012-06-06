@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 #include <string>
 #include <ostream>
 
@@ -39,7 +41,8 @@ class Atom;
 #endif
 
 template <>
-class Implementation<Atom>: Copiable, StoredAs<AtomImpl*>, WithValueBehavior {
+class Implementation<Atom>: public LiteralHelper<Atom>,
+  Copiable, StoredAs<AtomImpl*>, WithValueBehavior {
 public:
   typedef SelfType<Atom>::Self Self;
 public:
@@ -76,33 +79,6 @@ public:
 
   inline
   OpResult compare(Self self, VM vm, RichNode right, int& result);
-
-public:
-  // RecordLike interface
-
-  inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult width(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult arityList(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult clone(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
-
-  inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
-
-  inline
-  OpResult waitOr(Self self, VM vm, UnstableNode& result);
 
 public:
   // Miscellaneous

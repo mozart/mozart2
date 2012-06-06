@@ -29,6 +29,53 @@
 
 namespace mozart {
 
+///////////////////
+// LiteralHelper //
+///////////////////
+
+template <class T>
+class LiteralHelper {
+private:
+  typedef Implementation<T>* This;
+  typedef typename SelfType<T>::Self Self;
+
+public:
+  // Literal interface
+
+  inline
+  OpResult isLiteral(Self self, VM vm, bool& result);
+
+public:
+  // Dottable interface
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
+public:
+  // RecordLike interface
+
+  inline
+  OpResult label(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult width(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult arityList(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult clone(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult waitOr(Self self, VM vm, UnstableNode& result);
+};
+
 ///////////////////////////
 // IntegerDottableHelper //
 ///////////////////////////

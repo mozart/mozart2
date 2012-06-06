@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#include "datatypeshelpers.hh"
+
 #include "reference.hh"
 #include "gctypes.hh"
 #include "patmattypes.hh"

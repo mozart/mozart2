@@ -52,6 +52,7 @@
 #include "modules/modnumber.hh"
 #include "modules/modint.hh"
 #include "modules/modfloat.hh"
+#include "modules/modliteral.hh"
 #include "modules/modrecord.hh"
 #include "modules/modchunk.hh"
 #include "modules/modtuple.hh"

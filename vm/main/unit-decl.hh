@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 class Unit;
@@ -36,7 +38,8 @@ class Unit;
 #endif
 
 template <>
-class Implementation<Unit>: Copiable, StoredAs<unit_t>, WithValueBehavior {
+class Implementation<Unit>: public LiteralHelper<Unit>,
+  Copiable, StoredAs<unit_t>, WithValueBehavior {
 public:
   typedef SelfType<Unit>::Self Self;
 public:

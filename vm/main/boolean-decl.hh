@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 class Boolean;
@@ -40,7 +42,8 @@ typedef enum BOOL_OR_NOT_BOOL {
 #endif
 
 template <>
-class Implementation<Boolean>: Copiable, StoredAs<bool>, WithValueBehavior {
+class Implementation<Boolean>: public LiteralHelper<Boolean>,
+  Copiable, StoredAs<bool>, WithValueBehavior {
 public:
   typedef SelfType<Boolean>::Self Self;
 public:

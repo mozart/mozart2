@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 ////////////////
@@ -82,6 +84,7 @@ class Tuple;
  */
 template <>
 class Implementation<Tuple>: public BaseRecord<Tuple>,
+  public IntegerDottableHelper<Tuple>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Tuple>::Self Self;
@@ -103,6 +106,15 @@ public:
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
 protected:
+  friend class IntegerDottableHelper<Tuple>;
+
+  bool isValidFeature(Self self, VM vm, nativeint feature) {
+    return (feature > 0) && ((size_t) feature <= _width);
+  }
+
+  inline
+  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+
   inline
   void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
 
@@ -114,15 +126,6 @@ public:
 
   inline
   OpResult clone(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
-
-  inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
 public:
   inline
@@ -153,7 +156,8 @@ class Cons;
  * Cons (specialization of Tuple with label '|' and width 2)
  */
 template <>
-class Implementation<Cons>: WithStructuralBehavior {
+class Implementation<Cons>: public IntegerDottableHelper<Cons>,
+  WithStructuralBehavior {
 public:
   typedef SelfType<Cons>::Self Self;
 public:
@@ -175,6 +179,16 @@ public:
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
+protected:
+  friend class IntegerDottableHelper<Cons>;
+
+  bool isValidFeature(Self self, VM vm, nativeint feature) {
+    return (feature == 1) || (feature == 2);
+  }
+
+  inline
+  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+
 public:
   // RecordLike interface
 
@@ -189,15 +203,6 @@ public:
 
   inline
   OpResult clone(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
-
-  inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
   inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
@@ -285,6 +290,7 @@ class Record;
  */
 template <>
 class Implementation<Record>: public BaseRecord<Record>,
+  public DottableHelper<Record>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Record>::Self Self;
@@ -322,9 +328,6 @@ public:
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
 
   inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
   OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
 public:
@@ -333,6 +336,7 @@ public:
 
 private:
   friend class BaseRecord<Record>;
+  friend class DottableHelper<Record>;
 
   StableNode _arity;
   size_t _width;

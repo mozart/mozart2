@@ -61,51 +61,10 @@ Implementation<Array>::Implementation(VM vm, size_t width,
     gr->copyUnstableNode(_elements[i], from[i]);
 }
 
-OpResult Implementation<Array>::dot(Self self, VM vm,
-                                    RichNode feature, UnstableNode& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    return dotNumber(self, vm, featureIntValue, result);
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-OpResult Implementation<Array>::dotNumber(Self self, VM vm,
-                                          nativeint feature,
-                                          UnstableNode& result) {
-  if (isIndexInRange(feature)) {
-    // Inside bounds
-    result.copy(vm, self[indexToOffset(feature)]);
-    return OpResult::proceed();
-  } else {
-    // Out of bounds
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-OpResult Implementation<Array>::hasFeature(Self self, VM vm, RichNode feature,
-                                           bool& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    result = isIndexInRange(featureIntValue);
-    return OpResult::proceed();
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    result = false;
-    return OpResult::proceed();
-  }
+void Implementation<Array>::getValueAt(Self self, VM vm,
+                                       nativeint feature,
+                                       UnstableNode& result) {
+  result.copy(vm, self[indexToOffset(feature)]);
 }
 
 OpResult Implementation<Array>::arrayLow(Self self, VM vm,

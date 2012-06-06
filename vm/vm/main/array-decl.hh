@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 ///////////
@@ -43,7 +45,9 @@ class Array;
  * Array
  */
 template <>
-class Implementation<Array>: public WithHome, StoredWithArrayOf<UnstableNode> {
+class Implementation<Array>: public WithHome,
+  public IntegerDottableHelper<Array>,
+  StoredWithArrayOf<UnstableNode> {
 public:
   typedef SelfType<Array>::Self Self;
 public:
@@ -72,18 +76,17 @@ public:
     return _low + _width - 1;
   }
 
+protected:
+  friend class IntegerDottableHelper<Array>;
+
+  bool isValidFeature(Self self, VM vm, nativeint feature) {
+    return isIndexInRange(feature);
+  }
+
+  inline
+  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+
 public:
-  // Dottable interface
-
-  inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
-
-  inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
-
   // ArrayLike interface
 
   inline

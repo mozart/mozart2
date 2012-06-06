@@ -137,6 +137,12 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
   return true;
 }
 
+void Implementation<Tuple>::getValueAt(Self self, VM vm,
+                                       nativeint feature,
+                                       UnstableNode& result) {
+  result.copy(vm, self[(size_t) feature - 1]);
+}
+
 void Implementation<Tuple>::getFeatureAt(Self self, VM vm, size_t index,
                                          UnstableNode& result) {
   result = SmallInt::build(vm, index+1);
@@ -158,53 +164,6 @@ OpResult Implementation<Tuple>::clone(Self self, VM vm,
     tuple.getElement(i)->make<Unbound>(vm);
 
   return OpResult::proceed();
-}
-
-OpResult Implementation<Tuple>::dot(Self self, VM vm,
-                                    RichNode feature, UnstableNode& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    return dotNumber(self, vm, featureIntValue, result);
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-OpResult Implementation<Tuple>::dotNumber(Self self, VM vm,
-                                          nativeint feature,
-                                          UnstableNode& result) {
-  if ((feature > 0) && ((size_t) feature <= _width)) {
-    // Inside bounds
-    result.copy(vm, self[(size_t) feature - 1]);
-    return OpResult::proceed();
-  } else {
-    // Out of bounds
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-OpResult Implementation<Tuple>::hasFeature(Self self, VM vm, RichNode feature,
-                                           bool& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    result = (featureIntValue > 0) && ((size_t) featureIntValue <= _width);
-    return OpResult::proceed();
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    result = false;
-    return OpResult::proceed();
-  }
 }
 
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,
@@ -248,6 +207,15 @@ bool Implementation<Cons>::equals(Self self, VM vm, Self right,
   return true;
 }
 
+void Implementation<Cons>::getValueAt(Self self, VM vm,
+                                      nativeint feature,
+                                      UnstableNode& result) {
+  if (feature == 1)
+    result.copy(vm, _head);
+  else
+    result.copy(vm, _tail);
+}
+
 OpResult Implementation<Cons>::label(Self self, VM vm,
                                      UnstableNode& result) {
   result = Atom::build(vm, vm->coreatoms.pipe);
@@ -270,61 +238,6 @@ OpResult Implementation<Cons>::clone(Self self, VM vm,
                                      UnstableNode& result) {
   result = buildCons(vm, Unbound::build(vm), Unbound::build(vm));
   return OpResult::proceed();
-}
-
-OpResult Implementation<Cons>::dot(Self self, VM vm,
-                                   RichNode feature, UnstableNode& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    return dotNumber(self, vm, featureIntValue, result);
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-OpResult Implementation<Cons>::dotNumber(Self self, VM vm,
-                                         nativeint feature,
-                                         UnstableNode& result) {
-  switch (feature) {
-    case 1: {
-      result.copy(vm, _head);
-      return OpResult::proceed();
-    }
-
-    case 2: {
-      result.copy(vm, _tail);
-      return OpResult::proceed();
-    }
-
-    default: {
-      // Out of bounds
-      return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-    }
-  }
-}
-
-OpResult Implementation<Cons>::hasFeature(Self self, VM vm, RichNode feature,
-                                          bool& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    result = (featureIntValue == 1) || (featureIntValue == 2);
-    return OpResult::proceed();
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    result = false;
-    return OpResult::proceed();
-  }
 }
 
 OpResult Implementation<Cons>::waitOr(Self self, VM vm,
@@ -518,13 +431,6 @@ OpResult Implementation<Record>::dot(Self self, VM vm,
       return res;
     }
   }
-}
-
-OpResult Implementation<Record>::dotNumber(Self self, VM vm,
-                                           nativeint feature,
-                                           UnstableNode& result) {
-  UnstableNode featureNode = SmallInt::build(vm, feature);
-  return dot(self, vm, featureNode, result);
 }
 
 OpResult Implementation<Record>::hasFeature(Self self, VM vm, RichNode feature,

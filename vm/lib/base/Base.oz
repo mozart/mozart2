@@ -9,6 +9,7 @@ require
    Boot_Float     at 'x-oz://boot/Float'
    Boot_Number    at 'x-oz://boot/Number'
    Boot_Tuple     at 'x-oz://boot/Tuple'
+   Boot_Dictionary at 'x-oz://boot/Dictionary'
    Boot_Record    at 'x-oz://boot/Record'
    Boot_Chunk     at 'x-oz://boot/Chunk'
    Boot_Array     at 'x-oz://boot/Array'
@@ -173,6 +174,12 @@ prepare
    MakeTuple = Boot_Tuple.make
 
    %%
+   %% Dictionary
+   %%
+   IsDictionary  = Boot_Dictionary.is
+   NewDictionary = Boot_Dictionary.new
+
+   %%
    %% Record
    %%
    Arity  = Boot_Record.arity
@@ -294,7 +301,7 @@ prepare
 %#include "Procedure.oz"
 %#include "Loop.oz"
 %#include "WeakDictionary.oz"
-%#include "Dictionary.oz"
+#include "Dictionary.oz"
 #include "Record.oz"
 #include "Chunk.oz"
 %#include "VirtualString.oz"

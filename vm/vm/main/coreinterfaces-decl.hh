@@ -346,6 +346,73 @@ struct Interface<ArrayLike>: ImplementedBy<Array> {
   }
 };
 
+class DictionaryLike;
+template <>
+struct Interface<DictionaryLike>: ImplementedBy<Dictionary> {
+
+  OpResult isDictionary(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult dictIsEmpty(RichNode self, VM vm, bool& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictMember(RichNode self, VM vm, RichNode feature, bool& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictGet(RichNode self, VM vm, RichNode feature,
+                   UnstableNode& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictCondGet(RichNode self, VM vm, RichNode feature,
+                       RichNode defaultValue, UnstableNode& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictPut(RichNode self, VM vm, RichNode feature, RichNode newValue) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictExchange(RichNode self, VM vm, RichNode feature,
+                        RichNode newValue, UnstableNode& oldValue) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictCondExchange(RichNode self, VM vm, RichNode feature,
+                            RichNode defaultValue,
+                            RichNode newValue, UnstableNode& oldValue) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictRemove(RichNode self, VM vm, RichNode feature) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictRemoveAll(RichNode self, VM vm) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictKeys(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictEntries(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictItems(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+
+  OpResult dictClone(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"dictionary", self);
+  }
+};
+
 class ArrayInitializer;
 template<>
 struct Interface<ArrayInitializer>:

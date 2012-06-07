@@ -44,11 +44,11 @@ namespace mozart {
      * Expect that a node is an atom and the content is the given
      * null-terminated string.
      */
-    static bool EXPECT_EQ_ATOM(LString<nchar> expected, RichNode actual) {
+    bool EXPECT_EQ_ATOM(LString<nchar> expected, RichNode actual) const {
       if (!EXPECT_IS<Atom>(actual)) return false;
       const AtomImpl* impl = actual.as<Atom>().value();
       LString<nchar> actualString (impl->contents(), impl->length());
-      EXPECT_EQ(expected, actualString);
+        EXPECT_EQ(expected, actualString);
       return expected == actualString;
     }
 
@@ -87,6 +87,8 @@ namespace mozart {
      */
     bool EXPECT_RAISE(const nchar* label, OpResult result) const;
   };
+
+  std::ostream& operator<<(std::ostream& out, LString<nchar> input);
 
 }
 

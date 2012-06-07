@@ -32,6 +32,7 @@
 
 #include "store-decl.hh"
 #include "uuid-decl.hh"
+#include "utf-decl.hh"
 
 namespace mozart {
 

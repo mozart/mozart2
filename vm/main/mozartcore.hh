@@ -28,6 +28,7 @@
 #include "mozartcore-decl.hh"
 
 #include "coredatatypes-decl.hh"
+#include "utf.hh"
 #include "corebuilders.hh"
 #include "exchelpers-decl.hh"
 #include "coreinterfaces.hh"

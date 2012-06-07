@@ -46,7 +46,7 @@ local
 in
    Tuple = tuple(make:    MakeTuple
                  append:  Append
-                 %is:      IsTuple
+                 is:      IsTuple
                  toArray: fun {$ T}
                              W={Width T}
                              A={Array.new 1 W unit}

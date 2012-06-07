@@ -54,6 +54,11 @@ public:
 public:
   // CellLike interface
 
+  OpResult isCell(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult exchange(RichNode self, VM vm, RichNode newValue,
                     UnstableNode& oldValue);

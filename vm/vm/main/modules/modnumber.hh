@@ -41,6 +41,19 @@ class Number: public Module {
 public:
   Number(): Module("Number") {}
 
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(Numeric(value).isNumber(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
   class Opposite: public Builtin<Opposite> {
   public:
     Opposite(): Builtin("~") {}

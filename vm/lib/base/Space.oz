@@ -26,6 +26,7 @@
 %%
 Space = space(
    new: Boot_Space.new
+   is: Boot_Space.is
    ask: Boot_Space.ask
    askVerbose: Boot_Space.askVerbose
    merge: Boot_Space.merge

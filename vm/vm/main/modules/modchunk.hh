@@ -46,9 +46,15 @@ public:
     New(): Builtin("new") {}
 
     OpResult operator()(VM vm, In underlying, Out result) {
-      // TODO Check that `underlying` is a record
-      result = Chunk::build(vm, underlying);
-      return OpResult::proceed();
+      bool isRecord = false;
+      MOZART_CHECK_OPRESULT(RecordLike(underlying).isRecord(vm, isRecord));
+
+      if (isRecord) {
+        result = Chunk::build(vm, underlying);
+        return OpResult::proceed();
+      } else {
+        return raiseTypeError(vm, u"Record", underlying);
+      }
     }
   };
 
@@ -57,10 +63,10 @@ public:
     Is(): Builtin("is") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      if (value.isTransient())
-        return OpResult::waitFor(vm, value);
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(ChunkLike(value).isChunk(vm, boolResult));
 
-      result = Boolean::build(vm, value.is<Chunk>());
+      result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
     }
   };

@@ -26,5 +26,5 @@
 %%
 %% Module
 %%
-Name = name(%is:  IsName
+Name = name(is:  IsName
             new: NewName)

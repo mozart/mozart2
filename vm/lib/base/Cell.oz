@@ -26,7 +26,7 @@
 %%
 %% Module
 %%
-Cell = cell(%is:       IsCell
+Cell = cell(is:       IsCell
             new:      NewCell
             exchange: Exchange
             assign:   Assign

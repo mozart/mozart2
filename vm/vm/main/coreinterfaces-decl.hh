@@ -133,6 +133,24 @@ struct Interface<Literal>:
   }
 };
 
+class NameLike;
+template<>
+struct Interface<NameLike>: ImplementedBy<OptName, GlobalName> {
+  OpResult isName(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+};
+
+class AtomLike;
+template<>
+struct Interface<AtomLike>: ImplementedBy<Atom> {
+  OpResult isAtom(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+};
+
 class PotentialFeature;
 template<>
 struct Interface<PotentialFeature>: ImplementedBy<OptName> {
@@ -190,6 +208,21 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
 class Numeric;
 template<>
 struct Interface<Numeric>: ImplementedBy<SmallInt, Float> {
+  OpResult isNumber(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult isInt(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult isFloat(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   OpResult opposite(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Numeric", self);
   }
@@ -298,6 +331,16 @@ struct Interface<RecordLike>:
   ImplementedBy<Tuple, Record, Cons,
     Atom, OptName, GlobalName, Boolean, Unit> {
 
+  OpResult isRecord(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult isTuple(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   OpResult label(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Record", self);
   }
@@ -322,6 +365,11 @@ struct Interface<RecordLike>:
 class ArrayLike;
 template <>
 struct Interface<ArrayLike>: ImplementedBy<Array> {
+
+  OpResult isArray(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
 
   OpResult arrayLow(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"array", self);
@@ -426,6 +474,11 @@ struct Interface<ArrayInitializer>:
 class SpaceLike;
 template<>
 struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
+  OpResult isSpace(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   OpResult askSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
   }
@@ -450,10 +503,8 @@ struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
 class ThreadLike;
 template<>
 struct Interface<ThreadLike>: ImplementedBy<ReifiedThread> {
-  OpResult isThread(RichNode self, VM vm, UnstableNode& result) {
-#ifndef MOZART_GENERATOR
-    result = Boolean::build(vm, false);
-#endif
+  OpResult isThread(RichNode self, VM vm, bool& result) {
+    result = false;
     return OpResult::proceed();
   }
 
@@ -469,6 +520,11 @@ struct Interface<ThreadLike>: ImplementedBy<ReifiedThread> {
 class CellLike;
 template<>
 struct Interface<CellLike>: ImplementedBy<Cell> {
+  OpResult isCell(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   OpResult exchange(RichNode self, VM vm, RichNode newValue,
                     UnstableNode& oldValue) {
     return raiseTypeError(vm, u"Cell", self);
@@ -480,6 +536,15 @@ struct Interface<CellLike>: ImplementedBy<Cell> {
 
   OpResult assign(RichNode self, VM vm, RichNode newValue) {
     return raiseTypeError(vm, u"Cell", self);
+  }
+};
+
+class ChunkLike;
+template<>
+struct Interface<ChunkLike>: ImplementedBy<Chunk> {
+  OpResult isChunk(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
   }
 };
 

@@ -34,7 +34,7 @@ fun {IsEven X} X mod 2 == 0 end
 %%
 %% Module
 %%
-Int = int(%is:       IsInt
+Int = int(is:       IsInt
           isNat:    IsNat
           isOdd:    IsOdd
           isEven:   IsEven

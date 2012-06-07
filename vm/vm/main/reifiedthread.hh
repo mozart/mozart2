@@ -71,11 +71,6 @@ bool Implementation<ReifiedThread>::shouldWakeUpUnderSpace(VM vm,
   return _runnable->getSpace()->isAncestor(space);
 }
 
-OpResult Implementation<ReifiedThread>::isThread(VM vm, UnstableNode& result) {
-  result.make<Boolean>(vm, true);
-  return OpResult::proceed();
-}
-
 OpResult Implementation<ReifiedThread>::getThreadPriority(
   VM vm, ThreadPriority& result) {
 

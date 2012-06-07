@@ -337,33 +337,9 @@ local
 
    CloneRecord = Boot_Record.clone
 
-   % Temporary
-   local
-      fun {IsTupleArity Fs Offset}
-         case Fs
-         of F|Fr then
-            if F == Offset then
-               {IsTupleArity Fr Offset+1}
-            else
-               false
-            end
-         [] nil then
-            true
-         end
-      end
-   in
-      fun {IsTuple R}
-         {IsTupleArity {Arity R} 1}
-      end
-
-      fun {IsLiteral R}
-         {Width R} == 0
-      end
-   end
-
 in
 
-   Record = record(%is:           IsRecord
+   Record = record(is:           IsRecord
                    make:         MakeRecord
                    clone:        CloneRecord
 

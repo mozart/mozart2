@@ -79,6 +79,21 @@ public:
 public:
   // Numeric inteface
 
+  OpResult isNumber(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isInt(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isFloat(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult opposite(Self self, VM vm, UnstableNode& result);
 

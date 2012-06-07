@@ -118,11 +118,6 @@ SpaceRef Implementation<ReifiedSpace>::build(VM vm, GR gr, Self from) {
   return home;
 }
 
-OpResult Implementation<ReifiedSpace>::isSpace(VM vm, UnstableNode& result) {
-  result.make<Boolean>(vm, true);
-  return OpResult::proceed();
-}
-
 OpResult Implementation<ReifiedSpace>::askSpace(
   Self self, VM vm, UnstableNode& result) {
 
@@ -254,11 +249,6 @@ OpResult Implementation<ReifiedSpace>::cloneSpace(
 
 DeletedSpaceKind Implementation<DeletedSpace>::build(VM vm, GR gr, Self from) {
   return from.get().kind();
-}
-
-OpResult Implementation<DeletedSpace>::isSpace(VM vm, UnstableNode& result) {
-  result.make<Boolean>(vm, true);
-  return OpResult::proceed();
 }
 
 OpResult Implementation<DeletedSpace>::askSpace(

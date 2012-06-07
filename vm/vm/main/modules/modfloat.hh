@@ -41,6 +41,19 @@ class Float: public Module {
 public:
   Float(): Module("Float") {}
 
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(Numeric(value).isFloat(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
   class Divide: public Builtin<Divide> {
   public:
     Divide(): Builtin("/") {}

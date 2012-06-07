@@ -52,6 +52,19 @@ public:
       return makeTuple(vm, result, label, intWidth);
     }
   };
+
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(RecordLike(value).isTuple(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
 };
 
 }

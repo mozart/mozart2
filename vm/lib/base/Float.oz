@@ -26,7 +26,7 @@
 %%
 %% Module
 %%
-Float = float(%is:       IsFloat
+Float = float(is:       IsFloat
               '/':      Boot_Float.'/'
               /*'mod':    Boot_Float.fMod
               exp:      Exp

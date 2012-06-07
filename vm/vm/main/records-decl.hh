@@ -51,6 +51,11 @@ public:
   inline
   StableNode* getElement(Self self, size_t index);
 public:
+  OpResult isRecord(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult width(Self self, VM vm, UnstableNode& result);
 
@@ -120,6 +125,11 @@ protected:
 
 public:
   // RecordLike interface
+
+  OpResult isTuple(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
@@ -191,6 +201,16 @@ protected:
 
 public:
   // RecordLike interface
+
+  OpResult isRecord(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isTuple(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
@@ -318,6 +338,11 @@ protected:
 public:
   // RecordLike interface
 
+  OpResult isTuple(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
 
@@ -387,6 +412,14 @@ public:
 
   inline
   OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+
+public:
+  // ChunkLike interface
+
+  OpResult isChunk(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
 public:
   // Miscellaneous

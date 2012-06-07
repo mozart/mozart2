@@ -75,6 +75,14 @@ public:
   int compareFeatures(VM vm, Self right);
 
 public:
+  // AtomLike interface
+
+  OpResult isAtom(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+public:
   // Comparable interface
 
   inline

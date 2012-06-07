@@ -40,6 +40,8 @@ namespace mozart {
 #include "Comparable-interf.hh"
 #include "Wakeable-interf.hh"
 #include "Literal-interf.hh"
+#include "AtomLike-interf.hh"
+#include "NameLike-interf.hh"
 #include "PotentialFeature-interf.hh"
 #include "BuiltinCallable-interf.hh"
 #include "Callable-interf.hh"
@@ -56,6 +58,7 @@ namespace mozart {
 #include "SpaceLike-interf.hh"
 #include "ThreadLike-interf.hh"
 #include "CellLike-interf.hh"
+#include "ChunkLike-interf.hh"
 
 #endif // MOZART_GENERATOR
 

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODINT_H
-#define __MODINT_H
+#ifndef __MODATOM_H
+#define __MODATOM_H
 
 #include "../mozartcore.hh"
 
@@ -33,60 +33,24 @@ namespace mozart {
 
 namespace builtins {
 
-////////////////
-// Int module //
-////////////////
+/////////////////
+// Atom module //
+/////////////////
 
-class Int: public Module {
+class ModAtom: public Module {
 public:
-  Int(): Module("Int") {}
+  ModAtom(): Module("Atom") {}
 
   class Is: public Builtin<Is> {
   public:
     Is(): Builtin("is") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      MOZART_CHECK_OPRESULT(Numeric(value).isInt(vm, boolResult));
+      bool boolResult;
+      MOZART_CHECK_OPRESULT(AtomLike(value).isAtom(vm, boolResult));
 
       result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
-    }
-  };
-
-  class Div: public Builtin<Div> {
-  public:
-    Div(): Builtin("div") {}
-
-    OpResult operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).div(vm, right, result);
-    }
-  };
-
-  class Mod: public Builtin<Mod> {
-  public:
-    Mod(): Builtin("mod") {}
-
-    OpResult operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).mod(vm, right, result);
-    }
-  };
-
-  class Plus1: public Builtin<Plus1>, InlineAs<OpInlinePlus1> {
-  public:
-    Plus1(): Builtin("+1") {}
-
-    OpResult operator()(VM vm, In operand, Out result) {
-      return IntegerValue(operand).addValue(vm, 1, result);
-    }
-  };
-
-  class Minus1: public Builtin<Minus1>, InlineAs<OpInlineMinus1> {
-  public:
-    Minus1(): Builtin("-1") {}
-
-    OpResult operator()(VM vm, In operand, Out result) {
-      return IntegerValue(operand).addValue(vm, -1, result);
     }
   };
 };
@@ -97,4 +61,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODINT_H
+#endif // __MODATOM_H

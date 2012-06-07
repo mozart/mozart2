@@ -50,7 +50,7 @@ end
 %%
 %% Module
 %%
-Number = number(%is:  IsNumber
+Number = number(is:  IsNumber
                 '+': Boot_Number.'+'
                 '-': Boot_Number.'-'
                 '*': Boot_Number.'*'

@@ -57,8 +57,18 @@ public:
   static SpaceRef build(VM vm, GR gr, Self from);
 
 public:
+  // PotentialFeature interface
+
   inline
   OpResult makeFeature(Self self, VM vm);
+
+public:
+  // NameLike interface
+
+  OpResult isName(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
 public:
   // Miscellaneous
@@ -104,6 +114,14 @@ public:
 
   inline
   int compareFeatures(VM vm, Self right);
+
+public:
+  // NameLike interface
+
+  OpResult isName(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
 public:
   // Miscellaneous

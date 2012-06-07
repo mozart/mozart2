@@ -60,6 +60,16 @@ public:
 public:
   // RecordLike interface
 
+  OpResult isRecord(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isTuple(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult label(Self self, VM vm, UnstableNode& result);
 

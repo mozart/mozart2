@@ -59,7 +59,11 @@ public:
     Is(): Builtin("is") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      return ThreadLike(value).isThread(vm, result);
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(ThreadLike(value).isThread(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
     }
   };
 

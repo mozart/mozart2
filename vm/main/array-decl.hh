@@ -89,6 +89,11 @@ protected:
 public:
   // ArrayLike interface
 
+  OpResult isArray(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult arrayLow(Self self, VM vm, UnstableNode& result);
 

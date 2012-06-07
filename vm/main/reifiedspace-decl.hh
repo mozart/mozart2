@@ -58,8 +58,10 @@ public:
     return _space;
   }
 public:
-  inline
-  OpResult isSpace(VM vm, UnstableNode& result);
+  OpResult isSpace(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
   inline
   OpResult askSpace(Self self, VM vm, UnstableNode& result);
@@ -115,8 +117,10 @@ public:
     return _kind;
   }
 public:
-  inline
-  OpResult isSpace(VM vm, UnstableNode& result);
+  OpResult isSpace(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
   inline
   OpResult askSpace(Self self, VM vm, UnstableNode& result);

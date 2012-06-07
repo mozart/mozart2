@@ -59,6 +59,19 @@ public:
     }
   };
 
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(ArrayLike(value).isArray(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
   class Low: public Builtin<Low> {
   public:
     Low(): Builtin("low") {}

@@ -48,6 +48,7 @@
 
 #include "emulate.hh"
 
+#include "modules/modatom.hh"
 #include "modules/modvalue.hh"
 #include "modules/modnumber.hh"
 #include "modules/modint.hh"

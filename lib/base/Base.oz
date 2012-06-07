@@ -4,6 +4,7 @@ require
    Boot_Value     at 'x-oz://boot/Value'
    Boot_Literal   at 'x-oz://boot/Literal'
    Boot_Cell      at 'x-oz://boot/Cell'
+   Boot_Atom      at 'x-oz://boot/Atom'
    Boot_Name      at 'x-oz://boot/Name'
    Boot_Int       at 'x-oz://boot/Int'
    Boot_Float     at 'x-oz://boot/Float'
@@ -62,15 +63,22 @@ prepare
    %%
    %% Cell
    %%
+   IsCell   = Boot_Cell.is
    NewCell  = Boot_Cell.new
    Exchange = proc {$ C Old New} Old = {Boot_Cell.exchangeFun C New} end
-   Assign = Boot_Cell.assign
-   Access = Boot_Cell.access
+   Assign   = Boot_Cell.assign
+   Access   = Boot_Cell.access
+
+   %%
+   %% Atom
+   %%
+   IsAtom       = Boot_Atom.is
+   %AtomToString = Boot_Atom.toString
 
    %%
    %% Name
    %%
-   %IsName        = Boot_Name.is
+   IsName        = Boot_Name.is
    NewName       = Boot_Name.new
    %NewUniqueName = Boot_Name.newUnique % not exported
 
@@ -169,8 +177,24 @@ prepare
    Or     = fun {$ X Y} X orelse Y end
 
    %%
+   %% Int
+   %%
+   IsInt = Boot_Int.is
+
+   %%
+   %% Float
+   %%
+   IsFloat = Boot_Float.is
+
+   %%
+   %% Number
+   %%
+   IsNumber = Boot_Number.is
+
+   %%
    %% Tuple
    %%
+   IsTuple   = Boot_Tuple.is
    MakeTuple = Boot_Tuple.make
 
    %%
@@ -182,9 +206,10 @@ prepare
    %%
    %% Record
    %%
-   Arity  = Boot_Record.arity
-   Label  = Boot_Record.label
-   Width  = Boot_Record.width
+   IsRecord = Boot_Record.is
+   Arity    = Boot_Record.arity
+   Label    = Boot_Record.label
+   Width    = Boot_Record.width
 
    local
       fun {CountNewFeatures R1 Fs Acc}
@@ -262,7 +287,7 @@ prepare
    %% Array
    %%
    NewArray = Boot_Array.new
-   %IsArray  = Boot_Array.is
+   IsArray  = Boot_Array.is
    Put      = Boot_Array.put
    Get      = Boot_Array.get
 

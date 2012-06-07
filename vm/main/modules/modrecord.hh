@@ -41,6 +41,19 @@ class Record: public Module {
 public:
   Record(): Module("Record") {}
 
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(RecordLike(value).isRecord(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
   class Label: public Builtin<Label> {
   public:
     Label(): Builtin("label") {}

@@ -41,7 +41,7 @@ local
 in
 
    Array = array(new:      NewArray
-                 %is:       IsArray
+                 is:       IsArray
                  put:      Put
                  get:      Get
                  low:      GetLow

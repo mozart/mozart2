@@ -95,8 +95,10 @@ public:
 public:
   // ThreadLike interface
 
-  inline
-  OpResult isThread(VM vm, UnstableNode& result);
+  OpResult isThread(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
 
   inline
   OpResult getThreadPriority(VM vm, ThreadPriority& result);

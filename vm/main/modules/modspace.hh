@@ -66,6 +66,19 @@ public:
     }
   };
 
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(SpaceLike(value).isSpace(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
   class Ask: public Builtin<Ask> {
   public:
     Ask(): Builtin("ask") {}

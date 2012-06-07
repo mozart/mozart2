@@ -28,7 +28,7 @@ TEST_F(AtomTest, EqualsAndCompare) {
     for (const nchar* q : testVector) {
       UnstableNode qNode = Atom::build(vm, q);
 
-      int compareResult = nstrcmp(p, q);
+      int compareResult = compareByCodePoint(p, q);
       int pqCompareResult, qpCompareResult;
       EXPECT_PROCEED(Comparable(pNode).compare(vm, qNode, pqCompareResult));
       EXPECT_PROCEED(Comparable(qNode).compare(vm, pNode, qpCompareResult));

@@ -8,25 +8,6 @@ std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment();
 
 namespace mozart {
 
-inline bool nstreq(const nchar* a, const nchar* b) noexcept {
-  size_t aLength = std::char_traits<nchar>::length(a);
-  size_t bLength = std::char_traits<nchar>::length(b);
-  if (aLength != bLength)
-    return false;
-  return std::char_traits<nchar>::compare(a, b, aLength) == 0;
-}
-
-inline int nstrcmp(const nchar* a, const nchar* b) noexcept {
-  size_t aLength = std::char_traits<nchar>::length(a);
-  size_t bLength = std::char_traits<nchar>::length(b);
-  size_t minLength = std::min(aLength, bLength);
-  int compareRes = std::char_traits<nchar>::compare(a, b, minLength);
-  if (compareRes == 0) {
-    compareRes = aLength < bLength ? -1 : aLength > bLength ? 1 : 0;
-  }
-  return compareRes;
-}
-
 class MozartTest : public ::testing::Test {
 protected:
   MozartTest() : environment(makeTestEnvironment()),
@@ -64,14 +45,14 @@ protected:
    * Expect that a node is an atom and the content is the given
    * null-terminated string.
    */
-  static bool EXPECT_EQ_ATOM(const nchar* expected, RichNode actual) {
+  bool EXPECT_EQ_ATOM(LString<nchar> expected, RichNode actual) const {
     if (!EXPECT_IS<Atom>(actual))
       return false;
 
     const AtomImpl* impl = actual.as<Atom>().value();
-    const nchar* actualString = impl->contents();
-    EXPECT_TRUE(nstreq(expected, actualString));
-    return nstreq(expected, actualString);
+    LString<nchar> actualString(impl->contents(), impl->length());
+    EXPECT_EQ(expected, actualString);
+    return expected == actualString;
   }
 
   /**
@@ -113,6 +94,8 @@ protected:
    */
   bool EXPECT_RAISE(const nchar* label, OpResult result) const;
 };
+
+std::ostream& operator<<(std::ostream& out, LString<nchar> input);
 
 }
 

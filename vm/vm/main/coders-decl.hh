@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,25 +22,46 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_DECL_H
-#define __MOZARTCORE_DECL_H
+#ifndef __CODERS_DECL_H
+#define __CODERS_DECL_H
 
 #include "core-forward-decl.hh"
-
-#include "store-decl.hh"
-#include "opresult-decl.hh"
-#include "uuid-decl.hh"
-#include "type-decl.hh"
-#include "runnable-decl.hh"
-#include "threadpool-decl.hh"
-#include "space-decl.hh"
-#include "graphreplicator-decl.hh"
-#include "gcollect-decl.hh"
-#include "sclone-decl.hh"
-#include "unify-decl.hh"
 #include "lstring-decl.hh"
-#include "coders-decl.hh"
-#include "utf-decl.hh"
-#include "vm-decl.hh"
 
-#endif // __MOZARTCORE_DECL_H
+namespace mozart {
+
+//////////////
+// Encoders //
+//////////////
+
+LString<unsigned char> encodeLatin1(VM vm, LString<nchar> input,
+                                    bool isLittleEndian, bool insertBom);
+
+LString<unsigned char> encodeUTF8(VM vm, LString<nchar> input,
+                                  bool isLittleEndian, bool insertBom);
+
+LString<unsigned char> encodeUTF16(VM vm, LString<nchar> input,
+                                   bool isLittleEndian, bool insertBom);
+
+LString<unsigned char> encodeUTF32(VM vm, LString<nchar> input,
+                                   bool isLittleEndian, bool insertBom);
+
+//////////////
+// Decoders //
+//////////////
+
+LString<nchar> decodeLatin1(VM vm, LString<unsigned char> input,
+                            bool isLittleEndian, bool hasBom);
+
+LString<nchar> decodeUTF8(VM vm, LString<unsigned char> input,
+                          bool isLittleEndian, bool hasBom);
+
+LString<nchar> decodeUTF16(VM vm, LString<unsigned char> input,
+                           bool isLittleEndian, bool hasBom);
+
+LString<nchar> decodeUTF32(VM vm, LString<unsigned char> input,
+                           bool isLittleEndian, bool hasBom);
+
+}
+
+#endif // __CODERS_DECL_H

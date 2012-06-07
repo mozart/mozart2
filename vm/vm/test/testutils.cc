@@ -62,3 +62,20 @@ bool mozart::MozartTest::EXPECT_RAISE(const nchar* label,
 
   return EXPECT_EQ_ATOM(label, labelNode);
 }
+
+namespace mozart {
+
+std::ostream& operator<<(std::ostream& out, LString<nchar> input) {
+  out << "< ";
+  auto oldBase = out.setf(std::ios_base::hex, std::ios_base::basefield);
+  for (nativeint c : input) {
+    out.width(sizeof(nchar)*2);
+    out.fill('0');
+    out << c << " ";
+  }
+  out.setf(oldBase, std::ios_base::basefield);
+  out << ">";
+  return out;
+}
+
+}

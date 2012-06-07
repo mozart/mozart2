@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,53 +22,59 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __LSTRING_H
+#define __LSTRING_H
+
+#include <vector>
+#include <algorithm>
 
 #include "mozartcore.hh"
 
-#include "coredatatypes.hh"
+namespace mozart {
 
-#include "builtins.hh"
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "dynbuilders.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "lstring.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "unify.hh"
-#include "utf.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
+/////////////
+// LString //
+/////////////
 
-#include "emulate.hh"
+template <class C>
+void LString<C>::free(VM vm) {
+  if (length >= 0)
+    vm->free(const_cast<C*>(string), length * sizeof(C));
+  string = nullptr;
+  length = 0;
+}
 
-#include "modules/modatom.hh"
-#include "modules/modvalue.hh"
-#include "modules/modnumber.hh"
-#include "modules/modint.hh"
-#include "modules/modfloat.hh"
-#include "modules/modliteral.hh"
-#include "modules/modrecord.hh"
-#include "modules/modchunk.hh"
-#include "modules/modtuple.hh"
-#include "modules/modsystem.hh"
-#include "modules/modthread.hh"
-#include "modules/modspace.hh"
-#include "modules/modcell.hh"
-#include "modules/modname.hh"
-#include "modules/modarray.hh"
-#include "modules/moddictionary.hh"
-#include "modules/modexception.hh"
-#include "modules/modobject.hh"
-#include "modules/modprocedure.hh"
-#include "modules/modtime.hh"
+template <class C>
+LString<C>::LString(VM vm, LString<C> other) : length(other.length) {
+  if (other.isErrorOrEmpty()) {
+    string = nullptr;
+  } else {
+    void* memory = vm->malloc(other.bytesCount());
+    memcpy(memory, other.string, other.bytesCount());
+    string = static_cast<const C*>(memory);
+  }
+}
 
-#endif // __MOZART_H
+template <class C>
+std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
+                                  LString<C> input) {
+  return out.write(input.string, input.length);
+}
+
+template <class C>
+bool operator==(LString<C> a, LString<C> b) {
+  if (a.length != b.length)
+    return false;
+  if (a.string == b.string)
+    return true;
+  return memcmp(a.string, b.string, a.length*sizeof(C)) == 0;
+}
+
+template <class C>
+bool operator!=(LString<C> a, LString<C> b) {
+  return !(a == b);
+}
+
+}
+
+#endif // __LSTRING_H

@@ -333,6 +333,23 @@ OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
   return OpResult::fail();
 }
 
+OpResult Implementation<Arity>::requireFeature(VM vm, RichNode container,
+                                               RichNode feature,
+                                               size_t& result) {
+  OpResult res = lookupFeature(vm, feature, result);
+
+  if (res.kind() == OpResult::orFail)
+    return raise(vm, vm->coreatoms.illegalFieldSelection, container, feature);
+  else
+    return res;
+}
+
+OpResult Implementation<Arity>::hasFeature(VM vm, RichNode feature,
+                                           bool& result) {
+  size_t dummy;
+  return lookupFeature(vm, feature, dummy).mapProceedFailToTrueFalse(result);
+}
+
 void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
                                          UnstableNode& result) {
   UnstableNode tempTuple(vm, _tuple);
@@ -415,31 +432,17 @@ OpResult Implementation<Record>::dot(Self self, VM vm,
   UnstableNode temp(vm, _arity);
 
   size_t index = 0;
-  OpResult res = RichNode(temp).as<Arity>().lookupFeature(vm, feature, index);
+  MOZART_CHECK_OPRESULT(RichNode(temp).as<Arity>().requireFeature(
+    vm, self, feature, index));
 
-  switch (res.kind()) {
-    case OpResult::orProceed: {
-      result.copy(vm, self[index]);
-      return OpResult::proceed();
-    }
-
-    case OpResult::orFail: {
-      return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-    }
-
-    default: {
-      return res;
-    }
-  }
+  result.copy(vm, self[index]);
+  return OpResult::proceed();
 }
 
 OpResult Implementation<Record>::hasFeature(Self self, VM vm, RichNode feature,
                                             bool& result) {
   UnstableNode temp(vm, _arity);
-
-  size_t index = 0;
-  return RichNode(temp).as<Arity>().lookupFeature(
-    vm, feature, index).mapProceedFailToTrueFalse(result);
+  return RichNode(temp).as<Arity>().hasFeature(vm, feature, result);
 }
 
 void Implementation<Record>::printReprToStream(Self self, VM vm,

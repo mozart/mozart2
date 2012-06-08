@@ -281,6 +281,13 @@ public:
   OpResult lookupFeature(VM vm, RichNode feature, size_t& result);
 
   inline
+  OpResult requireFeature(VM vm, RichNode container,
+                          RichNode feature, size_t& result);
+
+  inline
+  OpResult hasFeature(VM vm, RichNode feature, bool& result);
+
+  inline
   void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
 
 public:

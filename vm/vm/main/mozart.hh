@@ -65,5 +65,6 @@
 #include "modules/modarray.hh"
 #include "modules/moddictionary.hh"
 #include "modules/modexception.hh"
+#include "modules/modobject.hh"
 
 #endif // __MOZART_H

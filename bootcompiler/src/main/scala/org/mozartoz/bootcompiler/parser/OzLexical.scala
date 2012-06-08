@@ -29,10 +29,12 @@ class OzLexical extends Lexical with OzTokens {
     )
   }
 
-  def identifier =
-    rep1(upperCaseLetter, identChar) ^^ {
-      chars => Identifier(chars mkString "")
-    }
+  def identifier = (
+      rep1(upperCaseLetter, identChar) ^^ {
+        chars => Identifier(chars mkString "")
+      }
+    | quotedKeepQuotes('`') ^^ Identifier
+  )
 
   def floatLiteral =
     (rep1(digit) <~ '.') ~ rep(digit) ^^ {
@@ -49,15 +51,18 @@ class OzLexical extends Lexical with OzTokens {
       rep1(lowerCaseLetter, identChar) ^^ {
         chars => processKeyword(chars mkString "")
       }
-
-    | '\'' ~> rep(inQuoteChar) <~ '\'' ^^ {
-        chars => AtomLit(chars mkString "")
-      }
+    | quoted('\'') ^^ AtomLit
   )
 
-  def inQuoteChar = (
+  def quotedKeepQuotes(quoteChar: Char) =
+    quoted(quoteChar) ^^ (quoteChar + _ + quoteChar)
+
+  def quoted(quoteChar: Char) =
+    quoteChar ~> rep(inQuoteChar(quoteChar)) <~ quoteChar ^^ (_ mkString "")
+
+  def inQuoteChar(quoteChar: Char) = (
       '\\' ~> escapeChar
-    | chrExcept('\\', '\'', '\n', EofCh)
+    | chrExcept('\\', '\n', quoteChar, EofCh)
   )
 
   def escapeChar = (

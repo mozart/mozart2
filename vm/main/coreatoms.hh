@@ -54,10 +54,17 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   ooPrintName = atomTable.get(vm, u"ooPrintName");
   ooFallback = atomTable.get(vm, u"ooFallback");
 
+  outOfRange = atomTable.get(vm, NSTR("outOfRange"));
+  surrogate = atomTable.get(vm, NSTR("surrogate"));
+  invalidUTF8 = atomTable.get(vm, NSTR("invalidUTF8"));
+  invalidUTF16 = atomTable.get(vm, NSTR("invalidUTF16"));
+  truncated = atomTable.get(vm, NSTR("truncated"));
+
   failure = atomTable.get(vm, u"failure");
   typeError = atomTable.get(vm, u"typeError");
   illegalFieldSelection = atomTable.get(vm, u"illegalFieldSelection");
   illegalArity = atomTable.get(vm, u"illegalArity");
+  unicodeError = atomTable.get(vm, NSTR("unicodeError"));
   spaceAdmissible = atomTable.get(vm, u"spaceAdmissible");
   spaceNoChoice = atomTable.get(vm, u"spaceNoChoice");
   spaceAltRange = atomTable.get(vm, u"spaceAltRange");

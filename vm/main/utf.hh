@@ -30,7 +30,7 @@
 #include "mozartcore-decl.hh"
 
 // Note: Perhaps we should switch to <codecvt> when libstdc++ supports it.
-//     or use icu's conversion function.
+//       or use icu's conversion function.
 
 namespace mozart {
 

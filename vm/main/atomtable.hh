@@ -54,8 +54,8 @@ public:
     if (this == rhs) {
       return 0;
     } else {
-      return std::char_traits<nchar>::compare(
-        this->contents(), rhs->contents(), this->length()+1);
+      return compareByCodePoint(LString<nchar>(this->contents(), this->length()),
+                                LString<nchar>(rhs->contents(), rhs->length()));
     }
   }
 private:

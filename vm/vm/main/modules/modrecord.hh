@@ -68,7 +68,11 @@ public:
     Width(): Builtin("width") {}
 
     OpResult operator()(VM vm, In record, Out result) {
-      return RecordLike(record).width(vm, result);
+      size_t intResult = 0;
+      MOZART_CHECK_OPRESULT(RecordLike(record).width(vm, intResult));
+
+      result = trivialBuild(vm, intResult);
+      return OpResult::proceed();
     }
   };
 

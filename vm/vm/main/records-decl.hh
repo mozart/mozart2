@@ -57,7 +57,7 @@ public:
   }
 
   inline
-  OpResult width(Self self, VM vm, UnstableNode& result);
+  OpResult width(Self self, VM vm, size_t& result);
 
   inline
   OpResult arityList(Self self, VM vm, UnstableNode& result);
@@ -216,7 +216,7 @@ public:
   OpResult label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult width(Self self, VM vm, UnstableNode& result);
+  OpResult width(Self self, VM vm, size_t& result);
 
   inline
   OpResult arityList(Self self, VM vm, UnstableNode& result);

@@ -85,7 +85,10 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       }
     }
 
-    val baseDeclsAsStats = baseDecls map (_.asInstanceOf[Statement])
+    val baseDeclsAsStats = baseDecls map {
+      case stat:Statement => stat
+      case v:RawVariable => atPos(v)(v === UnboundExpression())
+    }
 
     RAWLOCAL (bootModulesDecls:_*) IN {
       statsAndStatToStat(baseDeclsAsStats, baseStat)

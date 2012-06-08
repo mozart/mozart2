@@ -527,7 +527,16 @@ in
                              {Zip {Arity R1} R1 R2 P} ?R3}
                          end
                       end
-                   %toDictionary: Boot_Record.toDictionary
+
+                   toDictionary:
+                      proc {$ R ?D}
+                         D = {Dictionary.new}
+                      in
+                         {ForAllInd {Arity R} R
+                          proc {$ F X}
+                             {Dictionary.put D F X}
+                          end}
+                      end
 
                    waitOr: Boot_Record.waitOr
                   )

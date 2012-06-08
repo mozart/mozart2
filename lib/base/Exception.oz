@@ -26,6 +26,7 @@
 
 Exception = exception('raise':    Raise
                       %raiseError: Boot_Exception.raiseError
+                      raiseError: Raise
                       %%
                       %% wrapper functions
                       %%

@@ -345,7 +345,7 @@ struct Interface<RecordLike>:
     return raiseTypeError(vm, u"Record", self);
   }
 
-  OpResult width(RichNode self, VM vm, UnstableNode& result) {
+  OpResult width(RichNode self, VM vm, size_t& result) {
     return raiseTypeError(vm, u"Record", self);
   }
 

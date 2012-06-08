@@ -41,9 +41,8 @@ StableNode* BaseRecord<T>::getElement(Self self, size_t index) {
 }
 
 template <class T>
-OpResult BaseRecord<T>::width(Self self, VM vm,
-                              UnstableNode& result) {
-  result.make<SmallInt>(vm, getWidth());
+OpResult BaseRecord<T>::width(Self self, VM vm, size_t& result) {
+  result = getWidth();
   return OpResult::proceed();
 }
 
@@ -222,9 +221,8 @@ OpResult Implementation<Cons>::label(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::width(Self self, VM vm,
-                                     UnstableNode& result) {
-  result = SmallInt::build(vm, 2);
+OpResult Implementation<Cons>::width(Self self, VM vm, size_t& result) {
+  result = 2;
   return OpResult::proceed();
 }
 

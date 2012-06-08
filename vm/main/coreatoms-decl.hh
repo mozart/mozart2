@@ -63,11 +63,19 @@ struct CoreAtoms {
   AtomImpl* failed;
   AtomImpl* merged;
 
+  // Unicode error types
+  AtomImpl* outOfRange;
+  AtomImpl* surrogate;
+  AtomImpl* invalidUTF8;
+  AtomImpl* invalidUTF16;
+  AtomImpl* truncated;
+
   // Exceptions
   AtomImpl* failure;
   AtomImpl* typeError;
   AtomImpl* illegalFieldSelection;
   AtomImpl* illegalArity;
+  AtomImpl* unicodeError;
   AtomImpl* spaceAdmissible;
   AtomImpl* spaceNoChoice;
   AtomImpl* spaceAltRange;

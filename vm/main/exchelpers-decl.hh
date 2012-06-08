@@ -39,6 +39,10 @@ OpResult raiseTypeError(VM vm, const nchar* expected, RichNode actual);
 inline
 OpResult raiseIllegalArity(VM vm, int expected, int actual);
 
+template <class... ExtraArgs>
+inline
+OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args);
+
 }
 
 #endif // __EXCHELPERS_DECL_H

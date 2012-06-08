@@ -14,6 +14,7 @@ require
    Boot_Record    at 'x-oz://boot/Record'
    Boot_Chunk     at 'x-oz://boot/Chunk'
    Boot_Array     at 'x-oz://boot/Array'
+   Boot_Object    at 'x-oz://boot/Object'
    Boot_Thread    at 'x-oz://boot/Thread'
    Boot_Exception at 'x-oz://boot/Exception'
 
@@ -81,6 +82,7 @@ prepare
    IsName        = Boot_Name.is
    NewName       = Boot_Name.new
    %NewUniqueName = Boot_Name.newUnique % not exported
+   NewUniqueName = fun {$ X} X end
 
    %%
    %% Chunk
@@ -292,6 +294,31 @@ prepare
    Get      = Boot_Array.get
 
    %%
+   %% Object, Class, and OoExtensions
+   %%
+   IsObject      = Boot_Object.is
+   New           % defined in Object.oz
+   IsClass       % defined in Object.oz
+   BaseObject    % defined in Object.oz
+   %% Methods
+   `ooMeth`      = {NewUniqueName 'ooMeth'}
+   `ooFastMeth`  = {NewUniqueName 'ooFastMeth'}
+   `ooDefaults`  = {NewUniqueName 'ooDefaults'}
+   %% Attributes
+   `ooAttr`      = {NewUniqueName 'ooAttr'}
+   %% Features
+   `ooFeat`      = {NewUniqueName 'ooFeat'}
+   `ooFreeFeat`  = {NewUniqueName 'ooFreeFeat'}
+   `ooFreeFlag`  = {NewUniqueName 'ooFreeFlag'}
+   %% Inheritance related
+   `ooMethSrc`   = {NewUniqueName 'ooMethSrc'}
+   `ooAttrSrc`   = {NewUniqueName 'ooAttrSrc'}
+   `ooFeatSrc`   = {NewUniqueName 'ooFeatSrc'}
+   %% Other
+   `ooPrintName` = {NewUniqueName 'ooPrintName'}
+   `ooFallback`  = {NewUniqueName 'ooFallback'}
+
+   %%
    %% Thread
    %%
    IsThread = Boot_Thread.is
@@ -331,7 +358,7 @@ prepare
 #include "Chunk.oz"
 %#include "VirtualString.oz"
 #include "Array.oz"
-%#include "Object.oz"
+#include "Object.oz"
 %#include "BitArray.oz"
 %#include "ForeignPointer.oz"
 #include "Thread.oz"

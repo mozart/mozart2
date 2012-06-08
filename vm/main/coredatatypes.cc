@@ -33,4 +33,11 @@ constexpr UUID Implementation<GlobalName>::uuid;
 constexpr UUID Implementation<SmallInt>::uuid;
 constexpr UUID Implementation<Unit>::uuid;
 
+// Bytecode for object dispatch procedure
+const ByteCode Implementation<Object>::dispatchByteCode[9] = {
+  OpMoveGX, 0, 1,
+  OpInlineGetClass, 1, 2,
+  OpTailCallG, 1, 3
+};
+
 }

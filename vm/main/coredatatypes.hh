@@ -42,6 +42,7 @@
 #include "dictionary.hh"
 #include "float.hh"
 #include "names.hh"
+#include "objects.hh"
 #include "records.hh"
 #include "reifiedspace.hh"
 #include "reifiedthread.hh"

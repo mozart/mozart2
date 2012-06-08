@@ -178,7 +178,9 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
 
 class Callable;
 template<>
-struct Interface<Callable>: ImplementedBy<Abstraction, BuiltinProcedure> {
+struct Interface<Callable>:
+  ImplementedBy<Abstraction, Object, BuiltinProcedure> {
+
   OpResult getCallInfo(RichNode self, VM vm, int& arity, StableNode*& body,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
@@ -312,7 +314,7 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 class Dottable;
 template<>
 struct Interface<Dottable>:
-  ImplementedBy<Tuple, Record, Chunk, Cons, Array,
+  ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array,
     Atom, OptName, GlobalName, Boolean, Unit> {
 
   OpResult dot(RichNode self, VM vm, RichNode feature,
@@ -461,6 +463,33 @@ struct Interface<DictionaryLike>: ImplementedBy<Dictionary> {
   }
 };
 
+class ObjectLike;
+template <>
+struct Interface<ObjectLike>: ImplementedBy<Object> {
+  OpResult isObject(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult getClass(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, u"object", self);
+  }
+
+  OpResult attrGet(RichNode self, VM vm, RichNode attribute,
+                    UnstableNode& result) {
+    return raiseTypeError(vm, u"object", self);
+  }
+
+  OpResult attrPut(RichNode self, VM vm, RichNode attribute, RichNode value) {
+    return raiseTypeError(vm, u"object", self);
+  }
+
+  OpResult attrExchange(RichNode self, VM vm, RichNode attribute,
+                        RichNode newValue, UnstableNode& oldValue) {
+    return raiseTypeError(vm, u"object", self);
+  }
+};
+
 class ArrayInitializer;
 template<>
 struct Interface<ArrayInitializer>:
@@ -541,7 +570,7 @@ struct Interface<CellLike>: ImplementedBy<Cell> {
 
 class ChunkLike;
 template<>
-struct Interface<ChunkLike>: ImplementedBy<Chunk> {
+struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
   OpResult isChunk(RichNode self, VM vm, bool& result) {
     result = false;
     return OpResult::proceed();

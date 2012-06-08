@@ -41,6 +41,19 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   failed = atomTable.get(vm, u"failed");
   merged = atomTable.get(vm, u"merged");
 
+  ooMeth = atomTable.get(vm, u"ooMeth");
+  ooFastMeth = atomTable.get(vm, u"ooFastMeth");
+  ooDefaults = atomTable.get(vm, u"ooDefaults");
+  ooAttr = atomTable.get(vm, u"ooAttr");
+  ooFeat = atomTable.get(vm, u"ooFeat");
+  ooFreeFeat = atomTable.get(vm, u"ooFreeFeat");
+  ooFreeFlag = atomTable.get(vm, u"ooFreeFlag");
+  ooMethSrc = atomTable.get(vm, u"ooMethSrc");
+  ooAttrSrc = atomTable.get(vm, u"ooAttrSrc");
+  ooFeatSrc = atomTable.get(vm, u"ooFeatSrc");
+  ooPrintName = atomTable.get(vm, u"ooPrintName");
+  ooFallback = atomTable.get(vm, u"ooFallback");
+
   failure = atomTable.get(vm, u"failure");
   typeError = atomTable.get(vm, u"typeError");
   illegalFieldSelection = atomTable.get(vm, u"illegalFieldSelection");

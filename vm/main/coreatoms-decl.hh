@@ -40,6 +40,20 @@ struct CoreAtoms {
   AtomImpl* pipe;
   AtomImpl* sharp;
 
+  // Object Orientation
+  AtomImpl* ooMeth;
+  AtomImpl* ooFastMeth;
+  AtomImpl* ooDefaults;
+  AtomImpl* ooAttr;
+  AtomImpl* ooFeat;
+  AtomImpl* ooFreeFeat;
+  AtomImpl* ooFreeFlag;
+  AtomImpl* ooMethSrc;
+  AtomImpl* ooAttrSrc;
+  AtomImpl* ooFeatSrc;
+  AtomImpl* ooPrintName;
+  AtomImpl* ooFallback;
+
   // Space status
   AtomImpl* succeeded;
   AtomImpl* entailed;

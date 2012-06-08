@@ -32,7 +32,7 @@ typedef short unsigned int uint16_t;
 typedef uint16_t ByteCode;
 typedef ByteCode OpCode;
 
-typedef ByteCode* ProgramCounter;
+typedef const ByteCode* ProgramCounter;
 
 const OpCode OpSkip = 0x00;
 
@@ -101,6 +101,8 @@ const OpCode OpInlineAdd = 0x51;
 const OpCode OpInlineSubtract = 0x52;
 const OpCode OpInlinePlus1 = 0x53;
 const OpCode OpInlineMinus1 = 0x54;
+
+const OpCode OpInlineGetClass = 0x60;
 
 }
 

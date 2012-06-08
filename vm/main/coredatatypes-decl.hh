@@ -42,6 +42,7 @@
 #include "dictionary-decl.hh"
 #include "float-decl.hh"
 #include "names-decl.hh"
+#include "objects-decl.hh"
 #include "records-decl.hh"
 #include "reifiedspace-decl.hh"
 #include "reifiedthread-decl.hh"

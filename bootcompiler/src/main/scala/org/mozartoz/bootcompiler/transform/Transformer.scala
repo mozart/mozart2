@@ -92,9 +92,9 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.BindStatement(statement, transformExpr(left),
           transformExpr(right))
 
-    case AssignStatement(left, right) =>
-      treeCopy.AssignStatement(statement, transformExpr(left),
-          transformExpr(right))
+    case BinaryOpStatement(left, operator, right) =>
+      treeCopy.BinaryOpStatement(statement, transformExpr(left),
+          operator, transformExpr(right))
 
     case DotAssignStatement(left, center, right) =>
       treeCopy.DotAssignStatement(statement, transformExpr(left),
@@ -191,6 +191,7 @@ abstract class Transformer extends (Program => Unit) {
     case EscapedVariable(variable) => expression
     case UnboundExpression() => expression
     case NestingMarker() => expression
+    case Self() => expression
 
     // Constants
 
@@ -207,6 +208,14 @@ abstract class Transformer extends (Program => Unit) {
 
       treeCopy.Record(expression, transformExpr(label),
           fields map transformRecordField)
+
+    // Classes
+
+    case ClassExpression(name, parents, features, attributes,
+        properties, methods) =>
+      treeCopy.ClassExpression(expression, name, parents map transformExpr,
+          features map transformFeatOrAttr, attributes map transformFeatOrAttr,
+          properties map transformExpr, methods map transformMethodDef)
 
     // Synthetic-only
 
@@ -231,4 +240,19 @@ abstract class Transformer extends (Program => Unit) {
   def transformClauseExpr(clause: MatchExpressionClause) =
     treeCopy.MatchExpressionClause(clause, transformExpr(clause.pattern),
         clause.guard map transformExpr, transformExpr(clause.body))
+
+  /** Transforms a feature or an attribute of a class */
+  def transformFeatOrAttr(featOrAttr: FeatOrAttr) =
+    treeCopy.FeatOrAttr(featOrAttr, transformExpr(featOrAttr.name),
+        featOrAttr.value map transformExpr)
+
+  /** Transforms a method definition */
+  def transformMethodDef(method: MethodDef) = {
+    val body = method.body match {
+      case stat:Statement => transformStat(stat)
+      case expr:Expression => transformExpr(expr)
+    }
+
+    treeCopy.MethodDef(method, method.header, method.messageVar, body)
+  }
 }

@@ -162,15 +162,15 @@ case class BindStatement(left: Expression,
   protected val opSyntax = " = "
 }
 
-/** Assign statement
+/** Binary operator statement
  *
  *  {{{
- *  <left> := <right>
+ *  <left> <operator> <right>
  *  }}}
  */
-case class AssignStatement(left: Expression,
+case class BinaryOpStatement(left: Expression, operator: String,
     right: Expression) extends Statement with InfixSyntax {
-  protected val opSyntax = " := "
+  protected val opSyntax = " " + operator + " "
 }
 
 /** Dot-assign statement

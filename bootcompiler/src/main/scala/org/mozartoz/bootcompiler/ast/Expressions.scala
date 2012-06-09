@@ -375,6 +375,11 @@ case class NestingMarker() extends Expression {
   def syntax(indent: String) = "$"
 }
 
+/** self */
+case class Self() extends Expression {
+  def syntax(indent: String) = "self"
+}
+
 // Records
 
 /** Record field
@@ -502,6 +507,82 @@ object Cons extends ((Expression, Expression) => Record) {
   def unapply(record: Record) = {
     if (record.isCons) Some((record.fields(0).value, record.fields(1).value))
     else None
+  }
+}
+
+// Classes
+
+case class FeatOrAttr(name: Expression,
+    value: Option[Expression]) extends Node with InfixSyntax {
+  protected val left = name
+  protected val right = value getOrElse AutoFeature()
+  protected val opSyntax = ":"
+
+  override def syntax(indent: String) = {
+    if (value.isEmpty) name.syntax(indent)
+    else super.syntax(indent)
+  }
+}
+
+case class MethodParam(feature: Expression, name: Expression,
+    default: Option[Expression]) extends Node {
+  def syntax(indent: String) = {
+    feature.syntax(indent) + ":" + name.syntax(indent) + (
+        if (default.isEmpty) ""
+        else " <= " + default.get.syntax(indent)
+    )
+  }
+}
+
+case class MethodHeader(name: Expression, params: List[MethodParam],
+    open: Boolean) extends Node {
+  def syntax(indent: String) = {
+    name.syntax(indent) + "(" + (
+        params map (_.syntax(indent)) mkString " "
+    ) + (if (open) " ...)" else ")")
+  }
+}
+
+case class MethodDef(header: MethodHeader, messageVar: Option[VariableOrRaw],
+    body: StatOrExpr) extends Node {
+  def syntax(indent: String) = {
+    val untilHeader = "meth " + header.syntax(indent+"     ")
+    val firstLine =
+      if (messageVar.isEmpty) untilHeader
+      else untilHeader + " = " + messageVar.get.syntax(indent)
+    val untilBody = firstLine + "\n   " + indent + body.syntax(indent+"   ")
+    untilBody + "\n" + indent + "end"
+  }
+}
+
+case class ClassExpression(name: String, parents: List[Expression],
+    features: List[FeatOrAttr], attributes: List[FeatOrAttr],
+    properties: List[Expression],
+    methods: List[MethodDef]) extends Expression {
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+    val subsubIndent = subIndent + "   "
+
+    def sectionSyntax(sectionKw: String, elems: Traversable[Node]) = {
+      if (elems.isEmpty) ""
+      else {
+        (("\n\n" + subIndent + sectionKw) /: elems) {
+          (prev, elem) => prev + "\n" + subsubIndent + elem.syntax(subsubIndent)
+        }
+      }
+    }
+
+    val firstLine = "class % " + name
+    val untilParents = firstLine + sectionSyntax("from", parents)
+    val untilFeatures = untilParents + sectionSyntax("feat", features)
+    val untilAttributes = untilFeatures + sectionSyntax("attr", attributes)
+
+    val untilMethods = (untilAttributes /: methods) {
+      (prev, method) => prev + "\n\n" + subIndent + method.syntax(subIndent)
+    }
+
+    untilMethods + "\n\n" + indent + "end"
   }
 }
 

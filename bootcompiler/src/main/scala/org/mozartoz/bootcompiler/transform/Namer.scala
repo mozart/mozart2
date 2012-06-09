@@ -251,6 +251,10 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     case functor: FunctorExpression =>
       transformFunctor(functor)
 
+    /* See transformClass() */
+    case clazz: ClassExpression =>
+      transformClass(clazz)
+
     /* Input:
      *   X
      * Output:
@@ -371,6 +375,91 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   // End transformations applied to functors
+
+  // Begin transformations applied to classes
+
+  /** Transform a class */
+  def transformClass(clazz: ClassExpression): Expression = {
+    val decls = classDeclarations(clazz)
+    val namedDecls = nameDecls(decls)
+
+    withEnvironmentFromDecls(namedDecls) {
+      if (namedDecls.isEmpty) super.transformExpr(clazz)
+      else {
+        val initNames = CompoundStatement(for {
+          decl <- namedDecls
+        } yield {
+          decl === (builtins.newName callExpr ())
+        })
+
+        treeCopy.LocalExpression(clazz, namedDecls,
+            initNames ~> super.transformExpr(clazz))
+      }
+    }
+  }
+
+  /** Returns the raw variables that are implicitly introduced in a class */
+  def classDeclarations(clazz: ClassExpression): List[RawVariable] = {
+    val result = new ListBuffer[RawVariable]
+
+    for (FeatOrAttr(nameVar: RawVariable, _) <- clazz.features)
+      result += nameVar
+
+    for (FeatOrAttr(nameVar: RawVariable, _) <- clazz.attributes)
+      result += nameVar
+
+    for (MethodDef(MethodHeader(
+        nameVar: RawVariable, _, _), _, _) <- clazz.methods)
+      result += nameVar
+
+    result.toList
+  }
+
+  override def transformMethodDef(method: MethodDef) = {
+    val MethodDef(header @ MethodHeader(name, params, open),
+        messageVar, body) = method
+
+    val namedParams = new ListBuffer[Variable]
+
+    val newName = transformExpr(name)
+
+    val newParams = for {
+      (param @ MethodParam(feature, name, default)) <- params
+    } yield {
+      val newName = name match {
+        case paramVar:RawVariable =>
+          val namedParamVar = nameDecl(paramVar)
+          namedParams += namedParamVar
+          namedParamVar
+
+        case _ =>
+          name
+      }
+
+      val newDefault = default map transformExpr
+
+      treeCopy.MethodParam(param, feature, newName, newDefault)
+    }
+
+    val newMessageVar = messageVar map { v =>
+      val named = nameDecl(v.asInstanceOf[RawVariable])
+      namedParams += named
+      named
+    }
+
+    val newBody = withEnvironmentFromDecls(namedParams.toList) {
+      body match {
+        case stat:Statement => transformStat(stat)
+        case expr:Expression => transformExpr(expr)
+      }
+    }
+
+    treeCopy.MethodDef(method,
+        treeCopy.MethodHeader(header, newName, newParams, open),
+        newMessageVar, newBody)
+  }
+
+  // End transformations applied to classes
 
   /** Returns (named(PV(D)), D without singleton vars) for a given D */
   def extractDecls(

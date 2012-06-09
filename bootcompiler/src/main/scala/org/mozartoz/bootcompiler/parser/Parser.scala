@@ -55,7 +55,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     rep1(oneStatement) ^^ CompoundStatement
 
   lazy val oneStatement: PackratParser[Statement] = (
-      bindStatement
+      operatorStatement
     | "local" ~> inStatement <~ "end"
     | "(" ~> inStatement <~ ")"
     | procStatement
@@ -67,6 +67,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | tryStatement
     | raiseStatement
     | functorStatement
+    | classStatement
     | skipStatement
   )
 
@@ -284,12 +285,13 @@ class OzParser extends OzTokenParsers with PackratParsers
     "raise" ~> inExpression <~ "end" ^^ RaiseExpression
   }
 
-  // Bind and similar
+  // Operator statement
 
-  lazy val bindStatement: PackratParser[Statement] = positioned(
+  lazy val operatorStatement: PackratParser[Statement] = positioned(
       (expression1 <~ "=") ~ expression0 ^^ BindStatement
     | expression12andDot ~ (expression13 <~ ":=") ~ expression1 ^^ DotAssignStatement
-    | (expression2 <~ ":=") ~ expression1 ^^ AssignStatement
+    | expression2 ~ ("<-" | ":=") ~ expression1 ^^ BinaryOpStatement
+    | expression11 ~ "," ~ expression10 ^^ BinaryOpStatement
   )
 
   // Functor
@@ -358,6 +360,98 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val featureNoVar = positioned(featureConst ^^ Constant)
 
+  // Class
+
+  lazy val classStatement: PackratParser[Statement] = positioned {
+    "class" ~> expression ~ positioned(classContents) <~ "end" ^^ {
+      case lhs ~ clazz =>
+        BindStatement(lhs, clazz.copy(name = nameOf(lhs)))
+    }
+  }
+
+  lazy val classExpression: PackratParser[Expression] = positioned {
+    "class" ~> opt("$") ~> classContents <~ "end"
+  }
+
+  lazy val classContents = {
+    rep(classContentsItem) ^^ {
+      _.foldLeft(partialClass())(mergePartialClasses)
+    }
+  }
+
+  lazy val classContentsItem: PackratParser[ClassExpression] = (
+      "from" ~> rep(expression) ^^ (p => partialClass(parents = p))
+    | "feat" ~> rep(classFeatOrAttr) ^^ (f => partialClass(features = f))
+    | "attr" ~> rep(classFeatOrAttr) ^^ (a => partialClass(attributes = a))
+    | "prop" ~> rep(expression) ^^ (p => partialClass(properties = p))
+    | classMethod ^^ (m => partialClass(methods = List(m)))
+  )
+
+  lazy val classFeatOrAttr: PackratParser[FeatOrAttr] = positioned {
+    attrOrFeat ~ opt(":" ~> expression) ^^ FeatOrAttr
+  }
+
+  lazy val classMethod: PackratParser[MethodDef] = positioned {
+    "meth" ~> methodHeader >> { header =>
+      opt("=" ~> variable) ~ methodBody(header) <~ "end" ^^ {
+        case messageVar ~ body => MethodDef(header, messageVar, body)
+      }
+    }
+  }
+
+  lazy val methodHeader: PackratParser[MethodHeader] = positioned(
+      methodHeaderWithoutArgs ^^ (label => MethodHeader(label, Nil, false))
+    | methodHeaderLabel ~ rep(methodParam) ~ opt("...") <~ ")" ^^ {
+        case label ~ params ~ open =>
+          MethodHeader(label, params, open.isDefined)
+      }
+  )
+
+  lazy val methodHeaderWithoutArgs: PackratParser[Expression] =
+    variable | escapedVariable | literalConstExpr
+
+  lazy val methodHeaderLabel: PackratParser[Expression] = (
+      literalLabelExpr
+    | identLabelExpr
+    | positioned("!" ~> identLabelExpr ^^ EscapedVariable)
+  )
+
+  lazy val methodParam: PackratParser[MethodParam] = positioned {
+    methodParamFeat ~ methodParamName ~ opt("<=" ~> expression) ^^ MethodParam
+  }
+
+  lazy val methodParamFeat: PackratParser[Expression] = positioned {
+    opt(featureNoVar <~ ":") ^^ (x => x.getOrElse(AutoFeature()))
+  }
+
+  lazy val methodParamName: PackratParser[Expression] =
+    variable | wildcardExpr | nestingMarker
+
+  def methodBody(header: MethodHeader) = {
+    if (header.params exists (_.name.isInstanceOf[NestingMarker]))
+      inExpression
+    else
+      inStatement
+  }
+
+  def partialClass(name: String = "", parents: List[Expression] = Nil,
+      features: List[FeatOrAttr] = Nil, attributes: List[FeatOrAttr] = Nil,
+      properties: List[Expression] = Nil, methods: List[MethodDef] = Nil) =
+    ClassExpression(name, parents, features, attributes, properties, methods)
+
+  def mergePartialClasses(lhs: ClassExpression, rhs: ClassExpression) = {
+    val ClassExpression(lhsName, lhsParents, lhsFeatures, lhsAttributes,
+        lhsProperties, lhsMethods) = lhs
+
+    val ClassExpression(rhsName, rhsParents, rhsFeatures, rhsAttributes,
+        rhsProperties, rhsMethods) = rhs
+
+    ClassExpression(if (lhsName.isEmpty) rhsName else lhsName,
+        lhsParents ::: rhsParents, lhsFeatures ::: rhsFeatures,
+        lhsAttributes ::: rhsAttributes, lhsProperties ::: rhsProperties,
+        lhsMethods ::: rhsMethods)
+  }
+
   // Skip
 
   lazy val skipStatement: PackratParser[Statement] = positioned {
@@ -375,7 +469,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val expression1: PackratParser[Expression] = (
       positioned(expression12andDot ~ (expression13 <~ ":=") ~ expression1
           ^^ DotAssignExpression)
-    | positioned(expression2 ~ ":=" ~ expression1 ^^ BinaryOp)
+    | positioned(expression2 ~ ("<-" | ":=") ~ expression1 ^^ BinaryOp)
     | expression2
   )
 
@@ -430,7 +524,10 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val operator9 = "*" | "/" | "div" | "mod"
 
   // X,Y   (right-associative)
-  lazy val expression10: PackratParser[Expression] = expression11
+  lazy val expression10: PackratParser[Expression] = (
+      positioned(expression11 ~ "," ~ expression10 ^^ BinaryOp)
+    | expression11
+  )
 
   // ~X   (prefix)
   lazy val expression11: PackratParser[Expression] = (
@@ -474,22 +571,40 @@ class OzParser extends OzTokenParsers with PackratParsers
     | trivialExpression
     | recordExpression
     | listExpression
+    | classExpression
   )
 
   // Trivial expressions
 
-  lazy val trivialExpression: PackratParser[Expression] = (
-      variable
-    | positioned("!" ~> variable ^^ EscapedVariable)
-    | positioned("_" ^^^ UnboundExpression())
-    | positioned("$" ^^^ NestingMarker())
-    | positioned(integerConst ^^ Constant)
-    | positioned(floatConst ^^ Constant)
-    | positioned(literalConst ^^ Constant)
-  )
+  lazy val trivialExpression: PackratParser[Expression] =
+    attrOrFeat | wildcardExpr | nestingMarker | floatConstExpr | selfExpr
+
+  lazy val attrOrFeat: PackratParser[Expression] =
+    variable | escapedVariable | integerConstExpr | literalConstExpr
 
   lazy val variable: PackratParser[RawVariable] =
     positioned(ident ^^ (chars => RawVariable(chars)))
+
+  lazy val escapedVariable: PackratParser[EscapedVariable] =
+    positioned("!" ~> variable ^^ EscapedVariable)
+
+  lazy val wildcardExpr: PackratParser[UnboundExpression] =
+    positioned("_" ^^^ UnboundExpression())
+
+  lazy val nestingMarker: PackratParser[NestingMarker] =
+    positioned("$" ^^^ NestingMarker())
+
+  lazy val integerConstExpr: PackratParser[Constant] =
+    positioned(integerConst ^^ Constant)
+
+  lazy val floatConstExpr: PackratParser[Constant] =
+    positioned(floatConst ^^ Constant)
+
+  lazy val literalConstExpr: PackratParser[Constant] =
+    positioned(literalConst ^^ Constant)
+
+  lazy val selfExpr: PackratParser[Self] =
+    positioned("self" ^^^ Self())
 
   // Constants
 
@@ -517,10 +632,14 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val recordExpression: PackratParser[Expression] =
     positioned(recordLabel ~ rep(recordField) <~ ")" ^^ Record)
 
-  lazy val recordLabel: PackratParser[Expression] = (
-      positioned(atomLitLabel ^^ (chars => Constant(OzAtom(chars))))
-    | positioned(identLabel ^^ RawVariable)
-  )
+  lazy val recordLabel: PackratParser[Expression] =
+    literalLabelExpr | identLabelExpr
+
+  lazy val literalLabelExpr: PackratParser[Constant] =
+    positioned(atomLitLabel ^^ (chars => Constant(OzAtom(chars))))
+
+  lazy val identLabelExpr: PackratParser[RawVariable] =
+    positioned(identLabel ^^ RawVariable)
 
   lazy val recordField: PackratParser[RecordField] = positioned {
     optFeature ~ expression ^^ RecordField
@@ -546,27 +665,5 @@ class OzParser extends OzTokenParsers with PackratParsers
   private def nameOf(expression: Expression) = expression match {
     case RawVariable(name) => name
     case _ => ""
-  }
-
-  /** Builds an Oz List expression from a list of expressions */
-  private def exprListToListExpr(elems: List[Expression]): Expression = {
-    if (elems.isEmpty) Constant(OzAtom("nil"))
-    else cons(elems.head, exprListToListExpr(elems.tail))
-  }
-
-  /** Builds an Oz Cons pair */
-  private def cons(head: Expression, tail: Expression) = atPos(head) {
-    Record(Constant(OzAtom("|")),
-        List(withAutoFeature(head), withAutoFeature(tail)))
-  }
-
-  /** Builds an Oz #-tuple */
-  private def sharp(fields: List[Expression]) = atPos(fields.head) {
-    Record(Constant(OzAtom("#")), fields map withAutoFeature)
-  }
-
-  /** Equips an expression with an AutoFeature */
-  private def withAutoFeature(expr: Expression): RecordField = atPos(expr) {
-    RecordField(AutoFeature(), expr)
   }
 }

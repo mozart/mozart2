@@ -47,8 +47,9 @@ class TreeCopier {
   def BindStatement(tree: Node, left: Expression, right: Expression) =
     new BindStatement(left, right).copyAttrs(tree)
 
-  def AssignStatement(tree: Node, left: Expression, right: Expression) =
-    new AssignStatement(left, right).copyAttrs(tree)
+  def BinaryOpStatement(tree: Node, left: Expression, operator: String,
+      right: Expression) =
+    new BinaryOpStatement(left, operator, right).copyAttrs(tree)
 
   def DotAssignStatement(tree: Node, left: Expression, center: Expression,
       right: Expression) =
@@ -161,6 +162,9 @@ class TreeCopier {
   def UnboundExpression(tree: Node) =
     new UnboundExpression().copyAttrs(tree)
 
+  def Self(tree: Node) =
+    new Self().copyAttrs(tree)
+
   def Constant(tree: Node, value: OzValue) =
     new Constant(value).copyAttrs(tree)
 
@@ -181,6 +185,29 @@ class TreeCopier {
   def MatchExpressionClause(tree: Node, pattern: Expression,
       guard: Option[Expression], body: Expression) =
     new MatchExpressionClause(pattern, guard, body).copyAttrs(tree)
+
+  // Classes
+
+  def FeatOrAttr(tree: Node, name: Expression, value: Option[Expression]) =
+    new FeatOrAttr(name, value).copyAttrs(tree)
+
+  def MethodParam(tree: Node, feature: Expression, name: Expression,
+      default: Option[Expression]) =
+    new MethodParam(feature, name, default).copyAttrs(tree)
+
+  def MethodHeader(tree: Node, name: Expression, params: List[MethodParam],
+      open: Boolean) =
+    new MethodHeader(name, params, open).copyAttrs(tree)
+
+  def MethodDef(tree: Node, header: MethodHeader,
+      messageVar: Option[VariableOrRaw], body: StatOrExpr) =
+    new MethodDef(header, messageVar, body).copyAttrs(tree)
+
+  def ClassExpression(tree: Node, name: String, parents: List[Expression],
+      features: List[FeatOrAttr], attributes: List[FeatOrAttr],
+      properties: List[Expression], methods: List[MethodDef]) =
+    new ClassExpression(name, parents, features, attributes,
+        properties, methods).copyAttrs(tree)
 
   // Synthetic-only
 

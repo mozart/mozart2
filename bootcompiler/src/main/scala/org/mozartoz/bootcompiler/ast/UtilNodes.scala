@@ -9,8 +9,8 @@ trait RawDeclarationOrVar extends Node
 trait RawDeclaration extends RawDeclarationOrVar
 
 trait InfixSyntax extends Node {
-  val left: Node
-  val right: Node
+  protected val left: Node
+  protected val right: Node
   protected val opSyntax: String
 
   def syntax(indent: String) = {

@@ -58,6 +58,19 @@ class Builtins {
   lazy val makeRecordDynamic = builtinByName("Record", "makeDynamic")
   lazy val label = builtinByName("Record", "label")
 
+  lazy val hasFeature = builtinByName("Value", "hasFeature")
+
+  lazy val newName = builtinByName("Name", "new")
+
+  lazy val attrGet = builtinByName("Object", "attrGet")
+  lazy val attrPut = builtinByName("Object", "attrPut")
+  lazy val attrExchangeFun = builtinByName("Object", "attrExchangeFun")
+
+  lazy val cellOrAttrGet = builtinByName("Object", "cellOrAttrGet")
+  lazy val cellOrAttrPut = builtinByName("Object", "cellOrAttrPut")
+  lazy val cellOrAttrExchangeFun = builtinByName("Object",
+      "cellOrAttrExchangeFun")
+
   lazy val plus1 = builtinByName("Int", "+1")
   lazy val minus1 = builtinByName("Int", "-1")
 

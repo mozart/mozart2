@@ -7,7 +7,7 @@ import symtab._
 
 object Desugar extends Transformer with TreeDSL {
   override def transformStat(statement: Statement) = statement match {
-    case assign @ AssignStatement(lhs, rhs) =>
+    case assign @ BinaryOpStatement(lhs, ":=", rhs) =>
       builtins.cellAssign call (transformExpr(lhs), transformExpr(rhs))
 
     case DotAssignStatement(left, center, right) =>

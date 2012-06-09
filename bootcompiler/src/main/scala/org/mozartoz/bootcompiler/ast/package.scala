@@ -2,6 +2,8 @@ package org.mozartoz.bootcompiler
 
 import scala.util.parsing.input.{ Position, NoPosition, Positional }
 
+import oz._
+
 /** Classes representing the AST of Oz code
  *
  *  Provides general utilities for working with ASTs.
@@ -57,4 +59,26 @@ package object ast {
    */
   def atPos[A <: Node](positional: Positional)(node: A): A =
     atPos(positional.pos)(node)
+
+  /** Builds an Oz List expression from a list of expressions */
+  def exprListToListExpr(elems: List[Expression]): Expression = {
+    if (elems.isEmpty) Constant(OzAtom("nil"))
+    else cons(elems.head, exprListToListExpr(elems.tail))
+  }
+
+  /** Builds an Oz Cons pair */
+  def cons(head: Expression, tail: Expression) = atPos(head) {
+    Record(Constant(OzAtom("|")),
+        List(withAutoFeature(head), withAutoFeature(tail)))
+  }
+
+  /** Builds an Oz #-tuple */
+  def sharp(fields: List[Expression]) = atPos(fields.head) {
+    Record(Constant(OzAtom("#")), fields map withAutoFeature)
+  }
+
+  /** Equips an expression with an AutoFeature */
+  def withAutoFeature(expr: Expression): RecordField = atPos(expr) {
+    RecordField(AutoFeature(), expr)
+  }
 }

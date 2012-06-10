@@ -6,29 +6,7 @@
 
 using namespace mozart;
 
-class FloatTest : public ::testing::Test {
-protected:
-  FloatTest(): environment(makeTestEnvironment()),
-    virtualMachine(*environment), vm(&virtualMachine) {}
-
-  virtual void SetUp() {
-  }
-
-  virtual void TearDown() {
-  }
-
-  void EXPECT_EQ_FLOAT(double expected, RichNode actual) {
-    EXPECT_EQ(Float::type(), actual.type());
-    if (actual.type() == Float::type())
-      EXPECT_DOUBLE_EQ(expected, actual.as<Float>().value());
-  }
-
-  // The VM
-  std::unique_ptr<VirtualMachineEnvironment> environment;
-  VirtualMachine virtualMachine;
-  VM vm;
-};
-
+class FloatTest : public MozartTest {};
 
 TEST_F(FloatTest, Build) {
   for (double i = -5; i <= 5; i++) {
@@ -36,7 +14,6 @@ TEST_F(FloatTest, Build) {
     EXPECT_EQ_FLOAT(i, node);
   }
 }
-
 
 TEST_F(FloatTest, Add) {
   for (double left = -5; left <= 5; left++) {
@@ -53,7 +30,6 @@ TEST_F(FloatTest, Add) {
   }
 }
 
-
 TEST_F(FloatTest, Subtract) {
   for (double left = -5; left <= 5; left++) {
     UnstableNode leftNode = Float::build(vm, left);
@@ -68,7 +44,6 @@ TEST_F(FloatTest, Subtract) {
     }
   }
 }
-
 
 TEST_F(FloatTest, Multiply) {
   for (double left = -5; left <= 5; left++) {

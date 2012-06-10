@@ -48,3 +48,13 @@ namespace {
 std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment() {
   return std::unique_ptr<TestEnvironment>(new TestEnvironment());
 }
+
+bool mozart::MozartTest::EXPECT_RAISE(const nchar* label, OpResult result) const {
+    EXPECT_EQ(OpResult::orRaise, result.kind());
+    if (OpResult::orRaise != result.kind()) return false;
+    UnstableNode excNode = Reference::build(vm, result.getExceptionNode());
+    UnstableNode labelNode;
+    if (!EXPECT_PROCEED(RecordLike(excNode).label(vm, labelNode))) return false;
+    return EXPECT_EQ_ATOM(label, labelNode);
+}
+

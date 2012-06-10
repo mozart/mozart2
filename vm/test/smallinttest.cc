@@ -6,29 +6,7 @@
 
 using namespace mozart;
 
-class SmallIntTest : public ::testing::Test {
-protected:
-  SmallIntTest(): environment(makeTestEnvironment()),
-    virtualMachine(*environment), vm(&virtualMachine) {}
-
-  virtual void SetUp() {
-  }
-
-  virtual void TearDown() {
-  }
-
-  void EXPECT_EQ_INT(nativeint expected, RichNode actual) {
-    EXPECT_EQ(SmallInt::type(), actual.type());
-    if (actual.type() == SmallInt::type())
-      EXPECT_EQ(expected, actual.as<SmallInt>().value());
-  }
-
-  // The VM
-  std::unique_ptr<VirtualMachineEnvironment> environment;
-  VirtualMachine virtualMachine;
-  VM vm;
-};
-
+class SmallIntTest : public MozartTest {};
 
 TEST_F(SmallIntTest, Build) {
   for (nativeint i = -5; i <= 5; i++) {

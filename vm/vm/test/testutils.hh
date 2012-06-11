@@ -80,6 +80,19 @@ protected:
   }
 
   /**
+   * Expect that a node is a string and the content is the given
+   * null-terminated string.
+   */
+  static bool EXPECT_EQ_STRING(LString<nchar> expected, RichNode actual) {
+    if (!EXPECT_IS<String>(actual))
+      return false;
+
+    auto actualString = actual.as<String>().value();
+    EXPECT_EQ(expected, actualString);
+    return expected == actualString;
+  }
+
+  /**
    * Expect that a method returns ``OpResult::proceed()``.
    */
   static bool EXPECT_PROCEED(OpResult result) {

@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,48 +22,75 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREINTERFACES_H
-#define __COREINTERFACES_H
+#ifndef __STRING_DECL_H
+#define __STRING_DECL_H
 
 #include "mozartcore-decl.hh"
 
-#include "coreinterfaces-decl.hh"
-#include "coredatatypes-decl.hh"
-
 namespace mozart {
 
+////////////
+// String //
+////////////
+
+class String;
+
 #ifndef MOZART_GENERATOR
+#include "String-implem-decl.hh"
+#endif
 
-#include "DataflowVariable-interf.hh"
-#include "ValueEquatable-interf.hh"
-#include "StructuralEquatable-interf.hh"
-#include "Comparable-interf.hh"
-#include "Wakeable-interf.hh"
-#include "Literal-interf.hh"
-#include "AtomLike-interf.hh"
-#include "NameLike-interf.hh"
-#include "PotentialFeature-interf.hh"
-#include "BuiltinCallable-interf.hh"
-#include "Callable-interf.hh"
-#include "CodeAreaProvider-interf.hh"
-#include "Numeric-interf.hh"
-#include "IntegerValue-interf.hh"
-#include "FloatValue-interf.hh"
-#include "BooleanValue-interf.hh"
-#include "Dottable-interf.hh"
-#include "RecordLike-interf.hh"
-#include "ArrayLike-interf.hh"
-#include "DictionaryLike-interf.hh"
-#include "ObjectLike-interf.hh"
-#include "ArrayInitializer-interf.hh"
-#include "SpaceLike-interf.hh"
-#include "ThreadLike-interf.hh"
-#include "CellLike-interf.hh"
-#include "ChunkLike-interf.hh"
-#include "StringLike-interf.hh"
+template <>
+class Implementation<String>: WithValueBehavior {
+public:
+  typedef SelfType<String>::Self Self;
+public:
+  static constexpr UUID uuid = "{163123b5-feaa-4e1d-8917-f74d81e11236}";
 
-#endif // MOZART_GENERATOR
+  Implementation(VM vm, LString<nchar> string) : _string(string) {}
+
+  inline
+  Implementation(VM vm, GR gr, Self self);
+
+public:
+  const LString<nchar>& value() const { return _string; }
+
+  inline
+  bool equals(VM vm, Self right);
+
+public:
+  // Comparable interface
+
+  inline
+  OpResult compare(Self self, VM vm, RichNode right, int& result);
+
+public:
+  // StringLike interface
+
+  OpResult isString(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult toAtom(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult stringGet(Self self, VM vm, LString<nchar>*& result);
+
+public:
+  // Miscellaneous
+
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
+private:
+  LString<nchar> _string;
+};
+
+#ifndef MOZART_GENERATOR
+#include "String-implem-decl-after.hh"
+#endif
 
 }
 
-#endif // __COREINTERFACES_H
+#endif // __STRING_DECL_H

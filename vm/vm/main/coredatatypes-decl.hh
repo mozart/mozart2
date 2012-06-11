@@ -49,5 +49,6 @@
 #include "smallint-decl.hh"
 #include "unit-decl.hh"
 #include "variables-decl.hh"
+#include "string-decl.hh"
 
 #endif // __COREDATATYPES_DECL_H

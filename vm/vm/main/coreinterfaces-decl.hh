@@ -65,7 +65,7 @@ class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
-                ReifiedThread, Unit> {
+                ReifiedThread, Unit, String> {
 
   /**
    * Precondition:
@@ -101,7 +101,7 @@ struct Interface<StructuralEquatable>:
 class Comparable;
 template<>
 struct Interface<Comparable>:
-  ImplementedBy<SmallInt, Atom, Float> {
+  ImplementedBy<SmallInt, Atom, Float, String> {
 
   OpResult compare(RichNode self, VM vm, RichNode right, int& result) {
     return raiseTypeError(vm, MOZART_STR("comparable"), self);
@@ -591,6 +591,23 @@ struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
   OpResult isChunk(RichNode self, VM vm, bool& result) {
     result = false;
     return OpResult::proceed();
+  }
+};
+
+class StringLike;
+template<>
+struct Interface<StringLike>: ImplementedBy<String> {
+  OpResult isString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult toAtom(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("string"), self);
+  }
+
+  OpResult stringGet(RichNode self, VM vm, LString<nchar>*& result) {
+    return raiseTypeError(vm, MOZART_STR("string"), self);
   }
 };
 

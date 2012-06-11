@@ -1,3 +1,3 @@
 #include "mozart.hh"
 
-mozart::VirtualMachineEnvironment makeTestEnvironment();
+std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment();

@@ -47,18 +47,34 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
-typedef bool (*PreemptionTest)(void* data);
+class VirtualMachineEnvironment {
+public:
+  VirtualMachineEnvironment(): _useDynamicPreemption(false) {}
 
-struct VirtualMachineEnvironment {
-  void* data;
-  bool (*testPreemption)(void* data);
-  UUID (*genUUID)(void* data);
+  VirtualMachineEnvironment(bool useDynamicPreemption):
+    _useDynamicPreemption(useDynamicPreemption) {}
+
+  bool useDynamicPreemption() {
+    return _useDynamicPreemption;
+  }
+
+  virtual bool testDynamicPreemption() {
+    return false;
+  }
+
+  virtual bool testDynamicExitRun() {
+    return false;
+  }
+
+  virtual UUID genUUID() = 0;
+private:
+  bool _useDynamicPreemption;
 };
 
 class VirtualMachine {
 public:
   inline
-  VirtualMachine(const VirtualMachineEnvironment& environment);
+  VirtualMachine(VirtualMachineEnvironment& environment);
 
   VirtualMachine(const VirtualMachine& src) = delete;
 
@@ -123,6 +139,16 @@ public:
   UUID genUUID();
 public:
   CoreAtoms coreatoms;
+public:
+  // Influence from the external world
+  void requestPreempt() {
+    _preemptRequested = true;
+  }
+
+  void requestExitRun() {
+    _exitRunRequested = true;
+    _preemptRequested = true;
+  }
 private:
   friend class GarbageCollector;
   friend class SpaceCloner;
@@ -142,7 +168,7 @@ private:
   ThreadPool threadPool;
   AtomTable atomTable;
 
-  VirtualMachineEnvironment environment;
+  VirtualMachineEnvironment& environment;
 
   MemoryManager memoryManager;
   MemoryManager secondMemoryManager;
@@ -156,6 +182,11 @@ private:
 
   GarbageCollector gc;
   SpaceCloner sc;
+
+  // Flags set externally for preemption etc.
+  bool _envUseDynamicPreemption;
+  volatile bool _preemptRequested;
+  volatile bool _exitRunRequested;
 };
 
 }

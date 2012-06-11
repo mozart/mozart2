@@ -22,61 +22,51 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#ifndef __BOOSTENV_H
+#define __BOOSTENV_H
 
-namespace mozart {
+#include <mozart.hh>
 
-////////////////////
-// VirtualMachine //
-////////////////////
+#include <boost/thread.hpp>
 
-void VirtualMachine::run() {
-  while (!(_exitRunRequested ||
-      (_envUseDynamicPreemption && environment.testDynamicExitRun()))) {
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
 
-    if (gc.isGCRequired()) {
-      getTopLevelSpace()->install();
-      gc.doGC();
-    }
+namespace mozart { namespace boostenv {
 
-    Runnable* currentThread;
+//////////////////
+// BoostBasedVM //
+//////////////////
 
-    // Select a thread
-    do {
-      currentThread = threadPool.popNext();
+class BoostBasedVM: public VirtualMachineEnvironment {
+public:
+  BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine) {}
 
-      if (currentThread == nullptr) {
-        // All remaining threads are suspended
-        // TODO Is there something special to do in that case?
-        break;
-      }
-    } while (currentThread->isTerminated());
+// Run and preemption
 
-    // Forward break
-    if (currentThread == nullptr)
-      break;
+public:
+  void run();
+private:
+  static void preemptionThreadProc(VM vm);
 
-    // Install the thread's space
-    if (!currentThread->getSpace()->install()) {
-      // The space is failed, kill the thread now
-      currentThread->kill();
-      continue;
-    }
+// UUID generation
 
-    // Run the thread
-    assert(currentThread->isRunnable());
-    _currentThread = currentThread;
-    _preemptRequested = false;
-    currentThread->run();
-    _currentThread = nullptr;
+public:
+  UUID genUUID();
+private:
+  inline
+  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
 
-    // Schedule the thread anew if it is still runnable
-    if (currentThread->isRunnable())
-      threadPool.schedule(currentThread);
-  }
+  boost::uuids::random_generator uuidGenerator;
 
-  // Before giving control to the external world, restore the top-level space
-  getTopLevelSpace()->install();
-}
+// Reference to the virtual machine
 
-}
+private:
+  VirtualMachine virtualMachine;
+public:
+  const VM vm;
+};
+
+} }
+
+#endif // __BOOSTENV_UUIDGEN_H

@@ -22,61 +22,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#include "boostenv.hh"
 
-namespace mozart {
+namespace mozart { namespace boostenv {
 
-////////////////////
-// VirtualMachine //
-////////////////////
+//////////////////
+// BoostBasedVM //
+//////////////////
 
-void VirtualMachine::run() {
-  while (!(_exitRunRequested ||
-      (_envUseDynamicPreemption && environment.testDynamicExitRun()))) {
+void BoostBasedVM::run() {
+  boost::thread preemptionThread(preemptionThreadProc, vm);
 
-    if (gc.isGCRequired()) {
-      getTopLevelSpace()->install();
-      gc.doGC();
-    }
+  vm->run();
 
-    Runnable* currentThread;
+  preemptionThread.interrupt();
+  preemptionThread.join();
+}
 
-    // Select a thread
-    do {
-      currentThread = threadPool.popNext();
-
-      if (currentThread == nullptr) {
-        // All remaining threads are suspended
-        // TODO Is there something special to do in that case?
-        break;
-      }
-    } while (currentThread->isTerminated());
-
-    // Forward break
-    if (currentThread == nullptr)
-      break;
-
-    // Install the thread's space
-    if (!currentThread->getSpace()->install()) {
-      // The space is failed, kill the thread now
-      currentThread->kill();
-      continue;
-    }
-
-    // Run the thread
-    assert(currentThread->isRunnable());
-    _currentThread = currentThread;
-    _preemptRequested = false;
-    currentThread->run();
-    _currentThread = nullptr;
-
-    // Schedule the thread anew if it is still runnable
-    if (currentThread->isRunnable())
-      threadPool.schedule(currentThread);
+void BoostBasedVM::preemptionThreadProc(VM vm) {
+  while (true) {
+    boost::this_thread::sleep(boost::posix_time::millisec(1));
+    vm->requestPreempt();
   }
-
-  // Before giving control to the external world, restore the top-level space
-  getTopLevelSpace()->install();
 }
 
+UUID BoostBasedVM::genUUID() {
+  boost::uuids::uuid uuid = uuidGenerator();
+
+  std::uint64_t data0 = bytes2uint64(uuid.data);
+  std::uint64_t data1 = bytes2uint64(uuid.data+8);
+
+  return UUID(data0, data1);
 }
+
+std::uint64_t BoostBasedVM::bytes2uint64(const std::uint8_t* bytes) {
+  return
+    ((std::uint64_t) bytes[0] << 56) + ((std::uint64_t) bytes[1] << 48) +
+    ((std::uint64_t) bytes[2] << 40) + ((std::uint64_t) bytes[3] << 32) +
+    ((std::uint64_t) bytes[4] << 24) + ((std::uint64_t) bytes[5] << 16) +
+    ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
+}
+
+} }

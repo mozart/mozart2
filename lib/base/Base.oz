@@ -6,6 +6,7 @@ require
    Boot_Cell      at 'x-oz://boot/Cell'
    Boot_Atom      at 'x-oz://boot/Atom'
    Boot_Name      at 'x-oz://boot/Name'
+   Boot_String    at 'x-oz://boot/String'
    Boot_Int       at 'x-oz://boot/Int'
    Boot_Float     at 'x-oz://boot/Float'
    Boot_Number    at 'x-oz://boot/Number'
@@ -184,6 +185,14 @@ prepare
    Or     = fun {$ X Y} X orelse Y end
 
    %%
+   %% UnicodeString
+   %%
+   IsUnicodeString      = Boot_String.is
+   UnicodeStringToAtom  = Boot_String.toAtom
+   %UnicodeStringToInt   = Boot_String.toInt
+   %UnicodeStringToFloat = Boot_String.toFloat
+
+   %%
    %% Int
    %%
    IsInt = Boot_Int.is
@@ -357,6 +366,7 @@ prepare
    \insert 'Atom.oz'
    \insert 'Name.oz'
    \insert 'Bool.oz'
+   \insert 'UnicodeString.oz'
    %\insert 'String.oz'
    %\insert 'Char.oz'
    \insert 'Int.oz'

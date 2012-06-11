@@ -65,7 +65,7 @@ class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
-                ReifiedThread, Unit> {
+                ReifiedThread, Unit, String> {
 
   /**
    * Precondition:
@@ -315,7 +315,7 @@ class Dottable;
 template<>
 struct Interface<Dottable>:
   ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array,
-    Atom, OptName, GlobalName, Boolean, Unit> {
+    Atom, OptName, GlobalName, Boolean, Unit, String> {
 
   OpResult dot(RichNode self, VM vm, RichNode feature,
                UnstableNode& result) {
@@ -331,7 +331,7 @@ class RecordLike;
 template<>
 struct Interface<RecordLike>:
   ImplementedBy<Tuple, Record, Cons,
-    Atom, OptName, GlobalName, Boolean, Unit> {
+    Atom, OptName, GlobalName, Boolean, Unit, String> {
 
   OpResult isRecord(RichNode self, VM vm, bool& result) {
     result = false;
@@ -574,6 +574,19 @@ struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
   OpResult isChunk(RichNode self, VM vm, bool& result) {
     result = false;
     return OpResult::proceed();
+  }
+};
+
+class StringLike;
+template<>
+struct Interface<StringLike>: ImplementedBy<String> {
+  OpResult isString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult toAtom(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("string"), self);
   }
 };
 

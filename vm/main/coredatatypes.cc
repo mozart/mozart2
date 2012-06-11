@@ -32,6 +32,7 @@ constexpr UUID Implementation<Boolean>::uuid;
 constexpr UUID Implementation<GlobalName>::uuid;
 constexpr UUID Implementation<SmallInt>::uuid;
 constexpr UUID Implementation<Unit>::uuid;
+constexpr UUID Implementation<String>::uuid;
 
 // Bytecode for object dispatch procedure
 const ByteCode Implementation<Object>::dispatchByteCode[9] = {

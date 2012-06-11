@@ -4,23 +4,6 @@
 #include <ctime>
 
 namespace {
-  struct TestEnvData {
-    TestEnvData(): testPreemptionCount(3) {}
-
-    int testPreemptionCount;
-  };
-
-  bool testTestPreemption(void* _data) {
-    TestEnvData* data = static_cast<TestEnvData*>(_data);
-
-    if (--data->testPreemptionCount == 0) {
-      data->testPreemptionCount = 3;
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   inline
   std::uint64_t rand8() {
     return std::rand() % 0x100;
@@ -36,22 +19,32 @@ namespace {
     return (rand16() << 48) + (rand16() << 32) + (rand16() << 16) + rand16();
   }
 
-  mozart::UUID testGenUUID(void* _data) {
-    std::uint64_t data0 = (rand64() & ~0xf000) | 0x4000;
-    std::uint64_t data1 =
-      (rand64() & ~((std::uint64_t) 0xf << 60)) | ((std::uint64_t) 0x8 << 60);
+  class TestEnvironment: public mozart::VirtualMachineEnvironment {
+  public:
+    TestEnvironment(): VirtualMachineEnvironment(true),
+      testPreemptionCount(3) {}
 
-    return mozart::UUID(data0, data1);
-  }
+    bool testDynamicPreemption() {
+      if (--testPreemptionCount == 0) {
+        testPreemptionCount = 3;
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    mozart::UUID genUUID() {
+      std::uint64_t data0 = (rand64() & ~0xf000) | 0x4000;
+      std::uint64_t data1 =
+        (rand64() & ~((std::uint64_t) 0xf << 60)) | ((std::uint64_t) 0x8 << 60);
+
+      return mozart::UUID(data0, data1);
+    }
+  private:
+    int testPreemptionCount;
+  };
 }
 
-mozart::VirtualMachineEnvironment makeTestEnvironment() {
-  std::srand(std::time(nullptr));
-
-  mozart::VirtualMachineEnvironment env;
-  env.data = static_cast<void*>(new TestEnvData());
-  env.testPreemption = &testTestPreemption;
-  env.genUUID = &testGenUUID;
-
-  return env;
+std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment() {
+  return std::unique_ptr<TestEnvironment>(new TestEnvironment());
 }

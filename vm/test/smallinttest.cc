@@ -8,7 +8,8 @@ using namespace mozart;
 
 class SmallIntTest : public ::testing::Test {
 protected:
-  SmallIntTest() : virtualMachine(makeTestEnvironment()), vm(&virtualMachine) {}
+  SmallIntTest(): environment(makeTestEnvironment()),
+    virtualMachine(*environment), vm(&virtualMachine) {}
 
   virtual void SetUp() {
   }
@@ -23,6 +24,7 @@ protected:
   }
 
   // The VM
+  std::unique_ptr<VirtualMachineEnvironment> environment;
   VirtualMachine virtualMachine;
   VM vm;
 };

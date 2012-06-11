@@ -8,7 +8,8 @@ using namespace mozart;
 
 class FloatTest : public ::testing::Test {
 protected:
-  FloatTest() : virtualMachine(makeTestEnvironment()), vm(&virtualMachine) {}
+  FloatTest(): environment(makeTestEnvironment()),
+    virtualMachine(*environment), vm(&virtualMachine) {}
 
   virtual void SetUp() {
   }
@@ -23,6 +24,7 @@ protected:
   }
 
   // The VM
+  std::unique_ptr<VirtualMachineEnvironment> environment;
   VirtualMachine virtualMachine;
   VM vm;
 };

@@ -33,7 +33,7 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
-VirtualMachine::VirtualMachine(const VirtualMachineEnvironment& environment):
+VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   environment(environment), gc(this), sc(this) {
 
   memoryManager.init();
@@ -43,11 +43,17 @@ VirtualMachine::VirtualMachine(const VirtualMachineEnvironment& environment):
   _currentThread = nullptr;
   _isOnTopLevel = true;
 
+  _envUseDynamicPreemption = environment.useDynamicPreemption();
+  _preemptRequested = false;
+  _exitRunRequested = false;
+
   initialize();
 }
 
 bool VirtualMachine::testPreemption() {
-  return environment.testPreemption(environment.data) || gc.isGCRequired();
+  return _preemptRequested ||
+    (_envUseDynamicPreemption && environment.testDynamicPreemption()) ||
+    gc.isGCRequired();
 }
 
 void VirtualMachine::setCurrentSpace(Space* space) {
@@ -60,7 +66,7 @@ Space* VirtualMachine::cloneSpace(Space* space) {
 }
 
 UUID VirtualMachine::genUUID() {
-  return environment.genUUID(environment.data);
+  return environment.genUUID();
 }
 
 void VirtualMachine::initialize() {

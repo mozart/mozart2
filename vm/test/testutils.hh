@@ -86,6 +86,17 @@ namespace mozart {
      * exception record is an atom of the null-terminated Unicode string.
      */
     bool EXPECT_RAISE(const nchar* label, OpResult result) const;
+
+    /**
+     * Expect that a node is a string and the content is the given
+     * null-terminated string.
+     */
+    static bool EXPECT_EQ_STRING(LString<nchar> expected, RichNode actual) {
+        if (!EXPECT_IS<String>(actual)) return false;
+        auto actualString = actual.as<String>().getString();
+        EXPECT_EQ(expected, actualString);
+        return expected == actualString;
+    }
   };
 
   std::ostream& operator<<(std::ostream& out, LString<nchar> input);

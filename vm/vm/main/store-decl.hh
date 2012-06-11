@@ -217,7 +217,7 @@ private:
   friend class Space;
 
   inline
-  bool isCopiable();
+  bool isCopyable();
 
   union {
     Node node;
@@ -298,7 +298,7 @@ private:
   friend class Space;
 
   inline
-  bool isCopiable();
+  bool isCopyable();
 
   union {
     Node node;

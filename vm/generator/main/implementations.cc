@@ -79,7 +79,7 @@ struct ImplemMethodDef {
 struct ImplementationDef {
   ImplementationDef() {
     name = "";
-    copiable = false;
+    copyable = false;
     transient = false;
     feature = false;
     storageKind = skDefault;
@@ -99,7 +99,7 @@ struct ImplementationDef {
   void makeOutput(llvm::raw_fd_ostream& to);
 
   std::string name;
-  bool copiable;
+  bool copyable;
   bool transient;
   bool feature;
   StorageKind storageKind;
@@ -181,8 +181,8 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
     CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
     std::string markerLabel = marker->getNameAsString();
 
-    if (markerLabel == "Copiable") {
-      definition.copiable = true;
+    if (markerLabel == "Copyable") {
+      definition.copyable = true;
     } else if (markerLabel == "Transient") {
       definition.transient = true;
     } else if (markerLabel == "StoredAs") {
@@ -258,7 +258,7 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "  }\n";
   to << "public:\n";
   to << "  " << name << "() : " << base << "(\"" << name << "\", uuid(), "
-     << b2s(copiable) << ", " << b2s(transient) << ", " << b2s(feature) << ", "
+     << b2s(copyable) << ", " << b2s(transient) << ", " << b2s(feature) << ", "
      << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
      << ") {}\n";
   to << "\n";

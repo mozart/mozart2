@@ -49,11 +49,11 @@ enum StructuralBehavior {
 class Type {
 public:
   Type(std::string name, const UUID& uuid,
-       bool copiable, bool transient, bool feature,
+       bool copyable, bool transient, bool feature,
        StructuralBehavior structuralBehavior,
        unsigned char bindingPriority) :
     _name(name), _uuid(uuid), _hasUUID(!(uuid.is_nil())),
-    _copiable(copiable), _transient(transient), _feature(feature),
+    _copyable(copyable), _transient(transient), _feature(feature),
     _structuralBehavior(structuralBehavior),
     _bindingPriority(bindingPriority) {
 
@@ -75,7 +75,7 @@ public:
     return nullptr;
   }
 
-  bool isCopiable() const { return _copiable; }
+  bool isCopyable() const { return _copyable; }
   bool isTransient() const { return _transient; }
   bool isFeature() const { return _feature; }
 
@@ -109,7 +109,7 @@ private:
   const UUID _uuid;
   const bool _hasUUID;
 
-  const bool _copiable;
+  const bool _copyable;
   const bool _transient;
   const bool _feature;
 
@@ -213,7 +213,7 @@ struct ImplementedBy{};
 
 struct NoAutoWait{};
 
-struct Copiable{};
+struct Copyable{};
 
 struct Transient{};
 

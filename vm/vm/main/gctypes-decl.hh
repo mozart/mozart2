@@ -38,10 +38,10 @@ class GCedToStable;
 class GCedToStableBase: public Type {
 public:
   GCedToStableBase(std::string name, const UUID& uuid,
-                   bool copiable, bool transient, bool feature,
+                   bool copyable, bool transient, bool feature,
                    StructuralBehavior structuralBehavior,
                    unsigned char bindingPriority) :
-    Type(name, uuid, copiable, transient, feature, structuralBehavior,
+    Type(name, uuid, copyable, transient, feature, structuralBehavior,
          bindingPriority) {}
 
   inline
@@ -89,10 +89,10 @@ class GCedToUnstable;
 class GCedToUnstableBase: public Type {
 public:
   GCedToUnstableBase(std::string name, const UUID& uuid,
-                     bool copiable, bool transient, bool feature,
+                     bool copyable, bool transient, bool feature,
                      StructuralBehavior structuralBehavior,
                      unsigned char bindingPriority) :
-    Type(name, uuid, copiable, transient, feature, structuralBehavior,
+    Type(name, uuid, copyable, transient, feature, structuralBehavior,
          bindingPriority) {}
 
   inline

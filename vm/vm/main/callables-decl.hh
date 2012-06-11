@@ -43,7 +43,7 @@ class BuiltinProcedure;
 #endif
 
 template <>
-class Implementation<BuiltinProcedure>: Copiable,
+class Implementation<BuiltinProcedure>: Copyable,
   StoredAs<builtins::BaseBuiltin*>, WithValueBehavior {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;

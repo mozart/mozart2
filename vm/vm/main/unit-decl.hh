@@ -39,7 +39,7 @@ class Unit;
 
 template <>
 class Implementation<Unit>: public LiteralHelper<Unit>,
-  Copiable, StoredAs<unit_t>, WithValueBehavior {
+  Copyable, StoredAs<unit_t>, WithValueBehavior {
 public:
   typedef SelfType<Unit>::Self Self;
 public:

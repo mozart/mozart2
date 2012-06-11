@@ -42,7 +42,7 @@ class Atom;
 
 template <>
 class Implementation<Atom>: public LiteralHelper<Atom>,
-  Copiable, StoredAs<AtomImpl*>, WithValueBehavior {
+  Copyable, StoredAs<AtomImpl*>, WithValueBehavior {
 public:
   typedef SelfType<Atom>::Self Self;
 public:

@@ -19,6 +19,13 @@ set(JAVA "/usr/bin/java"
 set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG")
 
 
+# Boost library
+
+find_package(Boost 1.49 COMPONENTS thread REQUIRED)
+
+link_directories(${Boost_LIBRARY_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+
 # Mozart VM library
 
 add_library(mozartvm STATIC IMPORTED)
@@ -26,6 +33,16 @@ set_property(TARGET mozartvm PROPERTY
              IMPORTED_LOCATION "${MOZART_DIR}/build/vm/main/libmozartvm.a")
 
 include_directories("${MOZART_DIR}/vm/main" "${MOZART_BUILD_DIR}/vm/main")
+
+# Mozart VM Boost library
+
+add_library(mozartvmboost STATIC IMPORTED)
+set_property(TARGET mozartvmboost PROPERTY
+             IMPORTED_LOCATION
+             "${MOZART_DIR}/build/boostenv/main/libmozartvmboost.a")
+
+include_directories("${MOZART_DIR}/boostenv/main"
+    "${MOZART_BUILD_DIR}/boostenv/main")
 
 
 # Generate main.cc from Main.oz
@@ -45,4 +62,4 @@ add_custom_command(
 # Compile the executable
 
 add_executable(testmozart main.cc)
-target_link_libraries(testmozart mozartvm)
+target_link_libraries(testmozart mozartvmboost mozartvm ${Boost_LIBRARIES})

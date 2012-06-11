@@ -66,63 +66,10 @@ class Program {
     val codeAreas = abstractions map (_.codeArea)
 
     out << """
-       |#include "mozart.hh"
-       |
-       |#include <iostream>
-       |#include <cstdlib>
-       |#include <ctime>
+       |#include <mozart.hh>
+       |#include <boostenv.hh>
        |
        |using namespace mozart;
-       |
-       |struct EnvironmentData {
-       |  EnvironmentData(): preemptionCount(3) {}
-       |
-       |  int preemptionCount;
-       |};
-       |
-       |bool testPreemption(void* _data) {
-       |  EnvironmentData* data = static_cast<EnvironmentData*>(_data);
-       |
-       |  if (--data->preemptionCount == 0) {
-       |    data->preemptionCount = 3;
-       |    return true;
-       |  } else {
-       |    return false;
-       |  }
-       |}
-       |
-       |inline
-       |std::uint64_t rand8() {
-       |  return std::rand() % 0x100;
-       |}
-       |
-       |inline
-       |std::uint64_t rand16() {
-       |  return (rand8() << 8) + rand8();
-       |}
-       |
-       |inline
-       |std::uint64_t rand64() {
-       |  return (rand16() << 48) + (rand16() << 32) +
-       |    (rand16() << 16) + rand16();
-       |}
-       |
-       |UUID genUUID(void* _data) {
-       |  std::uint64_t data0 = (rand64() & ~0xf000) | 0x4000;
-       |  std::uint64_t data1 =
-       |    (rand64() & ~((std::uint64_t) 0xf << 60)) |
-       |      ((std::uint64_t) 0x8 << 60);
-       |
-       |  return UUID(data0, data1);
-       |}
-       |
-       |VirtualMachineEnvironment makeEnvironment() {
-       |  VirtualMachineEnvironment env;
-       |  env.data = static_cast<void*>(new EnvironmentData());
-       |  env.testPreemption = &testPreemption;
-       |  env.genUUID = &genUUID;
-       |  return env;
-       |}
        |""".stripMargin
 
     out << """
@@ -132,7 +79,7 @@ class Program {
        |
        |  void run();
        |private:
-       |  VirtualMachine virtualMachine;
+       |  boostenv::BoostBasedVM boostBasedVM;
        |  VM vm;
        |""".stripMargin
 
@@ -151,8 +98,7 @@ class Program {
        |  program.run();
        |}
        |
-       |Program::Program(): virtualMachine(makeEnvironment()),
-       |  vm(&virtualMachine) {
+       |Program::Program(): vm(boostBasedVM.vm) {
        |
        |""".stripMargin
 
@@ -169,7 +115,7 @@ class Program {
        |  UnstableNode* initialThreadParams[] = { &topLevelAbstraction };
        |  builtins::ModThread::Create::builtin().call(vm, initialThreadParams);
        |
-       |  vm->run();
+       |  boostBasedVM.run();
        |}
        |""".stripMargin % topLevelAbstraction.codeArea.ccCodeArea
 

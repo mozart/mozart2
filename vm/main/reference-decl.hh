@@ -40,7 +40,7 @@ class Reference;
 #endif
 
 template <>
-class Implementation<Reference>: Copiable, StoredAs<StableNode*> {
+class Implementation<Reference>: Copyable, StoredAs<StableNode*> {
 public:
   typedef SelfType<Reference>::Self Self;
 public:

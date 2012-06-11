@@ -38,7 +38,7 @@ namespace mozart {
 ////////////////
 
 void StableNode::init(VM vm, StableNode& from) {
-  if (from.isCopiable())
+  if (from.isCopyable())
     node = from.node;
   else
     node.make<Reference>(vm, &from);
@@ -46,7 +46,7 @@ void StableNode::init(VM vm, StableNode& from) {
 
 void StableNode::init(VM vm, UnstableNode& from) {
   node = from.node;
-  if (!isCopiable())
+  if (!isCopyable())
     from.make<Reference>(vm, this);
 }
 
@@ -54,8 +54,8 @@ void StableNode::init(VM vm, RichNode from) {
   init(vm, from.origin());
 }
 
-bool StableNode::isCopiable() {
-  return node.type->isCopiable();
+bool StableNode::isCopyable() {
+  return node.type->isCopyable();
 }
 
 //////////////////
@@ -75,14 +75,14 @@ void UnstableNode::init(VM vm, RichNode from) {
 }
 
 void UnstableNode::copy(VM vm, StableNode& from) {
-  if (from.isCopiable())
+  if (from.isCopyable())
     node = from.node;
   else
     make<Reference>(vm, &from);
 }
 
 void UnstableNode::copy(VM vm, UnstableNode& from) {
-  if (from.isCopiable()) {
+  if (from.isCopyable()) {
     node = from.node;
   } else {
     StableNode* stable = new (vm) StableNode;
@@ -100,8 +100,8 @@ void UnstableNode::swap(UnstableNode& from) {
   std::swap(node, from.node);
 }
 
-bool UnstableNode::isCopiable() {
-  return node.type->isCopiable();
+bool UnstableNode::isCopyable() {
+  return node.type->isCopyable();
 }
 
 //////////////
@@ -137,7 +137,7 @@ void RichNode::ensureStable(VM vm) {
 }
 
 void RichNode::reinit(VM vm, StableNode& from) {
-  if (from.isCopiable()) {
+  if (from.isCopyable()) {
     *_node = from.node;
   } else {
     _node->make<Reference>(vm, &from);
@@ -146,7 +146,7 @@ void RichNode::reinit(VM vm, StableNode& from) {
 }
 
 void RichNode::reinit(VM vm, UnstableNode& from) {
-  if (from.isCopiable()) {
+  if (from.isCopyable()) {
     *_node = from.node;
   } else if (_origin->node.type == Reference::type()) {
     StableNode* stable = getStableRefFor(vm, *_origin);

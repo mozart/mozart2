@@ -36,7 +36,7 @@ class SmallInt;
 #endif
 
 template <>
-class Implementation<SmallInt>: Copiable, StoredAs<nativeint>,
+class Implementation<SmallInt>: Copyable, StoredAs<nativeint>,
   WithValueBehavior {
 public:
   typedef SelfType<SmallInt>::Self Self;

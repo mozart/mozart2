@@ -38,10 +38,10 @@ class ReifiedThread;
 class ReifiedThreadBase: public Type {
 public:
   ReifiedThreadBase(std::string name, const UUID& uuid,
-                    bool copiable, bool transient, bool feature,
+                    bool copyable, bool transient, bool feature,
                     StructuralBehavior structuralBehavior,
                     unsigned char bindingPriority) :
-    Type(name, uuid, copiable, transient, feature, structuralBehavior,
+    Type(name, uuid, copyable, transient, feature, structuralBehavior,
          bindingPriority) {}
 
   inline
@@ -64,7 +64,7 @@ public:
 template <>
 class Implementation<ReifiedThread>:
   BasedOn<ReifiedThreadBase>, NoAutoGCollect, NoAutoSClone,
-  StoredAs<Runnable*>, Copiable, WithValueBehavior {
+  StoredAs<Runnable*>, Copyable, WithValueBehavior {
 public:
   typedef SelfType<ReifiedThread>::Self Self;
 public:

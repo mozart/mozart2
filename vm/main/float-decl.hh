@@ -36,7 +36,7 @@ class Float;
 #endif
 
 template <>
-class Implementation<Float>: Copiable, StoredAs<double>, WithValueBehavior {
+class Implementation<Float>: Copyable, StoredAs<double>, WithValueBehavior {
 public:
   typedef SelfType<Float>::Self Self;
 public:

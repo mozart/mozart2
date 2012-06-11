@@ -44,7 +44,7 @@ class PatMatCapture;
  */
 template <>
 class Implementation<PatMatCapture>: StoredAs<nativeint>,
-  Copiable, WithValueBehavior {
+  Copyable, WithValueBehavior {
 public:
   typedef SelfType<PatMatCapture>::Self Self;
 public:

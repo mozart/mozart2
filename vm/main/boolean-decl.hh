@@ -43,7 +43,7 @@ typedef enum BOOL_OR_NOT_BOOL {
 
 template <>
 class Implementation<Boolean>: public LiteralHelper<Boolean>,
-  Copiable, StoredAs<bool>, WithValueBehavior {
+  Copyable, StoredAs<bool>, WithValueBehavior {
 public:
   typedef SelfType<Boolean>::Self Self;
 public:

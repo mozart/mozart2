@@ -30,13 +30,24 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
-void VirtualMachine::run() {
+std::int64_t VirtualMachine::run() {
   while (!(_exitRunRequested ||
       (_envUseDynamicPreemption && environment.testDynamicExitRun()))) {
 
     if (gc.isGCRequired()) {
       getTopLevelSpace()->install();
       gc.doGC();
+    }
+
+    // Trigger alarms
+    std::int64_t now = _referenceTime;
+    while (!_alarms.empty() && (_alarms.front().expiration <= now)) {
+      getTopLevelSpace()->install();
+
+      UnstableNode wakeable(this, *_alarms.front().wakeable);
+      Wakeable(wakeable).wakeUp(this);
+
+      _alarms.remove_front(this);
     }
 
     Runnable* currentThread;
@@ -77,6 +88,13 @@ void VirtualMachine::run() {
 
   // Before giving control to the external world, restore the top-level space
   getTopLevelSpace()->install();
+
+  // Tell the external world in how much time I would like to be woken up
+  if (_alarms.empty())
+    return -1;
+  else
+    return std::max(_alarms.front().expiration - _referenceTime,
+                    (std::int64_t) 0);
 }
 
 }

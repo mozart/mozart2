@@ -46,6 +46,7 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _envUseDynamicPreemption = environment.useDynamicPreemption();
   _preemptRequested = false;
   _exitRunRequested = false;
+  _referenceTime = 0;
 
   initialize();
 }
@@ -69,8 +70,62 @@ UUID VirtualMachine::genUUID() {
   return environment.genUUID();
 }
 
+void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
+  std::int64_t expiration = _referenceTime + delay;
+
+  auto iter = _alarms.removable_begin();
+  while ((iter != _alarms.removable_end()) && (iter->expiration < expiration))
+    ++iter;
+
+  _alarms.insert_before_new(this, iter, expiration, wakeable);
+}
+
 void VirtualMachine::initialize() {
   coreatoms.initialize(this, atomTable);
+}
+
+void VirtualMachine::beforeGR(GR gr) {
+  for (auto iter = aliveThreads.begin();
+       iter != aliveThreads.end(); ++iter) {
+    (*iter)->beforeGR();
+  }
+}
+
+void VirtualMachine::afterGR(GR gr) {
+  for (auto iter = aliveThreads.begin();
+       iter != aliveThreads.end(); ++iter) {
+    (*iter)->afterGR();
+  }
+}
+
+void VirtualMachine::startGC(GC gc) {
+  VMAllocatedList<AlarmRecord> alarms = std::move(_alarms);
+
+  // Swap spaces
+  getMemoryManager().swapWith(getSecondMemoryManager());
+  getMemoryManager().init();
+
+  // Forget lists of things
+  atomTable = AtomTable();
+  aliveThreads = RunnableList();
+  _alarms = VMAllocatedList<AlarmRecord>();
+
+  // Reinitialize the VM
+  initialize();
+
+  // Always keep the top-level space
+  SpaceRef topLevelSpaceRef = _topLevelSpace;
+  gc->copySpace(topLevelSpaceRef, topLevelSpaceRef);
+  _topLevelSpace = topLevelSpaceRef;
+  _currentSpace = _topLevelSpace;
+
+  // Root of GC are runnable threads + pending alarms
+  getThreadPool().gCollect(gc);
+
+  for (auto iter = alarms.begin(); iter != alarms.end(); ++iter) {
+    _alarms.push_back_new(this, iter->expiration, iter->wakeable);
+    gc->copyStableRef(_alarms.back().wakeable, _alarms.back().wakeable);
+  }
 }
 
 }

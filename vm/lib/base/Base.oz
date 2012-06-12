@@ -17,6 +17,7 @@ require
    Boot_Object    at 'x-oz://boot/Object'
    Boot_Thread    at 'x-oz://boot/Thread'
    Boot_Exception at 'x-oz://boot/Exception'
+   Boot_Time      at 'x-oz://boot/Time'
 
    Boot_System    at 'x-oz://boot/System'
    Boot_Space     at 'x-oz://boot/Space'
@@ -329,6 +330,12 @@ prepare
    Raise = Boot_Exception.'raise'
 
    %%
+   %% Time
+   %%
+   Alarm = Boot_Time.alarm
+   Delay = proc {$ T} {Wait {Alarm T}} end
+
+   %%
    %% System
    %%
    Show = Boot_System.show
@@ -362,6 +369,7 @@ prepare
 %#include "BitArray.oz"
 %#include "ForeignPointer.oz"
 #include "Thread.oz"
+#include "Time.oz"
 
 #include "Space.oz"
 #include "System.oz"

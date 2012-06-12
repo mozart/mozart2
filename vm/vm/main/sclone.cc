@@ -35,10 +35,7 @@ Space* SpaceCloner::doCloneSpace(Space* space) {
   space->getParent()->setShouldNotBeCloned();
 
   // Before GR
-  for (auto iterator = vm->aliveThreads.begin();
-       iterator != vm->aliveThreads.end(); iterator++) {
-    (*iterator)->beforeGR();
-  }
+  vm->beforeGR(this);
 
   // Initialize the MM
   getSecondMM().init();
@@ -70,10 +67,7 @@ Space* SpaceCloner::doCloneSpace(Space* space) {
   }
 
   // After GR
-  for (auto iterator = vm->aliveThreads.begin();
-       iterator != vm->aliveThreads.end(); iterator++) {
-    (*iterator)->afterGR();
-  }
+  vm->afterGR(this);
 
   // Clear shouldBeCloned
   space->getParent()->unsetShouldNotBeCloned();

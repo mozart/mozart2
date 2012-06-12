@@ -42,39 +42,16 @@ void GarbageCollector::doGC() {
   assert(vm->_currentSpace == vm->_topLevelSpace);
 
   // Before GR
-  for (auto iterator = vm->aliveThreads.begin();
-       iterator != vm->aliveThreads.end(); iterator++) {
-    (*iterator)->beforeGR();
-  }
+  vm->beforeGR(this);
 
-  // Swap spaces
-  vm->getMemoryManager().swapWith(vm->getSecondMemoryManager());
-  vm->getMemoryManager().init();
-
-  // Forget lists of things
-  vm->atomTable = AtomTable();
-  vm->aliveThreads = RunnableList();
-
-  // Reinitialize the VM
-  vm->initialize();
-
-  // Always keep the top-level space
-  SpaceRef topLevelSpaceRef = vm->_topLevelSpace;
-  copySpace(topLevelSpaceRef, topLevelSpaceRef);
-  vm->_topLevelSpace = topLevelSpaceRef;
-  vm->_currentSpace = vm->_topLevelSpace;
-
-  // Root of GC are runnable threads
-  vm->getThreadPool().gCollect(this);
+  // Root of garbage collection
+  vm->startGC(this);
 
   // GC loop
   runCopyLoop<GarbageCollector>();
 
   // After GR
-  for (auto iterator = vm->aliveThreads.begin();
-       iterator != vm->aliveThreads.end(); iterator++) {
-    (*iterator)->afterGR();
-  }
+  vm->afterGR(this);
 
   if (OzDebugGC) {
     std::cerr << "After GC: " << vm->getMemoryManager().getAllocated();

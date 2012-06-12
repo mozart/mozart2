@@ -236,6 +236,18 @@ public:
     }
   }
 
+  void insert_before(MM mm, removable_iterator& iterator, const T& item) {
+    ListNode* node = newNode(mm, iterator.node, item);
+    internalInsert_before(node, iterator);
+  }
+
+  template <class... Args>
+  void insert_before_new(MM mm, removable_iterator& iterator, Args&&... args) {
+    ListNode* node = newNode_new(mm, iterator.node,
+                                 std::forward<Args>(args)...);
+    internalInsert_before(node, iterator);
+  }
+
   iterator begin() {
     return iterator(first);
   }
@@ -273,6 +285,18 @@ private:
       first = node->next;
     else
       prev->next = node->next;
+  }
+
+  void internalInsert_before(ListNode* node, removable_iterator& iterator) {
+    if (iterator.prev == nullptr)
+      first = node;
+    else
+      iterator.prev->next = node;
+
+    if (iterator.node == nullptr)
+      last = node;
+
+    iterator.prev = node;
   }
 private:
   ListNode* newNode(MM mm, ListNode* next, const T& item) {

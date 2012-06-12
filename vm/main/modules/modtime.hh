@@ -22,54 +22,59 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENV_H
-#define __BOOSTENV_H
+#ifndef __MODTIME_H
+#define __MODTIME_H
 
-#include <mozart.hh>
+#include "../mozartcore.hh"
 
-#include <boost/thread.hpp>
+#ifndef MOZART_GENERATOR
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/random_generator.hpp>
+namespace mozart {
 
-namespace mozart { namespace boostenv {
+namespace builtins {
 
-//////////////////
-// BoostBasedVM //
-//////////////////
+/////////////////
+// Time module //
+/////////////////
 
-class BoostBasedVM: public VirtualMachineEnvironment {
+class ModTime: public Module {
 public:
-  BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine) {}
+  ModTime(): Module("Time") {}
 
-// Run and preemption
+  class Alarm: public Builtin<Alarm> {
+  public:
+    Alarm(): Builtin("alarm") {}
 
-public:
-  void run();
-private:
-  static void preemptionThreadProc(VM vm);
+    OpResult operator()(VM vm, In delay, Out result) {
+      nativeint intDelay;
+      MOZART_GET_ARG(intDelay, delay, u"integer");
 
-  inline
-  static std::int64_t getReferenceTime();
+      if (intDelay <= 0) {
+        result = trivialBuild(vm, unit);
+      } else {
+        result.make<Variable>(vm, vm->getTopLevelSpace());
+        vm->setAlarm(intDelay, RichNode(result).getStableRef(vm));
+      }
 
-// UUID generation
+      return OpResult::proceed();
+    }
+  };
 
-public:
-  UUID genUUID();
-private:
-  inline
-  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
+  class GetReferenceTime: public Builtin<GetReferenceTime> {
+  public:
+    GetReferenceTime(): Builtin("getReferenceTime") {}
 
-  boost::uuids::random_generator uuidGenerator;
-
-// Reference to the virtual machine
-
-private:
-  VirtualMachine virtualMachine;
-public:
-  const VM vm;
+    OpResult operator()(VM vm, Out result) {
+      result = trivialBuild(vm, vm->getReferenceTime());
+      return OpResult::proceed();
+    }
+  };
 };
 
-} }
+}
 
-#endif // __BOOSTENV_UUIDGEN_H
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODTIME_H

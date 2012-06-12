@@ -31,9 +31,18 @@ namespace mozart { namespace boostenv {
 //////////////////
 
 void BoostBasedVM::run() {
+  vm->setReferenceTime(getReferenceTime());
+
   boost::thread preemptionThread(preemptionThreadProc, vm);
 
-  vm->run();
+  while (true) {
+    auto sleepDuration = vm->run();
+
+    if (sleepDuration < 0)
+      break;
+
+    boost::this_thread::sleep(boost::posix_time::millisec(sleepDuration));
+  }
 
   preemptionThread.interrupt();
   preemptionThread.join();
@@ -42,8 +51,20 @@ void BoostBasedVM::run() {
 void BoostBasedVM::preemptionThreadProc(VM vm) {
   while (true) {
     boost::this_thread::sleep(boost::posix_time::millisec(1));
+    vm->setReferenceTime(getReferenceTime());
     vm->requestPreempt();
   }
+}
+
+std::int64_t BoostBasedVM::getReferenceTime() {
+  using namespace boost::posix_time;
+  using namespace boost::gregorian;
+
+  auto now = microsec_clock::universal_time();
+  auto epoch = ptime(date(1970, Jan, 1));
+
+  auto diff = now - epoch;
+  return diff.total_milliseconds();
 }
 
 UUID BoostBasedVM::genUUID() {

@@ -66,5 +66,6 @@
 #include "modules/moddictionary.hh"
 #include "modules/modexception.hh"
 #include "modules/modobject.hh"
+#include "modules/modtime.hh"
 
 #endif // __MOZART_H

@@ -37,6 +37,7 @@
 #include "sclone-decl.hh"
 #include "space-decl.hh"
 #include "uuid-decl.hh"
+#include "vmallocatedlist-decl.hh"
 
 #include "atomtable.hh"
 #include "coreatoms-decl.hh"
@@ -72,6 +73,14 @@ private:
 };
 
 class VirtualMachine {
+private:
+  struct AlarmRecord {
+    AlarmRecord(std::int64_t expiration, StableNode* wakeable):
+      expiration(expiration), wakeable(wakeable) {}
+
+    std::int64_t expiration;
+    StableNode* wakeable;
+  };
 public:
   inline
   VirtualMachine(VirtualMachineEnvironment& environment);
@@ -98,7 +107,7 @@ public:
     free(memory, size * sizeof(T));
   }
 
-  void run();
+  std::int64_t run();
 
   inline
   bool testPreemption();
@@ -137,6 +146,13 @@ public:
 
   inline
   UUID genUUID();
+
+  std::int64_t getReferenceTime() {
+    return _referenceTime;
+  }
+
+  inline
+  void setAlarm(std::int64_t delay, StableNode* wakeable);
 public:
   CoreAtoms coreatoms;
 public:
@@ -148,6 +164,10 @@ public:
   void requestExitRun() {
     _exitRunRequested = true;
     _preemptRequested = true;
+  }
+
+  void setReferenceTime(std::int64_t value) {
+    _referenceTime = value;
   }
 private:
   friend class GarbageCollector;
@@ -164,6 +184,15 @@ private:
 
   inline
   void initialize();
+
+  inline
+  void beforeGR(GR gr);
+
+  inline
+  void afterGR(GR gr);
+
+  inline
+  void startGC(GC gc);
 
   ThreadPool threadPool;
   AtomTable atomTable;
@@ -183,10 +212,14 @@ private:
   GarbageCollector gc;
   SpaceCloner sc;
 
+  VMAllocatedList<AlarmRecord> _alarms;
+
   // Flags set externally for preemption etc.
+  // TODO Use atomic data types
   bool _envUseDynamicPreemption;
   volatile bool _preemptRequested;
   volatile bool _exitRunRequested;
+  volatile std::int64_t _referenceTime;
 };
 
 }

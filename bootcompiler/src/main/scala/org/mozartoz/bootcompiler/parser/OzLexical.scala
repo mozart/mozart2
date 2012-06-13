@@ -13,6 +13,7 @@ class OzLexical extends Lexical with OzTokens {
     | floatLiteral
     | integerLiteral
     | atomLiteral
+    | stringLiteral
     | EofCh ^^^ EOF
     | delim
     | '?' ~> token
@@ -53,6 +54,9 @@ class OzLexical extends Lexical with OzTokens {
       }
     | quoted('\'') ^^ AtomLit
   )
+
+  def stringLiteral =
+    quoted('\"') ^^ StringLit
 
   def quotedKeepQuotes(quoteChar: Char) =
     quoted(quoteChar) ^^ (quoteChar + _ + quoteChar)

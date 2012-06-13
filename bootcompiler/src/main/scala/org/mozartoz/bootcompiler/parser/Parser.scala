@@ -569,6 +569,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | raiseExpression
     | functorExpression
     | trivialExpression
+    | stringConstExpr
     | recordExpression
     | listExpression
     | classExpression
@@ -603,6 +604,9 @@ class OzParser extends OzTokenParsers with PackratParsers
   lazy val literalConstExpr: PackratParser[Constant] =
     positioned(literalConst ^^ Constant)
 
+  lazy val stringConstExpr: PackratParser[Constant] =
+    positioned(stringConst ^^ Constant)
+
   lazy val selfExpr: PackratParser[Self] =
     positioned("self" ^^^ Self())
 
@@ -626,6 +630,9 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val featureConst: PackratParser[OzFeature] =
     integerConst | literalConst
+
+  lazy val stringConst: PackratParser[OzValue] =
+    stringLit ^^ (chars => OzList(chars.toList map (c => OzInt(c.toInt))))
 
   // Record expressions
 

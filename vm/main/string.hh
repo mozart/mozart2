@@ -159,6 +159,24 @@ OpResult Implementation<String>::waitOr(Self self, VM vm, UnstableNode& result) 
   }
 }
 
+OpResult Implementation<String>::toString(Self self, VM vm,
+                                          std::basic_ostream<nchar>& sink) {
+  sink << _string;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::vsLength(Self self, VM vm, nativeint& result) {
+  result = codePointCount(_string);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::vsChangeSign(Self self, VM vm,
+                                              RichNode replacement,
+                                              UnstableNode& result) {
+  result.copy(vm, self);
+  return OpResult::proceed();
+}
+
 }
 
 #endif // MOZART_GENERATOR

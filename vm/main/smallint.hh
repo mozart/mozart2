@@ -27,6 +27,7 @@
 
 #include "mozartcore.hh"
 
+#include <string>
 #include <limits>
 
 #ifndef MOZART_GENERATOR
@@ -234,6 +235,52 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
     result.make<SmallInt>(vm, 0);
   }
 
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::toString(Self self, VM vm,
+                                            std::basic_ostream<nchar>& sink) {
+//sink << value();  // doesn't seem to work, don't know why.
+  auto str = std::to_string(value());
+  size_t length = str.length();
+  std::unique_ptr<nchar[]> nStr (new nchar[length]);
+  std::copy(str.begin(), str.end(), nStr.get());
+  sink.write(nStr.get(), length);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::vsLength(Self self, VM vm, nativeint& result) {
+  result = (nativeint) std::to_string(value()).length();
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::vsChangeSign(Self self, VM vm,
+                                                RichNode replacement,
+                                                UnstableNode& result) {
+  nativeint a = value();
+  static constexpr nativeint minVal = std::numeric_limits<nativeint>::min();
+
+  if (a >= 0) {
+    result.copy(vm, self);
+  } else if (a > minVal) {
+    UnstableNode node = SmallInt::build(vm, -a);
+    result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
+  } else {
+    // TODO: create a BigInt??
+    UnstableNode node;
+    if (minVal == std::numeric_limits<int32_t>::min()) {
+      node.make<String>(vm, NSTR("2147483648"));
+    } else if (minVal == std::numeric_limits<int64_t>::min()) {
+      node.make<String>(vm, NSTR("9223372036854775808"));
+    } else {
+      auto str = std::to_string(value());
+      size_t length = str.length() - 1;
+      nchar* nStr = new (vm) nchar[length];
+      std::copy(str.begin()+1, str.end(), nStr);
+      node.make<String>(vm, LString<nchar>(nStr, length));
+    }
+    result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
+  }
   return OpResult::proceed();
 }
 

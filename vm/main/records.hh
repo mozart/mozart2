@@ -182,6 +182,73 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
   out << ")";
 }
 
+bool Implementation<Tuple>::hasSharpLabel(VM vm) {
+  UnstableNode tempLabel (vm, _label);
+  RichNode label = tempLabel;
+  return label.is<Atom>() && label.as<Atom>().value() == vm->coreatoms.sharp;
+}
+
+OpResult Implementation<Tuple>::isVirtualString(Self self, VM vm, bool& result) {
+  result = false;
+  if (hasSharpLabel(vm)) {
+    for (size_t i = 0; i < _width; ++ i) {
+      UnstableNode tempNode (vm, self[i]);
+      MOZART_CHECK_OPRESULT(VirtualString(tempNode).isVirtualString(vm, result));
+      if (!result)
+        return OpResult::proceed();
+    }
+    result = true;
+  }
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::toString(Self self, VM vm,
+                                         std::basic_ostream<nchar>& sink) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+
+  for (size_t i = 0; i < _width; ++ i) {
+    UnstableNode tempNode (vm, self[i]);
+    MOZART_CHECK_OPRESULT(VirtualString(tempNode).toString(vm, sink));
+  }
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+
+  result = 0;
+  for (size_t i = 0; i < _width; ++ i) {
+    nativeint thisLength = 0;
+    UnstableNode tempNode (vm, self[i]);
+    MOZART_CHECK_OPRESULT(VirtualString(tempNode).vsLength(vm, thisLength));
+    result += thisLength;
+  }
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::vsChangeSign(Self self, VM vm,
+                                             RichNode replacement,
+                                             UnstableNode& result) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+
+  UnstableNode tempLabel (vm, _label);
+  result.make<Tuple>(vm, _width, tempLabel);
+  auto tuple = RichNode(result).as<Tuple>();
+  for (size_t i = 0; i < _width; i++) {
+    UnstableNode tempNode (vm, self[i]);
+    UnstableNode changedNode;
+    VirtualString(tempNode).vsChangeSign(vm, replacement, changedNode);
+    tuple.initElement(vm, i, changedNode);
+  }
+
+  return OpResult::proceed();
+}
+
 ///////////
 // Cons //
 ///////////
@@ -271,6 +338,101 @@ OpResult Implementation<Cons>::waitOr(Self self, VM vm,
 void Implementation<Cons>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
   out << repr(vm, _head, depth) << "|" << repr(vm, _tail, depth);
+}
+
+template <class F, class G>
+static OpResult withConsAsVirtualString(VM vm, TypedRichNode<Cons> cons,
+                                        const F& onChar, const G& onString) {
+  while (true) {
+    UnstableNode tempHead (vm, *cons.getHead());
+    RichNode head = tempHead;
+
+    nativeint c;
+    MOZART_CHECK_OPRESULT(IntegerValue(head).intValue(vm, c));
+    if (c < 0 || c >= 0x110000)
+      return raiseUnicodeError(vm, UnicodeErrorReason::outOfRange);
+    else if (0xd800 <= c && c < 0xe000)
+      return raiseUnicodeError(vm, UnicodeErrorReason::surrogate);
+
+    onChar((char32_t) c);
+
+    UnstableNode tempTail (vm, *cons.getTail());
+    RichNode tail = tempTail;
+
+    if (tail.is<Atom>()) {
+      if (tail.as<Atom>().value() == vm->coreatoms.nil)
+        return OpResult::proceed();
+
+    } else if (tail.is<Cons>()) {
+      cons = tail.as<Cons>();
+      continue;
+
+    } else {
+      bool isString = false;
+      MOZART_CHECK_OPRESULT(StringLike(tail).isString(vm, isString));
+      if (isString) {
+        return onString(tail);
+      }
+    }
+
+    return raiseTypeError(vm, NSTR("VirtualString"), cons);
+  }
+}
+
+OpResult Implementation<Cons>::isVirtualString(Self self, VM vm, bool& result) {
+  OpResult res = withConsAsVirtualString(vm, self,
+    [](char32_t){},
+    [](RichNode){ return OpResult::proceed(); }
+  );
+  if (res.isProceed()) {
+    result = true;
+    return res;
+  } else if (res.kind() == OpResult::orRaise) {
+    result = false;
+    return OpResult::proceed();
+  } else {
+    return res;
+  }
+}
+
+OpResult Implementation<Cons>::toString(Self self, VM vm,
+                                        std::basic_ostream<nchar>& sink) {
+  MOZART_CHECK_OPRESULT(withConsAsVirtualString(vm, self,
+    [&](char32_t c) {
+      nchar buffer[4];
+      nativeint length = toUTF(c, buffer);
+      sink.write(buffer, length);
+    },
+    [&](RichNode str) {
+      return VirtualString(str).toString(vm, sink);
+    }
+  ));
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::vsLength(Self self, VM vm, nativeint& result) {
+  nativeint length = 0;
+
+  MOZART_CHECK_OPRESULT(withConsAsVirtualString(vm, self,
+    [&](char32_t) { ++ length; },
+    [&](RichNode str) -> OpResult {
+      nativeint remainingLength;
+      MOZART_CHECK_OPRESULT(VirtualString(str).vsLength(vm, remainingLength));
+      length += remainingLength;
+      return OpResult::proceed();
+    }
+  ));
+
+  result = length;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::vsChangeSign(Self self, VM vm,
+                                            RichNode replacement,
+                                            UnstableNode& result) {
+  result.copy(vm, self);
+  return OpResult::proceed();
 }
 
 ///////////

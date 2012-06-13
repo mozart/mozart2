@@ -61,6 +61,7 @@ namespace mozart {
 #include "CellLike-interf.hh"
 #include "ChunkLike-interf.hh"
 #include "StringLike-interf.hh"
+#include "VirtualString-interf.hh"
 
 #endif // MOZART_GENERATOR
 

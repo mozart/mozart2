@@ -7,9 +7,11 @@ sealed abstract class Statement extends StatOrExpr with RawDeclaration
 /** Sequential composition of several statements */
 case class CompoundStatement(statements: List[Statement]) extends Statement {
   def syntax(indent: String) = {
-    val head :: tail = statements.toList
-    tail.foldLeft(head.syntax(indent)) {
-      _ + "\n" + indent + _.syntax(indent)
+    if (statements.isEmpty) "skip"
+    else {
+      statements.tail.foldLeft(statements.head.syntax(indent)) {
+        _ + "\n" + indent + _.syntax(indent)
+      }
     }
   }
 }

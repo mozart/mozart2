@@ -55,6 +55,8 @@ public:
   VirtualMachineEnvironment(bool useDynamicPreemption):
     _useDynamicPreemption(useDynamicPreemption) {}
 
+  VirtualMachineEnvironment(const VirtualMachineEnvironment&) = delete;
+
   bool useDynamicPreemption() {
     return _useDynamicPreemption;
   }
@@ -143,6 +145,10 @@ public:
 
   inline
   Space* cloneSpace(Space* space);
+
+  VirtualMachineEnvironment& getEnvironment() {
+    return environment;
+  }
 
   inline
   UUID genUUID();

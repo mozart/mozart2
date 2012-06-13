@@ -22,12 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENV_H
-#define __BOOSTENV_H
+#ifndef __BOOSTENV_DECL_H
+#define __BOOSTENV_DECL_H
 
-#include "boostenv-decl.hh"
+#include <mozart.hh>
 
-#include "modos.hh"
+#include <ctime>
+
+#include <boost/thread.hpp>
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
 
 namespace mozart { namespace boostenv {
 
@@ -35,6 +40,42 @@ namespace mozart { namespace boostenv {
 // BoostBasedVM //
 //////////////////
 
+class BoostBasedVM: public VirtualMachineEnvironment {
+public:
+  BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
+    random_generator(std::time(nullptr)), uuidGenerator(random_generator) {}
+
+// Run and preemption
+
+public:
+  void run();
+private:
+  static void preemptionThreadProc(VM vm);
+
+  inline
+  static std::int64_t getReferenceTime();
+
+// UUID generation
+
+public:
+  UUID genUUID();
+private:
+  inline
+  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
+
+// Reference to the virtual machine
+
+private:
+  VirtualMachine virtualMachine;
+public:
+  const VM vm;
+
+  typedef boost::random::mt19937 random_generator_t;
+  random_generator_t random_generator;
+private:
+  boost::uuids::random_generator uuidGenerator;
+};
+
 } }
 
-#endif // __BOOSTENV_H
+#endif // __BOOSTENV_DECL_H

@@ -22,19 +22,75 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENV_H
-#define __BOOSTENV_H
+#ifndef __MODOSBOOST_H
+#define __MODOSBOOST_H
+
+#include <mozart.hh>
 
 #include "boostenv-decl.hh"
 
-#include "modos.hh"
+#ifndef MOZART_GENERATOR
 
 namespace mozart { namespace boostenv {
 
-//////////////////
-// BoostBasedVM //
-//////////////////
+namespace builtins {
+
+using namespace ::mozart::builtins;
+
+///////////////
+// OS module //
+///////////////
+
+class ModOS: public Module {
+public:
+  ModOS(): Module("OS") {}
+
+  class Rand: public Builtin<Rand> {
+  public:
+    Rand(): Builtin("rand") {}
+
+    OpResult operator()(VM vm, Out result) {
+      auto& env = static_cast<BoostBasedVM&>(vm->getEnvironment());
+
+      result = SmallInt::build(vm, env.random_generator());
+
+      return OpResult::proceed();
+    }
+  };
+
+  class Srand: public Builtin<Srand> {
+  public:
+    Srand(): Builtin("srand") {}
+
+    OpResult operator()(VM vm, In seed) {
+      nativeint intSeed;
+      MOZART_GET_ARG(intSeed, seed, u"integer");
+
+      auto& env = static_cast<BoostBasedVM&>(vm->getEnvironment());
+      env.random_generator.seed(
+        (BoostBasedVM::random_generator_t::result_type) intSeed);
+
+      return OpResult::proceed();
+    }
+  };
+
+  class RandLimits: public Builtin<RandLimits> {
+  public:
+    RandLimits(): Builtin("randLimits") {}
+
+    OpResult operator()(VM vm, Out min, Out max) {
+      min = SmallInt::build(vm, BoostBasedVM::random_generator_t::min());
+      max = SmallInt::build(vm, BoostBasedVM::random_generator_t::max());
+
+      return OpResult::proceed();
+    }
+  };
+};
+
+}
 
 } }
 
-#endif // __BOOSTENV_H
+#endif // MOZART_GENERATOR
+
+#endif // __MODOSBOOST_H

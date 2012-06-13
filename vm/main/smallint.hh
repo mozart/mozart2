@@ -27,6 +27,7 @@
 
 #include "mozartcore.hh"
 
+#include <string>
 #include <limits>
 
 #ifndef MOZART_GENERATOR
@@ -234,6 +235,22 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
     result.make<SmallInt>(vm, 0);
   }
 
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::toString(Self self, VM vm,
+                                            std::basic_ostream<nchar>& sink) {
+//sink << value();  // doesn't seem to work, don't know why.
+  auto str = std::to_string(value());
+  size_t length = str.length();
+  std::unique_ptr<nchar[]> nStr (new nchar[length]);
+  std::copy(str.begin(), str.end(), nStr.get());
+  sink.write(nStr.get(), length);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::vsLength(Self self, VM vm, nativeint& result) {
+  result = (nativeint) std::to_string(value()).length();
   return OpResult::proceed();
 }
 

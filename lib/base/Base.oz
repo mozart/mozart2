@@ -15,6 +15,7 @@ require
    Boot_Dictionary at 'x-oz://boot/Dictionary'
    Boot_Record    at 'x-oz://boot/Record'
    Boot_Chunk     at 'x-oz://boot/Chunk'
+   Boot_VirtualString at 'x-oz://boot/VirtualString'
    Boot_Array     at 'x-oz://boot/Array'
    Boot_Object    at 'x-oz://boot/Object'
    Boot_Thread    at 'x-oz://boot/Thread'
@@ -306,6 +307,11 @@ prepare
    end
 
    %%
+   %% VirtualString
+   %%
+   IsVirtualString = Boot_VirtualString.is
+
+   %%
    %% Array
    %%
    NewArray = Boot_Array.new
@@ -380,7 +386,7 @@ prepare
    \insert 'Dictionary.oz'
    \insert 'Record.oz'
    \insert 'Chunk.oz'
-   %\insert 'VirtualString.oz'
+   \insert 'VirtualString.oz'
    \insert 'Array.oz'
    \insert 'Object.oz'
    %\insert 'BitArray.oz'

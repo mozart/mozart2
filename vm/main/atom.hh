@@ -63,12 +63,30 @@ OpResult Implementation<Atom>::compare(Self self, VM vm,
   return OpResult::proceed();
 }
 
+OpResult Implementation<Atom>::toString(Self self, VM vm,
+                                        std::basic_ostream<nchar>& sink) {
+  const AtomImpl* a = value();
+  if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
+    sink.write(a->contents(), a->length());
+  }
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
+  const AtomImpl* a = value();
+  if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
+    result = 0;
+  else
+    result = codePointCount(LString<nchar>(a->contents(), a->length()));
+  return OpResult::proceed();
+}
+
 void Implementation<Atom>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
-  out << "'";
-  for (size_t i = 0; i < value()->length(); i++)
-    out << (char) value()->contents()[i];
-  out << "'";
+  auto utf8Result = toUTF<char>(
+    vm, LString<nchar>(value()->contents(), value()->length()));
+  out << '\'' << utf8Result << '\'';
+  utf8Result.free(vm);
 }
 
 }

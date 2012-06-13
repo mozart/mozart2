@@ -52,8 +52,9 @@ add_custom_command(
   COMMAND ${JAVA} -jar
     "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar"
     -o "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
-    -m "${MOZART_BUILD_DIR}/vm/main/"
+    -m "${MOZART_BUILD_DIR}/boostenv/main/"
     -b "${MOZART_BUILD_DIR}/lib/base/BaseBuilt.oz"
+    -b "${MOZART_DIR}/boostenv/main/BoostBase.oz"
     "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz"
   DEPENDS Main.oz
   COMMENT Compiling Main.oz

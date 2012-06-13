@@ -71,5 +71,6 @@
 #include "modules/modprocedure.hh"
 #include "modules/modtime.hh"
 #include "modules/modstring.hh"
+#include "modules/modvirtualstring.hh"
 
 #endif // __MOZART_H

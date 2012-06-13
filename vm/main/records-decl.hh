@@ -138,6 +138,24 @@ public:
   OpResult clone(Self self, VM vm, UnstableNode& result);
 
 public:
+  // VirtualString inteface
+  inline
+  OpResult isVirtualString(Self self, VM vm, bool& result);
+
+  inline
+  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+
+  inline
+  OpResult vsLength(Self self, VM vm, nativeint& result);
+
+  inline
+  OpResult vsChangeSign(Self self, VM vm,
+                        RichNode replacement, UnstableNode& result);
+
+private:
+  inline bool hasSharpLabel(VM vm);
+
+public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
@@ -226,6 +244,21 @@ public:
 
   inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
+
+public:
+  // VirtualString inteface
+  inline
+  OpResult isVirtualString(Self self, VM vm, bool& result);
+
+  inline
+  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+
+  inline
+  OpResult vsLength(Self self, VM vm, nativeint& result);
+
+  inline
+  OpResult vsChangeSign(Self self, VM vm,
+                        RichNode replacement, UnstableNode& result);
 
 public:
   inline

@@ -121,6 +121,24 @@ public:
 
   inline
   OpResult mod(Self self, VM vm, RichNode right, UnstableNode& result);
+
+public:
+  // VirtualString inteface
+  OpResult isVirtualString(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+
+  inline
+  OpResult vsLength(Self self, VM vm, nativeint& result);
+
+  inline
+  OpResult vsChangeSign(Self self, VM vm,
+                        RichNode replacement, UnstableNode& result);
+
 public:
   // Miscellaneous
 

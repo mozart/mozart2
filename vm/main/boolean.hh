@@ -54,6 +54,24 @@ int Implementation<Boolean>::compareFeatures(VM vm, Self right) {
     return -1;
 }
 
+OpResult Implementation<Boolean>::toString(Self self, VM vm,
+                                           std::basic_ostream<nchar>& sink) {
+  sink << (value() ? NSTR("true") : NSTR("false"));
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Boolean>::vsLength(Self self, VM vm, nativeint& result) {
+  result = value() ? 4 : 5;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Boolean>::vsChangeSign(Self self, VM vm,
+                                               RichNode replacement,
+                                               UnstableNode& result) {
+  result.copy(vm, self);
+  return OpResult::proceed();
+}
+
 }
 
 #endif // MOZART_GENERATOR

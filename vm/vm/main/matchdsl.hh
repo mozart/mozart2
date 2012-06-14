@@ -410,6 +410,25 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
 template <>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value,
+                   PrimitiveCapturePattern<char> pattern) {
+  if (value.is<SmallInt>()) {
+    nativeint intValue = value.as<SmallInt>().value();
+
+    if ((intValue >= 0) && (intValue < 256)) {
+      pattern.value = (char) intValue;
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+}
+
+template <>
+inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
                    PrimitiveCapturePattern<const AtomImpl*> pattern) {
   if (value.is<Atom>()) {
     pattern.value = value.as<Atom>().value();

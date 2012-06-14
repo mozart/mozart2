@@ -28,6 +28,8 @@
 #include <mozart.hh>
 
 #include <ctime>
+#include <cstdio>
+#include <cerrno>
 
 #include <boost/thread.hpp>
 
@@ -42,8 +44,11 @@ namespace mozart { namespace boostenv {
 
 class BoostBasedVM: public VirtualMachineEnvironment {
 public:
-  BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
-    random_generator(std::time(nullptr)), uuidGenerator(random_generator) {}
+  BoostBasedVM();
+
+  static BoostBasedVM& forVM(VM vm) {
+    return static_cast<BoostBasedVM&>(vm->getEnvironment());
+  }
 
 // Run and preemption
 
@@ -63,6 +68,24 @@ private:
   inline
   static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
 
+// Internal file descriptors management
+
+public:
+  inline
+  nativeint registerFile(std::FILE* file);
+
+  inline
+  void unregisterFile(nativeint fd);
+
+  inline
+  std::FILE* getFile(nativeint fd);
+
+  inline
+  OpResult getFile(nativeint fd, std::FILE*& result);
+
+  inline
+  OpResult getFile(RichNode fd, std::FILE*& result);
+
 // Reference to the virtual machine
 
 private:
@@ -74,7 +97,35 @@ public:
   random_generator_t random_generator;
 private:
   boost::uuids::random_generator uuidGenerator;
+private:
+  std::map<nativeint, std::FILE*> openedFiles;
+public:
+  nativeint fdStdin;
+  nativeint fdStdout;
+  nativeint fdStderr;
 };
+
+///////////////
+// Utilities //
+///////////////
+
+inline
+OpResult ozListLength(VM vm, RichNode list, size_t& result);
+
+inline
+OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer);
+
+inline
+OpResult ozStringToStdString(VM vm, RichNode value, std::string& result);
+
+inline
+OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result);
+
+inline
+OpResult raiseOSError(VM vm, int errnum);
+
+inline
+OpResult raiseLastOSError(VM vm);
 
 } }
 

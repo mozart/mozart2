@@ -26,9 +26,23 @@
 
 namespace mozart { namespace boostenv {
 
+// Some definitions
+
+namespace builtins {
+  const size_t ModOS::MaxBufferSize;
+}
+
 //////////////////
 // BoostBasedVM //
 //////////////////
+
+BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
+  random_generator(std::time(nullptr)), uuidGenerator(random_generator) {
+
+  fdStdin = registerFile(stdin);
+  fdStdout = registerFile(stdout);
+  fdStderr = registerFile(stderr);
+}
 
 void BoostBasedVM::run() {
   vm->setReferenceTime(getReferenceTime());

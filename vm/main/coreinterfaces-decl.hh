@@ -65,7 +65,7 @@ class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
-                ReifiedThread, Unit, String> {
+                ReifiedThread, Unit, String, ByteString> {
 
   /**
    * Precondition:
@@ -101,7 +101,7 @@ struct Interface<StructuralEquatable>:
 class Comparable;
 template<>
 struct Interface<Comparable>:
-  ImplementedBy<SmallInt, Atom, Float, String> {
+  ImplementedBy<SmallInt, Atom, Float, String, ByteString> {
 
   OpResult compare(RichNode self, VM vm, RichNode right, int& result) {
     return raiseTypeError(vm, MOZART_STR("comparable"), self);
@@ -614,7 +614,8 @@ struct Interface<StringLike>: ImplementedBy<String> {
 class VirtualString;
 template<>
 struct Interface<VirtualString>:
-  ImplementedBy<Tuple, Atom, String, SmallInt, Cons, Float, Unit, Boolean> {
+  ImplementedBy<Tuple, Atom, String, SmallInt, Cons, Float, Unit, Boolean,
+    ByteString> {
 
   OpResult isVirtualString(RichNode self, VM vm, bool& result) {
     result = false;
@@ -627,6 +628,48 @@ struct Interface<VirtualString>:
 
   OpResult vsLength(RichNode self, VM vm, nativeint& result) {
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
+  }
+};
+
+class ByteStringLike;
+template<>
+struct Interface<ByteStringLike>: ImplementedBy<ByteString> {
+  OpResult isByteString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult stringGet(RichNode self, VM vm, LString<unsigned char>*& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult bsGet(RichNode self, VM vm, nativeint index,
+                 unsigned char& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult bsAppend(RichNode self, VM vm, RichNode right,
+                    UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult bsSlice(RichNode self, VM vm, nativeint from, nativeint to,
+                   UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult bsLength(RichNode self, VM vm, nativeint& length) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult bsDecode(RichNode self, VM vm, ByteStringEncoding encoding,
+                    bool isLittleEndian, bool hasBOM, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult bsStrChr(RichNode self, VM vm, nativeint from,
+                    unsigned char character, UnstableNode& res) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
   }
 };
 

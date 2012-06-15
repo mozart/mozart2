@@ -36,6 +36,7 @@
 #include "array.hh"
 #include "atom.hh"
 #include "boolean.hh"
+#include "bytestring.hh"
 #include "callables.hh"
 #include "cell.hh"
 #include "codearea.hh"
@@ -47,8 +48,8 @@
 #include "reifiedspace.hh"
 #include "reifiedthread.hh"
 #include "smallint.hh"
+#include "string.hh"
 #include "unit.hh"
 #include "variables.hh"
-#include "string.hh"
 
 #endif // __COREDATATYPES_H

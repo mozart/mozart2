@@ -36,6 +36,7 @@
 #include "array-decl.hh"
 #include "atom-decl.hh"
 #include "boolean-decl.hh"
+#include "bytestring-decl.hh"
 #include "callables-decl.hh"
 #include "cell-decl.hh"
 #include "codearea-decl.hh"
@@ -47,8 +48,8 @@
 #include "reifiedspace-decl.hh"
 #include "reifiedthread-decl.hh"
 #include "smallint-decl.hh"
+#include "string-decl.hh"
 #include "unit-decl.hh"
 #include "variables-decl.hh"
-#include "string-decl.hh"
 
 #endif // __COREDATATYPES_DECL_H

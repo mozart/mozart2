@@ -110,6 +110,11 @@ protected:
 
 std::ostream& operator<<(std::ostream& out, LString<nchar> input);
 
+inline
+const unsigned char* ustr(const char* str) {
+  return reinterpret_cast<const unsigned char*>(str);
+}
+
 }
 
 #endif

@@ -21,6 +21,7 @@ require
    Boot_Thread    at 'x-oz://boot/Thread'
    Boot_Exception at 'x-oz://boot/Exception'
    Boot_Time      at 'x-oz://boot/Time'
+   Boot_ByteString at 'x-oz://boot/ByteString'
 
 prepare
 
@@ -362,6 +363,12 @@ prepare
    Alarm = Boot_Time.alarm
    Delay = proc {$ T} {Wait {Alarm T}} end
 
+   %%
+   %% BitString ByteString
+   %%
+   %IsBitString  = Boot_BitString.is
+   IsByteString = Boot_ByteString.is
+
    \insert 'Exception.oz'
    \insert 'Value.oz'
    \insert 'Literal.oz'
@@ -393,5 +400,7 @@ prepare
    %\insert 'ForeignPointer.oz'
    \insert 'Thread.oz'
    \insert 'Time.oz'
+   %\insert 'BitString.oz'
+   \insert 'ByteString.oz'
 
 end

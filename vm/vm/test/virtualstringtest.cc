@@ -7,7 +7,7 @@ using namespace mozart;
 
 class VirtualStringTest : public MozartTest {
 protected:
-  UnstableNode testNodes[29];
+  UnstableNode testNodes[30];
   std::basic_string<nchar> minStr;
 
   virtual void SetUp() {
@@ -58,6 +58,7 @@ protected:
                                -5);
 
     testNodes[28].make<SmallInt>(vm, std::numeric_limits<nativeint>::min());
+    testNodes[29].make<ByteString>(vm, ustr("\x70\x80\x90"));
 
     auto s = std::to_string(std::numeric_limits<nativeint>::min());
     std::copy(s.cbegin(), s.cend(), std::back_inserter(minStr));
@@ -90,6 +91,7 @@ TEST_F(VirtualStringTest, ToString) {
     MOZART_STR("123456"), MOZART_STR("f-o6"),
     MOZART_STR("\U00012345-12345-12345-1-2-3-4-5"),
     minStr,
+    MOZART_STR("\u0070\u0080\u0090"),
   };
 
   size_t i = 0;
@@ -112,7 +114,8 @@ TEST_F(VirtualStringTest, Length) {
     3, 3, 1, 2,
     2,
     6, 4, 23,
-    (nativeint) minStr.length()
+    (nativeint) minStr.length(),
+    3,
   };
 
   size_t i = 0;

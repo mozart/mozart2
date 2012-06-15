@@ -6,11 +6,6 @@ using namespace mozart;
 
 class CodersTest : public MozartTest {};
 
-inline
-const unsigned char* ustr(const char* str) {
-  return reinterpret_cast<const unsigned char*>(str);
-}
-
 struct TestVector {
   const char* encoded;
   const nchar* decoded;

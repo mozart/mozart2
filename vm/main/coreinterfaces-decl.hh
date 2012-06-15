@@ -593,7 +593,8 @@ struct Interface<StringLike>: ImplementedBy<String> {
 class VirtualString;
 template<>
 struct Interface<VirtualString>:
-  ImplementedBy<SmallInt, Float, Atom, Boolean, String, Unit, Cons, Tuple> {
+  ImplementedBy<SmallInt, Float, Atom, Boolean, String, Unit, Cons, Tuple,
+                ByteString> {
 
   OpResult isVirtualString(RichNode self, VM vm, bool& result) {
     result = false;
@@ -611,6 +612,42 @@ struct Interface<VirtualString>:
   OpResult vsChangeSign(RichNode self, VM vm,
                         RichNode replacement, UnstableNode& result) {
     return raiseTypeError(vm, NSTR("VirtualString"), self);
+  }
+};
+
+class ByteStringLike;
+template<>
+struct Interface<ByteStringLike>: ImplementedBy<ByteString> {
+  OpResult isByteString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult bsGet(RichNode self, VM vm, nativeint index, char& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsAppend(RichNode self, VM vm, RichNode right, UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsSlice(RichNode self, VM vm, nativeint from, nativeint to, UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsLength(RichNode self, VM vm, nativeint& length) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsDecode(RichNode self, VM vm,
+                    ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+                    UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsStrChr(RichNode self, VM vm,
+                    nativeint from, char character, UnstableNode& res) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
   }
 };
 

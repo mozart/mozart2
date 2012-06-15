@@ -7,7 +7,7 @@ using namespace mozart;
 
 class VirtualStringTest : public MozartTest {
 protected:
-    UnstableNode testNodes[31];
+    UnstableNode testNodes[32];
     std::basic_string<nchar> minStr;
 
     virtual void SetUp() {
@@ -56,6 +56,7 @@ protected:
                                     -5);
 
         testNodes[30].make<SmallInt>(vm, std::numeric_limits<nativeint>::min());
+        testNodes[31].make<ByteString>(vm, "\x70\x80\x90");
 
         auto s = std::to_string(std::numeric_limits<nativeint>::min());
         std::copy(s.cbegin(), s.cend(), std::back_inserter(minStr));
@@ -91,6 +92,7 @@ TEST_F(VirtualStringTest, ToString) {
             NSTR("\U0004000060000"),
         NSTR("123456"), NSTR("f-o6"), NSTR("\U00012345-12345-12345-1-2-3-4-5"),
         minStr,
+        NSTR("\u0070\u0080\u0090"),
     };
 
     size_t i = 0;
@@ -113,7 +115,8 @@ TEST_F(VirtualStringTest, Length) {
         3, 3, 1, 2,
         2, 2, 6,
         6, 4, 23,
-        (nativeint) minStr.length()
+        (nativeint) minStr.length(),
+        3,
     };
 
     size_t i = 0;
@@ -139,7 +142,8 @@ TEST_F(VirtualStringTest, ChangeSign) {
             NSTR("\U0004000060000"),
         NSTR("123456"), NSTR("f-o6"),
             NSTR("\U00012345****12345-12345****1****2****3****4****5"),
-        NSTR("****") + minStr.substr(1)
+        NSTR("****") + minStr.substr(1),
+        NSTR("\u0070\u0080\u0090"),
     };
 
     UnstableNode replacement = String::build(vm, NSTR("****"));

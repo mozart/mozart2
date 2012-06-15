@@ -50,5 +50,6 @@
 #include "unit.hh"
 #include "variables.hh"
 #include "string.hh"
+#include "bytestring.hh"
 
 #endif // __COREDATATYPES_H

@@ -184,6 +184,63 @@ namespace mozart {
 
 namespace patternmatching {
 
+/**
+ * Metafunction from primitive type to the corresponding Oz type
+ */
+template <class T>
+struct PrimitiveTypeToOzType {
+};
+
+template <>
+struct PrimitiveTypeToOzType<nativeint> {
+  typedef SmallInt result;
+};
+
+template <>
+struct PrimitiveTypeToOzType<const AtomImpl*> {
+  typedef Atom result;
+};
+
+template <>
+struct PrimitiveTypeToOzType<bool> {
+  typedef Boolean result;
+};
+
+template <>
+struct PrimitiveTypeToOzType<double> {
+  typedef Float result;
+};
+
+template <class T>
+inline
+bool ozValueToPrimitiveValue(VM vm, RichNode value, T& primitive) {
+  typedef typename PrimitiveTypeToOzType<T>::result OzType;
+
+  if (value.is<OzType>()) {
+    primitive = value.as<OzType>().value();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+template <>
+inline
+bool ozValueToPrimitiveValue(VM vm, RichNode value, char& primitive) {
+  if (value.is<SmallInt>()) {
+    nativeint intValue = value.as<SmallInt>().value();
+
+    if ((intValue >= 0) && (intValue < 256)) {
+      primitive = (char) intValue;
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
 namespace internal {
 
 /**
@@ -394,73 +451,14 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
   return true;
 }
 
-template <>
+template <class T>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   PrimitiveCapturePattern<nativeint> pattern) {
-  if (value.is<SmallInt>()) {
-    pattern.value = value.as<SmallInt>().value();
+                   PrimitiveCapturePattern<T> pattern) {
+  if (ozValueToPrimitiveValue<T>(vm, value, pattern.value)) {
     return true;
   } else {
-    internal::waitForIfTransient(vm, result, value);
-    return false;
-  }
-}
-
-template <>
-inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   PrimitiveCapturePattern<char> pattern) {
-  if (value.is<SmallInt>()) {
-    nativeint intValue = value.as<SmallInt>().value();
-
-    if ((intValue >= 0) && (intValue < 256)) {
-      pattern.value = (char) intValue;
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    internal::waitForIfTransient(vm, result, value);
-    return false;
-  }
-}
-
-template <>
-inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   PrimitiveCapturePattern<const AtomImpl*> pattern) {
-  if (value.is<Atom>()) {
-    pattern.value = value.as<Atom>().value();
-    return true;
-  } else {
-    internal::waitForIfTransient(vm, result, value);
-    return false;
-  }
-}
-
-template <>
-inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   PrimitiveCapturePattern<bool> pattern) {
-  if (value.is<Boolean>()) {
-    pattern.value = value.as<Boolean>().value();
-    return true;
-  } else {
-    internal::waitForIfTransient(vm, result, value);
-    return false;
-  }
-}
-
-template <>
-inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   PrimitiveCapturePattern<double> pattern) {
-  if (value.is<Float>()) {
-    pattern.value = value.as<Float>().value();
-    return true;
-  } else {
-    internal::waitForIfTransient(vm, result, value);
+    waitForIfTransient(vm, result, value);
     return false;
   }
 }

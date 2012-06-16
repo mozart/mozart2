@@ -19,6 +19,10 @@ require
    Boot_Thread    at 'x-oz://boot/Thread'
    Boot_Exception at 'x-oz://boot/Exception'
    Boot_Time      at 'x-oz://boot/Time'
+   Boot_String    at 'x-oz://boot/String'
+   Boot_VirtualString at 'x-oz://boot/VirtualString'
+   Boot_ByteString at 'x-oz://boot/ByteString'
+
 
 prepare
 
@@ -357,7 +361,7 @@ prepare
    \insert 'Atom.oz'
    \insert 'Name.oz'
    \insert 'Bool.oz'
-   %\insert 'String.oz'
+   \insert 'String.oz'
    %\insert 'Char.oz'
    \insert 'Int.oz'
    \insert 'Float.oz'
@@ -370,12 +374,13 @@ prepare
    \insert 'Dictionary.oz'
    \insert 'Record.oz'
    \insert 'Chunk.oz'
-   %\insert 'VirtualString.oz'
+   \insert 'VirtualString.oz'
    \insert 'Array.oz'
    \insert 'Object.oz'
    %\insert 'BitArray.oz'
    %\insert 'ForeignPointer.oz'
    \insert 'Thread.oz'
    \insert 'Time.oz'
+   \insert 'ByteString.oz'
 
 end

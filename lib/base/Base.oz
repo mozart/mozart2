@@ -18,6 +18,10 @@ require
    Boot_Thread    at 'x-oz://boot/Thread'
    Boot_Exception at 'x-oz://boot/Exception'
    Boot_Time      at 'x-oz://boot/Time'
+   Boot_String    at 'x-oz://boot/String'
+   Boot_VirtualString at 'x-oz://boot/VirtualString'
+   Boot_ByteString at 'x-oz://boot/ByteString'
+
 
    Boot_System    at 'x-oz://boot/System'
    Boot_Space     at 'x-oz://boot/Space'
@@ -350,7 +354,7 @@ prepare
 #include "Atom.oz"
 #include "Name.oz"
 #include "Bool.oz"
-%#include "String.oz"
+#include "String.oz"
 %#include "Char.oz"
 #include "Int.oz"
 #include "Float.oz"
@@ -363,13 +367,14 @@ prepare
 #include "Dictionary.oz"
 #include "Record.oz"
 #include "Chunk.oz"
-%#include "VirtualString.oz"
+#include "VirtualString.oz"
 #include "Array.oz"
 #include "Object.oz"
 %#include "BitArray.oz"
 %#include "ForeignPointer.oz"
 #include "Thread.oz"
 #include "Time.oz"
+#include "ByteString.oz"
 
 #include "Space.oz"
 #include "System.oz"

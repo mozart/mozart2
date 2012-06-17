@@ -126,6 +126,9 @@ void VirtualMachine::startGC(GC gc) {
     _alarms.push_back_new(this, iter->expiration, iter->wakeable);
     gc->copyStableRef(_alarms.back().wakeable, _alarms.back().wakeable);
   }
+
+  // Oh, and, yes, environmental roots as well
+  environment.gCollect(gc);
 }
 
 }

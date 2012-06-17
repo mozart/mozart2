@@ -101,7 +101,8 @@ OpResult Implementation<Atom>::isString(Self self, VM vm, bool& result) {
   return OpResult::proceed();
 }
 
-OpResult Implementation<Atom>::getString(Self self, VM vm, LString<nchar>& result) {
+OpResult Implementation<Atom>::unsafeGetString(Self self, VM vm,
+                                               LString<nchar>& result) {
   if (value() != vm->coreatoms.nil)
     return raiseTypeError(vm, NSTR("String"), self);
   result = LString<nchar>();

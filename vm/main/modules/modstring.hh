@@ -59,8 +59,8 @@ public:
 
     OpResult operator()(VM vm, In value, Out result) {
       LString<nchar> string;
-      MOZART_CHECK_OPRESULT(StringLike(value).getString(vm, string));
-      result = Atom::build(vm, string.length, string.string);
+      MOZART_CHECK_OPRESULT(StringLike(value).unsafeGetString(vm, string));
+      result = Atom::build(vm, string.length(), string.string());
       return OpResult::proceed();
     }
   };

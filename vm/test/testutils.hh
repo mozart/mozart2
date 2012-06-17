@@ -36,7 +36,8 @@ namespace mozart {
      */
     template <class Type>
     static bool EXPECT_IS(RichNode actual) {
-      EXPECT_EQ(Type::type(), actual.type());
+      EXPECT_EQ(Type::type(), actual.type())
+        << Type::type()->getName() << " != " << actual.type()->getName();
       return Type::type() == actual.type();
     }
 
@@ -44,7 +45,7 @@ namespace mozart {
      * Expect that a node is an atom and the content is the given
      * null-terminated string.
      */
-    bool EXPECT_EQ_ATOM(LString<nchar> expected, RichNode actual) const {
+    bool EXPECT_EQ_ATOM(const LString<nchar>& expected, RichNode actual) const {
       if (!EXPECT_IS<Atom>(actual)) return false;
       const AtomImpl* impl = actual.as<Atom>().value();
       LString<nchar> actualString (impl->contents(), impl->length());
@@ -91,16 +92,10 @@ namespace mozart {
      * Expect that a node is a string and the content is the given
      * null-terminated string.
      */
-    static bool EXPECT_EQ_STRING(LString<nchar> expected, RichNode actual) {
-        if (!EXPECT_IS<String>(actual)) return false;
-        auto actualString = actual.as<String>().getString();
-        EXPECT_EQ(expected, actualString);
-        return expected == actualString;
-    }
+    bool EXPECT_EQ_STRING(const LString<nchar>& expected, RichNode actual) const;
   };
 
-  std::ostream& operator<<(std::ostream& out, LString<nchar> input);
-
+  void PrintTo(const LString<nchar>& input, std::ostream& out);
 }
 
 #endif

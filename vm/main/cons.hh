@@ -40,9 +40,9 @@ namespace mozart {
 
 // Constructors ----------------------------------------------------------------
 
-Implementation<Cons>::Implementation(VM vm, LString<nchar> string) {
+Implementation<Cons>::Implementation(VM vm, LString<nchar>&& string) {
   assert(!string.isErrorOrEmpty());
-  _string = string;
+  _string = std::move(string);
 }
 
 Implementation<Cons>::Implementation(VM vm, RichNode head, RichNode tail) {
@@ -51,7 +51,7 @@ Implementation<Cons>::Implementation(VM vm, RichNode head, RichNode tail) {
 }
 
 Implementation<Cons>::Implementation(VM vm, GR gr, Self from) {
-  _string = LString<nchar>(vm, from->_string);
+  _string = newLString(vm, from->_string);
   if (!isString()) {
     gr->copyStableNode(_head, from->_head);
     gr->copyStableNode(_tail, from->_tail);
@@ -81,12 +81,13 @@ OpResult Implementation<Cons>::getTail(VM vm, UnstableNode& result) {
 
   } else {
     // Slice the rest and return.
-    nativeint stride = getUTFStride(_string.string);
+    nativeint stride = getUTFStride(_string.string());
     if (stride <= 0)
       return raiseUnicodeError(vm, (UnicodeErrorReason) stride);
 
-    LString<nchar> newString(_string.string + stride, _string.length - stride);
-    result = buildString(vm, newString);
+    _string.withSubstring(stride, [&](const LString<nchar>& newString) {
+      result = buildString(vm, newString.unsafeAlias());
+    });
   }
 
   return OpResult::proceed();
@@ -109,7 +110,10 @@ OpResult Implementation<Cons>::getStableHeadAndTail(VM vm,
   tail = new (vm) StableNode;
 
   head->make<SmallInt>(vm, decodeRes.first);
-  tail->make<Cons>(vm, LString<nchar>(_string.string + decodeRes.second, _string.length - decodeRes.second));
+  _string.withSubstring(decodeRes.second, [&, tail](const LString<nchar>& newString) {
+    auto unstableTail = buildString(vm, newString.unsafeAlias());
+    tail->init(vm, unstableTail);
+  });
   return OpResult::proceed();
 }
 
@@ -188,10 +192,10 @@ OpResult Implementation<Cons>::waitOr(Self self, VM vm,
 inline
 bool Implementation<Cons>::internalGetConsStuff(StableNode*& head,
                                                 StableNode*& tail,
-                                                LString<nchar>& endStr) {
+                                                LString<nchar>*& endStr) {
   head = &_head;
   tail = &_tail;
-  endStr = _string;
+  endStr = &_string;
   return isString();
 }
 
@@ -204,7 +208,7 @@ OpResult Implementation<Cons>::resolveIsString(Self self, VM vm) {
     return raiseTypeError(vm, NSTR("String"), self);
 
   std::vector<char32_t> buffer;
-  LString<nchar> endStr;
+  LString<nchar>* endStr = nullptr;
 
   StableNode* headPtr = &_head;
   StableNode* tailPtr = &_tail;
@@ -230,12 +234,10 @@ OpResult Implementation<Cons>::resolveIsString(Self self, VM vm) {
         break;
 
     } else if (tail.is<Cons>()) {
-      LString<nchar> theEndStr;
-      bool tailIsString = tail.as<Cons>().internalGetConsStuff(headPtr, tailPtr, theEndStr);
-      if (tailIsString) {
-        endStr = theEndStr;
+      bool tailIsString = tail.as<Cons>().internalGetConsStuff(headPtr, tailPtr, endStr);
+      if (tailIsString)
         break;
-      } else
+      else
         continue;
     }
 
@@ -243,20 +245,20 @@ OpResult Implementation<Cons>::resolveIsString(Self self, VM vm) {
   }
 
   LString<char32_t> leadStrUTF32 (buffer.data(), buffer.size());
-  LString<nchar> leadStr = toUTF<nchar>(vm, leadStrUTF32);
+  FreeableLString<nchar> leadStr = toUTF<nchar>(vm, leadStrUTF32);
   if (leadStr.isErrorOrEmpty()) {
-    return raiseUnicodeError(vm, leadStr.error, self);
+    return raiseUnicodeError(vm, leadStr.error(), self);
   }
 
-  if (!endStr.isErrorOrEmpty()) {
-    nativeint newLength = leadStr.length + endStr.length;
-    nchar* newStr = new (vm) nchar[newLength];
-    memcpy(newStr, leadStr.string, leadStr.length * sizeof(nchar));
-    memcpy(newStr + leadStr.length, endStr.string, endStr.length * sizeof(nchar));
-    _string = LString<nchar>(newStr, newLength);
-    leadStr.free(vm);
+  if (endStr != nullptr && !endStr->isErrorOrEmpty()) {
+    nativeint newLength = leadStr.length() + endStr->length();
+    _string = FreeableLString<nchar>(vm, newLength, [&, endStr](nchar* newStr) {
+      memcpy(newStr, leadStr.string(), leadStr.bytesCount());
+      memcpy(newStr + leadStr.length(), endStr->string(), endStr->bytesCount());
+    });
+    free(std::move(leadStr));
   } else {
-    _string = leadStr;
+    _string = std::move(leadStr);
   }
 
   return OpResult::proceed();
@@ -304,7 +306,7 @@ void Implementation<Cons>::printReprToStream(Self self, VM vm,
   } else {
     auto utf8Result = toUTF<char>(vm, _string);
     out << '"' << utf8Result << '"';
-    utf8Result.free(vm);
+    free(std::move(utf8Result));
   }
 }
 
@@ -345,10 +347,10 @@ OpResult Implementation<Cons>::vsChangeSign(Self self, VM vm,
 
 // StringLike interface --------------------------------------------------------
 
-OpResult Implementation<Cons>::getString(Self self, VM vm,
-                                         LString<nchar>& result) {
+OpResult Implementation<Cons>::unsafeGetString(Self self, VM vm,
+                                               LString<nchar>& result) {
   MOZART_CHECK_OPRESULT(resolveIsString(self, vm));
-  result = _string;
+  result = _string.unsafeAlias();
   return OpResult::proceed();
 }
 

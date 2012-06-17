@@ -75,7 +75,7 @@ public:
       std::basic_ostringstream<nchar> combinedStringStream;
       VirtualString(string).toString(vm, combinedStringStream);
       std::basic_string<nchar> combinedString = combinedStringStream.str();
-      LString<nchar> rawString (combinedString.data(), combinedString.length());
+      auto rawString = makeLString(combinedString.data(), combinedString.length());
 
       return encodeToBytestring(vm, rawString, (ByteStringEncoding)encoding,
                                 isLE, hasBOM, result);

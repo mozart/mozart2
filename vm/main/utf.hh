@@ -32,7 +32,97 @@
 // Note: Perhaps we should switch to <codecvt> when libstdc++ supports it.
 //       or use icu's conversion function.
 
+///////////////////////////////
+// LString & FreeableLString //
+///////////////////////////////
+
 namespace mozart {
+
+template <class C>
+static std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
+                                         const mozart::LString<C>& input) {
+  return out.write(input.string(), input.length());
+}
+
+template <class C>
+void LString<C>::reset() {
+  _string = nullptr;
+  _length = 0;
+}
+
+template <class C>
+LString<C>::LString(LString&& other)
+    : _string(other._string), _length(other._length) {
+  other.reset();
+}
+
+template <class C>
+LString<C>& LString<C>::operator=(LString&& other) {
+  if (this != &other) {
+    _string = other._string;
+    _length = other._length;
+    other.reset();
+  }
+  return *this;
+}
+
+template <class C>
+bool LString<C>::operator==(const LString& a) const {
+  if (_length != a._length)
+    return false;
+  if (_string == a._string)
+    return true;
+  return memcmp(_string, a._string, bytesCount()) == 0;
+}
+
+template <class C>
+bool LString<C>::operator!=(const LString& a) const {
+  return !(*this == a);
+}
+
+template <class C>
+void FreeableLString<C>::doFree() {
+  if (!this->isErrorOrEmpty())
+    _vm->free(const_cast<C*>(this->_string), this->bytesCount());
+  this->reset();
+}
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const LString<C>& from) {
+  if (from.isErrorOrEmpty()) {
+    return from.error();
+  } else {
+    return FreeableLString<C>(vm, from.length(), [&](C* buf) {
+      memcpy(buf, from.string(), from.bytesCount());
+    });
+  }
+}
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const std::vector<C>& vector) {
+  return newLString(vm, makeLString(vector.data(), vector.size()));
+}
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const std::basic_string<C>& cppStr) {
+  return newLString(vm, makeLString(cppStr.data(), cppStr.size()));
+}
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const C* cStr) {
+  return newLString(vm, makeLString(cStr));
+}
+
+template <class C>
+template <class F>
+FreeableLString<C>::FreeableLString(VM vm, nativeint length, const F& modifier)
+    : _vm(vm) {
+
+  this->_length = length;
+  C* memory = static_cast<C*>(vm->malloc(length * sizeof(C)));
+  modifier(memory);
+  this->_string = memory;
+}
 
 /////////////////////////////////
 // Unicode encoding conversion //
@@ -177,21 +267,22 @@ static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint) {
 
 template <class To, class From>
 struct UTFConvertor {
-  static LString<To> call(VM vm, LString<From> input) {
+  static FreeableLString<To> call(VM vm, const LString<From>& input) {
     // propagate error if needed.
     if (input.isErrorOrEmpty())
-      return input.error;
+      return input.error();
 
     // The slow branch for required conversion.
     std::vector<To> tempVector;
-    tempVector.reserve(input.length);
+    tempVector.reserve(input.length());
 
+    const From* cur = input.begin();
     const From* end = input.end();
-    while (input.string < end) {
-      auto codePointSizePair = fromUTF(input.string, end - input.string);
+    while (cur < end) {
+      auto codePointSizePair = fromUTF(cur, end - cur);
       if (codePointSizePair.second < 0)
         return (UnicodeErrorReason) codePointSizePair.second;
-      input.string += codePointSizePair.second;
+      cur += codePointSizePair.second;
 
       To encoded[4];
       nativeint encodedLength = toUTF(codePointSizePair.first, encoded);
@@ -200,50 +291,52 @@ struct UTFConvertor {
       tempVector.insert(tempVector.end(), encoded, encoded + encodedLength);
     }
 
-    return LString<To>(vm, LString<To>(tempVector.data(), tempVector.size()));
+    return newLString(vm, tempVector);
   }
 };
 
 template <class To>
 struct UTFConvertor<To, To> {
-  static LString<To> call(VM vm, LString<To> input) {
+  static FreeableLString<To> call(VM vm, const LString<To>& input) {
     // propagate error if needed.
     if (input.isErrorOrEmpty())
-      return input.error;
+      return input.error();
 
     // Just validate if the whole string is correct.
-    LString<To> validator = input;
-    const To* end = validator.end();
-    while (validator.string < end) {
-      nativeint length = fromUTF(validator.string, end - validator.string).second;
+    const To* cur = input.begin();
+    const To* end = input.end();
+    while (cur < end) {
+      nativeint length = fromUTF(cur, end - cur).second;
       if (length < 0)
         return (UnicodeErrorReason) length;
-      validator.string += length;
+      cur += length;
     }
 
     // No conversion needed.
-    return LString<To>(vm, input);
+    return newLString(vm, input);
   }
 };
 
 template <class To, class From>
-static LString<To> toUTF(VM vm, LString<From> input) {
+static FreeableLString<To> toUTF(VM vm, const LString<From>& input) {
   return UTFConvertor<To, From>::call(vm, input);
 }
 
-static LString<char> toLatin1(VM vm, LString<nchar> input) {
+__attribute__((unused))
+static FreeableLString<char> toLatin1(VM vm, const LString<nchar>& input) {
   if (input.isErrorOrEmpty())
-    return input.error;
+    return input.error();
 
   std::vector<char> tempVector;
-  tempVector.reserve(input.length);
+  tempVector.reserve(input.length());
 
+  const nchar* cur = input.begin();
   const nchar* end = input.end();
-  while (input.string < end) {
-    auto codePointSizePair = fromUTF(input.string, end - input.string);
+  while (cur < end) {
+    auto codePointSizePair = fromUTF(cur, end - cur);
     if (codePointSizePair.second < 0)
       return (UnicodeErrorReason) codePointSizePair.second;
-    input.string += codePointSizePair.second;
+    cur += codePointSizePair.second;
 
     if (codePointSizePair.first > 0xff)
       tempVector.push_back('?');
@@ -251,48 +344,49 @@ static LString<char> toLatin1(VM vm, LString<nchar> input) {
       tempVector.push_back(codePointSizePair.first);
   }
 
-  return LString<char>(vm, LString<char>(tempVector.data(), tempVector.size()));
+  return newLString(vm, tempVector);
 }
 
-static LString<nchar> fromLatin1(VM vm, LString<char> input) {
+__attribute__((unused))
+static FreeableLString<nchar> fromLatin1(VM vm, const LString<char>& input) {
   if (std::is_same<nchar, char>::value) {
 
     // UTF-8 needs special consideration, because 0x80~0xff maps to 2-byte
     // sequences.
     std::vector<nchar> tempVector;
-    tempVector.reserve(input.length);
+    tempVector.reserve(input.length());
 
-    for (nativeint i = 0; i < input.length; ++ i) {
-      char32_t c = (unsigned char) input.string[i];
+    for (char c8 : input) {
+      char32_t c = (unsigned char) c8;
       nchar encoded[4];
-      nativeint length = toUTF(c, encoded);   // always valid.
+      nativeint length = toUTF(c, encoded);
       tempVector.insert(tempVector.end(), encoded, encoded + length);
     }
 
-    return LString<nchar>(vm, LString<nchar>(tempVector.data(), tempVector.size()));
+    return newLString(vm, tempVector);
 
   } else {
 
-    nchar* retval = static_cast<nchar*>(vm->malloc(input.length * sizeof(nchar)));
-    std::copy(reinterpret_cast<const unsigned char*>(input.begin()),
-          reinterpret_cast<const unsigned char*>(input.end()),
-          retval);
-    return LString<nchar>(retval, input.length);
+    return FreeableLString<nchar>(vm, input.length(), [&](nchar* memory) {
+      std::copy(reinterpret_cast<const unsigned char*>(input.begin()),
+                reinterpret_cast<const unsigned char*>(input.end()),
+                memory);
+    });
 
   }
 }
 
 template <class C>
-static int compareByCodePoint(LString<C> a, LString<C> b) {
-  if (a.string == b.string) {
-    return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
+static int compareByCodePoint(const LString<C>& a, const LString<C>& b) {
+  if (a.string() == b.string()) {
+    return a.length() < b.length() ? -1 : a.length() > b.length() ? 1 : 0;
   }
 
-  size_t minLength = std::min(a.length, b.length);
+  size_t minLength = std::min(a.length(), b.length());
 
   // UTF-8 and UTF-32 can be sorted directly.
   if (!std::is_same<C, char16_t>::value) {
-    int compareRes = std::char_traits<C>::compare(a.string, b.string, minLength);
+    int compareRes = std::char_traits<C>::compare(a.string(), b.string(), minLength);
     if (compareRes != 0)
       return compareRes;
   }
@@ -300,23 +394,24 @@ static int compareByCodePoint(LString<C> a, LString<C> b) {
   // UTF-16 need be compared manually, because a surrogate pair rank higher
   // than 0xe000, but the value in a string is lower.
   else {
-    for (; minLength; -- minLength, ++ a.string, ++ b.string) {
-      nchar aa = *a.string, bb = *b.string;
-      if (aa == bb)
+    const C* aa = a.string();
+    const C* bb = b.string();
+    for (; minLength; -- minLength, ++ aa, ++ bb) {
+      if (*aa == *bb)
         continue;
 
-      bool aIsSurrogate = 0xd800 <= aa && aa < 0xe000;
-      bool bIsSurrogate = 0xd800 <= bb && bb < 0xe000;
+      bool aIsSurrogate = 0xd800 <= *aa && *aa < 0xe000;
+      bool bIsSurrogate = 0xd800 <= *bb && *bb < 0xe000;
 
       if (aIsSurrogate == bIsSurrogate) {
-        return aa < bb ? -1 : 1;
+        return *aa < *bb ? -1 : 1;
       } else {
         return aIsSurrogate ? 1 : -1;
       }
     }
   }
 
-  return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
+  return a.length() < b.length() ? -1 : a.length() > b.length() ? 1 : 0;
 }
 
 __attribute__((unused))
@@ -352,67 +447,25 @@ static nativeint getUTFStride(const char32_t* utf) {
 }
 
 __attribute__((unused))
-static nativeint codePointCount(LString<char> input) {
+static nativeint codePointCount(const LString<char>& input) {
   if (input.isErrorOrEmpty())
-  return input.length;
+    return input.length();
   return std::count_if(input.begin(), input.end(), [](char c) {
     return !('\x80' <= c && c < '\xc0');
   });
 }
 
-static nativeint codePointCount(LString<char16_t> input) {
+static nativeint codePointCount(const LString<char16_t>& input) {
   if (input.isErrorOrEmpty())
-  return input.length;
+    return input.length();
   return std::count_if(input.begin(), input.end(), [](char16_t c) {
     return !(0xdc00 <= c && c < 0xe000);
   });
 }
 
 __attribute__((unused))
-static nativeint codePointCount(LString<char32_t> input) {
-  return input.length;
-}
-
-/////////////
-// LString //
-/////////////
-
-template <class C>
-void LString<C>::free(VM vm) {
-  if (length >= 0)
-    vm->free(const_cast<C*>(string), length * sizeof(C));
-  string = nullptr;
-  length = 0;
-}
-
-template <class C>
-LString<C>::LString(VM vm, LString<C> other) : length(other.length) {
-  if (other.isErrorOrEmpty()) {
-    string = nullptr;
-  } else {
-    void* memory = vm->malloc(other.bytesCount());
-    memcpy(memory, other.string, other.bytesCount());
-    string = static_cast<const C*>(memory);
-  }
-}
-
-template <class C>
-static std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out, LString<C> input) {
-  return out.write(input.string, input.length);
-}
-
-template <class C>
-static bool operator==(LString<C> a, LString<C> b) {
-  if (a.length != b.length)
-    return false;
-  if (a.string == b.string)
-    return true;
-  return memcmp(a.string, b.string, a.length*sizeof(C)) == 0;
-}
-
-template <class C>
-static bool operator!=(LString<C> a, LString<C> b) {
-  return !(a == b);
+static nativeint codePointCount(const LString<char32_t>& input) {
+  return input.length();
 }
 
 }

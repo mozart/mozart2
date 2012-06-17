@@ -196,7 +196,7 @@ struct FloatToStringHelper {
   void buildStringAt(VM vm, size_t from, size_t to, UnstableNode& result) const {
     nchar* vmStr = new (vm) nchar[to - from];
     memcpy(vmStr, string.get() + from, (to - from) * sizeof(nchar));
-    result.make<Cons>(vm, LString<nchar>(vmStr, to - from));
+    result = buildString(vm, LString<nchar>(vmStr, to - from));
   }
 };
 

@@ -111,7 +111,7 @@ public:
   OpResult isString(Self self, VM vm, bool& result);
 
   inline
-  OpResult getString(Self self, VM vm, LString<nchar>& result);
+  OpResult unsafeGetString(Self self, VM vm, LString<nchar>& result);
 
 public:
   // Miscellaneous

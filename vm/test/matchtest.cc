@@ -67,5 +67,23 @@ TEST_F(MatchTest, PatternMatchCons_String) {
     }
 }
 
+TEST_F(MatchTest, PatternMatchCons_StringLength1) {
+    auto normalCons = buildString(vm, NSTR("p"));
+    auto pattern = buildCons(vm, PatMatCapture::build(vm, 0), PatMatCapture::build(vm, 1));
+
+    UnstableNode nodes[2];
+    StaticArray<UnstableNode> captures (nodes, 2);
+
+    bool result;
+    if (EXPECT_PROCEED(patternMatch(vm, normalCons, pattern, captures, result))) {
+        EXPECT_TRUE(result);
+        if (result) {
+            EXPECT_EQ_INT('p', nodes[0]);
+            EXPECT_EQ_ATOM(NSTR("nil"), nodes[1]);
+        }
+    }
+}
+
+
 
 

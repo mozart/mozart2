@@ -77,11 +77,11 @@ TEST_F(StringTest, IsRecord) {
     }
 }
 
-TEST_F(StringTest, GetString) {
+TEST_F(StringTest, UnsafeGetString) {
     for (const nchar* s : stringTestVector) {
         UnstableNode stringNode = buildString(vm, s);
         LString<nchar> t;
-        if (EXPECT_PROCEED(StringLike(stringNode).getString(vm, t))) {
+        if (EXPECT_PROCEED(StringLike(stringNode).unsafeGetString(vm, t))) {
             EXPECT_EQ(LString<nchar>(s), t);
         }
     }
@@ -102,10 +102,8 @@ TEST_F(StringTest, Equals) {
         for (const nchar* const t : stringTestVector) {
             UnstableNode tNode = buildString(vm, t);
 
-            LString<nchar> tCopy (vm, t);
-            UnstableNode tNodeCopy = buildString(vm, tCopy);
-
-            ASSERT_NE(t, tCopy.string);
+            auto tCopy = newLString(vm, makeLString(t));
+            UnstableNode tNodeCopy = buildString(vm, std::move(tCopy));
 
             bool stEquals = (s == t);
 
@@ -124,10 +122,6 @@ TEST_F(StringTest, Equals) {
             EXPECT_NODE_EQ(true, tNode, tNodeCopy);
 
             #undef EXPECT_NODE_EQ
-
-            //tCopy.free(vm);
-            //^ can't free after it's put into a node. rebinding magic may cause
-            //  sNode & tNode & tNodeCopy using the same LString.
         }
     }
 }

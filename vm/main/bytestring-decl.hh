@@ -54,7 +54,7 @@ public:
 public:
   static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
-  Implementation(VM vm, LString<char> bytes) : _bytes(bytes) {}
+  Implementation(VM vm, LString<char>&& bytes) : _bytes(std::move(bytes)) {}
 
   inline
   Implementation(VM vm, GR gr, Self self);
@@ -124,14 +124,14 @@ public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
-  LString<char> getBytes() const { return _bytes; }
+  const LString<char>& getBytes() const { return _bytes; }
 
 private:
   LString<char> _bytes;
 };
 
 static
-OpResult encodeToBytestring(VM vm, LString<nchar> input,
+OpResult encodeToBytestring(VM vm, const LString<nchar>& input,
                             ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
                             UnstableNode& result);
 

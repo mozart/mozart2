@@ -28,15 +28,16 @@
 #include "mozartcore-decl.hh"
 #include <utility>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <type_traits>
 #include <ostream>
 
 namespace mozart {
 
-/////////////
-// LString //
-/////////////
+////////////////////////
+// UnicodeErrorReason //
+////////////////////////
 
 /**
  * An integer indicating the string pair contains a surrogate character.
@@ -54,54 +55,146 @@ enum UnicodeErrorReason : nativeint {
           std::is_same<nchar, char>::value ? invalidUTF8 : outOfRange
 };
 
+//////////////////////////////////////
+// LString - Length-prefixed string //
+//////////////////////////////////////
+
 template <class C>
-struct LString {    // LString = Length-prefixed string.
-    const C* string;
+struct FreeableLString;
+
+template <class C>
+struct LString {
+private:
+    const C* _string;
     union {
-        nativeint length;
-        UnicodeErrorReason error;
+        nativeint _length;
+        UnicodeErrorReason _error;
     };
 
-    bool isError() const { return length < 0; }
-    bool isErrorOrEmpty() const { return length <= 0; }
+    void reset();
 
-    size_t bytesCount() const { return length * sizeof(C); }
+    friend struct FreeableLString<C>;
 
-    const C* begin() const { return string; }
-    const C* end() const { return string + length; }
+public:
+    /// Whether this string contains an error.
+    constexpr bool isError() const { return _length < 0; }
 
-    C operator[](nativeint i) const { return string[i]; }
+    /// Whether this string is empty or contains an error.
+    constexpr bool isErrorOrEmpty() const { return _length <= 0; }
 
-    /**
-     * Free a string previously allocated from toUTF, fromLatin1 or toLatin1.
-     */
-    inline
-    void free(VM vm);
+    /// Number of bytes occupied by the string.
+    constexpr size_t bytesCount() const { return _length * sizeof(C); }
 
-    LString() : string(nullptr), length(0) {}
-    LString(UnicodeErrorReason error) : string(nullptr), error(error) {}
-    LString(const C* s) : string(s), length(std::char_traits<C>::length(s)) {}
-    LString(const C* s, nativeint len) : string(s), length(len) {}
-    LString(const LString&) = default;
+    /// Range interface - Beginning and end
+    const C* begin() const { return _string; }
+    const C* end() const { return _string + _length; }
 
-    /**
-     * Create a copy allocated on the VM heap.
-     */
-    inline
-    LString(VM vm, LString<C> other);
+    /// Properties.
+    const C* string() const { return _string; }
+    constexpr nativeint length() const { return _length; }
+    constexpr UnicodeErrorReason error() const { return _error; }
+
+    /// Indexing.
+    C operator[](nativeint i) const { return _string[i]; }
+
+    /// Initialize as empty string.
+    constexpr LString() : _string(nullptr), _length(0) {}
+
+    /// Initialize as error.
+    constexpr LString(UnicodeErrorReason error) : _string(nullptr), _error(error) {}
+
+    /// Initialize from immutable, ever-lasting C string (with length).
+    LString(const C* s) : _string(s), _length(std::char_traits<C>::length(s)) {}
+    LString(const C* s, nativeint len) : _string(s), _length(len) {}
+
+    /// An LString is not copyable, but is movable.
+    LString(const LString&) = delete;
+    LString& operator=(const LString&) = delete;
+    LString(LString&& other);
+    LString& operator=(LString&&);
+
+    // Equalities
+    bool operator==(const LString& other) const;
+    bool operator!=(const LString& other) const;
+
+    /// Create a new reference of LString to the same string as this. This
+    /// operation is unsafe, as there is now alasing. If one owner changes the
+    /// content, the other one will also see the change, causing some unintended
+    /// effects. This is safe if one can guarantee that the string is immutable.
+    LString unsafeAlias() const { return LString(_string, _length); }
+
+    /// Work on a substring.
+    template <class F>
+    auto withSubstring(nativeint from, const F& f) const -> decltype(f(*this)) {
+        const LString<C> copy (_string + from, _length - from);
+        return f(copy);
+    }
+
+    template <class F>
+    auto withSubstring(nativeint from, nativeint to, const F& f) const -> decltype(f(*this)) {
+        const LString<C> copy (_string + from, to - from);
+        return f(copy);
+    }
 };
 
-/**
- * Write the string to an output stream.
- */
+/// Convenient methods to create from C string (with length).
 template <class C>
-static std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out, LString<C> input);
+static inline LString<C> makeLString(const C* s, nativeint len) {
+    return LString<C>(s, len);
+}
+template <class C>
+static inline LString<C> makeLString(const C* s) {
+    return LString<C>(s);
+}
+
+
+///////////////////////////////////////////////////////////////////
+// FreeableLString - String which can be deterministically freed //
+///////////////////////////////////////////////////////////////////
+
+// Note: FreeableLString is a subclass of LString. It is safe to object-slice
+//       a FreeableLString into an LString. The string will just become garbage
+//       collected instead of deterministically destroyable.
 
 template <class C>
-static bool operator==(LString<C> a, LString<C> b);
+struct FreeableLString : LString<C> {
+    template <class K>
+    friend void free(FreeableLString<K>&& string);
+    template <class>
+    friend FreeableLString<C> newLString(VM vm, const LString<C>& from);
+
+    /// Initialize from pre-malloced memory and do some initialization on it.
+    template <class F>
+    FreeableLString(VM vm, nativeint length, const F& modifier);
+
+    /// Rest of the constructors inherited from the base.
+    FreeableLString(UnicodeErrorReason e) : LString<C>(e), _vm(nullptr) {}
+
+private:
+    VM _vm;
+
+    void doFree();
+};
 
 template <class C>
-static bool operator!=(LString<C> a, LString<C> b);
+static void free(FreeableLString<C>&& string) { string.doFree(); }
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const LString<C>& from);
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const std::vector<C>& vector);
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const std::basic_string<C>& cppStr);
+
+template <class C>
+static FreeableLString<C> newLString(VM vm, const C* cStr);
+
+/// Write the string to an output stream.
+template <class C>
+static std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
+                                         const mozart::LString<C>& input);
 
 /////////////////////////////////
 // Unicode encoding conversion //
@@ -143,7 +236,7 @@ static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint len
  * the virtual machine heap. A copy will always be made on the VM heap.
  */
 template <class To, class From>
-static LString<To> toUTF(VM vm, LString<From> input);
+static FreeableLString<To> toUTF(VM vm, const LString<From>& input);
 
 /**
  * Convert between a string of Latin-1 (ISO-8859-1) string and native character
@@ -154,29 +247,29 @@ static LString<To> toUTF(VM vm, LString<From> input);
  *
  * If the covnersion failed, (nullptr, invalidLength) will be returned.
  */
-static LString<char> toLatin1(VM vm, LString<nchar> input);
-static LString<nchar> fromLatin1(VM vm, LString<char> input);
+static FreeableLString<char> toLatin1(VM vm, const LString<nchar>& input);
+static FreeableLString<nchar> fromLatin1(VM vm, const LString<char>& input);
 
 /**
  * Compare two strings by code-point order (without considering locale-specific
  * collation, normalization, etc.)
  */
 template <class C>
-inline static int compareByCodePoint(LString<C> a, LString<C> b);
+inline static int compareByCodePoint(const LString<C>& a, const LString<C>& b);
 
 template <class C>
-inline static int compareByCodePoint(const C* a, LString<C> b) {
-  return compareByCodePoint(LString<C>(a), b);
+inline static int compareByCodePoint(const C* a, const LString<C>& b) {
+  return compareByCodePoint(makeLString(a), b);
 }
 
 template <class C>
-inline static int compareByCodePoint(LString<C> a, const C* b) {
-  return compareByCodePoint(a, LString<C>(b));
+inline static int compareByCodePoint(const LString<C>& a, const C* b) {
+  return compareByCodePoint(a, makeLString(b));
 }
 
 template <class C>
 inline static int compareByCodePoint(const C* a, const C* b) {
-  return compareByCodePoint(LString<C>(a), LString<C>(b));
+  return compareByCodePoint(makeLString(a), makeLString(b));
 }
 
 /**
@@ -195,9 +288,9 @@ static nativeint getUTFStride(const char32_t* utf);
  * Count the number of code points in the UTF string. These functions do not
  * attempt to validate if the input is valid.
  */
-static nativeint codePointCount(LString<char> input);
-static nativeint codePointCount(LString<char16_t> input);
-static nativeint codePointCount(LString<char32_t> input);
+static nativeint codePointCount(const LString<char>& input);
+static nativeint codePointCount(const LString<char16_t>& input);
+static nativeint codePointCount(const LString<char32_t>& input);
 
 }
 

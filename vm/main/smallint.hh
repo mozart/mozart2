@@ -269,15 +269,15 @@ OpResult Implementation<SmallInt>::vsChangeSign(Self self, VM vm,
     // TODO: create a BigInt??
     UnstableNode node;
     if (minVal == std::numeric_limits<int32_t>::min()) {
-      node.make<String>(vm, NSTR("2147483648"));
+      node = buildString(vm, NSTR("2147483648"));
     } else if (minVal == std::numeric_limits<int64_t>::min()) {
-      node.make<String>(vm, NSTR("9223372036854775808"));
+      node = buildString(vm, NSTR("9223372036854775808"));
     } else {
       auto str = std::to_string(value());
       size_t length = str.length() - 1;
       nchar* nStr = new (vm) nchar[length];
       std::copy(str.begin()+1, str.end(), nStr);
-      node.make<String>(vm, LString<nchar>(nStr, length));
+      node = buildString(vm, makeLString(nStr, length));
     }
     result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
   }

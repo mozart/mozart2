@@ -585,7 +585,7 @@ struct Interface<StringLike>: ImplementedBy<Cons, Atom> {
     return OpResult::proceed();
   }
 
-  OpResult getString(RichNode self, VM vm, LString<nchar>& result) {
+  OpResult unsafeGetString(RichNode self, VM vm, LString<nchar>& result) {
     return raiseTypeError(vm, NSTR("string"), self);
   }
 };

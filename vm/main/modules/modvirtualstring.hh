@@ -62,9 +62,9 @@ public:
     OpResult operator()(VM vm, In value, Out result) {
       std::basic_ostringstream<nchar> combinedStringStream;
       MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, combinedStringStream));
-      std::basic_string<nchar> combinedString = combinedStringStream.str();
-      LString<nchar> string (combinedString.data(), combinedString.length());
-      result = String::build(vm, string);
+      result = buildString(vm, newLString(vm, combinedStringStream.str()));
+      // ^ we need to call newLString() to move the result from the stack into
+      //   the VM heap.
       return OpResult::proceed();
     }
   };

@@ -58,10 +58,10 @@ bool mozart::MozartTest::EXPECT_RAISE(const nchar* label, OpResult result) const
     return EXPECT_EQ_ATOM(label, labelNode);
 }
 
-bool mozart::MozartTest::EXPECT_EQ_STRING(LString<nchar> expected,
+bool mozart::MozartTest::EXPECT_EQ_STRING(const LString<nchar>& expected,
                                           RichNode actual) const  {
     LString<nchar> actualString;
-    if (!EXPECT_PROCEED(StringLike(actual).getString(vm, actualString)))
+    if (!EXPECT_PROCEED(StringLike(actual).unsafeGetString(vm, actualString)))
         return false;
     EXPECT_EQ(expected, actualString);
     return expected == actualString;
@@ -69,7 +69,7 @@ bool mozart::MozartTest::EXPECT_EQ_STRING(LString<nchar> expected,
 
 namespace mozart {
 
-  void PrintTo(LString<nchar> input, std::ostream& out) {
+  void PrintTo(const LString<nchar>& input, std::ostream& out) {
     out << "< ";
     auto oldBase = out.setf(std::ios_base::hex, std::ios_base::basefield);
     for (nativeint c : input) {

@@ -227,11 +227,11 @@ UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
  * Build a string, which may be a Cons or a nil Atom.
  */
 inline
-UnstableNode buildString(VM vm, LString<nchar> content) {
-  if (content.length == 0)
+UnstableNode buildString(VM vm, LString<nchar>&& content) {
+  if (content.isErrorOrEmpty())
     return Atom::build(vm, vm->coreatoms.nil);
   else
-    return Cons::build(vm, content);
+    return Cons::build(vm, std::move(content));
 }
 
 }

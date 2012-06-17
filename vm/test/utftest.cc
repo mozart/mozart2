@@ -180,15 +180,15 @@ TEST_F(UTFTest, FromUTF_16) {
 
 TEST_F(UTFTest, ToUTF) {
     #define MAKE_TEST_CASE(String) \
-        EXPECT_EQ(LString<char>(u8##String), toUTF<char>(vm, LString<char>(u8##String))); \
-        EXPECT_EQ(LString<char>(u8##String), toUTF<char>(vm, LString<char16_t>(u##String))); \
-        EXPECT_EQ(LString<char>(u8##String), toUTF<char>(vm, LString<char32_t>(U##String))); \
-        EXPECT_EQ(LString<char16_t>(u##String), toUTF<char16_t>(vm, LString<char>(u8##String))); \
-        EXPECT_EQ(LString<char16_t>(u##String), toUTF<char16_t>(vm, LString<char16_t>(u##String))); \
-        EXPECT_EQ(LString<char16_t>(u##String), toUTF<char16_t>(vm, LString<char32_t>(U##String))); \
-        EXPECT_EQ(LString<char32_t>(U##String), toUTF<char32_t>(vm, LString<char>(u8##String))); \
-        EXPECT_EQ(LString<char32_t>(U##String), toUTF<char32_t>(vm, LString<char16_t>(u##String))); \
-        EXPECT_EQ(LString<char32_t>(U##String), toUTF<char32_t>(vm, LString<char32_t>(U##String)))
+        EXPECT_EQ(makeLString(u8##String), toUTF<char>(vm, makeLString(u8##String))); \
+        EXPECT_EQ(makeLString(u8##String), toUTF<char>(vm, makeLString(u##String))); \
+        EXPECT_EQ(makeLString(u8##String), toUTF<char>(vm, makeLString(U##String))); \
+        EXPECT_EQ(makeLString(u##String), toUTF<char16_t>(vm, makeLString(u8##String))); \
+        EXPECT_EQ(makeLString(u##String), toUTF<char16_t>(vm, makeLString(u##String))); \
+        EXPECT_EQ(makeLString(u##String), toUTF<char16_t>(vm, makeLString(U##String))); \
+        EXPECT_EQ(makeLString(U##String), toUTF<char32_t>(vm, makeLString(u8##String))); \
+        EXPECT_EQ(makeLString(U##String), toUTF<char32_t>(vm, makeLString(u##String))); \
+        EXPECT_EQ(makeLString(U##String), toUTF<char32_t>(vm, makeLString(U##String)))
 
     MAKE_TEST_CASE("abc");
     MAKE_TEST_CASE("a\u0300\u0080");
@@ -200,16 +200,16 @@ TEST_F(UTFTest, ToUTF) {
 }
 
 TEST_F(UTFTest, ToLatin1) {
-    EXPECT_EQ(LString<char>("a\xe1\x80\1c"), toLatin1(vm, NSTR("a\u00e1\u0080\u0001c")));
-    EXPECT_EQ(LString<char>("\x01\x12???"), toLatin1(vm, NSTR("\u0001\u0012\u0123\u1234\U00012345")));
+    EXPECT_EQ(makeLString("a\xe1\x80\1c"), toLatin1(vm, NSTR("a\u00e1\u0080\u0001c")));
+    EXPECT_EQ(makeLString("\x01\x12???"), toLatin1(vm, NSTR("\u0001\u0012\u0123\u1234\U00012345")));
     EXPECT_EQ(LString<char>(), toLatin1(vm, NSTR("")));
-    EXPECT_EQ(LString<char>("\0\0", 2), toLatin1(vm, LString<nchar>(NSTR("\0\0"), 2)));
+    EXPECT_EQ(makeLString("\0\0", 2), toLatin1(vm, makeLString(NSTR("\0\0"), 2)));
 }
 
 TEST_F(UTFTest, FromLatin1) {
-    EXPECT_EQ(LString<nchar>(NSTR("a\u00e1\u0080\u0001c")), fromLatin1(vm, "a\xe1\x80\1c"));
+    EXPECT_EQ(makeLString(NSTR("a\u00e1\u0080\u0001c")), fromLatin1(vm, "a\xe1\x80\1c"));
     EXPECT_EQ(LString<nchar>(), fromLatin1(vm, ""));
-    EXPECT_EQ(LString<nchar>(NSTR("\0\0"), 2), fromLatin1(vm, LString<char>("\0\0", 2)));
+    EXPECT_EQ(makeLString(NSTR("\0\0"), 2), fromLatin1(vm, makeLString("\0\0", 2)));
 }
 
 TEST_F(UTFTest, CompareByCodePoint) {
@@ -222,7 +222,7 @@ TEST_F(UTFTest, CompareByCodePoint) {
         EXPECT_GT(compareByCodePoint(P##"foo", P##"bar"), 0); \
         EXPECT_GT(compareByCodePoint(P##"\u1234\U00010000", P##"\u1234\uffff"), 0); \
         EXPECT_GT(compareByCodePoint(P##"aa", P##"a"), 0); \
-        EXPECT_LT(compareByCodePoint(P##"", LString<C>(P##"\0", 1)), 0); \
+        EXPECT_LT(compareByCodePoint(P##"", makeLString(P##"\0", 1)), 0); \
         EXPECT_EQ(0, compareByCodePoint(P##"", P##""))
 
     MAKE_TEST_CASE(u8, char);
@@ -231,9 +231,9 @@ TEST_F(UTFTest, CompareByCodePoint) {
 
     #undef MAKE_TEST_CASE
 
-    EXPECT_GT(compareByCodePoint(LString<char>(u8"\U00010000\0", 5), u8"\U00010000"), 0);
-    EXPECT_GT(compareByCodePoint(LString<char16_t>(u"\U00010000\0", 3), u"\U00010000"), 0);
-    EXPECT_GT(compareByCodePoint(LString<char32_t>(U"\U00010000\0", 2), U"\U00010000"), 0);
+    EXPECT_GT(compareByCodePoint(makeLString(u8"\U00010000\0", 5), u8"\U00010000"), 0);
+    EXPECT_GT(compareByCodePoint(makeLString(u"\U00010000\0", 3), u"\U00010000"), 0);
+    EXPECT_GT(compareByCodePoint(makeLString(U"\U00010000\0", 2), U"\U00010000"), 0);
 }
 
 TEST_F(UTFTest, GetUTFStride) {
@@ -263,45 +263,36 @@ TEST_F(UTFTest, GetUTFStride) {
 }
 
 TEST_F(UTFTest, CodePointCount) {
-    EXPECT_EQ(3, codePointCount(LString<char>(u8"asd", 3)));
-    EXPECT_EQ(2, codePointCount(LString<char>(u8"asd", 2)));
-    EXPECT_EQ(5, codePointCount(LString<char>(u8"\u0008\u0080\u0800\u8000\U00080000", 13)));
-    EXPECT_EQ(2, codePointCount(LString<char>(u8"\0\0", 2)));
+    EXPECT_EQ(3, codePointCount(makeLString(u8"asd", 3)));
+    EXPECT_EQ(2, codePointCount(makeLString(u8"asd", 2)));
+    EXPECT_EQ(5, codePointCount(makeLString(u8"\u0008\u0080\u0800\u8000\U00080000", 13)));
+    EXPECT_EQ(2, codePointCount(makeLString(u8"\0\0", 2)));
 
-    EXPECT_EQ(3, codePointCount(LString<char16_t>(u"asd", 3)));
-    EXPECT_EQ(2, codePointCount(LString<char16_t>(u"asd", 2)));
-    EXPECT_EQ(5, codePointCount(LString<char16_t>(u"\u0008\u0080\u0800\u8000\U00080000", 6)));
-    EXPECT_EQ(2, codePointCount(LString<char16_t>(u"\0\0", 2)));
+    EXPECT_EQ(3, codePointCount(makeLString(u"asd", 3)));
+    EXPECT_EQ(2, codePointCount(makeLString(u"asd", 2)));
+    EXPECT_EQ(5, codePointCount(makeLString(u"\u0008\u0080\u0800\u8000\U00080000", 6)));
+    EXPECT_EQ(2, codePointCount(makeLString(u"\0\0", 2)));
 
-    EXPECT_EQ(3, codePointCount(LString<char32_t>(U"asd", 3)));
-    EXPECT_EQ(2, codePointCount(LString<char32_t>(U"asd", 2)));
-    EXPECT_EQ(5, codePointCount(LString<char32_t>(U"\u0008\u0080\u0800\u8000\U00080000", 5)));
-    EXPECT_EQ(2, codePointCount(LString<char32_t>(U"\0\0", 2)));
+    EXPECT_EQ(3, codePointCount(makeLString(U"asd", 3)));
+    EXPECT_EQ(2, codePointCount(makeLString(U"asd", 2)));
+    EXPECT_EQ(5, codePointCount(makeLString(U"\u0008\u0080\u0800\u8000\U00080000", 5)));
+    EXPECT_EQ(2, codePointCount(makeLString(U"\0\0", 2)));
 }
 
 TEST_F(UTFTest, LStringCopyAndFree) {
     const char* foo = "abc";
     LString<char> imm (foo);
-    EXPECT_EQ(3, imm.length);
-    EXPECT_STREQ("abc", imm.string);
-    EXPECT_EQ(foo, imm.string);
+    EXPECT_EQ(3, imm.length());
+    EXPECT_STREQ("abc", imm.string());
+    EXPECT_EQ(foo, imm.string());
 
-    LString<char> copy (vm, imm);
-    EXPECT_EQ(3, copy.length);
-    EXPECT_STREQ("abc", copy.string);
-    EXPECT_NE(imm.string, copy.string);
+    auto copy = newLString(vm, imm);
+    EXPECT_EQ(3, copy.length());
+    EXPECT_STREQ("abc", copy.string());
+    EXPECT_NE(imm.string(), copy.string());
 
-    copy.free(vm);
-    EXPECT_EQ(3, imm.length);
-    EXPECT_STREQ("abc", imm.string);
-
-    LString<char> copy2 (vm, foo);
-    EXPECT_EQ(3, copy2.length);
-    EXPECT_STREQ("abc", copy2.string);
-    EXPECT_NE(imm.string, copy2.string);
-
-    copy2.free(vm);
-    EXPECT_EQ(3, imm.length);
-    EXPECT_STREQ("abc", imm.string);
+    free(std::move(copy));
+    EXPECT_EQ(3, imm.length());
+    EXPECT_STREQ("abc", imm.string());
 }
 

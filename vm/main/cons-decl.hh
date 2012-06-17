@@ -57,7 +57,7 @@ public:
   Implementation(VM vm, RichNode head, RichNode tail);
 
   inline
-  Implementation(VM vm, LString<nchar> string);
+  Implementation(VM vm, LString<nchar>&& string);
 
   inline
   Implementation(VM vm, GR gr, Self from);
@@ -81,7 +81,7 @@ public:
   }
 
   inline
-  OpResult getString(Self self, VM vm, LString<nchar>& result);
+  OpResult unsafeGetString(Self self, VM vm, LString<nchar>& result);
 
 protected:
   friend class IntegerDottableHelper<Cons>;
@@ -141,9 +141,10 @@ public:
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
 public:
+  // public only to let the generator generate this.
   inline
   bool internalGetConsStuff(StableNode*& head, StableNode*& tail,
-                            LString<nchar>& endStr);
+                            LString<nchar>*& endStr);
 
 private:
   // Resolve the intermediate status of cons/string. Returns whether it is a
@@ -159,7 +160,7 @@ private:
   // In particular, !isString() ≠ isCons().
   inline bool isString() const { return !_string.isErrorOrEmpty(); }
   inline bool isCons() const { return _string.isError(); }
-  inline bool isIntermediate() const { return _string.length == 0; }
+  inline bool isIntermediate() const { return _string.length() == 0; }
 
   // Note: although _head/_tail and _string are mutually exclusive, there might
   //       be cases where the stable nodes are refered by others. Thus, all 3

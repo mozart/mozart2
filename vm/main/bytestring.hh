@@ -41,21 +41,21 @@ namespace mozart {
 #include "ByteString-implem.hh"
 
 Implementation<ByteString>::Implementation(VM vm, GR gr, Self from)
-  : _bytes(vm, from->_bytes) {}
+  : _bytes(newLString(vm, from->_bytes)) {}
 
 bool Implementation<ByteString>::equals(VM vm, Self right) {
   return _bytes == right->_bytes;
 }
 
 int Implementation<ByteString>::compareFeatures(VM vm, Self right) {
-  int cmpRes = _bytes.string != right->_bytes.string;
+  int cmpRes = _bytes.string() != right->_bytes.string();
   if (cmpRes) {
-    nativeint minLength = std::min(_bytes.length, right->_bytes.length);
-    cmpRes = memcmp(_bytes.string, right->_bytes.string, minLength);
+    size_t minLength = std::min(_bytes.bytesCount(), right->_bytes.bytesCount());
+    cmpRes = memcmp(_bytes.string(), right->_bytes.string(), minLength);
   }
   if (!cmpRes) {
-    return _bytes.length < right->_bytes.length ? -1 :
-           _bytes.length > right->_bytes.length ? 1 : 0;
+    return _bytes.length() < right->_bytes.length() ? -1 :
+           _bytes.length() > right->_bytes.length() ? 1 : 0;
   } else {
     return cmpRes;
   }
@@ -70,12 +70,12 @@ OpResult Implementation<ByteString>::toString(Self self, VM vm,
                                               std::basic_ostream<nchar>& sink) {
   auto latin1Result = fromLatin1(vm, _bytes);   // Latin1 -> UTF always succeed.
   sink << latin1Result;
-  latin1Result.free(vm);
+  free(std::move(latin1Result));
   return OpResult::proceed();
 }
 
 OpResult Implementation<ByteString>::vsLength(Self self, VM vm, nativeint& result) {
-  result = _bytes.length;
+  result = _bytes.length();
   return OpResult::proceed();
 }
 
@@ -88,9 +88,9 @@ OpResult Implementation<ByteString>::vsChangeSign(Self self, VM vm,
 
 OpResult Implementation<ByteString>::bsGet(Self self, VM vm,
                                            nativeint index, char& result) {
-  if (index < 0 || index >= _bytes.length)
+  if (index < 0 || index >= _bytes.length())
     return raise(vm, NSTR("indexOutOfBound"), self, index);
-  result = _bytes.string[index];
+  result = _bytes[index];
   return OpResult::proceed();
 }
 
@@ -100,28 +100,31 @@ OpResult Implementation<ByteString>::bsAppend(Self self, VM vm,
   if (!right.is<ByteString>())
     return raiseTypeError(vm, NSTR("ByteString"), right);
 
-  if (_bytes.length <= 0) {
+  if (_bytes.isErrorOrEmpty()) {
     result.copy(vm, right);
     return OpResult::proceed();
   }
 
-  auto rightBytes = right.as<ByteString>().getBytes();
-  if (rightBytes.length <= 0) {
+  const LString<char>& rightBytes = right.as<ByteString>().getBytes();
+  if (rightBytes.isErrorOrEmpty()) {
     result.copy(vm, self);
     return OpResult::proceed();
   }
 
-  nativeint totalLength = _bytes.length + rightBytes.length;
+  nativeint totalLength = _bytes.length() + rightBytes.length();
 
   if (_bytes.end() == rightBytes.begin()) {
-    result.make<ByteString>(vm, LString<char>(_bytes.string, totalLength));
+    // Note: Unsafe, but fine because ByteString is immutable.
+    result.make<ByteString>(vm, makeLString(_bytes.string(), totalLength));
     return OpResult::proceed();
   }
 
-  char* newMem = new (vm) char[totalLength];
-  memcpy(newMem, _bytes.string, _bytes.length);
-  memcpy(newMem+_bytes.length, rightBytes.string, rightBytes.length);
-  result.make<ByteString>(vm, LString<char>(newMem, totalLength));
+  FreeableLString<char> newString (vm, totalLength, [&, this](char* newMem) {
+    memcpy(newMem, _bytes.string(), _bytes.length());
+    memcpy(newMem + _bytes.length(), rightBytes.string(), rightBytes.length());
+  });
+  result.make<ByteString>(vm, std::move(newString));
+
   return OpResult::proceed();
 }
 
@@ -129,83 +132,71 @@ OpResult Implementation<ByteString>::bsDecode(Self self, VM vm,
                                               ByteStringEncoding encoding,
                                               bool isLittleEndian, bool hasBOM,
                                               UnstableNode& result) {
-  LString<nchar> str;
+  FreeableLString<nchar> (*fptr)(VM, const LString<char>&, bool, bool);
   switch (encoding) {
-    case ByteStringEncoding::latin1:
-      str = decodeLatin1(vm, _bytes, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf8:
-      str = decodeUTF8(vm, _bytes, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf16:
-      str = decodeUTF16(vm, _bytes, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf32:
-      str = decodeUTF32(vm, _bytes, isLittleEndian, hasBOM);
-      break;
+    case ByteStringEncoding::latin1: fptr = &decodeLatin1; break;
+    case ByteStringEncoding::utf8:   fptr = &decodeUTF8;   break;
+    case ByteStringEncoding::utf16:  fptr = &decodeUTF16;  break;
+    case ByteStringEncoding::utf32:  fptr = &decodeUTF32;  break;
     default:
       return OpResult::fail();
   }
 
-  if (str.isError())
-    return raiseUnicodeError(vm, str.error, self);
+  auto str = fptr(vm, _bytes, isLittleEndian, hasBOM);
 
-  result.make<String>(vm, str);
+  if (str.isError())
+    return raiseUnicodeError(vm, str.error(), self);
+
+  result = buildString(vm, std::move(str));
   return OpResult::proceed();
 }
 
 OpResult Implementation<ByteString>::bsSlice(Self self, VM vm,
                                              nativeint from, nativeint to,
                                              UnstableNode& result) {
-  if (from > to || from < 0 || to >= _bytes.length)
+  if (from > to || from < 0 || to >= _bytes.length())
     return raise(vm, NSTR("indexOutOfBound"), self, from, to);
 
-  LString<char> newBytes (_bytes.string + from, to - from);
-  result.make<ByteString>(vm, newBytes);
+  _bytes.withSubstring(from, to, [&](const LString<char>& substring) {
+    result.make<ByteString>(vm, substring.unsafeAlias());
+  });
   return OpResult::proceed();
 }
 
 OpResult Implementation<ByteString>::bsStrChr(Self self, VM vm, nativeint from,
                                               char character, UnstableNode& res) {
-  if (from < 0 || from >= _bytes.length)
+  if (from < 0 || from >= _bytes.length())
     return raise(vm, NSTR("indexOutOfBound"), self, from);
 
-  char* start = const_cast<char*>(_bytes.string + from);
-  void* result = memchr(start, character, _bytes.length - from);
+  char* start = const_cast<char*>(_bytes.string() + from);
+  void* result = memchr(start, character, _bytes.length() - from);
   if (result == nullptr)
     res.make<Boolean>(vm, false);
   else
-    res.make<SmallInt>(vm, static_cast<char*>(result) - _bytes.string);
+    res.make<SmallInt>(vm, static_cast<char*>(result) - _bytes.string());
   return OpResult::proceed();
 }
 
 
 static
-OpResult encodeToBytestring(VM vm, LString<nchar> input,
+OpResult encodeToBytestring(VM vm, const LString<nchar>& input,
                             ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
                             UnstableNode& result) {
-  LString<char> bytes;
+  FreeableLString<char> (*fptr)(VM, const LString<nchar>&, bool, bool);
   switch (encoding) {
-    case ByteStringEncoding::latin1:
-      bytes = encodeLatin1(vm, input, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf8:
-      bytes = encodeUTF8(vm, input, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf16:
-      bytes = encodeUTF16(vm, input, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf32:
-      bytes = encodeUTF32(vm, input, isLittleEndian, hasBOM);
-      break;
+    case ByteStringEncoding::latin1: fptr = &encodeLatin1; break;
+    case ByteStringEncoding::utf8:   fptr = &encodeUTF8;   break;
+    case ByteStringEncoding::utf16:  fptr = &encodeUTF16;  break;
+    case ByteStringEncoding::utf32:  fptr = &encodeUTF32;  break;
     default:
       return OpResult::fail();
   }
 
+  auto bytes = fptr(vm, input, isLittleEndian, hasBOM);
   if (bytes.isError())
-    return raiseUnicodeError(vm, bytes.error, String::build(vm, input));
+    return raiseUnicodeError(vm, bytes.error());
 
-  result.make<ByteString>(vm, bytes);
+  result.make<ByteString>(vm, std::move(bytes));
   return OpResult::proceed();
 }
 

@@ -70,6 +70,9 @@ public:
   }
 
   virtual UUID genUUID() = 0;
+
+  virtual void gCollect(GC gc) {
+  }
 private:
   bool _useDynamicPreemption;
 };

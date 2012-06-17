@@ -96,6 +96,18 @@ OpResult Implementation<Atom>::vsChangeSign(Self self, VM vm,
   return OpResult::proceed();
 }
 
+OpResult Implementation<Atom>::isString(Self self, VM vm, bool& result) {
+  result = value() == vm->coreatoms.nil;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Atom>::getString(Self self, VM vm, LString<nchar>& result) {
+  if (value() != vm->coreatoms.nil)
+    return raiseTypeError(vm, NSTR("String"), self);
+  result = LString<nchar>();
+  return OpResult::proceed();
+}
+
 
 }
 

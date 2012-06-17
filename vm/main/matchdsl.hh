@@ -560,9 +560,16 @@ bool matchesCons(VM vm, OpResult& result, RichNode value,
   }
 
   auto cons = value.as<Cons>();
+  StableNode* headNode;
+  StableNode* tailNode;
+  OpResult getRes = cons.getStableHeadAndTail(vm, headNode, tailNode);
+  if (!getRes.isProceed()) {
+    result = getRes;
+    return false;
+  }
 
-  return internal::matchesStable(vm, result, cons.getHead(), head) &&
-    internal::matchesStable(vm, result, cons.getTail(), tail);
+  return internal::matchesStable(vm, result, headNode, head) &&
+    internal::matchesStable(vm, result, tailNode, tail);
 }
 
 /**

@@ -58,7 +58,10 @@ public:
     ToAtom() : Builtin("toAtom") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      return StringLike(value).toAtom(vm, result);
+      LString<nchar> string;
+      MOZART_CHECK_OPRESULT(StringLike(value).getString(vm, string));
+      result = Atom::build(vm, string.length, string.string);
+      return OpResult::proceed();
     }
   };
 };

@@ -36,21 +36,21 @@ protected:
 
         testNodes[19].make<Unit>(vm);
 
-        testNodes[20].make<String>(vm, NSTR("f-o"));
-        testNodes[21].make<String>(vm, NSTR("nil"));
-        testNodes[22].make<String>(vm, NSTR("#"));
-        testNodes[23].make<String>(vm, NSTR("\U0010ffff\U0010ffff"));
+        testNodes[20].make<Cons>(vm, NSTR("f-o"));
+        testNodes[21].make<Cons>(vm, NSTR("nil"));
+        testNodes[22].make<Cons>(vm, NSTR("#"));
+        testNodes[23].make<Cons>(vm, NSTR("\U0010ffff\U0010ffff"));
 
         testNodes[24] = buildCons(vm, 0x40, buildCons(vm, 0x60, vm->coreatoms.nil));
         testNodes[25] = buildCons(vm, 0x40000, buildCons(vm, 0x60000, vm->coreatoms.nil));
-        testNodes[26] = buildCons(vm, 0x40000, String::build(vm, NSTR("60000")));
+        testNodes[26] = buildCons(vm, 0x40000, Cons::build(vm, NSTR("60000")));
 
         testNodes[27] = buildTuple(vm, vm->coreatoms.sharp, 123, 456);
         testNodes[28] = buildTuple(vm, vm->coreatoms.sharp, NSTR("f-o"), NSTR("nil"), 6);
         testNodes[29] = buildTuple(vm, vm->coreatoms.sharp,
-                                    String::build(vm, NSTR("\U00012345")),
+                                    Cons::build(vm, NSTR("\U00012345")),
                                     -12345,
-                                    String::build(vm, NSTR("-12345")),
+                                    Cons::build(vm, NSTR("-12345")),
                                     buildTuple(vm, vm->coreatoms.sharp, -1, -2, -3),
                                     -4,
                                     -5);
@@ -146,7 +146,7 @@ TEST_F(VirtualStringTest, ChangeSign) {
         NSTR("\u0070\u0080\u0090"),
     };
 
-    UnstableNode replacement = String::build(vm, NSTR("****"));
+    UnstableNode replacement = Cons::build(vm, NSTR("****"));
 
     size_t i = 0;
     for (auto&& node : testNodes) {
@@ -167,7 +167,7 @@ TEST_F(VirtualStringTest, IsNotVirtualString) {
         OptName::build(vm),
         buildCons(vm, 0xd800, buildCons(vm, 0xdc00, vm->coreatoms.nil)),
         buildCons(vm, 0x110000, vm->coreatoms.nil),
-        buildCons(vm, String::build(vm, NSTR("foo")), vm->coreatoms.nil),
+        buildCons(vm, Cons::build(vm, NSTR("foo")), vm->coreatoms.nil),
         buildCons(vm, 0x40, vm->coreatoms.typeError),
         buildTuple(vm, vm->coreatoms.typeError, 2, 2),
         buildTuple(vm, vm->coreatoms.sharp, 10, OptName::build(vm)),

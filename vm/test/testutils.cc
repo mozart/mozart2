@@ -58,9 +58,18 @@ bool mozart::MozartTest::EXPECT_RAISE(const nchar* label, OpResult result) const
     return EXPECT_EQ_ATOM(label, labelNode);
 }
 
+bool mozart::MozartTest::EXPECT_EQ_STRING(LString<nchar> expected,
+                                          RichNode actual) const  {
+    LString<nchar> actualString;
+    if (!EXPECT_PROCEED(StringLike(actual).getString(vm, actualString)))
+        return false;
+    EXPECT_EQ(expected, actualString);
+    return expected == actualString;
+}
+
 namespace mozart {
 
-  std::ostream& operator<<(std::ostream& out, LString<nchar> input) {
+  void PrintTo(LString<nchar> input, std::ostream& out) {
     out << "< ";
     auto oldBase = out.setf(std::ios_base::hex, std::ios_base::basefield);
     for (nativeint c : input) {
@@ -70,7 +79,6 @@ namespace mozart {
     }
     out.setf(oldBase, std::ios_base::basefield);
     out << ">";
-    return out;
   }
 
 }

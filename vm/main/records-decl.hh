@@ -118,7 +118,7 @@ protected:
   }
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  OpResult getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
 
   inline
   void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
@@ -168,109 +168,6 @@ private:
 
 #ifndef MOZART_GENERATOR
 #include "Tuple-implem-decl-after.hh"
-#endif
-
-//////////
-// Cons //
-//////////
-
-class Cons;
-
-#ifndef MOZART_GENERATOR
-#include "Cons-implem-decl.hh"
-#endif
-
-/**
- * Cons (specialization of Tuple with label '|' and width 2)
- */
-template <>
-class Implementation<Cons>: public IntegerDottableHelper<Cons>,
-  WithStructuralBehavior {
-public:
-  typedef SelfType<Cons>::Self Self;
-public:
-  inline
-  Implementation(VM vm, RichNode head, RichNode tail);
-
-  inline
-  Implementation(VM vm, GR gr, Self from);
-
-public:
-  StableNode* getHead() {
-    return &_head;
-  }
-
-  StableNode* getTail() {
-    return &_tail;
-  }
-
-  inline
-  bool equals(Self self, VM vm, Self right, WalkStack& stack);
-
-protected:
-  friend class IntegerDottableHelper<Cons>;
-
-  bool isValidFeature(Self self, VM vm, nativeint feature) {
-    return (feature == 1) || (feature == 2);
-  }
-
-  inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-public:
-  // RecordLike interface
-
-  OpResult isRecord(Self self, VM vm, bool& result) {
-    result = true;
-    return OpResult::proceed();
-  }
-
-  OpResult isTuple(Self self, VM vm, bool& result) {
-    result = true;
-    return OpResult::proceed();
-  }
-
-  inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult width(Self self, VM vm, size_t& result);
-
-  inline
-  OpResult arityList(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult clone(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult waitOr(Self self, VM vm, UnstableNode& result);
-
-public:
-  // VirtualString inteface
-  inline
-  OpResult isVirtualString(Self self, VM vm, bool& result);
-
-  inline
-  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
-
-  inline
-  OpResult vsLength(Self self, VM vm, nativeint& result);
-
-  inline
-  OpResult vsChangeSign(Self self, VM vm,
-                        RichNode replacement, UnstableNode& result);
-
-public:
-  inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
-
-private:
-  StableNode _head;
-  StableNode _tail;
-};
-
-#ifndef MOZART_GENERATOR
-#include "Cons-implem-decl-after.hh"
 #endif
 
 ///////////

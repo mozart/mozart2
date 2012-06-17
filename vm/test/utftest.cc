@@ -279,3 +279,29 @@ TEST_F(UTFTest, CodePointCount) {
     EXPECT_EQ(2, codePointCount(LString<char32_t>(U"\0\0", 2)));
 }
 
+TEST_F(UTFTest, LStringCopyAndFree) {
+    const char* foo = "abc";
+    LString<char> imm (foo);
+    EXPECT_EQ(3, imm.length);
+    EXPECT_STREQ("abc", imm.string);
+    EXPECT_EQ(foo, imm.string);
+
+    LString<char> copy (vm, imm);
+    EXPECT_EQ(3, copy.length);
+    EXPECT_STREQ("abc", copy.string);
+    EXPECT_NE(imm.string, copy.string);
+
+    copy.free(vm);
+    EXPECT_EQ(3, imm.length);
+    EXPECT_STREQ("abc", imm.string);
+
+    LString<char> copy2 (vm, foo);
+    EXPECT_EQ(3, copy2.length);
+    EXPECT_STREQ("abc", copy2.string);
+    EXPECT_NE(imm.string, copy2.string);
+
+    copy2.free(vm);
+    EXPECT_EQ(3, imm.length);
+    EXPECT_STREQ("abc", imm.string);
+}
+

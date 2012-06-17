@@ -7,7 +7,7 @@ using namespace mozart;
 
 class StringTest : public MozartTest {};
 
-static const nchar* stringTestVector[] = {
+static constexpr const nchar* stringTestVector[] = {
     NSTR("#"), NSTR("|"), NSTR("##"), NSTR("o_O"), NSTR("unit"),
     NSTR("###"), NSTR("unittest"), NSTR("o"), NSTR("\u0123"),
     NSTR("\u0123\u4567"), NSTR("\U00012345"), NSTR("\U00012346"), NSTR(""),
@@ -17,14 +17,13 @@ static const nchar* stringTestVector[] = {
 
 TEST_F(StringTest, Build) {
     for (const nchar* s : stringTestVector) {
-        UnstableNode node;
-        node.make<String>(vm, s);
+        UnstableNode node = buildString(vm, s);
         EXPECT_EQ_STRING(s, node);
     }
 }
 
 TEST_F(StringTest, IsString) {
-    UnstableNode node1 = String::build(vm, NSTR("foo"));
+    UnstableNode node1 = Cons::build(vm, NSTR("foo"));
     bool isString;
     if (EXPECT_PROCEED(StringLike(node1).isString(vm, isString))) {
         EXPECT_TRUE(isString);
@@ -34,12 +33,40 @@ TEST_F(StringTest, IsString) {
     if (EXPECT_PROCEED(StringLike(node2).isString(vm, isString))) {
         EXPECT_FALSE(isString);
     }
+
+    UnstableNode node3 = Atom::build(vm, vm->coreatoms.nil);
+    if (EXPECT_PROCEED(StringLike(node3).isString(vm, isString))) {
+        EXPECT_TRUE(isString);
+    }
 }
+
+TEST_F(StringTest, IsString_Cons) {
+    UnstableNode node1 = buildCons(vm, 1, 2);
+    bool isString;
+    if (EXPECT_PROCEED(StringLike(node1).isString(vm, isString))) {
+        EXPECT_FALSE(isString);
+    }
+
+    UnstableNode node2 = buildCons(vm, 1, vm->coreatoms.nil);
+    if (EXPECT_PROCEED(StringLike(node2).isString(vm, isString))) {
+        EXPECT_TRUE(isString);
+    }
+
+    UnstableNode node3 = buildCons(vm, 1, buildCons(vm, 4, vm->coreatoms.nil));
+    if (EXPECT_PROCEED(StringLike(node3).isString(vm, isString))) {
+        EXPECT_TRUE(isString);
+    }
+
+    UnstableNode node4 = buildCons(vm, 1.0, buildCons(vm, 4, vm->coreatoms.nil));
+    if (EXPECT_PROCEED(StringLike(node4).isString(vm, isString))) {
+        EXPECT_FALSE(isString);
+    }
+}
+
 
 TEST_F(StringTest, IsRecord) {
     for (const nchar* s : stringTestVector) {
-        UnstableNode node;
-        node.make<String>(vm, s);
+        UnstableNode node = buildString(vm, s);
         bool res;
         if (EXPECT_PROCEED(RecordLike(node).isRecord(vm, res))) {
             EXPECT_TRUE(res);
@@ -50,35 +77,57 @@ TEST_F(StringTest, IsRecord) {
     }
 }
 
-TEST_F(StringTest, ToAtom) {
+TEST_F(StringTest, GetString) {
     for (const nchar* s : stringTestVector) {
-        UnstableNode stringNode = String::build(vm, s);
-        UnstableNode atomNode;
-        if (EXPECT_PROCEED(StringLike(stringNode).toAtom(vm, atomNode))) {
-            EXPECT_EQ_ATOM(s, atomNode);
+        UnstableNode stringNode = buildString(vm, s);
+        LString<nchar> t;
+        if (EXPECT_PROCEED(StringLike(stringNode).getString(vm, t))) {
+            EXPECT_EQ(LString<nchar>(s), t);
         }
     }
 }
 
+TEST_F(StringTest, NotEquals) {
+    UnstableNode s = buildString(vm, NSTR("1"));
+    UnstableNode t = buildString(vm, NSTR("2"));
+
+    bool res;
+    if (EXPECT_PROCEED(equals(vm, s, t, res)))
+        EXPECT_FALSE(res);
+}
+
 TEST_F(StringTest, Equals) {
-    for (const nchar* s : stringTestVector) {
-        UnstableNode sNode = String::build(vm, s);
-        for (const nchar* t : stringTestVector) {
-            UnstableNode tNode = String::build(vm, t);
+    for (const nchar* const s : stringTestVector) {
+        UnstableNode sNode = buildString(vm, s);
+        for (const nchar* const t : stringTestVector) {
+            UnstableNode tNode = buildString(vm, t);
 
             LString<nchar> tCopy (vm, t);
-            UnstableNode tNodeCopy = String::build(vm, tCopy);
+            UnstableNode tNodeCopy = buildString(vm, tCopy);
+
+            ASSERT_NE(t, tCopy.string);
 
             bool stEquals = (s == t);
 
-            EXPECT_EQ(stEquals, ValueEquatable(sNode).equals(vm, tNode));
-            EXPECT_EQ(stEquals, ValueEquatable(tNode).equals(vm, sNode));
-            EXPECT_EQ(stEquals, ValueEquatable(sNode).equals(vm, tNodeCopy));
-            EXPECT_EQ(stEquals, ValueEquatable(tNodeCopy).equals(vm, sNode));
-            EXPECT_TRUE(ValueEquatable(tNodeCopy).equals(vm, tNode));
-            EXPECT_TRUE(ValueEquatable(tNode).equals(vm, tNodeCopy));
+            #define EXPECT_NODE_EQ(CHECKER, LEFT, RIGHT) \
+                do { \
+                    bool eqRes = false; \
+                    if (EXPECT_PROCEED(equals(vm, LEFT, RIGHT, eqRes))) \
+                        EXPECT_EQ(CHECKER, eqRes); \
+                } while (0)
 
-            tCopy.free(vm);
+            EXPECT_NODE_EQ(stEquals, sNode, tNode);
+            EXPECT_NODE_EQ(stEquals, tNode, sNode);
+            EXPECT_NODE_EQ(stEquals, sNode, tNodeCopy);
+            EXPECT_NODE_EQ(stEquals, tNodeCopy, sNode);
+            EXPECT_NODE_EQ(true, tNodeCopy, tNode);
+            EXPECT_NODE_EQ(true, tNode, tNodeCopy);
+
+            #undef EXPECT_NODE_EQ
+
+            //tCopy.free(vm);
+            //^ can't free after it's put into a node. rebinding magic may cause
+            //  sNode & tNode & tNodeCopy using the same LString.
         }
     }
 }
@@ -96,7 +145,7 @@ TEST_F(StringTest, Dottable) {
     UnstableNode oneAtom = Atom::build(vm, NSTR("1"));
     bool hasHead, hasTail;
 
-    UnstableNode nil = String::build(vm, NSTR(""));
+    UnstableNode nil = buildString(vm, NSTR(""));
     UnstableNode dummy;
 
     if (EXPECT_PROCEED(Dottable(nil).hasFeature(vm, one, hasHead))) {
@@ -112,7 +161,7 @@ TEST_F(StringTest, Dottable) {
     EXPECT_RAISE(NSTR("illegalFieldSelection"), Dottable(nil).dot(vm, oneAtom, dummy));
 
     for (auto& tup : testVector) {
-        UnstableNode s = String::build(vm, std::get<0>(tup));
+        UnstableNode s = Cons::build(vm, std::get<0>(tup));
         UnstableNode head, tail;
 
         if (EXPECT_PROCEED(Dottable(s).hasFeature(vm, one, hasHead))) {
@@ -137,7 +186,7 @@ TEST_F(StringTest, Dottable) {
 }
 
 TEST_F(StringTest, RecordLike_normal) {
-    UnstableNode s = String::build(vm, NSTR("foo"));
+    UnstableNode s = Cons::build(vm, NSTR("foo"));
 
     UnstableNode label;
     size_t width;
@@ -146,19 +195,6 @@ TEST_F(StringTest, RecordLike_normal) {
     }
     if (EXPECT_PROCEED(RecordLike(s).width(vm, width))) {
         EXPECT_EQ(2u, width);
-    }
-}
-
-TEST_F(StringTest, RecordLike_empty) {
-    UnstableNode s = String::build(vm, NSTR(""));
-
-    UnstableNode label;
-    size_t width;
-    if (EXPECT_PROCEED(RecordLike(s).label(vm, label))) {
-        EXPECT_EQ_ATOM(NSTR("nil"), label);
-    }
-    if (EXPECT_PROCEED(RecordLike(s).width(vm, width))) {
-        EXPECT_EQ(0u, width);
     }
 }
 

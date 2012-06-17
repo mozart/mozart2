@@ -65,7 +65,7 @@ class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
-                ReifiedThread, Unit, String> {
+                ReifiedThread, Unit> {
 
   /**
    * Precondition:
@@ -315,7 +315,7 @@ class Dottable;
 template<>
 struct Interface<Dottable>:
   ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array,
-    Atom, OptName, GlobalName, Boolean, Unit, String> {
+    Atom, OptName, GlobalName, Boolean, Unit> {
 
   OpResult dot(RichNode self, VM vm, RichNode feature,
                UnstableNode& result) {
@@ -331,7 +331,7 @@ class RecordLike;
 template<>
 struct Interface<RecordLike>:
   ImplementedBy<Tuple, Record, Cons,
-    Atom, OptName, GlobalName, Boolean, Unit, String> {
+    Atom, OptName, GlobalName, Boolean, Unit> {
 
   OpResult isRecord(RichNode self, VM vm, bool& result) {
     result = false;
@@ -579,13 +579,13 @@ struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
 
 class StringLike;
 template<>
-struct Interface<StringLike>: ImplementedBy<String> {
+struct Interface<StringLike>: ImplementedBy<Cons, Atom> {
   OpResult isString(RichNode self, VM vm, bool& result) {
     result = false;
     return OpResult::proceed();
   }
 
-  OpResult toAtom(RichNode self, VM vm, UnstableNode& result) {
+  OpResult getString(RichNode self, VM vm, LString<nchar>& result) {
     return raiseTypeError(vm, NSTR("string"), self);
   }
 };
@@ -593,8 +593,7 @@ struct Interface<StringLike>: ImplementedBy<String> {
 class VirtualString;
 template<>
 struct Interface<VirtualString>:
-  ImplementedBy<SmallInt, Float, Atom, Boolean, String, Unit, Cons, Tuple,
-                ByteString> {
+  ImplementedBy<SmallInt, Float, Atom, Boolean, Unit, Cons, Tuple, ByteString> {
 
   OpResult isVirtualString(RichNode self, VM vm, bool& result) {
     result = false;

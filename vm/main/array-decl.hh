@@ -84,7 +84,7 @@ protected:
   }
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  OpResult getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
 
 public:
   // ArrayLike interface

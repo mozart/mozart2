@@ -223,6 +223,17 @@ UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
   return result;
 }
 
+/**
+ * Build a string, which may be a Cons or a nil Atom.
+ */
+inline
+UnstableNode buildString(VM vm, LString<nchar> content) {
+  if (content.length == 0)
+    return Atom::build(vm, vm->coreatoms.nil);
+  else
+    return Cons::build(vm, content);
+}
+
 }
 
 #endif // MOZART_GENERATOR

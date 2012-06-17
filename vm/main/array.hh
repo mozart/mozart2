@@ -61,10 +61,11 @@ Implementation<Array>::Implementation(VM vm, size_t width,
     gr->copyUnstableNode(_elements[i], from[i]);
 }
 
-void Implementation<Array>::getValueAt(Self self, VM vm,
-                                       nativeint feature,
-                                       UnstableNode& result) {
+OpResult Implementation<Array>::getValueAt(Self self, VM vm,
+                                           nativeint feature,
+                                           UnstableNode& result) {
   result.copy(vm, self[indexToOffset(feature)]);
+  return OpResult::proceed();
 }
 
 OpResult Implementation<Array>::arrayLow(Self self, VM vm,

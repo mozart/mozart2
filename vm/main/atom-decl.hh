@@ -106,6 +106,14 @@ public:
                         RichNode replacement, UnstableNode& result);
 
 public:
+  // StringLike inteface
+  inline
+  OpResult isString(Self self, VM vm, bool& result);
+
+  inline
+  OpResult getString(Self self, VM vm, LString<nchar>& result);
+
+public:
   // Miscellaneous
 
   inline

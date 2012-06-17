@@ -120,8 +120,7 @@ OpResult IntegerDottableHelper<T>::dotNumber(Self self, VM vm,
                                              UnstableNode& result) {
   if (internalIsValidFeature(self, vm, feature)) {
     // Inside bounds
-    internalGetValueAt(self, vm, feature, result);
-    return OpResult::proceed();
+    return internalGetValueAt(self, vm, feature, result);
   } else {
     // Out of bounds
     return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);

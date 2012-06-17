@@ -33,12 +33,11 @@ namespace mozart {
 // ByteString //
 ////////////////
 
-// Note: these magic numbers are to be known in the Oz side as well.
-enum ByteStringEncoding : nativeint {
-  latin1 = 0,
-  utf8 = 1,
-  utf16 = 2,
-  utf32 = 3
+enum class ByteStringEncoding {
+  latin1,
+  utf8,
+  utf16,
+  utf32
 };
 
 class ByteString;

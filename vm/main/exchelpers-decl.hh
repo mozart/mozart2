@@ -39,9 +39,9 @@ OpResult raiseTypeError(VM vm, const nchar* expected, RichNode actual);
 inline
 OpResult raiseIllegalArity(VM vm, int expected, int actual);
 
-template <class... ExtraArgs>
+template <class... Args>
 inline
-OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args);
+OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args);
 
 }
 

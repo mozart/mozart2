@@ -89,7 +89,7 @@ OpResult Implementation<ByteString>::vsChangeSign(Self self, VM vm,
 OpResult Implementation<ByteString>::bsGet(Self self, VM vm,
                                            nativeint index, char& result) {
   if (index < 0 || index >= _bytes.length)
-    return raise(vm, NSTR("indexOutOfBound"), self, index);
+    return raise(vm, MOZART_STR("indexOutOfBound"), self, index);
   result = _bytes.string[index];
   return OpResult::proceed();
 }
@@ -98,7 +98,7 @@ OpResult Implementation<ByteString>::bsAppend(Self self, VM vm,
                                               RichNode right,
                                               UnstableNode& result) {
   if (!right.is<ByteString>())
-    return raiseTypeError(vm, NSTR("ByteString"), right);
+    return raiseTypeError(vm, MOZART_STR("ByteString"), right);
 
   if (_bytes.length <= 0) {
     result.copy(vm, right);
@@ -158,7 +158,7 @@ OpResult Implementation<ByteString>::bsSlice(Self self, VM vm,
                                              nativeint from, nativeint to,
                                              UnstableNode& result) {
   if (from > to || from < 0 || to >= _bytes.length)
-    return raise(vm, NSTR("indexOutOfBound"), self, from, to);
+    return raise(vm, MOZART_STR("indexOutOfBound"), self, from, to);
 
   LString<char> newBytes (_bytes.string + from, to - from);
   result.make<ByteString>(vm, newBytes);
@@ -168,7 +168,7 @@ OpResult Implementation<ByteString>::bsSlice(Self self, VM vm,
 OpResult Implementation<ByteString>::bsStrChr(Self self, VM vm, nativeint from,
                                               char character, UnstableNode& res) {
   if (from < 0 || from >= _bytes.length)
-    return raise(vm, NSTR("indexOutOfBound"), self, from);
+    return raise(vm, MOZART_STR("indexOutOfBound"), self, from);
 
   char* start = const_cast<char*>(_bytes.string + from);
   void* result = memchr(start, character, _bytes.length - from);

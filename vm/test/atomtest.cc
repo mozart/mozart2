@@ -8,10 +8,10 @@ using namespace mozart;
 class AtomTest : public MozartTest {};
 
 static const nchar* testVector[] = {
-    NSTR("#"), NSTR("|"), NSTR("##"), NSTR("o_O"), NSTR("unit"),
-    NSTR("###"), NSTR("unittest"), NSTR("o"), NSTR("\u0123"),
-    NSTR("\u0123\u4567"), NSTR("\U00012345"), NSTR("o_O"),
-    NSTR("\U00012346")
+    MOZART_STR("#"), MOZART_STR("|"), MOZART_STR("##"), MOZART_STR("o_O"), MOZART_STR("unit"),
+    MOZART_STR("###"), MOZART_STR("unittest"), MOZART_STR("o"), MOZART_STR("\u0123"),
+    MOZART_STR("\u0123\u4567"), MOZART_STR("\U00012345"), MOZART_STR("o_O"),
+    MOZART_STR("\U00012346")
 };
 
 TEST_F(AtomTest, Build) {
@@ -49,7 +49,7 @@ TEST_F(AtomTest, EqualsAndCompare) {
 }
 
 TEST_F(AtomTest, SomeCoreAtoms) {
-    UnstableNode sharpNodeA = Atom::build(vm, NSTR("#"));
+    UnstableNode sharpNodeA = Atom::build(vm, MOZART_STR("#"));
     UnstableNode sharpNodeB = Atom::build(vm, vm->coreatoms.sharp);
     EXPECT_TRUE(ValueEquatable(sharpNodeA).equals(vm, sharpNodeB));
 }

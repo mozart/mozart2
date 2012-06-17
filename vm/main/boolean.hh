@@ -56,7 +56,7 @@ int Implementation<Boolean>::compareFeatures(VM vm, Self right) {
 
 OpResult Implementation<Boolean>::toString(Self self, VM vm,
                                            std::basic_ostream<nchar>& sink) {
-  sink << (value() ? NSTR("true") : NSTR("false"));
+  sink << (value() ? MOZART_STR("true") : MOZART_STR("false"));
   return OpResult::proceed();
 }
 

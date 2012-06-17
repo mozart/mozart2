@@ -44,8 +44,8 @@ OpResult raiseIllegalArity(VM vm, int expected, int actual) {
   return raise(vm, vm->coreatoms.illegalArity, expected, actual);
 }
 
-template <class... ExtraArgs>
-OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args) {
+template <class... Args>
+OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
   AtomImpl* reasonAtom;
   switch (reason) {
     case UnicodeErrorReason::outOfRange:
@@ -67,7 +67,7 @@ OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args
       assert(false);
       return OpResult::fail();
   }
-  return raise(vm, vm->coreatoms.unicodeError, reasonAtom, std::forward<ExtraArgs>(args)...);
+  return raise(vm, vm->coreatoms.unicodeError, reasonAtom, std::forward<Args>(args)...);
 }
 
 }

@@ -40,6 +40,28 @@ namespace builtins {
 ///////////////////////
 
 class ModByteString : public Module {
+private:
+  static OpResult parseEncoding(VM vm, In encodingNode,
+                                ByteStringEncoding& encoding) {
+    using namespace patternmatching;
+    OpResult matchRes = OpResult::proceed();
+    if (matches(vm, matchRes, encodingNode, MOZART_STR("latin1"))) {
+      encoding = ByteStringEncoding::latin1;
+    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("iso8859_1"))) {
+      encoding = ByteStringEncoding::latin1;
+    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("utf8"))) {
+      encoding = ByteStringEncoding::utf8;
+    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("utf16"))) {
+      encoding = ByteStringEncoding::utf16;
+    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("utf32"))) {
+      encoding = ByteStringEncoding::utf8;
+    } else {
+      return matchTypeError(vm, matchRes, encodingNode,
+                            MOZART_STR("latin1, utf8, utf16 or utf32"));
+    }
+    return OpResult::proceed();
+  }
+
 public:
   ModByteString() : Module("ByteString") {}
 
@@ -61,24 +83,24 @@ public:
 
     OpResult operator()(VM vm, In string, In encodingNode, In isLENode,
                                In hasBOMNode, Out result) {
-      nativeint encoding;
+      ByteStringEncoding encoding;
       bool isLE, hasBOM;
-      MOZART_GET_ARG(encoding, encodingNode, NSTR("integer"));
-      MOZART_GET_ARG(isLE, isLENode, NSTR("boolean"));
-      MOZART_GET_ARG(hasBOM, hasBOMNode, NSTR("boolean"));
+
+      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, encoding));
+      MOZART_GET_ARG(isLE, isLENode, MOZART_STR("boolean"));
+      MOZART_GET_ARG(hasBOM, hasBOMNode, MOZART_STR("boolean"));
 
       bool isVirtualString;
       MOZART_CHECK_OPRESULT(VirtualString(string).isVirtualString(vm, isVirtualString));
       if (!isVirtualString)
-        return raiseTypeError(vm, NSTR("VirtualString"), string);
+        return raiseTypeError(vm, MOZART_STR("VirtualString"), string);
 
       std::basic_ostringstream<nchar> combinedStringStream;
       VirtualString(string).toString(vm, combinedStringStream);
       std::basic_string<nchar> combinedString = combinedStringStream.str();
       LString<nchar> rawString (combinedString.data(), combinedString.length());
 
-      return encodeToBytestring(vm, rawString, (ByteStringEncoding)encoding,
-                                isLE, hasBOM, result);
+      return encodeToBytestring(vm, rawString, encoding, isLE, hasBOM, result);
     }
   };
 
@@ -88,13 +110,12 @@ public:
 
     OpResult operator()(VM vm, In value, In encodingNode, In isLENode,
                                In hasBOMNode, Out result) {
-      nativeint encoding;
+      ByteStringEncoding encoding;
       bool isLE, hasBOM;
-      MOZART_GET_ARG(encoding, encodingNode, NSTR("integer"));
-      MOZART_GET_ARG(isLE, isLENode, NSTR("boolean"));
-      MOZART_GET_ARG(hasBOM, hasBOMNode, NSTR("boolean"));
-      return ByteStringLike(value).bsDecode(vm, (ByteStringEncoding)encoding,
-                                            isLE, hasBOM, result);
+      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, encoding));
+      MOZART_GET_ARG(isLE, isLENode, MOZART_STR("boolean"));
+      MOZART_GET_ARG(hasBOM, hasBOMNode, MOZART_STR("boolean"));
+      return ByteStringLike(value).bsDecode(vm, encoding, isLE, hasBOM, result);
     }
   };
 
@@ -113,8 +134,8 @@ public:
 
     OpResult operator()(VM vm, In value, In fromNode, In toNode, Out result) {
       nativeint from, to;
-      MOZART_GET_ARG(from, fromNode, NSTR("integer"));
-      MOZART_GET_ARG(to, toNode, NSTR("integer"));
+      MOZART_GET_ARG(from, fromNode, MOZART_STR("integer"));
+      MOZART_GET_ARG(to, toNode, MOZART_STR("integer"));
       return ByteStringLike(value).bsSlice(vm, from, to, result);
     }
   };
@@ -138,7 +159,7 @@ public:
     OpResult operator()(VM vm, In value, In indexNode, Out result) {
       nativeint index;
       char charResult;
-      MOZART_GET_ARG(index, indexNode, NSTR("integer"));
+      MOZART_GET_ARG(index, indexNode, MOZART_STR("integer"));
       MOZART_CHECK_OPRESULT(ByteStringLike(value).bsGet(vm, index, charResult));
       result = SmallInt::build(vm, (unsigned char) charResult);
       return OpResult::proceed();
@@ -152,8 +173,8 @@ public:
     OpResult operator()(VM vm, In value, In fromNode, In charNode, Out result) {
       nativeint index;
       char character;
-      MOZART_GET_ARG(index, fromNode, NSTR("integer"));
-      MOZART_GET_ARG(character, charNode, NSTR("char"));
+      MOZART_GET_ARG(index, fromNode, MOZART_STR("integer"));
+      MOZART_GET_ARG(character, charNode, MOZART_STR("char"));
       return ByteStringLike(value).bsStrChr(vm, index, character, result);
     }
   };

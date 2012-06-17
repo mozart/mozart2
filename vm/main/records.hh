@@ -200,7 +200,7 @@ OpResult Implementation<Tuple>::isVirtualString(Self self, VM vm, bool& result) 
 OpResult Implementation<Tuple>::toString(Self self, VM vm,
                                          std::basic_ostream<nchar>& sink) {
   if (!hasSharpLabel(vm))
-    return raiseTypeError(vm, NSTR("VirtualString"), self);
+    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
   for (size_t i = 0; i < _width; ++ i) {
     MOZART_CHECK_OPRESULT(VirtualString(self[i]).toString(vm, sink));
@@ -211,7 +211,7 @@ OpResult Implementation<Tuple>::toString(Self self, VM vm,
 
 OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
   if (!hasSharpLabel(vm))
-    return raiseTypeError(vm, NSTR("VirtualString"), self);
+    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
   result = 0;
   for (size_t i = 0; i < _width; ++ i) {
@@ -228,7 +228,7 @@ OpResult Implementation<Tuple>::vsChangeSign(Self self, VM vm,
                                              RichNode replacement,
                                              UnstableNode& result) {
   if (!hasSharpLabel(vm))
-    return raiseTypeError(vm, NSTR("VirtualString"), self);
+    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
   UnstableNode tempLabel (vm, _label);
   result.make<Tuple>(vm, _width, tempLabel);
@@ -332,41 +332,35 @@ void Implementation<Cons>::printReprToStream(Self self, VM vm,
 }
 
 template <class F, class G>
-static OpResult withConsAsVirtualString(VM vm, TypedRichNode<Cons> cons,
+static OpResult withConsAsVirtualString(VM vm, RichNode cons,
                                         const F& onChar, const G& onString) {
   while (true) {
-    UnstableNode tempHead (vm, *cons.getHead());
-    RichNode head = tempHead;
+    using namespace patternmatching;
 
+    OpResult matchRes = OpResult::proceed();
     nativeint c;
-    MOZART_CHECK_OPRESULT(IntegerValue(head).intValue(vm, c));
-    if (c < 0 || c >= 0x110000)
-      return raiseUnicodeError(vm, UnicodeErrorReason::outOfRange);
-    else if (0xd800 <= c && c < 0xe000)
-      return raiseUnicodeError(vm, UnicodeErrorReason::surrogate);
+    UnstableNode tail;
 
-    onChar((char32_t) c);
+    if (matchesCons(vm, matchRes, cons, capture(c), capture(tail))) {
+      if (c < 0 || c >= 0x110000)
+        return raiseUnicodeError(vm, UnicodeErrorReason::outOfRange);
+      else if (0xd800 <= c && c < 0xe000)
+        return raiseUnicodeError(vm, UnicodeErrorReason::surrogate);
+      onChar((char32_t) c);
+      cons = tail;
 
-    UnstableNode tempTail (vm, *cons.getTail());
-    RichNode tail = tempTail;
-
-    if (tail.is<Atom>()) {
-      if (tail.as<Atom>().value() == vm->coreatoms.nil)
-        return OpResult::proceed();
-
-    } else if (tail.is<Cons>()) {
-      cons = tail.as<Cons>();
-      continue;
+    } else if (matches(vm, matchRes, cons, vm->coreatoms.nil)) {
+      return OpResult::proceed();
 
     } else {
       bool isString = false;
-      MOZART_CHECK_OPRESULT(StringLike(tail).isString(vm, isString));
+      MOZART_CHECK_OPRESULT(StringLike(cons).isString(vm, isString));
       if (isString) {
         return onString(tail);
       }
-    }
 
-    return raiseTypeError(vm, NSTR("VirtualString"), cons);
+      return matchTypeError(vm, matchRes, cons, MOZART_STR("VirtualString"));
+    }
   }
 }
 

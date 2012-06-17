@@ -27,28 +27,20 @@
 
 
 local
-   fun {Coder OptList Fun Input EncNum IsLE HasBOM}
+   fun {Coder OptList Fun Input Encoding IsLE HasBOM}
       case OptList
       of nil then
-         {Fun Input EncNum IsLE HasBOM}
+         {Fun Input Encoding IsLE HasBOM}
       [] H|T then
          case H
-         of iso8859_1 then
-            {Coder T Fun Input 0 IsLE HasBOM}
-         [] latin1 then
-            {Coder T Fun Input 0 IsLE HasBOM}
-         [] utf8 then
-            {Coder T Fun Input 1 IsLE HasBOM}
-         [] utf16 then
-            {Coder T Fun Input 2 IsLE HasBOM}
-         [] utf32 then
-            {Coder T Fun Input 3 IsLE HasBOM}
          [] littleEndian then
             {Coder T Fun Input EncNum true HasBOM}
          [] bigEndian then
             {Coder T Fun Input EncNum false HasBOM}
          [] bom then
             {Coder T Fun Input EncNum IsLE true}
+         else
+            {Coder T Fun Input H IsLE HasBOM}
          end
       end
    end

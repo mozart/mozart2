@@ -269,9 +269,9 @@ OpResult Implementation<SmallInt>::vsChangeSign(Self self, VM vm,
     // TODO: create a BigInt??
     UnstableNode node;
     if (minVal == std::numeric_limits<int32_t>::min()) {
-      node.make<String>(vm, NSTR("2147483648"));
+      node.make<String>(vm, MOZART_STR("2147483648"));
     } else if (minVal == std::numeric_limits<int64_t>::min()) {
-      node.make<String>(vm, NSTR("9223372036854775808"));
+      node.make<String>(vm, MOZART_STR("9223372036854775808"));
     } else {
       auto str = std::to_string(value());
       size_t length = str.length() - 1;

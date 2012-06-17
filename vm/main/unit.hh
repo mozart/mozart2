@@ -50,7 +50,7 @@ int Implementation<Unit>::compareFeatures(VM vm, Self right) {
 
 OpResult Implementation<Unit>::toString(Self self, VM vm,
                                         std::basic_ostream<nchar>& sink) {
-  sink << NSTR("unit");
+  sink << MOZART_STR("unit");
   return OpResult::proceed();
 }
 

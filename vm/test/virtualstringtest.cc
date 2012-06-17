@@ -26,31 +26,31 @@ protected:
         testNodes[11].make<Float>(vm, 9.5678e125);
         testNodes[12].make<Float>(vm, 9.0);
 
-        testNodes[13].make<Atom>(vm, NSTR("f-o"));
-        testNodes[14].make<Atom>(vm, NSTR("nil"));
-        testNodes[15].make<Atom>(vm, NSTR("#"));
-        testNodes[16].make<Atom>(vm, NSTR("\U0010ffff\U0010ffff"));
+        testNodes[13].make<Atom>(vm, MOZART_STR("f-o"));
+        testNodes[14].make<Atom>(vm, MOZART_STR("nil"));
+        testNodes[15].make<Atom>(vm, MOZART_STR("#"));
+        testNodes[16].make<Atom>(vm, MOZART_STR("\U0010ffff\U0010ffff"));
 
         testNodes[17].make<Boolean>(vm, true);
         testNodes[18].make<Boolean>(vm, false);
 
         testNodes[19].make<Unit>(vm);
 
-        testNodes[20].make<String>(vm, NSTR("f-o"));
-        testNodes[21].make<String>(vm, NSTR("nil"));
-        testNodes[22].make<String>(vm, NSTR("#"));
-        testNodes[23].make<String>(vm, NSTR("\U0010ffff\U0010ffff"));
+        testNodes[20].make<String>(vm, MOZART_STR("f-o"));
+        testNodes[21].make<String>(vm, MOZART_STR("nil"));
+        testNodes[22].make<String>(vm, MOZART_STR("#"));
+        testNodes[23].make<String>(vm, MOZART_STR("\U0010ffff\U0010ffff"));
 
         testNodes[24] = buildCons(vm, 0x40, buildCons(vm, 0x60, vm->coreatoms.nil));
         testNodes[25] = buildCons(vm, 0x40000, buildCons(vm, 0x60000, vm->coreatoms.nil));
-        testNodes[26] = buildCons(vm, 0x40000, String::build(vm, NSTR("60000")));
+        testNodes[26] = buildCons(vm, 0x40000, String::build(vm, MOZART_STR("60000")));
 
         testNodes[27] = buildTuple(vm, vm->coreatoms.sharp, 123, 456);
-        testNodes[28] = buildTuple(vm, vm->coreatoms.sharp, NSTR("f-o"), NSTR("nil"), 6);
+        testNodes[28] = buildTuple(vm, vm->coreatoms.sharp, MOZART_STR("f-o"), MOZART_STR("nil"), 6);
         testNodes[29] = buildTuple(vm, vm->coreatoms.sharp,
-                                    String::build(vm, NSTR("\U00012345")),
+                                    String::build(vm, MOZART_STR("\U00012345")),
                                     -12345,
-                                    String::build(vm, NSTR("-12345")),
+                                    String::build(vm, MOZART_STR("-12345")),
                                     buildTuple(vm, vm->coreatoms.sharp, -1, -2, -3),
                                     -4,
                                     -5);
@@ -82,17 +82,17 @@ TEST_F(VirtualStringTest, IsVirtualString) {
 
 TEST_F(VirtualStringTest, ToString) {
     std::basic_string<nchar> results[] = {
-        NSTR("0"), NSTR("4"), NSTR("-4"), NSTR("12300000"), NSTR("-12300000"),
-        NSTR("3.125"), NSTR("-3.125"), NSTR("9.0e125"), NSTR("-9.0e125"),
-            NSTR("9.0e-125"), NSTR("-9.0e-125"), NSTR("9.5678e125"), NSTR("9.0"),
-        NSTR("f-o"), NSTR(""), NSTR(""), NSTR("\U0010ffff\U0010ffff"),
-        NSTR("true"), NSTR("false"), NSTR("unit"),
-        NSTR("f-o"), NSTR("nil"), NSTR("#"), NSTR("\U0010ffff\U0010ffff"),
-        NSTR("\u0040\u0060"), NSTR("\U00040000\U00060000"),
-            NSTR("\U0004000060000"),
-        NSTR("123456"), NSTR("f-o6"), NSTR("\U00012345-12345-12345-1-2-3-4-5"),
+        MOZART_STR("0"), MOZART_STR("4"), MOZART_STR("-4"), MOZART_STR("12300000"), MOZART_STR("-12300000"),
+        MOZART_STR("3.125"), MOZART_STR("-3.125"), MOZART_STR("9.0e125"), MOZART_STR("-9.0e125"),
+            MOZART_STR("9.0e-125"), MOZART_STR("-9.0e-125"), MOZART_STR("9.5678e125"), MOZART_STR("9.0"),
+        MOZART_STR("f-o"), MOZART_STR(""), MOZART_STR(""), MOZART_STR("\U0010ffff\U0010ffff"),
+        MOZART_STR("true"), MOZART_STR("false"), MOZART_STR("unit"),
+        MOZART_STR("f-o"), MOZART_STR("nil"), MOZART_STR("#"), MOZART_STR("\U0010ffff\U0010ffff"),
+        MOZART_STR("\u0040\u0060"), MOZART_STR("\U00040000\U00060000"),
+            MOZART_STR("\U0004000060000"),
+        MOZART_STR("123456"), MOZART_STR("f-o6"), MOZART_STR("\U00012345-12345-12345-1-2-3-4-5"),
         minStr,
-        NSTR("\u0070\u0080\u0090"),
+        MOZART_STR("\u0070\u0080\u0090"),
     };
 
     size_t i = 0;
@@ -131,22 +131,22 @@ TEST_F(VirtualStringTest, Length) {
 
 TEST_F(VirtualStringTest, ChangeSign) {
     std::basic_string<nchar> results[] = {
-        NSTR("0"), NSTR("4"), NSTR("****4"), NSTR("12300000"), NSTR("****12300000"),
-        NSTR("3.125"), NSTR("****3.125"), NSTR("9.0e125"), NSTR("****9.0e125"),
-            NSTR("9.0e****125"), NSTR("****9.0e****125"), NSTR("9.5678e125"),
-            NSTR("9.0"),
-        NSTR("f-o"), NSTR(""), NSTR(""), NSTR("\U0010ffff\U0010ffff"),
-        NSTR("true"), NSTR("false"), NSTR("unit"),
-        NSTR("f-o"), NSTR("nil"), NSTR("#"), NSTR("\U0010ffff\U0010ffff"),
-        NSTR("\u0040\u0060"), NSTR("\U00040000\U00060000"),
-            NSTR("\U0004000060000"),
-        NSTR("123456"), NSTR("f-o6"),
-            NSTR("\U00012345****12345-12345****1****2****3****4****5"),
-        NSTR("****") + minStr.substr(1),
-        NSTR("\u0070\u0080\u0090"),
+        MOZART_STR("0"), MOZART_STR("4"), MOZART_STR("****4"), MOZART_STR("12300000"), MOZART_STR("****12300000"),
+        MOZART_STR("3.125"), MOZART_STR("****3.125"), MOZART_STR("9.0e125"), MOZART_STR("****9.0e125"),
+            MOZART_STR("9.0e****125"), MOZART_STR("****9.0e****125"), MOZART_STR("9.5678e125"),
+            MOZART_STR("9.0"),
+        MOZART_STR("f-o"), MOZART_STR(""), MOZART_STR(""), MOZART_STR("\U0010ffff\U0010ffff"),
+        MOZART_STR("true"), MOZART_STR("false"), MOZART_STR("unit"),
+        MOZART_STR("f-o"), MOZART_STR("nil"), MOZART_STR("#"), MOZART_STR("\U0010ffff\U0010ffff"),
+        MOZART_STR("\u0040\u0060"), MOZART_STR("\U00040000\U00060000"),
+            MOZART_STR("\U0004000060000"),
+        MOZART_STR("123456"), MOZART_STR("f-o6"),
+            MOZART_STR("\U00012345****12345-12345****1****2****3****4****5"),
+        MOZART_STR("****") + minStr.substr(1),
+        MOZART_STR("\u0070\u0080\u0090"),
     };
 
-    UnstableNode replacement = String::build(vm, NSTR("****"));
+    UnstableNode replacement = String::build(vm, MOZART_STR("****"));
 
     size_t i = 0;
     for (auto&& node : testNodes) {
@@ -167,7 +167,7 @@ TEST_F(VirtualStringTest, IsNotVirtualString) {
         OptName::build(vm),
         buildCons(vm, 0xd800, buildCons(vm, 0xdc00, vm->coreatoms.nil)),
         buildCons(vm, 0x110000, vm->coreatoms.nil),
-        buildCons(vm, String::build(vm, NSTR("foo")), vm->coreatoms.nil),
+        buildCons(vm, String::build(vm, MOZART_STR("foo")), vm->coreatoms.nil),
         buildCons(vm, 0x40, vm->coreatoms.typeError),
         buildTuple(vm, vm->coreatoms.typeError, 2, 2),
         buildTuple(vm, vm->coreatoms.sharp, 10, OptName::build(vm)),

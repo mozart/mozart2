@@ -200,16 +200,16 @@ TEST_F(UTFTest, ToUTF) {
 }
 
 TEST_F(UTFTest, ToLatin1) {
-    EXPECT_EQ(LString<char>("a\xe1\x80\1c"), toLatin1(vm, NSTR("a\u00e1\u0080\u0001c")));
-    EXPECT_EQ(LString<char>("\x01\x12???"), toLatin1(vm, NSTR("\u0001\u0012\u0123\u1234\U00012345")));
-    EXPECT_EQ(LString<char>(), toLatin1(vm, NSTR("")));
-    EXPECT_EQ(LString<char>("\0\0", 2), toLatin1(vm, LString<nchar>(NSTR("\0\0"), 2)));
+    EXPECT_EQ(LString<char>("a\xe1\x80\1c"), toLatin1(vm, MOZART_STR("a\u00e1\u0080\u0001c")));
+    EXPECT_EQ(LString<char>("\x01\x12???"), toLatin1(vm, MOZART_STR("\u0001\u0012\u0123\u1234\U00012345")));
+    EXPECT_EQ(LString<char>(), toLatin1(vm, MOZART_STR("")));
+    EXPECT_EQ(LString<char>("\0\0", 2), toLatin1(vm, LString<nchar>(MOZART_STR("\0\0"), 2)));
 }
 
 TEST_F(UTFTest, FromLatin1) {
-    EXPECT_EQ(LString<nchar>(NSTR("a\u00e1\u0080\u0001c")), fromLatin1(vm, "a\xe1\x80\1c"));
+    EXPECT_EQ(LString<nchar>(MOZART_STR("a\u00e1\u0080\u0001c")), fromLatin1(vm, "a\xe1\x80\1c"));
     EXPECT_EQ(LString<nchar>(), fromLatin1(vm, ""));
-    EXPECT_EQ(LString<nchar>(NSTR("\0\0"), 2), fromLatin1(vm, LString<char>("\0\0", 2)));
+    EXPECT_EQ(LString<nchar>(MOZART_STR("\0\0"), 2), fromLatin1(vm, LString<char>("\0\0", 2)));
 }
 
 TEST_F(UTFTest, CompareByCodePoint) {

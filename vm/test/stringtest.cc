@@ -8,9 +8,9 @@ using namespace mozart;
 class StringTest : public MozartTest {};
 
 static const nchar* stringTestVector[] = {
-    NSTR("#"), NSTR("|"), NSTR("##"), NSTR("o_O"), NSTR("unit"),
-    NSTR("###"), NSTR("unittest"), NSTR("o"), NSTR("\u0123"),
-    NSTR("\u0123\u4567"), NSTR("\U00012345"), NSTR("\U00012346"), NSTR(""),
+    MOZART_STR("#"), MOZART_STR("|"), MOZART_STR("##"), MOZART_STR("o_O"), MOZART_STR("unit"),
+    MOZART_STR("###"), MOZART_STR("unittest"), MOZART_STR("o"), MOZART_STR("\u0123"),
+    MOZART_STR("\u0123\u4567"), MOZART_STR("\U00012345"), MOZART_STR("\U00012346"), MOZART_STR(""),
 };
 
 
@@ -24,13 +24,13 @@ TEST_F(StringTest, Build) {
 }
 
 TEST_F(StringTest, IsString) {
-    UnstableNode node1 = String::build(vm, NSTR("foo"));
+    UnstableNode node1 = String::build(vm, MOZART_STR("foo"));
     bool isString;
     if (EXPECT_PROCEED(StringLike(node1).isString(vm, isString))) {
         EXPECT_TRUE(isString);
     }
 
-    UnstableNode node2 = Atom::build(vm, NSTR("foo"));
+    UnstableNode node2 = Atom::build(vm, MOZART_STR("foo"));
     if (EXPECT_PROCEED(StringLike(node2).isString(vm, isString))) {
         EXPECT_FALSE(isString);
     }
@@ -85,18 +85,18 @@ TEST_F(StringTest, Equals) {
 
 TEST_F(StringTest, Dottable) {
     static const std::tuple<const nchar*, char32_t, const nchar*> testVector[] = {
-        std::make_tuple(NSTR("foo"), U'f', NSTR("oo")),
-        std::make_tuple(NSTR("\U00010000x"), U'\U00010000', NSTR("x")),
-        std::make_tuple(NSTR("p"), 'p', NSTR("")),
-        std::make_tuple(NSTR("\U00010000"), U'\U00010000', NSTR("")),
+        std::make_tuple(MOZART_STR("foo"), U'f', MOZART_STR("oo")),
+        std::make_tuple(MOZART_STR("\U00010000x"), U'\U00010000', MOZART_STR("x")),
+        std::make_tuple(MOZART_STR("p"), 'p', MOZART_STR("")),
+        std::make_tuple(MOZART_STR("\U00010000"), U'\U00010000', MOZART_STR("")),
     };
 
     UnstableNode one = SmallInt::build(vm, 1);
     UnstableNode two = SmallInt::build(vm, 2);
-    UnstableNode oneAtom = Atom::build(vm, NSTR("1"));
+    UnstableNode oneAtom = Atom::build(vm, MOZART_STR("1"));
     bool hasHead, hasTail;
 
-    UnstableNode nil = String::build(vm, NSTR(""));
+    UnstableNode nil = String::build(vm, MOZART_STR(""));
     UnstableNode dummy;
 
     if (EXPECT_PROCEED(Dottable(nil).hasFeature(vm, one, hasHead))) {
@@ -108,8 +108,8 @@ TEST_F(StringTest, Dottable) {
     if (EXPECT_PROCEED(Dottable(nil).hasFeature(vm, oneAtom, hasTail))) {
         EXPECT_FALSE(hasTail);
     }
-    EXPECT_RAISE(NSTR("illegalFieldSelection"), Dottable(nil).dot(vm, one, dummy));
-    EXPECT_RAISE(NSTR("illegalFieldSelection"), Dottable(nil).dot(vm, oneAtom, dummy));
+    EXPECT_RAISE(MOZART_STR("illegalFieldSelection"), Dottable(nil).dot(vm, one, dummy));
+    EXPECT_RAISE(MOZART_STR("illegalFieldSelection"), Dottable(nil).dot(vm, oneAtom, dummy));
 
     for (auto& tup : testVector) {
         UnstableNode s = String::build(vm, std::get<0>(tup));
@@ -132,17 +132,17 @@ TEST_F(StringTest, Dottable) {
         if (EXPECT_PROCEED(Dottable(s).hasFeature(vm, oneAtom, hasHead))) {
             EXPECT_FALSE(hasHead);
         }
-        EXPECT_RAISE(NSTR("illegalFieldSelection"), Dottable(s).dot(vm, oneAtom, dummy));
+        EXPECT_RAISE(MOZART_STR("illegalFieldSelection"), Dottable(s).dot(vm, oneAtom, dummy));
     }
 }
 
 TEST_F(StringTest, RecordLike_normal) {
-    UnstableNode s = String::build(vm, NSTR("foo"));
+    UnstableNode s = String::build(vm, MOZART_STR("foo"));
 
     UnstableNode label;
     size_t width;
     if (EXPECT_PROCEED(RecordLike(s).label(vm, label))) {
-        EXPECT_EQ_ATOM(NSTR("|"), label);
+        EXPECT_EQ_ATOM(MOZART_STR("|"), label);
     }
     if (EXPECT_PROCEED(RecordLike(s).width(vm, width))) {
         EXPECT_EQ(2u, width);
@@ -150,12 +150,12 @@ TEST_F(StringTest, RecordLike_normal) {
 }
 
 TEST_F(StringTest, RecordLike_empty) {
-    UnstableNode s = String::build(vm, NSTR(""));
+    UnstableNode s = String::build(vm, MOZART_STR(""));
 
     UnstableNode label;
     size_t width;
     if (EXPECT_PROCEED(RecordLike(s).label(vm, label))) {
-        EXPECT_EQ_ATOM(NSTR("nil"), label);
+        EXPECT_EQ_ATOM(MOZART_STR("nil"), label);
     }
     if (EXPECT_PROCEED(RecordLike(s).width(vm, width))) {
         EXPECT_EQ(0u, width);

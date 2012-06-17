@@ -140,6 +140,8 @@ OpResult Implementation<Float>::mod(Self self, VM vm,
   return raiseTypeError(vm, u"Integer", self);
 }
 
+namespace internal {
+
 struct FloatToStringHelper {
   std::unique_ptr<nchar[]> string;
   size_t length;
@@ -200,22 +202,24 @@ struct FloatToStringHelper {
   }
 };
 
+}
+
 OpResult Implementation<Float>::toString(Self self, VM vm,
                                          std::basic_ostream<nchar>& sink) {
-  const FloatToStringHelper helper (value());
+  const internal::FloatToStringHelper helper (value());
   sink.write(helper.string.get(), helper.length);
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::vsLength(Self self, VM vm, nativeint& result) {
-  result = (nativeint) FloatToStringHelper(value()).length;
+  result = (nativeint) internal::FloatToStringHelper(value()).length;
   return OpResult::proceed();
 }
 
 OpResult Implementation<Float>::vsChangeSign(Self self, VM vm,
                                              RichNode replacement,
                                              UnstableNode& result) {
-  const FloatToStringHelper helper (value());
+  const internal::FloatToStringHelper helper (value());
 
   if (~helper.minusSigns[0] == 0) {
     helper.buildStringAt(vm, 0, helper.length, result);

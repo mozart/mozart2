@@ -34,10 +34,14 @@ inline
 OpResult raise(VM vm, LT&& label, Args&&... args);
 
 inline
-OpResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual);
+OpResult raiseTypeError(VM vm, const nchar* expected, RichNode actual);
 
 inline
 OpResult raiseIllegalArity(VM vm, int expected, int actual);
+
+template <class... ExtraArgs>
+inline
+OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args);
 
 }
 

@@ -86,7 +86,7 @@ UnstableNode trivialBuild(VM vm, double value) {
 }
 
 inline
-UnstableNode trivialBuild(VM vm, const char16_t* value) {
+UnstableNode trivialBuild(VM vm, const nchar* value) {
   return Atom::build(vm, value);
 }
 
@@ -221,6 +221,17 @@ UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
   staticInitElements<Record>(vm, RichNode(result).as<Record>(),
                              std::forward<Args>(args)...);
   return result;
+}
+
+/**
+ * Build a string, which may be a Cons or a nil Atom.
+ */
+inline
+UnstableNode buildString(VM vm, LString<nchar>&& content) {
+  if (content.isErrorOrEmpty())
+    return Atom::build(vm, vm->coreatoms.nil);
+  else
+    return Cons::build(vm, std::move(content));
 }
 
 }

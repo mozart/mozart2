@@ -113,9 +113,9 @@ private:
     return static_cast<This>(this)->isValidFeature(self, vm, feature);
   }
 
-  void internalGetValueAt(Self self, VM vm, nativeint feature,
+  OpResult internalGetValueAt(Self self, VM vm, nativeint feature,
                           UnstableNode& result) {
-    static_cast<This>(this)->getValueAt(self, vm, feature, result);
+    return static_cast<This>(this)->getValueAt(self, vm, feature, result);
   }
 
 protected:
@@ -124,7 +124,7 @@ protected:
   bool isValidFeature(Self self, VM vm, nativeint feature);
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  OpResult getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
   */
 };
 

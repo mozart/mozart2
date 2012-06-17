@@ -43,5 +43,5 @@ add_custom_target(genbuiltins
   VERBATIM)
 
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
-  unify.cc sclone.cc vm.cc coredatatypes.cc)
+  unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc)
 add_dependencies(mozartvm gensources genbuiltins)

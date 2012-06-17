@@ -577,6 +577,79 @@ struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
   }
 };
 
+class StringLike;
+template<>
+struct Interface<StringLike>: ImplementedBy<Cons, Atom> {
+  OpResult isString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult unsafeGetString(RichNode self, VM vm, LString<nchar>& result) {
+    return raiseTypeError(vm, NSTR("string"), self);
+  }
+};
+
+class VirtualString;
+template<>
+struct Interface<VirtualString>:
+  ImplementedBy<SmallInt, Float, Atom, Boolean, Unit, Cons, Tuple, ByteString> {
+
+  OpResult isVirtualString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink) {
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+  }
+
+  OpResult vsLength(RichNode self, VM vm, nativeint& result) {
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+  }
+
+  OpResult vsChangeSign(RichNode self, VM vm,
+                        RichNode replacement, UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+  }
+};
+
+class ByteStringLike;
+template<>
+struct Interface<ByteStringLike>: ImplementedBy<ByteString> {
+  OpResult isByteString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult bsGet(RichNode self, VM vm, nativeint index, char& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsAppend(RichNode self, VM vm, RichNode right, UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsSlice(RichNode self, VM vm, nativeint from, nativeint to, UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsLength(RichNode self, VM vm, nativeint& length) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsDecode(RichNode self, VM vm,
+                    ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+                    UnstableNode& result) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+
+  OpResult bsStrChr(RichNode self, VM vm,
+                    nativeint from, char character, UnstableNode& res) {
+    return raiseTypeError(vm, NSTR("ByteString"), self);
+  }
+};
+
 }
 
 #endif // __COREINTERFACES_DECL_H

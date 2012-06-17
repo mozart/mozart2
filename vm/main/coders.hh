@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,58 +22,52 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_H
-#define __BOOLEAN_H
+#ifndef __CODERS_H
+#define __CODERS_H
 
 #include "mozartcore.hh"
 
-#ifndef MOZART_GENERATOR
-
 namespace mozart {
 
-/////////////
-// Boolean //
-/////////////
+//////////////
+// Encoders //
+//////////////
 
-#include "Boolean-implem.hh"
 
-bool Implementation<Boolean>::build(VM vm, GR gr, Self from) {
-  return from.get().value();
-}
+FreeableLString<char> encodeLatin1(VM vm, const LString<nchar>& input,
+                                   bool isLittleEndian, bool insertBom);
 
-bool Implementation<Boolean>::equals(VM vm, Self right) {
-  return value() == right.get().value();
-}
 
-int Implementation<Boolean>::compareFeatures(VM vm, Self right) {
-  if (value() == right.get().value())
-    return 0;
-  else if (value())
-    return 1;
-  else
-    return -1;
-}
+FreeableLString<char> encodeUTF8(VM vm, const LString<nchar>& input,
+                                 bool isLittleEndian, bool insertBom);
 
-OpResult Implementation<Boolean>::toString(Self self, VM vm,
-                                           std::basic_ostream<nchar>& sink) {
-  sink << (value() ? NSTR("true") : NSTR("false"));
-  return OpResult::proceed();
-}
 
-OpResult Implementation<Boolean>::vsLength(Self self, VM vm, nativeint& result) {
-  result = value() ? 4 : 5;
-  return OpResult::proceed();
-}
+FreeableLString<char> encodeUTF16(VM vm, const LString<nchar>& input,
+                                  bool isLittleEndian, bool insertBom);
 
-OpResult Implementation<Boolean>::vsChangeSign(Self self, VM vm,
-                                               RichNode replacement,
-                                               UnstableNode& result) {
-  result.copy(vm, self);
-  return OpResult::proceed();
-}
+
+FreeableLString<char> encodeUTF32(VM vm, const LString<nchar>& input,
+                                  bool isLittleEndian, bool insertBom);
+
+//////////////
+// Decoders //
+//////////////
+
+
+FreeableLString<nchar> decodeLatin1(VM vm, const LString<char>& input,
+                                    bool isLittleEndian, bool hasBom);
+
+FreeableLString<nchar> decodeUTF8(VM vm, const LString<char>& input,
+                                  bool isLittleEndian, bool hasBom);
+
+
+FreeableLString<nchar> decodeUTF16(VM vm, const LString<char>& input,
+                                   bool isLittleEndian, bool hasBom);
+
+
+FreeableLString<nchar> decodeUTF32(VM vm, const LString<char>& input,
+                                   bool isLittleEndian, bool hasBom);
 
 }
 
-#endif // MOZART_GENERATOR
-
-#endif // __BOOLEAN_H
+#endif

@@ -49,5 +49,7 @@
 #include "smallint.hh"
 #include "unit.hh"
 #include "variables.hh"
+#include "cons.hh"
+#include "bytestring.hh"
 
 #endif // __COREDATATYPES_H

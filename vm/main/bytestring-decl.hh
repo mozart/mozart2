@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,43 +22,44 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_DECL_H
-#define __BOOLEAN_DECL_H
+#ifndef __BYTESTRING_DECL_H
+#define __BYTESTRING_DECL_H
 
 #include "mozartcore-decl.hh"
 
-#include "datatypeshelpers-decl.hh"
-
 namespace mozart {
 
-class Boolean;
+////////////////
+// ByteString //
+////////////////
 
-typedef enum BOOL_OR_NOT_BOOL {
-  bFalse, bTrue, bNotBool
-} BoolOrNotBool;
+// Note: these magic numbers are to be known in the Oz side as well.
+enum ByteStringEncoding : nativeint {
+  latin1 = 0,
+  utf8 = 1,
+  utf16 = 2,
+  utf32 = 3
+};
+
+class ByteString;
 
 #ifndef MOZART_GENERATOR
-#include "Boolean-implem-decl.hh"
+#include "ByteString-implem-decl.hh"
 #endif
 
 template <>
-class Implementation<Boolean>: public LiteralHelper<Boolean>,
-  Copyable, StoredAs<bool>, WithValueBehavior {
+class Implementation<ByteString>: WithValueBehavior {
 public:
-  typedef SelfType<Boolean>::Self Self;
+  typedef SelfType<ByteString>::Self Self;
 public:
-  constexpr static UUID uuid = "{ce34f46e-4751-4f2d-b6fd-0522198a4810}";
+  static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
-  Implementation(bool value) : _value(value) {}
-
-  static bool build(VM, bool value) { return value; }
+  Implementation(VM vm, LString<char>&& bytes) : _bytes(std::move(bytes)) {}
 
   inline
-  static bool build(VM vm, GR gr, Self from);
+  Implementation(VM vm, GR gr, Self self);
 
 public:
-  bool value() const { return _value; }
-
   inline
   bool equals(VM vm, Self right);
 
@@ -66,20 +67,43 @@ public:
   int compareFeatures(VM vm, Self right);
 
 public:
-  // BooleanValue interface
+  // Comparable interface
 
-  OpResult boolValue(Self self, VM vm, bool& result) {
-    result = value();
-    return OpResult::proceed();
-  }
-
-  OpResult valueOrNotBool(Self self, VM vm, BoolOrNotBool& result) {
-    result = value() ? bTrue : bFalse;
-    return OpResult::proceed();
-  }
+  //inline
+  //OpResult compare(Self self, VM vm, RichNode right, int& result);
 
 public:
-  // VirtualString inteface
+  // ByteStringLike interface
+  OpResult isByteString(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult bsGet(Self self, VM vm, nativeint index, char& result);
+
+  inline
+  OpResult bsAppend(Self self, VM vm, RichNode right, UnstableNode& result);
+
+  OpResult bsLength(Self self, VM vm, nativeint& length) {
+    return vsLength(self, vm, length);
+  }
+
+  inline
+  OpResult bsDecode(Self self, VM vm,
+                    ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+                    UnstableNode& result);
+
+  inline
+  OpResult bsSlice(Self self, VM vm, nativeint from, nativeint to, UnstableNode& result);
+
+  inline
+  OpResult bsStrChr(Self self, VM vm,
+                    nativeint from, char character, UnstableNode& res);
+
+
+public:
+  // VirtualString interface
   OpResult isVirtualString(Self self, VM vm, bool& result) {
     result = true;
     return OpResult::proceed();
@@ -97,19 +121,24 @@ public:
 
 public:
   // Miscellaneous
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
-    out << (value() ? "true" : "false");
-  }
+  const LString<char>& getBytes() const { return _bytes; }
 
 private:
-  const bool _value;
+  LString<char> _bytes;
 };
 
+static
+OpResult encodeToBytestring(VM vm, const LString<nchar>& input,
+                            ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+                            UnstableNode& result);
+
 #ifndef MOZART_GENERATOR
-#include "Boolean-implem-decl-after.hh"
+#include "ByteString-implem-decl-after.hh"
 #endif
 
 }
 
-#endif // __BOOLEAN_DECL_H
+#endif // __STRING_DECL_H

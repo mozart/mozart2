@@ -36,12 +36,38 @@ OpResult raise(VM vm, LT&& label, Args&&... args) {
   return OpResult::raise(vm, exception);
 }
 
-OpResult raiseTypeError(VM vm, const char16_t* expected, RichNode actual) {
+OpResult raiseTypeError(VM vm, const nchar* expected, RichNode actual) {
   return raise(vm, vm->coreatoms.typeError, expected, actual);
 }
 
 OpResult raiseIllegalArity(VM vm, int expected, int actual) {
   return raise(vm, vm->coreatoms.illegalArity, expected, actual);
+}
+
+template <class... ExtraArgs>
+OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args) {
+  AtomImpl* reasonAtom;
+  switch (reason) {
+    case UnicodeErrorReason::outOfRange:
+      reasonAtom = vm->coreatoms.outOfRange;
+      break;
+    case UnicodeErrorReason::surrogate:
+      reasonAtom = vm->coreatoms.surrogate;
+      break;
+    case UnicodeErrorReason::invalidUTF8:
+      reasonAtom = vm->coreatoms.invalidUTF8;
+      break;
+    case UnicodeErrorReason::invalidUTF16:
+      reasonAtom = vm->coreatoms.invalidUTF16;
+      break;
+    case UnicodeErrorReason::truncated:
+      reasonAtom = vm->coreatoms.truncated;
+      break;
+    default:    // shouldn't reach here.
+      assert(false);
+      return OpResult::fail();
+  }
+  return raise(vm, vm->coreatoms.unicodeError, reasonAtom, std::forward<ExtraArgs>(args)...);
 }
 
 }

@@ -136,10 +136,11 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
   return true;
 }
 
-void Implementation<Tuple>::getValueAt(Self self, VM vm,
-                                       nativeint feature,
-                                       UnstableNode& result) {
+OpResult Implementation<Tuple>::getValueAt(Self self, VM vm,
+                                           nativeint feature,
+                                           UnstableNode& result) {
   result.copy(vm, self[(size_t) feature - 1]);
+  return OpResult::proceed();
 }
 
 void Implementation<Tuple>::getFeatureAt(Self self, VM vm, size_t index,
@@ -182,95 +183,71 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
   out << ")";
 }
 
-///////////
-// Cons //
-///////////
-
-#include "Cons-implem.hh"
-
-Implementation<Cons>::Implementation(VM vm, RichNode head, RichNode tail) {
-  _head.init(vm, head);
-  _tail.init(vm, tail);
+bool Implementation<Tuple>::hasSharpLabel(VM vm) {
+  UnstableNode tempLabel (vm, _label);
+  RichNode label = tempLabel;
+  return label.is<Atom>() && label.as<Atom>().value() == vm->coreatoms.sharp;
 }
 
-Implementation<Cons>::Implementation(VM vm, GR gr, Self from) {
-  gr->copyStableNode(_head, from->_head);
-  gr->copyStableNode(_tail, from->_tail);
-}
-
-bool Implementation<Cons>::equals(Self self, VM vm, Self right,
-                                  WalkStack& stack) {
-  stack.push(vm, &_tail, &right->_tail);
-  stack.push(vm, &_head, &right->_head);
-
-  return true;
-}
-
-void Implementation<Cons>::getValueAt(Self self, VM vm,
-                                      nativeint feature,
-                                      UnstableNode& result) {
-  if (feature == 1)
-    result.copy(vm, _head);
-  else
-    result.copy(vm, _tail);
-}
-
-OpResult Implementation<Cons>::label(Self self, VM vm,
-                                     UnstableNode& result) {
-  result = Atom::build(vm, vm->coreatoms.pipe);
+OpResult Implementation<Tuple>::isVirtualString(Self self, VM vm, bool& result) {
+  result = false;
+  if (hasSharpLabel(vm)) {
+    for (size_t i = 0; i < _width; ++ i) {
+      UnstableNode tempNode (vm, self[i]);
+      MOZART_CHECK_OPRESULT(VirtualString(tempNode).isVirtualString(vm, result));
+      if (!result)
+        return OpResult::proceed();
+    }
+    result = true;
+  }
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::width(Self self, VM vm, size_t& result) {
-  result = 2;
-  return OpResult::proceed();
-}
+OpResult Implementation<Tuple>::toString(Self self, VM vm,
+                                         std::basic_ostream<nchar>& sink) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
 
-OpResult Implementation<Cons>::arityList(Self self, VM vm,
-                                         UnstableNode& result) {
-  result = buildCons(vm, 1, buildCons(vm, 2, vm->coreatoms.nil));
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Cons>::clone(Self self, VM vm,
-                                     UnstableNode& result) {
-  result = buildCons(vm, Unbound::build(vm), Unbound::build(vm));
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Cons>::waitOr(Self self, VM vm,
-                                      UnstableNode& result) {
-  UnstableNode tempHead(vm, _head);
-  UnstableNode tempTail(vm, _tail);
-
-  RichNode head = tempHead;
-  RichNode tail = tempTail;
-
-  // If there is a field which is bound, then return its feature
-  if (!head.isTransient()) {
-    result = SmallInt::build(vm, 1);
-    return OpResult::proceed();
-  } else if (!tail.isTransient()) {
-    result = SmallInt::build(vm, 2);
-    return OpResult::proceed();
+  for (size_t i = 0; i < _width; ++ i) {
+    UnstableNode tempNode (vm, self[i]);
+    MOZART_CHECK_OPRESULT(VirtualString(tempNode).toString(vm, sink));
   }
 
-  // Create the control variable
-  UnstableNode unstableControlVar = Variable::build(vm);
-  RichNode controlVar = unstableControlVar;
-  controlVar.ensureStable(vm);
-
-  // Add the control variable to the suspension list of both fields
-  DataflowVariable(head).addToSuspendList(vm, controlVar);
-  DataflowVariable(tail).addToSuspendList(vm, controlVar);
-
-  // Wait for the control variable
-  return OpResult::waitFor(vm, controlVar);
+  return OpResult::proceed();
 }
 
-void Implementation<Cons>::printReprToStream(Self self, VM vm,
-                                             std::ostream& out, int depth) {
-  out << repr(vm, _head, depth) << "|" << repr(vm, _tail, depth);
+OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+
+  result = 0;
+  for (size_t i = 0; i < _width; ++ i) {
+    nativeint thisLength = 0;
+    UnstableNode tempNode (vm, self[i]);
+    MOZART_CHECK_OPRESULT(VirtualString(tempNode).vsLength(vm, thisLength));
+    result += thisLength;
+  }
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::vsChangeSign(Self self, VM vm,
+                                             RichNode replacement,
+                                             UnstableNode& result) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, NSTR("VirtualString"), self);
+
+  UnstableNode tempLabel (vm, _label);
+  result.make<Tuple>(vm, _width, tempLabel);
+  auto tuple = RichNode(result).as<Tuple>();
+  for (size_t i = 0; i < _width; i++) {
+    UnstableNode tempNode (vm, self[i]);
+    UnstableNode changedNode;
+    VirtualString(tempNode).vsChangeSign(vm, replacement, changedNode);
+    tuple.initElement(vm, i, changedNode);
+  }
+
+  return OpResult::proceed();
 }
 
 ///////////

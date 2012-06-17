@@ -67,5 +67,8 @@
 #include "modules/modexception.hh"
 #include "modules/modobject.hh"
 #include "modules/modtime.hh"
+#include "modules/modstring.hh"
+#include "modules/modvirtualstring.hh"
+#include "modules/modbytestring.hh"
 
 #endif // __MOZART_H

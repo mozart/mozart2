@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,66 +22,55 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREATOMS_DECL_H
-#define __COREATOMS_DECL_H
+#ifndef __MODSTRING_H
+#define __MODSTRING_H
 
-#include "core-forward-decl.hh"
+#include "../mozartcore.hh"
 
-#include "atomtable.hh"
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-struct CoreAtoms {
-  inline
-  void initialize(VM vm, AtomTable& atomTable);
+namespace builtins {
 
-  // nil, '|' and '#'
-  AtomImpl* nil;
-  AtomImpl* pipe;
-  AtomImpl* sharp;
+///////////////////
+// String module //
+///////////////////
 
-  // Object Orientation
-  AtomImpl* ooMeth;
-  AtomImpl* ooFastMeth;
-  AtomImpl* ooDefaults;
-  AtomImpl* ooAttr;
-  AtomImpl* ooFeat;
-  AtomImpl* ooFreeFeat;
-  AtomImpl* ooFreeFlag;
-  AtomImpl* ooMethSrc;
-  AtomImpl* ooAttrSrc;
-  AtomImpl* ooFeatSrc;
-  AtomImpl* ooPrintName;
-  AtomImpl* ooFallback;
+class ModString : public Module {
+public:
+  ModString() : Module("String") {}
 
-  // Space status
-  AtomImpl* succeeded;
-  AtomImpl* entailed;
-  AtomImpl* stuck;
-  AtomImpl* suspended;
-  AtomImpl* alternatives;
-  AtomImpl* failed;
-  AtomImpl* merged;
+  class Is : public Builtin<Is> {
+  public:
+    Is() : Builtin("is") {}
 
-  // Unicode error types
-  AtomImpl* outOfRange;
-  AtomImpl* surrogate;
-  AtomImpl* invalidUTF8;
-  AtomImpl* invalidUTF16;
-  AtomImpl* truncated;
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(StringLike(value).isString(vm, boolResult));
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
 
-  // Exceptions
-  AtomImpl* failure;
-  AtomImpl* typeError;
-  AtomImpl* illegalFieldSelection;
-  AtomImpl* illegalArity;
-  AtomImpl* unicodeError;
-  AtomImpl* spaceAdmissible;
-  AtomImpl* spaceNoChoice;
-  AtomImpl* spaceAltRange;
-  AtomImpl* spaceMerged;
+  class ToAtom : public Builtin<ToAtom> {
+  public:
+    ToAtom() : Builtin("toAtom") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      LString<nchar> string;
+      MOZART_CHECK_OPRESULT(StringLike(value).unsafeGetString(vm, string));
+      result = Atom::build(vm, string.length(), string.string());
+      return OpResult::proceed();
+    }
+  };
 };
 
 }
 
-#endif // __COREATOMS_DECL_H
+}
+
+#endif
+
+#endif
+

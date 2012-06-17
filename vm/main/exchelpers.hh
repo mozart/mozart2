@@ -60,6 +60,9 @@ OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, ExtraArgs&&... args
     case UnicodeErrorReason::invalidUTF16:
       reasonAtom = vm->coreatoms.invalidUTF16;
       break;
+    case UnicodeErrorReason::truncated:
+      reasonAtom = vm->coreatoms.truncated;
+      break;
     default:    // shouldn't reach here.
       assert(false);
       return OpResult::fail();

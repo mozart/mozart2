@@ -85,7 +85,7 @@ OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
   if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
     result = 0;
   else
-    result = codePointCount(LString<nchar>(a->contents(), a->length()));
+    result = codePointCount(makeLString(a->contents(), a->length()));
   return OpResult::proceed();
 }
 

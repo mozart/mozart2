@@ -274,10 +274,10 @@ OpResult Implementation<SmallInt>::vsChangeSign(Self self, VM vm,
       node.make<String>(vm, MOZART_STR("9223372036854775808"));
     } else {
       auto str = std::to_string(value());
-      size_t length = str.length() - 1;
-      nchar* nStr = new (vm) nchar[length];
-      std::copy(str.begin()+1, str.end(), nStr);
-      node.make<String>(vm, LString<nchar>(nStr, length));
+      LString<nchar> newStr (vm, str.length() - 1, [&](nchar* buffer) {
+        std::copy(str.begin()+1, str.end(), buffer);
+      });
+      node.make<String>(vm, newStr);
     }
     result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
   }

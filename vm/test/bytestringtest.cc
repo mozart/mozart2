@@ -28,7 +28,7 @@ TEST_F(ByteStringTest, Append) {
   if (EXPECT_PROCEED(ByteStringLike(b1).bsAppend(vm, b2, b12i))) {
     RichNode b12 = b12i;
     if (EXPECT_IS<ByteString>(b12)) {
-      EXPECT_EQ(LString<char>("abc\xde\xf0"), b12.as<ByteString>().getBytes());
+      EXPECT_EQ("abc\xde\xf0", b12.as<ByteString>().getBytes());
     }
   }
 
@@ -36,7 +36,7 @@ TEST_F(ByteStringTest, Append) {
   if (EXPECT_PROCEED(ByteStringLike(b1).bsAppend(vm, b1, b11i))) {
     RichNode b11 = b11i;
     if (EXPECT_IS<ByteString>(b11)) {
-      EXPECT_EQ(LString<char>("abcabc"), b11.as<ByteString>().getBytes());
+      EXPECT_EQ("abcabc", b11.as<ByteString>().getBytes());
     }
   }
 
@@ -44,7 +44,7 @@ TEST_F(ByteStringTest, Append) {
   if (EXPECT_PROCEED(ByteStringLike(b0).bsAppend(vm, b0, b00i))) {
     RichNode b00 = b00i;
     if (EXPECT_IS<ByteString>(b00)) {
-      EXPECT_EQ(LString<char>(), b00.as<ByteString>().getBytes());
+      EXPECT_EQ("", b00.as<ByteString>().getBytes());
     }
   }
 
@@ -52,39 +52,39 @@ TEST_F(ByteStringTest, Append) {
   if (EXPECT_PROCEED(ByteStringLike(b1).bsAppend(vm, b0, b10i))) {
     RichNode b10 = b10i;
     if (EXPECT_IS<ByteString>(b10)) {
-      EXPECT_EQ(LString<char>("abc"), b10.as<ByteString>().getBytes());
+      EXPECT_EQ("abc", b10.as<ByteString>().getBytes());
     }
   }
 }
 
 TEST_F(ByteStringTest, Decode) {
-  UnstableNode b = ByteString::build(vm, LString<char>("\xc3\x80\x01\x00\xc4\xbf\x10\x00", 8));
+  UnstableNode b = ByteString::build(vm, newLString("\xc3\x80\x01\x00\xc4\xbf\x10\x00", 8));
 
   // bsDecode(vm, encoding, isLittleEndian, hasBOM, result)
 
   UnstableNode res;
-  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::latin1, false, false, res))) {
-    EXPECT_EQ_STRING(LString<nchar>(MOZART_STR("\u00c3\u0080\u0001\0\u00c4\u00bf\u0010\0"), 8), res);
+  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::latin1, EncodingVariant::none, res))) {
+    EXPECT_EQ_STRING(newLString(MOZART_STR("\u00c3\u0080\u0001\0\u00c4\u00bf\u0010\0"), 8), res);
   }
 
-  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf8, false, false, res))) {
-    EXPECT_EQ_STRING(LString<nchar>(MOZART_STR("\u00c0\u0001\0\u013f\u0010\0"), 6), res);
+  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf8, EncodingVariant::none, res))) {
+    EXPECT_EQ_STRING(makeLString(MOZART_STR("\u00c0\u0001\0\u013f\u0010\0"), 6), res);
   }
 
-  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf16, false, false, res))) {
+  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf16, EncodingVariant::none, res))) {
     EXPECT_EQ_STRING(MOZART_STR("\uc380\u0100\uc4bf\u1000"), res);
   }
 
-  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf16, true, false, res))) {
+  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf16, EncodingVariant::littleEndian, res))) {
     EXPECT_EQ_STRING(MOZART_STR("\u80c3\u0001\ubfc4\u0010"), res);
   }
 
-  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf32, true, false, res))) {
+  if (EXPECT_PROCEED(ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf32, EncodingVariant::littleEndian, res))) {
     EXPECT_EQ_STRING(MOZART_STR("\U000180c3\U0010bfc4"), res);
   }
 
   EXPECT_RAISE(MOZART_STR("unicodeError"),
-               ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf32, false, false, res));
+               ByteStringLike(b).bsDecode(vm, ByteStringEncoding::utf32, EncodingVariant::none, res));
 }
 
 TEST_F(ByteStringTest, Slice) {

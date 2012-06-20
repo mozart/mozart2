@@ -25,83 +25,11 @@
 #ifndef __UTF_DECL_H
 #define __UTF_DECL_H
 
+#include <vector>
 #include "mozartcore-decl.hh"
-#include <utility>
-#include <string>
-#include <cstring>
-#include <type_traits>
-#include <ostream>
+#include "lstring-decl.hh"
 
 namespace mozart {
-
-/////////////
-// LString //
-/////////////
-
-/**
- * An integer indicating the string pair contains a surrogate character.
- */
-enum UnicodeErrorReason : nativeint {
-    empty = 0,         // not really an error...
-    outOfRange = -1,   // the code point is outside of the valid range 0 -- 0x10ffff
-    surrogate = -2,    // the code point refers to a surrogate 0xd800 -- 0xdfff
-    invalidUTF8 = -3,  // an invalid UTF-8 sequence is provided.
-    invalidUTF16 = -4, // an invalid UTF-16 sequence is provided.
-    truncated = -5,    // the data is truncated such that an incomplete code unit exists.
-
-    invalidUTFNative   // an invalid UTF sequence (based on nchar) is provided
-        = std::is_same<nchar, char16_t>::value ? invalidUTF16 :
-          std::is_same<nchar, char>::value ? invalidUTF8 : outOfRange
-};
-
-template <class C>
-struct LString {    // LString = Length-prefixed string.
-    const C* string;
-    union {
-        nativeint length;
-        UnicodeErrorReason error;
-    };
-
-    bool isError() const { return length < 0; }
-    bool isErrorOrEmpty() const { return length <= 0; }
-
-    size_t bytesCount() const { return length * sizeof(C); }
-
-    const C* begin() const { return string; }
-    const C* end() const { return string + length; }
-
-    C operator[](nativeint i) const { return string[i]; }
-
-    /**
-     * Free a string previously allocated from toUTF, fromLatin1 or toLatin1.
-     */
-    inline
-    void free(VM vm);
-
-    LString() : string(nullptr), length(0) {}
-    LString(UnicodeErrorReason error) : string(nullptr), error(error) {}
-    LString(const C* s) : string(s), length(std::char_traits<C>::length(s)) {}
-    LString(const C* s, nativeint len) : string(s), length(len) {}
-    LString(const LString&) = default;
-
-    /**
-     * Create a copy allocated on the VM heap.
-     */
-    inline
-    LString(VM vm, LString<C> other);
-};
-
-/**
- * Write the string to an output stream.
- */
-template <class C>
-static std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out, LString<C> input);
-
-template <class C>
-static bool operator==(LString<C> a, LString<C> b);
-
-template <class C>
-static bool operator!=(LString<C> a, LString<C> b);
 
 /////////////////////////////////
 // Unicode encoding conversion //
@@ -139,44 +67,53 @@ static std::pair<char32_t, nativeint> fromUTF(const char16_t* utf, nativeint len
 static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint length = 1);
 
 /**
- * Convert between two kinds of UTF sequences. The memory will be allocated from
- * the virtual machine heap. A copy will always be made on the VM heap.
+ * Perform some action for each code point of the string. The function "f"
+ * should have the signature
+ *
+ *  bool f(char32_t codePoint)
+ *
+ * and the function "g" should have the signature
+ *
+ *  bool g(C codeUnit, UnicodeErrorReason errorReason);
+ *
+ * both the functions "f" and "g" should return 'false' to quit early.
  */
-template <class To, class From>
-static LString<To> toUTF(VM vm, LString<From> input);
+template <class C, class F, class G>
+static void forEachCodePoint(const LString<C>& string,
+                             const F& onChar, const G& onError);
+
+template <class C, class F>
+static void forEachCodePoint(const LString<C>& string, const F& onChar) {
+  forEachCodePoint(string, onChar, [](C, UnicodeErrorReason) { return false; });
+}
 
 /**
- * Convert between a string of Latin-1 (ISO-8859-1) string and native character
- * string.
- *
- * When a Unicode character is outside of the range of 0 -- 255, it will be
- * replaced by the character '?'.
- *
- * If the covnersion failed, (nullptr, invalidLength) will be returned.
+ * Convert between two kinds of UTF sequences. A copy will always be made.
  */
-static LString<char> toLatin1(VM vm, LString<nchar> input);
-static LString<nchar> fromLatin1(VM vm, LString<char> input);
+template <class To, class From>
+static ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input);
 
 /**
  * Compare two strings by code-point order (without considering locale-specific
  * collation, normalization, etc.)
  */
 template <class C>
-inline static int compareByCodePoint(LString<C> a, LString<C> b);
+inline static int compareByCodePoint(const BaseLString<C>& a,
+                                     const BaseLString<C>& b);
 
 template <class C>
-inline static int compareByCodePoint(const C* a, LString<C> b) {
-  return compareByCodePoint(LString<C>(a), b);
+inline static int compareByCodePoint(const C* a, const BaseLString<C>& b) {
+  return compareByCodePoint(makeLString(a), b);
 }
 
 template <class C>
-inline static int compareByCodePoint(LString<C> a, const C* b) {
-  return compareByCodePoint(a, LString<C>(b));
+inline static int compareByCodePoint(const BaseLString<C>& a, const C* b) {
+  return compareByCodePoint(a, makeLString(b));
 }
 
 template <class C>
 inline static int compareByCodePoint(const C* a, const C* b) {
-  return compareByCodePoint(LString<C>(a), LString<C>(b));
+  return compareByCodePoint(makeLString(a), makeLString(b));
 }
 
 /**
@@ -195,9 +132,9 @@ static nativeint getUTFStride(const char32_t* utf);
  * Count the number of code points in the UTF string. These functions do not
  * attempt to validate if the input is valid.
  */
-static nativeint codePointCount(LString<char> input);
-static nativeint codePointCount(LString<char16_t> input);
-static nativeint codePointCount(LString<char32_t> input);
+static nativeint codePointCount(const BaseLString<char>& input);
+static nativeint codePointCount(const BaseLString<char16_t>& input);
+static nativeint codePointCount(const BaseLString<char32_t>& input);
 
 }
 

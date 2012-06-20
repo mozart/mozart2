@@ -68,9 +68,8 @@ void Implementation<ByteString>::printReprToStream(Self self, VM vm,
 
 OpResult Implementation<ByteString>::toString(Self self, VM vm,
                                               std::basic_ostream<nchar>& sink) {
-  auto latin1Result = fromLatin1(vm, _bytes);   // Latin1 -> UTF always succeed.
-  sink << latin1Result;
-  latin1Result.free(vm);
+  sink << decodeLatin1(_bytes, EncodingVariant::none);
+  // ^ Latin1 -> UTF always succeed.
   return OpResult::proceed();
 }
 
@@ -100,57 +99,39 @@ OpResult Implementation<ByteString>::bsAppend(Self self, VM vm,
   if (!right.is<ByteString>())
     return raiseTypeError(vm, MOZART_STR("ByteString"), right);
 
-  if (_bytes.length <= 0) {
+  if (_bytes.isErrorOrEmpty()) {
     result.copy(vm, right);
     return OpResult::proceed();
   }
 
   auto rightBytes = right.as<ByteString>().getBytes();
-  if (rightBytes.length <= 0) {
+  if (rightBytes.isErrorOrEmpty()) {
     result.copy(vm, self);
     return OpResult::proceed();
   }
 
-  nativeint totalLength = _bytes.length + rightBytes.length;
-
-  if (_bytes.end() == rightBytes.begin()) {
-    result.make<ByteString>(vm, LString<char>(_bytes.string, totalLength));
-    return OpResult::proceed();
-  }
-
-  char* newMem = new (vm) char[totalLength];
-  memcpy(newMem, _bytes.string, _bytes.length);
-  memcpy(newMem+_bytes.length, rightBytes.string, rightBytes.length);
-  result.make<ByteString>(vm, LString<char>(newMem, totalLength));
+  result.make<ByteString>(vm, concatLString(vm, _bytes, rightBytes));
   return OpResult::proceed();
 }
 
 OpResult Implementation<ByteString>::bsDecode(Self self, VM vm,
                                               ByteStringEncoding encoding,
-                                              bool isLittleEndian, bool hasBOM,
+                                              EncodingVariant variant,
                                               UnstableNode& result) {
-  LString<nchar> str;
+  DecoderFun decoder;
   switch (encoding) {
-    case ByteStringEncoding::latin1:
-      str = decodeLatin1(vm, _bytes, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf8:
-      str = decodeUTF8(vm, _bytes, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf16:
-      str = decodeUTF16(vm, _bytes, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf32:
-      str = decodeUTF32(vm, _bytes, isLittleEndian, hasBOM);
-      break;
+    case ByteStringEncoding::latin1: decoder = &decodeLatin1; break;
+    case ByteStringEncoding::utf8:   decoder = &decodeUTF8;   break;
+    case ByteStringEncoding::utf16:  decoder = &decodeUTF16;  break;
+    case ByteStringEncoding::utf32:  decoder = &decodeUTF32;  break;
     default:
       return OpResult::fail();
   }
 
-  if (str.isError())
-    return raiseUnicodeError(vm, str.error, self);
-
-  result.make<String>(vm, str);
+  auto res = newLString(vm, decoder(_bytes, variant));
+  if (res.isError())
+    return raiseUnicodeError(vm, res.error);
+  result.make<String>(vm, res);
   return OpResult::proceed();
 }
 
@@ -160,8 +141,7 @@ OpResult Implementation<ByteString>::bsSlice(Self self, VM vm,
   if (from > to || from < 0 || to >= _bytes.length)
     return raise(vm, MOZART_STR("indexOutOfBound"), self, from, to);
 
-  LString<char> newBytes (_bytes.string + from, to - from);
-  result.make<ByteString>(vm, newBytes);
+  result.make<ByteString>(vm, _bytes.slice(from, to));
   return OpResult::proceed();
 }
 
@@ -181,31 +161,23 @@ OpResult Implementation<ByteString>::bsStrChr(Self self, VM vm, nativeint from,
 
 
 static
-OpResult encodeToBytestring(VM vm, LString<nchar> input,
-                            ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
+                            ByteStringEncoding encoding, EncodingVariant variant,
                             UnstableNode& result) {
-  LString<char> bytes;
+  EncoderFun encoder;
   switch (encoding) {
-    case ByteStringEncoding::latin1:
-      bytes = encodeLatin1(vm, input, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf8:
-      bytes = encodeUTF8(vm, input, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf16:
-      bytes = encodeUTF16(vm, input, isLittleEndian, hasBOM);
-      break;
-    case ByteStringEncoding::utf32:
-      bytes = encodeUTF32(vm, input, isLittleEndian, hasBOM);
-      break;
+    case ByteStringEncoding::latin1: encoder = &encodeLatin1; break;
+    case ByteStringEncoding::utf8:   encoder = &encodeUTF8;   break;
+    case ByteStringEncoding::utf16:  encoder = &encodeUTF16;  break;
+    case ByteStringEncoding::utf32:  encoder = &encodeUTF32;  break;
     default:
       return OpResult::fail();
   }
 
-  if (bytes.isError())
-    return raiseUnicodeError(vm, bytes.error, String::build(vm, input));
-
-  result.make<ByteString>(vm, bytes);
+  auto res = newLString(vm, encoder(input, variant));
+  if (res.isError())
+    return raiseUnicodeError(vm, res.error);
+  result.make<ByteString>(vm, res);
   return OpResult::proceed();
 }
 

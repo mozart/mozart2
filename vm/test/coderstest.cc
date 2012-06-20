@@ -14,6 +14,15 @@ struct TestVector {
     nativeint length;
 };
 
+EncodingVariant makeVariant(bool isLittleEndian, bool hasBOM) {
+    EncodingVariant v = EncodingVariant::none;
+    if (hasBOM)
+        v |= EncodingVariant::hasBOM;
+    if (isLittleEndian)
+        v |= EncodingVariant::littleEndian;
+    return v;
+}
+
 TEST_F(CodersTest, EncodeLatin1) {
     TestVector testVectors[] = {
         {"foo", MOZART_STR("foo"), true, true},
@@ -31,9 +40,9 @@ TEST_F(CodersTest, EncodeLatin1) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = encodeLatin1(vm, vec.decoded, vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<char>(vec.encoded), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = encodeLatin1(makeLString(vec.decoded), variant);
+        EXPECT_EQ(makeLString(vec.encoded), res);
     }
 }
 
@@ -54,10 +63,9 @@ TEST_F(CodersTest, DecodeLatin1) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = decodeLatin1(vm, {vec.encoded, vec.length},
-                                vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<nchar>(vec.decoded), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = decodeLatin1(makeLString(vec.encoded, vec.length), variant);
+        EXPECT_EQ(makeLString(vec.decoded), res);
     }
 }
 
@@ -78,9 +86,9 @@ TEST_F(CodersTest, EncodeUTF8) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = encodeUTF8(vm, vec.decoded, vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<char>(vec.encoded), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = encodeUTF8(makeLString(vec.decoded), variant);
+        EXPECT_EQ(makeLString(vec.encoded), res);
     }
 }
 
@@ -111,22 +119,25 @@ TEST_F(CodersTest, DecodeUTF8) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = decodeUTF8(vm, {vec.encoded, vec.length},
-                              vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<nchar>(vec.decoded), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = decodeUTF8(makeLString(vec.encoded, vec.length), variant);
+        EXPECT_EQ(makeLString(vec.decoded), res);
     }
 }
 
 TEST_F(CodersTest, DecodeUTF8_Fail) {
-    auto res = decodeUTF8(vm, "\xc3", false, false);
-    EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
-
-    res = decodeUTF8(vm, "\xe0\x80\x80", false, false);
-    EXPECT_EQ(UnicodeErrorReason::invalidUTF8, res.error);
-
-    res = decodeUTF8(vm, "\xed\xa0\x80", false, false);
-    EXPECT_EQ(UnicodeErrorReason::surrogate, res.error);
+    {
+        auto res = decodeUTF8("\xc3", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
+    }
+    {
+        auto res = decodeUTF8("\xe0\x80\x80", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::invalidUTF8, res.error);
+    }
+    {
+        auto res = decodeUTF8("\xed\xa0\x80", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::surrogate, res.error);
+    }
 }
 
 
@@ -147,9 +158,9 @@ TEST_F(CodersTest, EncodeUTF16) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = encodeUTF16(vm, vec.decoded, vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<char>(vec.encoded, vec.length), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = encodeUTF16(makeLString(vec.decoded), variant);
+        EXPECT_EQ(makeLString(vec.encoded, vec.length), res);
     }
 }
 
@@ -198,22 +209,25 @@ TEST_F(CodersTest, DecodeUTF16) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = decodeUTF16(vm, {vec.encoded, vec.length},
-                               vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<nchar>(vec.decoded), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = decodeUTF16(makeLString(vec.encoded, vec.length), variant);
+        EXPECT_EQ(makeLString(vec.decoded), res);
     }
 }
 
 TEST_F(CodersTest, DecodeUTF16_Fail) {
-    auto res = decodeUTF16(vm, "\x12\x34\x56", false, false);
-    EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
-
-    res = decodeUTF16(vm, "\xd8\x01", false, false);
-    EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
-
-    res = decodeUTF16(vm, "\xd8\x01\x01\x01", false, false);
-    EXPECT_EQ(UnicodeErrorReason::invalidUTF16, res.error);
+    {
+        auto res = decodeUTF16("\x12\x34\x56", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
+    }
+    {
+        auto res = decodeUTF16("\xd8\x01", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
+    }
+    {
+        auto res = decodeUTF16("\xd8\x01\x01\x01", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::invalidUTF16, res.error);
+    }
 }
 
 TEST_F(CodersTest, EncodeUTF32) {
@@ -233,9 +247,9 @@ TEST_F(CodersTest, EncodeUTF32) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = encodeUTF32(vm, vec.decoded, vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<char>(vec.encoded, vec.length), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = decodeUTF32(makeLString(vec.encoded, vec.length), variant);
+        EXPECT_EQ(makeLString(vec.decoded), res);
     }
 }
 
@@ -272,19 +286,21 @@ TEST_F(CodersTest, DecodeUTF32) {
     };
 
     for (auto&& vec : testVectors) {
-        auto res = decodeUTF32(vm, {vec.encoded, vec.length},
-                               vec.isLittleEndian, vec.hasBom);
-        EXPECT_EQ(LString<nchar>(vec.decoded), res);
-        res.free(vm);
+        EncodingVariant variant = makeVariant(vec.isLittleEndian, vec.hasBom);
+        auto res = decodeUTF32(makeLString(vec.encoded, vec.length), variant);
+        EXPECT_EQ(makeLString(vec.decoded), res);
     }
 }
 
 TEST_F(CodersTest, DecodeUTF32_Fail) {
-    auto res = decodeUTF32(vm, "\1\1\1\1", false, false);
-    EXPECT_EQ(UnicodeErrorReason::outOfRange, res.error);
-
-    res = decodeUTF32(vm, LString<char>("\0\0\0\1\0", 5), false, false);
-    EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
+    {
+        auto res = decodeUTF32("\1\1\1\1", EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::outOfRange, res.error);
+    }
+    {
+        auto res = decodeUTF32(makeLString("\0\0\0\1\0", 5), EncodingVariant::none);
+        EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
+    }
 }
 
 

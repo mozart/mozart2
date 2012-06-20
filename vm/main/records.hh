@@ -29,6 +29,8 @@
 
 #ifndef MOZART_GENERATOR
 
+#include "utils.hh"
+
 namespace mozart {
 
 ////////////////
@@ -334,34 +336,24 @@ void Implementation<Cons>::printReprToStream(Self self, VM vm,
 template <class F, class G>
 static OpResult withConsAsVirtualString(VM vm, RichNode cons,
                                         const F& onChar, const G& onString) {
-  while (true) {
-    using namespace patternmatching;
-
-    OpResult matchRes = OpResult::proceed();
-    nativeint c;
-    UnstableNode tail;
-
-    if (matchesCons(vm, matchRes, cons, capture(c), capture(tail))) {
+  return ozListForEach(vm, cons,
+    [&](nativeint c) -> OpResult {
       if (c < 0 || c >= 0x110000)
-        return raiseUnicodeError(vm, UnicodeErrorReason::outOfRange);
+        return raiseUnicodeError(vm, UnicodeErrorReason::outOfRange, c);
       else if (0xd800 <= c && c < 0xe000)
-        return raiseUnicodeError(vm, UnicodeErrorReason::surrogate);
+        return raiseUnicodeError(vm, UnicodeErrorReason::surrogate, c);
       onChar((char32_t) c);
-      cons = tail;
-
-    } else if (matches(vm, matchRes, cons, vm->coreatoms.nil)) {
       return OpResult::proceed();
-
-    } else {
+    },
+    [&](RichNode tail) -> OpResult {
       bool isString = false;
-      MOZART_CHECK_OPRESULT(StringLike(cons).isString(vm, isString));
-      if (isString) {
+      MOZART_CHECK_OPRESULT(StringLike(tail).isString(vm, isString));
+      if (isString)
         return onString(tail);
-      }
-
-      return matchTypeError(vm, matchRes, cons, MOZART_STR("VirtualString"));
+      else
+        return raiseTypeError(vm, MOZART_STR("VirtualString"), tail);
     }
-  }
+  );
 }
 
 OpResult Implementation<Cons>::isVirtualString(Self self, VM vm, bool& result) {

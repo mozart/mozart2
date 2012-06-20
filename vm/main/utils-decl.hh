@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,24 +22,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "mozart.hh"
+#ifndef __UTILS_DECL_H
+#define __UTILS_DECL_H
+
+#include "mozartcore-decl.hh"
 
 namespace mozart {
 
-// Definitions of the uuid's of data types
-constexpr UUID Implementation<Atom>::uuid;
-constexpr UUID Implementation<Boolean>::uuid;
-constexpr UUID Implementation<GlobalName>::uuid;
-constexpr UUID Implementation<SmallInt>::uuid;
-constexpr UUID Implementation<Unit>::uuid;
-constexpr UUID Implementation<String>::uuid;
-constexpr UUID Implementation<ByteString>::uuid;
+template <typename T>
+struct function_traits;
 
-// Bytecode for object dispatch procedure
-const ByteCode Implementation<Object>::dispatchByteCode[9] = {
-  OpMoveGX, 0, 1,
-  OpInlineGetClass, 1, 2,
-  OpTailCallG, 1, 3
-};
+/**
+ * Apply a function on a list.
+ *
+ * For example, if the list is `a|b|c|d|rest`, then this function is equivalent
+ * to::
+ *
+ *      MOZART_CHECK_OPRESULT(onHead(a));
+ *      MOZART_CHECK_OPRESULT(onHead(b));
+ *      MOZART_CHECK_OPRESULT(onHead(c));
+ *      MOZART_CHECK_OPRESULT(onHead(d));
+ *      return onTail(rest);
+ *
+ * The function onTail will **not** be called if the last element is `nil`. It
+ * assumes the list all have the same type "T".
+ */
+template <class F, class G>
+static
+OpResult ozListForEach(VM vm, RichNode list, const F& onHead, const G& onTail);
+
+template <class F>
+static
+OpResult ozListForEach(VM vm, RichNode list, const F& onHead,
+                       const nchar* expectedType);
 
 }
+
+#endif
+

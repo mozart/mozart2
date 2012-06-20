@@ -18,7 +18,7 @@ TEST_F(AtomTest, Build) {
     for (const nchar* s : testVector) {
         UnstableNode node;
         node.make<Atom>(vm, s);
-        EXPECT_EQ_ATOM(s, node);
+        EXPECT_EQ_ATOM(makeLString(s), node);
     }
 }
 

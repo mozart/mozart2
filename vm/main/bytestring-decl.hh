@@ -40,6 +40,8 @@ enum class ByteStringEncoding {
   utf32
 };
 
+enum EncodingVariant : uintptr_t;
+
 class ByteString;
 
 #ifndef MOZART_GENERATOR
@@ -53,7 +55,7 @@ public:
 public:
   static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
-  Implementation(VM vm, LString<char> bytes) : _bytes(bytes) {}
+  Implementation(VM vm, const LString<char>& bytes) : _bytes(bytes) {}
 
   inline
   Implementation(VM vm, GR gr, Self self);
@@ -90,7 +92,7 @@ public:
 
   inline
   OpResult bsDecode(Self self, VM vm,
-                    ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+                    ByteStringEncoding encoding, EncodingVariant variant,
                     UnstableNode& result);
 
   inline
@@ -123,15 +125,15 @@ public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
-  LString<char> getBytes() const { return _bytes; }
+  const LString<char>& getBytes() const { return _bytes; }
 
 private:
   LString<char> _bytes;
 };
 
 static
-OpResult encodeToBytestring(VM vm, LString<nchar> input,
-                            ByteStringEncoding encoding, bool isLittleEndian, bool hasBOM,
+OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
+                            ByteStringEncoding encoding, EncodingVariant variant,
                             UnstableNode& result);
 
 #ifndef MOZART_GENERATOR

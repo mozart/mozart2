@@ -41,8 +41,9 @@ namespace builtins {
 
 class ModByteString : public Module {
 private:
-  static OpResult parseEncoding(VM vm, In encodingNode,
-                                ByteStringEncoding& encoding) {
+  static OpResult parseEncoding(VM vm, In encodingNode, In encodingVariantList,
+                                ByteStringEncoding& encoding,
+                                EncodingVariant& variant) {
     using namespace patternmatching;
     OpResult matchRes = OpResult::proceed();
     if (matches(vm, matchRes, encodingNode, MOZART_STR("latin1"))) {
@@ -59,7 +60,25 @@ private:
       return matchTypeError(vm, matchRes, encodingNode,
                             MOZART_STR("latin1, utf8, utf16 or utf32"));
     }
-    return OpResult::proceed();
+
+    variant = EncodingVariant::none;
+    return ozListForEach(vm, encodingVariantList,
+      [&](const AtomImpl* atom) -> OpResult {
+        auto atomLStr = makeLString(atom->contents(), atom->length());
+        if (atomLStr == MOZART_STR("bom")) {
+          variant |= EncodingVariant::hasBOM;
+        } else if (atomLStr == MOZART_STR("littleEndian")) {
+          variant |= EncodingVariant::littleEndian;
+        } else if (atomLStr == MOZART_STR("bigEndian")) {
+          variant &= ~EncodingVariant::littleEndian;
+        } else {
+          return raiseTypeError(vm,
+                                MOZART_STR("list of bom, littleEndian or bigEndian"),
+                                encodingVariantList);
+        }
+        return OpResult::proceed();
+      },
+    MOZART_STR("List of Atoms"));
   }
 
 public:
@@ -81,14 +100,13 @@ public:
   public:
     Encode() : Builtin("encode") {}
 
-    OpResult operator()(VM vm, In string, In encodingNode, In isLENode,
-                               In hasBOMNode, Out result) {
+    // TODO: Change this built-in to accept a list of atom for the encoding
+    //       variants?
+    OpResult operator()(VM vm, In string, In encodingNode, In variantNode, Out result) {
       ByteStringEncoding encoding;
-      bool isLE, hasBOM;
-
-      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, encoding));
-      MOZART_GET_ARG(isLE, isLENode, MOZART_STR("boolean"));
-      MOZART_GET_ARG(hasBOM, hasBOMNode, MOZART_STR("boolean"));
+      EncodingVariant variant;
+      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
+                                          encoding, variant));
 
       bool isVirtualString;
       MOZART_CHECK_OPRESULT(VirtualString(string).isVirtualString(vm, isVirtualString));
@@ -97,10 +115,10 @@ public:
 
       std::basic_ostringstream<nchar> combinedStringStream;
       VirtualString(string).toString(vm, combinedStringStream);
-      std::basic_string<nchar> combinedString = combinedStringStream.str();
-      LString<nchar> rawString (combinedString.data(), combinedString.length());
+      auto combinedString = combinedStringStream.str();
+      auto rawString = makeLString(combinedString.data(), combinedString.size());
 
-      return encodeToBytestring(vm, rawString, encoding, isLE, hasBOM, result);
+      return encodeToBytestring(vm, rawString, encoding, variant, result);
     }
   };
 
@@ -108,14 +126,12 @@ public:
   public:
     Decode() : Builtin("decode") {}
 
-    OpResult operator()(VM vm, In value, In encodingNode, In isLENode,
-                               In hasBOMNode, Out result) {
+    OpResult operator()(VM vm, In value, In encodingNode, In variantNode, Out result) {
       ByteStringEncoding encoding;
-      bool isLE, hasBOM;
-      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, encoding));
-      MOZART_GET_ARG(isLE, isLENode, MOZART_STR("boolean"));
-      MOZART_GET_ARG(hasBOM, hasBOMNode, MOZART_STR("boolean"));
-      return ByteStringLike(value).bsDecode(vm, encoding, isLE, hasBOM, result);
+      EncodingVariant variant;
+      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
+                                          encoding, variant));
+      return ByteStringLike(value).bsDecode(vm, encoding, variant, result);
     }
   };
 

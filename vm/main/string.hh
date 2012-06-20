@@ -51,9 +51,7 @@ int Implementation<String>::compareFeatures(VM vm, Self right) {
 
 void Implementation<String>::printReprToStream(Self self, VM vm,
                                                std::ostream& out, int depth) {
-  auto utf8Result = toUTF<char>(vm, _string);
-  out << '"' << utf8Result << '"';
-  utf8Result.free(vm);
+  out << '"' << toUTF<char>(_string) << '"';
 }
 
 OpResult Implementation<String>::toAtom(Self self, VM vm, UnstableNode& result) {
@@ -97,7 +95,7 @@ OpResult Implementation<String>::dotNumber(Self self, VM vm,
     nativeint stride = getUTFStride(_string.string);
     if (stride <= 0)
       return raiseUnicodeError(vm, (UnicodeErrorReason) stride, self);
-    result.make<String>(vm, LString<nchar>(_string.string + stride, _string.length - stride));
+    result.make<String>(vm, _string.slice(stride));
     return OpResult::proceed();
   }
 }

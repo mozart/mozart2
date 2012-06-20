@@ -54,8 +54,8 @@ public:
     if (this == rhs) {
       return 0;
     } else {
-      return compareByCodePoint(LString<nchar>(this->contents(), this->length()),
-                                LString<nchar>(rhs->contents(), rhs->length()));
+      return compareByCodePoint(makeLString(this->contents(), this->length()),
+                                makeLString(rhs->contents(), rhs->length()));
     }
   }
 private:

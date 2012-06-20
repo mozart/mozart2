@@ -49,7 +49,7 @@ std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment() {
   return std::unique_ptr<TestEnvironment>(new TestEnvironment());
 }
 
-bool mozart::MozartTest::EXPECT_RAISE(const nchar* label,
+bool mozart::MozartTest::EXPECT_RAISE(const BaseLString<nchar>& label,
                                       OpResult result) const {
   EXPECT_EQ(OpResult::orRaise, result.kind());
   if (OpResult::orRaise != result.kind())
@@ -63,19 +63,28 @@ bool mozart::MozartTest::EXPECT_RAISE(const nchar* label,
   return EXPECT_EQ_ATOM(label, labelNode);
 }
 
-namespace mozart {
+namespace mozart { namespace mut {
 
-std::ostream& operator<<(std::ostream& out, LString<nchar> input) {
-  out << "< ";
-  auto oldBase = out.setf(std::ios_base::hex, std::ios_base::basefield);
+template <class C>
+void PrintTo(const BaseLString<C>& input, std::ostream* out) {
+  static const nativeint mask = (((nativeint) 1) << (8 * sizeof(C))) - 1;
+
+  *out << "< ";
+  auto oldBase = out->setf(std::ios_base::hex, std::ios_base::basefield);
   for (nativeint c : input) {
-    out.width(sizeof(nchar)*2);
-    out.fill('0');
-    out << c << " ";
+    out->width(sizeof(C)*2);
+    out->fill('0');
+    *out << (c & mask) << " ";
   }
-  out.setf(oldBase, std::ios_base::basefield);
-  out << ">";
-  return out;
+  out->setf(oldBase, std::ios_base::basefield);
+  *out << ">";
 }
 
-}
+template void PrintTo(const BaseLString<char>& input, std::ostream* out);
+template void PrintTo(const BaseLString<char16_t>& input, std::ostream* out);
+template void PrintTo(const BaseLString<char32_t>& input, std::ostream* out);
+
+template void PrintTo(const BaseLString<unsigned char>& input,
+                      std::ostream* out);
+
+}}

@@ -25,42 +25,42 @@
 %%
 
 local
-   fun {Coder OptList Fun Input Encoding IsLE HasBOM}
-      case OptList
-      of nil then
-         {Fun Input Encoding IsLE HasBOM}
-      [] H|T then
-         case H
-         of littleEndian then
-            {Coder T Fun Input Encoding true HasBOM}
-         [] bigEndian then
-            {Coder T Fun Input Encoding false HasBOM}
-         [] bom then
-            {Coder T Fun Input Encoding IsLE true}
-         else
-            {Coder T Fun Input H IsLE HasBOM}
-         end
+   fun {IsVariant Opt}
+      Opt == littleEndian orelse Opt == bigEndian orelse Opt == bom
+   end
+
+   fun {Coder OptList Fun Input}
+      Variants
+      Encoding
+   in
+      case {List.partition OptList IsVariant Variants}
+      of H|_ then
+         Encoding = H
+      [] nil then
+         Encoding = utf8
       end
+
+      {Fun Input Encoding Variants}
    end
 in
 
    ByteString = byteString(
       is: IsByteString
-      make: fun {$ V} {Boot_ByteString.encode V latin1 true false} end
+      make: fun {$ V} {Boot_ByteString.encode V latin1 nil} end
       get: Boot_ByteString.get
       append: Boot_ByteString.append
       slice: Boot_ByteString.slice
       width: Boot_ByteString.length
       length: Boot_ByteString.length
-      toString: fun {$ BS} {Boot_ByteString.decode BS latin1 true false} end
+      toString: fun {$ BS} {Boot_ByteString.decode BS latin1 nil} end
       %toStringWithTail: ---
       strchr: Boot_ByteString.strchr
 
       encode: fun {$ OptList V}
-                 {Coder OptList Boot_ByteString.encode V utf8 true false}
+                 {Coder OptList Boot_ByteString.encode V}
               end
       decode: fun {$ OptList BS}
-                 {Coder OptList Boot_ByteString.decode BS utf8 true false}
+                 {Coder OptList Boot_ByteString.decode BS}
               end
    )
 

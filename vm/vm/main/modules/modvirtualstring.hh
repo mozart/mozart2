@@ -61,11 +61,9 @@ public:
     ToString() : Builtin("toString") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      std::basic_ostringstream<nchar> combinedStringStream;
-      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, combinedStringStream));
-      std::basic_string<nchar> combinedString = combinedStringStream.str();
-      LString<nchar> string (combinedString.data(), combinedString.length());
-      result = String::build(vm, string);
+      std::basic_ostringstream<nchar> stringStream;
+      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, stringStream));
+      result = String::build(vm, newLString(vm, stringStream.str()));
       return OpResult::proceed();
     }
   };

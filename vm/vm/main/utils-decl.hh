@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,26 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_DECL_H
-#define __MOZARTCORE_DECL_H
+#ifndef __UTILS_DECL_H
+#define __UTILS_DECL_H
 
-#include "core-forward-decl.hh"
+#include "mozartcore-decl.hh"
 
-#include "store-decl.hh"
-#include "opresult-decl.hh"
-#include "uuid-decl.hh"
-#include "type-decl.hh"
-#include "runnable-decl.hh"
-#include "threadpool-decl.hh"
-#include "space-decl.hh"
-#include "graphreplicator-decl.hh"
-#include "gcollect-decl.hh"
-#include "sclone-decl.hh"
-#include "unify-decl.hh"
-#include "lstring-decl.hh"
-#include "coders-decl.hh"
-#include "utf-decl.hh"
-#include "functiontraits-decl.hh"
-#include "vm-decl.hh"
+namespace mozart {
 
-#endif // __MOZARTCORE_DECL_H
+/**
+ * Apply a function on a list.
+ *
+ * For example, if the list is `a|b|c|d|rest`, then this function is equivalent
+ * to::
+ *
+ *      MOZART_CHECK_OPRESULT(onHead(a));
+ *      MOZART_CHECK_OPRESULT(onHead(b));
+ *      MOZART_CHECK_OPRESULT(onHead(c));
+ *      MOZART_CHECK_OPRESULT(onHead(d));
+ *      return onTail(rest);
+ *
+ * The function onTail will **not** be called if the last element is `nil`. It
+ * assumes the list all have the same type "T".
+ */
+template <class F, class G>
+inline
+OpResult ozListForEach(VM vm, RichNode list, const F& onHead, const G& onTail);
+
+template <class F>
+inline
+OpResult ozListForEach(VM vm, RichNode list, const F& onHead,
+                       const nchar* expectedType);
+
+}
+
+#endif // __UTILS_DECL_H

@@ -17,7 +17,7 @@ static const nchar* testVector[] = {
 TEST_F(AtomTest, Build) {
   for (const nchar* s : testVector) {
     UnstableNode node = Atom::build(vm, s);
-    EXPECT_EQ_ATOM(s, node);
+    EXPECT_EQ_ATOM(makeLString(s), node);
   }
 }
 

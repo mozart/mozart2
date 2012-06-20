@@ -5,6 +5,8 @@
 
 using namespace mozart;
 
+static const unsigned char byteStringContent[] = "\x70\x80\x90";
+
 class VirtualStringTest : public MozartTest {
 protected:
   UnstableNode testNodes[30];
@@ -58,7 +60,7 @@ protected:
                                -5);
 
     testNodes[28].make<SmallInt>(vm, std::numeric_limits<nativeint>::min());
-    testNodes[29].make<ByteString>(vm, ustr("\x70\x80\x90"));
+    testNodes[29].make<ByteString>(vm, byteStringContent);
 
     auto s = std::to_string(std::numeric_limits<nativeint>::min());
     std::copy(s.cbegin(), s.cend(), std::back_inserter(minStr));

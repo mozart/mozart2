@@ -30,37 +30,65 @@
 
 namespace mozart {
 
+enum EncodingVariant : uintptr_t {
+  none = 0,
+  littleEndian = 1,
+  hasBOM = 2,
+};
+
+static inline
+EncodingVariant& operator|=(EncodingVariant& a, EncodingVariant b) noexcept {
+  return a = (EncodingVariant) (a | b);
+}
+static inline
+EncodingVariant& operator&=(EncodingVariant& a, EncodingVariant b) noexcept {
+  return a = (EncodingVariant) (a & b);
+}
+static inline
+EncodingVariant operator~(EncodingVariant a) noexcept {
+  return (EncodingVariant) ~((uintptr_t) a);
+}
+
+typedef ContainedLString<std::vector<unsigned char>> (*EncoderFun)
+    (const BaseLString<nchar>& input, EncodingVariant variant);
+typedef ContainedLString<std::vector<nchar>> (*DecoderFun)
+    (const BaseLString<unsigned char>& input, EncodingVariant variant);
+
 //////////////
 // Encoders //
 //////////////
 
-LString<unsigned char> encodeLatin1(VM vm, LString<nchar> input,
-                                    bool isLittleEndian, bool insertBom);
+auto encodeLatin1(const BaseLString<nchar>& input, EncodingVariant variant)
+    -> ContainedLString<std::vector<unsigned char>>;
 
-LString<unsigned char> encodeUTF8(VM vm, LString<nchar> input,
-                                  bool isLittleEndian, bool insertBom);
+auto encodeUTF8(const BaseLString<nchar>& input, EncodingVariant variant)
+    -> ContainedLString<std::vector<unsigned char>>;
 
-LString<unsigned char> encodeUTF16(VM vm, LString<nchar> input,
-                                   bool isLittleEndian, bool insertBom);
+auto encodeUTF16(const BaseLString<nchar>& input, EncodingVariant variant)
+    -> ContainedLString<std::vector<unsigned char>>;
 
-LString<unsigned char> encodeUTF32(VM vm, LString<nchar> input,
-                                   bool isLittleEndian, bool insertBom);
+auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
+    -> ContainedLString<std::vector<unsigned char>>;
 
 //////////////
 // Decoders //
 //////////////
 
-LString<nchar> decodeLatin1(VM vm, LString<unsigned char> input,
-                            bool isLittleEndian, bool hasBom);
+auto decodeLatin1(const BaseLString<unsigned char>& input,
+                  EncodingVariant variant)
+    -> ContainedLString<std::vector<nchar>>;
 
-LString<nchar> decodeUTF8(VM vm, LString<unsigned char> input,
-                          bool isLittleEndian, bool hasBom);
+auto decodeUTF8(const BaseLString<unsigned char>& input,
+                EncodingVariant variant)
+    -> ContainedLString<std::vector<nchar>>;
 
-LString<nchar> decodeUTF16(VM vm, LString<unsigned char> input,
-                           bool isLittleEndian, bool hasBom);
+auto decodeUTF16(const BaseLString<unsigned char>& input,
+                 EncodingVariant variant)
+    -> ContainedLString<std::vector<nchar>>;
 
-LString<nchar> decodeUTF32(VM vm, LString<unsigned char> input,
-                           bool isLittleEndian, bool hasBom);
+auto decodeUTF32(const BaseLString<unsigned char>& input,
+                 EncodingVariant variant)
+    -> ContainedLString<std::vector<nchar>>;
 
 }
 

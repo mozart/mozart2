@@ -75,9 +75,7 @@ OpResult Implementation<String>::stringGet(Self self, VM vm,
 
 void Implementation<String>::printReprToStream(Self self, VM vm,
                                                std::ostream& out, int depth) {
-  auto utf8Result = toUTF<char>(vm, _string);
-  out << '"' << utf8Result << '"';
-  utf8Result.free(vm);
+  out << '"' << toUTF<char>(_string) << '"';
 }
 
 OpResult Implementation<String>::toString(Self self, VM vm,

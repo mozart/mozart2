@@ -45,6 +45,7 @@
 #include "type.hh"
 #include "unify.hh"
 #include "utf.hh"
+#include "utils.hh"
 #include "vm.hh"
 #include "vmallocatedlist.hh"
 

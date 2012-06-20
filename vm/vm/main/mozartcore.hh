@@ -35,6 +35,7 @@
 #include "builtins-decl.hh"
 #include "builtinutils-decl.hh"
 #include "dynbuilders-decl.hh"
+#include "utils-decl.hh"
 
 //////////////////////
 // Some more macros //

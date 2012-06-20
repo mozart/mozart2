@@ -71,32 +71,53 @@ inline std::pair<char32_t, nativeint> fromUTF(const char32_t* utf,
                                               nativeint length = 1);
 
 /**
- * Convert between two kinds of UTF sequences. The memory will be allocated from
- * the virtual machine heap. A copy will always be made on the VM heap.
+ * Perform some action for each code point of the string. The function "f"
+ * should have the signature
+ *
+ *  bool f(char32_t codePoint)
+ *
+ * and the function "g" should have the signature
+ *
+ *  bool g(C codeUnit, UnicodeErrorReason errorReason);
+ *
+ * both the functions "f" and "g" should return 'false' to quit early.
+ */
+template <class C, class F, class G>
+inline void forEachCodePoint(const LString<C>& string,
+                             const F& onChar, const G& onError);
+
+template <class C, class F>
+inline void forEachCodePoint(const LString<C>& string, const F& onChar) {
+  forEachCodePoint(string, onChar, [](C, UnicodeErrorReason) { return false; });
+}
+
+/**
+ * Convert between two kinds of UTF sequences. A copy will always be made.
  */
 template <class To, class From>
-inline LString<To> toUTF(VM vm, LString<From> input);
+inline ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input);
 
 /**
  * Compare two strings by code-point order (without considering locale-specific
  * collation, normalization, etc.)
  */
 template <class C>
-inline int compareByCodePoint(LString<C> a, LString<C> b);
+inline int compareByCodePoint(const BaseLString<C>& a,
+                              const BaseLString<C>& b);
 
 template <class C>
-inline int compareByCodePoint(const C* a, LString<C> b) {
-  return compareByCodePoint(LString<C>(a), b);
+inline int compareByCodePoint(const C* a, const BaseLString<C>& b) {
+  return compareByCodePoint(makeLString(a), b);
 }
 
 template <class C>
-inline int compareByCodePoint(LString<C> a, const C* b) {
-  return compareByCodePoint(a, LString<C>(b));
+inline int compareByCodePoint(const BaseLString<C>& a, const C* b) {
+  return compareByCodePoint(a, makeLString(b));
 }
 
 template <class C>
 inline int compareByCodePoint(const C* a, const C* b) {
-  return compareByCodePoint(LString<C>(a), LString<C>(b));
+  return compareByCodePoint(makeLString(a), makeLString(b));
 }
 
 /**
@@ -115,9 +136,9 @@ inline nativeint getUTFStride(const char32_t* utf);
  * Count the number of code points in the UTF string. These functions do not
  * attempt to validate if the input is valid.
  */
-inline nativeint codePointCount(LString<char> input);
-inline nativeint codePointCount(LString<char16_t> input);
-inline nativeint codePointCount(LString<char32_t> input);
+inline nativeint codePointCount(const BaseLString<char>& input);
+inline nativeint codePointCount(const BaseLString<char16_t>& input);
+inline nativeint codePointCount(const BaseLString<char32_t>& input);
 
 }
 

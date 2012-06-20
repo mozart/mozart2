@@ -663,7 +663,7 @@ struct Interface<ByteStringLike>: ImplementedBy<ByteString> {
   }
 
   OpResult bsDecode(RichNode self, VM vm, ByteStringEncoding encoding,
-                    bool isLittleEndian, bool hasBOM, UnstableNode& result) {
+                    EncodingVariant variant, UnstableNode& result) {
     return raiseTypeError(vm, MOZART_STR("ByteString"), self);
   }
 

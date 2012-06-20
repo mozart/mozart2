@@ -45,12 +45,13 @@ protected:
    * Expect that a node is an atom and the content is the given
    * null-terminated string.
    */
-  bool EXPECT_EQ_ATOM(LString<nchar> expected, RichNode actual) const {
+  bool EXPECT_EQ_ATOM(const BaseLString<nchar>& expected,
+                      RichNode actual) const {
     if (!EXPECT_IS<Atom>(actual))
       return false;
 
     const AtomImpl* impl = actual.as<Atom>().value();
-    LString<nchar> actualString(impl->contents(), impl->length());
+    auto actualString = makeLString(impl->contents(), impl->length());
     EXPECT_EQ(expected, actualString);
     return expected == actualString;
   }
@@ -83,7 +84,8 @@ protected:
    * Expect that a node is a string and the content is the given
    * null-terminated string.
    */
-  static bool EXPECT_EQ_STRING(LString<nchar> expected, RichNode actual) {
+  static bool EXPECT_EQ_STRING(const BaseLString<nchar>& expected,
+                               RichNode actual) {
     if (!EXPECT_IS<String>(actual))
       return false;
 
@@ -105,10 +107,28 @@ protected:
    * Expect that a method returns ``OpResult::raise()``, and the label of the
    * exception record is an atom of the null-terminated Unicode string.
    */
-  bool EXPECT_RAISE(const nchar* label, OpResult result) const;
+  bool EXPECT_RAISE(const BaseLString<nchar>& label, OpResult result) const;
 };
 
-std::ostream& operator<<(std::ostream& out, LString<nchar> input);
+namespace mut {
+  template <class C>
+  void PrintTo(const BaseLString<C>& input, std::ostream* out);
+
+  extern template void PrintTo(const BaseLString<char>& input,
+                               std::ostream* out);
+  extern template void PrintTo(const BaseLString<char16_t>& input,
+                               std::ostream* out);
+  extern template void PrintTo(const BaseLString<char32_t>& input,
+                               std::ostream* out);
+
+  extern template void PrintTo(const BaseLString<unsigned char>& input,
+                               std::ostream* out);
+}
+
+template <class T>
+void PrintTo(const ContainedLString<T>& input, std::ostream* out) {
+  mut::PrintTo(input, out);
+}
 
 inline
 const unsigned char* ustr(const char* str) {

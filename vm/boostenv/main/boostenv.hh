@@ -27,13 +27,74 @@
 
 #include "boostenv-decl.hh"
 
+#include "boostenvtcp.hh"
+#include "boostenvdatatypes.hh"
 #include "modos.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart { namespace boostenv {
 
 //////////////////
 // BoostBasedVM //
 //////////////////
+
+StableNode** BoostBasedVM::allocAsyncIONode(StableNode* node) {
+  StableNode** result = new StableNode*(node);
+  _asyncIONodes.push_front(result);
+  return result;
+}
+
+void BoostBasedVM::releaseAsyncIONode(StableNode** node) {
+  _asyncIONodes.remove(node);
+  delete node;
+}
+
+void BoostBasedVM::createAsyncIOFeedbackNode(StableNode**& ref,
+                                             UnstableNode& readOnly) {
+  StableNode* stable = new (vm) StableNode;
+  stable->make<Variable>(vm);
+
+  StableNode* stableReadyOnly = new (vm) StableNode;
+  stableReadyOnly->make<ReadOnly>(vm, stable);
+
+  UnstableNode unstable(vm, *stable);
+  readOnly.init(vm, *stableReadyOnly);
+  DataflowVariable(unstable).addToSuspendList(vm, readOnly);
+
+  ref = allocAsyncIONode(stable);
+}
+
+template <class LT, class... Args>
+void BoostBasedVM::bindAndReleaseAsyncIOFeedbackNode(
+  StableNode** ref, LT&& label, Args&&... args) {
+
+  UnstableNode lhs(vm, **ref);
+  UnstableNode rhs = buildTuple(vm, std::forward<LT>(label),
+                                std::forward<Args>(args)...);
+  DataflowVariable(lhs).bind(vm, rhs);
+  releaseAsyncIONode(ref);
+}
+
+template <class LT, class... Args>
+void BoostBasedVM::raiseAndReleaseAsyncIOFeedbackNode(
+  StableNode** ref, LT&& label, Args&&... args) {
+
+  UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
+                                      std::forward<Args>(args)...);
+  bindAndReleaseAsyncIOFeedbackNode(
+    ref, FailedValue::build(vm, RichNode(exception).getStableRef(vm)));
+}
+
+void BoostBasedVM::postVMEvent(std::function<void()> callback) {
+  {
+    boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
+    _vmEventsCallbacks.push(callback);
+  }
+
+  vm->requestExitRun();
+  _conditionWorkToDoInVM.notify_all();
+}
 
 nativeint BoostBasedVM::registerFile(std::FILE* file) {
   nativeint result = 0;
@@ -132,6 +193,21 @@ OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
   return OpResult::proceed();
 }
 
+OpResult ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
+  size_t size;
+  MOZART_CHECK_OPRESULT(ozListLength(vm, value, size));
+
+  buffer.resize(size);
+
+  return internal::ozListForEach<char>(
+    vm, value, 0, u"string",
+    [size, &buffer] (VM vm, size_t i, char c) -> OpResult {
+      assert(i < size);
+      buffer[i] = c;
+      return OpResult::proceed();
+    });
+}
+
 OpResult ozStringToStdString(VM vm, RichNode value, std::string& result) {
   std::stringbuf buffer;
 
@@ -156,21 +232,42 @@ OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
   return OpResult::proceed();
 }
 
-OpResult raiseOSError(VM vm, int errnum) {
-  const char* message = std::strerror(errnum);
-  size_t len = std::strlen(message);
+std::unique_ptr<char16_t[]> systemStrToMozartStr(const char* str) {
+  size_t len = std::strlen(str);
 
-  auto umessage = std::unique_ptr<char16_t[]>(new char16_t[len+1]);
+  auto ustr = std::unique_ptr<char16_t[]>(new char16_t[len+1]);
   for (size_t i = 0; i <= len; i++)
-    umessage[i] = (char16_t) message[i];
+    ustr[i] = (char16_t) str[i];
 
-  return raise(vm, u"system", errnum, umessage.get());
+  return ustr;
+}
+
+std::unique_ptr<char16_t[]> systemStrToMozartStr(const std::string& str) {
+  size_t len = str.length();
+
+  auto ustr = std::unique_ptr<char16_t[]>(new char16_t[len+1]);
+  for (size_t i = 0; i <= len; i++)
+    ustr[i] = (char16_t) str[i];
+
+  return ustr;
+}
+
+OpResult raiseOSError(VM vm, int errnum) {
+  auto message = systemStrToMozartStr(std::strerror(errnum));
+  return raise(vm, u"system", errnum, message.get());
 }
 
 OpResult raiseLastOSError(VM vm) {
   return raiseOSError(vm, errno);
 }
 
+OpResult raiseSystemError(VM vm, const boost::system::system_error& error) {
+  auto message = systemStrToMozartStr(error.what());
+  return raise(vm, u"system", error.code().value(), message.get());
+}
+
 } }
+
+#endif
 
 #endif // __BOOSTENV_H

@@ -30,11 +30,18 @@
 #include <ctime>
 #include <cstdio>
 #include <cerrno>
+#include <forward_list>
 
 #include <boost/thread.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/bind.hpp>
+
+#include "boostenvdatatypes-decl.hh"
 
 namespace mozart { namespace boostenv {
 
@@ -55,10 +62,32 @@ public:
 public:
   void run();
 private:
-  static void preemptionThreadProc(VM vm);
+  void onPreemptionTimerExpire(const boost::system::error_code& error);
 
-  inline
-  static std::int64_t getReferenceTime();
+// Time
+
+  static std::int64_t getReferenceTime() {
+    return ptimeToReferenceTime(
+      boost::posix_time::microsec_clock::universal_time());
+  }
+
+  static boost::posix_time::ptime referenceTimeToPTime(std::int64_t time) {
+    return epoch() + boost::posix_time::millisec(time);
+  }
+
+  static std::int64_t ptimeToReferenceTime(boost::posix_time::ptime time) {
+    return (time - epoch()).total_milliseconds();
+  }
+
+  static boost::posix_time::ptime epoch() {
+    using namespace boost::gregorian;
+    return boost::posix_time::ptime(date(1970, Jan, 1));
+  }
+
+// Garbage collection hook
+
+public:
+  void gCollect(GC gc);
 
 // UUID generation
 
@@ -67,6 +96,34 @@ public:
 private:
   inline
   static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
+
+// Management of nodes used by asynchronous operations for feedback
+
+public:
+  inline
+  StableNode** allocAsyncIONode(StableNode* node);
+
+  inline
+  void releaseAsyncIONode(StableNode** node);
+
+  inline
+  void createAsyncIOFeedbackNode(StableNode**& ref, UnstableNode& readOnly);
+
+  template <class LT, class... Args>
+  inline
+  void bindAndReleaseAsyncIOFeedbackNode(StableNode** ref,
+                                         LT&& label, Args&&... args);
+
+  template <class LT, class... Args>
+  inline
+  void raiseAndReleaseAsyncIOFeedbackNode(StableNode** ref,
+                                          LT&& label, Args&&... args);
+
+// Notification from asynchronous work
+
+public:
+  inline
+  void postVMEvent(std::function<void()> callback);
 
 // Internal file descriptors management
 
@@ -87,16 +144,41 @@ public:
   OpResult getFile(RichNode fd, std::FILE*& result);
 
 // Reference to the virtual machine
-
 private:
   VirtualMachine virtualMachine;
 public:
   const VM vm;
 
+// References to nodes used by asynchronous operations
+private:
+  std::forward_list<StableNode**> _asyncIONodes;
+
+// Random number generation
+public:
   typedef boost::random::mt19937 random_generator_t;
   random_generator_t random_generator;
 private:
   boost::uuids::random_generator uuidGenerator;
+
+// ASIO service
+public:
+  boost::asio::io_service io_service;
+
+// Synchronization condition variable telling there is work to do in the VM
+private:
+  boost::condition_variable _conditionWorkToDoInVM;
+  boost::mutex _conditionWorkToDoInVMMutex;
+
+// Preemption and alarms
+private:
+  boost::asio::deadline_timer preemptionTimer;
+  boost::asio::deadline_timer alarmTimer;
+
+// IO-driven events that must work with the VM store
+private:
+  std::queue<std::function<void()> > _vmEventsCallbacks;
+
+// File I/O
 private:
   std::map<nativeint, std::FILE*> openedFiles;
 public:
@@ -116,16 +198,28 @@ inline
 OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer);
 
 inline
+OpResult ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer);
+
+inline
 OpResult ozStringToStdString(VM vm, RichNode value, std::string& result);
 
 inline
 OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result);
 
 inline
+std::unique_ptr<char16_t[]> systemStrToMozartStr(const char* str);
+
+inline
+std::unique_ptr<char16_t[]> systemStrToMozartStr(const std::string& str);
+
+inline
 OpResult raiseOSError(VM vm, int errnum);
 
 inline
 OpResult raiseLastOSError(VM vm);
+
+inline
+OpResult raiseSystemError(VM vm, const boost::system::system_error& error);
 
 } }
 

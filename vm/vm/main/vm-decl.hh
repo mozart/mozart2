@@ -78,6 +78,12 @@ private:
 };
 
 class VirtualMachine {
+public:
+  enum RunExitCode {
+    recNeverInvokeAgain, recInvokeAgainNow, recInvokeAgainLater
+  };
+
+  typedef std::pair<RunExitCode, std::int64_t> run_return_type;
 private:
   struct AlarmRecord {
     AlarmRecord(std::int64_t expiration, StableNode* wakeable):
@@ -112,7 +118,7 @@ public:
     free(memory, size * sizeof(T));
   }
 
-  std::int64_t run();
+  run_return_type run();
 
   inline
   bool testPreemption();

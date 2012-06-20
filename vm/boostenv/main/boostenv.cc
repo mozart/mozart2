@@ -37,7 +37,8 @@ namespace builtins {
 //////////////////
 
 BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
-  random_generator(std::time(nullptr)), uuidGenerator(random_generator) {
+  random_generator(std::time(nullptr)), uuidGenerator(random_generator),
+  preemptionTimer(io_service), alarmTimer(io_service) {
 
   fdStdin = registerFile(stdin);
   fdStdout = registerFile(stdout);
@@ -45,40 +46,104 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
 }
 
 void BoostBasedVM::run() {
-  vm->setReferenceTime(getReferenceTime());
+  constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
+  constexpr auto recInvokeAgainNow   = VirtualMachine::recInvokeAgainNow;
+  constexpr auto recInvokeAgainLater = VirtualMachine::recInvokeAgainLater;
 
-  boost::thread preemptionThread(preemptionThreadProc, vm);
+  // Prevent the ASIO run thread from exiting by giving it some "work" to do
+  auto work = new boost::asio::io_service::work(io_service);
 
+  // Now start the ASIO run thread
+  boost::thread asioRunThread(boost::bind(
+    &boost::asio::io_service::run, &io_service));
+
+  // The main loop that handles all interactions with the VM
   while (true) {
-    auto sleepDuration = vm->run();
+    // Make sure the VM knows the reference time before starting
+    vm->setReferenceTime(getReferenceTime());
 
-    if (sleepDuration < 0)
-      break;
+    // Setup the preemption timer
+    preemptionTimer.expires_from_now(boost::posix_time::millisec(1));
+    preemptionTimer.async_wait(boost::bind(
+      &BoostBasedVM::onPreemptionTimerExpire,
+      this, boost::asio::placeholders::error));
 
-    boost::this_thread::sleep(boost::posix_time::millisec(sleepDuration));
+    // Run the VM
+    auto nextInvokePair = vm->run();
+    auto nextInvoke = nextInvokePair.first;
+
+    // Stop the preemption timer
+    preemptionTimer.cancel();
+
+    {
+      // Acquire the lock that grants me access to
+      // _conditionWorkToDoInVM and _vmEventsCallbacks
+      boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
+
+      // Is there anything left to do?
+      if ((nextInvoke == recNeverInvokeAgain) &&
+          _asyncIONodes.empty() && _vmEventsCallbacks.empty()) {
+        // Totally finished, nothing can ever wake me again
+        break;
+      }
+
+      // Handle asynchronous events coming from I/O, e.g.
+      while (!_vmEventsCallbacks.empty()) {
+        _vmEventsCallbacks.front()();
+        _vmEventsCallbacks.pop();
+
+        // That could have created work for the VM
+        nextInvoke = recInvokeAgainNow;
+      }
+
+      // Unless asked to invoke again now, setup the wait
+      if (nextInvoke != recInvokeAgainNow) {
+        // Setup the alarm time, if asked by the VM
+        if (nextInvoke == recInvokeAgainLater) {
+          alarmTimer.expires_at(referenceTimeToPTime(nextInvokePair.second));
+          alarmTimer.async_wait([this] (const boost::system::error_code& err) {
+            if (!err) {
+              boost::lock_guard<boost::mutex> lock(_conditionWorkToDoInVMMutex);
+              _conditionWorkToDoInVM.notify_all();
+            }
+          });
+        }
+
+        _conditionWorkToDoInVM.wait(lock);
+      }
+    }
+
+    // Cancel the alarm timer, in case it was not it that woke me
+    alarmTimer.cancel();
   }
 
-  preemptionThread.interrupt();
-  preemptionThread.join();
+  // Tear down
+  delete work;
+  asioRunThread.join();
 }
 
-void BoostBasedVM::preemptionThreadProc(VM vm) {
-  while (true) {
-    boost::this_thread::sleep(boost::posix_time::millisec(1));
+void BoostBasedVM::onPreemptionTimerExpire(
+  const boost::system::error_code& error) {
+
+  if (error != boost::asio::error::operation_aborted) {
+    // Preemption
     vm->setReferenceTime(getReferenceTime());
     vm->requestPreempt();
+
+    // Reschedule
+    preemptionTimer.expires_at(
+      preemptionTimer.expires_at() + boost::posix_time::millisec(1));
+    preemptionTimer.async_wait(boost::bind(
+      &BoostBasedVM::onPreemptionTimerExpire,
+      this, boost::asio::placeholders::error));
   }
 }
 
-std::int64_t BoostBasedVM::getReferenceTime() {
-  using namespace boost::posix_time;
-  using namespace boost::gregorian;
-
-  auto now = microsec_clock::universal_time();
-  auto epoch = ptime(date(1970, Jan, 1));
-
-  auto diff = now - epoch;
-  return diff.total_milliseconds();
+void BoostBasedVM::gCollect(GC gc) {
+  for (auto iter = _asyncIONodes.begin(); iter != _asyncIONodes.end(); ++iter) {
+    StableNode** item = *iter;
+    gc->copyStableRef(*item, *item);
+  }
 }
 
 UUID BoostBasedVM::genUUID() {

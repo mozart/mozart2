@@ -30,7 +30,7 @@ namespace mozart {
 // VirtualMachine //
 ////////////////////
 
-std::int64_t VirtualMachine::run() {
+VirtualMachine::run_return_type VirtualMachine::run() {
   while (!(_exitRunRequested ||
       (_envUseDynamicPreemption && environment.testDynamicExitRun()))) {
 
@@ -77,24 +77,28 @@ std::int64_t VirtualMachine::run() {
     // Run the thread
     assert(currentThread->isRunnable());
     _currentThread = currentThread;
-    _preemptRequested = false;
     currentThread->run();
     _currentThread = nullptr;
+
+    _preemptRequested = false;
 
     // Schedule the thread anew if it is still runnable
     if (currentThread->isRunnable())
       threadPool.schedule(currentThread);
   }
 
+  _exitRunRequested = false;
+
   // Before giving control to the external world, restore the top-level space
   getTopLevelSpace()->install();
 
-  // Tell the external world in how much time I would like to be woken up
-  if (_alarms.empty())
-    return -1;
+  // Tell the external world in how much time I would like to be invoked again
+  if (!threadPool.empty())
+    return run_return_type(recInvokeAgainNow, 0);
+  else if (_alarms.empty())
+    return run_return_type(recNeverInvokeAgain, 0);
   else
-    return std::max(_alarms.front().expiration - _referenceTime,
-                    (std::int64_t) 0);
+    return run_return_type(recInvokeAgainLater, _alarms.front().expiration);
 }
 
 }

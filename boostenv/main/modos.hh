@@ -28,6 +28,8 @@
 #include <mozart.hh>
 
 #include "boostenv-decl.hh"
+#include "boostenvtcp-decl.hh"
+#include "boostenvdatatypes-decl.hh"
 
 #include <iostream>
 
@@ -268,6 +270,230 @@ public:
     OpResult operator()(VM vm, Out result) {
       result = SmallInt::build(vm, BoostBasedVM::forVM(vm).fdStderr);
       return OpResult::proceed();
+    }
+  };
+
+  // Socket I/O
+
+  class TCPAcceptorCreate: public Builtin<TCPAcceptorCreate> {
+  public:
+    TCPAcceptorCreate(): Builtin("tcpAcceptorCreate") {}
+
+    OpResult operator()(VM vm, In ipVersion, In port, Out result) {
+      using boost::asio::ip::tcp;
+
+      nativeint intIPVersion, intPort;
+
+      MOZART_GET_ARG(intIPVersion, ipVersion, u"4 or 6");
+      if ((intIPVersion != 4) && (intIPVersion != 6))
+        return raiseTypeError(vm, u"4 or 6", ipVersion);
+
+      MOZART_GET_ARG(intPort, port, u"valid port number");
+      if ((intPort <= 0) ||
+          (intPort > std::numeric_limits<unsigned short>::max()))
+        return raiseTypeError(vm, u"valid port number", port);
+
+      tcp::endpoint endpoint;
+      if (intIPVersion == 4)
+        endpoint = tcp::endpoint(tcp::v4(), intPort);
+      else
+        endpoint = tcp::endpoint(tcp::v6(), intPort);
+
+      try {
+        auto acceptor = TCPAcceptor::create(BoostBasedVM::forVM(vm), endpoint);
+
+        result = OzTCPAcceptor::build(vm, acceptor);
+        return OpResult::proceed();
+      } catch (const boost::system::system_error& error) {
+        return raiseSystemError(vm, error);
+      }
+    }
+  };
+
+  class TCPAccept: public Builtin<TCPAccept> {
+  public:
+    TCPAccept(): Builtin("tcpAccept") {}
+
+    OpResult operator()(VM vm, In acceptor, Out result) {
+      std::shared_ptr<TCPAcceptor> tcpAcceptor;
+      MOZART_GET_ARG(tcpAcceptor, acceptor, u"TCP acceptor");
+
+      StableNode** connectionNode;
+      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(connectionNode, result);
+
+      tcpAcceptor->startAsyncAccept(connectionNode);
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TCPCancelAccept: public Builtin<TCPCancelAccept> {
+  public:
+    TCPCancelAccept(): Builtin("tcpCancelAccept") {}
+
+    OpResult operator()(VM vm, In acceptor) {
+      std::shared_ptr<TCPAcceptor> tcpAcceptor;
+      MOZART_GET_ARG(tcpAcceptor, acceptor, u"TCP acceptor");
+
+      auto error = tcpAcceptor->cancel();
+      if (!error)
+        return raise(vm, u"system", u"cancel", error.value());
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TCPAcceptorClose: public Builtin<TCPAcceptorClose> {
+  public:
+    TCPAcceptorClose(): Builtin("tcpAcceptorClose") {}
+
+    OpResult operator()(VM vm, In acceptor) {
+      std::shared_ptr<TCPAcceptor> tcpAcceptor;
+      MOZART_GET_ARG(tcpAcceptor, acceptor, u"TCP acceptor");
+
+      auto error = tcpAcceptor->close();
+      if (error)
+        return raise(vm, u"system", u"cancel", error.value());
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TCPConnect: public Builtin<TCPConnect> {
+  public:
+    TCPConnect(): Builtin("tcpConnect") {}
+
+    OpResult operator()(VM vm, In host, In service, Out status) {
+      std::string strHost, strService;
+      MOZART_CHECK_OPRESULT(ozStringToStdString(vm, host, strHost));
+      MOZART_CHECK_OPRESULT(ozStringToStdString(vm, service, strService));
+
+      auto tcpConnection = TCPConnection::create(BoostBasedVM::forVM(vm));
+
+      StableNode** statusNode;
+      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(statusNode, status);
+
+      tcpConnection->startAsyncConnect(strHost, strService, statusNode);
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TCPConnectionRead: public Builtin<TCPConnectionRead> {
+  public:
+    TCPConnectionRead(): Builtin("tcpConnectionRead") {}
+
+    OpResult operator()(VM vm, In connection, In count, In tail, Out status) {
+      // Fetch the TCP connection
+      std::shared_ptr<TCPConnection> tcpConnection;
+      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+
+      // Fetch the count
+      nativeint intCount;
+      MOZART_GET_ARG(intCount, count, u"integer");
+
+      // 0 size
+      if (intCount <= 0) {
+        status = buildTuple(vm, u"succeeded", 0, tail);
+        return OpResult::proceed();
+      }
+
+      // Resize the buffer
+      size_t size = (size_t) intCount;
+      tcpConnection->getReadData().resize(size);
+
+      auto& env = BoostBasedVM::forVM(vm);
+
+      StableNode** tailNode = env.allocAsyncIONode(tail.getStableRef(vm));
+      StableNode** statusNode;
+      env.createAsyncIOFeedbackNode(statusNode, status);
+
+      tcpConnection->startAsyncRead(tailNode, statusNode);
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TCPConnectionWrite: public Builtin<TCPConnectionWrite> {
+  public:
+    TCPConnectionWrite(): Builtin("tcpConnectionWrite") {}
+
+    OpResult operator()(VM vm, In connection, In data, Out status) {
+      // Fetch the TCP connection
+      std::shared_ptr<TCPConnection> tcpConnection;
+      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+
+      // Fetch the data to write
+      MOZART_CHECK_OPRESULT(ozStringToBuffer(
+        vm, data, tcpConnection->getWriteData()));
+
+      // 0 size
+      if (tcpConnection->getWriteData().size() == 0) {
+        status = trivialBuild(vm, 0);
+        return OpResult::proceed();
+      }
+
+      StableNode** statusNode;
+      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(statusNode, status);
+
+      tcpConnection->startAsyncWrite(statusNode);
+
+      return OpResult::proceed();
+    }
+  };
+
+  class TCPConnectionShutdown: public Builtin<TCPConnectionShutdown> {
+  public:
+    TCPConnectionShutdown(): Builtin("tcpConnectionShutdown") {}
+
+    OpResult operator()(VM vm, In connection, In what) {
+      using namespace patternmatching;
+      using boost::asio::ip::tcp;
+
+      // Fetch the TCP connection
+      std::shared_ptr<TCPConnection> tcpConnection;
+      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+
+      // Fetch what channels must be shut down
+      OpResult res = OpResult::proceed();
+      tcp::socket::shutdown_type whatValue;
+      if (matches(vm, res, what, u"receive")) {
+        whatValue = tcp::socket::shutdown_receive;
+      } else if (matches(vm, res, what, u"send")) {
+        whatValue = tcp::socket::shutdown_send;
+      } else if (matches(vm, res, what, u"both")) {
+        whatValue = tcp::socket::shutdown_both;
+      } else {
+        return matchTypeError(vm, res, what, u"'receive', 'send' or 'both'");
+      }
+
+      try {
+        tcpConnection->socket().shutdown(whatValue);
+        return OpResult::proceed();
+      } catch (const boost::system::system_error& error) {
+        return raiseSystemError(vm, error);
+      }
+    }
+  };
+
+  class TCPConnectionClose: public Builtin<TCPConnectionClose> {
+  public:
+    TCPConnectionClose(): Builtin("tcpConnectionClose") {}
+
+    OpResult operator()(VM vm, In connection) {
+      using boost::asio::ip::tcp;
+
+      // Fetch the TCP connection
+      std::shared_ptr<TCPConnection> tcpConnection;
+      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+
+      try {
+        tcpConnection->socket().shutdown(tcp::socket::shutdown_both);
+        tcpConnection->socket().close();
+        return OpResult::proceed();
+      } catch (const boost::system::system_error& error) {
+        return raiseSystemError(vm, error);
+      }
     }
   };
 };

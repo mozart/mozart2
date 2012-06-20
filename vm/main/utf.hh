@@ -175,9 +175,35 @@ std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint) {
   return std::make_pair(c, length);
 }
 
+template <class C, class F, class G>
+static void forEachCodePoint(const BaseLString<C>& string,
+                             const F& onChar, const G& onError) {
+  const C* cur = string.begin();
+  const C* end = string.end();
+  while (cur < end) {
+    auto codePointSizePair = fromUTF(cur, end-cur);
+    if (codePointSizePair.second < 0) {
+      bool cont = onError(*cur, (UnicodeErrorReason) codePointSizePair.second);
+      if (cont) {
+        ++ cur;
+        continue;
+      } else {
+        return;
+      }
+    }
+
+    bool cont = onChar(codePointSizePair.first);
+    if (cont) {
+      cur += codePointSizePair.second;
+    } else {
+      break;
+    }
+  }
+}
+
 template <class To, class From>
 struct UTFConvertor {
-  static LString<To> call(VM vm, LString<From> input) {
+  static ContainedLString<std::vector<To>> call(const BaseLString<From>& input) {
     // propagate error if needed.
     if (input.isErrorOrEmpty())
       return input.error;
@@ -185,55 +211,64 @@ struct UTFConvertor {
     // The slow branch for required conversion.
     std::vector<To> tempVector;
     tempVector.reserve(input.length);
+    UnicodeErrorReason curError = UnicodeErrorReason::empty;
 
-    const From* end = input.end();
-    while (input.string < end) {
-      auto codePointSizePair = fromUTF(input.string, end - input.string);
-      if (codePointSizePair.second < 0)
-        return (UnicodeErrorReason) codePointSizePair.second;
-      input.string += codePointSizePair.second;
+    forEachCodePoint(
+      input,
+      [&](char32_t codePoint) -> bool {
+        To encoded[4];
+        nativeint encodedLength = toUTF(codePoint, encoded);
+        if (encodedLength < 0) {
+          curError = (UnicodeErrorReason) encodedLength;
+          return false;
+        } else {
+          tempVector.insert(tempVector.end(), encoded, encoded + encodedLength);
+          return true;
+        }
+      },
+      [&](From, UnicodeErrorReason reason) -> bool {
+        curError = reason;
+        return false;
+      });
 
-      To encoded[4];
-      nativeint encodedLength = toUTF(codePointSizePair.first, encoded);
-      if (encodedLength < 0)
-        return (UnicodeErrorReason) encodedLength;
-      tempVector.insert(tempVector.end(), encoded, encoded + encodedLength);
-    }
-
-    return LString<To>(vm, LString<To>(tempVector.data(), tempVector.size()));
+    if (curError != UnicodeErrorReason::empty)
+      return curError;
+    else
+      return std::move(tempVector);
   }
 };
 
 template <class To>
 struct UTFConvertor<To, To> {
-  static LString<To> call(VM vm, LString<To> input) {
+  static ContainedLString<std::vector<To>> call(const BaseLString<To>& input) {
     // propagate error if needed.
     if (input.isErrorOrEmpty())
       return input.error;
 
     // Just validate if the whole string is correct.
-    LString<To> validator = input;
-    const To* end = validator.end();
-    while (validator.string < end) {
-      nativeint length = fromUTF(validator.string,
-                                 end - validator.string).second;
-      if (length < 0)
-        return (UnicodeErrorReason) length;
-      validator.string += length;
-    }
+    UnicodeErrorReason curError = UnicodeErrorReason::empty;
+    forEachCodePoint(
+      input,
+      [](char32_t) { return true; },
+      [&](To, UnicodeErrorReason error) -> bool {
+        curError = error;
+        return false;
+      });
 
-    // No conversion needed.
-    return LString<To>(vm, input);
+    if (curError != UnicodeErrorReason::empty)
+      return curError;
+    else
+      return ContainedLString<std::vector<To>>(input.begin(), input.end());
   }
 };
 
 template <class To, class From>
-LString<To> toUTF(VM vm, LString<From> input) {
-  return UTFConvertor<To, From>::call(vm, input);
+ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input) {
+  return UTFConvertor<To, From>::call(input);
 }
 
 template <class C>
-int compareByCodePoint(LString<C> a, LString<C> b) {
+int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) {
   if (a.string == b.string) {
     return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
   }
@@ -251,16 +286,16 @@ int compareByCodePoint(LString<C> a, LString<C> b) {
   // UTF-16 need be compared manually, because a surrogate pair rank higher
   // than 0xe000, but the value in a string is lower.
   else {
-    for (; minLength; --minLength, ++a.string, ++b.string) {
-      char16_t aa = *a.string, bb = *b.string;
-      if (aa == bb)
+    auto aa = a.string, bb = b.string;
+    for (; minLength; --minLength, ++aa, ++bb) {
+      if (*aa == *bb)
         continue;
 
-      bool aIsSurrogate = 0xd800 <= aa && aa < 0xe000;
-      bool bIsSurrogate = 0xd800 <= bb && bb < 0xe000;
+      bool aIsSurrogate = 0xd800 <= *aa && *aa < 0xe000;
+      bool bIsSurrogate = 0xd800 <= *bb && *bb < 0xe000;
 
       if (aIsSurrogate == bIsSurrogate) {
-        return aa < bb ? -1 : 1;
+        return *aa < *bb ? -1 : 1;
       } else {
         return aIsSurrogate ? 1 : -1;
       }
@@ -300,23 +335,23 @@ nativeint getUTFStride(const char32_t* utf) {
   return 1;
 }
 
-nativeint codePointCount(LString<char> input) {
+nativeint codePointCount(const BaseLString<char>& input) {
   if (input.isErrorOrEmpty())
-  return input.length;
+    return input.length;
   return std::count_if(input.begin(), input.end(), [](char c) {
     return !('\x80' <= c && c < '\xc0');
   });
 }
 
-nativeint codePointCount(LString<char16_t> input) {
+nativeint codePointCount(const BaseLString<char16_t>& input) {
   if (input.isErrorOrEmpty())
-  return input.length;
+    return input.length;
   return std::count_if(input.begin(), input.end(), [](char16_t c) {
     return !(0xdc00 <= c && c < 0xe000);
   });
 }
 
-nativeint codePointCount(LString<char32_t> input) {
+nativeint codePointCount(const BaseLString<char32_t>& input) {
   return input.length;
 }
 

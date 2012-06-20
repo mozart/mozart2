@@ -46,7 +46,7 @@ public:
 public:
   static constexpr UUID uuid = "{163123b5-feaa-4e1d-8917-f74d81e11236}";
 
-  Implementation(VM vm, LString<nchar> string) : _string(string) {}
+  Implementation(VM vm, const LString<nchar>& string) : _string(string) {}
 
   inline
   Implementation(VM vm, GR gr, Self self);

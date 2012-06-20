@@ -77,16 +77,14 @@ OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
   if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
     result = 0;
   else
-    result = codePointCount(LString<nchar>(a->contents(), a->length()));
+    result = codePointCount(makeLString(a->contents(), a->length()));
   return OpResult::proceed();
 }
 
 void Implementation<Atom>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
-  auto utf8Result = toUTF<char>(
-    vm, LString<nchar>(value()->contents(), value()->length()));
-  out << '\'' << utf8Result << '\'';
-  utf8Result.free(vm);
+  const AtomImpl* a = value();
+  out << '\'' << toUTF<char>(makeLString(a->contents(), a->length())) << '\'';
 }
 
 }

@@ -313,28 +313,17 @@ namespace internal {
 template <class F>
 inline
 OpResult withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
-  while (true) {
-    using namespace patternmatching;
-
-    OpResult matchRes = OpResult::proceed();
-    nativeint c;
-    UnstableNode tail;
-
-    if (matchesCons(vm, matchRes, cons, capture(c), capture(tail))) {
+  return ozListForEach(vm, cons,
+    [&, vm](nativeint c) -> OpResult {
       if (c < 0 || c >= 256) {
         UnstableNode errNode = SmallInt::build(vm, c);
         return raiseTypeError(vm, MOZART_STR("char"), errNode);
       }
       onChar((char32_t) c);
-      cons = tail;
-
-    } else if (matches(vm, matchRes, cons, vm->coreatoms.nil)) {
       return OpResult::proceed();
-
-    } else {
-      return matchTypeError(vm, matchRes, cons, MOZART_STR("VirtualString"));
-    }
-  }
+    },
+    MOZART_STR("VirtualString")
+  );
 }
 
 }

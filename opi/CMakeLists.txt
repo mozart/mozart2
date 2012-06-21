@@ -21,7 +21,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG")
 
 # Boost library
 
-find_package(Boost 1.49 COMPONENTS thread REQUIRED)
+find_package(Boost 1.49 COMPONENTS system thread REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})

@@ -16,8 +16,10 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  <ul>
    *    <li>Several builtin modules</li>
    *    <li>One or more base functors that define the Base environment</li>
-   *    <li>The actual statement of the program</li>
+   *    <li>A map from URLs to non-base functors that define the program</li>
    *  </ul>
+   *
+   *  The URL of the main non-base functor must be provided too.
    *
    *  The base functors must have the following structure:
    *  {{{
@@ -40,10 +42,29 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  statically. These two parts define the ''base declarations'' as so
    *  {{{
    *  local
-   *     BootModA = <constant lookup up in the builtin modules map
+   *     BootModA = <constant lookup up in the builtin modules map>
    *     ...
    *  in
    *     <contents of the prepare section above>
+   *  end
+   *  }}}
+   *
+   *  The program functors make up the program statement as follows:
+   *  {{{
+   *  local
+   *     `Functor:<URL1>` = <content of File1.oz>
+   *     `Functor:<URL2>` = <content of File2.oz>
+   *     ...
+   *  in
+   *     {`Boot:RegisterModule` '<BootURL1>' <constant boot module 1>}
+   *     {`Boot:RegisterModule` '<BootURL2>' <constant boot module 2>}
+   *     ...
+   *
+   *     {`Boot:RegisterFunctor` '<URL1>' `Functor:<URL1>`}
+   *     {`Boot:RegisterFunctor` '<URL2>' `Functor:<URL2>`}
+   *     ...
+   *
+   *     {`Boot:Run` '<MainURL>'}
    *  end
    *  }}}
    *
@@ -57,14 +78,46 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  }}}
    */
   def build(prog: Program, bootModulesMap: Map[String, Expression],
-      baseFunctors: List[Expression], programStat: Statement) {
+      baseFunctors: List[Expression],
+      programFunctors: List[(String, Expression)],
+      mainFunctorURL: String) {
+
+    def functorVar(url: String) =
+      RawVariable("`Functor:"+url+"`")
 
     val baseDeclarations =
       baseFunctors map (baseFunctorToBaseDeclarations(bootModulesMap, _))
 
+    val programFunctorsDecls =
+      for ((url, functorExpr) <- programFunctors) yield {
+        functorVar(url) === functorExpr
+      }
+
+    val registerBootModulesStat = CompoundStatement {
+      val registerProc = RawVariable("`Boot:RegisterModule`")
+      for ((url, module) <- bootModulesMap.toList) yield {
+        registerProc.call(OzAtom(url), module)
+      }
+    }
+
+    val registerFunctorsStat = CompoundStatement {
+      val registerProc = RawVariable("`Boot:RegisterFunctor`")
+      for ((url, _) <- programFunctors) yield {
+        registerProc.call(OzAtom(url), functorVar(url))
+      }
+    }
+
+    val run = {
+      RawVariable("`Boot:Run`").call(OzAtom(mainFunctorURL))
+    }
+
     val wholeProgram = {
       RAWLOCAL (baseDeclarations:_*) IN {
-        programStat
+        RAWLOCAL (programFunctorsDecls:_*) IN {
+          registerBootModulesStat ~
+          registerFunctorsStat ~
+          run
+        }
       }
     }
 

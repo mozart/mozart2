@@ -16,7 +16,7 @@ import symtab._
 import util._
 
 case class Config(
-    fileName: String = "",
+    fileNames: List[String] = Nil,
     outputStream: () => PrintStream = () => Console.out,
     baseModules: List[String] = Nil,
     moduleDefs: List[String] = Nil
@@ -39,8 +39,8 @@ object Main {
         opt("b", "base", "path to the base functor") {
           (v: String, c: Config) => c.copy(baseModules = v :: c.baseModules)
         },
-        arg("<file>", "input file") {
-          (v: String, c: Config) => c.copy(fileName = v)
+        arglist("<files>", "input files (main file must be first)") {
+          (v: String, c: Config) => c.copy(fileNames = v :: c.fileNames)
         }
       )
     }
@@ -55,9 +55,11 @@ object Main {
           for (baseModule <- baseModules.reverse)
             yield parseExpression(readerForFile(baseModule))
 
-        val programStat = parseStatement(readerForFile(fileName))
+        val functors =
+          for (fileName <- fileNames.reverse)
+            yield fileName -> parseExpression(readerForFile(fileName))
 
-        val program = buildProgram(moduleDefs, baseFunctors, programStat)
+        val program = buildProgram(moduleDefs, baseFunctors, functors)
 
         produce(program, outputStream)
       } catch {
@@ -158,16 +160,47 @@ object Main {
    *
    *  @param moduleDefs list of files that define builtin modules
    *  @param baseFunctors ASTs of the base functors
-   *  @param programStat AST of the program main statement
+   *  @param programFunctors File names to ASTs of the program functors
    */
   private def buildProgram(moduleDefs: List[String],
-      baseFunctors: List[Expression], programStat: Statement): Program = {
+      baseFunctors: List[Expression],
+      programFunctors: List[(String, Expression)]): Program = {
     val prog = new Program
 
     val bootModulesMap = loadModuleDefs(prog, moduleDefs)
-    ProgramBuilder.build(prog, bootModulesMap, baseFunctors, programStat)
+
+    val programFunctorsWithURLs =
+      for ((fileName, functorExpr) <- programFunctors)
+        yield (fileNameToURL(fileName), functorExpr)
+
+    val mainFunctorURL = programFunctorsWithURLs.head._1
+
+    ProgramBuilder.build(prog, bootModulesMap, baseFunctors,
+        programFunctorsWithURLs, mainFunctorURL)
 
     prog
+  }
+
+  /** An amazingly hard-coded list of modules considered as "system" modules */
+  private val systemModules = Set(
+      "Application", "Module", "Search", "FD", "Schedule", "FS", "RecordC",
+      "Combinator", "Space", "Connection", "Remote", "URL", "Resolve", "Fault",
+      "Open", "OS", "Pickle", "Property", "Error", "Finalize", "System",
+      "Tk", "TkTools", "Browser", "Panel", "Explorer", "Ozcar", "Profiler",
+      "ObjectSupport"
+  )
+
+  /** Returns the appropriate URL for a file name */
+  private def fileNameToURL(fileName: String) = {
+    val nameAndExt = new File(fileName).getName
+    val nameOnly =
+      if (!(nameAndExt contains '.')) nameAndExt
+      else nameAndExt.substring(0, nameAndExt.lastIndexOf('.'))
+
+    if (systemModules contains nameOnly)
+      "x-oz://system/" + nameOnly + ".ozf"
+    else
+      nameOnly + ".ozf"
   }
 
   /** Compiles a program and produces the corresponding C++ code

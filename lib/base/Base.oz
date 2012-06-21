@@ -51,6 +51,12 @@ prepare
                                   end
                                end}
                   end
+   ByNeedDot    = fun {$ X F}
+                     if {IsDet X} andthen {IsDet F}
+                     then try X.F catch E then {FailedValue E} end
+                     else {ByNeedFuture fun {$} X.F end}
+                     end
+                  end
 
    %%
    %% Literal

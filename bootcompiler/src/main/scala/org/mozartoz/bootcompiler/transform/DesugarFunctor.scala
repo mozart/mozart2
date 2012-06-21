@@ -8,7 +8,32 @@ import ast._
 import symtab._
 
 object DesugarFunctor extends Transformer with TreeDSL {
+  var ByNeedDot: Option[Symbol] = None
+
+  /* Find some symbols we need from the Base env */
+  private def findThingsWeNeedInDecls(decls: List[Variable]) {
+    for (Variable(symbol) <- decls) {
+      symbol.name match {
+        case "ByNeedDot" => ByNeedDot = Some(symbol)
+        case _ => ()
+      }
+    }
+  }
+
+  override def transformStat(statement: Statement) = statement match {
+    case LocalStatement(decls, _) =>
+      findThingsWeNeedInDecls(decls)
+      super.transformStat(statement)
+
+    case _ =>
+      super.transformStat(statement)
+  }
+
   override def transformExpr(expression: Expression) = expression match {
+    case LocalExpression(decls, _) =>
+      findThingsWeNeedInDecls(decls)
+      super.transformExpr(expression)
+
     case functor @ FunctorExpression(name, require, prepare,
         imports, define, exports) if (!require.isEmpty || !prepare.isEmpty) =>
 
@@ -121,7 +146,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
           exec(module === (importsParam dot OzAtom(module.symbol.name)))
 
           for (AliasedFeature(feature, Some(variable)) <- aliases) {
-            exec(variable === (module dot feature))
+            exec(variable === (ByNeedDot.get callExpr (module, feature)))
           }
         }
 

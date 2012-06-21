@@ -47,6 +47,10 @@ include_directories("${MOZART_DIR}/boostenv/main"
 
 # Generate main.cc from Main.oz
 
+file(GLOB SYS_FUNCTORS
+    "${MOZART_DIR}/lib/sys/*.oz"
+    "${MOZART_DIR}/boostenv/lib/*.oz")
+
 add_custom_command(
   OUTPUT main.cc
   COMMAND ${JAVA} -jar
@@ -54,9 +58,10 @@ add_custom_command(
     -o "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
     -b "${MOZART_BUILD_DIR}/lib/base/BaseBuilt.oz"
-    -b "${MOZART_DIR}/boostenv/main/BoostBase.oz"
+    -b "${MOZART_DIR}/lib/boot/BootBase.oz"
     "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz"
-  DEPENDS Main.oz
+    ${SYS_FUNCTORS}
+  DEPENDS Main.oz ${SYS_FUNCTORS}
   COMMENT Compiling Main.oz
   VERBATIM)
 

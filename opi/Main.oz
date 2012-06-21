@@ -1,24 +1,12 @@
-local
-   proc {ShowList L}
-      if nil \= L then
-         {Show L.1}
-         {ShowList L.2}
-      end
-   end
+functor
 
-   fun {FibList N}
-      fun {FibListEx N Acc1 Acc2}
-         if N == 0 then
-            nil
-         else
-            Acc1 | {FibListEx N-1 Acc2 Acc1+Acc2}
-         end
-      end
-   in
-      {FibListEx N 0 1}
-   end
+import
+   System(show:Show)
+   OS at 'x-oz://system/OS.ozf'
 
-   List = {FibList 10}
-in
-   {ShowList List}
+define
+
+   {Show 'Hello world!'}
+   {OS.fwrite OS.stdout {Append "Hello world!" [10]} _}
+
 end

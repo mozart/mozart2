@@ -20,22 +20,27 @@ For this reason, a design goal of this bootstrap compiler is to stay minimal. In
 
 See [sjrd/mozart-app-test](https://github.com/sjrd/mozart-app-test) for an integrated way of using this bootcompiler.
 
-Roughly, the program must be executed with exactly 4 command-line arguments:
+Roughly, the program must be executed with 4 kinds of command-line arguments (that can be repeated, except for the first one):
 
-*   Under option `-m`, the path to a directory where it can find builtin information, i.e., the build directory of your Mozart2 installation,
-*   Under option `-b`, the path to the base module `Base.oz`,
 *   Under option `-o`, the output file (a `.cc` file),
-*   The `.oz` file to process.
+*   Under option `-m`, a path to a file or directory where it can find builtin information,
+*   Under option `-b`, a path to a functor that must be part of the base environment,
+*   A list of `.oz` files containing the functors of the application (the first one being the main functor).
+
+Normally you need two base functors: the file `BaseBuilt.oz` which contains the regular base environment of Oz; and the file `BootBase.oz` which contains only the boot module manager.
+
+In the list of regular functors, you must give all the system functors used by the application, so that they can be linked in.
 
 For example:
 
     $ java -jar "./target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar" \
-        -m "/path/to/mozart/build/vm/main/" \
-        -b "/path/to/mozart/build/lib/base/BaseBuilt.oz" \
         -o output.cc \
-        Input.oz
+        -m "/path/to/mozart/build/boostenv/main/" \
+        -b "/path/to/mozart/build/lib/base/BaseBuilt.oz" \
+        Main.oz SomeOtherFunctor.oz \
+        "/path/to/mozart/lib/sys/System.oz" # and others
 
-The file `Input.oz` must contain an Oz _statement_. The generated program will execute that statement.
+The generated program will (lazily) load all the given functors, and request the main one (effectively executing the instructions therein).
 
 ## See also ##
 

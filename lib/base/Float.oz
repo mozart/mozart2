@@ -26,6 +26,14 @@
 %%
 %% Module
 %%
+fun {FloatToString F}
+    if {IsFloat F} then
+        {VirtualString.toString F}
+    else
+        raise typeError('Float' F) end
+    end
+end
+
 Float = float(is:       IsFloat
               '/':      Boot_Float.'/'
               /*'mod':    Boot_Float.fMod
@@ -48,5 +56,5 @@ Float = float(is:       IsFloat
               asinh:    Boot_Float.asinh
               acosh:    Boot_Float.acosh
               atanh:    Boot_Float.atanh
-              toInt:    FloatToInt
-              toString: FloatToString*/)
+              toInt:    FloatToInt*/
+              toString: FloatToString)

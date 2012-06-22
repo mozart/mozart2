@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 ////////////////
@@ -49,7 +51,8 @@ class ByteString;
 #endif
 
 template <>
-class Implementation<ByteString>: WithValueBehavior {
+class Implementation<ByteString>:
+  public IntegerDottableHelper<ByteString>, WithValueBehavior {
 public:
   typedef SelfType<ByteString>::Self Self;
 public:
@@ -66,6 +69,16 @@ public:
   inline
   bool equals(VM vm, Self right);
 
+protected:
+  friend class IntegerDottableHelper<ByteString>;
+
+  bool isValidFeature(Self self, VM vm, nativeint feature) {
+    return (feature >= 0) && (feature < _bytes.length);
+  }
+
+  inline
+  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+
 public:
   // Comparable interface
 
@@ -73,7 +86,12 @@ public:
   OpResult compare(Self self, VM vm, RichNode right, int& result);
 
 public:
-  // ByteStringLike interface
+  // StringLike interface
+
+  OpResult isString(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
 
   OpResult isByteString(Self self, VM vm, bool& result) {
     result = true;
@@ -81,30 +99,30 @@ public:
   }
 
   inline
+  OpResult stringGet(Self self, VM vm, LString<nchar>*& result);
+
+  inline
   OpResult stringGet(Self self, VM vm, LString<unsigned char>*& result);
 
   inline
-  OpResult bsGet(Self self, VM vm, nativeint index, unsigned char& result);
+  OpResult stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
 
   inline
-  OpResult bsAppend(Self self, VM vm, RichNode right, UnstableNode& result);
-
-  OpResult bsLength(Self self, VM vm, nativeint& length) {
-    return vsLength(self, vm, length);
-  }
+  OpResult stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult bsDecode(Self self, VM vm, ByteStringEncoding encoding,
-                    EncodingVariant variant, UnstableNode& result);
+  OpResult stringSlice(Self self, VM vm,
+                       RichNode from, RichNode to, UnstableNode& result);
 
   inline
-  OpResult bsSlice(Self self, VM vm, nativeint from, nativeint to,
-                   UnstableNode& result);
+  OpResult stringSearch(Self self, VM vm, RichNode from, RichNode needle,
+                        UnstableNode& begin, UnstableNode& end);
 
   inline
-  OpResult bsStrChr(Self self, VM vm, nativeint from,
-                    unsigned char character, UnstableNode& res);
+  OpResult stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
 
+  inline
+  OpResult stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
 
 public:
   // VirtualString interface
@@ -122,6 +140,11 @@ public:
 
 public:
   // Miscellaneous
+
+  inline
+  OpResult decode(Self self, VM vm,
+                  ByteStringEncoding encoding, EncodingVariant variant,
+                  UnstableNode& result);
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);

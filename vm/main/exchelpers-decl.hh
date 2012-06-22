@@ -43,6 +43,10 @@ template <class... Args>
 inline
 OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args);
 
+template <class... Args>
+inline
+OpResult raiseIndexOutOfBounds(VM vm, Args&&... args);
+
 }
 
 #endif // __EXCHELPERS_DECL_H

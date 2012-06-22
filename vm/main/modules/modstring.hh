@@ -58,7 +58,76 @@ public:
     ToAtom() : Builtin("toAtom") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      return StringLike(value).toAtom(vm, result);
+      LString<nchar>* content;
+      MOZART_CHECK_OPRESULT(StringLike(value).stringGet(vm, content));
+      result.make<Atom>(vm, content->length, content->string);
+      return OpResult::proceed();
+    }
+  };
+
+  class CharAt : public Builtin<CharAt> {
+  public:
+    CharAt() : Builtin("charAt") {}
+
+    OpResult operator()(VM vm, In value, In index, Out result) {
+      nativeint charResult;
+      MOZART_CHECK_OPRESULT(
+        StringLike(value).stringCharAt(vm, index, charResult));
+      result.make<SmallInt>(vm, charResult);
+      return OpResult::proceed();
+    }
+  };
+
+  class Append : public Builtin<Append> {
+  public:
+    Append() : Builtin("append") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return StringLike(left).stringAppend(vm, right, result);
+    }
+  };
+
+  class Slice : public Builtin<Slice> {
+  public:
+    Slice() : Builtin("slice") {}
+
+    OpResult operator()(VM vm, In value, In from, In to, Out result) {
+      return StringLike(value).stringSlice(vm, from, to, result);
+    }
+  };
+
+  class Search : public Builtin<Search> {
+  public:
+    Search() : Builtin("search") {}
+
+    OpResult operator()(VM vm, In value, In from, In needle, Out begin, Out end) {
+      return StringLike(value).stringSearch(vm, from, needle, begin, end);
+    }
+  };
+
+  class HasPrefix : public Builtin<HasPrefix> {
+  public:
+    HasPrefix() : Builtin("hasPrefix") {}
+
+    OpResult operator()(VM vm, In string, In prefix, Out resultNode) {
+      bool result;
+      MOZART_CHECK_OPRESULT(
+        StringLike(string).stringHasPrefix(vm, prefix, result));
+      resultNode.make<Boolean>(vm, result);
+      return OpResult::proceed();
+    }
+  };
+
+  class HasSuffix : public Builtin<HasSuffix> {
+  public:
+    HasSuffix() : Builtin("hasSuffix") {}
+
+    OpResult operator()(VM vm, In string, In suffix, Out resultNode) {
+      bool result;
+      MOZART_CHECK_OPRESULT(
+        StringLike(string).stringHasSuffix(vm, suffix, result));
+      resultNode.make<Boolean>(vm, result);
+      return OpResult::proceed();
     }
   };
 };

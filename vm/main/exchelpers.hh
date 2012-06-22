@@ -71,6 +71,11 @@ OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
                reasonAtom, std::forward<Args>(args)...);
 }
 
+template <class... Args>
+OpResult raiseIndexOutOfBounds(VM vm, Args&&... args) {
+  return raise(vm, vm->coreatoms.indexOutOfBounds, std::forward<Args>(args)...);
+}
+
 }
 
 #endif // __EXCHELPERS_H

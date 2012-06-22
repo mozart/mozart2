@@ -25,7 +25,7 @@
 %% Module
 %%
 
-UnicodeString = string(
+UnicodeString = unicodeString(
    is: IsUnicodeString
    toAtom: UnicodeStringToAtom
    %isAtom: Boot_String.isAtom
@@ -33,6 +33,13 @@ UnicodeString = string(
    %isInt: Boot_String.isInt
    %toFloat: UnicodeStringToFloat
    %isFloat: Boot_String.isFloat
-   %token: Boot_String.token
-   %tokens: fun {$ S X} ... end
+
+   charAt: Boot_String.charAt
+   append: Boot_String.append
+   slice: Boot_String.slice
+   search: Boot_String.search
+   isPrefix: fun {$ X Y} {Boot_String.hasPrefix Y X} end
+   isSuffix: fun {$ X Y} {Boot_String.hasSuffix Y X} end
+
+   length: Boot_VirtualString.length
 )

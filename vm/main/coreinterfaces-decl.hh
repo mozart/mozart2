@@ -596,26 +596,59 @@ struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
 
 class StringLike;
 template<>
-struct Interface<StringLike>: ImplementedBy<String> {
+struct Interface<StringLike>: ImplementedBy<String, ByteString> {
   OpResult isString(RichNode self, VM vm, bool& result) {
     result = false;
     return OpResult::proceed();
   }
 
-  OpResult toAtom(RichNode self, VM vm, UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("string"), self);
+  OpResult isByteString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
   }
 
   OpResult stringGet(RichNode self, VM vm, LString<nchar>*& result) {
-    return raiseTypeError(vm, MOZART_STR("string"), self);
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringGet(RichNode self, VM vm, LString<unsigned char>*& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult stringCharAt(RichNode self, VM vm,
+                        RichNode offset, nativeint& character) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringAppend(RichNode self, VM vm,
+                        RichNode right, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringSlice(RichNode self, VM vm,
+                       RichNode from, RichNode to, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringSearch(RichNode self, VM vm, RichNode from, RichNode needle,
+                        UnstableNode& begin, UnstableNode& end) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringHasPrefix(RichNode self, VM vm, RichNode prefix, bool& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringHasSuffix(RichNode self, VM vm, RichNode suffix, bool& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
   }
 };
 
 class VirtualString;
 template<>
 struct Interface<VirtualString>:
-  ImplementedBy<Tuple, Atom, String, SmallInt, Cons, Float, Unit, Boolean,
-    ByteString> {
+  ImplementedBy<SmallInt, Float, Atom, Boolean, String, Unit, Cons, Tuple,
+                ByteString> {
 
   OpResult isVirtualString(RichNode self, VM vm, bool& result) {
     result = false;
@@ -628,48 +661,6 @@ struct Interface<VirtualString>:
 
   OpResult vsLength(RichNode self, VM vm, nativeint& result) {
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-  }
-};
-
-class ByteStringLike;
-template<>
-struct Interface<ByteStringLike>: ImplementedBy<ByteString> {
-  OpResult isByteString(RichNode self, VM vm, bool& result) {
-    result = false;
-    return OpResult::proceed();
-  }
-
-  OpResult stringGet(RichNode self, VM vm, LString<unsigned char>*& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsGet(RichNode self, VM vm, nativeint index,
-                 unsigned char& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsAppend(RichNode self, VM vm, RichNode right,
-                    UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsSlice(RichNode self, VM vm, nativeint from, nativeint to,
-                   UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsLength(RichNode self, VM vm, nativeint& length) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsDecode(RichNode self, VM vm, ByteStringEncoding encoding,
-                    EncodingVariant variant, UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsStrChr(RichNode self, VM vm, nativeint from,
-                    unsigned char character, UnstableNode& res) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
   }
 };
 

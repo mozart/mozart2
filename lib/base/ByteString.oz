@@ -47,14 +47,21 @@ in
    ByteString = byteString(
       is: IsByteString
       make: fun {$ V} {Boot_ByteString.encode V latin1 nil} end
-      get: Boot_ByteString.get
-      append: Boot_ByteString.append
-      slice: Boot_ByteString.slice
-      width: Boot_ByteString.length
-      length: Boot_ByteString.length
-      toString: fun {$ BS} {Boot_ByteString.decode BS latin1 nil} end
+      get: Boot_String.charAt
+      append: Boot_String.append
+      slice: Boot_String.slice
+      width: Boot_VirtualString.length
+      length: Boot_VirtualString.length
+      %toString: ---
       %toStringWithTail: ---
-      strchr: Boot_ByteString.strchr
+
+      strchr: fun {$ BS From Chr}
+                 if {IsInt Chr} then
+                    {Boot_String.search BS From Chr $ _}
+                 else
+                    raise typeError('char' Chr) end
+                 end
+              end
 
       encode: fun {$ OptList V}
                  {Coder OptList Boot_ByteString.encode V}

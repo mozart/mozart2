@@ -341,11 +341,6 @@ prepare
    Alarm = Boot_Time.alarm
    Delay = proc {$ T} {Wait {Alarm T}} end
 
-   %%
-   %% System
-   %%
-   Show = Boot_System.show
-
 #include "Exception.oz"
 #include "Value.oz"
 #include "Literal.oz"
@@ -376,8 +371,5 @@ prepare
 %#include "ForeignPointer.oz"
 #include "Thread.oz"
 #include "Time.oz"
-
-#include "Space.oz"
-#include "System.oz"
 
 end

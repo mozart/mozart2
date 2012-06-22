@@ -60,9 +60,8 @@ public:
 
 public:
   // Comparable interface
-
-  //inline
-  //OpResult compare(Self self, VM vm, RichNode right, int& result);
+  inline
+  OpResult compare(Self self, VM vm, RichNode right, int& result);
 
 public:
   // StringLike interface
@@ -71,50 +70,45 @@ public:
     return OpResult::proceed();
   }
 
+  OpResult isByteString(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   inline
-  OpResult toAtom(Self self, VM vm, UnstableNode& result);
+  OpResult stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
+
+  inline
+  OpResult stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
+
+  inline
+  OpResult stringSlice(Self self, VM vm,
+                       RichNode from, RichNode to, UnstableNode& result);
+
+  // Search for a string or a character.
+  inline
+  OpResult stringSearch(Self self, VM vm, RichNode from, RichNode needle,
+                        UnstableNode& result);
+
+  inline
+  OpResult stringEnd(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult stringGet(Self self, VM vm, LString<nchar>*& result);
+
+  inline
+  OpResult stringGet(Self self, VM vm, LString<unsigned char>*& result);
 
 public:
   // Dottable interface
 
-  // (can't implement IntegerDottableHelper because .dotNumber() may raise
-  //  exceptions).
-
-  inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
+  // (can't implement IntegerDottableHelper because of StringOffset)
 
   inline
   OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
 
   inline
   OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result);
-
-public:
-  // RecordLike interface
-  OpResult isRecord(Self self, VM vm, bool& result) {
-    result = true;
-    return OpResult::proceed();
-  }
-
-  OpResult isTuple(Self self, VM vm, bool& result) {
-    result = true;
-    return OpResult::proceed();
-  }
-
-  inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult width(Self self, VM vm, size_t& result);
-
-  inline
-  OpResult arityList(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult clone(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult waitOr(Self self, VM vm, UnstableNode& result);
 
 public:
   // VirtualString inteface
@@ -138,7 +132,7 @@ public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
-  const LString<nchar>& getString() const { return _string; }
+  const LString<nchar>& value() const { return _string; }
 
 private:
   LString<nchar> _string;

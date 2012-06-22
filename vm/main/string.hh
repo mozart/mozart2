@@ -38,6 +38,8 @@ namespace mozart {
 
 #include "String-implem.hh"
 
+// Core methods ----------------------------------------------------------------
+
 Implementation<String>::Implementation(VM vm, GR gr, Self from)
   : _string(vm, from->_string) {}
 
@@ -51,111 +53,164 @@ int Implementation<String>::compareFeatures(VM vm, Self right) {
 
 void Implementation<String>::printReprToStream(Self self, VM vm,
                                                std::ostream& out, int depth) {
-  out << '"' << toUTF<char>(_string) << '"';
+  out << '"' << toUTF<char>(_string) << '"'; // TODO: Escape characters.
 }
 
-OpResult Implementation<String>::toAtom(Self self, VM vm, UnstableNode& result) {
-  result.make<Atom>(vm, _string.length, _string.string);
+// Comparable ------------------------------------------------------------------
+
+OpResult Implementation<String>::compare(Self self, VM vm,
+                                         RichNode right, int& result) {
+  LString<nchar>* rightString = nullptr;
+  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightString));
+  result = compareByCodePoint(_string, *rightString);
+  return OpResult::proceed();
+}
+
+// StringLike ------------------------------------------------------------------
+
+OpResult Implementation<String>::stringGet(Self self, VM vm,
+                                           LString<nchar>*& result) {
+  result = &_string;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringGet(Self self, VM vm,
+                                           LString<unsigned char>*& result) {
+  return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+}
+
+OpResult Implementation<String>::stringCharAt(Self self, VM vm,
+                                              RichNode offsetNode,
+                                              nativeint& character) {
+  nativeint offset;
+  MOZART_CHECK_OPRESULT(StringOffsetLike(offsetNode).toStringOffset(vm, self, offset));
+  if (offset >= _string.length)
+    return raiseIndexOutOfBounds(vm, offsetNode, self);
+
+  LString<nchar> slice = _string.slice(offset);
+
+  char32_t codePoint;
+  nativeint length;
+  std::tie(codePoint, length) = fromUTF(slice.string, slice.length);
+  if (length <= 0)
+    return raiseUnicodeError(vm, (UnicodeErrorReason) length, self, offsetNode);
+
+  character = codePoint;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringAppend(Self self, VM vm,
+                                              RichNode right,
+                                              UnstableNode& result) {
+  LString<nchar>* rightString = nullptr;
+  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightString));
+  LString<nchar> resultString = concatLString(vm, _string, *rightString);
+  if (resultString.isError())
+    return raiseUnicodeError(vm, resultString.error, self, right);
+  result.make<String>(vm, resultString);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringSlice(Self self, VM vm,
+                                             RichNode from, RichNode to,
+                                             UnstableNode& result) {
+  nativeint fromOffset, toOffset;
+  MOZART_CHECK_OPRESULT(StringOffsetLike(from).toStringOffset(vm, self, fromOffset));
+  MOZART_CHECK_OPRESULT(StringOffsetLike(to).toStringOffset(vm, self, toOffset));
+  if (fromOffset > toOffset)
+    return raiseIndexOutOfBounds(vm, fromOffset, toOffset);
+  result.make<String>(vm, _string.slice(fromOffset, toOffset));
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringSearch(Self self, VM vm,
+                                              RichNode from, RichNode needleNode,
+                                              UnstableNode& result) {
+  nativeint fromOffset;
+  MOZART_CHECK_OPRESULT(StringOffsetLike(from).toStringOffset(vm, self, fromOffset));
+
+  nchar utf[4];
+  std::aligned_storage<sizeof(BaseLString<nchar>),
+                       alignof(BaseLString<nchar>)> needleStorage;
+  BaseLString<nchar>* needle;
+
+  // Extract the needle. Could be a code point, or a string.
+  {
+    using namespace patternmatching;
+    OpResult matchRes = OpResult::proceed();
+    nativeint codePointInteger;
+    if (matches(vm, matchRes, needleNode, capture(codePointInteger))) {
+
+      char32_t codePoint = (char32_t) codePointInteger;
+      nativeint length = toUTF(codePoint, utf);
+      if (length <= 0)
+        return raiseUnicodeError(vm, (UnicodeErrorReason) length, needleNode);
+      needle = new (&needleStorage) BaseLString<nchar> (utf, length);
+
+    //static_assert(std::is_trivially_destructible<BaseLString<nchar>>::value,
+      static_assert(std::has_trivial_destructor<BaseLString<nchar>>::value,
+                    "BaseLString<nchar> has been modified to have non-trivial "
+                    "destructor! Please rewrite this piece of code to avoid "
+                    "resource leak.");
+      // ^ BaseLString<nchar> has trivial destructor, so we shouldn't need to
+      //   explicitly destroy it.
+
+    } else if (matchRes.isProceed()) {
+
+      LString<nchar>* stringNeedle;
+      MOZART_CHECK_OPRESULT(StringLike(needleNode).stringGet(vm, stringNeedle));
+      needle = stringNeedle;
+
+    } else {
+
+      return matchRes;
+
+    }
+  }
+
+  // Do the actual searching.
+  LString<nchar> haystack = _string.slice(fromOffset);
+  const nchar* foundIter = std::search(haystack.begin(), haystack.end(),
+                                       needle->begin(), needle->end());
+  if (foundIter == haystack.end())
+    result.make<Boolean>(vm, false);
+  else
+    result.make<StringOffset>(vm, foundIter - _string.string, self);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringEnd(Self self, VM vm,
+                                           UnstableNode& result) {
+  result.make<StringOffset>(vm, _string.length, self);
+  return OpResult::proceed();
+}
+
+// Dottable --------------------------------------------------------------------
+
+OpResult Implementation<String>::dot(Self self, VM vm, RichNode feature,
+                                     UnstableNode& result) {
+  nativeint character;
+  MOZART_CHECK_OPRESULT(stringCharAt(self, vm, feature, character));
+  result.make<SmallInt>(vm, character);
   return OpResult::proceed();
 }
 
 OpResult Implementation<String>::hasFeature(RichNode self, VM vm,
                                             RichNode feature, bool& result) {
-  using namespace patternmatching;
+  MOZART_REQUIRE_FEATURE(feature);
 
-  OpResult opRes = OpResult::proceed();
-  nativeint value;
-
-  if (_string.length > 0 && matches(vm, opRes, feature, capture(value))) {
-    result = value == 1 || value == 2;
-    return OpResult::proceed();
-  } else if (opRes.isProceed()) {
-    MOZART_REQUIRE_FEATURE(feature);
+  nativeint offset;
+  OpResult opRes = StringOffsetLike(feature).toStringOffset(vm, self, offset);
+  if (!opRes.isProceed()) {
     result = false;
     return OpResult::proceed();
-  } else {
-    return opRes;
   }
-}
 
-OpResult Implementation<String>::dotNumber(Self self, VM vm,
-                                           nativeint feature, UnstableNode& result) {
-  if (_string.length <= 0 || (feature != 1 && feature != 2)) {
-    return raise(vm, vm->coreatoms.illegalFieldSelection,
-                 self, SmallInt::build(vm, feature));
-
-  } else if (feature == 1) {
-    auto decodeRes = fromUTF(_string.string);
-    if (decodeRes.second < 0)
-      return raiseUnicodeError(vm, (UnicodeErrorReason) decodeRes.second, self);
-    result.make<SmallInt>(vm, decodeRes.first);
-    return OpResult::proceed();
-
-  } else {
-    nativeint stride = getUTFStride(_string.string);
-    if (stride <= 0)
-      return raiseUnicodeError(vm, (UnicodeErrorReason) stride, self);
-    result.make<String>(vm, _string.slice(stride));
-    return OpResult::proceed();
-  }
-}
-
-OpResult Implementation<String>::dot(Self self, VM vm,
-                                     RichNode feature, UnstableNode& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    return dotNumber(self, vm, featureIntValue, result);
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-OpResult Implementation<String>::label(Self self, VM vm, UnstableNode& result) {
-  result.make<Atom>(vm, _string.isErrorOrEmpty() ? vm->coreatoms.nil : vm->coreatoms.pipe);
+  result = offset < _string.length && isLeadingCodeUnit(_string[offset]);
   return OpResult::proceed();
 }
 
-OpResult Implementation<String>::width(Self self, VM vm, size_t& result) {
-  result = _string.isErrorOrEmpty() ? 0 : 2;
-  return OpResult::proceed();
-}
-
-OpResult Implementation<String>::arityList(Self self, VM vm,
-                                           UnstableNode& result) {
-  if (_string.isErrorOrEmpty())
-    result.make<Atom>(vm, vm->coreatoms.nil);
-  else
-    result = buildCons(vm, 1, buildCons(vm, 2, vm->coreatoms.nil));
-  return OpResult::proceed();
-}
-
-OpResult Implementation<String>::clone(Self self, VM vm, UnstableNode& result) {
-  if (_string.isErrorOrEmpty()) {
-    result.make<Atom>(vm, vm->coreatoms.nil);
-  } else {
-    result = buildCons(vm, Unbound::build(vm),
-                           buildCons(vm, Unbound::build(vm), vm->coreatoms.nil));
-  }
-  return OpResult::proceed();
-}
-
-OpResult Implementation<String>::waitOr(Self self, VM vm, UnstableNode& result) {
-  if (_string.isErrorOrEmpty()) {
-    // Wait forever (refer to LiteralHelper<Self>::waitOr)
-    UnstableNode dummyVar = Variable::build(vm);
-    return OpResult::waitFor(vm, dummyVar);
-  } else {
-    // No need to 'wait', all features are always available.
-    result.make<SmallInt>(vm, 1);
-    return OpResult::proceed();
-  }
-}
+// VirtualString ---------------------------------------------------------------
 
 OpResult Implementation<String>::toString(Self self, VM vm,
                                           std::basic_ostream<nchar>& sink) {

@@ -93,7 +93,7 @@ namespace mozart {
      */
     static bool EXPECT_EQ_STRING(const BaseLString<nchar>& expected, RichNode actual) {
         if (!EXPECT_IS<String>(actual)) return false;
-        auto actualString = actual.as<String>().getString();
+        auto actualString = actual.as<String>().value();
         EXPECT_EQ(expected, actualString);
         return expected == actualString;
     }

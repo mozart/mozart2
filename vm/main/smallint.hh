@@ -57,6 +57,8 @@ int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
     return 1;
 }
 
+// Comparable ------------------------------------------------------------------
+
 OpResult Implementation<SmallInt>::compare(Self self, VM vm,
                                            RichNode right,
                                            int& result) {
@@ -69,12 +71,16 @@ OpResult Implementation<SmallInt>::compare(Self self, VM vm,
   return OpResult::proceed();
 }
 
+// IntegerValue ----------------------------------------------------------------
+
 OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                  nativeint right,
                                                  bool& result) {
   result = value() == right;
   return OpResult::proceed();
 }
+
+// Numeric ---------------------------------------------------------------------
 
 OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
                                             UnstableNode& result) {
@@ -238,6 +244,8 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
   return OpResult::proceed();
 }
 
+// VirtualString ---------------------------------------------------------------
+
 OpResult Implementation<SmallInt>::toString(Self self, VM vm,
                                             std::basic_ostream<nchar>& sink) {
 //sink << value();  // doesn't seem to work, don't know why.
@@ -281,6 +289,74 @@ OpResult Implementation<SmallInt>::vsChangeSign(Self self, VM vm,
     }
     result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
   }
+  return OpResult::proceed();
+}
+
+// StringOffset ----------------------------------------------------------------
+
+namespace internal {
+
+  static
+  OpResult charIndexToStringOffset(VM vm, RichNode node,
+                                   nativeint index, nativeint& offset) {
+    offset = -1;
+    if (index < 0)
+      return OpResult::proceed();
+
+    if (node.is<String>()) {
+
+      LString<nchar> string = node.as<String>().value();
+      LString<nchar> sliced = sliceByCodePoints(string, index, 0);
+      if (sliced.isError()) {
+        if (sliced.error != UnicodeErrorReason::indexOutOfBounds)
+          return raiseUnicodeError(vm, sliced.error, node);
+      } else {
+        offset = sliced.string - string.string;
+      }
+
+    } else {
+
+      UnstableNode endNode;
+      nativeint endIndex;
+      MOZART_CHECK_OPRESULT(StringLike(node).stringEnd(vm, endNode));
+      MOZART_CHECK_OPRESULT(StringOffsetLike(endNode).getCharIndex(vm, endIndex));
+      if (index <= endIndex)
+        offset = index;
+
+    }
+
+    return OpResult::proceed();
+  }
+
+}
+
+OpResult Implementation<SmallInt>::toStringOffset(Self self, VM vm,
+                                                  RichNode string,
+                                                  nativeint& offset) {
+  nativeint theOffset;
+  MOZART_CHECK_OPRESULT(internal::charIndexToStringOffset(vm, string, value(), theOffset));
+  if (theOffset < 0) {
+    return raiseIndexOutOfBounds(vm, string, self);
+  } else {
+    offset = theOffset;
+    return OpResult::proceed();
+  }
+}
+
+OpResult Implementation<SmallInt>::stringOffsetAdvance(Self self, VM vm,
+                                                       RichNode string,
+                                                       nativeint delta,
+                                                       UnstableNode& result) {
+  nativeint theOffset;
+  nativeint advancedIndex = value() + delta;
+  MOZART_CHECK_OPRESULT(
+    internal::charIndexToStringOffset(vm, string, advancedIndex, theOffset));
+
+  if (theOffset < 0)
+    result.make<Boolean>(vm, false);
+  else
+    result.make<StringOffset>(vm, theOffset, string, advancedIndex);
+
   return OpResult::proceed();
 }
 

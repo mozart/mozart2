@@ -150,6 +150,26 @@ public:
                         RichNode replacement, UnstableNode& result);
 
 public:
+  // StringOffset interface
+  OpResult isStringOffset(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult toStringOffset(Self self, VM vm, RichNode string, nativeint& offset);
+
+  OpResult getCharIndex(RichNode self, VM vm, nativeint& index) {
+    index = value();
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult stringOffsetAdvance(Self self, VM vm,
+                               RichNode string, nativeint delta,
+                               UnstableNode& result);
+
+public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {

@@ -65,7 +65,7 @@ class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
-                ReifiedThread, Unit, String> {
+                ReifiedThread, Unit, String, StringOffset> {
 
   /**
    * Precondition:
@@ -101,7 +101,7 @@ struct Interface<StructuralEquatable>:
 class Comparable;
 template<>
 struct Interface<Comparable>:
-  ImplementedBy<SmallInt, Atom, Float> {
+  ImplementedBy<SmallInt, Atom, Float, StringOffset, String, ByteString> {
 
   OpResult compare(RichNode self, VM vm, RichNode right, int& result) {
     return raiseTypeError(vm, u"comparable", self);
@@ -344,7 +344,7 @@ class RecordLike;
 template<>
 struct Interface<RecordLike>:
   ImplementedBy<Tuple, Record, Cons,
-    Atom, OptName, GlobalName, Boolean, Unit, String> {
+    Atom, OptName, GlobalName, Boolean, Unit> {
 
   OpResult isRecord(RichNode self, VM vm, bool& result) {
     result = false;
@@ -596,14 +596,73 @@ struct Interface<ChunkLike>: ImplementedBy<Chunk, Object> {
 
 class StringLike;
 template<>
-struct Interface<StringLike>: ImplementedBy<String> {
+struct Interface<StringLike>: ImplementedBy<String, ByteString> {
   OpResult isString(RichNode self, VM vm, bool& result) {
     result = false;
     return OpResult::proceed();
   }
 
-  OpResult toAtom(RichNode self, VM vm, UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("string"), self);
+  OpResult isByteString(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult stringGet(RichNode self, VM vm, LString<nchar>*& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringGet(RichNode self, VM vm, LString<unsigned char>*& result) {
+    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+  }
+
+  OpResult stringCharAt(RichNode self, VM vm,
+                        RichNode offset, nativeint& character) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringAppend(RichNode self, VM vm,
+                        RichNode right, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringSlice(RichNode self, VM vm,
+                       RichNode from, RichNode to, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringSearch(RichNode self, VM vm,
+                        RichNode from, RichNode needle, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringEnd(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+};
+
+
+class StringOffsetLike;
+template<>
+struct Interface<StringOffsetLike>: ImplementedBy<SmallInt, StringOffset> {
+  OpResult isStringOffset(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult toStringOffset(RichNode self, VM vm, RichNode string, nativeint& offset) {
+    return raiseTypeError(vm, MOZART_STR("StringOffset"), self);
+  }
+
+  OpResult getCharIndex(RichNode self, VM vm, nativeint& index) {
+    return raiseTypeError(vm, MOZART_STR("StringOffset"), self);
+  }
+
+  // Advance the string offset by the given number of code points. Returns the
+  // new string offset if possible, or 'false' on overflow or underflow.
+  OpResult stringOffsetAdvance(RichNode self, VM vm,
+                               RichNode string, nativeint delta,
+                               UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("StringOffset"), self);
   }
 };
 
@@ -629,42 +688,6 @@ struct Interface<VirtualString>:
   OpResult vsChangeSign(RichNode self, VM vm,
                         RichNode replacement, UnstableNode& result) {
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-  }
-};
-
-class ByteStringLike;
-template<>
-struct Interface<ByteStringLike>: ImplementedBy<ByteString> {
-  OpResult isByteString(RichNode self, VM vm, bool& result) {
-    result = false;
-    return OpResult::proceed();
-  }
-
-  OpResult bsGet(RichNode self, VM vm, nativeint index, char& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsAppend(RichNode self, VM vm, RichNode right, UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsSlice(RichNode self, VM vm, nativeint from, nativeint to, UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsLength(RichNode self, VM vm, nativeint& length) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsDecode(RichNode self, VM vm,
-                    ByteStringEncoding encoding, EncodingVariant variant,
-                    UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
-  }
-
-  OpResult bsStrChr(RichNode self, VM vm,
-                    nativeint from, char character, UnstableNode& res) {
-    return raiseTypeError(vm, MOZART_STR("ByteString"), self);
   }
 };
 

@@ -58,7 +58,46 @@ public:
     ToAtom() : Builtin("toAtom") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      return StringLike(value).toAtom(vm, result);
+      LString<nchar>* content;
+      MOZART_CHECK_OPRESULT(StringLike(value).stringGet(vm, content));
+      result.build<Atom>(vm, content->length, content->string);
+      return OpResult::proceed();
+    }
+  };
+
+  class Append : public Builtin<Append> {
+  public:
+    Append() : Builtin("append") {}
+
+    OpResult operator()(VM vm, In left, In right, Out result) {
+      return StringLike(left).stringAppend(vm, right, result);
+    }
+  };
+
+  class Slice : public Builtin<Append> {
+  public:
+    Slice() : Builtin("slice") {}
+
+    OpResult operator()(VM vm, In value, In from, In to, Out result) {
+      return StringLike(value).stringSlice(vm, from, to, result);
+    }
+  };
+
+  class Search : public Builtin<Append> {
+  public:
+    Search() : Builtin("search") {}
+
+    OpResult operator()(VM vm, In value, In from, In needle, Out result) {
+      return StringLike(value).stringSearch(vm, from, needle, result);
+    }
+  };
+
+  class End : public Builtin<End> {
+  public:
+    End() : Builtin("end") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      return StringLike(value).stringEnd(vm, result);
     }
   };
 };

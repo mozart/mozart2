@@ -55,7 +55,7 @@ public:
 public:
   static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
-  Implementation(VM vm, const LString<char>& bytes) : _bytes(bytes) {}
+  Implementation(VM vm, const LString<unsigned char>& bytes) : _bytes(bytes) {}
 
   inline
   Implementation(VM vm, GR gr, Self self);
@@ -69,42 +69,56 @@ public:
 
 public:
   // Comparable interface
-
-  //inline
-  //OpResult compare(Self self, VM vm, RichNode right, int& result);
+  inline
+  OpResult compare(Self self, VM vm, RichNode right, int& result);
 
 public:
-  // ByteStringLike interface
-  OpResult isByteString(Self self, VM vm, bool& result) {
+  // StringLike interface
+  OpResult isString(Self self, VM vm, bool& result) {
     result = true;
     return OpResult::proceed();
   }
 
-  inline
-  OpResult bsGet(Self self, VM vm, nativeint index, char& result);
-
-  inline
-  OpResult bsAppend(Self self, VM vm, RichNode right, UnstableNode& result);
-
-  OpResult bsLength(Self self, VM vm, nativeint& length) {
-    return vsLength(self, vm, length);
+  OpResult isByteString(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
   }
 
   inline
-  OpResult bsDecode(Self self, VM vm,
-                    ByteStringEncoding encoding, EncodingVariant variant,
-                    UnstableNode& result);
+  OpResult stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
 
   inline
-  OpResult bsSlice(Self self, VM vm, nativeint from, nativeint to, UnstableNode& result);
+  OpResult stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult bsStrChr(Self self, VM vm,
-                    nativeint from, char character, UnstableNode& res);
+  OpResult stringSlice(Self self, VM vm,
+                       RichNode from, RichNode to, UnstableNode& result);
 
+  inline
+  OpResult stringSearch(Self self, VM vm, RichNode from, RichNode needle,
+                        UnstableNode& result);
+
+  inline
+  OpResult stringEnd(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult stringGet(Self self, VM vm, LString<nchar>*& result);
+
+  inline
+  OpResult stringGet(Self self, VM vm, LString<unsigned char>*& result);
 
 public:
-  // VirtualString interface
+  // Dottable interface
+  // (can't implement IntegerDottableHelper because of StringOffset)
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result);
+
+public:
+  // VirtualString inteface
   OpResult isVirtualString(Self self, VM vm, bool& result) {
     result = true;
     return OpResult::proceed();
@@ -123,12 +137,17 @@ public:
 public:
   // Miscellaneous
   inline
+  OpResult decode(Self self, VM vm,
+                  ByteStringEncoding encoding, EncodingVariant variant,
+                  UnstableNode& result);
+
+  inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
-  const LString<char>& getBytes() const { return _bytes; }
+  const LString<unsigned char>& value() const { return _bytes; }
 
 private:
-  LString<char> _bytes;
+  LString<unsigned char> _bytes;
 };
 
 static

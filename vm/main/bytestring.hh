@@ -40,6 +40,25 @@ namespace mozart {
 
 #include "ByteString-implem.hh"
 
+// Core methods ----------------------------------------------------------------
+
+namespace internal {
+  static int compareByteStrings(LString<unsigned char> left,
+                                LString<unsigned char> right) {
+    int cmpRes = left.string != right.string;
+    if (cmpRes) {
+      size_t minLength = std::min(left.bytesCount(), right.bytesCount());
+      cmpRes = memcmp(left.string, right.string, minLength);
+    }
+    if (!cmpRes) {
+      return left.length < right.length ? -1 :
+             left.length > right.length ? 1 : 0;
+    } else {
+      return cmpRes;
+    }
+  }
+}
+
 Implementation<ByteString>::Implementation(VM vm, GR gr, Self from)
   : _bytes(vm, from->_bytes) {}
 
@@ -48,28 +67,155 @@ bool Implementation<ByteString>::equals(VM vm, Self right) {
 }
 
 int Implementation<ByteString>::compareFeatures(VM vm, Self right) {
-  int cmpRes = _bytes.string != right->_bytes.string;
-  if (cmpRes) {
-    nativeint minLength = std::min(_bytes.length, right->_bytes.length);
-    cmpRes = memcmp(_bytes.string, right->_bytes.string, minLength);
-  }
-  if (!cmpRes) {
-    return _bytes.length < right->_bytes.length ? -1 :
-           _bytes.length > right->_bytes.length ? 1 : 0;
-  } else {
-    return cmpRes;
-  }
+  return internal::compareByteStrings(_bytes, right->_bytes);
 }
 
 void Implementation<ByteString>::printReprToStream(Self self, VM vm,
                                                    std::ostream& out, int depth) {
-  out << "<ByteString \"" << _bytes << "\">"; // TODO Escape the characters.
+  out << "<ByteString \"";
+  out.write(reinterpret_cast<const char*>(_bytes.string), _bytes.length);
+  // TODO: Escape characters.
+  out << "\">";
 }
+
+// Comparable ------------------------------------------------------------------
+
+OpResult Implementation<ByteString>::compare(Self self, VM vm,
+                                             RichNode right, int& result) {
+  LString<unsigned char>* rightBytes = nullptr;
+  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightBytes));
+  result = internal::compareByteStrings(_bytes, *rightBytes);
+  return OpResult::proceed();
+}
+
+// StringLike ------------------------------------------------------------------
+
+OpResult Implementation<ByteString>::stringGet(Self self, VM vm,
+                                               LString<unsigned char>*& result) {
+  result = &_bytes;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringGet(Self self, VM vm,
+                                               LString<nchar>*& result) {
+  return raiseTypeError(vm, MOZART_STR("String"), self);
+}
+
+OpResult Implementation<ByteString>::stringCharAt(Self self, VM vm,
+                                                  RichNode offsetNode,
+                                                  nativeint& character) {
+  nativeint offset;
+  MOZART_CHECK_OPRESULT(StringOffsetLike(offsetNode).toStringOffset(vm, self, offset));
+  if (offset >= _bytes.length)
+    return raiseIndexOutOfBounds(vm, offsetNode, self);
+
+  character = _bytes[offset];
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringAppend(Self self, VM vm,
+                                                  RichNode right,
+                                                  UnstableNode& result) {
+  LString<unsigned char>* rightBytes = nullptr;
+  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightBytes));
+  LString<unsigned char> resultBytes = concatLString(vm, _bytes, *rightBytes);
+  if (resultBytes.isError())
+    return raiseUnicodeError(vm, resultBytes.error, self, right);
+  result.make<ByteString>(vm, resultBytes);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringSlice(Self self, VM vm,
+                                                 RichNode from, RichNode to,
+                                                 UnstableNode& result) {
+  nativeint fromOffset, toOffset;
+  MOZART_CHECK_OPRESULT(StringOffsetLike(from).toStringOffset(vm, self, fromOffset));
+  MOZART_CHECK_OPRESULT(StringOffsetLike(to).toStringOffset(vm, self, toOffset));
+  if (fromOffset > toOffset)
+    return raiseIndexOutOfBounds(vm, fromOffset, toOffset);
+  result.make<ByteString>(vm, _bytes.slice(fromOffset, toOffset));
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringSearch(Self self, VM vm,
+                                                  RichNode from, RichNode needleNode,
+                                                  UnstableNode& result) {
+  using namespace patternmatching;
+
+  nativeint fromOffset;
+  MOZART_CHECK_OPRESULT(StringOffsetLike(from).toStringOffset(vm, self, fromOffset));
+  LString<unsigned char> haystack = _bytes.slice(fromOffset);
+
+  nativeint character;
+  OpResult matchRes = OpResult::proceed();
+
+  if (matches(vm, matchRes, needleNode, capture(character))) {
+
+    if (character < 0 || character >= 0x100)
+      return raiseTypeError(vm, MOZART_STR("Integer between 0 and 255"), needleNode);
+
+    void* searchRes = memchr(haystack.string, character, haystack.bytesCount());
+    if (searchRes == nullptr) {
+      result.make<Boolean>(vm, false);
+    } else {
+      nativeint foundOffset = static_cast<unsigned char*>(searchRes) - _bytes.string;
+      result.make<SmallInt>(vm, foundOffset);
+    }
+
+  } else if (matchRes.isProceed()) {
+
+    LString<unsigned char>* needle;
+    MOZART_CHECK_OPRESULT(StringLike(needleNode).stringGet(vm, needle));
+    auto foundIter = std::search(haystack.begin(), haystack.end(),
+                                 needle->begin(), needle->end());
+    if (foundIter == haystack.end())
+      result.make<Boolean>(vm, false);
+    else
+      result.make<SmallInt>(vm, foundIter - _bytes.string);
+
+  } else {
+    return matchRes;
+  }
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringEnd(Self self, VM vm,
+                                               UnstableNode& result) {
+  result.make<SmallInt>(vm, _bytes.length);
+  return OpResult::proceed();
+}
+
+// Dottable --------------------------------------------------------------------
+
+OpResult Implementation<ByteString>::dot(Self self, VM vm, RichNode feature,
+                                         UnstableNode& result) {
+  nativeint character;
+  MOZART_CHECK_OPRESULT(stringCharAt(self, vm, feature, character));
+  result.make<SmallInt>(vm, character);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::hasFeature(RichNode self, VM vm,
+                                                RichNode feature, bool& result) {
+  MOZART_REQUIRE_FEATURE(feature);
+
+  nativeint offset;
+  OpResult opRes = StringOffsetLike(feature).toStringOffset(vm, self, offset);
+  if (!opRes.isProceed()) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  result = offset < _bytes.length;
+  return OpResult::proceed();
+}
+
+// VirtualString ---------------------------------------------------------------
 
 OpResult Implementation<ByteString>::toString(Self self, VM vm,
                                               std::basic_ostream<nchar>& sink) {
   sink << decodeLatin1(_bytes, EncodingVariant::none);
-  // ^ Latin1 -> UTF always succeed.
   return OpResult::proceed();
 }
 
@@ -85,39 +231,12 @@ OpResult Implementation<ByteString>::vsChangeSign(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::bsGet(Self self, VM vm,
-                                           nativeint index, char& result) {
-  if (index < 0 || index >= _bytes.length)
-    return raise(vm, MOZART_STR("indexOutOfBound"), self, index);
-  result = _bytes.string[index];
-  return OpResult::proceed();
-}
+// Encode & decode -------------------------------------------------------------
 
-OpResult Implementation<ByteString>::bsAppend(Self self, VM vm,
-                                              RichNode right,
-                                              UnstableNode& result) {
-  if (!right.is<ByteString>())
-    return raiseTypeError(vm, MOZART_STR("ByteString"), right);
-
-  if (_bytes.isErrorOrEmpty()) {
-    result.copy(vm, right);
-    return OpResult::proceed();
-  }
-
-  auto rightBytes = right.as<ByteString>().getBytes();
-  if (rightBytes.isErrorOrEmpty()) {
-    result.copy(vm, self);
-    return OpResult::proceed();
-  }
-
-  result.make<ByteString>(vm, concatLString(vm, _bytes, rightBytes));
-  return OpResult::proceed();
-}
-
-OpResult Implementation<ByteString>::bsDecode(Self self, VM vm,
-                                              ByteStringEncoding encoding,
-                                              EncodingVariant variant,
-                                              UnstableNode& result) {
+OpResult Implementation<ByteString>::decode(Self self, VM vm,
+                                            ByteStringEncoding encoding,
+                                            EncodingVariant variant,
+                                            UnstableNode& result) {
   DecoderFun decoder;
   switch (encoding) {
     case ByteStringEncoding::latin1: decoder = &decodeLatin1; break;
@@ -134,31 +253,6 @@ OpResult Implementation<ByteString>::bsDecode(Self self, VM vm,
   result.make<String>(vm, res);
   return OpResult::proceed();
 }
-
-OpResult Implementation<ByteString>::bsSlice(Self self, VM vm,
-                                             nativeint from, nativeint to,
-                                             UnstableNode& result) {
-  if (from > to || from < 0 || to >= _bytes.length)
-    return raise(vm, MOZART_STR("indexOutOfBound"), self, from, to);
-
-  result.make<ByteString>(vm, _bytes.slice(from, to));
-  return OpResult::proceed();
-}
-
-OpResult Implementation<ByteString>::bsStrChr(Self self, VM vm, nativeint from,
-                                              char character, UnstableNode& res) {
-  if (from < 0 || from >= _bytes.length)
-    return raise(vm, MOZART_STR("indexOutOfBound"), self, from);
-
-  char* start = const_cast<char*>(_bytes.string + from);
-  void* result = memchr(start, character, _bytes.length - from);
-  if (result == nullptr)
-    res.make<Boolean>(vm, false);
-  else
-    res.make<SmallInt>(vm, static_cast<char*>(result) - _bytes.string);
-  return OpResult::proceed();
-}
-
 
 static
 OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,

@@ -80,6 +80,7 @@ struct CoreAtoms {
   AtomImpl* spaceNoChoice;
   AtomImpl* spaceAltRange;
   AtomImpl* spaceMerged;
+  AtomImpl* indexOutOfBounds;
 };
 
 }

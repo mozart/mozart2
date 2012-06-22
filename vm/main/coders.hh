@@ -48,41 +48,41 @@ EncodingVariant operator~(EncodingVariant a) noexcept {
   return (EncodingVariant)~(uintptr_t)a;
 }
 
-typedef ContainedLString<std::vector<char>> (*EncoderFun)
+typedef ContainedLString<std::vector<unsigned char>> (*EncoderFun)
     (const BaseLString<nchar>& input, EncodingVariant variant);
 typedef ContainedLString<std::vector<nchar>> (*DecoderFun)
-    (const BaseLString<char>& input, EncodingVariant variant);
+    (const BaseLString<unsigned char>& input, EncodingVariant variant);
 
 //////////////
 // Encoders //
 //////////////
 
 auto encodeLatin1(const BaseLString<nchar>& input, EncodingVariant variant)
-    -> ContainedLString<std::vector<char>>;
+    -> ContainedLString<std::vector<unsigned char>>;
 
 auto encodeUTF8(const BaseLString<nchar>& input, EncodingVariant variant)
-    -> ContainedLString<std::vector<char>>;
+    -> ContainedLString<std::vector<unsigned char>>;
 
 auto encodeUTF16(const BaseLString<nchar>& input, EncodingVariant variant)
-    -> ContainedLString<std::vector<char>>;
+    -> ContainedLString<std::vector<unsigned char>>;
 
 auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
-    -> ContainedLString<std::vector<char>>;
+    -> ContainedLString<std::vector<unsigned char>>;
 
 //////////////
 // Decoders //
 //////////////
 
-auto decodeLatin1(const BaseLString<char>& input, EncodingVariant variant)
+auto decodeLatin1(const BaseLString<unsigned char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<nchar>>;
 
-auto decodeUTF8(const BaseLString<char>& input, EncodingVariant variant)
+auto decodeUTF8(const BaseLString<unsigned char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<nchar>>;
 
-auto decodeUTF16(const BaseLString<char>& input, EncodingVariant variant)
+auto decodeUTF16(const BaseLString<unsigned char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<nchar>>;
 
-auto decodeUTF32(const BaseLString<char>& input, EncodingVariant variant)
+auto decodeUTF32(const BaseLString<unsigned char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<nchar>>;
 
 }

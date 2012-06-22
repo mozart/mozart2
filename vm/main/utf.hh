@@ -319,6 +319,7 @@ static nativeint getUTFStride(const char* utf) {
     return 4;
 }
 
+__attribute__((unused))
 static nativeint getUTFStride(const char16_t* utf) {
   char16_t lead = *utf;
   if (lead < 0xd800 || lead >= 0xe000)
@@ -335,25 +336,62 @@ static nativeint getUTFStride(const char32_t* utf) {
 }
 
 __attribute__((unused))
-static nativeint codePointCount(const BaseLString<char>& input) {
-  if (input.isErrorOrEmpty())
-  return input.length;
-  return std::count_if(input.begin(), input.end(), [](char c) {
-    return !('\x80' <= c && c < '\xc0');
-  });
+static constexpr bool isLeadingCodeUnit(char c) {
+  return ('\x00' <= c && c <= '\x7f') || ('\xc2' <= c && c <= '\xf4');
 }
 
-static nativeint codePointCount(const BaseLString<char16_t>& input) {
-  if (input.isErrorOrEmpty())
-  return input.length;
-  return std::count_if(input.begin(), input.end(), [](char16_t c) {
-    return !(0xdc00 <= c && c < 0xe000);
-  });
+static constexpr bool isLeadingCodeUnit(char16_t c) {
+  return !(0xdc00 <= c && c < 0xe000);
 }
 
 __attribute__((unused))
-static nativeint codePointCount(const BaseLString<char32_t>& input) {
-  return input.length;
+static constexpr bool isLeadingCodeUnit(char32_t c) {
+  return true;
+}
+
+template <class C>
+static nativeint codePointCount(const BaseLString<C>& input) {
+  if (std::is_same<C, char32_t>::value || input.isErrorOrEmpty())
+    return input.length;
+  return std::count_if(input.begin(), input.end(), [](C c) {
+    return isLeadingCodeUnit(c);
+  });
+}
+
+template <class C>
+static LString<C> sliceByCodePoints(const LString<C>& input,
+                                    nativeint left, nativeint right) {
+  if (left < 0 || right < 0)
+    return UnicodeErrorReason::indexOutOfBounds;
+
+  if (std::is_same<C, char32_t>::value) {
+
+    if (left + right >= input.length)
+      return UnicodeErrorReason::indexOutOfBounds;
+    else
+      return input.slice(left, input.length - right);
+
+  } else {
+
+    const C* begin = input.begin();
+    const C* end = input.end();
+
+    while (left > 0 && begin < input.end()) {
+      if (isLeadingCodeUnit(*begin++))
+        -- left;
+    }
+    if (left != 0)
+      return UnicodeErrorReason::indexOutOfBounds;
+
+    while (right > 0 && end > input.begin()) {
+      if (isLeadingCodeUnit(*--end))
+        -- right;
+    }
+    if (right != 0 || begin > end)
+      return UnicodeErrorReason::indexOutOfBounds;
+
+    return input.slice(begin - input.begin(), end - begin);
+  }
 }
 
 }

@@ -103,6 +103,7 @@ namespace mozart {
     template <class C>
     void PrintTo(const BaseLString<C>& input, std::ostream* out);
 
+    extern template void PrintTo(const BaseLString<unsigned char>& input, std::ostream* out);
     extern template void PrintTo(const BaseLString<char>& input, std::ostream* out);
     extern template void PrintTo(const BaseLString<char16_t>& input, std::ostream* out);
     extern template void PrintTo(const BaseLString<char32_t>& input, std::ostream* out);

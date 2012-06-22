@@ -129,13 +129,28 @@ static nativeint getUTFStride(const char16_t* utf);
 static nativeint getUTFStride(const char32_t* utf);
 
 /**
+ * Check whether the code unit is a valid leading code unit.
+ */
+static constexpr bool isLeadingCodeUnit(char c);
+static constexpr bool isLeadingCodeUnit(char16_t c);
+static constexpr bool isLeadingCodeUnit(char32_t c);
+
+/**
  * Count the number of code points in the UTF string. These functions do not
  * attempt to validate if the input is valid.
  */
-static nativeint codePointCount(const BaseLString<char>& input);
-static nativeint codePointCount(const BaseLString<char16_t>& input);
-static nativeint codePointCount(const BaseLString<char32_t>& input);
+template <class C>
+static nativeint codePointCount(const BaseLString<C>& input);
 
+/**
+ * Create a new slice by shrinking a certain amount of code points from both
+ * ends. No validation is done, except length checking.
+ *
+ * e.g. sliceByCodePoints("abcdefg", 1, 2) == "bcde".
+ */
+template <class C>
+static LString<C> sliceByCodePoints(const LString<C>& input,
+                                    nativeint left, nativeint right);
 }
 
 #endif

@@ -36,37 +36,30 @@ object DesugarFunctor extends Transformer with TreeDSL {
 
     case functor @ FunctorExpression(name, require, prepare,
         imports, define, exports) if (!require.isEmpty || !prepare.isEmpty) =>
+      /* In the boot compiler, require/prepare is no different than
+       * import/define.
+       * -> merge them
+       */
 
-      val innerFunctor = treeCopy.FunctorExpression(expression, name,
-          Nil, None, imports, define, exports)
+      val mergedRequireImport = require ::: imports
 
-      val innerFunctorVar = Variable.newSynthetic()
-
-      val outerImports = require
-
-      val outerDefine = atPos(prepare.getOrElse(functor)) {
-        val (prepareDecls, prepareStat) = prepare match {
-          case Some(LocalStatement(decls, stat)) => (decls, stat)
-          case None => (Nil, SkipStatement())
-        }
-
-        val allInnerDefineDecls = prepareDecls :+ innerFunctorVar
-
-        LOCAL (allInnerDefineDecls:_*) IN {
-          prepareStat ~
-          (innerFunctorVar === innerFunctor)
+      val mergedPrepareDefine = {
+        if (prepare.isEmpty) define
+        else if (define.isEmpty) prepare
+        else {
+          val LocalStatement(prepareDecls, prepareStat) = prepare.get
+          val LocalStatement(defineDecls, defineStat) = define.get
+          Some(LocalStatement(prepareDecls ::: defineDecls,
+              prepareStat ~ defineStat))
         }
       }
 
-      val outerExports = List(atPos(functor) {
-        FunctorExport(Constant(OzAtom("inner")), innerFunctorVar)
-      })
-
-      val outerFunctor = treeCopy.FunctorExpression(expression, name+"<outer>",
-          Nil, None, outerImports, Some(outerDefine), outerExports)
-
-      // TODO This not quite right, need to apply this functor
-      transformExpr(outerFunctor)
+      transformExpr {
+        atPos(functor) {
+          FunctorExpression(name, Nil, None, mergedRequireImport,
+              mergedPrepareDefine, exports)
+        }
+      }
 
     case functor @ FunctorExpression(name, Nil, None,
         imports, define, exports) =>

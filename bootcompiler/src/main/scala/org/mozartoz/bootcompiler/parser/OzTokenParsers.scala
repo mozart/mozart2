@@ -6,9 +6,9 @@ import scala.util.parsing.combinator.token._
 
 import collection.mutable.HashMap
 
-trait OzTokenParsers extends StdTokenParsers {
+trait OzTokenParsers extends StdTokenParsers with OzPreprocessor {
   type Tokens = OzTokens
-  val lexical = new OzLexical
+  //val lexical = new OzLexical
 
   import lexical._
 

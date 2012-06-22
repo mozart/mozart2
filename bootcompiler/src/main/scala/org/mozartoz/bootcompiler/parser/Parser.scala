@@ -1,6 +1,8 @@
 package org.mozartoz.bootcompiler
 package parser
 
+import java.io.File
+
 import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input._
@@ -43,11 +45,14 @@ class OzParser extends OzTokenParsers with PackratParsers
       ">=", "=:", "\\=:", "<:", "=<:", ">:", ">=:", "::", ":::"
   )
 
-  def parseStatement(input: Reader[Char]) =
-    phrase(statement)(new lexical.Scanner(input))
+  def parseStatement(input: Reader[Char], file: File) =
+    phrase(statement)(makePreprocessor(input, file))
 
-  def parseExpression(input: Reader[Char]) =
-    phrase(expression)(new lexical.Scanner(input))
+  def parseExpression(input: Reader[Char], file: File) =
+    phrase(expression)(makePreprocessor(input, file))
+
+  private def makePreprocessor(input: Reader[Char], file: File) =
+    new Preprocessor(new lexical.Scanner(input), file)
 
   // Statements
 

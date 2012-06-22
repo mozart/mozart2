@@ -53,11 +53,13 @@ object Main {
       try {
         val baseFunctors =
           for (baseModule <- baseModules.reverse)
-            yield parseExpression(readerForFile(baseModule))
+            yield parseExpression(readerForFile(baseModule),
+                new File(baseModule))
 
         val functors =
           for (fileName <- fileNames.reverse)
-            yield fileName -> parseExpression(readerForFile(fileName))
+            yield fileName -> parseExpression(readerForFile(fileName),
+                new File(fileName))
 
         val program = buildProgram(moduleDefs, baseFunctors, functors)
 
@@ -82,8 +84,8 @@ object Main {
    *  @param reader input reader
    *  @return The statement AST
    */
-  private def parseStatement(reader: PagedSeqReader) =
-    new ParserWrapper().parseStatement(reader)
+  private def parseStatement(reader: PagedSeqReader, file: File) =
+    new ParserWrapper().parseStatement(reader, file)
 
   /** Parses an Oz expression from a reader
    *
@@ -93,8 +95,8 @@ object Main {
    *  @param reader input reader
    *  @return The expression AST
    */
-  private def parseExpression(reader: PagedSeqReader) =
-    new ParserWrapper().parseExpression(reader)
+  private def parseExpression(reader: PagedSeqReader, file: File) =
+    new ParserWrapper().parseExpression(reader, file)
 
   /** Utility wrapper for an [[org.mozartoz.bootcompiler.parser.OzParser]]
    *
@@ -104,11 +106,11 @@ object Main {
     /** Underlying parser */
     private val parser = new OzParser()
 
-    def parseStatement(reader: PagedSeqReader) =
-      processResult(parser.parseStatement(reader))
+    def parseStatement(reader: PagedSeqReader, file: File) =
+      processResult(parser.parseStatement(reader, file))
 
-    def parseExpression(reader: PagedSeqReader) =
-      processResult(parser.parseExpression(reader))
+    def parseExpression(reader: PagedSeqReader, file: File) =
+      processResult(parser.parseExpression(reader, file))
 
     /** Processes a parse result
      *
@@ -126,8 +128,7 @@ object Main {
 
         case parser.NoSuccess(msg, next) =>
           Console.err.println(
-              "Parse error (line %d, col %d)\n".format(
-                  next.pos.line, next.pos.column) +
+              "Parse error at %s\n".format(next.pos.toString) +
               msg + "\n" +
               next.pos.longString)
           sys.exit(2)
@@ -203,7 +204,7 @@ object Main {
     if (prog.hasErrors) {
       for ((message, pos) <- prog.errors) {
         Console.err.println(
-            "Error at line %d, column %d\n".format(pos.line, pos.column) +
+            "Error at %s\n".format(pos.toString) +
             message + "\n" +
             pos.longString)
       }

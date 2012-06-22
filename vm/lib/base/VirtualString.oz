@@ -25,10 +25,10 @@
 %%
 
 VirtualString = virtualString(
-  is: IsVirtualString
-  toUnicodeString: Boot_VirtualString.toString
-  toAtom: fun {$ V} {Boot_String.toAtom {Boot_VirtualString.toString V}} end
-  %toByteString: ByteString.make
-  length: Boot_VirtualString.length
-  %changeSign: Boot_VirtualString.changeSign
+   is: IsVirtualString
+   toUnicodeString: Boot_VirtualString.toString
+   toAtom: fun {$ V} {UnicodeStringToAtom {Boot_VirtualString.toString V}} end
+   toByteString: fun {$ V} {ByteString.make V} end
+   length: Boot_VirtualString.length
+   %changeSign: ChangeSign
 )

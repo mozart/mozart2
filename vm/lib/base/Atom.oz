@@ -26,5 +26,13 @@
 %%
 %% Module
 %%
-Atom = atom(is:       IsAtom)
-            %toString: AtomToString)
+fun {AtomToString A}
+    if {IsAtom A} then
+        {VirtualString.toString A}
+    else
+        raise typeError('Atom' A) end
+    end
+end
+
+Atom = atom(is:       IsAtom
+            toString: AtomToString)

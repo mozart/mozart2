@@ -57,6 +57,8 @@ int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
     return 1;
 }
 
+// Comparable ------------------------------------------------------------------
+
 OpResult Implementation<SmallInt>::compare(Self self, VM vm,
                                            RichNode right,
                                            int& result) {
@@ -69,12 +71,16 @@ OpResult Implementation<SmallInt>::compare(Self self, VM vm,
   return OpResult::proceed();
 }
 
+// IntegerValue ----------------------------------------------------------------
+
 OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                  nativeint right,
                                                  bool& result) {
   result = value() == right;
   return OpResult::proceed();
 }
+
+// Numeric ---------------------------------------------------------------------
 
 OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
                                             UnstableNode& result) {
@@ -237,6 +243,8 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
 
   return OpResult::proceed();
 }
+
+// VirtualString ---------------------------------------------------------------
 
 OpResult Implementation<SmallInt>::toString(Self self, VM vm,
                                             std::basic_ostream<nchar>& sink) {

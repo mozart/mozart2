@@ -49,18 +49,6 @@ TEST_F(StringTest, NotIsRecord) {
   }
 }
 
-/*
-TEST_F(StringTest, ToAtom) {
-  for (const nchar* s : stringTestVector) {
-    UnstableNode stringNode = String::build(vm, newLString(vm, s));
-    UnstableNode atomNode;
-    if (EXPECT_PROCEED(StringLike(stringNode).toAtom(vm, atomNode))) {
-      EXPECT_EQ_ATOM(makeLString(s), atomNode);
-    }
-  }
-}
-*/
-
 TEST_F(StringTest, Equals) {
   for (const nchar* s : stringTestVector) {
     UnstableNode sNode = String::build(vm, newLString(vm, s));
@@ -77,6 +65,197 @@ TEST_F(StringTest, Equals) {
       EXPECT_EQ(stEquals, ValueEquatable(tNodeCopy).equals(vm, sNode));
       EXPECT_TRUE(ValueEquatable(tNodeCopy).equals(vm, tNode));
       EXPECT_TRUE(ValueEquatable(tNode).equals(vm, tNodeCopy));
+    }
+  }
+}
+
+TEST_F(StringTest, CharAt) {
+  UnstableNode b = String::build(vm, MOZART_STR("\U00012345\u6789"));
+
+  UnstableNode minusOne = SmallInt::build(vm, -1);
+  UnstableNode zero = SmallInt::build(vm, 0);
+  UnstableNode one = SmallInt::build(vm, 1);
+  UnstableNode two = SmallInt::build(vm, 2);
+
+  nativeint result;
+  if (EXPECT_PROCEED(StringLike(b).stringCharAt(vm, zero, result)))
+    EXPECT_EQ(0x12345, result);
+
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringCharAt(vm, two, result));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringCharAt(vm, minusOne, result));
+
+  if (EXPECT_PROCEED(StringLike(b).stringCharAt(vm, one, result)))
+    EXPECT_EQ(0x6789, result);
+}
+
+TEST_F(StringTest, Append) {
+  UnstableNode b1 = String::build(vm, MOZART_STR("abc"));
+  UnstableNode b2 = String::build(vm, MOZART_STR("\U000def01"));
+  UnstableNode b0 = String::build(vm, MOZART_STR(""));
+
+  UnstableNode b12i;
+  if (EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b2, b12i))) {
+    EXPECT_EQ_STRING(MOZART_STR("abc\U000def01"), b12i);
+  }
+
+  UnstableNode b11i;
+  if (EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b1, b11i))) {
+    EXPECT_EQ_STRING(MOZART_STR("abcabc"), b11i);
+  }
+
+  UnstableNode b00i;
+  if (EXPECT_PROCEED(StringLike(b0).stringAppend(vm, b0, b00i))) {
+    EXPECT_EQ_STRING(MOZART_STR(""), b00i);
+  }
+
+  UnstableNode b10i;
+  if (EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b0, b10i))) {
+    EXPECT_EQ_STRING(MOZART_STR("abc"), b10i);
+  }
+}
+
+TEST_F(StringTest, SliceByCharCode) {
+  UnstableNode b = String::build(vm, MOZART_STR("a\U00012345b\u6789c"));
+
+  UnstableNode minusOne = SmallInt::build(vm, -1);
+  UnstableNode zero = SmallInt::build(vm, 0);
+  UnstableNode two = SmallInt::build(vm, 2);
+  UnstableNode three = SmallInt::build(vm, 3);
+  UnstableNode four = SmallInt::build(vm, 4);
+  UnstableNode five = SmallInt::build(vm, 5);
+  UnstableNode six = SmallInt::build(vm, 6);
+
+
+  UnstableNode result;
+
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSlice(vm, minusOne, zero, result));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSlice(vm, five, six, result));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSlice(vm, three, two, result));
+
+  if (EXPECT_PROCEED(StringLike(b).stringSlice(vm, two, four, result))) {
+    EXPECT_EQ_STRING(MOZART_STR("b\u6789"), result);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSlice(vm, zero, three, result))) {
+    EXPECT_EQ_STRING(MOZART_STR("a\U00012345b"), result);
+  }
+}
+
+TEST_F(StringTest, Compare) {
+  UnstableNode nodes[] = {String::build(vm, MOZART_STR("\U000ffeed\uccbb")),
+                          String::build(vm, MOZART_STR("\U000ffeed")),
+                          String::build(vm, MOZART_STR("c"))};
+
+  // results[p][q] == nodes[p] cmp nodes[q].
+  int results[3][3] = {{ 0,  1,  1},
+                       {-1,  0,  1},
+                       {-1, -1,  0}};
+
+  for (int i = 0; i < 3; ++ i) {
+    for (int j = 0; j < 3; ++ j) {
+      int res;
+      if (EXPECT_PROCEED(Comparable(nodes[i]).compare(vm, nodes[j], res))) {
+        EXPECT_EQ(results[i][j]<0, res<0);
+        EXPECT_EQ(results[i][j]==0, res==0);
+        EXPECT_EQ(results[i][j]>0, res>0);
+      }
+    }
+  }
+}
+
+TEST_F(StringTest, StrChr) {
+  UnstableNode b = String::build(vm, MOZART_STR("1\U000100023\U00010002\u00cc"));
+
+  UnstableNode minusOne = SmallInt::build(vm, -1);
+  UnstableNode zero = SmallInt::build(vm, 0);
+  UnstableNode one = SmallInt::build(vm, 1);
+  UnstableNode two = SmallInt::build(vm, 2);
+  UnstableNode four = SmallInt::build(vm, 4);
+  UnstableNode six = SmallInt::build(vm, 6);
+  UnstableNode char2 = SmallInt::build(vm, 0x10002);
+  UnstableNode charInvalid = SmallInt::build(vm, 0xd800);
+
+  UnstableNode begin, end;
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSearch(vm, minusOne, char2, begin, end));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSearch(vm, six, char2, begin, end));
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, begin, end))) {
+    EXPECT_EQ_INT(1, begin);
+    EXPECT_EQ_INT(2, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, begin, end))) {
+    EXPECT_EQ_INT(1, begin);
+    EXPECT_EQ_INT(2, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, begin, end))) {
+    EXPECT_EQ_INT(3, begin);
+    EXPECT_EQ_INT(4, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, begin, end))) {
+    for (auto node : {&begin, &end}) {
+      if (EXPECT_IS<Boolean>(*node)) {
+        bool value;
+        if (EXPECT_PROCEED(BooleanValue(*node).boolValue(vm, value)))
+          EXPECT_FALSE(value);
+      }
+    }
+  }
+
+  EXPECT_RAISE(MOZART_STR("unicodeError"),
+               StringLike(b).stringSearch(vm, zero, minusOne, begin, end));
+  EXPECT_RAISE(MOZART_STR("unicodeError"),
+               StringLike(b).stringSearch(vm, zero, charInvalid, begin, end));
+}
+
+TEST_F(StringTest, Search) {
+  UnstableNode b = String::build(
+    vm, MOZART_STR("123\U000a0000b\U000a0000b\U000a0000b\U000a0000b\U000a000d"));
+  UnstableNode needle = String::build(
+    vm, MOZART_STR("\U000a0000b\U000a0000"));
+
+  UnstableNode zero = SmallInt::build(vm, 0);
+  UnstableNode three = SmallInt::build(vm, 3);
+  UnstableNode four = SmallInt::build(vm, 4);
+  UnstableNode six = SmallInt::build(vm, 6);
+  UnstableNode eight = SmallInt::build(vm, 8);
+
+  UnstableNode begin, end;
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, begin, end))) {
+    EXPECT_EQ_INT(3, begin);
+    EXPECT_EQ_INT(6, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, begin, end))) {
+    EXPECT_EQ_INT(3, begin);
+    EXPECT_EQ_INT(6, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, begin, end))) {
+    EXPECT_EQ_INT(5, begin);
+    EXPECT_EQ_INT(8, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, begin, end))) {
+    EXPECT_EQ_INT(7, begin);
+    EXPECT_EQ_INT(10, end);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, begin, end))) {
+    if (EXPECT_IS<Boolean>(begin)) {
+      EXPECT_FALSE(RichNode(begin).as<Boolean>().value());
+    }
+    if (EXPECT_IS<Boolean>(end)) {
+      EXPECT_FALSE(RichNode(end).as<Boolean>().value());
     }
   }
 }

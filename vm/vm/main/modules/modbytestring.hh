@@ -90,7 +90,7 @@ public:
 
     OpResult operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(ByteStringLike(value).isByteString(vm, boolResult));
+      MOZART_CHECK_OPRESULT(StringLike(value).isByteString(vm, boolResult));
       result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
     }
@@ -129,71 +129,15 @@ public:
 
     OpResult operator()(VM vm, In value, In encodingNode,
                         In variantNode, Out result) {
+      if (!value.is<ByteString>())
+        return raiseTypeError(vm, MOZART_STR("ByteString"), value);
+
       ByteStringEncoding encoding;
       EncodingVariant variant;
       MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
                                           encoding, variant));
-      return ByteStringLike(value).bsDecode(vm, encoding, variant, result);
-    }
-  };
 
-  class Append : public Builtin<Append> {
-  public:
-    Append() : Builtin("append") {}
-
-    OpResult operator()(VM vm, In left, In right, Out result) {
-      return ByteStringLike(left).bsAppend(vm, right, result);
-    }
-  };
-
-  class Slice : public Builtin<Slice> {
-  public:
-    Slice() : Builtin("slice") {}
-
-    OpResult operator()(VM vm, In value, In fromNode, In toNode, Out result) {
-      nativeint from, to;
-      MOZART_GET_ARG(from, fromNode, MOZART_STR("integer"));
-      MOZART_GET_ARG(to, toNode, MOZART_STR("integer"));
-      return ByteStringLike(value).bsSlice(vm, from, to, result);
-    }
-  };
-
-  class Length : public Builtin<Length> {
-  public:
-    Length() : Builtin("length") {}
-
-    OpResult operator()(VM vm, In value, Out result) {
-      nativeint integerResult = 0;
-      MOZART_CHECK_OPRESULT(ByteStringLike(value).bsLength(vm, integerResult));
-      result = SmallInt::build(vm, integerResult);
-      return OpResult::proceed();
-    }
-  };
-
-  class Get : public Builtin<Get> {
-  public:
-    Get() : Builtin("get") {}
-
-    OpResult operator()(VM vm, In value, In indexNode, Out result) {
-      nativeint index;
-      unsigned char charResult = 0;
-      MOZART_GET_ARG(index, indexNode, MOZART_STR("integer"));
-      MOZART_CHECK_OPRESULT(ByteStringLike(value).bsGet(vm, index, charResult));
-      result = SmallInt::build(vm, charResult);
-      return OpResult::proceed();
-    }
-  };
-
-  class StrChr : public Builtin<StrChr> {
-  public:
-    StrChr() : Builtin("strchr") {}
-
-    OpResult operator()(VM vm, In value, In fromNode, In charNode, Out result) {
-      nativeint index;
-      char character;
-      MOZART_GET_ARG(index, fromNode, MOZART_STR("integer"));
-      MOZART_GET_ARG(character, charNode, MOZART_STR("char"));
-      return ByteStringLike(value).bsStrChr(vm, index, character, result);
+      return value.as<ByteString>().decode(vm, encoding, variant, result);
     }
   };
 };

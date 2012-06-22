@@ -27,6 +27,8 @@
 
 #include "mozartcore-decl.hh"
 
+#include "datatypeshelpers-decl.hh"
+
 namespace mozart {
 
 ////////////
@@ -40,7 +42,8 @@ class String;
 #endif
 
 template <>
-class Implementation<String>: WithValueBehavior {
+class Implementation<String>:
+  public DottableHelper<String>, WithValueBehavior {
 public:
   typedef SelfType<String>::Self Self;
 public:
@@ -71,11 +74,50 @@ public:
     return OpResult::proceed();
   }
 
-  inline
-  OpResult toAtom(Self self, VM vm, UnstableNode& result);
+  OpResult isByteString(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
 
   inline
   OpResult stringGet(Self self, VM vm, LString<nchar>*& result);
+
+  inline
+  OpResult stringGet(Self self, VM vm, LString<unsigned char>*& result);
+
+  inline
+  OpResult stringCharAt(Self self, VM vm, RichNode offset,
+                        nativeint& character);
+
+  inline
+  OpResult stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
+
+  inline
+  OpResult stringSlice(Self self, VM vm,
+                       RichNode from, RichNode to, UnstableNode& result);
+
+  // Search for a string or a character.
+  inline
+  OpResult stringSearch(Self self, VM vm, RichNode from, RichNode needle,
+                        UnstableNode& begin, UnstableNode& end);
+
+  inline
+  OpResult stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
+
+  inline
+  OpResult stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
+
+public:
+  // Dottable interface
+
+  // (don't want to implement IntegerDottableHelper because isValidFeature
+  // is not trivial)
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result);
 
 public:
   // VirtualString inteface

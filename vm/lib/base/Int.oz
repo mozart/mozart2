@@ -34,11 +34,19 @@ fun {IsEven X} X mod 2 == 0 end
 %%
 %% Module
 %%
+fun {IntToString I}
+    if {IsInt I} then
+        {VirtualString.toString I}
+    else
+        raise typeError('Integer' I) end
+    end
+end
+
 Int = int(is:       IsInt
           isNat:    IsNat
           isOdd:    IsOdd
           isEven:   IsEven
           'div':    Boot_Int.'div'
-          'mod':    Boot_Int.'mod')
+          'mod':    Boot_Int.'mod'
           %toFloat:  IntToFloat
-          %toString: IntToString)
+          toString: IntToString)

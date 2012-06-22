@@ -83,8 +83,10 @@ object DesugarFunctor extends Transformer with TreeDSL {
 
   def makeImportsRec(imports: List[FunctorImport]): Expression = {
     val resultFields = for {
-      FunctorImport(module:Variable, aliases, location) <- imports
+      FunctorImport(Variable(module), aliases, location) <- imports
     } yield {
+      val modName = module.name
+
       val typeField = {
         val requiredFeatures =
           for (AliasedFeature(feat, _) <- aliases)
@@ -93,13 +95,18 @@ object DesugarFunctor extends Transformer with TreeDSL {
         RecordField(OzAtom("type"), OzList(requiredFeatures))
       }
 
-      val fromField = location map { location =>
-        RecordField(OzAtom("from"), OzAtom(location))
+      val fromField = {
+        val loc = {
+          if (location.isDefined) location.get
+          else if (!SystemModules.isSystemModule(modName)) modName + ".ozf"
+          else "x-oz://system/" + modName + ".ozf"
+        }
+        RecordField(OzAtom("from"), OzAtom(loc))
       }
 
-      val info = Record(OzAtom("info"), List(typeField) ++ fromField)
+      val info = Record(OzAtom("info"), List(typeField, fromField))
 
-      RecordField(OzAtom(module.symbol.name), info)
+      RecordField(OzAtom(modName), info)
     }
 
     Record(OzAtom("import"), resultFields)

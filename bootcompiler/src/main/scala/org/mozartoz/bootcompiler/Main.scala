@@ -181,15 +181,6 @@ object Main {
     prog
   }
 
-  /** An amazingly hard-coded list of modules considered as "system" modules */
-  private val systemModules = Set(
-      "Application", "Module", "Search", "FD", "Schedule", "FS", "RecordC",
-      "Combinator", "Space", "Connection", "Remote", "URL", "Resolve", "Fault",
-      "Open", "OS", "Pickle", "Property", "Error", "Finalize", "System",
-      "Tk", "TkTools", "Browser", "Panel", "Explorer", "Ozcar", "Profiler",
-      "ObjectSupport"
-  )
-
   /** Returns the appropriate URL for a file name */
   private def fileNameToURL(fileName: String) = {
     val nameAndExt = new File(fileName).getName
@@ -197,10 +188,8 @@ object Main {
       if (!(nameAndExt contains '.')) nameAndExt
       else nameAndExt.substring(0, nameAndExt.lastIndexOf('.'))
 
-    if (systemModules contains nameOnly)
-      "x-oz://system/" + nameOnly + ".ozf"
-    else
-      nameOnly + ".ozf"
+    if (!SystemModules.isSystemModule(nameOnly)) nameOnly + ".ozf"
+    else "x-oz://system/" + nameOnly + ".ozf"
   }
 
   /** Compiles a program and produces the corresponding C++ code

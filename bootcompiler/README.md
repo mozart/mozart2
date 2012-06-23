@@ -27,7 +27,7 @@ Roughly, the program must be executed with 4 kinds of command-line arguments (th
 *   Under option `-b`, a path to a functor that must be part of the base environment,
 *   A list of `.oz` files containing the functors of the application (the first one being the main functor).
 
-Normally you need two base functors: the file `BaseBuilt.oz` which contains the regular base environment of Oz; and the file `BootBase.oz` which contains only the boot module manager.
+Normally you need two base functors: the file `Base.oz` which contains the regular base environment of Oz; and the file `BootBase.oz` which contains only the boot module manager.
 
 In the list of regular functors, you must give all the system functors used by the application, so that they can be linked in.
 
@@ -36,7 +36,8 @@ For example:
     $ java -jar "./target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar" \
         -o output.cc \
         -m "/path/to/mozart/build/boostenv/main/" \
-        -b "/path/to/mozart/build/lib/base/BaseBuilt.oz" \
+        -b "/path/to/mozart/lib/base/Base.oz" \
+        -b "/path/to/mozart/lib/boot/BootBase.oz" \
         Main.oz SomeOtherFunctor.oz \
         "/path/to/mozart/lib/sys/System.oz" # and others
 

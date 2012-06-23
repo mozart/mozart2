@@ -2,10 +2,11 @@ package org.mozartoz.bootcompiler
 package parser
 
 import scala.util.parsing.input.CharArrayReader.EofCh
+import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.lexical._
 import collection.mutable.HashSet
 
-class OzLexical extends Lexical with OzTokens {
+class OzLexical extends Lexical with OzTokens with ImplicitConversions {
   // see `token' in `Scanners'
   def token: Parser[Token] = (
       identifier >> handleLabel
@@ -17,6 +18,7 @@ class OzLexical extends Lexical with OzTokens {
     | EofCh ^^^ EOF
     | delim
     | '?' ~> token
+    | '\\' ~> preprocessorDirective
     | failure("illegal character")
   )
 
@@ -31,27 +33,20 @@ class OzLexical extends Lexical with OzTokens {
   }
 
   def identifier = (
-      rep1(upperCaseLetter, identChar) ^^ {
-        chars => Identifier(chars mkString "")
-      }
+      stringOf1(upperCaseLetter, identChar) ^^ Identifier
     | quotedKeepQuotes('`') ^^ Identifier
   )
 
   def floatLiteral =
-    (rep1(digit) <~ '.') ~ rep(digit) ^^ {
-      case int ~ fract =>
-        FloatLit(int mkString "" + "." + fract mkString "")
+    stringOf1(digit) ~ stringOf1('.', digit) ^^ {
+      case int ~ fract => FloatLit(int + fract)
     }
 
   def integerLiteral =
-    rep1(digit) ^^ {
-      chars => NumericLit(chars mkString "")
-    }
+    stringOf1(digit) ^^ NumericLit
 
   def atomLiteral = (
-      rep1(lowerCaseLetter, identChar) ^^ {
-        chars => processKeyword(chars mkString "")
-      }
+      stringOf1(lowerCaseLetter, identChar) ^^ processKeyword
     | quoted('\'') ^^ AtomLit
   )
 
@@ -62,7 +57,7 @@ class OzLexical extends Lexical with OzTokens {
     quoted(quoteChar) ^^ (quoteChar + _ + quoteChar)
 
   def quoted(quoteChar: Char) =
-    quoteChar ~> rep(inQuoteChar(quoteChar)) <~ quoteChar ^^ (_ mkString "")
+    quoteChar ~> stringOf(inQuoteChar(quoteChar)) <~ quoteChar
 
   def inQuoteChar(quoteChar: Char) = (
       '\\' ~> escapeChar
@@ -94,6 +89,45 @@ class OzLexical extends Lexical with OzTokens {
       '*' ~ '/'  ^^ { case _ => ' ' }
     | chrExcept(EofCh) ~ comment
   )
+
+  def preprocessorDirective = (
+      "switch" ~> whitespace ~> switchArgs
+    | ("showSwitches" | "pushSwitches" | "popSwitches" | "localSwitches" |
+        "else" | "endif") ^^ PreprocessorDirective
+    | ((("define" | "undef" | "ifdef" | "ifndef") <~ whitespace) ~
+        preprocessorVar ^^ PreprocessorDirectiveWithArg)
+    | (("insert" <~ whitespace) ~ preprocessorFileName
+        ^^ PreprocessorDirectiveWithArg)
+  )
+
+  def switchArgs = (
+      ((('+' ^^^ true) | ('-' ^^^ false)) <~ opt(whitespace)) ~
+      stringOf1(lowerCaseLetter, identChar)
+  ) ^^ { case value ~ switch => PreprocessorSwitch(switch, value) }
+
+  def preprocessorVar =
+    stringOf1(upperCaseLetter, identChar)
+
+  def preprocessorFileName = (
+      stringOf1(letter | digit | '/' | '_' | '~' | '.' | '-')
+    | quoted('\'')
+  )
+
+  // utils
+
+  def stringOf(p: => Parser[Char]): Parser[String] = rep(p) ^^ chars2string
+  def stringOf1(p: => Parser[Char]): Parser[String] = rep1(p) ^^ chars2string
+  def stringOf1(first: => Parser[Char], p: => Parser[Char]): Parser[String] =
+    rep1(first, p) ^^ chars2string
+
+  private def chars2string(chars: List[Char]) = chars mkString ""
+
+  private implicit def verbatimString(str: String): Parser[String] =
+    str.toList.foldRight[Parser[Any]](success("")) {
+      (c, prev) => c ~ prev
+    } ^^^ str
+
+  // reserved words and delimiters
 
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   val reserved = new HashSet[String]

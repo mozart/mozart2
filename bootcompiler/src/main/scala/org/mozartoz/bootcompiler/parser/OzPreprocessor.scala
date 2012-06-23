@@ -1,7 +1,9 @@
 package org.mozartoz.bootcompiler
 package parser
 
-import java.io.File
+import java.io.{ File, FileReader, BufferedReader }
+
+import scala.collection.immutable.PagedSeq
 
 import scala.util.parsing.input._
 import scala.util.parsing.combinator.token._
@@ -41,6 +43,14 @@ trait OzPreprocessor {
       in.first match {
         // TODO Process a preprocessor token
 
+        case PreprocessorDirectiveWithArg("insert", fileName) =>
+          val subFile = new File(file.getParentFile, fileName)
+          val subReader = readerForFile(subFile)
+          val subScanner = new Scanner(subReader)
+
+          val subStack = (in.rest, file) :: stack
+          preprocess(subScanner, subFile, subStack, offset)
+
         case _ =>
           def rest() =
             new Preprocessor(in.rest, file, stack, offset+1)
@@ -48,6 +58,15 @@ trait OzPreprocessor {
               new PreprocessorPosition(offset)(in.pos, file), false)
       }
     }
+  }
+
+  /** Builds a [[scala.util.parsing.input.PagedSeqReader]] for a file
+   *
+   *  @param file file to be read
+   */
+  private def readerForFile(file: File) = {
+    new PagedSeqReader(PagedSeq.fromReader(
+        new BufferedReader(new FileReader(file))))
   }
 
   private case class PreprocessorPosition(offset: Int)(

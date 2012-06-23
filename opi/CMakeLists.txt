@@ -57,7 +57,7 @@ add_custom_command(
     "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar"
     -o "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
-    -b "${MOZART_BUILD_DIR}/lib/base/BaseBuilt.oz"
+    -b "${MOZART_DIR}/lib/base/Base.oz"
     -b "${MOZART_DIR}/lib/boot/BootBase.oz"
     "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz"
     ${SYS_FUNCTORS}

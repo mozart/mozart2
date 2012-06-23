@@ -341,35 +341,35 @@ prepare
    Alarm = Boot_Time.alarm
    Delay = proc {$ T} {Wait {Alarm T}} end
 
-#include "Exception.oz"
-#include "Value.oz"
-#include "Literal.oz"
-#include "Unit.oz"
-#include "Lock.oz"
-#include "Cell.oz"
-#include "Port.oz"
-#include "Atom.oz"
-#include "Name.oz"
-#include "Bool.oz"
-%#include "String.oz"
-%#include "Char.oz"
-#include "Int.oz"
-#include "Float.oz"
-#include "Number.oz"
-#include "Tuple.oz"
-#include "List.oz"
-%#include "Procedure.oz"
-#include "Loop.oz"
-%#include "WeakDictionary.oz"
-#include "Dictionary.oz"
-#include "Record.oz"
-#include "Chunk.oz"
-%#include "VirtualString.oz"
-#include "Array.oz"
-#include "Object.oz"
-%#include "BitArray.oz"
-%#include "ForeignPointer.oz"
-#include "Thread.oz"
-#include "Time.oz"
+   \insert 'Exception.oz'
+   \insert 'Value.oz'
+   \insert 'Literal.oz'
+   \insert 'Unit.oz'
+   \insert 'Lock.oz'
+   \insert 'Cell.oz'
+   \insert 'Port.oz'
+   \insert 'Atom.oz'
+   \insert 'Name.oz'
+   \insert 'Bool.oz'
+   %\insert 'String.oz'
+   %\insert 'Char.oz'
+   \insert 'Int.oz'
+   \insert 'Float.oz'
+   \insert 'Number.oz'
+   \insert 'Tuple.oz'
+   \insert 'List.oz'
+   %\insert 'Procedure.oz'
+   \insert 'Loop.oz'
+   %\insert 'WeakDictionary.oz'
+   \insert 'Dictionary.oz'
+   \insert 'Record.oz'
+   \insert 'Chunk.oz'
+   %\insert 'VirtualString.oz'
+   \insert 'Array.oz'
+   \insert 'Object.oz'
+   %\insert 'BitArray.oz'
+   %\insert 'ForeignPointer.oz'
+   \insert 'Thread.oz'
+   \insert 'Time.oz'
 
 end

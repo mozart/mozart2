@@ -62,17 +62,15 @@ namespace mozart { namespace mut {
 
   template <class C>
   void PrintTo(const BaseLString<C>& input, std::ostream* out) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wshift-count-overflow"
-    static const nativeint mask = (1 << (8 * sizeof(C))) - 1;
-#pragma clang diagnostic pop
-
     *out << "< ";
     auto oldBase = out->setf(std::ios_base::hex, std::ios_base::basefield);
     for (nativeint c : input) {
       out->width(sizeof(C)*2);
       out->fill('0');
-      *out << (c & mask) << " ";
+      if (std::is_same<C, char>::value)
+        *out << (c & 0xff) << " ";
+      else
+        *out << c << " ";
     }
     out->setf(oldBase, std::ios_base::basefield);
     *out << ">";

@@ -170,9 +170,19 @@ private:
   T _container;
 };
 
+#if defined(__clang__) || !defined(__GNUC__)
+
 // The default view is immutable.
 template <class C> using LString = const mut::LString<C>;
 template <class C> using BaseLString = const mut::BaseLString<C>;
+
+#else
+
+// Note: gcc users can only "be careful", because of bug 53026.
+// - http://gcc.gnu.org/bugzilla/show_bug.cgi?id=53026
+using namespace mut;
+
+#endif
 
 // Make BaseLString from local buffer
 template <class C>

@@ -154,11 +154,11 @@ OpResult Implementation<ByteString>::stringSearch(Self self, VM vm,
     if (character < 0 || character >= 0x100)
       return raiseTypeError(vm, MOZART_STR("Integer between 0 and 255"), needleNode);
 
-    void* searchRes = memchr(haystack.string, character, haystack.bytesCount());
+    const void* searchRes = memchr(haystack.string, character, haystack.bytesCount());
     if (searchRes == nullptr) {
       result.make<Boolean>(vm, false);
     } else {
-      nativeint foundOffset = static_cast<unsigned char*>(searchRes) - _bytes.string;
+      nativeint foundOffset = static_cast<const unsigned char*>(searchRes) - _bytes.string;
       result.make<SmallInt>(vm, foundOffset);
     }
 

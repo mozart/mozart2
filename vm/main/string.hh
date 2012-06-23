@@ -147,13 +147,15 @@ OpResult Implementation<String>::stringSearch(Self self, VM vm,
         return raiseUnicodeError(vm, (UnicodeErrorReason) length, needleNode);
       needle = new (&needleStorage) BaseLString<nchar> (utf, length);
 
-    //static_assert(std::is_trivially_destructible<BaseLString<nchar>>::value,
-      static_assert(std::has_trivial_destructor<BaseLString<nchar>>::value,
+#ifdef _LIBCPP_TYPE_TRAITS
+      static_assert(std::is_trivially_destructible<BaseLString<nchar>>::value,
                     "BaseLString<nchar> has been modified to have non-trivial "
                     "destructor! Please rewrite this piece of code to avoid "
                     "resource leak.");
       // ^ BaseLString<nchar> has trivial destructor, so we shouldn't need to
       //   explicitly destroy it.
+      //   Note: libstdc++ before 4.8 still calls it 'std::has_trivial_destructor'.
+#endif
 
     } else if (matchRes.isProceed()) {
 

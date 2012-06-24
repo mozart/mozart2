@@ -358,6 +358,7 @@ static nativeint codePointCount(const BaseLString<C>& input) {
   });
 }
 
+
 template <class C>
 static LString<C> sliceByCodePoints(const LString<C>& input,
                                     nativeint left, nativeint right) {
@@ -366,7 +367,7 @@ static LString<C> sliceByCodePoints(const LString<C>& input,
 
   if (std::is_same<C, char32_t>::value) {
 
-    if (left + right >= input.length)
+    if (left + right > input.length)
       return UnicodeErrorReason::indexOutOfBounds;
     else
       return input.slice(left, input.length - right);
@@ -376,21 +377,28 @@ static LString<C> sliceByCodePoints(const LString<C>& input,
     const C* begin = input.begin();
     const C* end = input.end();
 
-    while (left > 0 && begin < input.end()) {
-      if (isLeadingCodeUnit(*begin++))
+    while (begin < input.end()) {
+      if (isLeadingCodeUnit(*begin))
         -- left;
+      if (left < 0)
+        break;
+      ++ begin;
     }
-    if (left != 0)
+    if (left == 0 && right == 0)
+      return nullptr;
+    else if (left != -1)
       return UnicodeErrorReason::indexOutOfBounds;
 
-    while (right > 0 && end > input.begin()) {
+    while (begin < end) {
+      if (right <= 0)
+        break;
       if (isLeadingCodeUnit(*--end))
         -- right;
     }
-    if (right != 0 || begin > end)
+    if (right != 0)
       return UnicodeErrorReason::indexOutOfBounds;
 
-    return input.slice(begin - input.begin(), end - begin);
+    return input.slice(begin - input.begin(), end - input.begin());
   }
 }
 

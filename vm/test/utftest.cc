@@ -281,3 +281,39 @@ TEST_F(UTFTest, CodePointCount) {
     EXPECT_EQ(2, codePointCount(makeLString(U"\0\0", 2)));
 }
 
+TEST_F(UTFTest, SliceByCodePoints) {
+    #define DO_TEST(p) \
+        EXPECT_EQ(newLString(p##"bcd"), \
+                  sliceByCodePoints(newLString(p##"abcd"), 1, 0)); \
+        EXPECT_EQ(newLString(p##"\U00012345\u1234\U00065432\u0065"), \
+                  sliceByCodePoints(newLString(p##"\U00012345\u1234\U00065432\u0065"), 0, 0)); \
+        EXPECT_EQ(newLString(p##"\u1234\U00065432\u0065"), \
+                  sliceByCodePoints(newLString(p##"\U00012345\u1234\U00065432\u0065"), 1, 0)); \
+        EXPECT_EQ(newLString(p##"\u0065"), \
+                  sliceByCodePoints(newLString(p##"\U00012345\u1234\U00065432\u0065"), 3, 0)); \
+        EXPECT_EQ(newLString(p##"\U00012345\u1234\U00065432"), \
+                  sliceByCodePoints(newLString(p##"\U00012345\u1234\U00065432\u0065"), 0, 1)); \
+        EXPECT_EQ(newLString(p##"\U00012345"), \
+                  sliceByCodePoints(newLString(p##"\U00012345\u1234\U00065432\u0065"), 0, 3)); \
+        EXPECT_EQ(newLString(p##"\u1234\U00065432"), \
+                  sliceByCodePoints(newLString(p##"\U00012345\u1234\U00065432\u0065"), 1, 1)); \
+        EXPECT_EQ(UnicodeErrorReason::indexOutOfBounds, \
+                  sliceByCodePoints(newLString(p##"\U00012345"), 2, 0).error); \
+        EXPECT_EQ(UnicodeErrorReason::indexOutOfBounds, \
+                  sliceByCodePoints(newLString(p##"\U00012345"), 0, 2).error); \
+        EXPECT_EQ(UnicodeErrorReason::indexOutOfBounds, \
+                  sliceByCodePoints(newLString(p##"\U00012345"), 1, 1).error); \
+        EXPECT_EQ(0, sliceByCodePoints(newLString(p##"\U00012345"), 1, 0).length); \
+        EXPECT_EQ(0, sliceByCodePoints(newLString(p##"\U00012345"), 0, 1).length); \
+        EXPECT_EQ(0, sliceByCodePoints(newLString(p##"pq"), 1, 1).length)
+
+    DO_TEST(u8);
+    DO_TEST(u);
+    DO_TEST(U);
+
+    #undef DO_TEST
+
+
+}
+
+

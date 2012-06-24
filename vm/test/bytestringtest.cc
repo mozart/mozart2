@@ -136,6 +136,7 @@ TEST_F(ByteStringTest, StrChr) {
   UnstableNode four = SmallInt::build(vm, 4);
   UnstableNode six = SmallInt::build(vm, 6);
   UnstableNode char2 = SmallInt::build(vm, '2');
+  UnstableNode char256 = SmallInt::build(vm, 256);
 
   UnstableNode result;
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"), StringLike(b).stringSearch(vm, minusOne, char2, result));
@@ -160,6 +161,105 @@ TEST_F(ByteStringTest, StrChr) {
         EXPECT_FALSE(value);
     }
   }
+
+  EXPECT_RAISE(MOZART_STR("typeError"), StringLike(b).stringSearch(vm, zero, minusOne, result));
+  EXPECT_RAISE(MOZART_STR("typeError"), StringLike(b).stringSearch(vm, zero, char256, result));
 }
 
+TEST_F(ByteStringTest, Compare) {
+  static const unsigned char a[] = "\xff\xee\xdd";
+  static const unsigned char b[] = "\xff\xee";
+  static const unsigned char c[] = "123";
+
+  UnstableNode nodes[] = {ByteString::build(vm, a),
+                          ByteString::build(vm, b),
+                          ByteString::build(vm, c)};
+
+  // results[p][q] == nodes[p] cmp nodes[q].
+  int results[3][3] = {{ 0,  1,  1},
+                       {-1,  0,  1},
+                       {-1, -1,  0}};
+
+  for (int i = 0; i < 3; ++ i) {
+    for (int j = 0; j < 3; ++ j) {
+      int res;
+      if (EXPECT_PROCEED(Comparable(nodes[i]).compare(vm, nodes[j], res))) {
+        EXPECT_EQ(results[i][j]<0, res<0);
+        EXPECT_EQ(results[i][j]==0, res==0);
+        EXPECT_EQ(results[i][j]>0, res>0);
+      }
+    }
+  }
+}
+
+TEST_F(ByteStringTest, Search) {
+  static const unsigned char a[] = "123ababababd";
+  //                                012345678901
+  static const unsigned char needleString[] = "aba";
+
+  UnstableNode b = ByteString::build(vm, a);
+  UnstableNode needle = ByteString::build(vm, needleString);
+
+  UnstableNode zero = SmallInt::build(vm, 0);
+  UnstableNode three = SmallInt::build(vm, 3);
+  UnstableNode four = SmallInt::build(vm, 4);
+  UnstableNode six = SmallInt::build(vm, 6);
+  UnstableNode eight = SmallInt::build(vm, 8);
+
+  UnstableNode result;
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, result))) {
+    EXPECT_EQ_INT(3, result);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, result))) {
+    EXPECT_EQ_INT(3, result);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, result))) {
+    EXPECT_EQ_INT(5, result);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, result))) {
+    EXPECT_EQ_INT(7, result);
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, result))) {
+    if (EXPECT_IS<Boolean>(result)) {
+      EXPECT_FALSE(RichNode(result).as<Boolean>().value());
+    }
+  }
+}
+
+TEST_F(ByteStringTest, Encode) {
+  auto test = MOZART_STR("a\U000180c3b");
+
+  UnstableNode res;
+  if (EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::latin1, EncodingVariant::none, res))) {
+    if (EXPECT_IS<ByteString>(res)) {
+      const unsigned char expected[] = "a?b";
+      EXPECT_EQ(makeLString(expected, 3), RichNode(res).as<ByteString>().value());
+    }
+  }
+
+  if (EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::utf8, EncodingVariant::none, res))) {
+    if (EXPECT_IS<ByteString>(res)) {
+      const unsigned char expected[] = "a\xf0\x98\x83\x83" "b";
+      EXPECT_EQ(makeLString(expected, 6), RichNode(res).as<ByteString>().value());
+    }
+  }
+
+  if (EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::utf16, EncodingVariant::none, res))) {
+    if (EXPECT_IS<ByteString>(res)) {
+      const unsigned char expected[] = "\0a\xd8\x20\xdc\xc3\0b";
+      EXPECT_EQ(makeLString(expected, 8), RichNode(res).as<ByteString>().value());
+    }
+  }
+
+  if (EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::utf32, EncodingVariant::none, res))) {
+    if (EXPECT_IS<ByteString>(res)) {
+      const unsigned char expected[] = "\0\0\0a\0\1\x80\xc3\0\0\0b";
+      EXPECT_EQ(makeLString(expected, 12), RichNode(res).as<ByteString>().value());
+    }
+  }
+}
 

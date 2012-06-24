@@ -130,8 +130,7 @@ OpResult Implementation<String>::stringSearch(Self self, VM vm,
   MOZART_CHECK_OPRESULT(StringOffsetLike(from).toStringOffset(vm, self, fromOffset));
 
   nchar utf[4];
-  std::aligned_storage<sizeof(BaseLString<nchar>),
-                       alignof(BaseLString<nchar>)> needleStorage;
+  mut::BaseLString<nchar> needleStorage;
   BaseLString<nchar>* needle;
 
   // Extract the needle. Could be a code point, or a string.

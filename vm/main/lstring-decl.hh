@@ -122,6 +122,7 @@ namespace mut { // mut = mutable (which is a keyword in C++.)
     LString(C (&str)[n], nativeint len=n-1) = delete;
 
     constexpr LString(UnicodeErrorReason e) : BaseLString<C>(e) {}
+    constexpr LString(std::nullptr_t) : BaseLString<C>(nullptr) {}
 
     // LString is copyable (aliasable).
     constexpr LString(const LString& s) : BaseLString<C>(s.string, s.length) {}

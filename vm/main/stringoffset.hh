@@ -156,7 +156,10 @@ OpResult Implementation<StringOffset>::stringOffsetAdvance(Self self, VM vm,
       if (advancedSlice.isError()) {
         error = advancedSlice.error;
       } else {
-        newOffset = advancedSlice.string - wholeString->string;
+        if (advancedSlice.length > 0)
+          newOffset = advancedSlice.string - wholeString->string;
+        else
+          newOffset = wholeString->length;
         error = UnicodeErrorReason::empty;
       }
 
@@ -167,7 +170,10 @@ OpResult Implementation<StringOffset>::stringOffsetAdvance(Self self, VM vm,
       if (retreatedSlice.isError()) {
         error = retreatedSlice.error;
       } else {
-        newOffset = retreatedSlice.end() - wholeString->string;
+        if (retreatedSlice.length > 0)
+          newOffset = retreatedSlice.end() - wholeString->string;
+        else
+          newOffset = 0;
         error = UnicodeErrorReason::empty;
       }
 

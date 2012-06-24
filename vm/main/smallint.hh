@@ -62,12 +62,26 @@ int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
 OpResult Implementation<SmallInt>::compare(Self self, VM vm,
                                            RichNode right,
                                            int& result) {
+  using namespace patternmatching;
+
+  OpResult matchRes = OpResult::proceed();
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+
+  if (matches(vm, matchRes, right, capture(rightIntValue))) {
+    // No-op.
+  } else if (!matchRes.isProceed()) {
+    return matchRes;
+  } else {
+    // Allow string offsets to be compared with integers just for consistency.
+    bool isStringOffset;
+    MOZART_CHECK_OPRESULT(StringOffsetLike(right).isStringOffset(vm, isStringOffset));
+    if (!isStringOffset)
+      return raiseTypeError(vm, MOZART_STR("integer"), right);
+    MOZART_CHECK_OPRESULT(StringOffsetLike(right).getCharIndex(vm, rightIntValue));
+  }
 
   result = (value() == rightIntValue) ? 0 :
     (value() < rightIntValue) ? -1 : 1;
-
   return OpResult::proceed();
 }
 
@@ -310,8 +324,10 @@ namespace internal {
       if (sliced.isError()) {
         if (sliced.error != UnicodeErrorReason::indexOutOfBounds)
           return raiseUnicodeError(vm, sliced.error, node);
-      } else {
+      } else if (sliced.length > 0) {
         offset = sliced.string - string.string;
+      } else {
+        offset = string.length;
       }
 
     } else {

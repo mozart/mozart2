@@ -8,24 +8,46 @@ import symtab._
 object ConstantFolding extends Transformer with TreeDSL {
   import Utils._
 
+  override protected def apply() {
+    program.rawCode = transformRoot(program.rawCode)
+  }
+
+  private def transformRoot(statement: Statement): Statement = {
+    /* The top-level local statements define the base environment.
+     * A lot of variables in the base environment are trivially bound to a
+     * constant builtin. This treatment allows to replace uses of such
+     * variables by the builtin, directly.
+     * Later, the codegen will take huge advantage of this knowledge to
+     * produce OpCallBuiltin opcodes instead of OpCall's.
+     */
+    statement match {
+      case compound @ CompoundStatement(stats) =>
+        treeCopy.CompoundStatement(compound, stats map transformRoot)
+
+      case local @ LocalStatement(decls, stat0) =>
+        val stat = transformRoot(stat0)
+
+        processConstAssignments(decls, stat) match {
+          case None =>
+            treeCopy.LocalStatement(local, decls, stat)
+
+          case Some((newDecls, newStat)) =>
+            transformRoot {
+              treeCopy.LocalStatement(local, newDecls, newStat)
+            }
+        }
+
+      case _ =>
+        transformStat(statement)
+    }
+  }
+
   override def transformExpr(expression0: Expression) = {
     val expression = super.transformExpr(expression0)
 
     expression match {
       case Variable(symbol) if symbol.isConstant =>
         treeCopy.Constant(expression, symbol.constant.get)
-
-      case local @ LocalExpression(decls,
-          sae @ StatAndExpression(stat, expr)) =>
-        processConstAssignments(decls, stat) match {
-          case None => local
-
-          case Some((newDecls, newStat)) =>
-            transformExpr {
-              treeCopy.LocalExpression(local, newDecls,
-                  treeCopy.StatAndExpression(sae, newStat, expr))
-            }
-        }
 
       case record:Record =>
         transformRecord(record)
@@ -49,25 +71,6 @@ object ConstantFolding extends Transformer with TreeDSL {
 
       case _ =>
         expression
-    }
-  }
-
-  override def transformStat(statement0: Statement) = {
-    val statement = super.transformStat(statement0)
-
-    statement match {
-      case local @ LocalStatement(decls, stat) =>
-        processConstAssignments(decls, stat) match {
-          case None => local
-
-          case Some((newDecls, newStat)) =>
-            transformStat {
-              treeCopy.LocalStatement(local, newDecls, newStat)
-            }
-        }
-
-      case _ =>
-        statement
     }
   }
 

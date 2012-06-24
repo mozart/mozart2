@@ -214,38 +214,6 @@ OpResult Implementation<Float>::vsLength(Self self, VM vm, nativeint& result) {
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::vsChangeSign(Self self, VM vm,
-                                             RichNode replacement,
-                                             UnstableNode& result) {
-  const internal::FloatToStringHelper helper (value());
-
-  if (~helper.minusSigns[0] == 0) {
-    helper.buildStringAt(vm, 0, helper.length, result);
-
-  } else if (~helper.minusSigns[1] == 0) {
-    if (helper.minusSigns[0] == 0) {
-      UnstableNode absNode;
-      helper.buildStringAt(vm, 1, helper.length, absNode);
-      result = buildTuple(vm, vm->coreatoms.sharp, replacement, absNode);
-
-    } else {
-      UnstableNode preNode, postNode;
-      helper.buildStringAt(vm, 0, helper.minusSigns[0], preNode);
-      helper.buildStringAt(vm, helper.minusSigns[0]+1, helper.length, postNode);
-      result = buildTuple(vm, vm->coreatoms.sharp, preNode, replacement, postNode);
-    }
-
-  } else {
-    UnstableNode preNode, postNode;
-    helper.buildStringAt(vm, 1, helper.minusSigns[1], preNode);
-    helper.buildStringAt(vm, helper.minusSigns[1]+1, helper.length, postNode);
-    result = buildTuple(vm, vm->coreatoms.sharp,
-                        replacement, preNode, replacement, postNode);
-  }
-
-  return OpResult::proceed();
-}
-
 }
 
 #endif // MOZART_GENERATOR

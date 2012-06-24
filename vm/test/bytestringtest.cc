@@ -138,32 +138,41 @@ TEST_F(ByteStringTest, StrChr) {
   UnstableNode char2 = SmallInt::build(vm, '2');
   UnstableNode char256 = SmallInt::build(vm, 256);
 
-  UnstableNode result;
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"), StringLike(b).stringSearch(vm, minusOne, char2, result));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"), StringLike(b).stringSearch(vm, six, char2, result));
+  UnstableNode begin, end;
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSearch(vm, minusOne, char2, begin, end));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSearch(vm, six, char2, begin, end));
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, result))) {
-    EXPECT_EQ_INT(1, result);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, begin, end))) {
+    EXPECT_EQ_INT(1, begin);
+    EXPECT_EQ_INT(2, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, result))) {
-    EXPECT_EQ_INT(1, result);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, begin, end))) {
+    EXPECT_EQ_INT(1, begin);
+    EXPECT_EQ_INT(2, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, result))) {
-    EXPECT_EQ_INT(3, result);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, begin, end))) {
+    EXPECT_EQ_INT(3, begin);
+    EXPECT_EQ_INT(4, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, result))) {
-    if (EXPECT_IS<Boolean>(result)) {
-      bool value;
-      if (EXPECT_PROCEED(BooleanValue(result).boolValue(vm, value)))
-        EXPECT_FALSE(value);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, begin, end))) {
+    for (auto node : {&begin, &end}) {
+      if (EXPECT_IS<Boolean>(*node)) {
+        bool value;
+        if (EXPECT_PROCEED(BooleanValue(*node).boolValue(vm, value)))
+          EXPECT_FALSE(value);
+      }
     }
   }
 
-  EXPECT_RAISE(MOZART_STR("typeError"), StringLike(b).stringSearch(vm, zero, minusOne, result));
-  EXPECT_RAISE(MOZART_STR("typeError"), StringLike(b).stringSearch(vm, zero, char256, result));
+  EXPECT_RAISE(MOZART_STR("typeError"),
+               StringLike(b).stringSearch(vm, zero, minusOne, begin, end));
+  EXPECT_RAISE(MOZART_STR("typeError"),
+               StringLike(b).stringSearch(vm, zero, char256, begin, end));
 }
 
 TEST_F(ByteStringTest, Compare) {
@@ -206,26 +215,33 @@ TEST_F(ByteStringTest, Search) {
   UnstableNode six = SmallInt::build(vm, 6);
   UnstableNode eight = SmallInt::build(vm, 8);
 
-  UnstableNode result;
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, result))) {
-    EXPECT_EQ_INT(3, result);
+  UnstableNode begin, end;
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, begin, end))) {
+    EXPECT_EQ_INT(3, begin);
+    EXPECT_EQ_INT(6, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, result))) {
-    EXPECT_EQ_INT(3, result);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, begin, end))) {
+    EXPECT_EQ_INT(3, begin);
+    EXPECT_EQ_INT(6, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, result))) {
-    EXPECT_EQ_INT(5, result);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, begin, end))) {
+    EXPECT_EQ_INT(5, begin);
+    EXPECT_EQ_INT(8, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, result))) {
-    EXPECT_EQ_INT(7, result);
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, begin, end))) {
+    EXPECT_EQ_INT(7, begin);
+    EXPECT_EQ_INT(10, end);
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, result))) {
-    if (EXPECT_IS<Boolean>(result)) {
-      EXPECT_FALSE(RichNode(result).as<Boolean>().value());
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, begin, end))) {
+    if (EXPECT_IS<Boolean>(begin)) {
+      EXPECT_FALSE(RichNode(begin).as<Boolean>().value());
+    }
+    if (EXPECT_IS<Boolean>(end)) {
+      EXPECT_FALSE(RichNode(end).as<Boolean>().value());
     }
   }
 }

@@ -45,8 +45,6 @@ Implementation<StringOffset>::Implementation(VM vm, nativeint offset,
     : _offset(offset), _index(index)
 {
   _ref.init(vm, refString);
-  if (!refString.is<String>() && index < 0)
-    _index = _offset;
 }
 
 Implementation<StringOffset>::Implementation(VM vm, GR gr, Self from)

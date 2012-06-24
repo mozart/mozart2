@@ -176,42 +176,54 @@ TEST_F(StringTest, StrChr) {
   UnstableNode char2 = SmallInt::build(vm, 0x10002);
   UnstableNode charInvalid = SmallInt::build(vm, 0xd800);
 
-  UnstableNode result;
+  UnstableNode begin, end;
   nativeint index;
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"), StringLike(b).stringSearch(vm, minusOne, char2, result));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"), StringLike(b).stringSearch(vm, six, char2, result));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSearch(vm, minusOne, char2, begin, end));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSearch(vm, six, char2, begin, end));
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, result))) {
-  printf("1\n");
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
       EXPECT_EQ(1, index);
+    }
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(2, index);
     }
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, result))) {
-  std::cout << repr(vm, result) << std::endl;
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
       EXPECT_EQ(1, index);
+    }
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(2, index);
     }
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, result))) {
-  printf("1\n");
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
       EXPECT_EQ(3, index);
     }
-  }
-
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, result))) {
-    if (EXPECT_IS<Boolean>(result)) {
-      bool value;
-      if (EXPECT_PROCEED(BooleanValue(result).boolValue(vm, value)))
-        EXPECT_FALSE(value);
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(4, index);
     }
   }
 
-  EXPECT_RAISE(MOZART_STR("unicodeError"), StringLike(b).stringSearch(vm, zero, minusOne, result));
-  EXPECT_RAISE(MOZART_STR("unicodeError"), StringLike(b).stringSearch(vm, zero, charInvalid, result));
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, begin, end))) {
+    for (auto node : {&begin, &end}) {
+      if (EXPECT_IS<Boolean>(*node)) {
+        bool value;
+        if (EXPECT_PROCEED(BooleanValue(*node).boolValue(vm, value)))
+          EXPECT_FALSE(value);
+      }
+    }
+  }
+
+  EXPECT_RAISE(MOZART_STR("unicodeError"),
+               StringLike(b).stringSearch(vm, zero, minusOne, begin, end));
+  EXPECT_RAISE(MOZART_STR("unicodeError"),
+               StringLike(b).stringSearch(vm, zero, charInvalid, begin, end));
 }
 
 TEST_F(StringTest, Search) {
@@ -224,35 +236,50 @@ TEST_F(StringTest, Search) {
   UnstableNode six = SmallInt::build(vm, 6);
   UnstableNode eight = SmallInt::build(vm, 8);
 
-  UnstableNode result;
+  UnstableNode begin, end;
   nativeint index;
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, result))) {
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
       EXPECT_EQ(3, index);
+    }
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(6, index);
     }
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, result))) {
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
       EXPECT_EQ(3, index);
+    }
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(6, index);
     }
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, result))) {
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
       EXPECT_EQ(5, index);
     }
-  }
-
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, result))) {
-    if (EXPECT_PROCEED(StringOffsetLike(result).getCharIndex(vm, index))) {
-      EXPECT_EQ(7, index);
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(8, index);
     }
   }
 
-  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, result))) {
-    if (EXPECT_IS<Boolean>(result)) {
-      EXPECT_FALSE(RichNode(result).as<Boolean>().value());
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, begin, end))) {
+    if (EXPECT_PROCEED(StringOffsetLike(begin).getCharIndex(vm, index))) {
+      EXPECT_EQ(7, index);
+    }
+    if (EXPECT_PROCEED(StringOffsetLike(end).getCharIndex(vm, index))) {
+      EXPECT_EQ(10, index);
+    }
+  }
+
+  if (EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, begin, end))) {
+    if (EXPECT_IS<Boolean>(begin)) {
+      EXPECT_FALSE(RichNode(begin).as<Boolean>().value());
+    }
+    if (EXPECT_IS<Boolean>(end)) {
+      EXPECT_FALSE(RichNode(end).as<Boolean>().value());
     }
   }
 }

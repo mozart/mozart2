@@ -135,10 +135,6 @@ public:
   inline
   OpResult vsLength(Self self, VM vm, nativeint& result);
 
-  inline
-  OpResult vsChangeSign(Self self, VM vm,
-                        RichNode replacement, UnstableNode& result);
-
 public:
   // Miscellaneous
 

@@ -139,7 +139,8 @@ OpResult Implementation<ByteString>::stringSlice(Self self, VM vm,
 
 OpResult Implementation<ByteString>::stringSearch(Self self, VM vm,
                                                   RichNode from, RichNode needleNode,
-                                                  UnstableNode& result) {
+                                                  UnstableNode& begin,
+                                                  UnstableNode& end) {
   using namespace patternmatching;
 
   nativeint fromOffset;
@@ -156,10 +157,12 @@ OpResult Implementation<ByteString>::stringSearch(Self self, VM vm,
 
     const void* searchRes = memchr(haystack.string, character, haystack.bytesCount());
     if (searchRes == nullptr) {
-      result.make<Boolean>(vm, false);
+      begin.make<Boolean>(vm, false);
+      end.make<Boolean>(vm, false);
     } else {
       nativeint foundOffset = static_cast<const unsigned char*>(searchRes) - _bytes.string;
-      result.make<SmallInt>(vm, foundOffset);
+      begin.make<SmallInt>(vm, foundOffset);
+      end.make<SmallInt>(vm, foundOffset + 1);
     }
 
   } else if (matchRes.isProceed()) {
@@ -168,10 +171,14 @@ OpResult Implementation<ByteString>::stringSearch(Self self, VM vm,
     MOZART_CHECK_OPRESULT(StringLike(needleNode).stringGet(vm, needle));
     auto foundIter = std::search(haystack.begin(), haystack.end(),
                                  needle->begin(), needle->end());
-    if (foundIter == haystack.end())
-      result.make<Boolean>(vm, false);
-    else
-      result.make<SmallInt>(vm, foundIter - _bytes.string);
+    if (foundIter == haystack.end()) {
+      begin.make<Boolean>(vm, false);
+      end.make<Boolean>(vm, false);
+    } else {
+      nativeint foundOffset = foundIter - _bytes.string;
+      begin.make<SmallInt>(vm, foundOffset);
+      end.make<SmallInt>(vm, foundOffset + needle->length);
+    }
 
   } else {
     return matchRes;
@@ -183,6 +190,30 @@ OpResult Implementation<ByteString>::stringSearch(Self self, VM vm,
 OpResult Implementation<ByteString>::stringEnd(Self self, VM vm,
                                                UnstableNode& result) {
   result.make<SmallInt>(vm, _bytes.length);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringHasPrefix(Self self, VM vm,
+                                                     RichNode prefixNode,
+                                                     bool& result) {
+  LString<unsigned char>* prefix;
+  MOZART_CHECK_OPRESULT(StringLike(prefixNode).stringGet(vm, prefix));
+  if (_bytes.length < prefix->length)
+    result = false;
+  else
+    result = (memcmp(_bytes.string, prefix->string, prefix->bytesCount()) == 0);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ByteString>::stringHasSuffix(Self self, VM vm,
+                                                     RichNode suffixNode,
+                                                     bool& result) {
+  LString<unsigned char>* suffix;
+  MOZART_CHECK_OPRESULT(StringLike(suffixNode).stringGet(vm, suffix));
+  if (_bytes.length < suffix->length)
+    result = false;
+  else
+    result = (memcmp(_bytes.end() - suffix->length, suffix->string, suffix->bytesCount()) == 0);
   return OpResult::proceed();
 }
 
@@ -221,13 +252,6 @@ OpResult Implementation<ByteString>::toString(Self self, VM vm,
 
 OpResult Implementation<ByteString>::vsLength(Self self, VM vm, nativeint& result) {
   result = _bytes.length;
-  return OpResult::proceed();
-}
-
-OpResult Implementation<ByteString>::vsChangeSign(Self self, VM vm,
-                                                  RichNode replacement,
-                                                  UnstableNode& result) {
-  result.copy(vm, self);
   return OpResult::proceed();
 }
 

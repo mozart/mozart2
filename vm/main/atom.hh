@@ -89,14 +89,6 @@ OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
   return OpResult::proceed();
 }
 
-OpResult Implementation<Atom>::vsChangeSign(Self self, VM vm,
-                                            RichNode replacement,
-                                            UnstableNode& result) {
-  result.copy(vm, self);
-  return OpResult::proceed();
-}
-
-
 }
 
 #endif // MOZART_GENERATOR

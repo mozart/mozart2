@@ -125,7 +125,8 @@ OpResult Implementation<String>::stringSlice(Self self, VM vm,
 
 OpResult Implementation<String>::stringSearch(Self self, VM vm,
                                               RichNode from, RichNode needleNode,
-                                              UnstableNode& result) {
+                                              UnstableNode& begin,
+                                              UnstableNode& end) {
   nativeint fromOffset;
   MOZART_CHECK_OPRESULT(StringOffsetLike(from).toStringOffset(vm, self, fromOffset));
 
@@ -173,16 +174,44 @@ OpResult Implementation<String>::stringSearch(Self self, VM vm,
   LString<nchar> haystack = _string.slice(fromOffset);
   const nchar* foundIter = std::search(haystack.begin(), haystack.end(),
                                        needle->begin(), needle->end());
-  if (foundIter == haystack.end())
-    result.make<Boolean>(vm, false);
-  else
-    result.make<StringOffset>(vm, foundIter - _string.string, self);
+  if (foundIter == haystack.end()) {
+    begin.make<Boolean>(vm, false);
+    end.make<Boolean>(vm, false);
+  } else {
+    nativeint beginOffset = foundIter - _string.string;
+    begin.make<StringOffset>(vm, beginOffset, self);
+    end.make<StringOffset>(vm, beginOffset + needle->length, self);
+  }
   return OpResult::proceed();
 }
 
 OpResult Implementation<String>::stringEnd(Self self, VM vm,
                                            UnstableNode& result) {
   result.make<StringOffset>(vm, _string.length, self);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringHasPrefix(Self self, VM vm,
+                                                 RichNode prefixNode,
+                                                 bool& result) {
+  LString<nchar>* prefix;
+  MOZART_CHECK_OPRESULT(StringLike(prefixNode).stringGet(vm, prefix));
+  if (_string.length < prefix->length)
+    result = false;
+  else
+    result = (memcmp(_string.string, prefix->string, prefix->bytesCount()) == 0);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<String>::stringHasSuffix(Self self, VM vm,
+                                                 RichNode suffixNode,
+                                                 bool& result) {
+  LString<nchar>* suffix;
+  MOZART_CHECK_OPRESULT(StringLike(suffixNode).stringGet(vm, suffix));
+  if (_string.length < suffix->length)
+    result = false;
+  else
+    result = (memcmp(_string.end() - suffix->length, suffix->string, suffix->bytesCount()) == 0);
   return OpResult::proceed();
 }
 
@@ -221,13 +250,6 @@ OpResult Implementation<String>::toString(Self self, VM vm,
 
 OpResult Implementation<String>::vsLength(Self self, VM vm, nativeint& result) {
   result = codePointCount(_string);
-  return OpResult::proceed();
-}
-
-OpResult Implementation<String>::vsChangeSign(Self self, VM vm,
-                                              RichNode replacement,
-                                              UnstableNode& result) {
-  result.copy(vm, self);
   return OpResult::proceed();
 }
 

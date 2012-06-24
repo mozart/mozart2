@@ -96,7 +96,7 @@ public:
 
   inline
   OpResult stringSearch(Self self, VM vm, RichNode from, RichNode needle,
-                        UnstableNode& result);
+                        UnstableNode& begin, UnstableNode& end);
 
   inline
   OpResult stringEnd(Self self, VM vm, UnstableNode& result);
@@ -106,6 +106,12 @@ public:
 
   inline
   OpResult stringGet(Self self, VM vm, LString<unsigned char>*& result);
+
+  inline
+  OpResult stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
+
+  inline
+  OpResult stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
 
 public:
   // Dottable interface
@@ -129,10 +135,6 @@ public:
 
   inline
   OpResult vsLength(Self self, VM vm, nativeint& result);
-
-  inline
-  OpResult vsChangeSign(Self self, VM vm,
-                        RichNode replacement, UnstableNode& result);
 
 public:
   // Miscellaneous

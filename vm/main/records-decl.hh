@@ -148,10 +148,6 @@ public:
   inline
   OpResult vsLength(Self self, VM vm, nativeint& result);
 
-  inline
-  OpResult vsChangeSign(Self self, VM vm,
-                        RichNode replacement, UnstableNode& result);
-
 private:
   inline bool hasSharpLabel(VM vm);
 
@@ -255,10 +251,6 @@ public:
 
   inline
   OpResult vsLength(Self self, VM vm, nativeint& result);
-
-  inline
-  OpResult vsChangeSign(Self self, VM vm,
-                        RichNode replacement, UnstableNode& result);
 
 public:
   inline

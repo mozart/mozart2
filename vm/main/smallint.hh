@@ -276,36 +276,6 @@ OpResult Implementation<SmallInt>::vsLength(Self self, VM vm, nativeint& result)
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::vsChangeSign(Self self, VM vm,
-                                                RichNode replacement,
-                                                UnstableNode& result) {
-  nativeint a = value();
-  static constexpr nativeint minVal = std::numeric_limits<nativeint>::min();
-
-  if (a >= 0) {
-    result.copy(vm, self);
-  } else if (a > minVal) {
-    UnstableNode node = SmallInt::build(vm, -a);
-    result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
-  } else {
-    // TODO: create a BigInt??
-    UnstableNode node;
-    if (minVal == std::numeric_limits<int32_t>::min()) {
-      node.make<String>(vm, MOZART_STR("2147483648"));
-    } else if (minVal == std::numeric_limits<int64_t>::min()) {
-      node.make<String>(vm, MOZART_STR("9223372036854775808"));
-    } else {
-      auto str = std::to_string(value());
-      LString<nchar> newStr (vm, str.length() - 1, [&](nchar* buffer) {
-        std::copy(str.begin()+1, str.end(), buffer);
-      });
-      node.make<String>(vm, newStr);
-    }
-    result = buildTuple(vm, vm->coreatoms.sharp, replacement, node);
-  }
-  return OpResult::proceed();
-}
-
 // StringOffset ----------------------------------------------------------------
 
 namespace internal {

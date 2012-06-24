@@ -87,8 +87,8 @@ public:
   public:
     Search() : Builtin("search") {}
 
-    OpResult operator()(VM vm, In value, In from, In needle, Out result) {
-      return StringLike(value).stringSearch(vm, from, needle, result);
+    OpResult operator()(VM vm, In value, In from, In needle, Out begin, Out end) {
+      return StringLike(value).stringSearch(vm, from, needle, begin, end);
     }
   };
 
@@ -98,6 +98,30 @@ public:
 
     OpResult operator()(VM vm, In value, Out result) {
       return StringLike(value).stringEnd(vm, result);
+    }
+  };
+
+  class HasPrefix : public Builtin<HasPrefix> {
+  public:
+    HasPrefix() : Builtin("hasPrefix") {}
+
+    OpResult operator()(VM vm, In string, In prefix, Out resultNode) {
+      bool result;
+      MOZART_CHECK_OPRESULT(StringLike(string).stringHasPrefix(vm, prefix, result));
+      resultNode.make<Boolean>(vm, result);
+      return OpResult::proceed();
+    }
+  };
+
+  class HasSuffix : public Builtin<HasSuffix> {
+  public:
+    HasSuffix() : Builtin("hasSuffix") {}
+
+    OpResult operator()(VM vm, In string, In suffix, Out resultNode) {
+      bool result;
+      MOZART_CHECK_OPRESULT(StringLike(string).stringHasSuffix(vm, suffix, result));
+      resultNode.make<Boolean>(vm, result);
+      return OpResult::proceed();
     }
   };
 };

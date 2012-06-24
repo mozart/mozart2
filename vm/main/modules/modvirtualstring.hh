@@ -78,15 +78,6 @@ public:
       return OpResult::proceed();
     }
   };
-
-  class ChangeSign : public Builtin<ChangeSign> {
-  public:
-    ChangeSign() : Builtin("changeSign") {}
-
-    OpResult operator()(VM vm, In value, In replacement, Out result) {
-      return VirtualString(value).vsChangeSign(vm, replacement, result);
-    }
-  };
 };
 
 }

@@ -630,12 +630,20 @@ struct Interface<StringLike>: ImplementedBy<String, ByteString> {
     return raiseTypeError(vm, MOZART_STR("String"), self);
   }
 
-  OpResult stringSearch(RichNode self, VM vm,
-                        RichNode from, RichNode needle, UnstableNode& result) {
+  OpResult stringSearch(RichNode self, VM vm, RichNode from, RichNode needle,
+                        UnstableNode& begin, UnstableNode& end) {
     return raiseTypeError(vm, MOZART_STR("String"), self);
   }
 
   OpResult stringEnd(RichNode self, VM vm, UnstableNode& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringHasPrefix(RichNode self, VM vm, RichNode prefix, bool& result) {
+    return raiseTypeError(vm, MOZART_STR("String"), self);
+  }
+
+  OpResult stringHasSuffix(RichNode self, VM vm, RichNode suffix, bool& result) {
     return raiseTypeError(vm, MOZART_STR("String"), self);
   }
 };
@@ -685,10 +693,6 @@ struct Interface<VirtualString>:
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
   }
 
-  OpResult vsChangeSign(RichNode self, VM vm,
-                        RichNode replacement, UnstableNode& result) {
-    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-  }
 };
 
 }

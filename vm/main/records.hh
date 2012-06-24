@@ -226,25 +226,6 @@ OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
   return OpResult::proceed();
 }
 
-OpResult Implementation<Tuple>::vsChangeSign(Self self, VM vm,
-                                             RichNode replacement,
-                                             UnstableNode& result) {
-  if (!hasSharpLabel(vm))
-    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-
-  UnstableNode tempLabel (vm, _label);
-  result.make<Tuple>(vm, _width, tempLabel);
-  auto tuple = RichNode(result).as<Tuple>();
-  for (size_t i = 0; i < _width; i++) {
-    UnstableNode tempNode (vm, self[i]);
-    UnstableNode changedNode;
-    VirtualString(tempNode).vsChangeSign(vm, replacement, changedNode);
-    tuple.initElement(vm, i, changedNode);
-  }
-
-  return OpResult::proceed();
-}
-
 ///////////
 // Cons //
 ///////////
@@ -402,13 +383,6 @@ OpResult Implementation<Cons>::vsLength(Self self, VM vm, nativeint& result) {
   ));
 
   result = length;
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Cons>::vsChangeSign(Self self, VM vm,
-                                            RichNode replacement,
-                                            UnstableNode& result) {
-  result.copy(vm, self);
   return OpResult::proceed();
 }
 

@@ -19,6 +19,9 @@ protected:
     strings[0] = String::build(vm, MOZART_STR("\u12345\U00067890"));
     strings[1] = String::build(vm, MOZART_STR("\U00012345\u6789\U00100000"));
 
+    RichNode s0 = strings[0];
+    RichNode s1 = strings[1];
+
     #define LEN(x) std::char_traits<nchar>::length(MOZART_STR(x))
 
     offsets[0][0] = 0;
@@ -32,13 +35,13 @@ protected:
 
     #undef LEN
 
-    nodes[0] = StringOffset::build(vm, 0, strings[0]);
-    nodes[1] = StringOffset::build(vm, offsets[0][1], strings[0]);
-    nodes[2] = StringOffset::build(vm, offsets[0][3], strings[0]);
+    nodes[0] = StringOffset::build(vm, 0, s0);
+    nodes[1] = StringOffset::build(vm, offsets[0][1], s0);
+    nodes[2] = StringOffset::build(vm, offsets[0][3], s0);
 
-    nodes[3] = StringOffset::build(vm, 0, strings[1]);
-    nodes[4] = StringOffset::build(vm, offsets[1][1], strings[1]);
-    nodes[5] = StringOffset::build(vm, offsets[1][3], strings[1]);
+    nodes[3] = StringOffset::build(vm, 0, s1);
+    nodes[4] = StringOffset::build(vm, offsets[1][1], s1);
+    nodes[5] = StringOffset::build(vm, offsets[1][3], s1);
 
     nodes[6] = SmallInt::build(vm, 0);
     nodes[7] = SmallInt::build(vm, 1);

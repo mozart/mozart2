@@ -25,6 +25,24 @@ object DesugarClass extends Transformer with TreeDSL {
   }
 
   override def transformStat(statement: Statement) = statement match {
+    case LockObjectStatement(body) if selfSymbol.isDefined =>
+      val getObjLock = OoExtensions dot OzAtom("getObjLock")
+      val lock = getObjLock callExpr (selfSymbol.get)
+      transformStat {
+        atPos(statement) {
+          LockStatement(lock, body)
+        }
+      }
+
+    case LockObjectStatement(body) if !selfSymbol.isDefined =>
+      program.reportError(
+          "Illegal use of lock-object outside of class definition",
+          statement)
+
+      // Some dummy statement
+      transformStat(atPos(statement)(
+          LockStatement(UnboundExpression(), body)))
+
     case BinaryOpStatement(lhs, "<-", rhs) if selfSymbol.isDefined =>
       transformStat {
         atPos(statement) {
@@ -66,6 +84,24 @@ object DesugarClass extends Transformer with TreeDSL {
   }
 
   override def transformExpr(expression: Expression) = expression match {
+    case LockObjectExpression(body) if selfSymbol.isDefined =>
+      val getObjLock = OoExtensions dot OzAtom("getObjLock")
+      val lock = getObjLock callExpr (selfSymbol.get)
+      transformExpr {
+        atPos(expression) {
+          LockExpression(lock, body)
+        }
+      }
+
+    case LockObjectExpression(body) if !selfSymbol.isDefined =>
+      program.reportError(
+          "Illegal use of lock-object outside of class definition",
+          expression)
+
+      // Some dummy statement
+      transformExpr(atPos(expression)(
+          LockExpression(UnboundExpression(), body)))
+
     case clazz @ ClassExpression(name, parents, features, attributes,
         properties, methods) =>
       val methodsInfo = makeMethods(name, methods)

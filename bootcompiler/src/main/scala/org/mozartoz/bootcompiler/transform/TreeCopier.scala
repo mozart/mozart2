@@ -33,6 +33,12 @@ class TreeCopier {
   def ThreadStatement(tree: Node, statement: Statement) =
     new ThreadStatement(statement).copyAttrs(tree)
 
+  def LockStatement(tree: Node, lock: Expression, statement: Statement) =
+    new LockStatement(lock, statement).copyAttrs(tree)
+
+  def LockObjectStatement(tree: Node, statement: Statement) =
+    new LockObjectStatement(statement).copyAttrs(tree)
+
   def TryStatement(tree: Node, body: Statement, exceptionVar: VariableOrRaw,
       catchBody: Statement) =
     new TryStatement(body, exceptionVar, catchBody).copyAttrs(tree)
@@ -95,6 +101,12 @@ class TreeCopier {
 
   def ThreadExpression(tree: Node, expression: Expression) =
     new ThreadExpression(expression).copyAttrs(tree)
+
+  def LockExpression(tree: Node, lock: Expression, expression: Expression) =
+    new LockExpression(lock, expression).copyAttrs(tree)
+
+  def LockObjectExpression(tree: Node, expression: Expression) =
+    new LockObjectExpression(expression).copyAttrs(tree)
 
   def TryExpression(tree: Node, body: Expression, exceptionVar: VariableOrRaw,
       catchBody: Expression) =

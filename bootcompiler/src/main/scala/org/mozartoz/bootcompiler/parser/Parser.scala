@@ -69,6 +69,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifStatement
     | caseStatement
     | threadStatement
+    | lockStatement
     | tryStatement
     | raiseStatement
     | functorStatement
@@ -234,6 +235,22 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val threadExpression: PackratParser[Expression] = positioned {
     "thread" ~> inExpression <~ "end" ^^ ThreadExpression
+  }
+
+  // Lock
+
+  lazy val lockStatement: PackratParser[Statement] = positioned {
+    "lock" ~> opt(expression <~ "then") ~ inStatement <~ "end" ^^ {
+      case Some(lock) ~ body => LockStatement(lock, body)
+      case None ~ body => LockObjectStatement(body)
+    }
+  }
+
+  lazy val lockExpression: PackratParser[Expression] = positioned {
+    "lock" ~> opt(expression <~ "then") ~ inExpression <~ "end" ^^ {
+      case Some(lock) ~ body => LockExpression(lock, body)
+      case None ~ body => LockObjectExpression(body)
+    }
   }
 
   // Try
@@ -570,6 +587,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | ifExpression
     | caseExpression
     | threadExpression
+    | lockExpression
     | tryExpression
     | raiseExpression
     | functorExpression

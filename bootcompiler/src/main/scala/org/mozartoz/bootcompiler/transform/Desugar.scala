@@ -21,6 +21,13 @@ object Desugar extends Transformer with TreeDSL {
 
       builtins.createThread call (proc)
 
+    case lockStat @ LockStatement(lock, body) =>
+      val proc = PROC("", Nil) {
+        transformStat(body)
+      }
+
+      program.baseEnvironment("LockIn") call (transformExpr(lock), proc)
+
     case TryFinallyStatement(body, finallyBody) =>
       transformStat {
         atPos(statement) {
@@ -58,6 +65,13 @@ object Desugar extends Transformer with TreeDSL {
     case thread @ ThreadExpression(body) =>
       expressionWithTemp { temp =>
         transformStat(THREAD (temp === body)) ~> temp
+      }
+
+    case lockExpr @ LockExpression(lock, body) =>
+      expressionWithTemp { temp =>
+        transformStat(atPos(lockExpr) {
+          LockStatement(lock, temp === body)
+        }) ~> temp
       }
 
     case TryFinallyExpression(body, finallyBody) =>

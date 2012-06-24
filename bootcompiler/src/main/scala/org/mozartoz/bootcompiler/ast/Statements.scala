@@ -115,6 +115,32 @@ case class ThreadStatement(
   protected val body = statement
 }
 
+/** Lock statement
+ *
+ *  {{{
+ *  lock <lock> in
+ *     <statement>
+ *  end
+ *  }}}
+ */
+case class LockStatement(lock: Expression,
+    statement: Statement) extends Statement with LockCommon {
+  protected val body = statement
+}
+
+/** Lock object statement
+ *
+ *  {{{
+ *  lock
+ *     <statement>
+ *  end
+ *  }}}
+ */
+case class LockObjectStatement(
+    statement: Statement) extends Statement with LockObjectCommon {
+  protected val body = statement
+}
+
 /** Try-catch statement
  *
  *  {{{

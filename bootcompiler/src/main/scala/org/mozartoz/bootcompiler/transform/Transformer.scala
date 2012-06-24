@@ -54,13 +54,13 @@ abstract class Transformer extends (Program => Unit) {
     case CompoundStatement(stats) =>
       treeCopy.CompoundStatement(statement, stats map transformStat)
 
-    case RawLocalStatement(declarations, statement) =>
+    case RawLocalStatement(declarations, body) =>
       treeCopy.RawLocalStatement(statement, declarations map transformDecl,
-          transformStat(statement))
+          transformStat(body))
 
-    case LocalStatement(declarations, statement) =>
+    case LocalStatement(declarations, body) =>
       treeCopy.LocalStatement(statement, declarations,
-          transformStat(statement))
+          transformStat(body))
 
     case CallStatement(callable, args) =>
       treeCopy.CallStatement(statement, transformExpr(callable),
@@ -74,8 +74,15 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.MatchStatement(statement, transformExpr(value),
           clauses map transformClauseStat, transformStat(elseStatement))
 
-    case ThreadStatement(statement) =>
-      treeCopy.ThreadStatement(statement, transformStat(statement))
+    case ThreadStatement(body) =>
+      treeCopy.ThreadStatement(statement, transformStat(body))
+
+    case LockStatement(lock, body) =>
+      treeCopy.LockStatement(statement, transformExpr(lock),
+          transformStat(body))
+
+    case LockObjectStatement(body) =>
+      treeCopy.LockObjectStatement(statement, transformStat(body))
 
     case TryStatement(body, exceptionVar, catchBody) =>
       treeCopy.TryStatement(statement, transformStat(body),
@@ -85,8 +92,8 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.TryFinallyStatement(statement, transformStat(body),
           transformStat(finallyBody))
 
-    case RaiseStatement(exception) =>
-      treeCopy.RaiseStatement(statement, transformExpr(exception))
+    case RaiseStatement(body) =>
+      treeCopy.RaiseStatement(statement, transformExpr(body))
 
     case BindStatement(left, right) =>
       treeCopy.BindStatement(statement, transformExpr(left),
@@ -106,9 +113,9 @@ abstract class Transformer extends (Program => Unit) {
 
   /** Transforms an expression */
   def transformExpr(expression: Expression): Expression = expression match {
-    case StatAndExpression(statement, expression) =>
-      treeCopy.StatAndExpression(statement, transformStat(statement),
-          transformExpr(expression))
+    case StatAndExpression(statement, expr) =>
+      treeCopy.StatAndExpression(expression, transformStat(statement),
+          transformExpr(expr))
 
     case RawLocalExpression(declarations, expression) =>
       treeCopy.RawLocalExpression(expression, declarations map transformDecl,
@@ -140,8 +147,15 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.MatchExpression(expression, transformExpr(value),
           clauses map transformClauseExpr, transformExpr(elseExpression))
 
-    case ThreadExpression(expression) =>
-      treeCopy.ThreadExpression(expression, transformExpr(expression))
+    case ThreadExpression(body) =>
+      treeCopy.ThreadExpression(expression, transformExpr(body))
+
+    case LockExpression(lock, body) =>
+      treeCopy.LockExpression(expression, transformExpr(lock),
+          transformExpr(body))
+
+    case LockObjectExpression(body) =>
+      treeCopy.LockObjectExpression(expression, transformExpr(body))
 
     case TryExpression(body, exceptionVar, catchBody) =>
       treeCopy.TryExpression(expression, transformExpr(body),
@@ -151,8 +165,8 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.TryFinallyExpression(expression, transformExpr(body),
           transformStat(finallyBody))
 
-    case RaiseExpression(exception) =>
-      treeCopy.RaiseExpression(expression, transformExpr(exception))
+    case RaiseExpression(body) =>
+      treeCopy.RaiseExpression(expression, transformExpr(body))
 
     case BindExpression(left, right) =>
       treeCopy.BindExpression(expression, transformExpr(left),

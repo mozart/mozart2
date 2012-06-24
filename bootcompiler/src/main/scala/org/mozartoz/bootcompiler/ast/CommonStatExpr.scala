@@ -126,6 +126,28 @@ trait ThreadCommon extends StatOrExpr {
   }
 }
 
+trait LockCommon extends StatOrExpr {
+  protected val lock: Expression
+  protected val body: StatOrExpr
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+
+    ("lock " + lock.syntax(indent+"     ") + " then\n" +
+        subIndent + body.syntax(subIndent) + "\n" + indent + "end")
+  }
+}
+
+trait LockObjectCommon extends StatOrExpr {
+  protected val body: StatOrExpr
+
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+
+    "lock\n" + subIndent + body.syntax(subIndent) + "\n" + indent + "end"
+  }
+}
+
 trait TryCommon extends StatOrExpr {
   protected val body: StatOrExpr
   protected val exceptionVar: VariableOrRaw

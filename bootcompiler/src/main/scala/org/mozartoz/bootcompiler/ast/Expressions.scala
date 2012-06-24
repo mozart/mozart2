@@ -152,6 +152,32 @@ case class ThreadExpression(
   protected val body = expression
 }
 
+/** Lock expression
+ *
+ *  {{{
+ *  lock <lock> in
+ *     <expression>
+ *  end
+ *  }}}
+ */
+case class LockExpression(lock: Expression,
+    expression: Expression) extends Expression with LockCommon {
+  protected val body = expression
+}
+
+/** Lock object expression
+ *
+ *  {{{
+ *  lock
+ *     <expression>
+ *  end
+ *  }}}
+ */
+case class LockObjectExpression(
+    expression: Expression) extends Expression with LockObjectCommon {
+  protected val body = expression
+}
+
 /** Try-catch expression
  *
  *  {{{

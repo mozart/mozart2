@@ -5,15 +5,15 @@ prepare
    FunctorMap = {Dictionary.new}
 
    class BootModuleManager
-      feat Lock ModuleMap
+      prop locking
+      feat ModuleMap
 
       meth init
-         self.Lock = {NewLock}
          self.ModuleMap = {Dictionary.new}
       end
 
       meth link(URL ?Module)
-         {LockIn self.Lock proc {$}
+         lock
             ModMap = self.ModuleMap
          in
             if {Dictionary.member ModMap URL} then
@@ -24,7 +24,7 @@ prepare
                Module = {ByNeedFuture fun {$} {self load(URL $)} end}
                {Dictionary.put ModMap URL Module}
             end
-         end}
+         end
       end
 
       meth load(URL ?Module)

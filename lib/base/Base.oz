@@ -19,9 +19,6 @@ require
    Boot_Exception at 'x-oz://boot/Exception'
    Boot_Time      at 'x-oz://boot/Time'
 
-   Boot_System    at 'x-oz://boot/System'
-   Boot_Space     at 'x-oz://boot/Space'
-
 prepare
 
    %%
@@ -324,6 +321,8 @@ prepare
    %% Other
    `ooPrintName` = {NewUniqueName 'ooPrintName'}
    `ooFallback`  = {NewUniqueName 'ooFallback'}
+   %% Object lock
+   `ooObjLock`   = {NewUniqueName 'ooObjLock'}
 
    %%
    %% Thread

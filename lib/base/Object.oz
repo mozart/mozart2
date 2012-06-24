@@ -36,11 +36,11 @@ local
       {IsChunk X} andthen {HasFeature X ClassTag}
    end
 
-   fun {BuildClass Info IsSited IsLocking}
+   fun {BuildClass Info IsLocking IsSited}
       {Chunk.new {Adjoin Info
                   'class'(ClassTag:true
-                          `ooClassIsSited`:IsSited
-                          `ooClassIsLocking`:IsLocking)}}
+                          `ooClassIsLocking`:IsLocking
+                          `ooClassIsSited`:IsSited)}}
    end
 
    %%
@@ -60,14 +60,7 @@ local
          end
       end
 
-      local
-         NewObject = Boot_Object.new
-      in
-         fun {FbNew C Message}
-            O={NewObject C} in {O Message} O
-         end
-      end
-
+      FbNew = New
    in
       Fallback = fallback(new:   FbNew
                           apply: FbApply)
@@ -313,7 +306,7 @@ local
       %%
       %% The real class creation
       %%
-      proc {NewFullClass Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
+      proc {NewFullClass Parents NewMeth NewAttr NewFeat0 NewProp PrintName ?C}
          {CheckParents Parents PrintName}
          %% To be computed for methods
          Meth FastMeth Defaults MethSrc
@@ -327,6 +320,12 @@ local
          IsSited   = ({Member sited NewProp}  orelse
                       {Some Parents ClassIsSited})
          IsFinal   = {Member final NewProp}
+         NewFeat = if IsLocking then
+                      %% Include `ooObjLock` in NewFeat
+                      {AdjoinAt NewFeat0 `ooObjLock` `ooFreeFlag`}
+                   else
+                      NewFeat0
+                   end
          NoNewMeth = {Width NewMeth}
          AsNewAttr = {Arity NewAttr}
          AsNewFeat = {Arity NewFeat}
@@ -558,6 +557,9 @@ in
    fun {New C Mess}
       Obj = {Boot_Object.new C}
    in
+      if {ClassIsLocking C} then
+         Obj.`ooObjLock` = {NewLock}
+      end
       {Obj Mess}
       Obj
    end
@@ -596,5 +598,8 @@ in
                                        if {ClassIsLocking C} then [locking]
                                        else nil
                                        end}
+                                   end
+                     getObjLock:   fun {$ O}
+                                      O.`ooObjLock`
                                    end)
 end

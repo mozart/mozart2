@@ -9,11 +9,11 @@ import symtab._
 
 /** Desugars class definitions */
 object DesugarClass extends Transformer with TreeDSL {
-  var ooFreeFlag: Option[Symbol] = None
-  var ooFallback: Option[Symbol] = None
-  var OoExtensions: Option[Symbol] = None
-
   case class MethodInfo(symbol: Symbol, label: Expression, proc: Expression)
+
+  def ooFreeFlag = program.baseEnvironment("`ooFreeFlag`")
+  def ooFallback = program.baseEnvironment("`ooFallback`")
+  def OoExtensions = program.baseEnvironment("OoExtensions")
 
   var selfSymbol: Option[Symbol] = None
 
@@ -24,23 +24,7 @@ object DesugarClass extends Transformer with TreeDSL {
     finally selfSymbol = oldSelf
   }
 
-  /* Find some symbols we need from the Base env */
-  private def findThingsWeNeedInDecls(decls: List[Variable]) {
-    for (Variable(symbol) <- decls) {
-      symbol.name match {
-        case "`ooFreeFlag`" => ooFreeFlag = Some(symbol)
-        case "`ooFallback`" => ooFallback = Some(symbol)
-        case "OoExtensions" => OoExtensions = Some(symbol)
-        case _ => ()
-      }
-    }
-  }
-
   override def transformStat(statement: Statement) = statement match {
-    case LocalStatement(decls, _) =>
-      findThingsWeNeedInDecls(decls)
-      super.transformStat(statement)
-
     case BinaryOpStatement(lhs, "<-", rhs) if selfSymbol.isDefined =>
       transformStat {
         atPos(statement) {
@@ -65,7 +49,7 @@ object DesugarClass extends Transformer with TreeDSL {
     case BinaryOpStatement(lhs, ",", rhs) if selfSymbol.isDefined =>
       transformStat {
         atPos(statement) {
-          val applyProc = (lhs dot ooFallback.get dot OzAtom("apply"))
+          val applyProc = (lhs dot ooFallback dot OzAtom("apply"))
           applyProc call (rhs, Self(), lhs)
         }
       }
@@ -82,15 +66,8 @@ object DesugarClass extends Transformer with TreeDSL {
   }
 
   override def transformExpr(expression: Expression) = expression match {
-    case LocalExpression(decls, _) =>
-      findThingsWeNeedInDecls(decls)
-      super.transformExpr(expression)
-
     case clazz @ ClassExpression(name, parents, features, attributes,
         properties, methods) =>
-      require(ooFreeFlag.isDefined && ooFallback.isDefined &&
-          OoExtensions.isDefined)
-
       val methodsInfo = makeMethods(name, methods)
 
       transformExpr(atPos(clazz) {
@@ -108,7 +85,7 @@ object DesugarClass extends Transformer with TreeDSL {
           val newProperties = transformProperties(properties)
           val newMethods = transformMethods(methodsInfo)
 
-          val newFullClass = OoExtensions.get dot OzAtom("class")
+          val newFullClass = OoExtensions dot OzAtom("class")
 
           createMethodProcs ~>
           newFullClass.callExpr(newParents, newMethods, newAttributes,
@@ -160,7 +137,7 @@ object DesugarClass extends Transformer with TreeDSL {
     case BinaryOp(lhs, ",", rhs) if selfSymbol.isDefined =>
       transformExpr {
         atPos(expression) {
-          val applyProc = (lhs dot ooFallback.get dot OzAtom("apply"))
+          val applyProc = (lhs dot ooFallback dot OzAtom("apply"))
           applyProc callExpr (rhs, Self(), lhs)
         }
       }
@@ -185,7 +162,7 @@ object DesugarClass extends Transformer with TreeDSL {
     val specs = for {
       featOrAttr @ FeatOrAttr(name, value) <- featOrAttrs
     } yield {
-      val newValue = value getOrElse Variable(ooFreeFlag.get)
+      val newValue = value getOrElse Variable(ooFreeFlag)
       treeCopy.RecordField(featOrAttr, name, newValue)
     }
 

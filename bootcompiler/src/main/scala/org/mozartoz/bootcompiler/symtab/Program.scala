@@ -1,7 +1,7 @@
 package org.mozartoz.bootcompiler
 package symtab
 
-import scala.collection.mutable.{ ListBuffer, ArrayBuffer }
+import scala.collection.mutable.{ ListBuffer, ArrayBuffer, HashMap }
 import scala.util.parsing.input.{ Position, NoPosition, Positional }
 
 import ast._
@@ -17,6 +17,9 @@ class Program {
 
   /** Builtin manager */
   val builtins = new Builtins
+
+  /** Base environment */
+  val baseEnvironment = new HashMap[String, Symbol]
 
   /** Implicit top-level abstraction */
   val topLevelAbstraction = new Abstraction(NoAbstraction, "<TopLevel>")

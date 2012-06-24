@@ -75,6 +75,11 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       val stat = statsAndStatToStat(stats, body)
 
       withEnvironmentFromDecls(decls) {
+        /* The top-level local statement (hence the first that is encountered)
+         * is the one declaring the base environment. */
+        if (program.baseEnvironment.isEmpty)
+          program.baseEnvironment ++= env
+
         if (decls.isEmpty) transformStat(stat)
         else treeCopy.LocalStatement(local, decls, transformStat(stat))
       }

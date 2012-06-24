@@ -108,8 +108,8 @@ trait MatchClauseCommon extends Node {
 
     val untilPattern = "[] " + pattern.syntax(subIndent)
     val untilGuard =
-      if (guard.isDefined) untilPattern + " if " + guard.get.syntax(subIndent)
-      else untilPattern
+      if (guard.isEmpty) untilPattern
+      else untilPattern + " andthen " + guard.get.syntax(subIndent)
     val allButBody = untilGuard + " then\n" + subIndent
 
     allButBody + body.syntax(subIndent)

@@ -194,7 +194,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val caseStatementClause: PackratParser[MatchStatementClause] = (
       positioned(
-          expression ~ opt("if" ~> expression) ~ ("then" ~> inStatement)
+          pattern ~ opt("andthen" ~> expression) ~ ("then" ~> inStatement)
               ^^ MatchStatementClause)
   )
 
@@ -203,9 +203,35 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val caseExpressionClause: PackratParser[MatchExpressionClause] = (
       positioned(
-          expression ~ opt("if" ~> expression) ~ ("then" ~> inExpression)
+          pattern ~ opt("andthen" ~> expression) ~ ("then" ~> inExpression)
               ^^ MatchExpressionClause)
   )
+
+  lazy val pattern: PackratParser[Expression] = (
+      positioned((pattern1 <~ "|") ~ pattern ^^ cons)
+    | pattern1
+  )
+
+  lazy val pattern1: PackratParser[Expression] = (
+      pattern2 ~ rep1("#" ~> pattern2) ^^ { case f ~ r => sharp(f :: r) }
+    | pattern2
+  )
+
+  lazy val pattern2: PackratParser[Expression] = (
+      // TODO open record and escaped variable (and <pattern> = <pattern> ?)
+      positioned(literalLabelExpr ~ rep(patternRecordField) <~ ")" ^^ Record)
+    | positioned("[" ~> rep1(pattern) <~ "]" ^^ exprListToListExpr)
+    | integerConstExpr | floatConstExpr | literalConstExpr
+    | variable
+    | wildcardExpr
+    | "(" ~> pattern <~ ")"
+  )
+
+  lazy val patternRecordField: PackratParser[RecordField] =
+    positioned(optFeatureNoVar ~ pattern ^^ RecordField)
+
+  lazy val optFeatureNoVar: PackratParser[Expression] =
+    positioned(opt(featureNoVar <~ ":") ^^ (_.getOrElse(AutoFeature())))
 
   // else clauses of if and case
 

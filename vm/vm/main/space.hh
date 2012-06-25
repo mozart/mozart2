@@ -287,10 +287,25 @@ Space* Space::clone(VM vm) {
   return vm->cloneSpace(this);
 }
 
+void Space::kill(VM vm) {
+  assert(!isTopLevel());
+
+  Space* parent = getParent();
+  _status = ssFailed;
+  parent->decRunnableThreadCount();
+
+  clearStatusVar(vm);
+
+  assert(vm->getCurrentSpace() == parent);
+  bindStatusVar(vm, trivialBuild(vm, vm->coreatoms.failed));
+}
+
 // Status variable
 
 void Space::clearStatusVar(VM vm) {
-  _statusVar.make<Unbound>(vm);
+  RichNode statusVar = *getStatusVar();
+  if (!statusVar.isTransient())
+    _statusVar.make<Unbound>(vm, getParent());
 }
 
 void Space::bindStatusVar(VM vm, RichNode value) {

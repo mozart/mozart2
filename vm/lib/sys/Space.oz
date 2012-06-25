@@ -40,6 +40,7 @@ export
    Merge
    Clone
    Commit
+   Kill
    Choose
 
 define
@@ -51,6 +52,7 @@ define
    Merge      = Boot_Space.merge
    Clone      = Boot_Space.clone
    Commit     = Boot_Space.commit
+   Kill       = Boot_Space.kill
    Choose     = Boot_Space.choose
 
 end

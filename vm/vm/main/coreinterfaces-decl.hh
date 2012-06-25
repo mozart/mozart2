@@ -541,6 +541,10 @@ struct Interface<SpaceLike>: ImplementedBy<ReifiedSpace, DeletedSpace> {
   OpResult cloneSpace(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, u"Space", self);
   }
+
+  OpResult killSpace(RichNode self, VM vm) {
+    return raiseTypeError(vm, u"Space", self);
+  }
 };
 
 class ThreadLike;

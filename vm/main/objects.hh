@@ -180,6 +180,10 @@ OpResult Implementation<Object>::getAttrOffset(Self self, VM vm,
     vm, self, attribute, offset);
 }
 
+OpResult Implementation<Object>::procedureArity(Self self, VM vm, int& result) {
+  return Interface<Callable>().procedureArity(self, vm, result);
+}
+
 OpResult Implementation<Object>::getCallInfo(
   Self self, VM vm, int& arity, StableNode*& body,
   ProgramCounter& start, int& Xcount,
@@ -208,12 +212,6 @@ OpResult Implementation<Object>::getCallInfo(
   Gs = StaticArray<StableNode>(_Gs, 2);
   Ks = nullptr;
 
-  return OpResult::proceed();
-}
-
-OpResult Implementation<Object>::arity(Self self, VM vm,
-                                       UnstableNode& result) {
-  result = trivialBuild(vm, 1);
   return OpResult::proceed();
 }
 

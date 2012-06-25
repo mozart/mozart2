@@ -10,6 +10,7 @@ require
    Boot_Float     at 'x-oz://boot/Float'
    Boot_Number    at 'x-oz://boot/Number'
    Boot_Tuple     at 'x-oz://boot/Tuple'
+   Boot_Procedure at 'x-oz://boot/Procedure'
    Boot_Dictionary at 'x-oz://boot/Dictionary'
    Boot_Record    at 'x-oz://boot/Record'
    Boot_Chunk     at 'x-oz://boot/Chunk'
@@ -204,6 +205,12 @@ prepare
    MakeTuple = Boot_Tuple.make
 
    %%
+   %% Procedure
+   %%
+   IsProcedure    = Boot_Procedure.is
+   ProcedureArity = Boot_Procedure.arity
+
+   %%
    %% Dictionary
    %%
    IsDictionary  = Boot_Dictionary.is
@@ -357,7 +364,7 @@ prepare
    \insert 'Number.oz'
    \insert 'Tuple.oz'
    \insert 'List.oz'
-   %\insert 'Procedure.oz'
+   \insert 'Procedure.oz'
    \insert 'Loop.oz'
    %\insert 'WeakDictionary.oz'
    \insert 'Dictionary.oz'

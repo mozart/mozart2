@@ -70,15 +70,14 @@ protected:
   template <class Self>
   void runCopyLoop();
 
-  virtual void customCopySpace(SpaceRef& to, SpaceRef from) {
-    assert(_kind == grkCustom);
-    assert(false);
-  }
-
   MemoryManager& getSecondMM() {
     return secondMM;
   }
 private:
+  template <class Self>
+  inline
+  void processSpaceInternal(SpaceRef& space);
+
   template <class Self>
   inline
   void processThreadInternal(Runnable*& thread);
@@ -98,6 +97,7 @@ private:
   MemoryManager& secondMM;
 
   struct {
+    MemManagedList<SpaceRef*> spaces;
     MemManagedList<Runnable**> threads;
     StableNode* stableNodes;
     UnstableNode* unstableNodes;

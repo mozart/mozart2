@@ -235,6 +235,9 @@ private:
   volatile bool _preemptRequested;
   volatile bool _exitRunRequested;
   volatile std::int64_t _referenceTime;
+
+  // During GC, we need a SpaceRef version of the top-level space
+  SpaceRef _topLevelSpaceRef;
 };
 
 }

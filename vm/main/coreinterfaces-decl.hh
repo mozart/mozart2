@@ -314,7 +314,7 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
 class Dottable;
 template<>
 struct Interface<Dottable>:
-  ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array,
+  ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array, Dictionary,
     Atom, OptName, GlobalName, Boolean, Unit> {
 
   OpResult dot(RichNode self, VM vm, RichNode feature,

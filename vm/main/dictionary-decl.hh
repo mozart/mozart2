@@ -201,7 +201,8 @@ class Dictionary;
  * Dictionary
  */
 template <>
-class Implementation<Dictionary>: public WithHome {
+class Implementation<Dictionary>: public WithHome,
+  public DottableHelper<Dictionary> {
 public:
   typedef SelfType<Dictionary>::Self Self;
 public:
@@ -213,6 +214,15 @@ public:
 
   inline
   Implementation(VM vm, GR gr, Self from);
+
+public:
+  // Dottable interface
+
+  inline
+  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+
+  inline
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
 public:
   // DictionaryLike interface

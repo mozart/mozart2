@@ -240,6 +240,16 @@ OpResult Implementation<ReifiedSpace>::cloneSpace(
   return OpResult::proceed();
 }
 
+OpResult Implementation<ReifiedSpace>::killSpace(Self self, VM vm) {
+  Space* space = getSpace();
+
+  if (!space->isAdmissible(vm))
+    return raise(vm, vm->coreatoms.spaceAdmissible);
+
+  space->kill(vm);
+  return OpResult::proceed();
+}
+
 //////////////////
 // DeletedSpace //
 //////////////////
@@ -349,6 +359,10 @@ OpResult Implementation<DeletedSpace>::cloneSpace(
       return OpResult::fail();
     }
   }
+}
+
+OpResult Implementation<DeletedSpace>::killSpace(Self self, VM vm) {
+  return OpResult::proceed();
 }
 
 }

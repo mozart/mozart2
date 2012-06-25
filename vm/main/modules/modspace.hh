@@ -124,6 +124,15 @@ public:
     }
   };
 
+  class Kill: public Builtin<Kill> {
+  public:
+    Kill(): Builtin("kill") {}
+
+    OpResult operator()(VM vm, In space) {
+      return SpaceLike(space).killSpace(vm);
+    }
+  };
+
   class Choose: public Builtin<Choose> {
   public:
     Choose(): Builtin("choose") {}

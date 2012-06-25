@@ -170,6 +170,9 @@ public:
   inline
   Space* clone(VM vm);
 
+  inline
+  void kill(VM vm);
+
 // Distributor
 
 public:

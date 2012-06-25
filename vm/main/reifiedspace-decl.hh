@@ -77,6 +77,9 @@ public:
 
   inline
   OpResult cloneSpace(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult killSpace(Self self, VM vm);
 private:
   SpaceRef _space;
 };
@@ -136,6 +139,9 @@ public:
 
   inline
   OpResult cloneSpace(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult killSpace(Self self, VM vm);
 private:
   DeletedSpaceKind _kind;
 };

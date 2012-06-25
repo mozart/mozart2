@@ -49,6 +49,8 @@ include_directories("${MOZART_DIR}/boostenv/main"
 
 file(GLOB SYS_FUNCTORS
     "${MOZART_DIR}/lib/sys/*.oz"
+    "${MOZART_DIR}/lib/op/*.oz"
+    "${MOZART_DIR}/lib/cp/*.oz"
     "${MOZART_DIR}/boostenv/lib/*.oz")
 
 add_custom_command(

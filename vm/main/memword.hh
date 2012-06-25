@@ -122,7 +122,7 @@ union MWUnion<T,args...>{
 
 // Finally, here comes the list of potentially small types that we want to
 // optimize in a memory word.
-typedef MWUnion<nativeint, bool, double> MemWord;
+typedef MWUnion<nativeint, bool, double, unit_t> MemWord;
 
 static_assert(sizeof(MemWord) == sizeof(char *),
   "MemWord has not the size of a word");

@@ -47,12 +47,12 @@ public:
   Implementation(SpaceRef space):
     WithHome(space->getParent()), _space(space) {}
 
-  static SpaceRef build(VM vm, SpaceRef space) {
-    return space;
+  static void build(SpaceRef& self, VM vm, SpaceRef space) {
+    self = space;
   }
 
   inline
-  static SpaceRef build(VM vm, GR gr, Self from);
+  static void build(SpaceRef& self, VM vm, GR gr, Self from);
 public:
   Space* getSpace() {
     return _space;
@@ -106,12 +106,12 @@ public:
 public:
   Implementation(DeletedSpaceKind kind): _kind(kind) {}
 
-  static DeletedSpaceKind build(VM vm, DeletedSpaceKind kind) {
-    return kind;
+  static void build(DeletedSpaceKind& self, VM vm, DeletedSpaceKind kind) {
+    self = kind;
   }
 
   inline
-  static DeletedSpaceKind build(VM vm, GR gr, Self from);
+  static void build(DeletedSpaceKind& self, VM vm, GR gr, Self from);
 public:
   DeletedSpaceKind kind() {
     return _kind;

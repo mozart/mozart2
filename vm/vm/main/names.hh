@@ -37,10 +37,8 @@ namespace mozart {
 
 #include "OptName-implem.hh"
 
-SpaceRef Implementation<OptName>::build(VM vm, GR gr, Self from) {
-  SpaceRef home;
-  gr->copySpace(home, from.get().home());
-  return home;
+void Implementation<OptName>::build(SpaceRef& self, VM vm, GR gr, Self from) {
+  gr->copySpace(self, from.get().home());
 }
 
 OpResult Implementation<OptName>::makeFeature(Self self, VM vm) {

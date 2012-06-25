@@ -132,16 +132,16 @@ public:
 public:
   Implementation(SpaceRef home): WithHome(home) {}
 
-  static SpaceRef build(VM vm) {
-    return vm->getCurrentSpace();
+  static void build(SpaceRef& self, VM vm) {
+    self = vm->getCurrentSpace();
   }
 
-  static SpaceRef build(VM vm, Space* home) {
-    return home;
+  static void build(SpaceRef& self, VM vm, Space* home) {
+    self = home;
   }
 
   inline
-  static SpaceRef build(VM vm, GR gr, Self from);
+  static void build(SpaceRef& self, VM vm, GR gr, Self from);
 
 public:
   // DataflowVariable interface
@@ -189,12 +189,12 @@ public:
 public:
   Implementation(StableNode* underlying): _underlying(underlying) {}
 
-  static StableNode* build(VM vm, StableNode* underlying) {
-    return underlying;
+  static void build(StableNode*& self, VM vm, StableNode* underlying) {
+    self = underlying;
   }
 
   inline
-  static StableNode* build(VM vm, GR gr, Self from);
+  static void build(StableNode*& self, VM vm, GR gr, Self from);
 
 public:
   StableNode* getUnderlying() {
@@ -258,12 +258,12 @@ public:
 public:
   Implementation(StableNode* underlying): _underlying(underlying) {}
 
-  static StableNode* build(VM vm, StableNode* underlying) {
-    return underlying;
+  static void build(StableNode*& self, VM vm, StableNode* underlying) {
+    self = underlying;
   }
 
   inline
-  static StableNode* build(VM vm, GR gr, Self from);
+  static void build(StableNode*& self, VM vm, GR gr, Self from);
 
 public:
   StableNode* getUnderlying() {

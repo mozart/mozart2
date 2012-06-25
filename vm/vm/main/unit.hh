@@ -37,8 +37,7 @@ namespace mozart {
 
 #include "Unit-implem.hh"
 
-unit_t Implementation<Unit>::build(VM vm, GR gr, Self from) {
-  return unit;
+void Implementation<Unit>::build(unit_t& self, VM vm, GR gr, Self from) {
 }
 
 bool Implementation<Unit>::equals(VM vm, Self right) {

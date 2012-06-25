@@ -69,7 +69,9 @@ public:
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
-  static StableNode* build(VM vm, StableNode* dest) { return dest; }
+  static void build(StableNode*& self, VM vm, StableNode* dest) {
+    self = dest;
+  }
 
   StableNode* dest() const { return _dest; }
 private:
@@ -120,7 +122,9 @@ public:
 public:
   Implementation(UnstableNode* dest) : _dest(dest) {}
 
-  static UnstableNode* build(VM vm, UnstableNode* dest) { return dest; }
+  static void build(UnstableNode*& self, VM vm, UnstableNode* dest) {
+    self = dest;
+  }
 
   UnstableNode* dest() const { return _dest; }
 private:

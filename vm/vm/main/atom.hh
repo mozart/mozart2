@@ -37,9 +37,9 @@ namespace mozart {
 
 #include "Atom-implem.hh"
 
-AtomImpl* Implementation<Atom>::build(VM vm, GR gr, Self from) {
+void Implementation<Atom>::build(AtomImpl*& self, VM vm, GR gr, Self from) {
   const AtomImpl* fromValue = from.get().value();
-  return build(vm, fromValue->length(), fromValue->contents());
+  self = vm->atomTable.get(vm, fromValue->length(), fromValue->contents());
 }
 
 bool Implementation<Atom>::equals(VM vm, Self right) {

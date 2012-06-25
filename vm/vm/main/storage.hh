@@ -77,7 +77,8 @@ public:
   template<class... Args>
   static void init(const Type*& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
-    value.init(vm, Implementation<T>::build(vm, std::forward<Args>(args)...));
+    value.alloc<U>(vm);
+    Implementation<T>::build(value.get<U>(), vm, std::forward<Args>(args)...);
   }
 
   static Implementation<T> get(MemWord value) {

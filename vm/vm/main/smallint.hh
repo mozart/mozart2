@@ -39,8 +39,8 @@ namespace mozart {
 
 #include "SmallInt-implem.hh"
 
-nativeint Implementation<SmallInt>::build(VM vm, GR gr, Self from) {
-  return from.get().value();
+void Implementation<SmallInt>::build(nativeint& self, VM vm, GR gr, Self from) {
+  self = from.get().value();
 }
 
 bool Implementation<SmallInt>::equals(VM vm, Self right) {

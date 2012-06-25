@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "Float-implem.hh"
 
-double Implementation<Float>::build(VM vm, GR gr, Self from) {
-  return from.get().value();
+void Implementation<Float>::build(double& self, VM vm, GR gr, Self from) {
+  self = from.get().value();
 }
 
 bool Implementation<Float>::equals(VM vm, Self right) {

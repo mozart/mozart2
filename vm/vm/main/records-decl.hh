@@ -395,16 +395,16 @@ public:
 public:
   Implementation(StableNode* underlying): _underlying(underlying) {}
 
-  static StableNode* build(VM vm, StableNode* underlying) {
-    return underlying;
+  static void build(StableNode*& self, VM vm, StableNode* underlying) {
+    self = underlying;
   }
 
-  static StableNode* build(VM vm, RichNode underlying) {
-    return underlying.getStableRef(vm);
+  static void build(StableNode*& self, VM vm, RichNode underlying) {
+    self = underlying.getStableRef(vm);
   }
 
   inline
-  static StableNode* build(VM vm, GR gr, Self from);
+  static void build(StableNode*& self, VM vm, GR gr, Self from);
 
 public:
   StableNode* getUnderlying() {

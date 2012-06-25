@@ -52,16 +52,16 @@ private:
 public:
   Implementation(Builtin* builtin): _builtin(builtin) {}
 
-  static Builtin* build(VM vm, Builtin* builtin) {
-    return builtin;
+  static void build(Builtin*& self, VM vm, Builtin* builtin) {
+    self = builtin;
   }
 
-  static Builtin* build(VM vm, Builtin& builtin) {
-    return &builtin;
+  static void build(Builtin*& self, VM vm, Builtin& builtin) {
+    self = &builtin;
   }
 
   inline
-  static Builtin* build(VM vm, GR gr, Self from);
+  static void build(Builtin*& self, VM vm, GR gr, Self from);
 
 public:
   /**

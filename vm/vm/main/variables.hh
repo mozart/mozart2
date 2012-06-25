@@ -181,10 +181,8 @@ void Implementation<Variable>::wakeUpPendingsSubSpace(VM vm,
 
 #include "Unbound-implem.hh"
 
-SpaceRef Implementation<Unbound>::build(VM vm, GR gr, Self from) {
-  SpaceRef home;
-  gr->copySpace(home, from.get().home());
-  return home;
+void Implementation<Unbound>::build(SpaceRef& self, VM vm, GR gr, Self from) {
+  gr->copySpace(self, from.get().home());
 }
 
 void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
@@ -218,10 +216,9 @@ OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
 
 #include "ReadOnly-implem.hh"
 
-StableNode* Implementation<ReadOnly>::build(VM vm, GR gr, Self from) {
-  StableNode* result = new (gr->vm) StableNode;
-  gr->copyStableNode(*result, *from.get().getUnderlying());
-  return result;
+void Implementation<ReadOnly>::build(StableNode*& self, VM vm, GR gr,
+                                     Self from) {
+  gr->copyStableRef(self, from.get().getUnderlying());
 }
 
 OpResult Implementation<ReadOnly>::wakeUp(Self self, VM vm) {
@@ -270,10 +267,9 @@ OpResult Implementation<ReadOnly>::bind(Self self, VM vm, RichNode src) {
 
 #include "FailedValue-implem.hh"
 
-StableNode* Implementation<FailedValue>::build(VM vm, GR gr, Self from) {
-  StableNode* result = new (gr->vm) StableNode;
-  gr->copyStableNode(*result, *from.get().getUnderlying());
-  return result;
+void Implementation<FailedValue>::build(StableNode*& self, VM vm, GR gr,
+                                        Self from) {
+  gr->copyStableRef(self, from.get().getUnderlying());
 }
 
 OpResult Implementation<FailedValue>::raiseUnderlying(VM vm) {

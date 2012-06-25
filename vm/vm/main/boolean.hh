@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "Boolean-implem.hh"
 
-bool Implementation<Boolean>::build(VM vm, GR gr, Self from) {
-  return from.get().value();
+void Implementation<Boolean>::build(bool& self, VM vm, GR gr, Self from) {
+  self = from.get().value();
 }
 
 bool Implementation<Boolean>::equals(VM vm, Self right) {

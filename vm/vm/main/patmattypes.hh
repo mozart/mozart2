@@ -37,8 +37,9 @@ namespace mozart {
 
 #include "PatMatCapture-implem.hh"
 
-nativeint Implementation<PatMatCapture>::build(VM vm, GR gr, Self from) {
-  return from.get().index();
+void Implementation<PatMatCapture>::build(nativeint& self, VM vm, GR gr,
+                                          Self from) {
+  self = from.get().index();
 }
 
 bool Implementation<PatMatCapture>::equals(VM vm, Self right) {

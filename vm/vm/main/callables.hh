@@ -37,9 +37,9 @@ namespace mozart {
 
 #include "BuiltinProcedure-implem.hh"
 
-builtins::BaseBuiltin* Implementation<BuiltinProcedure>::build(
-  VM vm, GR gr, Self from) {
-  return from.get()._builtin;
+void Implementation<BuiltinProcedure>::build(Builtin*& self, VM vm, GR gr,
+                                             Self from) {
+  self = from.get()._builtin;
 }
 
 bool Implementation<BuiltinProcedure>::equals(VM vm, Self right) {

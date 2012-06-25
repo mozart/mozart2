@@ -47,12 +47,11 @@ public:
 
   Implementation(unit_t value) {}
 
-  static unit_t build(VM vm) {
-    return unit;
+  static void build(unit_t& self, VM vm) {
   }
 
   inline
-  static unit_t build(VM vm, GR gr, Self from);
+  static void build(unit_t& self, VM vm, GR gr, Self from);
 
 public:
   inline

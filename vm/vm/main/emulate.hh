@@ -53,10 +53,10 @@ struct StackEntry {
   StackEntry(GR gr, StackEntry& from);
 
   inline
-  void beforeGR(VM vm);
+  void beforeGR(VM vm, StableNode*& abs);
 
   inline
-  void afterGR(VM vm);
+  void afterGR(VM vm, StableNode*& abs);
 
   bool isExceptionHandler() {
     return abstraction == nullptr;

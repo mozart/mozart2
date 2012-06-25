@@ -93,17 +93,24 @@ public:
 public:
   // Callable interface
 
+  OpResult isCallable(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isProcedure(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult procedureArity(Self self, VM vm, int& result);
+
   inline
   OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
-
-  /**
-   * Get the arity of the builtin in a node
-   */
-  inline
-  OpResult arity(Self self, VM vm, UnstableNode& result);
 public:
   // Miscellaneous
 
@@ -152,16 +159,30 @@ public:
     return _Gc;
   }
 
+public:
   int getArity() { return _arity; }
 
-  /**
-   * Get the arity of the abstraction in a node
-   */
-  inline
-  OpResult arity(Self self, VM vm, UnstableNode& result);
+public:
+  // ArrayInitializer interface
 
   inline
   OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+
+public:
+  // Callable interface
+
+  OpResult isCallable(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isProcedure(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult procedureArity(Self self, VM vm, int& result);
 
   /**
    * Get the information needed to call this abstraction
@@ -178,6 +199,7 @@ public:
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
+
 public:
   // Miscellaneous
 

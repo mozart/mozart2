@@ -112,14 +112,24 @@ private:
 public:
   // Callable interface
 
+  OpResult isCallable(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  OpResult isProcedure(Self self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult procedureArity(Self self, VM vm, int& result);
+
   inline
   OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
-
-  inline
-  OpResult arity(Self self, VM vm, UnstableNode& result);
 
 public:
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {

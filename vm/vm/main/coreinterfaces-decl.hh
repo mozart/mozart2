@@ -181,6 +181,20 @@ template<>
 struct Interface<Callable>:
   ImplementedBy<Abstraction, Object, BuiltinProcedure> {
 
+  OpResult isCallable(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult isProcedure(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult procedureArity(RichNode self, VM vm, int& result) {
+    return raiseTypeError(vm, u"Abstraction", self);
+  }
+
   OpResult getCallInfo(RichNode self, VM vm, int& arity, StableNode*& body,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,

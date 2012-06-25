@@ -65,17 +65,17 @@ OpResult Implementation<BuiltinProcedure>::callBuiltin(
     return raiseIllegalArity(vm, getArity(), sizeof...(args));
 }
 
+OpResult Implementation<BuiltinProcedure>::procedureArity(Self self, VM vm,
+                                                          int& result) {
+  result = getArity();
+  return OpResult::proceed();
+}
+
 OpResult Implementation<BuiltinProcedure>::getCallInfo(
   Self self, VM vm, int& arity, StableNode*& body, ProgramCounter& start,
   int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   return _builtin->getCallInfo(self, vm, arity, body, start, Xcount, Gs, Ks);
-}
-
-OpResult Implementation<BuiltinProcedure>::arity(Self self, VM vm,
-                                                 UnstableNode& result) {
-  result.make<SmallInt>(vm, getArity());
-  return OpResult::proceed();
 }
 
 /////////////////
@@ -99,16 +99,16 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
     gr->copyStableNode(_Gs[i], from[i]);
 }
 
-OpResult Implementation<Abstraction>::arity(Self self, VM vm,
-                                            UnstableNode& result) {
-  result.make<SmallInt>(vm, _arity);
-  return OpResult::proceed();
-}
-
 OpResult Implementation<Abstraction>::initElement(Self self, VM vm,
                                                   size_t index,
                                                   RichNode value) {
   self[index].init(vm, value);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Abstraction>::procedureArity(Self self, VM vm,
+                                                     int& result) {
+  result = getArity();
   return OpResult::proceed();
 }
 

@@ -59,6 +59,10 @@ void GarbageCollector::doGC() {
   }
 }
 
+void GarbageCollector::processSpace(SpaceRef& to, SpaceRef from) {
+  to = from->gCollectOuter(this);
+}
+
 void GarbageCollector::processThread(Runnable*& to, Runnable* from) {
   to = from->gCollectOuter(this);
 }

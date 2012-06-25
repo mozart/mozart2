@@ -75,6 +75,15 @@ Space* SpaceCloner::doCloneSpace(Space* space) {
   return copy;
 }
 
+void SpaceCloner::processSpace(SpaceRef& to, SpaceRef from) {
+  Space* space = from;
+  Space* copy = space->sCloneOuter(this);
+  to = copy;
+
+  if (copy != space)
+    spaceBackups.push_back(getSecondMM(), space);
+}
+
 void SpaceCloner::processThread(Runnable*& to, Runnable* from) {
   to = from->sCloneOuter(this);
 

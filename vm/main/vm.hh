@@ -85,6 +85,11 @@ void VirtualMachine::initialize() {
 }
 
 void VirtualMachine::beforeGR(GR gr) {
+  if (gr->kind() == GraphReplicator::grkGarbageCollection) {
+    _topLevelSpaceRef = _topLevelSpace;
+    assert(_currentSpace == _topLevelSpace);
+  }
+
   for (auto iter = aliveThreads.begin();
        iter != aliveThreads.end(); ++iter) {
     (*iter)->beforeGR();
@@ -92,6 +97,11 @@ void VirtualMachine::beforeGR(GR gr) {
 }
 
 void VirtualMachine::afterGR(GR gr) {
+  if (gr->kind() == GraphReplicator::grkGarbageCollection) {
+    _topLevelSpace = _topLevelSpaceRef;
+    _currentSpace = _topLevelSpace;
+  }
+
   for (auto iter = aliveThreads.begin();
        iter != aliveThreads.end(); ++iter) {
     (*iter)->afterGR();
@@ -113,21 +123,21 @@ void VirtualMachine::startGC(GC gc) {
   // Reinitialize the VM
   initialize();
 
-  // Always keep the top-level space
-  SpaceRef topLevelSpaceRef = _topLevelSpace;
-  gc->copySpace(topLevelSpaceRef, topLevelSpaceRef);
-  _topLevelSpace = topLevelSpaceRef;
-  _currentSpace = _topLevelSpace;
+  // Roots of garbage collection
 
-  // Root of GC are runnable threads + pending alarms
+  // Top-level space
+  gc->copySpace(_topLevelSpaceRef, _topLevelSpaceRef);
+
+  // Runnable threads
   getThreadPool().gCollect(gc);
 
+  // Pending alarms
   for (auto iter = alarms.begin(); iter != alarms.end(); ++iter) {
     _alarms.push_back_new(this, iter->expiration, iter->wakeable);
     gc->copyStableRef(_alarms.back().wakeable, _alarms.back().wakeable);
   }
 
-  // Oh, and, yes, environmental roots as well
+  // Environmental roots
   environment.gCollect(gc);
 }
 

@@ -43,31 +43,8 @@ GraphReplicator::GraphReplicator(VM vm, Kind kind):
 }
 
 void GraphReplicator::copySpace(SpaceRef& to, SpaceRef from) {
-  // Spaces are copied immediately
-
-  switch (kind()) {
-    case grkGarbageCollection: {
-      Space* space = from;
-      to = space->gCollectOuter(static_cast<GC>(this));
-      break;
-    }
-
-    case grkSpaceCloning: {
-      Space* space = from;
-      Space* copy = space->sCloneOuter(static_cast<SC>(this));
-      to = copy;
-
-      if (copy != space)
-        static_cast<SC>(this)->spaceBackups.push_back(secondMM, space);
-
-      break;
-    }
-
-    case grkCustom: {
-      customCopySpace(to, from);
-      break;
-    }
-  }
+  to = from;
+  todos.spaces.push_front(secondMM, &to);
 }
 
 void GraphReplicator::copyThread(Runnable*& to, Runnable* from) {
@@ -94,12 +71,16 @@ void GraphReplicator::copyStableRef(StableNode*& to, StableNode* from) {
 
 template <class Self>
 void GraphReplicator::runCopyLoop() {
-  while (!todos.threads.empty() ||
+  while (!todos.spaces.empty() ||
+         !todos.threads.empty() ||
          todos.stableNodes != nullptr ||
          todos.unstableNodes != nullptr ||
          !todos.stableRefs.empty()) {
 
-    if (!todos.threads.empty()) {
+    if (!todos.spaces.empty()) {
+      processSpaceInternal<Self>(
+        *todos.spaces.pop_front(secondMM));
+    } else if (!todos.threads.empty()) {
       processThreadInternal<Self>(
         *todos.threads.pop_front(secondMM));
     } else if (todos.stableNodes != nullptr) {
@@ -113,6 +94,11 @@ void GraphReplicator::runCopyLoop() {
         *todos.stableRefs.pop_front(secondMM));
     }
   }
+}
+
+template <class Self>
+void GraphReplicator::processSpaceInternal(SpaceRef& space) {
+  static_cast<Self*>(this)->processSpace(space, space);
 }
 
 template <class Self>

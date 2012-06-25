@@ -55,6 +55,9 @@ private:
   friend class GraphReplicator;
 
   inline
+  void processSpace(SpaceRef& to, SpaceRef from);
+
+  inline
   void processThread(Runnable*& to, Runnable* from);
 
   template <class NodeType, class GCedType>

@@ -50,10 +50,12 @@ public:
 public:
   Implementation(nativeint index) : _index(index) {}
 
-  static nativeint build(VM, nativeint index) { return index; }
+  static void build(nativeint& self, VM, nativeint index) {
+    self = index;
+  }
 
   inline
-  static nativeint build(VM vm, GR gr, Self from);
+  static void build(nativeint& self, VM vm, GR gr, Self from);
 
 public:
   nativeint index() const { return _index; }

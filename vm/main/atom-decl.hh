@@ -50,20 +50,21 @@ public:
 
   Implementation(const AtomImpl* value) : _value(value) {}
 
-  static AtomImpl* build(VM vm, std::size_t length, const char16_t* contents) {
-    return vm->atomTable.get(vm, length, contents);
+  static void build(AtomImpl*& self, VM vm, std::size_t length,
+                    const char16_t* contents) {
+    self = vm->atomTable.get(vm, length, contents);
   }
 
-  static AtomImpl* build(VM vm, const char16_t* contents) {
-    return vm->atomTable.get(vm, contents);
+  static void build(AtomImpl*& self, VM vm, const char16_t* contents) {
+    self = vm->atomTable.get(vm, contents);
   }
 
-  static AtomImpl* build(VM vm, AtomImpl* value) {
-    return value;
+  static void build(AtomImpl*& self, VM vm, AtomImpl* value) {
+    self = value;
   }
 
   inline
-  static AtomImpl* build(VM vm, GR gr, Self from);
+  static void build(AtomImpl*& self, VM vm, GR gr, Self from);
 
 public:
   const AtomImpl* value() const { return _value; }

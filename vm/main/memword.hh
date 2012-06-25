@@ -67,7 +67,7 @@ template<class U, class T, class R>
 class MWUAccessor{
 public:
   static T& get(U *u){return (u->next).template get<T>();}
-  static void init(VM vm, U *u, T v){u->next.template init<T>(vm,v);}
+  static void alloc(VM vm, U *u){u->next.template alloc<T>(vm);}
 };
 
 // The bottom case of the MWUnion contains just a char* as it can be cast to
@@ -78,7 +78,7 @@ union MWUnion<>{
   template<class T>
   T& get(){return MWUAccessor<MWUnion,T,T>::get(this);}
   template<class T>
-  void init(VM vm,T v){MWUAccessor<MWUnion,T,T>::init(vm,this,v);}
+  void alloc(VM vm){MWUAccessor<MWUnion,T,T>::alloc(vm,this);}
 };
 
 // The easy case of accessing what we have in the first member of the union.
@@ -86,7 +86,7 @@ template<class U, class T>
 class MWUAccessor<U,T,T>{
 public:
   static T& get(U *u){return u->it;}
-  static void init(VM vm, U *u, T v){u->it=v;}
+  static void alloc(VM vm, U *u){}
 };
 
 // Accessing something that wasn't there, if a pointer type, we just get away
@@ -95,16 +95,16 @@ template<class T>
 class MWUAccessor<MWUnion<>,T*,T*>{
 public:
   static T*& get(MWUnion<>* u){return reinterpret_cast<T*&>(u->it);}
-  static void init(VM vm, MWUnion<> *u, T *v){u->it=reinterpret_cast<char*>(v);}
+  static void alloc(VM vm, MWUnion<> *u){}
 };
-// It isn't there and isn't a pointer so we store a pointer to it. We need new
-// memory on setting too.
+// It isn't there and isn't a pointer so we store a pointer to it.
+// This requires external memory
 template<class T>
 class MWUAccessor<MWUnion<>,T,T>{
 public:
   static T& get(MWUnion<>* u){return *reinterpret_cast<T*>(u->it);}
-  static void init(VM vm, MWUnion<> *u, T v){
-    u->it=reinterpret_cast<char*>(new(vm)T(v));
+  static void alloc(VM vm, MWUnion<> *u){
+    u->it=reinterpret_cast<char*>(new(vm)T);
   }
 };
 // The union itself, recursive on the parameter pack. If the first type is too
@@ -117,7 +117,9 @@ union MWUnion<T,args...>{
   template<class Q>
   Q& get(){return MWUAccessor<MWUnion,Q,Tred>::get(this);}
   template<class Q>
-  void init(VM vm,Q v){MWUAccessor<MWUnion,Q,Tred>::init(vm,this,v);}
+  void init(VM vm,Q v){ alloc<Q>(vm); get<Q>() = v; }
+  template<class Q>
+  void alloc(VM vm){MWUAccessor<MWUnion,Q,Tred>::alloc(vm,this);}
 };
 
 // Finally, here comes the list of potentially small types that we want to

@@ -70,8 +70,8 @@ public:
 public:
   Implementation(Runnable* runnable): _runnable(runnable) {}
 
-  static Runnable* build(VM vm, Runnable* runnable) {
-    return runnable;
+  static void build(Runnable*& self, VM vm, Runnable* runnable) {
+    self = runnable;
   }
 
 public:

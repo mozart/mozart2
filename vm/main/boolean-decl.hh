@@ -51,10 +51,12 @@ public:
 
   Implementation(bool value) : _value(value) {}
 
-  static bool build(VM, bool value) { return value; }
+  static void build(bool& self, VM, bool value) {
+    self = value;
+  }
 
   inline
-  static bool build(VM vm, GR gr, Self from);
+  static void build(bool& self, VM vm, GR gr, Self from);
 
 public:
   bool value() const { return _value; }

@@ -42,10 +42,12 @@ public:
 public:
   Implementation(double value) : _value(value) {}
 
-  static double build(VM, double value) { return value; }
+  static void build(double& self, VM, double value) {
+    self = value;
+  }
 
   inline
-  static double build(VM vm, GR gr, Self from);
+  static void build(double& self, VM vm, GR gr, Self from);
 
   double value() const { return _value; }
 

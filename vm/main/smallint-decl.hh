@@ -45,10 +45,12 @@ public:
 
   Implementation(nativeint value) : _value(value) {}
 
-  static nativeint build(VM, nativeint value) { return value; }
+  static void build(nativeint& self, VM vm, nativeint value) {
+    self = value;
+  }
 
   inline
-  static nativeint build(VM vm, GR gr, Self from);
+  static void build(nativeint& self, VM vm, GR gr, Self from);
 
 public:
   nativeint value() const { return _value; }

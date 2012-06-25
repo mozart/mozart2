@@ -473,10 +473,8 @@ void Implementation<Record>::printReprToStream(Self self, VM vm,
 
 #include "Chunk-implem.hh"
 
-StableNode* Implementation<Chunk>::build(VM vm, GR gr, Self from) {
-  StableNode* result = new (gr->vm) StableNode;
-  gr->copyStableNode(*result, *from.get().getUnderlying());
-  return result;
+void Implementation<Chunk>::build(StableNode*& self, VM vm, GR gr, Self from) {
+  gr->copyStableRef(self, from.get().getUnderlying());
 }
 
 OpResult Implementation<Chunk>::dot(Self self, VM vm,

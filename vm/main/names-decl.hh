@@ -49,12 +49,12 @@ public:
 public:
   Implementation(SpaceRef home): WithHome(home) {}
 
-  static SpaceRef build(VM vm) {
-    return vm->getCurrentSpace();
+  static void build(SpaceRef& self, VM vm) {
+    self = vm->getCurrentSpace();
   }
 
   inline
-  static SpaceRef build(VM vm, GR gr, Self from);
+  static void build(SpaceRef& self, VM vm, GR gr, Self from);
 
 public:
   // PotentialFeature interface

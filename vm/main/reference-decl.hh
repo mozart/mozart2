@@ -46,11 +46,13 @@ public:
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
-  static StableNode* build(VM, StableNode* dest) { return dest; }
+  static void build(StableNode*& self, VM, StableNode* dest) {
+    self = dest;
+  }
 
-  static StableNode* build(VM vm, GR gr, Self from) {
+  static void build(StableNode*& self, VM vm, GR gr, Self from) {
     assert(false);
-    return nullptr;
+    self = nullptr;
   }
 
   StableNode* dest() const { return _dest; }

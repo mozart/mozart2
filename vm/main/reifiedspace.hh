@@ -112,10 +112,9 @@ private:
 
 #include "ReifiedSpace-implem.hh"
 
-SpaceRef Implementation<ReifiedSpace>::build(VM vm, GR gr, Self from) {
-  SpaceRef home;
-  gr->copySpace(home, from.get().home());
-  return home;
+void Implementation<ReifiedSpace>::build(SpaceRef& self, VM vm, GR gr,
+                                         Self from) {
+  gr->copySpace(self, from.get().home());
 }
 
 OpResult Implementation<ReifiedSpace>::askSpace(
@@ -247,8 +246,9 @@ OpResult Implementation<ReifiedSpace>::cloneSpace(
 
 #include "DeletedSpace-implem.hh"
 
-DeletedSpaceKind Implementation<DeletedSpace>::build(VM vm, GR gr, Self from) {
-  return from.get().kind();
+void Implementation<DeletedSpace>::build(DeletedSpaceKind& self,
+                                         VM vm, GR gr, Self from) {
+  self = from.get().kind();
 }
 
 OpResult Implementation<DeletedSpace>::askSpace(

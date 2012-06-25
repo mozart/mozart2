@@ -422,6 +422,18 @@ Implementation<Dictionary>::Implementation(VM vm, GR gr, Self from):
   // TODO
 }
 
+OpResult Implementation<Dictionary>::dot(
+  Self self, VM vm, RichNode feature, UnstableNode& result) {
+
+  return dictGet(self, vm, feature, result);
+}
+
+OpResult Implementation<Dictionary>::hasFeature(
+  Self self, VM vm, RichNode feature, bool& result) {
+
+  return dictMember(self, vm, feature, result);
+}
+
 OpResult Implementation<Dictionary>::isDictionary(Self self, VM vm,
                                                   bool& result) {
   result = true;

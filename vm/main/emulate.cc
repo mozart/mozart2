@@ -51,7 +51,11 @@ StackEntry::StackEntry(GR gr, StackEntry& from) {
   // gregs and kregs are irrelevant
 }
 
-void StackEntry::beforeGR(VM vm) {
+void StackEntry::beforeGR(VM vm, StableNode*& abs) {
+  if (!isExceptionHandler())
+    abs = abstraction;
+  assert(abs != nullptr);
+
   int arity;
   StableNode* body;
   ProgramCounter start = nullptr;
@@ -59,13 +63,17 @@ void StackEntry::beforeGR(VM vm) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  UnstableNode temp(vm, *abstraction);
+  UnstableNode temp(vm, *abs);
   Callable(temp).getCallInfo(vm, arity, body, start, Xcount, Gs, Ks);
 
   PCOffset = PC - start;
 }
 
-void StackEntry::afterGR(VM vm) {
+void StackEntry::afterGR(VM vm, StableNode*& abs) {
+  if (!isExceptionHandler())
+    abs = abstraction;
+  assert(abs != nullptr);
+
   int arity;
   StableNode* body;
   ProgramCounter start = nullptr;
@@ -73,7 +81,7 @@ void StackEntry::afterGR(VM vm) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  UnstableNode temp(vm, *abstraction);
+  UnstableNode temp(vm, *abs);
   Callable(temp).getCallInfo(vm, arity, body, start, Xcount, Gs, Ks);
 
   PC = start + PCOffset;
@@ -837,15 +845,17 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
 void Thread::beforeGR()
 {
   VM vm = this->vm;
+  StableNode* abstraction = nullptr;
   for (auto iterator = stack.begin(); iterator != stack.end(); iterator++)
-    (*iterator).beforeGR(vm);
+    (*iterator).beforeGR(vm, abstraction);
 }
 
 void Thread::afterGR()
 {
   VM vm = this->vm;
+  StableNode* abstraction = nullptr;
   for (auto iterator = stack.begin(); iterator != stack.end(); iterator++)
-    (*iterator).afterGR(vm);
+    (*iterator).afterGR(vm, abstraction);
 }
 
 Runnable* Thread::gCollect(GC gc) {

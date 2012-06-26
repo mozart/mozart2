@@ -51,7 +51,10 @@ void StableNode::init(VM vm, UnstableNode& from) {
 }
 
 void StableNode::init(VM vm, RichNode from) {
-  init(vm, from.origin());
+  if (from.isStable())
+    init(vm, *from._stable);
+  else
+    init(vm, *from._unstable);
 }
 
 bool StableNode::isCopyable() {
@@ -93,7 +96,10 @@ void UnstableNode::copy(VM vm, UnstableNode& from) {
 }
 
 void UnstableNode::copy(VM vm, RichNode from) {
-  copy(vm, from.origin());
+  if (from.isStable())
+    copy(vm, *from._stable);
+  else
+    copy(vm, *from._unstable);
 }
 
 void UnstableNode::swap(UnstableNode& from) {
@@ -108,8 +114,24 @@ bool UnstableNode::isCopyable() {
 // RichNode //
 //////////////
 
-RichNode::RichNode(UnstableNode& origin) :
-  _node(dereference(&origin.node)), _origin(&origin) {
+RichNode::RichNode(StableNode& origin) {
+  if (origin.node.type != Reference::type()) {
+    _stable = &origin;
+    _isStable = true;
+  } else {
+    _stable = dereference(&origin.node);
+    _isStable = true;
+  }
+}
+
+RichNode::RichNode(UnstableNode& origin) {
+  if (origin.node.type != Reference::type()) {
+    _unstable = &origin;
+    _isStable = false;
+  } else {
+    _stable = dereference(&origin.node);
+    _isStable = true;
+  }
 }
 
 bool RichNode::isTransient() {
@@ -121,92 +143,70 @@ bool RichNode::isFeature() {
 }
 
 StableNode* RichNode::getStableRef(VM vm) {
-  return getStableRefFor(vm, *_origin);
+  ensureStable(vm);
+  return _stable;
 }
 
 void RichNode::update() {
-  _node = dereference(_node);
+  if (node()->type == Reference::type()) {
+    _stable = dereference(node());
+    _isStable = true;
+  }
 }
 
 void RichNode::ensureStable(VM vm) {
-  if (_origin->node.type != Reference::type()) {
+  if (!isStable()) {
     StableNode* stable = new (vm) StableNode;
-    stable->init(vm, *_origin);
-    _node = &stable->node;
+    stable->init(vm, *_unstable);
+    _stable = stable;
+    _isStable = true;
   }
 }
 
 void RichNode::reinit(VM vm, StableNode& from) {
   if (from.isCopyable()) {
-    *_node = from.node;
+    *node() = from.node;
   } else {
-    _node->make<Reference>(vm, &from);
-    _origin->node = *_node;
+    node()->make<Reference>(vm, &from);
   }
 }
 
 void RichNode::reinit(VM vm, UnstableNode& from) {
   if (from.isCopyable()) {
-    *_node = from.node;
-  } else if (_origin->node.type == Reference::type()) {
-    StableNode* stable = getStableRefFor(vm, *_origin);
-    stable->init(vm, from);
+    *node() = from.node;
+  } else if (isStable()) {
+    _stable->init(vm, from);
   } else {
-    StableNode* stable = getStableRefFor(vm, from);
-    _node->make<Reference>(vm, stable);
-    _origin->node = *_node;
+    _unstable->init(vm, from);
   }
 }
 
 void RichNode::reinit(VM vm, RichNode from) {
-  reinit(vm, from.origin());
+  if (from.isStable())
+    reinit(vm, *from._stable);
+  else
+    reinit(vm, *from._unstable);
 }
 
 std::string RichNode::toDebugString() {
   std::stringstream stream;
-  stream << type()->getName() << "@" << _node;
+  stream << type()->getName() << "@" << node();
   return stream.str();
 }
 
-Node* RichNode::dereference(Node* node) {
-  /* This is optimized for the 0- and 1-dereference paths.
+StableNode* RichNode::dereference(Node* node) {
+  assert(node->type == Reference::type());
+
+  /* This is optimized for the 1-dereference path.
    * Normally it would have been only a while loop. */
-  if (node->type != Reference::type())
-    return node;
-  else {
-    Node* result = &destOf(node)->node;
-    if (result->type != Reference::type())
-      return result;
-    else
-      return dereferenceLoop(result);
-  }
+  StableNode* result = destOf(node);
+  if (result->node.type != Reference::type())
+    return result;
+  else
+    return dereferenceLoop(result);
 }
 
-Node* RichNode::dereferenceLoop(Node* node) {
-  do {
-    node = &destOf(node)->node;
-  } while (node->type == Reference::type());
-
-  return node;
-}
-
-StableNode* RichNode::getStableRefFor(VM vm, UnstableNode& node) {
-  /* This is optimized for the 0- and 1-dereference paths.
-   * Normally the else part would have been only a while loop. */
-  if (node.node.type != Reference::type()) {
-    StableNode* stable = new (vm) StableNode;
-    stable->init(vm, node);
-    return stable;
-  } else {
-    StableNode* result = destOf(&node.node);
-    if (result->node.type != Reference::type())
-      return result;
-    else
-      return getStableRefForLoop(result);
-  }
-}
-
-StableNode* RichNode::getStableRefForLoop(StableNode* node) {
+StableNode* RichNode::dereferenceLoop(StableNode* node) {
   do {
     node = destOf(&node->node);
   } while (node->node.type == Reference::type());
@@ -220,6 +220,10 @@ StableNode* RichNode::destOf(Node* node) {
   typedef Accessor<Reference, StorageType> Access;
 
   return Access::get(node->value).dest();
+}
+
+Node* RichNode::node() {
+  return _isStable ? &_stable->node : &_unstable->node;
 }
 
 }

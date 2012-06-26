@@ -82,7 +82,7 @@ OpResult Implementation<Array>::arrayHigh(Self self, VM vm,
 OpResult Implementation<Array>::arrayGet(Self self, VM vm,
                                          RichNode index,
                                          UnstableNode& result) {
-  size_t offset;
+  size_t offset = 0;
   MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
   result.copy(vm, self[offset]);
@@ -95,7 +95,7 @@ OpResult Implementation<Array>::arrayPut(Self self, VM vm,
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, u"globalState", "array");
 
-  size_t offset;
+  size_t offset = 0;
   MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
   self[offset].copy(vm, value);
@@ -108,7 +108,7 @@ OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, u"globalState", "array");
 
-  size_t offset;
+  size_t offset = 0;
   MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
   oldValue.copy(vm, self[offset]);

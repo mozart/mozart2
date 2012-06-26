@@ -88,38 +88,41 @@ class TypedRichNode {
 };
 
 /**
- * A rich node is a node with an accompanying unstable origin
- * The important invariant of this class is that following a chain of
- * references starting at the origin eventually reaches the node.
+ * A rich node is a discriminated union of StableNode* and UnstableNode*
+ * Its purpose is to offer read access to nodes, with transparent
+ * dereferencing.
  */
 class RichNode {
-private:
-  RichNode(Node* node, UnstableNode& origin) : _node(node), _origin(&origin) {}
 public:
+  __attribute__((always_inline))
+  inline
+  RichNode(StableNode& origin);
+
   __attribute__((always_inline))
   inline
   RichNode(UnstableNode& origin);
 
+  __attribute__((always_inline))
   const Type* type() {
-    return _node->type;
+    return node()->type;
   }
 
+  __attribute__((always_inline))
   inline
   bool isTransient();
 
+  __attribute__((always_inline))
   inline
   bool isFeature();
 
-  UnstableNode& origin() {
-    return *_origin;
-  }
-
   template <class T>
+  __attribute__((always_inline))
   bool is() {
     return type() == T::type();
   }
 
   template <class T>
+  __attribute__((always_inline))
   TypedRichNode<T> as() {
     assert(is<T>());
     return TypedRichNode<T>(*this);
@@ -141,46 +144,57 @@ public:
 
   template<class T, class... Args>
   void remake(VM vm, Args&&... args) {
-    _node->make<T>(vm, std::forward<Args>(args)...);
+    node()->make<T>(vm, std::forward<Args>(args)...);
   }
 
   NodeBackup makeBackup() {
-    return NodeBackup(_node);
+    return NodeBackup(node());
   }
 
   bool isSameNode(RichNode right) {
-    return _node == right._node;
+    return node() == right.node();
   }
 
   inline
   std::string toDebugString();
 private:
+  __attribute__((always_inline))
   inline
-  static Node* dereference(Node* node);
+  static StableNode* dereference(Node* node);
 
   __attribute__((noinline))
   inline
-  static Node* dereferenceLoop(Node* node);
+  static StableNode* dereferenceLoop(StableNode* node);
 
-  inline
-  static StableNode* getStableRefFor(VM vm, UnstableNode& node);
-
-  __attribute__((noinline))
-  inline
-  static StableNode* getStableRefForLoop(StableNode* node);
-
+  __attribute__((always_inline))
   inline
   static StableNode* destOf(Node* node);
 private:
   template <class T>
   friend class BaseSelf;
 
+  __attribute__((always_inline))
   MemWord value() {
-    return _node->value;
+    return node()->value;
   }
 private:
-  Node* _node;
-  UnstableNode* _origin;
+  friend class StableNode;
+  friend class UnstableNode;
+
+  __attribute__((always_inline))
+  inline
+  Node* node();
+
+  __attribute__((always_inline))
+  bool isStable() {
+    return _isStable;
+  }
+private:
+  union {
+    StableNode* _stable;
+    UnstableNode* _unstable;
+  };
+  bool _isStable;
 };
 
 /**

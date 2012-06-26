@@ -71,6 +71,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
   to << "public:\n";
   to << "  " << name << "(RichNode self) : _self(self) {}\n";
   to << "  " << name << "(UnstableNode& self) : _self(self) {}\n";
+  to << "  " << name << "(StableNode& self) : _self(self) {}\n";
   to << "\n";
   to << "  template <class T>\n";
   to << "  " << name << "(BaseSelf<T> self) : _self(self) {}\n";

@@ -91,8 +91,7 @@ void Runnable::suspend(bool skipUnschedule) {
 void Runnable::suspendOnVar(VM vm, RichNode variable, bool skipUnschedule) {
   suspend(skipUnschedule);
 
-  UnstableNode selfRef = Reference::build(vm, &_reification);
-  DataflowVariable(variable).addToSuspendList(vm, selfRef);
+  DataflowVariable(variable).addToSuspendList(vm, _reification);
 }
 
 void Runnable::kill() {

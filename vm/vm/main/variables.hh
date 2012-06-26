@@ -131,10 +131,7 @@ void Implementation<Variable>::transferPendingsSubSpace(
 
   for (auto iter = src.removable_begin();
        iter != src.removable_end(); ) {
-    UnstableNode temp(vm, **iter);
-    RichNode richTemp = temp;
-
-    if (Wakeable(richTemp).shouldWakeUpUnderSpace(vm, currentSpace))
+    if (Wakeable(**iter).shouldWakeUpUnderSpace(vm, currentSpace))
       pendings.splice(vm, src, iter);
     else
       ++iter;
@@ -147,8 +144,7 @@ void Implementation<Variable>::wakeUpPendings(VM vm) {
 
   for (auto iter = pendings.begin();
        iter != pendings.end(); iter++) {
-    UnstableNode temp(vm, **iter);
-    Wakeable(temp).wakeUp(vm);
+    Wakeable(**iter).wakeUp(vm);
   }
 
   pendings.clear(vm);
@@ -165,11 +161,9 @@ void Implementation<Variable>::wakeUpPendingsSubSpace(VM vm,
 
   for (auto iter = pendings.begin();
        iter != pendings.end(); iter++) {
-    UnstableNode temp(vm, **iter);
-    RichNode richTemp = temp;
-
-    if (Wakeable(richTemp).shouldWakeUpUnderSpace(vm, currentSpace))
-      Wakeable(richTemp).wakeUp(vm);
+    Wakeable pending = **iter;
+    if (pending.shouldWakeUpUnderSpace(vm, currentSpace))
+      pending.wakeUp(vm);
   }
 
   pendings.clear(vm);
@@ -222,8 +216,7 @@ void Implementation<ReadOnly>::build(StableNode*& self, VM vm, GR gr,
 }
 
 OpResult Implementation<ReadOnly>::wakeUp(Self self, VM vm) {
-  UnstableNode temp(vm, *_underlying);
-  RichNode underlying = temp;
+  RichNode underlying = *_underlying;
 
   // TODO Test on something more generic than Variable and Unbound
   if (underlying.is<Variable>() || underlying.is<Unbound>()) {
@@ -242,23 +235,19 @@ bool Implementation<ReadOnly>::shouldWakeUpUnderSpace(VM vm, Space* space) {
 
 void Implementation<ReadOnly>::addToSuspendList(Self self, VM vm,
                                                 RichNode variable) {
-  UnstableNode underlying(vm, *_underlying);
-  DataflowVariable(underlying).addToSuspendList(vm, variable);
+  DataflowVariable(*_underlying).addToSuspendList(vm, variable);
 }
 
 bool Implementation<ReadOnly>::isNeeded(VM vm) {
-  UnstableNode underlying(vm, *_underlying);
-  return DataflowVariable(underlying).isNeeded(vm);
+  return DataflowVariable(*_underlying).isNeeded(vm);
 }
 
 void Implementation<ReadOnly>::markNeeded(Self self, VM vm) {
-  UnstableNode underlying(vm, *_underlying);
-  DataflowVariable(underlying).markNeeded(vm);
+  DataflowVariable(*_underlying).markNeeded(vm);
 }
 
 OpResult Implementation<ReadOnly>::bind(Self self, VM vm, RichNode src) {
-  UnstableNode underlying(vm, *_underlying);
-  return OpResult::waitFor(vm, underlying);
+  return OpResult::waitFor(vm, *_underlying);
 }
 
 /////////////////
@@ -273,8 +262,7 @@ void Implementation<FailedValue>::build(StableNode*& self, VM vm, GR gr,
 }
 
 OpResult Implementation<FailedValue>::raiseUnderlying(VM vm) {
-  UnstableNode underlying(vm, *_underlying);
-  return OpResult::raise(vm, underlying);
+  return OpResult::raise(vm, *_underlying);
 }
 
 void Implementation<FailedValue>::addToSuspendList(Self self, VM vm,

@@ -117,9 +117,8 @@ OpResult Implementation<Abstraction>::getCallInfo(
   int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (!_codeAreaCacheValid) {
-    UnstableNode temp(vm, _body);
     MOZART_CHECK_OPRESULT(
-      CodeAreaProvider(temp).getCodeAreaInfo(vm, _start, _Xcount, _Ks));
+      CodeAreaProvider(_body).getCodeAreaInfo(vm, _start, _Xcount, _Ks));
 
     _codeAreaCacheValid = true;
   }

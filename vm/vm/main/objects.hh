@@ -77,19 +77,15 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
     auto featModelRec = featModel.as<Record>();
     size_t featCount = featModelRec.getWidth();
 
-    UnstableNode featArity(vm, *featModelRec.getArity());
-    _features.make<Record>(vm, featCount, featArity);
-
-    UnstableNode _featuresUnstable(vm, _features);
-    auto _featuresRec = RichNode(_featuresUnstable).as<Record>();
+    _features.make<Record>(vm, featCount, *featModelRec.getArity());
+    auto _featuresRec = RichNode(_features).as<Record>();
 
     for (size_t i = 0; i < featCount; i++) {
       StableNode& feat = *_featuresRec.getElement(i);
       feat.init(vm, *featModelRec.getElement(i));
 
-      UnstableNode featUnstable(vm, feat);
       OpResult res = OpResult::proceed();
-      if (matches(vm, res, featUnstable, vm->coreatoms.ooFreeFlag))
+      if (matches(vm, res, feat, vm->coreatoms.ooFreeFlag))
         feat.make<Unbound>(vm);
     }
   }
@@ -118,14 +114,12 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
 
 OpResult Implementation<Object>::dot(Self self, VM vm,
                                      RichNode feature, UnstableNode& result) {
-  UnstableNode features(vm, _features);
-  return Dottable(features).dot(vm, feature, result);
+  return Dottable(_features).dot(vm, feature, result);
 }
 
 OpResult Implementation<Object>::hasFeature(Self self, VM vm, RichNode feature,
                                             bool& result) {
-  UnstableNode features(vm, _features);
-  return Dottable(features).hasFeature(vm, feature, result);
+  return Dottable(_features).hasFeature(vm, feature, result);
 }
 
 OpResult Implementation<Object>::getClass(Self self, VM vm,
@@ -175,8 +169,7 @@ OpResult Implementation<Object>::attrExchange(Self self, VM vm,
 OpResult Implementation<Object>::getAttrOffset(Self self, VM vm,
                                                RichNode attribute,
                                                size_t& offset) {
-  UnstableNode temp(vm, _attrArity);
-  return RichNode(temp).as<Arity>().requireFeature(
+  return RichNode(_attrArity).as<Arity>().requireFeature(
     vm, self, attribute, offset);
 }
 
@@ -190,11 +183,10 @@ OpResult Implementation<Object>::getCallInfo(
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (!_GsInitialized) {
-    UnstableNode clazz(vm, _clazz);
     UnstableNode fallback, fallbackApply;
 
     UnstableNode ooFallback = trivialBuild(vm, vm->coreatoms.ooFallback);
-    MOZART_CHECK_OPRESULT(Dottable(clazz).dot(vm, ooFallback, fallback));
+    MOZART_CHECK_OPRESULT(Dottable(_clazz).dot(vm, ooFallback, fallback));
 
     UnstableNode apply = trivialBuild(vm, u"apply");
     MOZART_CHECK_OPRESULT(Dottable(fallback).dot(vm, apply, fallbackApply));

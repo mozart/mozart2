@@ -102,8 +102,6 @@ OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
 OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
   VM vm = this->vm;
 
-  UnstableNode unstableLeft, unstableRight;
-
   while (true) {
     // Process the pair
     OpResult pairResult = processPair(vm, left, right);
@@ -135,11 +133,8 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
       break;
 
     // Pop next pair
-    unstableLeft.copy(vm, *stack.front().left);
-    unstableRight.copy(vm, *stack.front().right);
-
-    left = unstableLeft;
-    right = unstableRight;
+    left = *stack.front().left;
+    right = *stack.front().right;
 
     // Go to next item
     stack.remove_front(vm);
@@ -161,11 +156,8 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
     size_t count = suspendTrail.size();
 
     if (count == 1) {
-      unstableLeft.copy(vm, *suspendTrail.front().left);
-      unstableRight.copy(vm, *suspendTrail.front().right);
-
-      left = unstableLeft;
-      right = unstableRight;
+      left = *suspendTrail.front().left;
+      right = *suspendTrail.front().right;
 
       if (left.isTransient())
         DataflowVariable(left).addToSuspendList(vm, controlVar);
@@ -175,8 +167,8 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
     } else {
       UnstableNode label = Atom::build(vm, vm->coreatoms.pipe);
 
-      unstableLeft.make<Tuple>(vm, count, label);
-      unstableRight.make<Tuple>(vm, count, label);
+      UnstableNode unstableLeft = Tuple::build(vm, count, label);
+      UnstableNode unstableRight = Tuple::build(vm, count, label);
 
       auto leftTuple = RichNode(unstableLeft).as<Tuple>();
       auto rightTuple = RichNode(unstableRight).as<Tuple>();

@@ -62,8 +62,7 @@ void StackEntry::beforeGR(VM vm, StableNode*& abs) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  UnstableNode temp(vm, *abs);
-  Callable(temp).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
+  Callable(*abs).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
   PCOffset = PC - start;
 }
@@ -79,8 +78,7 @@ void StackEntry::afterGR(VM vm, StableNode*& abs) {
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  UnstableNode temp(vm, *abs);
-  Callable(temp).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
+  Callable(*abs).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
   PC = start + PCOffset;
   gregs = Gs;
@@ -359,16 +357,14 @@ void Thread::run() {
       // Control
 
       case OpCallBuiltin0: {
-        UnstableNode target(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(vm));
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(vm));
 
         advancePC(1);
         break;
       }
 
       case OpCallBuiltin1: {
-        UnstableNode target(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
           vm, XPC(2)));
 
         advancePC(2);
@@ -376,8 +372,7 @@ void Thread::run() {
       }
 
       case OpCallBuiltin2: {
-        UnstableNode target(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
           vm, XPC(2), XPC(3)));
 
         advancePC(3);
@@ -385,8 +380,7 @@ void Thread::run() {
       }
 
       case OpCallBuiltin3: {
-        UnstableNode target(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
           vm, XPC(2), XPC(3), XPC(4)));
 
         advancePC(4);
@@ -394,8 +388,7 @@ void Thread::run() {
       }
 
       case OpCallBuiltin4: {
-        UnstableNode target(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
           vm, XPC(2), XPC(3), XPC(4), XPC(5)));
 
         advancePC(5);
@@ -403,8 +396,7 @@ void Thread::run() {
       }
 
       case OpCallBuiltin5: {
-        UnstableNode target(vm, KPC(1));
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
           vm, XPC(2), XPC(3), XPC(4), XPC(5), XPC(6)));
 
         advancePC(6);
@@ -412,14 +404,13 @@ void Thread::run() {
       }
 
       case OpCallBuiltinN: {
-        UnstableNode target(vm, KPC(1));
         size_t argc = IntPC(2);
 
         UnstableNode* args[argc];
         for (size_t i = 0; i < argc; i++)
           args[i] = &XPC(3 + i);
 
-        CHECK_OPRESULT_BREAK(BuiltinCallable(target).callBuiltin(
+        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
           vm, argc, args));
 
         advancePC(2 + argc);
@@ -434,8 +425,7 @@ void Thread::run() {
       }
 
       case OpCallG: {
-        UnstableNode temp(vm, GPC(1));
-        call(temp, IntPC(2), false,
+        call(GPC(1), IntPC(2), false,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
@@ -449,8 +439,7 @@ void Thread::run() {
       }
 
       case OpTailCallG: {
-        UnstableNode temp(vm, GPC(1));
-        call(temp, IntPC(2), true,
+        call(GPC(1), IntPC(2), true,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
@@ -493,8 +482,7 @@ void Thread::run() {
       }
 
       case OpPatternMatch: {
-        UnstableNode patterns(vm, KPC(2));
-        patternMatch(vm, XPC(1), patterns,
+        patternMatch(vm, XPC(1), KPC(2),
                      abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
                      preempted);
         break;
@@ -517,16 +505,14 @@ void Thread::run() {
       }
 
       case OpUnifyXK: {
-        UnstableNode rhs(vm, KPC(2));
-        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), rhs));
+        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), KPC(2)));
 
         advancePC(2);
         break;
       }
 
       case OpUnifyXG: {
-        UnstableNode rhs(vm, GPC(2));
-        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), rhs));
+        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), GPC(2)));
 
         advancePC(2);
         break;
@@ -551,60 +537,44 @@ void Thread::run() {
       }
 
       case OpArrayInitElementG: {
-        UnstableNode value(vm, GPC(3));
         CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), value));
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), GPC(3)));
 
         advancePC(3);
         break;
       }
 
       case OpArrayInitElementK: {
-        UnstableNode value(vm, KPC(3));
         CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), value));
+          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), KPC(3)));
 
         advancePC(3);
         break;
       }
 
       case OpCreateAbstractionX: {
-        int arity = IntPC(1);
-        UnstableNode& body = XPC(2);
-        size_t Gc = IntPC(3);
-
-        XPC(4).make<Abstraction>(vm, Gc, arity, body);
+        XPC(4).make<Abstraction>(vm, IntPC(3), IntPC(1), XPC(2));
 
         advancePC(4);
         break;
       }
 
       case OpCreateAbstractionK: {
-        int arity = IntPC(1);
-        UnstableNode body(vm, KPC(2));
-        size_t Gc = IntPC(3);
-
-        XPC(4).make<Abstraction>(vm, Gc, arity, body);
+        XPC(4).make<Abstraction>(vm, IntPC(3), IntPC(1), KPC(2));
 
         advancePC(4);
         break;
       }
 
       case OpCreateTupleK: {
-        UnstableNode label(vm, KPC(1));
-        size_t width = IntPC(2);
-
-        XPC(3).make<Tuple>(vm, width, label);
+        XPC(3).make<Tuple>(vm, IntPC(2), KPC(1));
 
         advancePC(3);
         break;
       }
 
       case OpCreateRecordK: {
-        UnstableNode arity(vm, KPC(1));
-        size_t width = IntPC(2);
-
-        XPC(3).make<Record>(vm, width, arity);
+        XPC(3).make<Record>(vm, IntPC(2), KPC(1));
 
         advancePC(3);
         break;
@@ -785,8 +755,7 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
 
     case OpResult::orWaitBefore:
     case OpResult::orWaitQuietBefore: {
-      UnstableNode unstableWaitee(vm, *result.getWaiteeNode());
-      RichNode waitee = unstableWaitee;
+      RichNode waitee = *result.getWaiteeNode();
 
       if (result.kind() != OpResult::orWaitQuietBefore) {
         if (waitee.is<FailedValue>()) {

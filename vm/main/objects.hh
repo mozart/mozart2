@@ -55,7 +55,8 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
     _attrCount = 0;
   } else {
     auto attrModelRec = attrModel.as<Record>();
-    assert(attrCount == attrModelRec.getWidth());
+    assert(attrModelRec.getWidth() >= 0);
+    assert(attrCount == (size_t) attrModelRec.getWidth());
 
     _attrArity.init(vm, *attrModelRec.getArity());
     _attrCount = attrCount;

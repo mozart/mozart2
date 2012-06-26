@@ -297,16 +297,6 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value, T pattern) {
   return false;
 }
 
-/**
- * Like matchesSimple(), but expects a StableNode* instead of a RichNode.
- */
-template <class T>
-inline
-bool matchesStable(VM vm, OpResult& result, StableNode* value, T pattern) {
-  UnstableNode temp(vm, *value);
-  return matchesSimple(vm, result, RichNode(temp), pattern);
-}
-
 /** Base case of the below */
 template <size_t i, class T>
 inline
@@ -327,7 +317,7 @@ bool matchesElementsAgainstPatternList(
   VM vm, OpResult& result, TypedRichNode<T> aggregate,
   U ithPattern, Rest... restPatterns) {
 
-  if (!matchesStable(vm, result, aggregate.getElement(i), ithPattern))
+  if (!matchesSimple(vm, result, *aggregate.getElement(i), ithPattern))
     return false;
 
   return matchesElementsAgainstPatternList<i+1, T>(
@@ -534,7 +524,7 @@ bool matchesTuple(VM vm, OpResult& result, RichNode value,
   if (tuple.getWidth() != sizeof...(Args))
     return false;
 
-  if (!internal::matchesStable(vm, result, tuple.getLabel(), labelPat))
+  if (!internal::matchesSimple(vm, result, *tuple.getLabel(), labelPat))
     return false;
 
   return internal::matchesElementsAgainstPatternList<0>(
@@ -559,8 +549,8 @@ bool matchesCons(VM vm, OpResult& result, RichNode value,
 
   auto cons = value.as<Cons>();
 
-  return internal::matchesStable(vm, result, cons.getHead(), head) &&
-    internal::matchesStable(vm, result, cons.getTail(), tail);
+  return internal::matchesSimple(vm, result, *cons.getHead(), head) &&
+    internal::matchesSimple(vm, result, *cons.getTail(), tail);
 }
 
 /**
@@ -608,7 +598,7 @@ bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
   if (tuple.getWidth() < fixedArgc)
     return false;
 
-  if (!internal::matchesStable(vm, result, tuple.getLabel(), labelPat))
+  if (!internal::matchesSimple(vm, result, *tuple.getLabel(), labelPat))
     return false;
 
   if (!internal::matchesElementsAgainstPatternList<0>(

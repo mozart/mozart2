@@ -111,21 +111,18 @@ void GraphReplicator::processNodeInternal(NodeType*& list) {
   NodeType* to = list;
   list = to->grNext;
 
-  UnstableNode temp(vm, *to->grFrom);
-  RichNode from = temp;
+  RichNode from = *to->grFrom;
 
   static_cast<Self*>(this)->template processNode<NodeType, GCedType>(to, from);
 }
 
 template <class Self>
 void GraphReplicator::processStableRefInternal(StableNode*& ref) {
-  UnstableNode temp = Reference::build(vm, ref);
-  RichNode from = temp;
+  RichNode from = *ref;
 
   if (from.is<GCedToStable>()) {
     StableNode* dest = from.as<GCedToStable>().dest();
-    UnstableNode temp2 = Reference::build(vm, dest);
-    ref = RichNode(temp2).getStableRef(vm);
+    ref = RichNode(*dest).getStableRef(vm);
   } else if (from.is<GCedToUnstable>()) {
     UnstableNode* dest = from.as<GCedToUnstable>().dest();
     ref = RichNode(*dest).getStableRef(vm);

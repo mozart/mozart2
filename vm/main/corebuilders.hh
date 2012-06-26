@@ -111,6 +111,11 @@ UnstableNode trivialBuild(VM vm, UnstableNode& node) {
 }
 
 inline
+UnstableNode trivialBuild(VM vm, StableNode& node) {
+  return UnstableNode(vm, node);
+}
+
+inline
 UnstableNode trivialBuild(VM vm, RichNode node) {
   return UnstableNode(vm, node);
 }

@@ -44,8 +44,7 @@ VirtualMachine::run_return_type VirtualMachine::run() {
     while (!_alarms.empty() && (_alarms.front().expiration <= now)) {
       getTopLevelSpace()->install();
 
-      UnstableNode wakeable(this, *_alarms.front().wakeable);
-      Wakeable(wakeable).wakeUp(this);
+      Wakeable(*_alarms.front().wakeable).wakeUp(this);
 
       _alarms.remove_front(this);
     }

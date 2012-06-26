@@ -75,8 +75,7 @@ OpResult BaseRecord<T>::waitOr(Self self, VM vm,
                                UnstableNode& result) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < getArraySize(); i++) {
-    UnstableNode field(vm, self[i]);
-    if (!RichNode(field).isTransient()) {
+    if (!RichNode(self[i]).isTransient()) {
       static_cast<Implementation<T>*>(this)->getFeatureAt(self, vm, i, result);
       return OpResult::proceed();
     }
@@ -89,8 +88,7 @@ OpResult BaseRecord<T>::waitOr(Self self, VM vm,
 
   // Add the control variable to the suspension list of all the fields
   for (size_t i = 0; i < getArraySize(); i++) {
-    UnstableNode field(vm, self[i]);
-    DataflowVariable(field).addToSuspendList(vm, controlVar);
+    DataflowVariable(self[i]).addToSuspendList(vm, controlVar);
   }
 
   // Wait for the control variable
@@ -155,8 +153,7 @@ OpResult Implementation<Tuple>::label(Self self, VM vm,
 
 OpResult Implementation<Tuple>::clone(Self self, VM vm,
                                       UnstableNode& result) {
-  UnstableNode tempLabel(vm, _label);
-  result.make<Tuple>(vm, _width, tempLabel);
+  result.make<Tuple>(vm, _width, _label);
 
   auto tuple = RichNode(result).as<Tuple>();
   for (size_t i = 0; i < _width; i++)
@@ -240,11 +237,8 @@ OpResult Implementation<Cons>::clone(Self self, VM vm,
 
 OpResult Implementation<Cons>::waitOr(Self self, VM vm,
                                       UnstableNode& result) {
-  UnstableNode tempHead(vm, _head);
-  UnstableNode tempTail(vm, _tail);
-
-  RichNode head = tempHead;
-  RichNode tail = tempTail;
+  RichNode head = _head;
+  RichNode tail = _tail;
 
   // If there is a field which is bound, then return its feature
   if (!head.isTransient()) {
@@ -298,16 +292,14 @@ bool Implementation<Arity>::equals(Self self, VM vm, Self right,
 
 OpResult Implementation<Arity>::label(Self self, VM vm,
                                       UnstableNode& result) {
-  UnstableNode temp(vm, _tuple);
-  return RichNode(temp).as<Tuple>().label(vm, result);
+  return RichNode(_tuple).as<Tuple>().label(vm, result);
 }
 
 OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
                                               size_t& result) {
   MOZART_REQUIRE_FEATURE(feature);
 
-  UnstableNode tempTuple(vm, _tuple);
-  auto tuple = RichNode(tempTuple).as<Tuple>();
+  auto tuple = RichNode(_tuple).as<Tuple>();
 
   // Dichotomic search
   size_t lo = 0;
@@ -350,8 +342,7 @@ OpResult Implementation<Arity>::hasFeature(VM vm, RichNode feature,
 
 void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
                                          UnstableNode& result) {
-  UnstableNode tempTuple(vm, _tuple);
-  MOZART_ASSERT_PROCEED(RichNode(tempTuple).as<Tuple>().dotNumber(
+  MOZART_ASSERT_PROCEED(RichNode(_tuple).as<Tuple>().dotNumber(
     vm, index+1, result));
 }
 
@@ -403,20 +394,17 @@ bool Implementation<Record>::equals(Self self, VM vm, Self right,
 
 void Implementation<Record>::getFeatureAt(Self self, VM vm, size_t index,
                                           UnstableNode& result) {
-  UnstableNode temp(vm, _arity);
-  RichNode(temp).as<Arity>().getFeatureAt(vm, index, result);
+  RichNode(_arity).as<Arity>().getFeatureAt(vm, index, result);
 }
 
 OpResult Implementation<Record>::label(Self self, VM vm,
                                        UnstableNode& result) {
-  UnstableNode temp(vm, _arity);
-  return RichNode(temp).as<Arity>().label(vm, result);
+  return RichNode(_arity).as<Arity>().label(vm, result);
 }
 
 OpResult Implementation<Record>::clone(Self self, VM vm,
                                        UnstableNode& result) {
-  UnstableNode tempArity(vm, _arity);
-  result.make<Record>(vm, _width, tempArity);
+  result.make<Record>(vm, _width, _arity);
 
   auto record = RichNode(result).as<Record>();
   for (size_t i = 0; i < _width; i++)
@@ -427,10 +415,8 @@ OpResult Implementation<Record>::clone(Self self, VM vm,
 
 OpResult Implementation<Record>::dot(Self self, VM vm,
                                      RichNode feature, UnstableNode& result) {
-  UnstableNode temp(vm, _arity);
-
   size_t index = 0;
-  MOZART_CHECK_OPRESULT(RichNode(temp).as<Arity>().requireFeature(
+  MOZART_CHECK_OPRESULT(RichNode(_arity).as<Arity>().requireFeature(
     vm, self, feature, index));
 
   result.copy(vm, self[index]);
@@ -439,8 +425,7 @@ OpResult Implementation<Record>::dot(Self self, VM vm,
 
 OpResult Implementation<Record>::hasFeature(Self self, VM vm, RichNode feature,
                                             bool& result) {
-  UnstableNode temp(vm, _arity);
-  return RichNode(temp).as<Arity>().hasFeature(vm, feature, result);
+  return RichNode(_arity).as<Arity>().hasFeature(vm, feature, result);
 }
 
 void Implementation<Record>::printReprToStream(Self self, VM vm,
@@ -479,14 +464,12 @@ void Implementation<Chunk>::build(StableNode*& self, VM vm, GR gr, Self from) {
 
 OpResult Implementation<Chunk>::dot(Self self, VM vm,
                                     RichNode feature, UnstableNode& result) {
-  UnstableNode underlying(vm, *_underlying);
-  return Dottable(underlying).dot(vm, feature, result);
+  return Dottable(*_underlying).dot(vm, feature, result);
 }
 
 OpResult Implementation<Chunk>::hasFeature(Self self, VM vm, RichNode feature,
                                            bool& result) {
-  UnstableNode underlying(vm, *_underlying);
-  return Dottable(underlying).hasFeature(vm, feature, result);
+  return Dottable(*_underlying).hasFeature(vm, feature, result);
 }
 
 }

@@ -127,13 +127,13 @@ OpResult Implementation<ReifiedSpace>::askSpace(
   if (!space->isAdmissible(vm))
     return raise(vm, vm->coreatoms.spaceAdmissible, self);
 
-  UnstableNode statusVar(vm, *space->getStatusVar());
+  RichNode statusVar = *space->getStatusVar();
   OpResult res = OpResult::proceed();
 
   if (matchesTuple(vm, res, statusVar, vm->coreatoms.succeeded, wildcard())) {
     result.make<Atom>(vm, vm->coreatoms.succeeded);
   } else if (res.isProceed()) {
-    result = std::move(statusVar);
+    result.copy(vm, statusVar);
   } else {
     return res;
   }
@@ -150,9 +150,7 @@ OpResult Implementation<ReifiedSpace>::askVerboseSpace(
     return raise(vm, vm->coreatoms.spaceAdmissible, self);
 
   if (space->isBlocked() && !space->isStable()) {
-    UnstableNode statusVar(vm, *space->getStatusVar());
-    result = buildTuple(vm, vm->coreatoms.suspended, statusVar);
-
+    result = buildTuple(vm, vm->coreatoms.suspended, *space->getStatusVar());
     return OpResult::proceed();
   }
 

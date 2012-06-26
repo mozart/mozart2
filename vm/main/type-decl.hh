@@ -155,9 +155,6 @@ public:
   repr(VM vm, RichNode value, int depth = 10):
     vm(vm), value(value), depth(depth) {}
 
-  repr(VM vm, StableNode& value, int depth = 10):
-    tempValue(vm, value), vm(vm), value(tempValue), depth(depth) {}
-
   std::ostream& operator()(std::ostream& out) const {
     if (depth <= 0)
       out << "...";
@@ -166,7 +163,6 @@ public:
     return out;
   }
 private:
-  mutable UnstableNode tempValue;
   mutable VM vm;
   mutable RichNode value;
   mutable int depth;

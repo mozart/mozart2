@@ -58,9 +58,8 @@ void BoostBasedVM::createAsyncIOFeedbackNode(StableNode**& ref,
   StableNode* stableReadyOnly = new (vm) StableNode;
   stableReadyOnly->make<ReadOnly>(vm, stable);
 
-  UnstableNode unstable(vm, *stable);
   readOnly.init(vm, *stableReadyOnly);
-  DataflowVariable(unstable).addToSuspendList(vm, readOnly);
+  DataflowVariable(*stable).addToSuspendList(vm, readOnly);
 
   ref = allocAsyncIONode(stable);
 }
@@ -69,10 +68,9 @@ template <class LT, class... Args>
 void BoostBasedVM::bindAndReleaseAsyncIOFeedbackNode(
   StableNode** ref, LT&& label, Args&&... args) {
 
-  UnstableNode lhs(vm, **ref);
   UnstableNode rhs = buildTuple(vm, std::forward<LT>(label),
                                 std::forward<Args>(args)...);
-  DataflowVariable(lhs).bind(vm, rhs);
+  DataflowVariable(**ref).bind(vm, rhs);
   releaseAsyncIONode(ref);
 }
 

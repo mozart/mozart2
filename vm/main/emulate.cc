@@ -57,14 +57,13 @@ void StackEntry::beforeGR(VM vm, StableNode*& abs) {
   assert(abs != nullptr);
 
   int arity;
-  StableNode* body;
   ProgramCounter start = nullptr;
   int Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   UnstableNode temp(vm, *abs);
-  Callable(temp).getCallInfo(vm, arity, body, start, Xcount, Gs, Ks);
+  Callable(temp).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
   PCOffset = PC - start;
 }
@@ -75,14 +74,13 @@ void StackEntry::afterGR(VM vm, StableNode*& abs) {
   assert(abs != nullptr);
 
   int arity;
-  StableNode* body;
   ProgramCounter start = nullptr;
   int Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   UnstableNode temp(vm, *abs);
-  Callable(temp).getCallInfo(vm, arity, body, start, Xcount, Gs, Ks);
+  Callable(temp).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
   PC = start + PCOffset;
   gregs = Gs;
@@ -140,15 +138,14 @@ void Thread::constructor(VM vm, RichNode abstraction,
                          bool createSuspended) {
   // getCallInfo
 
-  int arity;
-  StableNode* body;
+  int arity = 0;
   ProgramCounter start = nullptr;
   int Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   MOZART_ASSERT_PROCEED(Callable(abstraction).getCallInfo(
-    vm, arity, body, start, Xcount, Gs, Ks));
+    vm, arity, start, Xcount, Gs, Ks));
 
   assert(arity == argc);
 
@@ -696,14 +693,13 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
                   StaticArray<StableNode>& kregs,
                   bool& preempted) {
   int formalArity;
-  StableNode* body;
   ProgramCounter start;
   int Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   CHECK_OPRESULT_RETURN(Callable(target).getCallInfo(
-    vm, formalArity, body, start, Xcount, Gs, Ks));
+    vm, formalArity, start, Xcount, Gs, Ks));
 
   if (actualArity != formalArity) {
     CHECK_OPRESULT_RETURN(raiseIllegalArity(vm, formalArity, actualArity));

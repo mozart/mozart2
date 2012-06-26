@@ -72,10 +72,10 @@ OpResult Implementation<BuiltinProcedure>::procedureArity(Self self, VM vm,
 }
 
 OpResult Implementation<BuiltinProcedure>::getCallInfo(
-  Self self, VM vm, int& arity, StableNode*& body, ProgramCounter& start,
+  Self self, VM vm, int& arity, ProgramCounter& start,
   int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
-  return _builtin->getCallInfo(self, vm, arity, body, start, Xcount, Gs, Ks);
+  return _builtin->getCallInfo(self, vm, arity, start, Xcount, Gs, Ks);
 }
 
 /////////////////
@@ -113,7 +113,7 @@ OpResult Implementation<Abstraction>::procedureArity(Self self, VM vm,
 }
 
 OpResult Implementation<Abstraction>::getCallInfo(
-  Self self, VM vm, int& arity, StableNode*& body, ProgramCounter& start,
+  Self self, VM vm, int& arity, ProgramCounter& start,
   int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (!_codeAreaCacheValid) {
@@ -125,7 +125,6 @@ OpResult Implementation<Abstraction>::getCallInfo(
   }
 
   arity = _arity;
-  body = &_body;
   start = _start;
   Xcount = _Xcount;
   Gs = self.getArray();

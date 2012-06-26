@@ -195,12 +195,11 @@ struct Interface<Callable>:
     return raiseTypeError(vm, u"Abstraction", self);
   }
 
-  OpResult getCallInfo(RichNode self, VM vm, int& arity, StableNode*& body,
+  OpResult getCallInfo(RichNode self, VM vm, int& arity,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks) {
     arity = 0;
-    body = nullptr;
     start = nullptr;
     Xcount = 0;
     Gs = nullptr;

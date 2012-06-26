@@ -185,7 +185,7 @@ OpResult Implementation<Object>::procedureArity(Self self, VM vm, int& result) {
 }
 
 OpResult Implementation<Object>::getCallInfo(
-  Self self, VM vm, int& arity, StableNode*& body,
+  Self self, VM vm, int& arity,
   ProgramCounter& start, int& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
@@ -206,7 +206,6 @@ OpResult Implementation<Object>::getCallInfo(
   }
 
   arity = 1;
-  body = nullptr;
   start = dispatchByteCode;
   Xcount = 3;
   Gs = StaticArray<StableNode>(_Gs, 2);

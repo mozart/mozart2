@@ -107,7 +107,7 @@ public:
   OpResult procedureArity(Self self, VM vm, int& result);
 
   inline
-  OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
+  OpResult getCallInfo(Self self, VM vm, int& arity,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
@@ -188,14 +188,13 @@ public:
    * Get the information needed to call this abstraction
    * @param vm       Contextual VM
    * @param arity    Output: arity of this abstraction
-   * @param body     Output: code area which is the body
    * @param start    Output: start of the code area
    * @param Xcount   Output: number of X registers used by the code area
    * @param Gs       Output: G registers
    * @param Ks       Output: K registers
    */
   inline
-  OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
+  OpResult getCallInfo(Self self, VM vm, int& arity,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);

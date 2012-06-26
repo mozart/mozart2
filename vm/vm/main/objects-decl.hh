@@ -126,7 +126,7 @@ public:
   OpResult procedureArity(Self self, VM vm, int& result);
 
   inline
-  OpResult getCallInfo(Self self, VM vm, int& arity, StableNode*& body,
+  OpResult getCallInfo(Self self, VM vm, int& arity,
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);

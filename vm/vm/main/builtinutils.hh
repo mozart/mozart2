@@ -35,14 +35,13 @@ namespace builtins {
 
 OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
   int arity = 0;
-  StableNode* body;
   ProgramCounter start;
   int Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   MOZART_CHECK_OPRESULT(Callable(target).getCallInfo(
-    vm, arity, body, start, Xcount, Gs, Ks));
+    vm, arity, start, Xcount, Gs, Ks));
 
   if (arity != expectedArity)
     return raiseIllegalArity(vm, expectedArity, arity);

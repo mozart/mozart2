@@ -36,14 +36,13 @@ namespace builtins {
 /////////////////
 
 OpResult BaseBuiltin::getCallInfo(
-  RichNode self, VM vm, int& arity, StableNode*& body, ProgramCounter& start,
-  int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
+  RichNode self, VM vm, int& arity, ProgramCounter& start, int& Xcount,
+  StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (_codeBlock == nullptr)
     buildCodeBlock(vm, self);
 
   arity = _arity;
-  body = nullptr;
   start = _codeBlock;
   Xcount = 2*_arity;
   Gs = nullptr;

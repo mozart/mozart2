@@ -24,13 +24,38 @@
 %% Module
 %%
 
-IsVirtualString = Boot_VirtualString.is
-VirtualString = virtualString(
-  is: IsVirtualString
-  toString: Boot_VirtualString.toString
-  toAtom: fun {$ V} {String.toAtom {VirtualString.toString V}} end
-  %toByteString: ByteString.make
-  length: Boot_VirtualString.length
-  changeSign: Boot_VirtualString.changeSign
-)
+local
+    fun {JoinBy L Sep}
+       case L
+       of H|nil then H
+       [] H|T then H#Sep#{JoinBy T Sep}
+       [] nil then nil
+       end
+    end
+
+    fun {ChangeSign V Replacement}
+        if {IsInt V} andthen V < 0 then
+            Replacement#~V                  % Note: require bigint support here.
+        elseif {IsFloat V} then S Parts in
+            S = {VirtualString.toString V}
+            Parts = {String.tokens S 45}    % 45 == &-
+            {JoinBy Parts Replacement}
+        elseif {IsTuple V} andthen {Label V} == '#' then
+            {Record.map  V  fun {$ A} {ChangeSign A Replacement} end}
+        else
+            V
+        end
+    end
+in
+
+    IsVirtualString = Boot_VirtualString.is
+    VirtualString = virtualString(
+        is: IsVirtualString
+        toString: Boot_VirtualString.toString
+        toAtom: fun {$ V} {String.toAtom {VirtualString.toString V}} end
+        toByteString: fun {$ V} {ByteString.make V} end
+        length: Boot_VirtualString.length
+        changeSign: ChangeSign
+    )
+end
 

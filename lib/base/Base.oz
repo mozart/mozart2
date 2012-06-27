@@ -22,7 +22,7 @@ require
    Boot_String    at 'x-oz://boot/String'
    Boot_VirtualString at 'x-oz://boot/VirtualString'
    Boot_ByteString at 'x-oz://boot/ByteString'
-
+   Boot_StringOffset at 'x-oz://boot/StringOffset'
 
 prepare
 

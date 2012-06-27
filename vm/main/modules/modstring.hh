@@ -74,7 +74,7 @@ public:
     }
   };
 
-  class Slice : public Builtin<Append> {
+  class Slice : public Builtin<Slice> {
   public:
     Slice() : Builtin("slice") {}
 
@@ -83,7 +83,7 @@ public:
     }
   };
 
-  class Search : public Builtin<Append> {
+  class Search : public Builtin<Search> {
   public:
     Search() : Builtin("search") {}
 

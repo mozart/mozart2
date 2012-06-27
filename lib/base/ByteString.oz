@@ -27,43 +27,48 @@
 
 
 local
-   fun {Coder OptList Fun Input Encoding IsLE HasBOM}
-      case OptList
-      of nil then
-         {Fun Input Encoding IsLE HasBOM}
-      [] H|T then
-         case H
-         [] littleEndian then
-            {Coder T Fun Input EncNum true HasBOM}
-         [] bigEndian then
-            {Coder T Fun Input EncNum false HasBOM}
-         [] bom then
-            {Coder T Fun Input EncNum IsLE true}
-         else
-            {Coder T Fun Input H IsLE HasBOM}
-         end
+   fun {Coder OptList Fun Input}
+      Variants
+      Encoding
+      fun {IsVariant Opt}
+         Opt == littleEndian orelse Opt == bigEndian orelse Opt == bom
       end
+   in
+      case {List.partition OptList IsVariant Variants}
+      of H|T then
+         Encoding = H
+      [] nil then
+         Encoding = utf8
+      end
+
+      {Fun Input Encoding Variants}
    end
 in
 
    IsByteString = Boot_ByteString.is
    ByteString = byteString(
       is: IsByteString
-      make: fun {$ V} {Boot_ByteString.encode V 0 true false} end
-      get: Boot_ByteString.get
-      append: Boot_ByteString.append
-      slice: Boot_ByteString.slice
-      width: Boot_ByteString.length
-      length: Boot_ByteString.length
-      toString: fun {$ BS} {Boot_ByteString.decode BS 0 true false} end
+      make: fun {$ V} {Boot_ByteString.encode V latin1 nil} end
+      get: Value.'.'
+      append: String.append
+      slice: String.slice
+      width: String.length
+      length: String.length
+      toString: fun {$ BS} {Boot_ByteString.decode BS latin1 nil} end
       %toStringWithTail: ---
-      strchr: Boot_ByteString.strchr
+      strchr: fun {$ BS From Chr}
+         if {IsInt Chr} then
+            {String.search BS From Chr $ _}
+         else
+            raise typeError('char' Chr) end
+         end
+      end
 
       encode: fun {$ OptList V}
-         {Coder OptList Boot_ByteString.encode V 1 true false}
+         {Coder OptList Boot_ByteString.encode V}
       end
       decode: fun {$ OptList BS}
-         {Coder OptList Boot_ByteString.decode BS 1 true false}
+         {Coder OptList Boot_ByteString.decode BS}
       end
    )
 

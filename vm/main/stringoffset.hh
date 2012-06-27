@@ -105,10 +105,14 @@ OpResult Implementation<StringOffset>::compare(Self self, VM vm,
   if (right.is<StringOffset>()) {
     result = ::mozart::compareFeatures(vm, self, right);
   } else {
-    resolveCharIndex(vm);
     nativeint rightCharIndex;
     MOZART_CHECK_OPRESULT(StringOffsetLike(right).getCharIndex(vm, rightCharIndex));
-    result = _index < rightCharIndex ? -1 : _index > rightCharIndex ? 1 : 0;
+    if (rightCharIndex == 0) {
+      result = _offset < 0 ? -1 : _offset > 0 ? 1 : 0;
+    } else {
+      resolveCharIndex(vm);
+      result = _index < rightCharIndex ? -1 : _index > rightCharIndex ? 1 : 0;
+    }
   }
   return OpResult::proceed();
 }

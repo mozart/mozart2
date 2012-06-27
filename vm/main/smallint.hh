@@ -68,21 +68,23 @@ OpResult Implementation<SmallInt>::compare(Self self, VM vm,
   nativeint rightIntValue = 0;
 
   if (matches(vm, matchRes, right, capture(rightIntValue))) {
-    // No-op.
+    result = (value() == rightIntValue) ? 0 :
+             (value() < rightIntValue) ? -1 : 1;
+    return OpResult::proceed();
+
   } else if (!matchRes.isProceed()) {
     return matchRes;
+
   } else {
     // Allow string offsets to be compared with integers just for consistency.
     bool isStringOffset;
     MOZART_CHECK_OPRESULT(StringOffsetLike(right).isStringOffset(vm, isStringOffset));
     if (!isStringOffset)
       return raiseTypeError(vm, MOZART_STR("integer"), right);
-    MOZART_CHECK_OPRESULT(StringOffsetLike(right).getCharIndex(vm, rightIntValue));
+    MOZART_CHECK_OPRESULT(Comparable(right).compare(vm, self, result));
+    result = -result;
+    return OpResult::proceed();
   }
-
-  result = (value() == rightIntValue) ? 0 :
-    (value() < rightIntValue) ? -1 : 1;
-  return OpResult::proceed();
 }
 
 // IntegerValue ----------------------------------------------------------------

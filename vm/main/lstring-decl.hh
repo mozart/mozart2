@@ -1,3 +1,27 @@
+// Copyright © 2012, Université catholique de Louvain
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// *  Redistributions of source code must retain the above copyright notice,
+//  this list of conditions and the following disclaimer.
+// *  Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation
+//  and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 #ifndef __LSTRING_DECL_HH
 #define __LSTRING_DECL_HH
 
@@ -85,18 +109,18 @@ namespace mut { // mut = mutable (which is a keyword in C++.)
 
   // Equality testing.
   template <class C>
-  static
+  inline
   bool operator==(const BaseLString<C>& a, const BaseLString<C>& b);
   template <class C>
-  static
+  inline
   bool operator!=(const BaseLString<C>& a, const BaseLString<C>& b);
 
   template <class C, nativeint n>
-  static bool operator==(const C (&str)[n], const BaseLString<C>& b) {
+  inline bool operator==(const C (&str)[n], const BaseLString<C>& b) {
     return BaseLString<C>(str) == b;
   }
   template <class C, nativeint n>
-  static bool operator==(const BaseLString<C>& a, const C (&str)[n]) {
+  inline bool operator==(const BaseLString<C>& a, const C (&str)[n]) {
     return a == BaseLString<C>(str);
   }
 
@@ -105,7 +129,7 @@ namespace mut { // mut = mutable (which is a keyword in C++.)
    * Write the string to an output stream.
    */
   template <class C>
-  static std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
+  inline std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
                                            const BaseLString<C>& input);
 
   // LString -------------------------------------------------------------------
@@ -187,9 +211,9 @@ using namespace mut;
 
 // Make BaseLString from local buffer
 template <class C>
-static mut::BaseLString<C> makeLString(const C* str);
+inline mut::BaseLString<C> makeLString(const C* str);
 template <class C>
-static mut::BaseLString<C> makeLString(const C* str, nativeint len);
+inline mut::BaseLString<C> makeLString(const C* str, nativeint len);
 
 // Create LString on heap.
 template <class C, nativeint n>
@@ -200,19 +224,19 @@ LString<C> newLString(C (&str)[n], nativeint len=n-1) = delete;
 template <class C>
 inline LString<C> newLString(VM vm, const C* str);
 template <class C>
-static LString<C> newLString(VM vm, const C* str, nativeint len);
+inline LString<C> newLString(VM vm, const C* str, nativeint len);
 template <class T>
-static LString<typename T::value_type> newLString(VM vm, const T& container);
+inline LString<typename T::value_type> newLString(VM vm, const T& container);
 template <class C>
-static LString<C> newLString(VM vm, const BaseLString<C>& copyFrom);
+inline LString<C> newLString(VM vm, const BaseLString<C>& copyFrom);
 template <class F>
-static auto newLString(VM vm, nativeint len, const F& func)
+inline auto newLString(VM vm, nativeint len, const F& func)
     -> LString<typename std::remove_pointer<
                  typename function_traits<F>::template arg<0>::type>::type>;
 
 // Concatenate two LString's.
 template <class C>
-static LString<C> concatLString(VM vm, const LString<C>& a, const LString<C>& b);
+inline LString<C> concatLString(VM vm, const LString<C>& a, const LString<C>& b);
 
 }
 

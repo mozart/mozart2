@@ -48,11 +48,11 @@ struct function_traits;
  * assumes the list all have the same type "T".
  */
 template <class F, class G>
-static
+inline
 OpResult ozListForEach(VM vm, RichNode list, const F& onHead, const G& onTail);
 
 template <class F>
-static
+inline
 OpResult ozListForEach(VM vm, RichNode list, const F& onHead,
                        const nchar* expectedType);
 

@@ -39,7 +39,7 @@ namespace mozart {
 /////////////////////////////////
 
 __attribute__((unused))
-static nativeint toUTF(char32_t character, char utf[4]) {
+inline nativeint toUTF(char32_t character, char utf[4]) {
   if (character < 0x80) {
     utf[0] = (char) character;
     return 1;
@@ -65,7 +65,7 @@ static nativeint toUTF(char32_t character, char utf[4]) {
   }
 }
 
-static nativeint toUTF(char32_t character, char16_t utf[2]) {
+inline nativeint toUTF(char32_t character, char16_t utf[2]) {
   if (character < 0x10000) {
     if (0xd800 <= character && character < 0xe000)
       return UnicodeErrorReason::surrogate;
@@ -82,12 +82,12 @@ static nativeint toUTF(char32_t character, char16_t utf[2]) {
 }
 
 __attribute__((unused))
-static nativeint toUTF(char32_t character, char32_t utf[1]) {
+inline nativeint toUTF(char32_t character, char32_t utf[1]) {
   utf[0] = character;
   return 1;
 }
 
-static std::pair<char32_t, nativeint> fromUTF8ContSeq(const char* utf,
+inline std::pair<char32_t, nativeint> fromUTF8ContSeq(const char* utf,
                                                       char32_t val,
                                                       nativeint length,
                                                       char32_t lowerLimit) {
@@ -102,7 +102,7 @@ static std::pair<char32_t, nativeint> fromUTF8ContSeq(const char* utf,
 }
 
 __attribute__((unused))
-static std::pair<char32_t, nativeint> fromUTF(const char* utf, nativeint length) {
+inline std::pair<char32_t, nativeint> fromUTF(const char* utf, nativeint length) {
   unsigned char leadingByte = *utf;
 
   // 1-byte code.
@@ -148,7 +148,7 @@ static std::pair<char32_t, nativeint> fromUTF(const char* utf, nativeint length)
   }
 }
 
-static std::pair<char32_t, nativeint> fromUTF(const char16_t* utf, nativeint length) {
+inline std::pair<char32_t, nativeint> fromUTF(const char16_t* utf, nativeint length) {
   char16_t lead = *utf;
   if (lead < 0xd800 || lead >= 0xe000) {
     return std::make_pair(lead, 1);
@@ -165,7 +165,7 @@ static std::pair<char32_t, nativeint> fromUTF(const char16_t* utf, nativeint len
 }
 
 __attribute__((unused))
-static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint) {
+inline std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint) {
   char32_t c = *utf;
   nativeint length = 1;
   if (0xd800 <= c && c < 0xe000)
@@ -176,7 +176,7 @@ static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint) {
 }
 
 template <class C, class F, class G>
-static void forEachCodePoint(const BaseLString<C>& string,
+inline void forEachCodePoint(const BaseLString<C>& string,
                              const F& onChar, const G& onError) {
   const C* cur = string.begin();
   const C* end = string.end();
@@ -261,12 +261,12 @@ struct UTFConvertor<To, To> {
 };
 
 template <class To, class From>
-static ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input) {
+inline ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input) {
   return UTFConvertor<To, From>::call(input);
 }
 
 template <class C>
-static int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) {
+inline int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) {
   if (a.string == b.string) {
     return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
   }
@@ -303,7 +303,7 @@ static int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) 
 }
 
 __attribute__((unused))
-static nativeint getUTFStride(const char* utf) {
+inline nativeint getUTFStride(const char* utf) {
   unsigned char leadingByte = *utf;
   if (leadingByte < 0x80)
     return 1;
@@ -320,7 +320,7 @@ static nativeint getUTFStride(const char* utf) {
 }
 
 __attribute__((unused))
-static nativeint getUTFStride(const char16_t* utf) {
+inline nativeint getUTFStride(const char16_t* utf) {
   char16_t lead = *utf;
   if (lead < 0xd800 || lead >= 0xe000)
     return 1;
@@ -331,26 +331,26 @@ static nativeint getUTFStride(const char16_t* utf) {
 }
 
 __attribute__((unused))
-static nativeint getUTFStride(const char32_t* utf) {
+inline nativeint getUTFStride(const char32_t* utf) {
   return 1;
 }
 
 __attribute__((unused))
-static constexpr bool isLeadingCodeUnit(char c) {
+inline constexpr bool isLeadingCodeUnit(char c) {
   return ('\x00' <= c && c <= '\x7f') || ('\xc2' <= c && c <= '\xf4');
 }
 
-static constexpr bool isLeadingCodeUnit(char16_t c) {
+inline constexpr bool isLeadingCodeUnit(char16_t c) {
   return !(0xdc00 <= c && c < 0xe000);
 }
 
 __attribute__((unused))
-static constexpr bool isLeadingCodeUnit(char32_t c) {
+inline constexpr bool isLeadingCodeUnit(char32_t c) {
   return true;
 }
 
 template <class C>
-static nativeint codePointCount(const BaseLString<C>& input) {
+inline nativeint codePointCount(const BaseLString<C>& input) {
   if (std::is_same<C, char32_t>::value || input.isErrorOrEmpty())
     return input.length;
   return std::count_if(input.begin(), input.end(), [](C c) {
@@ -360,7 +360,7 @@ static nativeint codePointCount(const BaseLString<C>& input) {
 
 
 template <class C>
-static LString<C> sliceByCodePoints(const LString<C>& input,
+inline LString<C> sliceByCodePoints(const LString<C>& input,
                                     nativeint left, nativeint right) {
   if (left < 0 || right < 0)
     return UnicodeErrorReason::indexOutOfBounds;

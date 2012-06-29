@@ -46,9 +46,9 @@ namespace mozart {
  *      How many code units are used. If the character is invalid, a negative
  *      number (of type UnicodeErrorReason) will be returned.
  */
-static nativeint toUTF(char32_t character, char utf[4]);
-static nativeint toUTF(char32_t character, char16_t utf[2]);
-static nativeint toUTF(char32_t character, char32_t utf[1]);
+inline nativeint toUTF(char32_t character, char utf[4]);
+inline nativeint toUTF(char32_t character, char16_t utf[2]);
+inline nativeint toUTF(char32_t character, char32_t utf[1]);
 
 /**
  * Convert a UTF string to a Unicode character
@@ -62,9 +62,9 @@ static nativeint toUTF(char32_t character, char32_t utf[1]);
  *      sequence is invalid, the number of code units used will be negative of
  *      type UnicodeErrorReason.
  */
-static std::pair<char32_t, nativeint> fromUTF(const char* utf, nativeint length = 4);
-static std::pair<char32_t, nativeint> fromUTF(const char16_t* utf, nativeint length = 2);
-static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint length = 1);
+inline std::pair<char32_t, nativeint> fromUTF(const char* utf, nativeint length = 4);
+inline std::pair<char32_t, nativeint> fromUTF(const char16_t* utf, nativeint length = 2);
+inline std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint length = 1);
 
 /**
  * Perform some action for each code point of the string. The function "f"
@@ -79,11 +79,11 @@ static std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint len
  * both the functions "f" and "g" should return 'false' to quit early.
  */
 template <class C, class F, class G>
-static void forEachCodePoint(const LString<C>& string,
+inline void forEachCodePoint(const LString<C>& string,
                              const F& onChar, const G& onError);
 
 template <class C, class F>
-static void forEachCodePoint(const LString<C>& string, const F& onChar) {
+inline void forEachCodePoint(const LString<C>& string, const F& onChar) {
   forEachCodePoint(string, onChar, [](C, UnicodeErrorReason) { return false; });
 }
 
@@ -91,28 +91,28 @@ static void forEachCodePoint(const LString<C>& string, const F& onChar) {
  * Convert between two kinds of UTF sequences. A copy will always be made.
  */
 template <class To, class From>
-static ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input);
+inline ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input);
 
 /**
  * Compare two strings by code-point order (without considering locale-specific
  * collation, normalization, etc.)
  */
 template <class C>
-inline static int compareByCodePoint(const BaseLString<C>& a,
-                                     const BaseLString<C>& b);
+inline int compareByCodePoint(const BaseLString<C>& a,
+                              const BaseLString<C>& b);
 
 template <class C>
-inline static int compareByCodePoint(const C* a, const BaseLString<C>& b) {
+inline int compareByCodePoint(const C* a, const BaseLString<C>& b) {
   return compareByCodePoint(makeLString(a), b);
 }
 
 template <class C>
-inline static int compareByCodePoint(const BaseLString<C>& a, const C* b) {
+inline int compareByCodePoint(const BaseLString<C>& a, const C* b) {
   return compareByCodePoint(a, makeLString(b));
 }
 
 template <class C>
-inline static int compareByCodePoint(const C* a, const C* b) {
+inline int compareByCodePoint(const C* a, const C* b) {
   return compareByCodePoint(makeLString(a), makeLString(b));
 }
 
@@ -124,23 +124,23 @@ inline static int compareByCodePoint(const C* a, const C* b) {
  * If the conversion failed, a negative number of type UnicodeErrorReason will
  * be returned.
  */
-static nativeint getUTFStride(const char* utf);
-static nativeint getUTFStride(const char16_t* utf);
-static nativeint getUTFStride(const char32_t* utf);
+inline nativeint getUTFStride(const char* utf);
+inline nativeint getUTFStride(const char16_t* utf);
+inline nativeint getUTFStride(const char32_t* utf);
 
 /**
  * Check whether the code unit is a valid leading code unit.
  */
-static constexpr bool isLeadingCodeUnit(char c);
-static constexpr bool isLeadingCodeUnit(char16_t c);
-static constexpr bool isLeadingCodeUnit(char32_t c);
+inline constexpr bool isLeadingCodeUnit(char c);
+inline constexpr bool isLeadingCodeUnit(char16_t c);
+inline constexpr bool isLeadingCodeUnit(char32_t c);
 
 /**
  * Count the number of code points in the UTF string. These functions do not
  * attempt to validate if the input is valid.
  */
 template <class C>
-static nativeint codePointCount(const BaseLString<C>& input);
+inline nativeint codePointCount(const BaseLString<C>& input);
 
 /**
  * Create a new slice by shrinking a certain amount of code points from both
@@ -149,7 +149,7 @@ static nativeint codePointCount(const BaseLString<C>& input);
  * e.g. sliceByCodePoints("abcdefg", 1, 2) == "bcde".
  */
 template <class C>
-static LString<C> sliceByCodePoints(const LString<C>& input,
+inline LString<C> sliceByCodePoints(const LString<C>& input,
                                     nativeint left, nativeint right);
 }
 

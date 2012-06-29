@@ -221,7 +221,7 @@ struct function_traits<const volatile T&&> : public function_traits<T> {};
 // ozListForEach ---------------------------------------------------------------
 
 template <class F, class G>
-static
+inline
 OpResult ozListForEach(VM vm, RichNode cons, const F& onHead, const G& onTail) {
   while (true) {
     using namespace patternmatching;
@@ -247,7 +247,7 @@ OpResult ozListForEach(VM vm, RichNode cons, const F& onHead, const G& onTail) {
 }
 
 template <class F>
-static
+inline
 OpResult ozListForEach(VM vm, RichNode cons, const F& onHead,
                        const nchar* expectedType)
 {

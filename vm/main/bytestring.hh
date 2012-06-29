@@ -278,7 +278,7 @@ OpResult Implementation<ByteString>::decode(Self self, VM vm,
   return OpResult::proceed();
 }
 
-static
+inline
 OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
                             ByteStringEncoding encoding, EncodingVariant variant,
                             UnstableNode& result) {

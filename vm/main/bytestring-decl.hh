@@ -152,7 +152,7 @@ private:
   LString<unsigned char> _bytes;
 };
 
-static
+inline
 OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
                             ByteStringEncoding encoding, EncodingVariant variant,
                             UnstableNode& result);

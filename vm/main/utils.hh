@@ -99,6 +99,7 @@ struct function_traits<ReturnType(Args...)>
     */
     typedef ReturnType function_type(Args...);
 
+#if defined(__has_feature) && __has_feature(cxx_alias_templates) || __GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 7
     /**
     .. type:: type member_function_type<OwnerType>
 
@@ -109,6 +110,7 @@ struct function_traits<ReturnType(Args...)>
         typename std::remove_pointer<typename std::remove_reference<OwnerType>::type>::type,
         ReturnType, Args...
     >::type;
+#endif
 
     /**
     .. data:: static const size_t arity
@@ -249,7 +251,7 @@ static
 OpResult ozListForEach(VM vm, RichNode cons, const F& onHead,
                        const nchar* expectedType)
 {
-  return ozListForEach(vm, cons, onHead, [=, &vm](RichNode node) {
+  return ozListForEach(vm, cons, onHead, [=](RichNode node) {
     return raiseTypeError(vm, expectedType, node);
   });
 }

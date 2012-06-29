@@ -20,6 +20,10 @@ trait OzTokenParsers extends StdTokenParsers with OzPreprocessor {
   def atomLit: Parser[String] =
     elem("atom literal", _.isInstanceOf[AtomLit]) ^^ (_.chars)
 
+  /** A parser which matches an atom literal */
+  def charLit: Parser[Char] =
+    accept("char literal", { case CharLit(char) => char })
+
   /** A parser which matches an atom literal label */
   def atomLitLabel: Parser[String] =
     acceptMatch("atom literal label", {

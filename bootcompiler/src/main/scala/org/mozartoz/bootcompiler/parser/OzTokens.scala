@@ -14,6 +14,12 @@ trait OzTokens extends StdTokens {
     override def toString() = "atom "+chars
   }
 
+  /** The class of char literal tokens */
+  case class CharLit(char: Char) extends Token {
+    override def chars = "&" + char
+    override def toString() = chars
+  }
+
   /** A special token representing a label, i.e. an identifier or atom literal
    *  followed directly by a (
    */

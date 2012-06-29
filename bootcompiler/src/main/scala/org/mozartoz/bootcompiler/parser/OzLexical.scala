@@ -14,6 +14,7 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
     | floatLiteral
     | integerLiteral
     | atomLiteral
+    | charLiteral
     | stringLiteral
     | EofCh ^^^ EOF
     | delim
@@ -50,6 +51,9 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
     | quoted('\'') ^^ AtomLit
   )
 
+  def charLiteral =
+    '&' ~> (chrExcept('\\', EofCh) | pseudoChar) ^^ CharLit
+
   def stringLiteral =
     quoted('\"') ^^ StringLit
 
@@ -59,13 +63,39 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
   def quoted(quoteChar: Char) =
     quoteChar ~> stringOf(inQuoteChar(quoteChar)) <~ quoteChar
 
-  def inQuoteChar(quoteChar: Char) = (
-      '\\' ~> escapeChar
-    | chrExcept('\\', '\n', quoteChar, EofCh)
+  def inQuoteChar(quoteChar: Char) =
+    chrExcept('\\', '\n', quoteChar, EofCh) | pseudoChar
+
+  def pseudoChar = '\\' ~> (
+      octalDigit ~ octalDigit ~ octalDigit ^^ {
+        case sixtyFour ~ eight ~ one => latin1char(64*sixtyFour + 8*eight + one)
+      }
+    | (elem('x') | 'X') ~> hexDigit ~ hexDigit ^^ {
+        case sixteen ~ one => latin1char(16*sixteen + one)
+      }
+    | escapeChar
   )
 
+  def octalDigit =
+    elem("octal digit", c => '0' <= c && c <= '7') ^^ (_ - '0')
+
+  def hexDigit = accept("hex digit", {
+    case c @ ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9') => (c - '0')
+    case c @ ('A'|'B'|'C'|'D'|'E'|'F') => (c - 'A' + 10)
+    case c @ ('a'|'b'|'c'|'d'|'e'|'f') => (c - 'a' + 10)
+  })
+
+  def latin1char(code: Int) = code.toChar
+
   def escapeChar = (
-      elem('\'') | '"' | '\\'
+      elem('\'') | '"' | '`' | '\\' | '&'
+    | 'a' ^^^ '\u0007'
+    | 'b' ^^^ '\u0008'
+    | 't' ^^^ '\u0009'
+    | 'n' ^^^ '\u000A'
+    | 'v' ^^^ '\u000B'
+    | 'f' ^^^ '\u000C'
+    | 'r' ^^^ '\u000D'
   )
 
   /** A character-parser that matches a lowercase letter (and returns it)*/

@@ -713,7 +713,8 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
   std::unique_ptr<UnstableNode[]> patternList;
 
   if (!matchesVariadicSharp(vm, res, patterns, patternCount, patternList))
-    CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patterns, u"patterns"));
+    CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patterns,
+                                         MOZART_STR("patterns")));
 
   for (size_t index = 0; index < patternCount; index++) {
     UnstableNode pattern;
@@ -722,7 +723,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
     if (!matchesSharp(vm, res, patternList[index],
                       capture(pattern), capture(jumpOffset))) {
       CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patternList[index],
-                                           u"pattern"));
+                                           MOZART_STR("pattern")));
     }
 
     assert(jumpOffset >= 0);

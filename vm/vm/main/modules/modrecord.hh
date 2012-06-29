@@ -127,7 +127,8 @@ public:
 
         return buildRecordDynamic(vm, result, label, width, elements.get());
       } else {
-        return matchTypeError(vm, res, contents, u"#-tuple with even arity");
+        return matchTypeError(vm, res, contents,
+                              MOZART_STR("#-tuple with even arity"));
       }
     }
   };

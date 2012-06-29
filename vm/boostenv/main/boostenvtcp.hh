@@ -60,7 +60,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
         } else {
           _environment.postVMEvent([=] () {
             _environment.raiseAndReleaseAsyncIOFeedbackNode(
-              statusNode, u"socket", u"connect", error.value());
+              statusNode, MOZART_STR("socket"), MOZART_STR("connect"), error.value());
           });
         }
       };
@@ -69,7 +69,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
     } else {
       _environment.postVMEvent([=] () {
         _environment.raiseAndReleaseAsyncIOFeedbackNode(
-          statusNode, u"socket", u"resolve", error.value());
+          statusNode, MOZART_STR("socket"), MOZART_STR("resolve"), error.value());
       });
     }
   };
@@ -91,10 +91,10 @@ void TCPConnection::startAsyncRead(StableNode** tailNode,
           head = buildCons(vm, _readData[i-1], std::move(head));
 
         _environment.bindAndReleaseAsyncIOFeedbackNode(
-          statusNode, u"succeeded", bytes_transferred, std::move(head));
+          statusNode, MOZART_STR("succeeded"), bytes_transferred, std::move(head));
       } else {
         _environment.raiseAndReleaseAsyncIOFeedbackNode(
-          statusNode, u"socket", u"read", error.value());
+          statusNode, MOZART_STR("socket"), MOZART_STR("read"), error.value());
       }
 
       _environment.releaseAsyncIONode(tailNode);
@@ -113,7 +113,7 @@ void TCPConnection::startAsyncWrite(StableNode** statusNode) {
           statusNode, bytes_transferred);
       } else {
         _environment.raiseAndReleaseAsyncIOFeedbackNode(
-          statusNode, u"socket", u"write", error.value());
+          statusNode, MOZART_STR("socket"), MOZART_STR("write"), error.value());
       }
     });
   };

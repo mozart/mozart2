@@ -70,7 +70,7 @@ public:
 
     OpResult operator()(VM vm, In seed) {
       nativeint intSeed;
-      MOZART_GET_ARG(intSeed, seed, u"integer");
+      MOZART_GET_ARG(intSeed, seed, MOZART_STR("integer"));
 
       BoostBasedVM::forVM(vm).random_generator.seed(
         (BoostBasedVM::random_generator_t::result_type) intSeed);
@@ -121,7 +121,7 @@ public:
       MOZART_CHECK_OPRESULT(BoostBasedVM::forVM(vm).getFile(fd, file));
 
       nativeint intCount;
-      MOZART_GET_ARG(intCount, count, u"integer");
+      MOZART_GET_ARG(intCount, count, MOZART_STR("integer"));
 
       if (intCount <= 0) {
         actualCount = trivialBuild(vm, 0);
@@ -137,7 +137,7 @@ public:
       if ((readCount < bufferSize) && std::ferror(file)) {
         // error
         vm->free(buffer, bufferSize);
-        return raise(vm, u"system", u"fread");
+        return raise(vm, MOZART_STR("system"), MOZART_STR("fread"));
       }
 
       char* charBuffer = static_cast<char*>(buffer);
@@ -192,19 +192,19 @@ public:
       MOZART_CHECK_OPRESULT(BoostBasedVM::forVM(vm).getFile(fd, file));
 
       nativeint intOffset;
-      MOZART_GET_ARG(intOffset, offset, u"integer");
+      MOZART_GET_ARG(intOffset, offset, MOZART_STR("integer"));
 
       int intWhence;
       OpResult res = OpResult::proceed();
-      if (matches(vm, res, whence, u"SEEK_SET")) {
+      if (matches(vm, res, whence, MOZART_STR("SEEK_SET"))) {
         intWhence = SEEK_SET;
-      } else if (matches(vm, res, whence, u"SEEK_CUR")) {
+      } else if (matches(vm, res, whence, MOZART_STR("SEEK_CUR"))) {
         intWhence = SEEK_CUR;
-      } else if (matches(vm, res, whence, u"SEEK_END")) {
+      } else if (matches(vm, res, whence, MOZART_STR("SEEK_END"))) {
         intWhence = SEEK_END;
       } else {
-        return matchTypeError(vm, res, whence,
-                              u"'SEEK_SET', 'SEEK_CUR' or 'SEEK_END'");
+        return matchTypeError(
+          vm, res, whence, MOZART_STR("'SEEK_SET', 'SEEK_CUR' or 'SEEK_END'"));
       }
 
       auto seekResult = std::fseek(file, (long) intOffset, intWhence);
@@ -225,7 +225,7 @@ public:
       BoostBasedVM& env = BoostBasedVM::forVM(vm);
 
       nativeint intfd = 0;
-      MOZART_GET_ARG(intfd, fd, u"filedesc");
+      MOZART_GET_ARG(intfd, fd, MOZART_STR("filedesc"));
 
       // Never actually close standard I/O
       if ((intfd == env.fdStdin) || (intfd == env.fdStdout) ||
@@ -284,14 +284,14 @@ public:
 
       nativeint intIPVersion, intPort;
 
-      MOZART_GET_ARG(intIPVersion, ipVersion, u"4 or 6");
+      MOZART_GET_ARG(intIPVersion, ipVersion, MOZART_STR("4 or 6"));
       if ((intIPVersion != 4) && (intIPVersion != 6))
-        return raiseTypeError(vm, u"4 or 6", ipVersion);
+        return raiseTypeError(vm, MOZART_STR("4 or 6"), ipVersion);
 
-      MOZART_GET_ARG(intPort, port, u"valid port number");
+      MOZART_GET_ARG(intPort, port, MOZART_STR("valid port number"));
       if ((intPort <= 0) ||
           (intPort > std::numeric_limits<unsigned short>::max()))
-        return raiseTypeError(vm, u"valid port number", port);
+        return raiseTypeError(vm, MOZART_STR("valid port number"), port);
 
       tcp::endpoint endpoint;
       if (intIPVersion == 4)
@@ -316,7 +316,7 @@ public:
 
     OpResult operator()(VM vm, In acceptor, Out result) {
       std::shared_ptr<TCPAcceptor> tcpAcceptor;
-      MOZART_GET_ARG(tcpAcceptor, acceptor, u"TCP acceptor");
+      MOZART_GET_ARG(tcpAcceptor, acceptor, MOZART_STR("TCP acceptor"));
 
       StableNode** connectionNode;
       BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(connectionNode, result);
@@ -333,11 +333,12 @@ public:
 
     OpResult operator()(VM vm, In acceptor) {
       std::shared_ptr<TCPAcceptor> tcpAcceptor;
-      MOZART_GET_ARG(tcpAcceptor, acceptor, u"TCP acceptor");
+      MOZART_GET_ARG(tcpAcceptor, acceptor, MOZART_STR("TCP acceptor"));
 
       auto error = tcpAcceptor->cancel();
       if (!error)
-        return raise(vm, u"system", u"cancel", error.value());
+        return raise(vm, MOZART_STR("system"),
+                     MOZART_STR("cancel"), error.value());
 
       return OpResult::proceed();
     }
@@ -349,11 +350,12 @@ public:
 
     OpResult operator()(VM vm, In acceptor) {
       std::shared_ptr<TCPAcceptor> tcpAcceptor;
-      MOZART_GET_ARG(tcpAcceptor, acceptor, u"TCP acceptor");
+      MOZART_GET_ARG(tcpAcceptor, acceptor, MOZART_STR("TCP acceptor"));
 
       auto error = tcpAcceptor->close();
       if (error)
-        return raise(vm, u"system", u"cancel", error.value());
+        return raise(vm, MOZART_STR("system"),
+                     MOZART_STR("close"), error.value());
 
       return OpResult::proceed();
     }
@@ -386,15 +388,15 @@ public:
     OpResult operator()(VM vm, In connection, In count, In tail, Out status) {
       // Fetch the TCP connection
       std::shared_ptr<TCPConnection> tcpConnection;
-      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+      MOZART_GET_ARG(tcpConnection, connection, MOZART_STR("TCP connection"));
 
       // Fetch the count
       nativeint intCount;
-      MOZART_GET_ARG(intCount, count, u"integer");
+      MOZART_GET_ARG(intCount, count, MOZART_STR("integer"));
 
       // 0 size
       if (intCount <= 0) {
-        status = buildTuple(vm, u"succeeded", 0, tail);
+        status = buildTuple(vm, MOZART_STR("succeeded"), 0, tail);
         return OpResult::proceed();
       }
 
@@ -421,7 +423,7 @@ public:
     OpResult operator()(VM vm, In connection, In data, Out status) {
       // Fetch the TCP connection
       std::shared_ptr<TCPConnection> tcpConnection;
-      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+      MOZART_GET_ARG(tcpConnection, connection, MOZART_STR("TCP connection"));
 
       // Fetch the data to write
       MOZART_CHECK_OPRESULT(ozStringToBuffer(
@@ -452,19 +454,20 @@ public:
 
       // Fetch the TCP connection
       std::shared_ptr<TCPConnection> tcpConnection;
-      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+      MOZART_GET_ARG(tcpConnection, connection, MOZART_STR("TCP connection"));
 
       // Fetch what channels must be shut down
       OpResult res = OpResult::proceed();
       tcp::socket::shutdown_type whatValue;
-      if (matches(vm, res, what, u"receive")) {
+      if (matches(vm, res, what, MOZART_STR("receive"))) {
         whatValue = tcp::socket::shutdown_receive;
-      } else if (matches(vm, res, what, u"send")) {
+      } else if (matches(vm, res, what, MOZART_STR("send"))) {
         whatValue = tcp::socket::shutdown_send;
-      } else if (matches(vm, res, what, u"both")) {
+      } else if (matches(vm, res, what, MOZART_STR("both"))) {
         whatValue = tcp::socket::shutdown_both;
       } else {
-        return matchTypeError(vm, res, what, u"'receive', 'send' or 'both'");
+        return matchTypeError(
+          vm, res, what, MOZART_STR("'receive', 'send' or 'both'"));
       }
 
       try {
@@ -485,7 +488,7 @@ public:
 
       // Fetch the TCP connection
       std::shared_ptr<TCPConnection> tcpConnection;
-      MOZART_GET_ARG(tcpConnection, connection, u"TCP connection");
+      MOZART_GET_ARG(tcpConnection, connection, MOZART_STR("TCP connection"));
 
       try {
         tcpConnection->socket().shutdown(tcp::socket::shutdown_both);

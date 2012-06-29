@@ -47,12 +47,12 @@ public:
 
     OpResult operator()(VM vm, In low, In high, In initValue, Out result) {
       nativeint intLow, intHigh;
-      MOZART_GET_ARG(intLow, low, u"integer");
-      MOZART_GET_ARG(intHigh, high, u"integer");
+      MOZART_GET_ARG(intLow, low, MOZART_STR("integer"));
+      MOZART_GET_ARG(intHigh, high, MOZART_STR("integer"));
 
       nativeint width = intHigh - intLow + 1;
       if (width < 0)
-        return raise(vm, u"negativeArraySize");
+        return raise(vm, MOZART_STR("negativeArraySize"));
 
       result = Array::build(vm, (size_t) width, intLow, initValue);
       return OpResult::proceed();

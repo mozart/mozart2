@@ -183,16 +183,16 @@ public:
     OpResult operator()(VM vm, In value, Out result) {
       if (value.isTransient()) {
         if (value.is<ReadOnly>())
-          result = Atom::build(vm, u"future");
+          result = Atom::build(vm, MOZART_STR("future"));
         else if (value.is<FailedValue>())
-          result = Atom::build(vm, u"failed");
+          result = Atom::build(vm, MOZART_STR("failed"));
         else
-          result = Atom::build(vm, u"free");
+          result = Atom::build(vm, MOZART_STR("free"));
       } else {
         UnstableNode type;
         MOZART_CHECK_OPRESULT(TypeOf::builtin()(vm, value, type));
 
-        result = buildTuple(vm, u"det", std::move(type));
+        result = buildTuple(vm, MOZART_STR("det"), std::move(type));
       }
 
       return OpResult::proceed();
@@ -208,7 +208,7 @@ public:
         return OpResult::waitFor(vm, value);
 
       // TODO
-      result = Atom::build(vm, u"value");
+      result = Atom::build(vm, MOZART_STR("value"));
       return OpResult::proceed();
     }
   };

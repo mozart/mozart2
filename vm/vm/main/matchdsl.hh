@@ -65,7 +65,7 @@
  *       show(value);
  *     } else if (result.isProceed()) {
  *       // value does not match any of the patterns, usually it's a type error
- *       return raiseTypeError(vm, u"int or 42-pair", value);
+ *       return raiseTypeError(vm, MOZART_STR("int or 42-pair"), value);
  *     } else {
  *       // the match blocks on a transient, or failed, etc.
  *       // the `result` contains the outcome of the operation
@@ -102,7 +102,7 @@
  * Hence the two clauses can be rewritten as:
  *
  *     } else {
- *       return matchTypeError(vm, result, value, u"int or 42-pair");
+ *       return matchTypeError(vm, result, value, MOZART_STR("int or 42-pair"));
  *     }
  *
  * The whole example thus looks like this:
@@ -120,7 +120,7 @@
  *     } else if (matches(vm, result, value, capture(intValue))) {
  *       cout << intValue << endl;
  *     } else {
- *       return matchTypeError(vm, result, value, u"int or 42-pair");
+ *       return matchTypeError(vm, result, value, MOZART_STR("int or 42-pair"));
  *     }
  *
  *     return OpResult::proceed();

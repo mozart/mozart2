@@ -139,14 +139,14 @@ public:
 
     OpResult operator()(VM vm, In alts, Out result) {
       nativeint alternatives = 0;
-      MOZART_GET_ARG(alternatives, alts, u"integer");
+      MOZART_GET_ARG(alternatives, alts, MOZART_STR("integer"));
 
       Space* space = vm->getCurrentSpace();
 
       if (space->isTopLevel()) {
         result.make<Unbound>(vm);
       } else if (space->hasDistributor()) {
-        return raise(vm, u"spaceDistributor");
+        return raise(vm, MOZART_STR("spaceDistributor"));
       } else {
         ChooseDistributor* distributor =
           new (vm) ChooseDistributor(vm, space, alternatives);

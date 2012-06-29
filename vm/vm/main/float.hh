@@ -48,7 +48,7 @@ bool Implementation<Float>::equals(VM vm, Self right) {
 OpResult Implementation<Float>::compare(Self self, VM vm,
                                         RichNode right, int& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   result = (value() < rightFloatValue) ? -1 :
     (value() > rightFloatValue) ? 1 : 0;
@@ -71,7 +71,7 @@ OpResult Implementation<Float>::opposite(Self self, VM vm,
 OpResult Implementation<Float>::add(Self self, VM vm,
                                     RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return addValue(self, vm, rightFloatValue, result);
 }
@@ -86,7 +86,7 @@ OpResult Implementation<Float>::addValue(Self self, VM vm,
 OpResult Implementation<Float>::subtract(Self self, VM vm,
                                          RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return subtractValue(self, vm, rightFloatValue, result);
 }
@@ -101,7 +101,7 @@ OpResult Implementation<Float>::subtractValue(Self self, VM vm,
 OpResult Implementation<Float>::multiply(Self self, VM vm,
                                          RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return multiplyValue(self, vm, rightFloatValue, result);
 }
@@ -116,7 +116,7 @@ OpResult Implementation<Float>::multiplyValue(Self self, VM vm,
 OpResult Implementation<Float>::divide(Self self, VM vm,
                                        RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
-  MOZART_GET_ARG(rightFloatValue, right, u"float");
+  MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return divideValue(self, vm, rightFloatValue, result);
 }
@@ -130,12 +130,12 @@ OpResult Implementation<Float>::divideValue(Self self, VM vm,
 
 OpResult Implementation<Float>::div(Self self, VM vm,
                                     RichNode right, UnstableNode& result) {
-  return raiseTypeError(vm, u"Integer", self);
+  return raiseTypeError(vm, MOZART_STR("Integer"), self);
 }
 
 OpResult Implementation<Float>::mod(Self self, VM vm,
                                     RichNode right, UnstableNode& result) {
-  return raiseTypeError(vm, u"Integer", self);
+  return raiseTypeError(vm, MOZART_STR("Integer"), self);
 }
 
 }

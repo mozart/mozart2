@@ -56,7 +56,7 @@ int Implementation<Atom>::compareFeatures(VM vm, Self right) {
 OpResult Implementation<Atom>::compare(Self self, VM vm,
                                        RichNode right, int& result) {
   const AtomImpl* rightAtomValue = 0;
-  MOZART_GET_ARG(rightAtomValue, right, u"atom");
+  MOZART_GET_ARG(rightAtomValue, right, MOZART_STR("atom"));
 
   result = value()->compare(rightAtomValue);
 

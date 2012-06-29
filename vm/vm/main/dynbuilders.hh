@@ -44,7 +44,7 @@ OpResult requireLiteral(VM vm, RichNode label) {
   if (isLiteral)
     return OpResult::proceed();
   else
-    return raiseTypeError(vm, u"literal", label);
+    return raiseTypeError(vm, MOZART_STR("literal"), label);
 }
 
 namespace internal {

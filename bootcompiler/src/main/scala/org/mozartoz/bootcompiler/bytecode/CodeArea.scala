@@ -177,7 +177,7 @@ class CodeArea(val abstraction: Abstraction) {
         out << value.toString()
 
       case OzAtom(value) =>
-        out << "u\"%s\"" % (value map {
+        out << "MOZART_STR(\"%s\")" % (value map {
           case '\\' => "\\\\"
           case c => c
         } mkString "")

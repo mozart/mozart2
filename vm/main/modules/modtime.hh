@@ -47,7 +47,7 @@ public:
 
     OpResult operator()(VM vm, In delay, Out result) {
       nativeint intDelay;
-      MOZART_GET_ARG(intDelay, delay, u"integer");
+      MOZART_GET_ARG(intDelay, delay, MOZART_STR("integer"));
 
       if (intDelay <= 0) {
         result = trivialBuild(vm, unit);

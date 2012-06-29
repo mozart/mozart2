@@ -169,7 +169,7 @@ OpResult Implementation<ReifiedSpace>::mergeSpace(
 
   if (space->getParent() != currentSpace) {
     // TODO This is not an error, but I don't know what to do with it yet
-    return raise(vm, u"spaceMergeNotImplemented");
+    return raise(vm, MOZART_STR("spaceMergeNotImplemented"));
   }
 
   // Update status var
@@ -214,9 +214,9 @@ OpResult Implementation<ReifiedSpace>::commitSpace(
 
     return OpResult::proceed();
   } else if (matchesSharp(vm, res, value, capture(left), capture(right))) {
-    return raise(vm, u"notImplemented", u"commitRange");
+    return raise(vm, MOZART_STR("notImplemented"), MOZART_STR("commitRange"));
   } else {
-    return matchTypeError(vm, res, value, u"int or range");
+    return matchTypeError(vm, res, value, MOZART_STR("int or range"));
   }
 }
 

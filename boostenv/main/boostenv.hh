@@ -119,13 +119,13 @@ std::FILE* BoostBasedVM::getFile(nativeint fd) {
 OpResult BoostBasedVM::getFile(nativeint fd, std::FILE*& result) {
   result = getFile(fd);
   if (result == nullptr)
-    return raise(vm, u"system", u"invalidfd", fd);
+    return raise(vm, MOZART_STR("system"), MOZART_STR("invalidfd"), fd);
   return OpResult::proceed();
 }
 
 OpResult BoostBasedVM::getFile(RichNode fd, std::FILE*& result) {
   nativeint intfd = 0;
-  MOZART_GET_ARG(intfd, fd, u"filedesc");
+  MOZART_GET_ARG(intfd, fd, MOZART_STR("filedesc"));
 
   return getFile(intfd, result);
 }
@@ -148,7 +148,7 @@ namespace internal {
     } else if (matches(vm, res, list, vm->coreatoms.nil)) {
       return OpResult::proceed();
     } else {
-      return matchTypeError(vm, res, list, u"list");
+      return matchTypeError(vm, res, list, MOZART_STR("list"));
     }
   }
 
@@ -181,7 +181,7 @@ OpResult ozListLength(VM vm, RichNode list, size_t& result) {
 
 OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
   MOZART_CHECK_OPRESULT(internal::ozListForEach<char>(
-    vm, value, 0, u"string",
+    vm, value, 0, MOZART_STR("string"),
     [size, buffer] (VM vm, size_t i, char c) -> OpResult {
       assert(i < size);
       buffer[i] = c;
@@ -198,7 +198,7 @@ OpResult ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
   buffer.resize(size);
 
   return internal::ozListForEach<char>(
-    vm, value, 0, u"string",
+    vm, value, 0, MOZART_STR("string"),
     [size, &buffer] (VM vm, size_t i, char c) -> OpResult {
       assert(i < size);
       buffer[i] = c;
@@ -210,7 +210,8 @@ OpResult ozStringToStdString(VM vm, RichNode value, std::string& result) {
   std::stringbuf buffer;
 
   MOZART_CHECK_OPRESULT(internal::ozListForEach<char>(
-    vm, value, 0, u"string", [&buffer] (VM vm, size_t i, char c) -> OpResult {
+    vm, value, 0, MOZART_STR("string"),
+    [&buffer] (VM vm, size_t i, char c) -> OpResult {
       buffer.sputc(c);
       return OpResult::proceed();
     }));
@@ -252,7 +253,7 @@ std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str) {
 
 OpResult raiseOSError(VM vm, int errnum) {
   auto message = systemStrToMozartStr(std::strerror(errnum));
-  return raise(vm, u"system", errnum, message.get());
+  return raise(vm, MOZART_STR("system"), errnum, message.get());
 }
 
 OpResult raiseLastOSError(VM vm) {
@@ -261,7 +262,7 @@ OpResult raiseLastOSError(VM vm) {
 
 OpResult raiseSystemError(VM vm, const boost::system::system_error& error) {
   auto message = systemStrToMozartStr(error.what());
-  return raise(vm, u"system", error.code().value(), message.get());
+  return raise(vm, MOZART_STR("system"), error.code().value(), message.get());
 }
 
 } }

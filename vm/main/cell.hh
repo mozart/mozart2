@@ -47,7 +47,7 @@ OpResult Implementation<Cell>::exchange(RichNode self, VM vm,
                                         RichNode newValue,
                                         UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "cell");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
 
   oldValue = std::move(_value);
   _value.copy(vm, newValue);
@@ -65,7 +65,7 @@ OpResult Implementation<Cell>::access(RichNode self, VM vm,
 OpResult Implementation<Cell>::assign(RichNode self, VM vm,
                                       RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "cell");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
 
   _value.copy(vm, newValue);
 

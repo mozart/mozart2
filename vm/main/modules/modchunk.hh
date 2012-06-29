@@ -53,7 +53,7 @@ public:
         result = Chunk::build(vm, underlying);
         return OpResult::proceed();
       } else {
-        return raiseTypeError(vm, u"Record", underlying);
+        return raiseTypeError(vm, MOZART_STR("Record"), underlying);
       }
     }
   };

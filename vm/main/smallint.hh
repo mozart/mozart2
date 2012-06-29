@@ -60,7 +60,7 @@ OpResult Implementation<SmallInt>::compare(Self self, VM vm,
                                            RichNode right,
                                            int& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   result = (value() == rightIntValue) ? 0 :
     (value() < rightIntValue) ? -1 : 1;
@@ -92,7 +92,7 @@ OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
 OpResult Implementation<SmallInt>::add(Self self, VM vm,
                                        RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return addValue(self, vm, rightIntValue, result);
 }
@@ -118,7 +118,7 @@ OpResult Implementation<SmallInt>::subtract(Self self, VM vm,
                                             RichNode right,
                                             UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return subtractValue(self, vm, rightIntValue, result);
 }
@@ -145,7 +145,7 @@ OpResult Implementation<SmallInt>::multiply(Self self, VM vm,
                                             RichNode right,
                                             UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return multiplyValue(self, vm, rightIntValue, result);
 }
@@ -186,13 +186,13 @@ OpResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
 OpResult Implementation<SmallInt>::divide(Self self, VM vm,
                                           RichNode right,
                                           UnstableNode& result) {
-  return raiseTypeError(vm, u"Float", self);
+  return raiseTypeError(vm, MOZART_STR("Float"), self);
 }
 
 OpResult Implementation<SmallInt>::div(Self self, VM vm,
                                        RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return divValue(self, vm, rightIntValue, result);
 }
@@ -216,7 +216,7 @@ OpResult Implementation<SmallInt>::divValue(Self self, VM vm,
 OpResult Implementation<SmallInt>::mod(Self self, VM vm,
                                        RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
+  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return modValue(self, vm, rightIntValue, result);
 }

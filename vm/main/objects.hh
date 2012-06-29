@@ -143,7 +143,7 @@ OpResult Implementation<Object>::attrPut(Self self, VM vm,
                                          RichNode attribute,
                                          RichNode value) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", u"object");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
   size_t offset;
   MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
@@ -157,7 +157,7 @@ OpResult Implementation<Object>::attrExchange(Self self, VM vm,
                                               RichNode newValue,
                                               UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", u"object");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
   size_t offset;
   MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
@@ -189,7 +189,7 @@ OpResult Implementation<Object>::getCallInfo(
     UnstableNode ooFallback = trivialBuild(vm, vm->coreatoms.ooFallback);
     MOZART_CHECK_OPRESULT(Dottable(_clazz).dot(vm, ooFallback, fallback));
 
-    UnstableNode apply = trivialBuild(vm, u"apply");
+    UnstableNode apply = trivialBuild(vm, MOZART_STR("apply"));
     MOZART_CHECK_OPRESULT(Dottable(fallback).dot(vm, apply, fallbackApply));
 
     _Gs[0].init(vm, RichNode(self));

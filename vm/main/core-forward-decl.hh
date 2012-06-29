@@ -39,6 +39,7 @@ namespace mozart {
 
 typedef intptr_t nativeint;
 typedef char16_t nchar;
+#define MOZART_STR(S) u##S
 
 struct unit_t {
 };

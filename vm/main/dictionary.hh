@@ -465,7 +465,7 @@ OpResult Implementation<Dictionary>::dictGet(
     result.copy(vm, *value);
     return OpResult::proceed();
   } else {
-    return raise(vm, u"dictKeyNotFound", self, feature);
+    return raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
   }
 }
 
@@ -489,7 +489,7 @@ OpResult Implementation<Dictionary>::dictPut(
   Self self, VM vm, RichNode feature, RichNode newValue) {
 
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "dictionary");
+    return raise(vm, MOZART_STR("globalState"), "dictionary");
 
   MOZART_REQUIRE_FEATURE(feature);
 
@@ -505,7 +505,7 @@ OpResult Implementation<Dictionary>::dictExchange(
   UnstableNode& oldValue) {
 
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "dictionary");
+    return raise(vm, MOZART_STR("globalState"), "dictionary");
 
   UnstableNode* value;
   if (dict.lookup(vm, feature, value)) {
@@ -513,7 +513,7 @@ OpResult Implementation<Dictionary>::dictExchange(
     value->copy(vm, newValue);
     return OpResult::proceed();
   } else {
-    return raise(vm, u"dictKeyNotFound", self, feature);
+    return raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
   }
 }
 
@@ -522,7 +522,7 @@ OpResult Implementation<Dictionary>::dictCondExchange(
   RichNode newValue, UnstableNode& oldValue) {
 
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "dictionary");
+    return raise(vm, MOZART_STR("globalState"), "dictionary");
 
   UnstableNode* value;
   if (dict.lookupOrCreate(vm, feature, value)) {
@@ -540,7 +540,7 @@ OpResult Implementation<Dictionary>::dictRemove(
   Self self, VM vm, RichNode feature) {
 
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "dictionary");
+    return raise(vm, MOZART_STR("globalState"), "dictionary");
 
   MOZART_REQUIRE_FEATURE(feature);
 
@@ -550,7 +550,7 @@ OpResult Implementation<Dictionary>::dictRemove(
 
 OpResult Implementation<Dictionary>::dictRemoveAll(Self self, VM vm) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "dictionary");
+    return raise(vm, MOZART_STR("globalState"), "dictionary");
 
   dict.removeAll(vm);
   return OpResult::proceed();

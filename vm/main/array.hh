@@ -93,7 +93,7 @@ OpResult Implementation<Array>::arrayPut(Self self, VM vm,
                                          RichNode index,
                                          RichNode value) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "array");
+    return raise(vm, MOZART_STR("globalState"), "array");
 
   size_t offset = 0;
   MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
@@ -106,7 +106,7 @@ OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
                                               RichNode index, RichNode newValue,
                                               UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, u"globalState", "array");
+    return raise(vm, MOZART_STR("globalState"), "array");
 
   size_t offset = 0;
   MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
@@ -119,10 +119,10 @@ OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
 OpResult Implementation<Array>::getOffset(Self self, VM vm,
                                           RichNode index, size_t& offset) {
   nativeint indexIntValue;
-  MOZART_GET_ARG(indexIntValue, index, u"integer");
+  MOZART_GET_ARG(indexIntValue, index, MOZART_STR("integer"));
 
   if (!isIndexInRange(indexIntValue))
-    return raise(vm, u"arrayIndexOutOfBounds", self, index);
+    return raise(vm, MOZART_STR("arrayIndexOutOfBounds"), self, index);
 
   offset = indexToOffset(indexIntValue);
   return OpResult::proceed();

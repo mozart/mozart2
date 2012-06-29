@@ -86,9 +86,9 @@ public:
       MOZART_CHECK_OPRESULT(ThreadLike(thread).getThreadPriority(vm, prio));
 
       switch (prio) {
-        case tpLow: result = trivialBuild(vm, u"low"); break;
-        case tpMiddle: result = trivialBuild(vm, u"medium"); break;
-        case tpHi: result = trivialBuild(vm, u"high"); break;
+        case tpLow: result = trivialBuild(vm, MOZART_STR("low")); break;
+        case tpMiddle: result = trivialBuild(vm, MOZART_STR("medium")); break;
+        case tpHi: result = trivialBuild(vm, MOZART_STR("high")); break;
 
         default: assert(false);
       }
@@ -107,14 +107,15 @@ public:
       ThreadPriority prio = tpMiddle;
       OpResult res = OpResult::proceed();
 
-      if (matches(vm, res, priority, u"low")) {
+      if (matches(vm, res, priority, MOZART_STR("low"))) {
         prio = tpLow;
-      } else if (matches(vm, res, priority, u"medium")) {
+      } else if (matches(vm, res, priority, MOZART_STR("medium"))) {
         prio = tpMiddle;
-      } else if (matches(vm, res, priority, u"high")) {
+      } else if (matches(vm, res, priority, MOZART_STR("high"))) {
         prio = tpHi;
       } else {
-        return matchTypeError(vm, res, priority, u"low, medium or high");
+        return matchTypeError(vm, res, priority,
+                              MOZART_STR("low, medium or high"));
       }
 
       return ThreadLike(thread).setThreadPriority(vm, prio);

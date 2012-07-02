@@ -335,24 +335,25 @@ nativeint getUTFStride(const char32_t* utf) {
   return 1;
 }
 
-nativeint codePointCount(const BaseLString<char>& input) {
-  if (input.isErrorOrEmpty())
-    return input.length;
-  return std::count_if(input.begin(), input.end(), [](char c) {
-    return !('\x80' <= c && c < '\xc0');
-  });
+constexpr bool isLeadingCodeUnit(char c) {
+  return ('\x00' <= c && c <= '\x7f') || ('\xc2' <= c && c <= '\xf4');
 }
 
-nativeint codePointCount(const BaseLString<char16_t>& input) {
-  if (input.isErrorOrEmpty())
-    return input.length;
-  return std::count_if(input.begin(), input.end(), [](char16_t c) {
-    return !(0xdc00 <= c && c < 0xe000);
-  });
+constexpr bool isLeadingCodeUnit(char16_t c) {
+  return !(0xdc00 <= c && c < 0xe000);
 }
 
-nativeint codePointCount(const BaseLString<char32_t>& input) {
-  return input.length;
+constexpr bool isLeadingCodeUnit(char32_t c) {
+  return true;
+}
+
+template <class C>
+nativeint codePointCount(const BaseLString<C>& input) {
+  if (std::is_same<C, char32_t>::value || input.isErrorOrEmpty())
+    return input.length;
+  return std::count_if(input.begin(), input.end(), [](C c) {
+    return isLeadingCodeUnit(c);
+  });
 }
 
 }

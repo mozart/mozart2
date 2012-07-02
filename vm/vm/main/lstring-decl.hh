@@ -51,6 +51,7 @@ enum UnicodeErrorReason : nativeint {
   invalidUTF8 = -3,  // an invalid UTF-8 sequence is provided.
   invalidUTF16 = -4, // an invalid UTF-16 sequence is provided.
   truncated = -5,    // the data is truncated such that an incomplete code unit exists.
+  indexOutOfBounds = -6, // index out-of-bounds.
 
   invalidUTFNative = // an invalid UTF sequence (based on nchar) is provided
     std::is_same<nchar, char16_t>::value ? invalidUTF16 :

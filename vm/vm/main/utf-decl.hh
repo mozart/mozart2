@@ -133,12 +133,18 @@ inline nativeint getUTFStride(const char16_t* utf);
 inline nativeint getUTFStride(const char32_t* utf);
 
 /**
- * Count the number of code points in the UTF string. These functions do not
- * attempt to validate if the input is valid.
- */
-inline nativeint codePointCount(const BaseLString<char>& input);
-inline nativeint codePointCount(const BaseLString<char16_t>& input);
-inline nativeint codePointCount(const BaseLString<char32_t>& input);
+* Check whether the code unit is a valid leading code unit.
+*/
+inline constexpr bool isLeadingCodeUnit(char c);
+inline constexpr bool isLeadingCodeUnit(char16_t c);
+inline constexpr bool isLeadingCodeUnit(char32_t c);
+
+/**
+* Count the number of code points in the UTF string. These functions do not
+* attempt to validate if the input is valid.
+*/
+template <class C>
+inline nativeint codePointCount(const BaseLString<C>& input);
 
 }
 

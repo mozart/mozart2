@@ -27,6 +27,7 @@
 
 #include "mozartcore.hh"
 
+#include <string>
 #include <limits>
 
 #ifndef MOZART_GENERATOR
@@ -56,17 +57,37 @@ int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
     return 1;
 }
 
+// Comparable ------------------------------------------------------------------
+
 OpResult Implementation<SmallInt>::compare(Self self, VM vm,
                                            RichNode right,
                                            int& result) {
+  using namespace patternmatching;
+
+  OpResult matchRes = OpResult::proceed();
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, u"integer");
 
-  result = (value() == rightIntValue) ? 0 :
-    (value() < rightIntValue) ? -1 : 1;
+  if (matches(vm, matchRes, right, capture(rightIntValue))) {
+    result = (value() == rightIntValue) ? 0 :
+             (value() < rightIntValue) ? -1 : 1;
+    return OpResult::proceed();
 
-  return OpResult::proceed();
+  } else if (!matchRes.isProceed()) {
+    return matchRes;
+
+  } else {
+    // Allow string offsets to be compared with integers just for consistency.
+    bool isStringOffset;
+    MOZART_CHECK_OPRESULT(StringOffsetLike(right).isStringOffset(vm, isStringOffset));
+    if (!isStringOffset)
+      return raiseTypeError(vm, MOZART_STR("integer"), right);
+    MOZART_CHECK_OPRESULT(Comparable(right).compare(vm, self, result));
+    result = -result;
+    return OpResult::proceed();
+  }
 }
+
+// IntegerValue ----------------------------------------------------------------
 
 OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
                                                  nativeint right,
@@ -74,6 +95,8 @@ OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
   result = value() == right;
   return OpResult::proceed();
 }
+
+// Numeric ---------------------------------------------------------------------
 
 OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
                                             UnstableNode& result) {
@@ -233,6 +256,94 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
     // Overflow - TODO: create a BigInt
     result.make<SmallInt>(vm, 0);
   }
+
+  return OpResult::proceed();
+}
+
+// VirtualString ---------------------------------------------------------------
+
+OpResult Implementation<SmallInt>::toString(Self self, VM vm,
+                                            std::basic_ostream<nchar>& sink) {
+//sink << value();  // doesn't seem to work, don't know why.
+  auto str = std::to_string(value());
+  size_t length = str.length();
+  std::unique_ptr<nchar[]> nStr (new nchar[length]);
+  std::copy(str.begin(), str.end(), nStr.get());
+  sink.write(nStr.get(), length);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<SmallInt>::vsLength(Self self, VM vm, nativeint& result) {
+  result = (nativeint) std::to_string(value()).length();
+  return OpResult::proceed();
+}
+
+// StringOffset ----------------------------------------------------------------
+
+namespace internal {
+
+  static
+  OpResult charIndexToStringOffset(VM vm, RichNode node,
+                                   nativeint index, nativeint& offset) {
+    offset = -1;
+    if (index < 0)
+      return OpResult::proceed();
+
+    if (node.is<String>()) {
+
+      LString<nchar> string = node.as<String>().value();
+      LString<nchar> sliced = sliceByCodePoints(string, index, 0);
+      if (sliced.isError()) {
+        if (sliced.error != UnicodeErrorReason::indexOutOfBounds)
+          return raiseUnicodeError(vm, sliced.error, node);
+      } else if (sliced.length > 0) {
+        offset = sliced.string - string.string;
+      } else {
+        offset = string.length;
+      }
+
+    } else {
+
+      UnstableNode endNode;
+      nativeint endIndex;
+      MOZART_CHECK_OPRESULT(StringLike(node).stringEnd(vm, endNode));
+      MOZART_CHECK_OPRESULT(StringOffsetLike(endNode).getCharIndex(vm, endIndex));
+      if (index <= endIndex)
+        offset = index;
+
+    }
+
+    return OpResult::proceed();
+  }
+
+}
+
+OpResult Implementation<SmallInt>::toStringOffset(Self self, VM vm,
+                                                  RichNode string,
+                                                  nativeint& offset) {
+  nativeint theOffset;
+  MOZART_CHECK_OPRESULT(internal::charIndexToStringOffset(vm, string, value(), theOffset));
+  if (theOffset < 0) {
+    return raiseIndexOutOfBounds(vm, string, self);
+  } else {
+    offset = theOffset;
+    return OpResult::proceed();
+  }
+}
+
+OpResult Implementation<SmallInt>::stringOffsetAdvance(Self self, VM vm,
+                                                       RichNode string,
+                                                       nativeint delta,
+                                                       UnstableNode& result) {
+  nativeint theOffset;
+  nativeint advancedIndex = value() + delta;
+  MOZART_CHECK_OPRESULT(
+    internal::charIndexToStringOffset(vm, string, advancedIndex, theOffset));
+
+  if (theOffset < 0)
+    result.make<Boolean>(vm, false);
+  else
+    result.make<StringOffset>(vm, theOffset, string, advancedIndex);
 
   return OpResult::proceed();
 }

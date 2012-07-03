@@ -49,5 +49,8 @@
 #include "smallint.hh"
 #include "unit.hh"
 #include "variables.hh"
+#include "string.hh"
+#include "bytestring.hh"
+#include "stringoffset.hh"
 
 #endif // __COREDATATYPES_H

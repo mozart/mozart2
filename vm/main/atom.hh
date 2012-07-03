@@ -71,6 +71,24 @@ void Implementation<Atom>::printReprToStream(Self self, VM vm,
   out << "'";
 }
 
+OpResult Implementation<Atom>::toString(Self self, VM vm,
+                                        std::basic_ostream<nchar>& sink) {
+  const AtomImpl* a = value();
+  if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
+    sink.write(a->contents(), a->length());
+  }
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
+  const AtomImpl* a = value();
+  if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
+    result = 0;
+  else
+    result = codePointCount(makeLString(a->contents(), a->length()));
+  return OpResult::proceed();
+}
+
 }
 
 #endif // MOZART_GENERATOR

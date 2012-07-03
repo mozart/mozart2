@@ -149,7 +149,7 @@
  *
  * All the patterns can be one of the following:
  *
- * * Simple C++ values, such as int, const char16_t*, bool.
+ * * Simple C++ values, such as int, const char*, bool.
  *   The value matches if it is equal to the given value.
  * * A RichNode `node`.
  *   The value matches if it is equal to `node` (tested with mozart::equals()).
@@ -369,16 +369,16 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value, unit_t pattern) {
 template <>
 inline
 bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   const char16_t* pattern) {
+                   const nchar* pattern) {
   if (!value.is<Atom>()) {
     internal::waitForIfTransient(vm, result, value);
     return false;
   }
 
   size_t length = value.as<Atom>().value()->length();
-  const char16_t* valueContents = value.as<Atom>().value()->contents();
+  const nchar* valueContents = value.as<Atom>().value()->contents();
 
-  return std::char_traits<char16_t>::compare(
+  return std::char_traits<nchar>::compare(
     valueContents, pattern, length) == 0;
 }
 
@@ -634,7 +634,7 @@ bool matchesVariadicSharp(VM vm, OpResult& result, RichNode value,
  */
 inline
 OpResult matchTypeError(VM vm, OpResult& result, RichNode value,
-                        const char16_t* expected) {
+                        const nchar* expected) {
   if (result.isProceed())
     return raiseTypeError(vm, expected, value);
   else

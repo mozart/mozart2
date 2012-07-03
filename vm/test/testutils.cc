@@ -48,3 +48,38 @@ namespace {
 std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment() {
   return std::unique_ptr<TestEnvironment>(new TestEnvironment());
 }
+
+bool mozart::MozartTest::EXPECT_RAISE(const BaseLString<nchar>& label, OpResult result) const {
+    EXPECT_EQ(OpResult::orRaise, result.kind());
+    if (OpResult::orRaise != result.kind()) return false;
+    UnstableNode excNode = Reference::build(vm, result.getExceptionNode());
+    UnstableNode labelNode;
+    if (!EXPECT_PROCEED(RecordLike(excNode).label(vm, labelNode))) return false;
+    return EXPECT_EQ_ATOM(label, labelNode);
+}
+
+namespace mozart { namespace mut {
+
+  template <class C>
+  void PrintTo(const BaseLString<C>& input, std::ostream* out) {
+    *out << "< ";
+    auto oldBase = out->setf(std::ios_base::hex, std::ios_base::basefield);
+    for (nativeint c : input) {
+      out->width(sizeof(C)*2);
+      out->fill('0');
+      if (std::is_same<C, char>::value)
+        *out << (c & 0xff) << " ";
+      else
+        *out << c << " ";
+    }
+    out->setf(oldBase, std::ios_base::basefield);
+    *out << ">";
+  }
+
+  template void PrintTo(const BaseLString<unsigned char>& input, std::ostream* out);
+  template void PrintTo(const BaseLString<char>& input, std::ostream* out);
+  template void PrintTo(const BaseLString<char16_t>& input, std::ostream* out);
+  template void PrintTo(const BaseLString<char32_t>& input, std::ostream* out);
+}}
+
+

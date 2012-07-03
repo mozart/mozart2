@@ -51,11 +51,11 @@ public:
   Implementation(const AtomImpl* value) : _value(value) {}
 
   static void build(AtomImpl*& self, VM vm, std::size_t length,
-                    const char16_t* contents) {
+                    const nchar* contents) {
     self = vm->atomTable.get(vm, length, contents);
   }
 
-  static void build(AtomImpl*& self, VM vm, const char16_t* contents) {
+  static void build(AtomImpl*& self, VM vm, const nchar* contents) {
     self = vm->atomTable.get(vm, contents);
   }
 
@@ -88,6 +88,19 @@ public:
 
   inline
   OpResult compare(Self self, VM vm, RichNode right, int& result);
+
+public:
+  // VirtualString inteface
+  OpResult isVirtualString(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+  inline
+  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+
+  inline
+  OpResult vsLength(Self self, VM vm, nativeint& result);
 
 public:
   // Miscellaneous

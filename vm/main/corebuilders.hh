@@ -86,7 +86,7 @@ UnstableNode trivialBuild(VM vm, double value) {
 }
 
 inline
-UnstableNode trivialBuild(VM vm, const char16_t* value) {
+UnstableNode trivialBuild(VM vm, const nchar* value) {
   return Atom::build(vm, value);
 }
 

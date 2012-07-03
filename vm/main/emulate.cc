@@ -145,7 +145,7 @@ void Thread::constructor(VM vm, RichNode abstraction,
   MOZART_ASSERT_PROCEED(Callable(abstraction).getCallInfo(
     vm, arity, start, Xcount, Gs, Ks));
 
-  assert(arity == argc);
+  assert(arity >= 0 && (size_t)arity == argc);
 
   // Set up
 

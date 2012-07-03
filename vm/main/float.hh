@@ -25,6 +25,8 @@
 #ifndef __FLOAT_H
 #define __FLOAT_H
 
+#include <tuple>
+#include <memory>
 #include "mozartcore.hh"
 
 #ifndef MOZART_GENERATOR
@@ -136,6 +138,80 @@ OpResult Implementation<Float>::div(Self self, VM vm,
 OpResult Implementation<Float>::mod(Self self, VM vm,
                                     RichNode right, UnstableNode& result) {
   return raiseTypeError(vm, u"Integer", self);
+}
+
+namespace internal {
+
+struct FloatToStringHelper {
+  std::unique_ptr<nchar[]> string;
+  size_t length;
+  size_t minusSigns[2];
+
+  explicit FloatToStringHelper(double d) : minusSigns{~(size_t)0u, ~(size_t)0u} {
+    char cStr[16];
+    size_t actualLength = snprintf(cStr, sizeof(cStr), "%.5g", d);
+    string.reset(new nchar[actualLength + 2]);
+    length = 0;
+
+    bool hasDot = false, hasDigit = false;
+    size_t* curMinusSign = minusSigns;
+
+    for (size_t i = 0; i < actualLength; ++ i) {
+      switch (cStr[i]) {
+        case '+':
+          continue;
+
+        case '-':
+          *curMinusSign++ = length;
+          break;
+
+        case 'e':
+          if (!hasDot)
+            string[length++] = '.';
+          if (!hasDigit)
+            string[length++] = '0';
+          hasDigit = hasDot = true;
+          break;
+
+        case '.':
+          hasDot = true;
+
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+          if (hasDot)
+            hasDigit = true;
+          break;
+
+        default:
+          break;
+      }
+
+      string[length++] = cStr[i];
+    }
+
+    if (!hasDot)
+      string[length++] = '.';
+    if (!hasDigit)
+      string[length++] = '0';
+  }
+
+  void buildStringAt(VM vm, size_t from, size_t to, UnstableNode& result) const {
+    result.make<String>(vm, newLString(vm, string.get() + from, to - from));
+  }
+};
+
+}
+
+OpResult Implementation<Float>::toString(Self self, VM vm,
+                                         std::basic_ostream<nchar>& sink) {
+  const internal::FloatToStringHelper helper (value());
+  sink.write(helper.string.get(), helper.length);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Float>::vsLength(Self self, VM vm, nativeint& result) {
+  result = (nativeint) internal::FloatToStringHelper(value()).length;
+  return OpResult::proceed();
 }
 
 }

@@ -29,19 +29,24 @@
 
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 namespace mozart {
 
 class Atom;
 class AtomTable;
 
+static constexpr size_t bitsPerChar = std::is_same<nchar, char32_t>::value ? 5 :
+                                      std::is_same<nchar, char16_t>::value ? 4 : 3;
+static constexpr size_t charBitsMask = (1 << bitsPerChar) - 1;
+
 class AtomImpl {
 public:
   size_t length() const {
-    return size >> 4;
+    return size >> bitsPerChar;
   }
 
-  const char16_t* contents() const {
+  const nchar* contents() const {
     return data;
   }
 
@@ -49,28 +54,28 @@ public:
     if (this == rhs) {
       return 0;
     } else {
-      return std::char_traits<char16_t>::compare(
-        this->contents(), rhs->contents(), this->length()+1);
+      return compareByCodePoint(makeLString(this->contents(), this->length()),
+			        makeLString(rhs->contents(), rhs->length()));
     }
   }
 private:
   friend class AtomTable;
 
-  AtomImpl(VM vm, size_t size, const char16_t* data,
+  AtomImpl(VM vm, size_t size, const nchar* data,
            size_t critBit, int d, AtomImpl* other)
     : size(size), critBit(critBit) {
 
-    size_t dataLengthPlus1 = (size >> 4) + 1;
-    char16_t* data0 = new (vm) char16_t[dataLengthPlus1];
-    std::memcpy(data0, data, dataLengthPlus1 * sizeof(char16_t));
+    size_t dataLengthPlus1 = (size >> bitsPerChar) + 1;
+    nchar* data0 = new (vm) nchar[dataLengthPlus1];
+    std::memcpy(data0, data, dataLengthPlus1 * sizeof(nchar));
     this->data = data0;
 
     side[d]=this;
     side[1-d]=other;
   }
 
-  size_t size;
-  const char16_t* data;
+  size_t size;              // number of bits in this atom.
+  const nchar* data;     // the string content
   size_t critBit;
   AtomImpl* side[2];
 };
@@ -79,17 +84,18 @@ class AtomTable {
 public:
   AtomTable() : root(nullptr), _count(0) {}
 
-  AtomImpl* get(VM vm, const char16_t* data) {
-    return get(vm, std::char_traits<char16_t>::length(data), data);
+  AtomImpl* get(VM vm, const nchar* data) {
+    return get(vm, std::char_traits<nchar>::length(data), data);
   }
 
   __attribute__((noinline))
-  AtomImpl* get(VM vm, size_t size, const char16_t* data) {
-    assert(size == (size << 5) >> 5);
-    size <<= 4;
+  AtomImpl* get(VM vm, size_t size, const nchar* data) {
+    assert(size == (size << (bitsPerChar+1)) >> (bitsPerChar+1));   // ??
+    size <<= bitsPerChar;
     if(root == nullptr){
       ++_count;
-      return root = new (vm) AtomImpl(vm, size, data, size+16, 1, nullptr);
+      size_t critBit = size + (1 << bitsPerChar);
+      return root = new (vm) AtomImpl(vm, size, data, critBit, 1, nullptr);
     }
     AtomImpl** curP = &root;
     size_t nextToCheck = 0;
@@ -115,29 +121,29 @@ public:
   }
   size_t count() {return _count;}
 private:
-  int bitAt(size_t size, const char16_t* data, size_t pos) {
+  int bitAt(size_t size, const nchar* data, size_t pos) {
     if(pos >= size) return 1;
-    return (data[pos >> 4] & (1 << (pos & 0xF))) ? 1 : 0;
+    return (data[pos >> bitsPerChar] & (1 << (pos & charBitsMask))) ? 1 : 0;
   }
-  char16_t charAt(size_t sizeC, const char16_t* data, size_t i) {
-    if(i >= sizeC) return ~(char16_t)0;
+  nchar charAt(size_t sizeC, const nchar* data, size_t i) {
+    if(i >= sizeC) return ~(nchar)0;
     return data[i];
   }
-  size_t firstMismatch(size_t s1, const char16_t* d1,
-		       size_t s2, const char16_t* d2,
+  size_t firstMismatch(size_t s1, const nchar* d1,
+		       size_t s2, const nchar* d2,
 		       size_t start, size_t stop) {
     if(start == stop) return stop;
     stop--;
-    size_t s1c = s1 >> 4;
-    size_t s2c = s2 >> 4;
-    char16_t mask = (1 << (start & 0xF)) - 1;
+    size_t s1c = s1 >> bitsPerChar;
+    size_t s2c = s2 >> bitsPerChar;
+    nchar mask = (1 << (start & charBitsMask)) - 1;
     mask = ~mask;
-    for(size_t i = start >> 4; (i <= stop >> 4); ++i) {
-      char16_t x = charAt(s1c, d1, i);
-      char16_t y = charAt(s2c, d2, i);
-      char16_t d = (x ^ y) & mask;
-      if(d) return (i << 4) + __builtin_ctz(d);
-      mask = ~(char16_t)0;
+    for(size_t i = start >> bitsPerChar; (i <= stop >> bitsPerChar); ++i) {
+      nchar x = charAt(s1c, d1, i);
+      nchar y = charAt(s2c, d2, i);
+      nchar d = (x ^ y) & mask;
+      if(d) return (i << bitsPerChar) + __builtin_ctz(d);
+      mask = ~(nchar)0;
     }
     return stop+1;
   }

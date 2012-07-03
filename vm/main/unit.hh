@@ -48,6 +48,17 @@ int Implementation<Unit>::compareFeatures(VM vm, Self right) {
   return 0;
 }
 
+OpResult Implementation<Unit>::toString(Self self, VM vm,
+                                        std::basic_ostream<nchar>& sink) {
+  sink << MOZART_STR("unit");
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Unit>::vsLength(Self self, VM vm, nativeint& result) {
+  result = 4;
+  return OpResult::proceed();
+}
+
 }
 
 #endif // MOZART_GENERATOR

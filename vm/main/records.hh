@@ -29,6 +29,8 @@
 
 #ifndef MOZART_GENERATOR
 
+#include "utils.hh"
+
 namespace mozart {
 
 ////////////////
@@ -179,6 +181,51 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
   out << ")";
 }
 
+bool Implementation<Tuple>::hasSharpLabel(VM vm) {
+  RichNode label = _label;
+  return label.is<Atom>() && label.as<Atom>().value() == vm->coreatoms.sharp;
+}
+
+OpResult Implementation<Tuple>::isVirtualString(Self self, VM vm, bool& result) {
+  result = false;
+  if (hasSharpLabel(vm)) {
+    for (size_t i = 0; i < _width; ++ i) {
+      MOZART_CHECK_OPRESULT(VirtualString(self[i]).isVirtualString(vm, result));
+      if (!result)
+        return OpResult::proceed();
+    }
+    result = true;
+  }
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::toString(Self self, VM vm,
+                                         std::basic_ostream<nchar>& sink) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
+
+  for (size_t i = 0; i < _width; ++ i) {
+    MOZART_CHECK_OPRESULT(VirtualString(self[i]).toString(vm, sink));
+  }
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
+  if (!hasSharpLabel(vm))
+    return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
+
+  result = 0;
+  for (size_t i = 0; i < _width; ++ i) {
+    nativeint thisLength = 0;
+    UnstableNode tempNode (vm, self[i]);
+    MOZART_CHECK_OPRESULT(VirtualString(tempNode).vsLength(vm, thisLength));
+    result += thisLength;
+  }
+
+  return OpResult::proceed();
+}
+
 ///////////
 // Cons //
 ///////////
@@ -265,6 +312,73 @@ OpResult Implementation<Cons>::waitOr(Self self, VM vm,
 void Implementation<Cons>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
   out << repr(vm, _head, depth) << "|" << repr(vm, _tail, depth);
+}
+
+template <class F, class G>
+static OpResult withConsAsVirtualString(VM vm, RichNode cons,
+                                        const F& onChar, const G& onString) {
+  return ozListForEach(vm, cons,
+    [&, vm](nativeint c) -> OpResult {
+      if (c < 0 || c >= 256) {
+        UnstableNode errNode = SmallInt::build(vm, c);
+        return raiseTypeError(vm, MOZART_STR("char"), errNode);
+      }
+      onChar((char32_t) c);
+      return OpResult::proceed();
+    },
+    [vm](RichNode tail) -> OpResult {
+      return raiseTypeError(vm, MOZART_STR("VirtualString"), tail);
+    }
+  );
+}
+
+OpResult Implementation<Cons>::isVirtualString(Self self, VM vm, bool& result) {
+  OpResult res = withConsAsVirtualString(vm, self,
+    [](char32_t){},
+    [](RichNode){ return OpResult::proceed(); }
+  );
+  if (res.isProceed()) {
+    result = true;
+    return res;
+  } else if (res.kind() == OpResult::orRaise) {
+    result = false;
+    return OpResult::proceed();
+  } else {
+    return res;
+  }
+}
+
+OpResult Implementation<Cons>::toString(Self self, VM vm,
+                                        std::basic_ostream<nchar>& sink) {
+  MOZART_CHECK_OPRESULT(withConsAsVirtualString(vm, self,
+    [&](char32_t c) {
+      nchar buffer[4];
+      nativeint length = toUTF(c, buffer);
+      sink.write(buffer, length);
+    },
+    [&](RichNode str) {
+      return VirtualString(str).toString(vm, sink);
+    }
+  ));
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::vsLength(Self self, VM vm, nativeint& result) {
+  nativeint length = 0;
+
+  MOZART_CHECK_OPRESULT(withConsAsVirtualString(vm, self,
+    [&](char32_t) { ++ length; },
+    [&](RichNode str) -> OpResult {
+      nativeint remainingLength;
+      MOZART_CHECK_OPRESULT(VirtualString(str).vsLength(vm, remainingLength));
+      length += remainingLength;
+      return OpResult::proceed();
+    }
+  ));
+
+  result = length;
+  return OpResult::proceed();
 }
 
 ///////////

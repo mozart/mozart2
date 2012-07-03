@@ -362,6 +362,7 @@ prepare
    \insert 'Name.oz'
    \insert 'Bool.oz'
    \insert 'String.oz'
+   \insert 'UnicodeString.oz'
    %\insert 'Char.oz'
    \insert 'Int.oz'
    \insert 'Float.oz'

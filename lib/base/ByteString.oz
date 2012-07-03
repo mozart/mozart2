@@ -50,15 +50,16 @@ in
       is: IsByteString
       make: fun {$ V} {Boot_ByteString.encode V latin1 nil} end
       get: Value.'.'
-      append: String.append
-      slice: String.slice
-      width: String.length
-      length: String.length
-      toString: fun {$ BS} {Boot_ByteString.decode BS latin1 nil} end
-      %toStringWithTail: ---
+      append: UnicodeString.append
+      slice: UnicodeString.slice
+      width: UnicodeString.length
+      length: UnicodeString.length
+      toString: UnicodeString.toList
+      toStringWithTail: UnicodeString.toListWithTail
+
       strchr: fun {$ BS From Chr}
          if {IsInt Chr} then
-            {String.search BS From Chr $ _}
+            {UnicodeString.search BS From Chr $ _}
          else
             raise typeError('char' Chr) end
          end

@@ -38,7 +38,7 @@ local
             Replacement#~V                  % Note: require bigint support here.
         elseif {IsFloat V} then S Parts in
             S = {VirtualString.toString V}
-            Parts = {String.tokens S 45}    % 45 == &-
+            Parts = {UnicodeString.tokens S &-}
             {JoinBy Parts Replacement}
         elseif {IsTuple V} andthen {Label V} == '#' then
             {Record.map  V  fun {$ A} {ChangeSign A Replacement} end}
@@ -51,7 +51,8 @@ in
     IsVirtualString = Boot_VirtualString.is
     VirtualString = virtualString(
         is: IsVirtualString
-        toString: Boot_VirtualString.toString
+        toUnicodeString: Boot_VirtualString.toString
+        toString: fun {$ V} {UnicodeString.toString {VirtualString.toString V}} end
         toAtom: fun {$ V} {String.toAtom {VirtualString.toString V}} end
         toByteString: fun {$ V} {ByteString.make V} end
         length: Boot_VirtualString.length

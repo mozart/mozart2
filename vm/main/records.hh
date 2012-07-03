@@ -318,21 +318,16 @@ template <class F, class G>
 static OpResult withConsAsVirtualString(VM vm, RichNode cons,
                                         const F& onChar, const G& onString) {
   return ozListForEach(vm, cons,
-    [&](nativeint c) -> OpResult {
-      if (c < 0 || c >= 0x110000)
-        return raiseUnicodeError(vm, UnicodeErrorReason::outOfRange, c);
-      else if (0xd800 <= c && c < 0xe000)
-        return raiseUnicodeError(vm, UnicodeErrorReason::surrogate, c);
+    [&, vm](nativeint c) -> OpResult {
+      if (c < 0 || c >= 256) {
+        UnstableNode errNode = SmallInt::build(vm, c);
+        return raiseTypeError(vm, MOZART_STR("char"), errNode);
+      }
       onChar((char32_t) c);
       return OpResult::proceed();
     },
-    [&](RichNode tail) -> OpResult {
-      bool isString = false;
-      MOZART_CHECK_OPRESULT(StringLike(tail).isString(vm, isString));
-      if (isString)
-        return onString(tail);
-      else
-        return raiseTypeError(vm, MOZART_STR("VirtualString"), tail);
+    [vm](RichNode tail) -> OpResult {
+      return raiseTypeError(vm, MOZART_STR("VirtualString"), tail);
     }
   );
 }

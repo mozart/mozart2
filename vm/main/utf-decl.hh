@@ -146,6 +146,26 @@ inline constexpr bool isLeadingCodeUnit(char32_t c);
 template <class C>
 inline nativeint codePointCount(const BaseLString<C>& input);
 
+/**
+* Create a new slice [from, to) of a string. from and to are expressed in
+* number of code points. No validation is done, except length checking.
+*
+* e.g. sliceByCodePointsFromTo("abcdefg", 1, 4) == "bcd".
+*/
+template <class C>
+inline LString<C> sliceByCodePointsFromTo(const LString<C>& input,
+                                          nativeint from, nativeint to);
+
+/**
+* Create a new slice [from, end) of a string. from and to are expressed in
+* number of code points. No validation is done, except length checking.
+*
+* e.g. sliceByCodePointsFrom("abcdefg", 3) == "defg".
+*/
+template <class C>
+inline LString<C> sliceByCodePointsFrom(const LString<C>& input,
+                                        nativeint from);
+
 }
 
 #endif // __UTF_DECL_H

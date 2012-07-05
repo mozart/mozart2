@@ -356,6 +356,65 @@ nativeint codePointCount(const BaseLString<C>& input) {
   });
 }
 
+namespace internal {
+  template <class C>
+  inline
+  bool skipCodePoints(const C*& iter, const C* end, nativeint count) {
+    // Assume isLeadingCodeUnit(*iter) at that point - but do not assert it
+
+    while (count > 0 && iter < end) {
+      if (isLeadingCodeUnit(*++iter))
+        --count;
+    }
+
+    return count == 0;
+  }
+}
+
+template <class C>
+LString<C> sliceByCodePointsFromTo(const LString<C>& input,
+                                   nativeint from, nativeint to) {
+  if (from < 0 || to < from)
+    return UnicodeErrorReason::indexOutOfBounds;
+
+  if (std::is_same<C, char32_t>::value) {
+    if (to > input.length)
+      return UnicodeErrorReason::indexOutOfBounds;
+    else
+      return input.slice(from, to);
+  } else {
+    const C* begin = input.begin();
+    if (!internal::skipCodePoints(begin, input.end(), from))
+      return UnicodeErrorReason::indexOutOfBounds;
+
+    const C* end = begin;
+    if (!internal::skipCodePoints(end, input.end(), to - from))
+      return UnicodeErrorReason::indexOutOfBounds;
+
+    return input.slice(begin - input.begin(), end - input.begin());
+  }
+}
+
+template <class C>
+LString<C> sliceByCodePointsFrom(const LString<C>& input,
+                                 nativeint from) {
+  if (from < 0)
+    return UnicodeErrorReason::indexOutOfBounds;
+
+  if (std::is_same<C, char32_t>::value) {
+    if (from > input.length)
+      return UnicodeErrorReason::indexOutOfBounds;
+    else
+      return input.slice(from);
+  } else {
+    const C* begin = input.begin();
+    if (!internal::skipCodePoints(begin, input.end(), from))
+      return UnicodeErrorReason::indexOutOfBounds;
+
+    return input.slice(begin - input.begin());
+  }
+}
+
 }
 
 #endif // __UTF_H

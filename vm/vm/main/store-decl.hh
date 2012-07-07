@@ -345,7 +345,7 @@ public:
     return _node;
   }
 protected:
-  auto getBase() -> decltype(Access::get(MemWord())) {
+  auto getBase() -> decltype(Access::get(std::declval<MemWord>())) {
     return Access::get(_node.value());
   }
 private:

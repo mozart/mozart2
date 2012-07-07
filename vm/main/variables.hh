@@ -98,7 +98,7 @@ OpResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
   Space* currentSpace = vm->getCurrentSpace();
 
   // Is it a speculative binding?
-  if (home() != currentSpace) {
+  if (!vm->isOnTopLevel() && (home() != currentSpace)) {
     currentSpace->makeBackupForSpeculativeBinding(
       RichNode(self).getStableRef(vm));
   }
@@ -192,10 +192,12 @@ void Implementation<Unbound>::markNeeded(Self self, VM vm) {
 
 OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
   // Is it a speculative binding?
-  Space* currentSpace = vm->getCurrentSpace();
-  if (home() != currentSpace) {
-    currentSpace->makeBackupForSpeculativeBinding(
-      RichNode(self).getStableRef(vm));
+  if (!vm->isOnTopLevel()) {
+    Space* currentSpace = vm->getCurrentSpace();
+    if (home() != currentSpace) {
+      currentSpace->makeBackupForSpeculativeBinding(
+        RichNode(self).getStableRef(vm));
+    }
   }
 
   // Actual binding

@@ -114,9 +114,16 @@ struct ImplementationDef {
   bool autoSClone;
   std::vector<ImplemMethodDef> methods;
 private:
-  void makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to);
+  void makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
+                                  bool toStableNode);
   void makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
                                 bool toStableNode);
+
+  bool requiresStableNodeInGR() {
+    return (storageKind == skCustom) &&
+      ((storage == "SpaceRef") || (storage == "class mozart::Runnable *") ||
+      (storage == "class mozart::StableNode *"));
+  }
 };
 
 void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
@@ -351,12 +358,12 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "\n";
     to << "void " << name
        << "::gCollect(GC gc, RichNode from, StableNode& to) const {\n";
-    makeContentsOfAutoGCollect(to);
+    makeContentsOfAutoGCollect(to, true);
     to << "}\n\n";
 
     to << "void " << name
        << "::gCollect(GC gc, RichNode from, UnstableNode& to) const {\n";
-    makeContentsOfAutoGCollect(to);
+    makeContentsOfAutoGCollect(to, false);
     to << "}\n";
   }
 
@@ -414,10 +421,20 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   }
 }
 
-void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to) {
+void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
+                                                   bool toStableNode) {
   to << "  assert(from.type() == type());\n";
   to << "  Self fromAsSelf = from;\n";
-  to << "  to.make<" << name << ">(gc->vm, ";
+
+  std::string toPrefix = "to.";
+
+  if (!toStableNode && requiresStableNodeInGR()) {
+    to << "  StableNode* stable = new (gc->vm) StableNode;\n";
+    to << "  to.make<Reference>(gc->vm, stable);\n";
+    toPrefix = "stable->";
+  }
+
+  to << "  " << toPrefix << "make<" << name << ">(gc->vm, ";
   if (storageKind == skWithArray)
     to << "fromAsSelf.getArraySize(), ";
   to << "gc, fromAsSelf);\n";
@@ -427,10 +444,19 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
                                                  bool toStableNode) {
   to << "  assert(from.type() == type());\n";
 
-  std::string cloneStatement = std::string("to.make<") + name + ">(sc->vm, ";
+  std::string cloneStatement = std::string("make<") + name + ">(sc->vm, ";
   if (storageKind == skWithArray)
     cloneStatement += "fromAsSelf.getArraySize(), ";
   cloneStatement += "sc, fromAsSelf);";
+
+  if (!toStableNode && requiresStableNodeInGR()) {
+    cloneStatement = std::string("stable->") + cloneStatement;
+    cloneStatement = std::string(
+      "StableNode* stable = new (sc->vm) StableNode;\n"
+      "to.make<Reference>(sc->vm, stable);\n") + cloneStatement;
+  } else {
+    cloneStatement = std::string("to.") + cloneStatement;
+  }
 
   std::string copyStatement =
     std::string("to.") + (toStableNode ? "init" : "copy") + "(sc->vm, from);";

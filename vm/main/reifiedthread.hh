@@ -37,24 +37,9 @@ namespace mozart {
 
 #include "ReifiedThread-implem.hh"
 
-void ReifiedThreadBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  Runnable* runnable = from.as<ReifiedThread>().getRunnable();
-  to.make<ReifiedThread>(gc->vm, runnable->gCollectOuter(gc));
-}
-
-void ReifiedThreadBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  Runnable* runnable = from.as<ReifiedThread>().getRunnable();
-  to.make<ReifiedThread>(gc->vm, runnable->gCollectOuter(gc));
-}
-
-void ReifiedThreadBase::sClone(SC sc, RichNode from, StableNode& to) const {
-  Runnable* runnable = from.as<ReifiedThread>().getRunnable();
-  to.make<ReifiedThread>(sc->vm, runnable->sCloneOuter(sc));
-}
-
-void ReifiedThreadBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
-  Runnable* runnable = from.as<ReifiedThread>().getRunnable();
-  to.make<ReifiedThread>(sc->vm, runnable->sCloneOuter(sc));
+void Implementation<ReifiedThread>::build(Runnable*& self, VM vm, GR gr,
+                                          Self from) {
+  gr->copyThread(self, from.get()._runnable);
 }
 
 bool Implementation<ReifiedThread>::equals(VM vm, Self right) {

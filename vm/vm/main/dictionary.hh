@@ -417,9 +417,7 @@ void NodeDictionary::rotateRight(Node* parent, Node* child) {
 #include "Dictionary-implem.hh"
 
 Implementation<Dictionary>::Implementation(VM vm, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
-
-  // TODO
+  WithHome(vm, gr, from->home()), dict(gr, from->dict) {
 }
 
 OpResult Implementation<Dictionary>::dot(

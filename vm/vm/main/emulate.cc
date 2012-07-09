@@ -36,7 +36,11 @@ const ProgramCounter NullPC = nullptr;
 ////////////////
 
 StackEntry::StackEntry(GR gr, StackEntry& from) {
-  gr->copyStableRef(abstraction, from.abstraction);
+  if (from.abstraction == nullptr)
+    abstraction = nullptr;
+  else
+    gr->copyStableRef(abstraction, from.abstraction);
+
   PCOffset = from.PCOffset;
   yregCount = from.yregCount;
 

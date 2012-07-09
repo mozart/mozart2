@@ -35,35 +35,12 @@ namespace mozart {
 
 class ReifiedThread;
 
-class ReifiedThreadBase: public Type {
-public:
-  ReifiedThreadBase(std::string name, const UUID& uuid,
-                    bool copyable, bool transient, bool feature,
-                    StructuralBehavior structuralBehavior,
-                    unsigned char bindingPriority) :
-    Type(name, uuid, copyable, transient, feature, structuralBehavior,
-         bindingPriority) {}
-
-  inline
-  void gCollect(GC gc, RichNode from, StableNode& to) const;
-
-  inline
-  void gCollect(GC gc, RichNode from, UnstableNode& to) const;
-
-  inline
-  void sClone(SC sc, RichNode from, StableNode& to) const;
-
-  inline
-  void sClone(SC sc, RichNode from, UnstableNode& to) const;
-};
-
 #ifndef MOZART_GENERATOR
 #include "ReifiedThread-implem-decl.hh"
 #endif
 
 template <>
 class Implementation<ReifiedThread>:
-  BasedOn<ReifiedThreadBase>, NoAutoGCollect, NoAutoSClone,
   StoredAs<Runnable*>, Copyable, WithValueBehavior {
 public:
   typedef SelfType<ReifiedThread>::Self Self;
@@ -73,6 +50,9 @@ public:
   static void build(Runnable*& self, VM vm, Runnable* runnable) {
     self = runnable;
   }
+
+  inline
+  static void build(Runnable*& self, VM vm, GR gr, Self from);
 
 public:
   inline

@@ -73,7 +73,7 @@ public:
     Length() : Builtin("length") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      nativeint length;
+      nativeint length = 0;
       MOZART_CHECK_OPRESULT(VirtualString(value).vsLength(vm, length));
       result = SmallInt::build(vm, length);
       return OpResult::proceed();

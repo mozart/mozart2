@@ -205,7 +205,7 @@ OpResult Implementation<ReifiedSpace>::commitSpace(
     return raise(vm, vm->coreatoms.spaceNoChoice, self);
 
   OpResult res = OpResult::proceed();
-  nativeint left, right;
+  nativeint left = 0, right = 0;
 
   if (matches(vm, res, value, capture(left))) {
     int commitResult = space->commit(vm, left);

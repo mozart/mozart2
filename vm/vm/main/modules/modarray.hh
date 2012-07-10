@@ -46,7 +46,7 @@ public:
     New(): Builtin("new") {}
 
     OpResult operator()(VM vm, In low, In high, In initValue, Out result) {
-      nativeint intLow, intHigh;
+      nativeint intLow = 0, intHigh = 0;
       MOZART_GET_ARG(intLow, low, MOZART_STR("integer"));
       MOZART_GET_ARG(intHigh, high, MOZART_STR("integer"));
 

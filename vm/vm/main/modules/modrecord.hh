@@ -37,9 +37,9 @@ namespace builtins {
 // Record module //
 ///////////////////
 
-class Record: public Module {
+class ModRecord: public Module {
 public:
-  Record(): Module("Record") {}
+  ModRecord(): Module("Record") {}
 
   class Is: public Builtin<Is> {
   public:
@@ -111,7 +111,7 @@ public:
       using namespace patternmatching;
 
       OpResult res = OpResult::proceed();
-      size_t contentsWidth;
+      size_t contentsWidth = 0;
       std::unique_ptr<UnstableNode[]> contentsData;
 
       if (matchesVariadicSharp(vm, res, contents, contentsWidth,

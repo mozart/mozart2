@@ -39,6 +39,20 @@ namespace mozart {
 
 Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
                                          StaticArray<StableNode> _Ks,
+                                         ByteCode* codeBlock, int size,
+                                         int Xcount)
+  : _size(size), _Xcount(Xcount), _Kc(Kc) {
+
+  _setCodeBlock(vm, codeBlock, size);
+
+  // Initialize elements with non-random data
+  // TODO An Uninitialized type?
+  for (size_t i = 0; i < Kc; i++)
+    _Ks[i].make<Unit>(vm);
+}
+
+Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
+                                         StaticArray<StableNode> _Ks,
                                          GR gr, Self from) {
   _size = from->_size;
   _Xcount = from->_Xcount;

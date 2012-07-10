@@ -46,7 +46,7 @@ public:
     Alarm(): Builtin("alarm") {}
 
     OpResult operator()(VM vm, In delay, Out result) {
-      nativeint intDelay;
+      nativeint intDelay = 0;
       MOZART_GET_ARG(intDelay, delay, MOZART_STR("integer"));
 
       if (intDelay <= 0) {

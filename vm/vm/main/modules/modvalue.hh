@@ -37,9 +37,9 @@ namespace builtins {
 // Value module //
 //////////////////
 
-class Value: public Module {
+class ModValue: public Module {
 public:
-  Value(): Module("Value") {}
+  ModValue(): Module("Value") {}
 
   class Dot: public Builtin<Dot> {
   public:

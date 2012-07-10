@@ -48,12 +48,9 @@ class Implementation<CodeArea>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<CodeArea>::Self Self;
 public:
+  inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 ByteCode* codeBlock, int size, int Xcount)
-    : _size(size), _Xcount(Xcount), _Kc(Kc) {
-
-    _setCodeBlock(vm, codeBlock, size);
-  }
+                 ByteCode* codeBlock, int size, int Xcount);
 
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,

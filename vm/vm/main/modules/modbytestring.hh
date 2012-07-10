@@ -102,12 +102,12 @@ public:
 
     OpResult operator()(VM vm, In string, In encodingNode,
                         In variantNode, Out result) {
-      ByteStringEncoding encoding;
-      EncodingVariant variant;
+      ByteStringEncoding encoding = ByteStringEncoding::utf8;
+      EncodingVariant variant = EncodingVariant::none;
       MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
                                           encoding, variant));
 
-      bool isVirtualString;
+      bool isVirtualString = false;
       MOZART_CHECK_OPRESULT(
         VirtualString(string).isVirtualString(vm, isVirtualString));
       if (!isVirtualString)
@@ -132,8 +132,8 @@ public:
       if (!value.is<ByteString>())
         return raiseTypeError(vm, MOZART_STR("ByteString"), value);
 
-      ByteStringEncoding encoding;
-      EncodingVariant variant;
+      ByteStringEncoding encoding = ByteStringEncoding::utf8;
+      EncodingVariant variant = EncodingVariant::none;
       MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
                                           encoding, variant));
 

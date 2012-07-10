@@ -86,6 +86,19 @@ OpResult Implementation<BuiltinProcedure>::getCallInfo(
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,
+                                            int arity, RichNode body)
+  : WithHome(vm), _arity(arity), _Gc(Gc) {
+  _body.init(vm, body);
+  _codeAreaCacheValid = false;
+
+  // Initialize elements with non-random data
+  // TODO An Uninitialized type?
+  for (size_t i = 0; i < Gc; i++)
+    _Gs[i].make<Unit>(vm);
+}
+
+Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
+                                            StaticArray<StableNode> _Gs,
                                             GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 

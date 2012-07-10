@@ -97,7 +97,7 @@ OpResult Implementation<ByteString>::stringGet(
 OpResult Implementation<ByteString>::stringCharAt(Self self, VM vm,
                                                   RichNode offsetNode,
                                                   nativeint& character) {
-  nativeint offset;
+  nativeint offset = 0;
   MOZART_GET_ARG(offset, offsetNode, MOZART_STR("integer"));
 
   if (offset < 0 || offset >= _bytes.length)
@@ -122,7 +122,7 @@ OpResult Implementation<ByteString>::stringAppend(Self self, VM vm,
 OpResult Implementation<ByteString>::stringSlice(Self self, VM vm,
                                                  RichNode from, RichNode to,
                                                  UnstableNode& result) {
-  nativeint fromOffset, toOffset;
+  nativeint fromOffset = 0, toOffset = 0;
   MOZART_GET_ARG(fromOffset, from, MOZART_STR("integer"));
   MOZART_GET_ARG(toOffset, to, MOZART_STR("integer"));
 
@@ -139,7 +139,7 @@ OpResult Implementation<ByteString>::stringSearch(
 
   using namespace patternmatching;
 
-  nativeint fromOffset;
+  nativeint fromOffset = 0;
   MOZART_GET_ARG(fromOffset, from, MOZART_STR("integer"));
 
   if (fromOffset < 0 || fromOffset > _bytes.length)
@@ -147,7 +147,7 @@ OpResult Implementation<ByteString>::stringSearch(
 
   LString<unsigned char> haystack = _bytes.slice(fromOffset);
 
-  nativeint character;
+  nativeint character = 0;
   OpResult matchRes = OpResult::proceed();
 
   if (matches(vm, matchRes, needleNode, capture(character))) {
@@ -157,7 +157,8 @@ OpResult Implementation<ByteString>::stringSearch(
                             needleNode);
 
     auto haystackUnsafe = const_cast<unsigned char*>(haystack.string);
-    const void* searchRes = memchr(haystackUnsafe, character, haystack.bytesCount());
+    const void* searchRes = memchr(haystackUnsafe, character,
+                                   haystack.bytesCount());
     if (searchRes == nullptr) {
       begin.make<Boolean>(vm, false);
       end.make<Boolean>(vm, false);
@@ -170,7 +171,7 @@ OpResult Implementation<ByteString>::stringSearch(
 
   } else if (matchRes.isProceed()) {
 
-    LString<unsigned char>* needle;
+    LString<unsigned char>* needle = nullptr;
     MOZART_CHECK_OPRESULT(StringLike(needleNode).stringGet(vm, needle));
     auto foundIter = std::search(haystack.begin(), haystack.end(),
                                  needle->begin(), needle->end());
@@ -193,7 +194,7 @@ OpResult Implementation<ByteString>::stringSearch(
 OpResult Implementation<ByteString>::stringHasPrefix(Self self, VM vm,
                                                      RichNode prefixNode,
                                                      bool& result) {
-  LString<unsigned char>* prefix;
+  LString<unsigned char>* prefix = nullptr;
   MOZART_CHECK_OPRESULT(StringLike(prefixNode).stringGet(vm, prefix));
   if (_bytes.length < prefix->length)
     result = false;
@@ -205,7 +206,7 @@ OpResult Implementation<ByteString>::stringHasPrefix(Self self, VM vm,
 OpResult Implementation<ByteString>::stringHasSuffix(Self self, VM vm,
                                                      RichNode suffixNode,
                                                      bool& result) {
-  LString<unsigned char>* suffix;
+  LString<unsigned char>* suffix = nullptr;
   MOZART_CHECK_OPRESULT(StringLike(suffixNode).stringGet(vm, suffix));
   if (_bytes.length < suffix->length)
     result = false;

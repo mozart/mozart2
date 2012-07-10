@@ -66,7 +66,7 @@ Implementation<PatMatConjunction>::Implementation(
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < count; i++)
-    _elements[i].make<SmallInt>(vm, 0);
+    _elements[i].make<Unit>(vm);
 }
 
 Implementation<PatMatConjunction>::Implementation(

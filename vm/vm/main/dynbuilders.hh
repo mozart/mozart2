@@ -38,7 +38,7 @@ namespace mozart {
 ////////////
 
 OpResult requireLiteral(VM vm, RichNode label) {
-  bool isLiteral;
+  bool isLiteral = false;
   MOZART_CHECK_OPRESULT(Literal(label).isLiteral(vm, isLiteral));
 
   if (isLiteral)
@@ -196,7 +196,7 @@ OpResult buildRecordDynamic(VM vm, UnstableNode& result,
   MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
 
   // Make the arity - this sorts elements along the way
-  bool isTuple;
+  bool isTuple = false;
   UnstableNode arity;
   MOZART_CHECK_OPRESULT(buildArityDynamic(
     vm, isTuple, arity, label, width, elements));

@@ -46,7 +46,7 @@ public:
     Make(): Builtin("make") {}
 
     OpResult operator()(VM vm, In label, In width, Out result) {
-      nativeint intWidth;
+      nativeint intWidth = 0;
       MOZART_GET_ARG(intWidth, width, MOZART_STR("integer"));
 
       return makeTuple(vm, result, label, intWidth);

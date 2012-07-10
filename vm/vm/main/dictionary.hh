@@ -458,7 +458,7 @@ OpResult Implementation<Dictionary>::dictGet(
 
   MOZART_REQUIRE_FEATURE(feature);
 
-  UnstableNode* value;
+  UnstableNode* value = nullptr;
   if (dict.lookup(vm, feature, value)) {
     result.copy(vm, *value);
     return OpResult::proceed();
@@ -473,7 +473,7 @@ OpResult Implementation<Dictionary>::dictCondGet(
 
   MOZART_REQUIRE_FEATURE(feature);
 
-  UnstableNode* value;
+  UnstableNode* value = nullptr;
   if (dict.lookup(vm, feature, value)) {
     result.copy(vm, *value);
   } else {
@@ -491,7 +491,7 @@ OpResult Implementation<Dictionary>::dictPut(
 
   MOZART_REQUIRE_FEATURE(feature);
 
-  UnstableNode* value;
+  UnstableNode* value = nullptr;
   dict.lookupOrCreate(vm, feature, value);
 
   value->copy(vm, newValue);
@@ -505,7 +505,7 @@ OpResult Implementation<Dictionary>::dictExchange(
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
-  UnstableNode* value;
+  UnstableNode* value = nullptr;
   if (dict.lookup(vm, feature, value)) {
     oldValue.copy(vm, *value);
     value->copy(vm, newValue);
@@ -522,7 +522,7 @@ OpResult Implementation<Dictionary>::dictCondExchange(
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
-  UnstableNode* value;
+  UnstableNode* value = nullptr;
   if (dict.lookupOrCreate(vm, feature, value)) {
     oldValue.copy(vm, *value);
   } else {

@@ -118,7 +118,7 @@ OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
 
 OpResult Implementation<Array>::getOffset(Self self, VM vm,
                                           RichNode index, size_t& offset) {
-  nativeint indexIntValue;
+  nativeint indexIntValue = 0;
   MOZART_GET_ARG(indexIntValue, index, MOZART_STR("integer"));
 
   if (!isIndexInRange(indexIntValue))

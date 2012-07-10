@@ -132,7 +132,7 @@ OpResult Implementation<Object>::getClass(Self self, VM vm,
 OpResult Implementation<Object>::attrGet(Self self, VM vm,
                                          RichNode attribute,
                                          UnstableNode& result) {
-  size_t offset;
+  size_t offset = 0;
   MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
 
   result.copy(vm, self[offset]);
@@ -145,7 +145,7 @@ OpResult Implementation<Object>::attrPut(Self self, VM vm,
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
-  size_t offset;
+  size_t offset = 0;
   MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
 
   self[offset].copy(vm, value);
@@ -159,7 +159,7 @@ OpResult Implementation<Object>::attrExchange(Self self, VM vm,
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
-  size_t offset;
+  size_t offset = 0;
   MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
 
   oldValue.copy(vm, self[offset]);

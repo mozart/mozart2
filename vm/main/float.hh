@@ -66,7 +66,7 @@ OpResult Implementation<Float>::equalsFloat(Self self, VM vm,
 
 OpResult Implementation<Float>::opposite(Self self, VM vm,
                                          UnstableNode& result) {
-  result.make<Float>(vm, -value());
+  result = Float::build(vm, -value());
   return OpResult::proceed();
 }
 
@@ -80,7 +80,7 @@ OpResult Implementation<Float>::add(Self self, VM vm,
 
 OpResult Implementation<Float>::addValue(Self self, VM vm,
                                          double b, UnstableNode& result) {
-  result.make<Float>(vm, value() + b);
+  result = Float::build(vm, value() + b);
 
   return OpResult::proceed();
 }
@@ -95,7 +95,7 @@ OpResult Implementation<Float>::subtract(Self self, VM vm,
 
 OpResult Implementation<Float>::subtractValue(Self self, VM vm,
                                               double b, UnstableNode& result) {
-  result.make<Float>(vm, value() - b);
+  result = Float::build(vm, value() - b);
 
   return OpResult::proceed();
 }
@@ -110,7 +110,7 @@ OpResult Implementation<Float>::multiply(Self self, VM vm,
 
 OpResult Implementation<Float>::multiplyValue(Self self, VM vm,
                                               double b, UnstableNode& result) {
-  result.make<Float>(vm, value() * b);
+  result = Float::build(vm, value() * b);
 
   return OpResult::proceed();
 }
@@ -125,7 +125,7 @@ OpResult Implementation<Float>::divide(Self self, VM vm,
 
 OpResult Implementation<Float>::divideValue(Self self, VM vm,
                                             double b, UnstableNode& result) {
-  result.make<Float>(vm, value() / b);
+  result = Float::build(vm, value() / b);
 
   return OpResult::proceed();
 }
@@ -196,7 +196,7 @@ struct FloatToStringHelper {
   }
 
   void buildStringAt(VM vm, size_t from, size_t to, UnstableNode& result) const {
-    result.make<String>(vm, newLString(vm, string.get() + from, to - from));
+    result = String::build(vm, newLString(vm, string.get() + from, to - from));
   }
 };
 

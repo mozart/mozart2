@@ -58,7 +58,7 @@ public:
       bool res = false;
       MOZART_CHECK_OPRESULT(equals(vm, left, right, res));
 
-      result.make<Boolean>(vm, res);
+      result = Boolean::build(vm, res);
       return OpResult::proceed();
     }
   };
@@ -71,7 +71,7 @@ public:
       bool res = false;
       MOZART_CHECK_OPRESULT(notEquals(vm, left, right, res));
 
-      result.make<Boolean>(vm, res);
+      result = Boolean::build(vm, res);
       return OpResult::proceed();
     }
   };
@@ -130,7 +130,7 @@ public:
       bool res = value.isTransient() &&
         !value.is<ReadOnly>() && !value.is<FailedValue>();
 
-      result.make<Boolean>(vm, res);
+      result = Boolean::build(vm, res);
       return OpResult::proceed();
     }
   };
@@ -141,7 +141,7 @@ public:
 
     OpResult operator()(VM vm, In value, Out result) {
       // TODO Update this when we actually have kinded values
-      result.make<Boolean>(vm, false);
+      result = Boolean::build(vm, false);
       return OpResult::proceed();
     }
   };
@@ -151,7 +151,7 @@ public:
     IsFuture(): Builtin("isFuture") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      result.make<Boolean>(vm, value.is<ReadOnly>());
+      result = Boolean::build(vm, value.is<ReadOnly>());
       return OpResult::proceed();
     }
   };
@@ -161,7 +161,7 @@ public:
     IsFailed(): Builtin("isFailed") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      result.make<Boolean>(vm, value.is<FailedValue>());
+      result = Boolean::build(vm, value.is<FailedValue>());
       return OpResult::proceed();
     }
   };
@@ -171,7 +171,7 @@ public:
     IsDet(): Builtin("isDet") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      result.make<Boolean>(vm, !value.isTransient());
+      result = Boolean::build(vm, !value.isTransient());
       return OpResult::proceed();
     }
   };
@@ -219,7 +219,7 @@ public:
 
     OpResult operator()(VM vm, In value, Out result) {
       bool boolResult = DataflowVariable(value).isNeeded(vm);
-      result.make<Boolean>(vm, boolResult);
+      result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
     }
   };
@@ -232,7 +232,7 @@ public:
       int res = 0;
       MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
 
-      result.make<Boolean>(vm, res <= 0);
+      result = Boolean::build(vm, res <= 0);
       return OpResult::proceed();
     }
   };
@@ -245,7 +245,7 @@ public:
       int res = 0;
       MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
 
-      result.make<Boolean>(vm, res < 0);
+      result = Boolean::build(vm, res < 0);
       return OpResult::proceed();
     }
   };
@@ -258,7 +258,7 @@ public:
       int res = 0;
       MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
 
-      result.make<Boolean>(vm, res >= 0);
+      result = Boolean::build(vm, res >= 0);
       return OpResult::proceed();
     }
   };
@@ -271,7 +271,7 @@ public:
       int res = 0;
       MOZART_CHECK_OPRESULT(Comparable(left).compare(vm, right, res));
 
-      result.make<Boolean>(vm, res > 0);
+      result = Boolean::build(vm, res > 0);
       return OpResult::proceed();
     }
   };
@@ -326,7 +326,7 @@ public:
       // TODO Test on something more generic than Variable and Unbound
       if (variable.is<Variable>() || variable.is<Unbound>()) {
         StableNode* readOnly = new (vm) StableNode;
-        readOnly->make<ReadOnly>(vm, variable.getStableRef(vm));
+        readOnly->init(vm, ReadOnly::build(vm, variable.getStableRef(vm)));
 
         result.copy(vm, *readOnly);
         DataflowVariable(variable).addToSuspendList(vm, result);

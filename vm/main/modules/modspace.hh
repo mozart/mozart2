@@ -60,7 +60,7 @@ public:
       new (vm) Thread(vm, space, target, 1, threadArgs);
 
       // Create the reification of the space
-      result.make<ReifiedSpace>(vm, space);
+      result = ReifiedSpace::build(vm, space);
 
       return OpResult::proceed();
     }
@@ -144,7 +144,7 @@ public:
       Space* space = vm->getCurrentSpace();
 
       if (space->isTopLevel()) {
-        result.make<Unbound>(vm);
+        result = Unbound::build(vm);
       } else if (space->hasDistributor()) {
         return raise(vm, MOZART_STR("spaceDistributor"));
       } else {

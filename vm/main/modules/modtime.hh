@@ -52,7 +52,7 @@ public:
       if (intDelay <= 0) {
         result = trivialBuild(vm, unit);
       } else {
-        result.make<Variable>(vm, vm->getTopLevelSpace());
+        result = Variable::build(vm, vm->getTopLevelSpace());
         vm->setAlarm(intDelay, RichNode(result).getStableRef(vm));
       }
 

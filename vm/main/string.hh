@@ -102,7 +102,7 @@ OpResult Implementation<String>::stringAppend(Self self, VM vm,
   LString<nchar> resultString = concatLString(vm, _string, *rightString);
   if (resultString.isError())
     return raiseUnicodeError(vm, resultString.error, self, right);
-  result.make<String>(vm, resultString);
+  result = String::build(vm, resultString);
   return OpResult::proceed();
 }
 
@@ -123,7 +123,7 @@ OpResult Implementation<String>::stringSlice(Self self, VM vm,
       return raiseUnicodeError(vm, resultString.error, self);
   }
 
-  result.make<String>(vm, resultString);
+  result = String::build(vm, resultString);
   return OpResult::proceed();
 }
 
@@ -189,15 +189,15 @@ OpResult Implementation<String>::stringSearch(
 
   // Make result
   if (foundIter == haystack.end()) {
-    begin.make<Boolean>(vm, false);
-    end.make<Boolean>(vm, false);
+    begin = Boolean::build(vm, false);
+    end = Boolean::build(vm, false);
   } else {
     LString<nchar> haystackUntilNeedle =
       haystack.slice(0, foundIter-haystack.begin());
     nativeint foundIndex = fromIndex + codePointCount(haystackUntilNeedle);
 
-    begin.make<SmallInt>(vm, foundIndex);
-    end.make<SmallInt>(vm, foundIndex + codePointCount(*needle));
+    begin = SmallInt::build(vm, foundIndex);
+    end = SmallInt::build(vm, foundIndex + codePointCount(*needle));
   }
 
   return OpResult::proceed();
@@ -235,7 +235,7 @@ OpResult Implementation<String>::dot(Self self, VM vm, RichNode feature,
                                      UnstableNode& result) {
   nativeint character = 0;
   MOZART_CHECK_OPRESULT(stringCharAt(self, vm, feature, character));
-  result.make<SmallInt>(vm, character);
+  result = SmallInt::build(vm, character);
   return OpResult::proceed();
 }
 

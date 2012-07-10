@@ -430,36 +430,34 @@ void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
 
   if (!toStableNode && requiresStableNodeInGR()) {
     to << "  StableNode* stable = new (gc->vm) StableNode;\n";
-    to << "  to.make<Reference>(gc->vm, stable);\n";
+    to << "  to.init(gc->vm, Reference::build(gc->vm, stable));\n";
     toPrefix = "stable->";
   }
 
-  to << "  " << toPrefix << "make<" << name << ">(gc->vm, ";
+  to << "  " << toPrefix << "init(gc->vm, " << name << "::build(gc->vm, ";
   if (storageKind == skWithArray)
     to << "fromAsSelf.getArraySize(), ";
-  to << "gc, fromAsSelf);\n";
+  to << "gc, fromAsSelf));\n";
 }
 
 void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
                                                  bool toStableNode) {
   to << "  assert(from.type() == type());\n";
 
-  std::string cloneStatement = std::string("make<") + name + ">(sc->vm, ";
+  std::string cloneStatement =
+    std::string("init(sc->vm, ") + name + "::build(sc->vm, ";
   if (storageKind == skWithArray)
     cloneStatement += "fromAsSelf.getArraySize(), ";
-  cloneStatement += "sc, fromAsSelf);";
+  cloneStatement += "sc, fromAsSelf));";
 
   if (!toStableNode && requiresStableNodeInGR()) {
     cloneStatement = std::string("stable->") + cloneStatement;
     cloneStatement = std::string(
       "StableNode* stable = new (sc->vm) StableNode;\n"
-      "to.make<Reference>(sc->vm, stable);\n") + cloneStatement;
+      "to.init(sc->vm, Reference::build(sc->vm, stable));\n") + cloneStatement;
   } else {
     cloneStatement = std::string("to.") + cloneStatement;
   }
-
-  std::string copyStatement =
-    std::string("to.") + (toStableNode ? "init" : "copy") + "(sc->vm, from);";
 
   if (withHome) {
     to << "  Self fromAsSelf = from;\n";
@@ -469,7 +467,7 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
       to << "  if (fromAsSelf->home()->shouldBeCloned()) {\n";
     to << "    " << cloneStatement << "\n";
     to << "  } else {\n";
-    to << "    " << copyStatement << "\n";
+    to << "    to.init(sc->vm, from);\n";
     to << "  }\n";
   } else {
     switch (this->structuralBehavior) {
@@ -483,7 +481,7 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
       case sbTokenEq:
       case sbVariable: {
         // Actually, these have a home, but it's always the top-level
-        to << "  " << copyStatement << "\n";
+        to << "  to.init(sc->vm, from);\n";
         break;
       }
     }

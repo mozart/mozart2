@@ -47,7 +47,11 @@ void StableNode::init(VM vm, StableNode& from) {
 void StableNode::init(VM vm, UnstableNode& from) {
   node = from.node;
   if (!isCopyable())
-    from.make<Reference>(vm, this);
+    from.node.make<Reference>(vm, this);
+}
+
+void StableNode::init(VM vm, UnstableNode&& from) {
+  node = from.node;
 }
 
 void StableNode::init(VM vm, RichNode from) {
@@ -55,6 +59,10 @@ void StableNode::init(VM vm, RichNode from) {
     init(vm, *from._stable);
   else
     init(vm, *from._unstable);
+}
+
+void StableNode::init(VM vm) {
+  node.make<Unit>(vm);
 }
 
 bool StableNode::isCopyable() {
@@ -73,15 +81,23 @@ void UnstableNode::init(VM vm, UnstableNode& from) {
   copy(vm, from);
 }
 
+void UnstableNode::init(VM vm, UnstableNode&& from) {
+  copy(vm, std::move(from));
+}
+
 void UnstableNode::init(VM vm, RichNode from) {
   copy(vm, from);
+}
+
+void UnstableNode::init(VM vm) {
+  node.make<Unit>(vm);
 }
 
 void UnstableNode::copy(VM vm, StableNode& from) {
   if (from.isCopyable())
     node = from.node;
   else
-    make<Reference>(vm, &from);
+    node.make<Reference>(vm, &from);
 }
 
 void UnstableNode::copy(VM vm, UnstableNode& from) {
@@ -90,9 +106,13 @@ void UnstableNode::copy(VM vm, UnstableNode& from) {
   } else {
     StableNode* stable = new (vm) StableNode;
     stable->node = from.node;
-    make<Reference>(vm, stable);
-    from.make<Reference>(vm, stable);
+    node.make<Reference>(vm, stable);
+    from.node.make<Reference>(vm, stable);
   }
+}
+
+void UnstableNode::copy(VM vm, UnstableNode&& from) {
+  node = from.node;
 }
 
 void UnstableNode::copy(VM vm, RichNode from) {
@@ -179,6 +199,10 @@ void RichNode::reinit(VM vm, UnstableNode& from) {
   } else {
     _unstable->init(vm, from);
   }
+}
+
+void RichNode::reinit(VM vm, UnstableNode&& from) {
+  *node() = from.node;
 }
 
 void RichNode::reinit(VM vm, RichNode from) {

@@ -87,10 +87,10 @@ OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
   // Detecting overflow - platform dependent (2's complement)
   if (value() != std::numeric_limits<nativeint>::min()) {
     // No overflow
-    result.make<SmallInt>(vm, -value());
+    result = SmallInt::build(vm, -value());
   } else {
     // Overflow - TODO: create a BigInt
-    result.make<SmallInt>(vm, 0);
+    result = SmallInt::build(vm, 0);
   }
 
   return OpResult::proceed();
@@ -112,10 +112,10 @@ OpResult Implementation<SmallInt>::addValue(Self self, VM vm,
   // Detecting overflow - platform dependent (2's complement)
   if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
-    result.make<SmallInt>(vm, c);
+    result = SmallInt::build(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    result.make<SmallInt>(vm, 0);
+    result = SmallInt::build(vm, 0);
   }
 
   return OpResult::proceed();
@@ -139,10 +139,10 @@ OpResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
   // Detecting overflow - platform dependent (2's complement)
   if ((((a ^ c) & (-b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
-    result.make<SmallInt>(vm, c);
+    result = SmallInt::build(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    result.make<SmallInt>(vm, 0);
+    result = SmallInt::build(vm, 0);
   }
 
   return OpResult::proceed();
@@ -181,10 +181,10 @@ OpResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
   // Detecting overflow
   if (!testMultiplyOverflow(a, b)) {
     // No overflow
-    result.make<SmallInt>(vm, a * b);
+    result = SmallInt::build(vm, a * b);
   } else {
     // Overflow - TODO: create a BigInt
-    result.make<SmallInt>(vm, 0);
+    result = SmallInt::build(vm, 0);
   }
 
   return OpResult::proceed();
@@ -211,10 +211,10 @@ OpResult Implementation<SmallInt>::divValue(Self self, VM vm,
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
     // No overflow
-    result.make<SmallInt>(vm, a / b);
+    result = SmallInt::build(vm, a / b);
   } else {
     // Overflow - TODO: create a BigInt
-    result.make<SmallInt>(vm, 0);
+    result = SmallInt::build(vm, 0);
   }
 
   return OpResult::proceed();
@@ -235,10 +235,10 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
     // No overflow
-    result.make<SmallInt>(vm, a % b);
+    result = SmallInt::build(vm, a % b);
   } else {
     // Overflow - TODO: create a BigInt
-    result.make<SmallInt>(vm, 0);
+    result = SmallInt::build(vm, 0);
   }
 
   return OpResult::proceed();

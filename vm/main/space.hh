@@ -119,8 +119,8 @@ void Space::constructor(VM vm, bool isTopLevel, Space* parent) {
 
   _mark = false;
 
-  _rootVar.make<Unbound>(vm, this);
-  _statusVar.make<Unbound>(vm, isTopLevel ? this : parent);
+  _rootVar.init(vm, Unbound::build(vm, this));
+  _statusVar = Unbound::build(vm, isTopLevel ? this : parent);
 
   _distributor = nullptr;
 
@@ -305,7 +305,7 @@ void Space::kill(VM vm) {
 void Space::clearStatusVar(VM vm) {
   RichNode statusVar = *getStatusVar();
   if (!statusVar.isTransient())
-    _statusVar.make<Unbound>(vm, getParent());
+    _statusVar = Unbound::build(vm, getParent());
 }
 
 void Space::bindStatusVar(VM vm, RichNode value) {
@@ -549,7 +549,7 @@ void Space::deinstallThis() {
 
     scriptEntry.left.node = trailEntry.node->node;
     trailEntry.node->node = trailEntry.saved;
-    scriptEntry.right.make<Reference>(vm, trailEntry.node);
+    scriptEntry.right = Reference::build(vm, trailEntry.node);
 
     if (hasNoRunnableThreads) {
       createPropagateThreadOnceAndSuspendItOnVar(vm, propagateThread,

@@ -300,7 +300,7 @@ void Thread::run() {
         yregCount = count;
         yregs = vm->newStaticArray<UnstableNode>(count);
         for (size_t i = 0; i < count; i++)
-          yregs[i].make<SmallInt>(vm, 0);
+          yregs[i].init(vm);
         advancePC(1); break;
       }
 
@@ -315,28 +315,28 @@ void Thread::run() {
       // Variable allocation
 
       case OpCreateVarX: {
-        XPC(1).make<Unbound>(vm);
+        XPC(1) = Unbound::build(vm);
         advancePC(1); break;
       }
 
       case OpCreateVarY: {
-        YPC(1).make<Unbound>(vm);
+        YPC(1) = Unbound::build(vm);
         advancePC(1); break;
       }
 
       case OpCreateVarMoveX: {
         StableNode* stable = new (vm) StableNode;
-        stable->make<Unbound>(vm);
-        XPC(1).make<Reference>(vm, stable);
-        XPC(2).make<Reference>(vm, stable);
+        stable->init(vm, Unbound::build(vm));
+        XPC(1) = Reference::build(vm, stable);
+        XPC(2) = Reference::build(vm, stable);
         advancePC(2); break;
       }
 
       case OpCreateVarMoveY: {
         StableNode* stable = new (vm) StableNode;
-        stable->make<Unbound>(vm);
-        YPC(1).make<Reference>(vm, stable);
-        XPC(2).make<Reference>(vm, stable);
+        stable->init(vm, Unbound::build(vm));
+        YPC(1) = Reference::build(vm, stable);
+        XPC(2) = Reference::build(vm, stable);
         advancePC(2); break;
       }
 
@@ -557,35 +557,35 @@ void Thread::run() {
       }
 
       case OpCreateAbstractionX: {
-        XPC(4).make<Abstraction>(vm, IntPC(3), IntPC(1), XPC(2));
+        XPC(4) = Abstraction::build(vm, IntPC(3), IntPC(1), XPC(2));
 
         advancePC(4);
         break;
       }
 
       case OpCreateAbstractionK: {
-        XPC(4).make<Abstraction>(vm, IntPC(3), IntPC(1), KPC(2));
+        XPC(4) = Abstraction::build(vm, IntPC(3), IntPC(1), KPC(2));
 
         advancePC(4);
         break;
       }
 
       case OpCreateTupleK: {
-        XPC(3).make<Tuple>(vm, IntPC(2), KPC(1));
+        XPC(3) = Tuple::build(vm, IntPC(2), KPC(1));
 
         advancePC(3);
         break;
       }
 
       case OpCreateRecordK: {
-        XPC(3).make<Record>(vm, IntPC(2), KPC(1));
+        XPC(3) = Record::build(vm, IntPC(2), KPC(1));
 
         advancePC(3);
         break;
       }
 
       case OpCreateConsXX: {
-        XPC(3).make<Cons>(vm, XPC(1), XPC(2));
+        XPC(3) = Cons::build(vm, XPC(1), XPC(2));
 
         advancePC(3);
         break;

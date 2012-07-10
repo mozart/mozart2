@@ -94,7 +94,7 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < Gc; i++)
-    _Gs[i].make<Unit>(vm);
+    _Gs[i].init(vm);
 }
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,

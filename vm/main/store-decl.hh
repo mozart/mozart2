@@ -138,15 +138,6 @@ public:
   inline
   void ensureStable(VM vm);
 
-  inline void reinit(VM vm, StableNode& from);
-  inline void reinit(VM vm, UnstableNode& from);
-  inline void reinit(VM vm, RichNode from);
-
-  template<class T, class... Args>
-  void remake(VM vm, Args&&... args) {
-    node()->make<T>(vm, std::forward<Args>(args)...);
-  }
-
   NodeBackup makeBackup() {
     return NodeBackup(node());
   }
@@ -172,6 +163,15 @@ private:
 private:
   template <class T>
   friend class BaseSelf;
+
+  friend class GarbageCollector;
+  friend class SpaceCloner;
+  friend struct StructuralDualWalk;
+
+  inline void reinit(VM vm, StableNode& from);
+  inline void reinit(VM vm, UnstableNode& from);
+  inline void reinit(VM vm, UnstableNode&& from);
+  inline void reinit(VM vm, RichNode from);
 
   __attribute__((always_inline))
   MemWord value() {
@@ -206,12 +206,9 @@ public:
 
   inline void init(VM vm, StableNode& from);
   inline void init(VM vm, UnstableNode& from);
+  inline void init(VM vm, UnstableNode&& from);
   inline void init(VM vm, RichNode from);
-
-  template<class T, class... Args>
-  void make(VM vm, Args&&... args) {
-    node.make<T>(vm, std::forward<Args>(args)...);
-  }
+  inline void init(VM vm);
 
   NodeBackup makeBackup() {
     return NodeBackup(&node);
@@ -265,24 +262,22 @@ public:
 
   inline void init(VM vm, StableNode& from);
   inline void init(VM vm, UnstableNode& from);
+  inline void init(VM vm, UnstableNode&& from);
   inline void init(VM vm, RichNode from);
+  inline void init(VM vm);
 
   inline void copy(VM vm, StableNode& from);
   inline void copy(VM vm, UnstableNode& from);
+  inline void copy(VM vm, UnstableNode&& from);
   inline void copy(VM vm, RichNode from);
 
   inline void swap(UnstableNode& from);
   inline void reset(VM vm);
 
   template<class T, class... Args>
-  void make(VM vm, Args&&... args) {
-    node.make<T>(vm, std::forward<Args>(args)...);
-  }
-
-  template<class T, class... Args>
   static UnstableNode build(VM vm, Args&&... args) {
     UnstableNode result;
-    result.make<T>(vm, std::forward<Args>(args)...);
+    result.node.make<T>(vm, std::forward<Args>(args)...);
     return result;
   }
 
@@ -336,9 +331,9 @@ protected:
 public:
   BaseSelf(RichNode node) : _node(node) {}
 
-  template<class U, class... Args>
-  void remake(VM vm, Args&&... args) {
-    _node.remake<U>(vm, std::forward<Args>(args)...);
+  template<class U>
+  void become(VM vm, U&& from) {
+    _node.reinit(vm, std::forward<U>(from));
   }
 
   operator RichNode() {

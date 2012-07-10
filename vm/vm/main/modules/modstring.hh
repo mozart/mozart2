@@ -60,7 +60,7 @@ public:
     OpResult operator()(VM vm, In value, Out result) {
       LString<nchar>* content = nullptr;
       MOZART_CHECK_OPRESULT(StringLike(value).stringGet(vm, content));
-      result.make<Atom>(vm, content->length, content->string);
+      result = Atom::build(vm, content->length, content->string);
       return OpResult::proceed();
     }
   };
@@ -73,7 +73,7 @@ public:
       nativeint charResult = 0;
       MOZART_CHECK_OPRESULT(
         StringLike(value).stringCharAt(vm, index, charResult));
-      result.make<SmallInt>(vm, charResult);
+      result = SmallInt::build(vm, charResult);
       return OpResult::proceed();
     }
   };
@@ -113,7 +113,7 @@ public:
       bool boolResult = false;
       MOZART_CHECK_OPRESULT(
         StringLike(string).stringHasPrefix(vm, prefix, boolResult));
-      result.make<Boolean>(vm, boolResult);
+      result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
     }
   };
@@ -126,7 +126,7 @@ public:
       bool boolResult = false;
       MOZART_CHECK_OPRESULT(
         StringLike(string).stringHasSuffix(vm, suffix, boolResult));
-      result.make<Boolean>(vm, boolResult);
+      result = Boolean::build(vm, boolResult);
       return OpResult::proceed();
     }
   };

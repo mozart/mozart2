@@ -110,7 +110,7 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].make<Unit>(vm);
+    _elements[i].init(vm);
 }
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
@@ -153,11 +153,11 @@ OpResult Implementation<Tuple>::label(Self self, VM vm,
 
 OpResult Implementation<Tuple>::clone(Self self, VM vm,
                                       UnstableNode& result) {
-  result.make<Tuple>(vm, _width, _label);
+  result = Tuple::build(vm, _width, _label);
 
   auto tuple = RichNode(result).as<Tuple>();
   for (size_t i = 0; i < _width; i++)
-    tuple.getElement(i)->make<Unbound>(vm);
+    tuple.getElement(i)->init(vm, Unbound::build(vm));
 
   return OpResult::proceed();
 }
@@ -471,7 +471,7 @@ Implementation<Record>::Implementation(VM vm, size_t width,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].make<Unit>(vm);
+    _elements[i].init(vm);
 }
 
 Implementation<Record>::Implementation(VM vm, size_t width,
@@ -507,11 +507,11 @@ OpResult Implementation<Record>::label(Self self, VM vm,
 
 OpResult Implementation<Record>::clone(Self self, VM vm,
                                        UnstableNode& result) {
-  result.make<Record>(vm, _width, _arity);
+  result = Record::build(vm, _width, _arity);
 
   auto record = RichNode(result).as<Record>();
   for (size_t i = 0; i < _width; i++)
-    record.getElement(i)->make<Unbound>(vm);
+    record.getElement(i)->init(vm, Unbound::build(vm));
 
   return OpResult::proceed();
 }

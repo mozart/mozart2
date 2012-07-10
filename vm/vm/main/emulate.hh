@@ -109,7 +109,7 @@ public:
     allocArray(vm, initialSize);
 
     for (size_t i = 0; i < initialSize; i++)
-      _array[i].make<SmallInt>(vm, 0);
+      _array[i].init(vm);
   }
 
   void grow(VM vm, size_t newSize, size_t elemsToKeep) {
@@ -127,7 +127,7 @@ public:
     freeArray(vm, oldArray, oldSize);
 
     for (size_t i = elemsToKeep; i < newSize; i++)
-      _array[i].make<SmallInt>(vm, 0);
+      _array[i].init(vm);
   }
 
   void release(VM vm) {

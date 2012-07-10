@@ -73,7 +73,7 @@ void Implementation<Variable>::markNeeded(Self self, VM vm) {
 OpResult Implementation<Variable>::bind(Self self, VM vm, RichNode src) {
   if (vm->isOnTopLevel()) {
     // The simple, fast binding when on top-level
-    RichNode(self).reinit(vm, src);
+    self.become(vm, src);
 
     /* If the value we were bound to is a Variable too, we have to transfer the
      * variables waiting for this so that they wait for the other Variable.
@@ -104,7 +104,7 @@ OpResult Implementation<Variable>::bindSubSpace(Self self, VM vm,
   }
 
   // Actual binding
-  RichNode(self).reinit(vm, src);
+  self.become(vm, src);
 
   /* If the value we were bound to is a Variable too, we have to transfer the
    * variables waiting for this so that they wait for the other Variable.
@@ -181,12 +181,12 @@ void Implementation<Unbound>::build(SpaceRef& self, VM vm, GR gr, Self from) {
 
 void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
                                                RichNode variable) {
-  self.remake<Variable>(vm);
+  self.become(vm, Variable::build(vm));
   DataflowVariable(self).addToSuspendList(vm, variable);
 }
 
 void Implementation<Unbound>::markNeeded(Self self, VM vm) {
-  self.remake<Variable>(vm);
+  self.become(vm, Variable::build(vm));
   DataflowVariable(self).markNeeded(vm);
 }
 
@@ -201,7 +201,7 @@ OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
   }
 
   // Actual binding
-  RichNode(self).reinit(vm, src);
+  self.become(vm, src);
 
   return OpResult::proceed();
 }
@@ -225,7 +225,7 @@ OpResult Implementation<ReadOnly>::wakeUp(Self self, VM vm) {
     // Aaah, no. I was waken up for nothing
     DataflowVariable(underlying).addToSuspendList(vm, self);
   } else {
-    RichNode(self).reinit(vm, underlying);
+    self.become(vm, underlying);
   }
 
   return OpResult::proceed();

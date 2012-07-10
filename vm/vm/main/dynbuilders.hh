@@ -69,16 +69,16 @@ OpResult makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
   if ((width == 2) && internal::isPipeAtom(vm, label)) {
     UnstableNode head = Unbound::build(vm);
     UnstableNode tail = Unbound::build(vm);
-    result.make<Cons>(vm, head, tail);
+    result = Cons::build(vm, head, tail);
 
     return OpResult::proceed();
   }
 
-  result.make<Tuple>(vm, width, label);
+  result = Tuple::build(vm, width, label);
   auto tuple = RichNode(result).as<Tuple>();
 
   for (size_t i = 0; i < width; i++)
-    tuple.getElement(i)->make<Unbound>(vm);
+    tuple.getElement(i)->init(vm, Unbound::build(vm));
 
   return OpResult::proceed();
 }
@@ -105,12 +105,12 @@ OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
   if ((width == 2) && internal::isPipeAtom(vm, label)) {
     UnstableNode head(vm, elemToValue(elements[0]));
     UnstableNode tail(vm, elemToValue(elements[1]));
-    result.make<Cons>(vm, head, tail);
+    result = Cons::build(vm, head, tail);
 
     return OpResult::proceed();
   }
 
-  result.make<Tuple>(vm, width, label);
+  result = Tuple::build(vm, width, label);
   auto tuple = RichNode(result).as<Tuple>();
 
   for (size_t i = 0; i < width; i++)
@@ -185,7 +185,7 @@ OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
     [] (T& element) -> UnstableNode& { return featureOf(element); }));
 
   // Make the result
-  result.make<Arity>(vm, tuple);
+  result = Arity::build(vm, tuple);
 
   return OpResult::proceed();
 }
@@ -208,7 +208,7 @@ OpResult buildRecordDynamic(VM vm, UnstableNode& result,
   }
 
   // Allocate the record
-  result.make<Record>(vm, width, arity);
+  result = Record::build(vm, width, arity);
   auto record = RichNode(result).as<Record>();
 
   // Fill the elements

@@ -48,7 +48,7 @@ Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < Kc; i++)
-    _Ks[i].make<Unit>(vm);
+    _Ks[i].init(vm);
 }
 
 Implementation<CodeArea>::Implementation(VM vm, size_t Kc,

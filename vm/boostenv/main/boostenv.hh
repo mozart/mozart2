@@ -53,10 +53,10 @@ void BoostBasedVM::releaseAsyncIONode(StableNode** node) {
 void BoostBasedVM::createAsyncIOFeedbackNode(StableNode**& ref,
                                              UnstableNode& readOnly) {
   StableNode* stable = new (vm) StableNode;
-  stable->make<Variable>(vm);
+  stable->init(vm, Variable::build(vm));
 
   StableNode* stableReadyOnly = new (vm) StableNode;
-  stableReadyOnly->make<ReadOnly>(vm, stable);
+  stableReadyOnly->init(vm, ReadOnly::build(vm, stable));
 
   readOnly.init(vm, *stableReadyOnly);
   DataflowVariable(*stable).addToSuspendList(vm, readOnly);

@@ -50,7 +50,7 @@ bool Implementation<ByteString>::equals(VM vm, Self right) {
 void Implementation<ByteString>::getValueAt(Self self, VM vm,
                                             nativeint feature,
                                             UnstableNode& result) {
-  result.make<SmallInt>(vm, _bytes[feature]);
+  result = SmallInt::build(vm, _bytes[feature]);
 }
 
 namespace internal {
@@ -115,7 +115,7 @@ OpResult Implementation<ByteString>::stringAppend(Self self, VM vm,
   LString<unsigned char> resultBytes = concatLString(vm, _bytes, *rightBytes);
   if (resultBytes.isError())
     return raiseUnicodeError(vm, resultBytes.error, self, right);
-  result.make<ByteString>(vm, resultBytes);
+  result = ByteString::build(vm, resultBytes);
   return OpResult::proceed();
 }
 
@@ -129,7 +129,7 @@ OpResult Implementation<ByteString>::stringSlice(Self self, VM vm,
   if (fromOffset < 0 || fromOffset > toOffset || toOffset > _bytes.length)
     return raiseIndexOutOfBounds(vm, fromOffset, toOffset);
 
-  result.make<ByteString>(vm, _bytes.slice(fromOffset, toOffset));
+  result = ByteString::build(vm, _bytes.slice(fromOffset, toOffset));
   return OpResult::proceed();
 }
 
@@ -160,13 +160,13 @@ OpResult Implementation<ByteString>::stringSearch(
     const void* searchRes = memchr(haystackUnsafe, character,
                                    haystack.bytesCount());
     if (searchRes == nullptr) {
-      begin.make<Boolean>(vm, false);
-      end.make<Boolean>(vm, false);
+      begin = Boolean::build(vm, false);
+      end = Boolean::build(vm, false);
     } else {
       nativeint foundOffset =
         static_cast<const unsigned char*>(searchRes) - _bytes.string;
-      begin.make<SmallInt>(vm, foundOffset);
-      end.make<SmallInt>(vm, foundOffset + 1);
+      begin = SmallInt::build(vm, foundOffset);
+      end = SmallInt::build(vm, foundOffset + 1);
     }
 
   } else if (matchRes.isProceed()) {
@@ -176,12 +176,12 @@ OpResult Implementation<ByteString>::stringSearch(
     auto foundIter = std::search(haystack.begin(), haystack.end(),
                                  needle->begin(), needle->end());
     if (foundIter == haystack.end()) {
-      begin.make<Boolean>(vm, false);
-      end.make<Boolean>(vm, false);
+      begin = Boolean::build(vm, false);
+      end = Boolean::build(vm, false);
     } else {
       nativeint foundOffset = foundIter - _bytes.string;
-      begin.make<SmallInt>(vm, foundOffset);
-      end.make<SmallInt>(vm, foundOffset + needle->length);
+      begin = SmallInt::build(vm, foundOffset);
+      end = SmallInt::build(vm, foundOffset + needle->length);
     }
 
   } else {
@@ -249,7 +249,7 @@ OpResult Implementation<ByteString>::decode(Self self, VM vm,
   auto res = newLString(vm, decoder(_bytes, variant));
   if (res.isError())
     return raiseUnicodeError(vm, res.error);
-  result.make<String>(vm, res);
+  result = String::build(vm, res);
   return OpResult::proceed();
 }
 
@@ -270,7 +270,7 @@ OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
   auto res = newLString(vm, encoder(input, variant));
   if (res.isError())
     return raiseUnicodeError(vm, res.error);
-  result.make<ByteString>(vm, res);
+  result = ByteString::build(vm, res);
   return OpResult::proceed();
 }
 

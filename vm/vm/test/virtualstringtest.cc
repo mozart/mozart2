@@ -13,35 +13,35 @@ protected:
   std::basic_string<nchar> minStr;
 
   virtual void SetUp() {
-    testNodes[0].make<SmallInt>(vm, 0);
-    testNodes[1].make<SmallInt>(vm, 4);
-    testNodes[2].make<SmallInt>(vm, -4);
-    testNodes[3].make<SmallInt>(vm, 12300000);
-    testNodes[4].make<SmallInt>(vm, -12300000);
+    testNodes[0] = SmallInt::build(vm, 0);
+    testNodes[1] = SmallInt::build(vm, 4);
+    testNodes[2] = SmallInt::build(vm, -4);
+    testNodes[3] = SmallInt::build(vm, 12300000);
+    testNodes[4] = SmallInt::build(vm, -12300000);
 
-    testNodes[5].make<Float>(vm, 3.125);
-    testNodes[6].make<Float>(vm, -3.125);
-    testNodes[7].make<Float>(vm, 9.0e125);
-    testNodes[8].make<Float>(vm, -9.0e125);
-    testNodes[9].make<Float>(vm, 9.0e-125);
-    testNodes[10].make<Float>(vm, -9.0e-125);
-    testNodes[11].make<Float>(vm, 9.5678e125);
-    testNodes[12].make<Float>(vm, 9.0);
+    testNodes[5] = Float::build(vm, 3.125);
+    testNodes[6] = Float::build(vm, -3.125);
+    testNodes[7] = Float::build(vm, 9.0e125);
+    testNodes[8] = Float::build(vm, -9.0e125);
+    testNodes[9] = Float::build(vm, 9.0e-125);
+    testNodes[10] = Float::build(vm, -9.0e-125);
+    testNodes[11] = Float::build(vm, 9.5678e125);
+    testNodes[12] = Float::build(vm, 9.0);
 
-    testNodes[13].make<Atom>(vm, MOZART_STR("f-o"));
-    testNodes[14].make<Atom>(vm, MOZART_STR("nil"));
-    testNodes[15].make<Atom>(vm, MOZART_STR("#"));
-    testNodes[16].make<Atom>(vm, MOZART_STR("\U0010ffff\U0010ffff"));
+    testNodes[13] = Atom::build(vm, MOZART_STR("f-o"));
+    testNodes[14] = Atom::build(vm, MOZART_STR("nil"));
+    testNodes[15] = Atom::build(vm, MOZART_STR("#"));
+    testNodes[16] = Atom::build(vm, MOZART_STR("\U0010ffff\U0010ffff"));
 
-    testNodes[17].make<Boolean>(vm, true);
-    testNodes[18].make<Boolean>(vm, false);
+    testNodes[17] = Boolean::build(vm, true);
+    testNodes[18] = Boolean::build(vm, false);
 
-    testNodes[19].make<Unit>(vm);
+    testNodes[19] = Unit::build(vm);
 
-    testNodes[20].make<String>(vm, MOZART_STR("f-o"));
-    testNodes[21].make<String>(vm, MOZART_STR("nil"));
-    testNodes[22].make<String>(vm, MOZART_STR("#"));
-    testNodes[23].make<String>(vm, MOZART_STR("\U0010ffff\U0010ffff"));
+    testNodes[20] = String::build(vm, MOZART_STR("f-o"));
+    testNodes[21] = String::build(vm, MOZART_STR("nil"));
+    testNodes[22] = String::build(vm, MOZART_STR("#"));
+    testNodes[23] = String::build(vm, MOZART_STR("\U0010ffff\U0010ffff"));
 
     testNodes[24] = buildCons(vm, 0x40,
                               buildCons(vm, 0x60, vm->coreatoms.nil));
@@ -59,8 +59,8 @@ protected:
                                -4,
                                -5);
 
-    testNodes[28].make<SmallInt>(vm, std::numeric_limits<nativeint>::min());
-    testNodes[29].make<ByteString>(vm, byteStringContent);
+    testNodes[28] = SmallInt::build(vm, std::numeric_limits<nativeint>::min());
+    testNodes[29] = ByteString::build(vm, byteStringContent);
 
     auto s = std::to_string(std::numeric_limits<nativeint>::min());
     std::copy(s.cbegin(), s.cend(), std::back_inserter(minStr));

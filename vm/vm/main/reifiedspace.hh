@@ -72,7 +72,7 @@ private:
 public:
   ChooseDistributor(VM vm, Space* space, nativeint alternatives) {
     _alternatives = alternatives;
-    _var.make<Unbound>(vm, space);
+    _var = Unbound::build(vm, space);
   }
 
   ChooseDistributor(GR gr, ChooseDistributor& from) {
@@ -131,7 +131,7 @@ OpResult Implementation<ReifiedSpace>::askSpace(
   OpResult res = OpResult::proceed();
 
   if (matchesTuple(vm, res, statusVar, vm->coreatoms.succeeded, wildcard())) {
-    result.make<Atom>(vm, vm->coreatoms.succeeded);
+    result = Atom::build(vm, vm->coreatoms.succeeded);
   } else if (res.isProceed()) {
     result.copy(vm, statusVar);
   } else {
@@ -185,8 +185,8 @@ OpResult Implementation<ReifiedSpace>::mergeSpace(
   // Actual merge
   OpResult res = space->merge(vm, currentSpace);
 
-  // Mutate this into a merged deleted space
-  self.remake<DeletedSpace>(vm, dsMerged);
+  // Become a merged deleted space
+  self.become(vm, DeletedSpace::build(vm, dsMerged));
 
   return res;
 }
@@ -233,7 +233,7 @@ OpResult Implementation<ReifiedSpace>::cloneSpace(
     return OpResult::waitFor(vm, statusVar);
 
   Space* copy = space->clone(vm);
-  result.make<ReifiedSpace>(vm, copy);
+  result = ReifiedSpace::build(vm, copy);
 
   return OpResult::proceed();
 }
@@ -264,12 +264,12 @@ OpResult Implementation<DeletedSpace>::askSpace(
 
   switch (kind()) {
     case dsFailed: {
-      result.make<Atom>(vm, vm->coreatoms.failed);
+      result = Atom::build(vm, vm->coreatoms.failed);
       return OpResult::proceed();
     }
 
     case dsMerged: {
-      result.make<Atom>(vm, vm->coreatoms.merged);
+      result = Atom::build(vm, vm->coreatoms.merged);
       return OpResult::proceed();
     }
 
@@ -285,12 +285,12 @@ OpResult Implementation<DeletedSpace>::askVerboseSpace(
 
   switch (kind()) {
     case dsFailed: {
-      result.make<Atom>(vm, vm->coreatoms.failed);
+      result = Atom::build(vm, vm->coreatoms.failed);
       return OpResult::proceed();
     }
 
     case dsMerged: {
-      result.make<Atom>(vm, vm->coreatoms.merged);
+      result = Atom::build(vm, vm->coreatoms.merged);
       return OpResult::proceed();
     }
 
@@ -344,7 +344,7 @@ OpResult Implementation<DeletedSpace>::cloneSpace(
 
   switch (kind()) {
     case dsFailed: {
-      result.make<DeletedSpace>(vm, dsFailed);
+      result = DeletedSpace::build(vm, dsFailed);
       return OpResult::proceed();
     }
 

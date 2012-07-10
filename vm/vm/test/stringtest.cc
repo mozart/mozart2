@@ -16,8 +16,7 @@ static const nchar* stringTestVector[] = {
 
 TEST_F(StringTest, Build) {
   for (const nchar* s : stringTestVector) {
-    UnstableNode node;
-    node.make<String>(vm, newLString(vm, s));
+    UnstableNode node = String::build(vm, newLString(vm, s));
     EXPECT_EQ_STRING(makeLString(s), node);
   }
 }
@@ -37,8 +36,7 @@ TEST_F(StringTest, IsString) {
 
 TEST_F(StringTest, NotIsRecord) {
   for (const nchar* s : stringTestVector) {
-    UnstableNode node;
-    node.make<String>(vm, newLString(vm, s));
+    UnstableNode node = String::build(vm, newLString(vm, s));
     bool res = true;
     if (EXPECT_PROCEED(RecordLike(node).isRecord(vm, res))) {
       EXPECT_FALSE(res);

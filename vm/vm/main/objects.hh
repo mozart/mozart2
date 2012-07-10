@@ -51,7 +51,7 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
   // Initialize attributes
   if (attrModel.is<Atom>()) {
     assert(attrCount == 0);
-    _attrArity.make<Unit>(vm);
+    _attrArity.init(vm, Unit::build(vm));
     _attrCount = 0;
   } else {
     auto attrModelRec = attrModel.as<Record>();
@@ -73,12 +73,12 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
 
   // Initialize features
   if (featModel.is<Atom>()) {
-    _features.make<Unit>(vm);
+    _features.init(vm, Unit::build(vm));
   } else {
     auto featModelRec = featModel.as<Record>();
     size_t featCount = featModelRec.getWidth();
 
-    _features.make<Record>(vm, featCount, *featModelRec.getArity());
+    _features.init(vm, Record::build(vm, featCount, *featModelRec.getArity()));
     auto _featuresRec = RichNode(_features).as<Record>();
 
     for (size_t i = 0; i < featCount; i++) {
@@ -87,7 +87,7 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
 
       OpResult res = OpResult::proceed();
       if (matches(vm, res, feat, vm->coreatoms.ooFreeFlag))
-        feat.make<Unbound>(vm);
+        feat.init(vm, Unbound::build(vm));
     }
   }
 

@@ -35,7 +35,7 @@ Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
   _runnable(false), _terminated(false), _dead(false), _replicate(nullptr) {
 
-  _reification.make<ReifiedThread>(vm, this);
+  _reification.init(vm, ReifiedThread::build(vm, this));
 
   _space->notifyThreadCreated();
 
@@ -51,7 +51,7 @@ Runnable::Runnable(GR gr, Runnable& from) :
   _terminated = from._terminated;
   _dead = from._dead;
 
-  _reification.make<ReifiedThread>(gr->vm, this);
+  _reification.init(vm, ReifiedThread::build(gr->vm, this));
 
   if (!_dead)
     vm->aliveThreads.insert(this);

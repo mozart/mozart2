@@ -362,8 +362,8 @@ auto NodeDictionary::newNode(VM vm, Node* parent, Color color,
   node->left = nullptr;
   node->right = nullptr;
   node->color = color;
-  node->key.copy(vm, key);
-  node->value.make<Unit>(vm);
+  node->key.init(vm, key);
+  node->value.init(vm);
 
   return node;
 }

@@ -42,7 +42,7 @@ void Implementation<OptName>::build(SpaceRef& self, VM vm, GR gr, Self from) {
 }
 
 OpResult Implementation<OptName>::makeFeature(Self self, VM vm) {
-  self.remake<GlobalName>(vm);
+  self.become(vm, GlobalName::build(vm));
   return OpResult::proceed();
 }
 

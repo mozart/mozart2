@@ -70,7 +70,7 @@ void GarbageCollector::processThread(Runnable*& to, Runnable* from) {
 template <class NodeType, class GCedType>
 void GarbageCollector::processNode(NodeType*& to, RichNode from) {
   from.type()->gCollect(this, from, *to);
-  from.remake<GCedType>(vm, to);
+  from.reinit(vm, GCedType::build(vm, to));
 }
 
 }

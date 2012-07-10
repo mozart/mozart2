@@ -46,7 +46,7 @@ public:
     Is(): Builtin("is") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      bool boolResult;
+      bool boolResult = false;
       MOZART_CHECK_OPRESULT(Literal(value).isLiteral(vm, boolResult));
 
       result = Boolean::build(vm, boolResult);

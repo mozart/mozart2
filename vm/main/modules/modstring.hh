@@ -58,7 +58,7 @@ public:
     ToAtom() : Builtin("toAtom") {}
 
     OpResult operator()(VM vm, In value, Out result) {
-      LString<nchar>* content;
+      LString<nchar>* content = nullptr;
       MOZART_CHECK_OPRESULT(StringLike(value).stringGet(vm, content));
       result.make<Atom>(vm, content->length, content->string);
       return OpResult::proceed();
@@ -70,7 +70,7 @@ public:
     CharAt() : Builtin("charAt") {}
 
     OpResult operator()(VM vm, In value, In index, Out result) {
-      nativeint charResult;
+      nativeint charResult = 0;
       MOZART_CHECK_OPRESULT(
         StringLike(value).stringCharAt(vm, index, charResult));
       result.make<SmallInt>(vm, charResult);
@@ -109,11 +109,11 @@ public:
   public:
     HasPrefix() : Builtin("hasPrefix") {}
 
-    OpResult operator()(VM vm, In string, In prefix, Out resultNode) {
-      bool result;
+    OpResult operator()(VM vm, In string, In prefix, Out result) {
+      bool boolResult = false;
       MOZART_CHECK_OPRESULT(
-        StringLike(string).stringHasPrefix(vm, prefix, result));
-      resultNode.make<Boolean>(vm, result);
+        StringLike(string).stringHasPrefix(vm, prefix, boolResult));
+      result.make<Boolean>(vm, boolResult);
       return OpResult::proceed();
     }
   };
@@ -122,11 +122,11 @@ public:
   public:
     HasSuffix() : Builtin("hasSuffix") {}
 
-    OpResult operator()(VM vm, In string, In suffix, Out resultNode) {
-      bool result;
+    OpResult operator()(VM vm, In string, In suffix, Out result) {
+      bool boolResult = false;
       MOZART_CHECK_OPRESULT(
-        StringLike(string).stringHasSuffix(vm, suffix, result));
-      resultNode.make<Boolean>(vm, result);
+        StringLike(string).stringHasSuffix(vm, suffix, boolResult));
+      result.make<Boolean>(vm, boolResult);
       return OpResult::proceed();
     }
   };

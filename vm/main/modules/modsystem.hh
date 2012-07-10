@@ -39,9 +39,9 @@ namespace builtins {
 // System module //
 ///////////////////
 
-class System: public Module {
+class ModSystem: public Module {
 public:
-  System(): Module("System") {}
+  ModSystem(): Module("System") {}
 
   class Show: public Builtin<Show> {
   public:

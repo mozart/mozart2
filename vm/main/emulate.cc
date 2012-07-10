@@ -666,9 +666,9 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
                   StaticArray<StableNode>& gregs,
                   StaticArray<StableNode>& kregs,
                   bool& preempted) {
-  int formalArity;
-  ProgramCounter start;
-  int Xcount;
+  int formalArity = 0;
+  ProgramCounter start = nullptr;
+  int Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
@@ -732,7 +732,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
 
     assert(jumpOffset >= 0);
 
-    bool matchResult;
+    bool matchResult = false;
     CHECK_OPRESULT_RETURN(mozart::patternMatch(
       vm, value, pattern, xregs->getArray(), matchResult));
 

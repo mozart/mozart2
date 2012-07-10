@@ -110,7 +110,7 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].make<SmallInt>(vm, 0);
+    _elements[i].make<Unit>(vm);
 }
 
 Implementation<Tuple>::Implementation(VM vm, size_t width,
@@ -171,7 +171,7 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
   } else {
     for (size_t i = 0; i < _width; i++) {
       if (i > 0)
-        out << ", ";
+        out << " ";
       out << repr(vm, self[i], depth);
     }
   }
@@ -471,7 +471,7 @@ Implementation<Record>::Implementation(VM vm, size_t width,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].make<SmallInt>(vm, 0);
+    _elements[i].make<Unit>(vm);
 }
 
 Implementation<Record>::Implementation(VM vm, size_t width,
@@ -543,7 +543,7 @@ void Implementation<Record>::printReprToStream(Self self, VM vm,
   } else {
     for (size_t i = 0; i < _width; i++) {
       if (i > 0)
-        out << ", ";
+        out << " ";
 
       UnstableNode feature;
       getFeatureAt(self, vm, i, feature);

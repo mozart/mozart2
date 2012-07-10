@@ -37,9 +37,9 @@ namespace builtins {
 // Int module //
 ////////////////
 
-class Int: public Module {
+class ModInt: public Module {
 public:
-  Int(): Module("Int") {}
+  ModInt(): Module("Int") {}
 
   class Is: public Builtin<Is> {
   public:

@@ -37,9 +37,9 @@ namespace builtins {
 // Float module //
 //////////////////
 
-class Float: public Module {
+class ModFloat: public Module {
 public:
-  Float(): Module("Float") {}
+  ModFloat(): Module("Float") {}
 
   class Is: public Builtin<Is> {
   public:

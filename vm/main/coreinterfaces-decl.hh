@@ -199,11 +199,6 @@ struct Interface<Callable>:
                        ProgramCounter& start, int& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks) {
-    arity = 0;
-    start = nullptr;
-    Xcount = 0;
-    Gs = nullptr;
-    Ks = nullptr;
     return raiseTypeError(vm, MOZART_STR("Abstraction"), self);
   }
 };
@@ -213,9 +208,6 @@ template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
   OpResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter& start,
                            int& Xcount, StaticArray<StableNode>& Ks) {
-    start = nullptr;
-    Xcount = 0;
-    Ks = nullptr;
     return raiseTypeError(vm, MOZART_STR("CodeArea"), self);
   }
 };

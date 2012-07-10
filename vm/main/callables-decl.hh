@@ -144,12 +144,9 @@ class Implementation<Abstraction>: public WithHome,
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
+  inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 int arity, RichNode body)
-    : WithHome(vm), _arity(arity), _Gc(Gc) {
-    _body.init(vm, body);
-    _codeAreaCacheValid = false;
-  }
+                 int arity, RichNode body);
 
   inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,

@@ -67,7 +67,7 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
 
       OpResult res = OpResult::proceed();
       if (matches(vm, res, attr, vm->coreatoms.ooFreeFlag))
-        attr = Unbound::build(vm);
+        attr = OptVar::build(vm);
     }
   }
 
@@ -87,7 +87,7 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
 
       OpResult res = OpResult::proceed();
       if (matches(vm, res, feat, vm->coreatoms.ooFreeFlag))
-        feat.init(vm, Unbound::build(vm));
+        feat.init(vm, OptVar::build(vm));
     }
   }
 

@@ -67,8 +67,8 @@ OpResult makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
   }
 
   if ((width == 2) && internal::isPipeAtom(vm, label)) {
-    UnstableNode head = Unbound::build(vm);
-    UnstableNode tail = Unbound::build(vm);
+    UnstableNode head = OptVar::build(vm);
+    UnstableNode tail = OptVar::build(vm);
     result = Cons::build(vm, head, tail);
 
     return OpResult::proceed();
@@ -78,7 +78,7 @@ OpResult makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
   auto tuple = RichNode(result).as<Tuple>();
 
   for (size_t i = 0; i < width; i++)
-    tuple.getElement(i)->init(vm, Unbound::build(vm));
+    tuple.getElement(i)->init(vm, OptVar::build(vm));
 
   return OpResult::proceed();
 }

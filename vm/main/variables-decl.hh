@@ -114,21 +114,21 @@ private:
 #include "Variable-implem-decl-after.hh"
 #endif
 
-/////////////
-// Unbound //
-/////////////
+////////////
+// OptVar //
+////////////
 
-class Unbound;
+class OptVar;
 
 #ifndef MOZART_GENERATOR
-#include "Unbound-implem-decl.hh"
+#include "OptVar-implem-decl.hh"
 #endif
 
 template <>
-class Implementation<Unbound>: public WithHome, Transient, StoredAs<SpaceRef>,
+class Implementation<OptVar>: public WithHome, Transient, StoredAs<SpaceRef>,
   WithVariableBehavior<100> {
 public:
-  typedef SelfType<Unbound>::Self Self;
+  typedef SelfType<OptVar>::Self Self;
 public:
   Implementation(SpaceRef home): WithHome(home) {}
 
@@ -168,7 +168,7 @@ public:
 };
 
 #ifndef MOZART_GENERATOR
-#include "Unbound-implem-decl-after.hh"
+#include "OptVar-implem-decl-after.hh"
 #endif
 
 //////////////

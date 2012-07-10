@@ -315,18 +315,18 @@ void Thread::run() {
       // Variable allocation
 
       case OpCreateVarX: {
-        XPC(1) = Unbound::build(vm);
+        XPC(1) = OptVar::build(vm);
         advancePC(1); break;
       }
 
       case OpCreateVarY: {
-        YPC(1) = Unbound::build(vm);
+        YPC(1) = OptVar::build(vm);
         advancePC(1); break;
       }
 
       case OpCreateVarMoveX: {
         StableNode* stable = new (vm) StableNode;
-        stable->init(vm, Unbound::build(vm));
+        stable->init(vm, OptVar::build(vm));
         XPC(1) = Reference::build(vm, stable);
         XPC(2) = Reference::build(vm, stable);
         advancePC(2); break;
@@ -334,7 +334,7 @@ void Thread::run() {
 
       case OpCreateVarMoveY: {
         StableNode* stable = new (vm) StableNode;
-        stable->init(vm, Unbound::build(vm));
+        stable->init(vm, OptVar::build(vm));
         YPC(1) = Reference::build(vm, stable);
         XPC(2) = Reference::build(vm, stable);
         advancePC(2); break;

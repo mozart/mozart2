@@ -144,7 +144,7 @@ public:
       Space* space = vm->getCurrentSpace();
 
       if (space->isTopLevel()) {
-        result = Unbound::build(vm);
+        result = OptVar::build(vm);
       } else if (space->hasDistributor()) {
         return raise(vm, MOZART_STR("spaceDistributor"));
       } else {

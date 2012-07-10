@@ -119,8 +119,8 @@ void Space::constructor(VM vm, bool isTopLevel, Space* parent) {
 
   _mark = false;
 
-  _rootVar.init(vm, Unbound::build(vm, this));
-  _statusVar = Unbound::build(vm, isTopLevel ? this : parent);
+  _rootVar.init(vm, OptVar::build(vm, this));
+  _statusVar = OptVar::build(vm, isTopLevel ? this : parent);
 
   _distributor = nullptr;
 
@@ -305,7 +305,7 @@ void Space::kill(VM vm) {
 void Space::clearStatusVar(VM vm) {
   RichNode statusVar = *getStatusVar();
   if (!statusVar.isTransient())
-    _statusVar = Unbound::build(vm, getParent());
+    _statusVar = OptVar::build(vm, getParent());
 }
 
 void Space::bindStatusVar(VM vm, RichNode value) {
@@ -475,7 +475,7 @@ void Space::checkStability() {
     if (!hasRunnableThreads()) {
       // No runnable threads: suspended
 
-      UnstableNode newStatusVar = Unbound::build(vm, parent);
+      UnstableNode newStatusVar = OptVar::build(vm, parent);
       bindStatusVar(vm, buildTuple(vm, vm->coreatoms.suspended, newStatusVar));
       _statusVar = std::move(newStatusVar);
     }

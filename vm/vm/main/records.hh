@@ -157,7 +157,7 @@ OpResult Implementation<Tuple>::clone(Self self, VM vm,
 
   auto tuple = RichNode(result).as<Tuple>();
   for (size_t i = 0; i < _width; i++)
-    tuple.getElement(i)->init(vm, Unbound::build(vm));
+    tuple.getElement(i)->init(vm, OptVar::build(vm));
 
   return OpResult::proceed();
 }
@@ -277,7 +277,7 @@ OpResult Implementation<Cons>::arityList(Self self, VM vm,
 
 OpResult Implementation<Cons>::clone(Self self, VM vm,
                                      UnstableNode& result) {
-  result = buildCons(vm, Unbound::build(vm), Unbound::build(vm));
+  result = buildCons(vm, OptVar::build(vm), OptVar::build(vm));
   return OpResult::proceed();
 }
 
@@ -511,7 +511,7 @@ OpResult Implementation<Record>::clone(Self self, VM vm,
 
   auto record = RichNode(result).as<Record>();
   for (size_t i = 0; i < _width; i++)
-    record.getElement(i)->init(vm, Unbound::build(vm));
+    record.getElement(i)->init(vm, OptVar::build(vm));
 
   return OpResult::proceed();
 }

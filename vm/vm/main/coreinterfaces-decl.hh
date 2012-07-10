@@ -35,7 +35,7 @@ namespace mozart {
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>:
-  ImplementedBy<Unbound, Variable, ReadOnly, FailedValue>, NoAutoWait {
+  ImplementedBy<OptVar, Variable, ReadOnly, FailedValue>, NoAutoWait {
 
   void addToSuspendList(RichNode self, VM vm, RichNode variable) {
     // TODO Should we immediately wake up the variable, here?

@@ -169,28 +169,28 @@ void Implementation<Variable>::wakeUpPendingsSubSpace(VM vm,
   pendings.clear(vm);
 }
 
-/////////////
-// Unbound //
-/////////////
+////////////
+// OptVar //
+////////////
 
-#include "Unbound-implem.hh"
+#include "OptVar-implem.hh"
 
-void Implementation<Unbound>::build(SpaceRef& self, VM vm, GR gr, Self from) {
+void Implementation<OptVar>::build(SpaceRef& self, VM vm, GR gr, Self from) {
   gr->copySpace(self, from.get().home());
 }
 
-void Implementation<Unbound>::addToSuspendList(Self self, VM vm,
-                                               RichNode variable) {
+void Implementation<OptVar>::addToSuspendList(Self self, VM vm,
+                                              RichNode variable) {
   self.become(vm, Variable::build(vm));
   DataflowVariable(self).addToSuspendList(vm, variable);
 }
 
-void Implementation<Unbound>::markNeeded(Self self, VM vm) {
+void Implementation<OptVar>::markNeeded(Self self, VM vm) {
   self.become(vm, Variable::build(vm));
   DataflowVariable(self).markNeeded(vm);
 }
 
-OpResult Implementation<Unbound>::bind(Self self, VM vm, RichNode src) {
+OpResult Implementation<OptVar>::bind(Self self, VM vm, RichNode src) {
   // Is it a speculative binding?
   if (!vm->isOnTopLevel()) {
     Space* currentSpace = vm->getCurrentSpace();
@@ -220,8 +220,8 @@ void Implementation<ReadOnly>::build(StableNode*& self, VM vm, GR gr,
 OpResult Implementation<ReadOnly>::wakeUp(Self self, VM vm) {
   RichNode underlying = *_underlying;
 
-  // TODO Test on something more generic than Variable and Unbound
-  if (underlying.is<Variable>() || underlying.is<Unbound>()) {
+  // TODO Test on something more generic than Variable and OptVar
+  if (underlying.is<Variable>() || underlying.is<OptVar>()) {
     // Aaah, no. I was waken up for nothing
     DataflowVariable(underlying).addToSuspendList(vm, self);
   } else {

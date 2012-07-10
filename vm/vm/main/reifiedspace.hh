@@ -72,7 +72,7 @@ private:
 public:
   ChooseDistributor(VM vm, Space* space, nativeint alternatives) {
     _alternatives = alternatives;
-    _var = Unbound::build(vm, space);
+    _var = OptVar::build(vm, space);
   }
 
   ChooseDistributor(GR gr, ChooseDistributor& from) {

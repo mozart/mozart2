@@ -323,8 +323,8 @@ public:
     MakeReadOnly(): Builtin("readOnly") {}
 
     OpResult operator()(VM vm, In variable, Out result) {
-      // TODO Test on something more generic than Variable and Unbound
-      if (variable.is<Variable>() || variable.is<Unbound>()) {
+      // TODO Test on something more generic than Variable and OptVar
+      if (variable.is<Variable>() || variable.is<OptVar>()) {
         StableNode* readOnly = new (vm) StableNode;
         readOnly->init(vm, ReadOnly::build(vm, variable.getStableRef(vm)));
 

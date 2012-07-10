@@ -120,7 +120,7 @@ class CodeArea(val abstraction: Abstraction) {
        |  };
        |
        |  %s = new (vm) UnstableNode;
-       |  %s->make<CodeArea>(vm, %d, codeBlock, sizeof(codeBlock), %d);
+       |  *%s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d);
        |""".stripMargin % (ccCodeArea, ccCodeArea,
            constants.size, computeXCount())
 

@@ -152,7 +152,7 @@ class CodeArea(val abstraction: Abstraction) {
         produceCCForConstant(out, constant)
 
       case _ =>
-        out << "trivialBuild(vm, "
+        out << "build(vm, "
         produceCCForConstant(out, constant)
         out << ")"
     }

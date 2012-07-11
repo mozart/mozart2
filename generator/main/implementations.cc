@@ -194,11 +194,11 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
       definition.transient = true;
     } else if (markerLabel == "StoredAs") {
       definition.storageKind = skCustom;
-      definition.storage = getTypeParamAsString(marker);
+      definition.storage = getTypeParamAsString(marker, false);
     } else if (markerLabel == "StoredWithArrayOf") {
       definition.storageKind = skWithArray;
       definition.storage = "ImplWithArray<Implementation<" + name + ">, " +
-        getTypeParamAsString(marker) + ">";
+        getTypeParamAsString(marker, false) + ">";
     } else if (markerLabel == "WithValueBehavior") {
       definition.structuralBehavior = sbValue;
     } else if (markerLabel == "WithStructuralBehavior") {

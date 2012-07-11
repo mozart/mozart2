@@ -95,8 +95,8 @@ template <class NodeType, class GCedType>
 void SpaceCloner::processNode(NodeType*& to, RichNode from) {
   from.type()->sClone(this, from, *to);
 
-  if ((from.type() != GCedToStable::type()) &&
-      (from.type() != GCedToUnstable::type())) {
+  if ((from.type() != GRedToStable::type()) &&
+      (from.type() != GRedToUnstable::type())) {
     nodeBackups.push_front(getSecondMM(), from.makeBackup());
     from.reinit(vm, GCedType::build(vm, to));
   }

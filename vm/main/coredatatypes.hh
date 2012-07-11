@@ -30,7 +30,7 @@
 #include "datatypeshelpers.hh"
 
 #include "reference.hh"
-#include "gctypes.hh"
+#include "grtypes.hh"
 #include "patmattypes.hh"
 
 #include "array.hh"

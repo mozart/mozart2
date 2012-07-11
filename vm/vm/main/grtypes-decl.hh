@@ -22,22 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GCTYPES_DECL_H
-#define __GCTYPES_DECL_H
+#ifndef __GRTYPES_DECL_H
+#define __GRTYPES_DECL_H
 
 #include "mozartcore-decl.hh"
 
 namespace mozart {
 
 //////////////////
-// GCedToStable //
+// GRedToStable //
 //////////////////
 
-class GCedToStable;
+class GRedToStable;
 
-class GCedToStableBase: public Type {
+class GRedToStableBase: public Type {
 public:
-  GCedToStableBase(std::string name, const UUID& uuid,
+  GRedToStableBase(std::string name, const UUID& uuid,
                    bool copyable, bool transient, bool feature,
                    StructuralBehavior structuralBehavior,
                    unsigned char bindingPriority) :
@@ -58,14 +58,14 @@ public:
 };
 
 #ifndef MOZART_GENERATOR
-#include "GCedToStable-implem-decl.hh"
+#include "GRedToStable-implem-decl.hh"
 #endif
 
 template <>
-class Implementation<GCedToStable>: StoredAs<StableNode*>,
-  NoAutoGCollect, NoAutoSClone, BasedOn<GCedToStableBase> {
+class Implementation<GRedToStable>: StoredAs<StableNode*>,
+  NoAutoGCollect, NoAutoSClone, BasedOn<GRedToStableBase> {
 public:
-  typedef SelfType<GCedToStable>::Self Self;
+  typedef SelfType<GRedToStable>::Self Self;
 public:
   Implementation(StableNode* dest) : _dest(dest) {}
 
@@ -79,18 +79,18 @@ private:
 };
 
 #ifndef MOZART_GENERATOR
-#include "GCedToStable-implem-decl-after.hh"
+#include "GRedToStable-implem-decl-after.hh"
 #endif
 
 ////////////////////
-// GCedToUnstable //
+// GRedToUnstable //
 ////////////////////
 
-class GCedToUnstable;
+class GRedToUnstable;
 
-class GCedToUnstableBase: public Type {
+class GRedToUnstableBase: public Type {
 public:
-  GCedToUnstableBase(std::string name, const UUID& uuid,
+  GRedToUnstableBase(std::string name, const UUID& uuid,
                      bool copyable, bool transient, bool feature,
                      StructuralBehavior structuralBehavior,
                      unsigned char bindingPriority) :
@@ -111,14 +111,14 @@ public:
 };
 
 #ifndef MOZART_GENERATOR
-#include "GCedToUnstable-implem-decl.hh"
+#include "GRedToUnstable-implem-decl.hh"
 #endif
 
 template <>
-class Implementation<GCedToUnstable>: StoredAs<UnstableNode*>,
-  NoAutoGCollect, NoAutoSClone, BasedOn<GCedToUnstableBase> {
+class Implementation<GRedToUnstable>: StoredAs<UnstableNode*>,
+  NoAutoGCollect, NoAutoSClone, BasedOn<GRedToUnstableBase> {
 public:
-  typedef SelfType<GCedToUnstable>::Self Self;
+  typedef SelfType<GRedToUnstable>::Self Self;
 public:
   Implementation(UnstableNode* dest) : _dest(dest) {}
 
@@ -132,9 +132,9 @@ private:
 };
 
 #ifndef MOZART_GENERATOR
-#include "GCedToUnstable-implem-decl-after.hh"
+#include "GRedToUnstable-implem-decl-after.hh"
 #endif
 
 }
 
-#endif // __GCTYPES_DECL_H
+#endif // __GRTYPES_DECL_H

@@ -84,10 +84,10 @@ void GraphReplicator::runCopyLoop() {
       processThreadInternal<Self>(
         *todos.threads.pop_front(secondMM));
     } else if (todos.stableNodes != nullptr) {
-      processNodeInternal<Self, StableNode, GCedToStable>(
+      processNodeInternal<Self, StableNode, GRedToStable>(
         todos.stableNodes);
     } else if (todos.unstableNodes != nullptr) {
-      processNodeInternal<Self, UnstableNode, GCedToUnstable>(
+      processNodeInternal<Self, UnstableNode, GRedToUnstable>(
         todos.unstableNodes);
     } else {
       processStableRefInternal<Self>(
@@ -120,15 +120,15 @@ template <class Self>
 void GraphReplicator::processStableRefInternal(StableNode*& ref) {
   RichNode from = *ref;
 
-  if (from.is<GCedToStable>()) {
-    StableNode* dest = from.as<GCedToStable>().dest();
+  if (from.is<GRedToStable>()) {
+    StableNode* dest = from.as<GRedToStable>().dest();
     ref = RichNode(*dest).getStableRef(vm);
-  } else if (from.is<GCedToUnstable>()) {
-    UnstableNode* dest = from.as<GCedToUnstable>().dest();
+  } else if (from.is<GRedToUnstable>()) {
+    UnstableNode* dest = from.as<GRedToUnstable>().dest();
     ref = RichNode(*dest).getStableRef(vm);
   } else {
     ref = new (vm) StableNode;
-    static_cast<Self*>(this)->template processNode<StableNode, GCedToStable>(
+    static_cast<Self*>(this)->template processNode<StableNode, GRedToStable>(
       ref, from);
   }
 }

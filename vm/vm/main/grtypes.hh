@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GCTYPES_H
-#define __GCTYPES_H
+#ifndef __GRTYPES_H
+#define __GRTYPES_H
 
 #include "mozartcore.hh"
 
@@ -32,54 +32,54 @@
 namespace mozart {
 
 //////////////////
-// GCedToStable //
+// GRedToStable //
 //////////////////
 
-#include "GCedToStable-implem.hh"
+#include "GRedToStable-implem.hh"
 
-void GCedToStableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
+void GRedToStableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
+  StableNode* dest = from.as<GRedToStable>().dest();
   to.init(gc->vm, *dest);
 }
 
-void GCedToStableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
+void GRedToStableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
+  StableNode* dest = from.as<GRedToStable>().dest();
   to.copy(gc->vm, *dest);
 }
 
-void GCedToStableBase::sClone(SC sc, RichNode from, StableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
+void GRedToStableBase::sClone(SC sc, RichNode from, StableNode& to) const {
+  StableNode* dest = from.as<GRedToStable>().dest();
   to.init(sc->vm, *dest);
 }
 
-void GCedToStableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
-  StableNode* dest = from.as<GCedToStable>().dest();
+void GRedToStableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
+  StableNode* dest = from.as<GRedToStable>().dest();
   to.copy(sc->vm, *dest);
 }
 
 ////////////////////
-// GCedToUnstable //
+// GRedToUnstable //
 ////////////////////
 
-#include "GCedToUnstable-implem.hh"
+#include "GRedToUnstable-implem.hh"
 
-void GCedToUnstableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
+void GRedToUnstableBase::gCollect(GC gc, RichNode from, StableNode& to) const {
+  UnstableNode* dest = from.as<GRedToUnstable>().dest();
   to.init(gc->vm, *dest);
 }
 
-void GCedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
+void GRedToUnstableBase::gCollect(GC gc, RichNode from, UnstableNode& to) const {
+  UnstableNode* dest = from.as<GRedToUnstable>().dest();
   to.copy(gc->vm, *dest);
 }
 
-void GCedToUnstableBase::sClone(SC sc, RichNode from, StableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
+void GRedToUnstableBase::sClone(SC sc, RichNode from, StableNode& to) const {
+  UnstableNode* dest = from.as<GRedToUnstable>().dest();
   to.init(sc->vm, *dest);
 }
 
-void GCedToUnstableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
-  UnstableNode* dest = from.as<GCedToUnstable>().dest();
+void GRedToUnstableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
+  UnstableNode* dest = from.as<GRedToUnstable>().dest();
   to.copy(sc->vm, *dest);
 }
 
@@ -87,4 +87,4 @@ void GCedToUnstableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
 
 #endif // MOZART_GENERATOR
 
-#endif // __GCTYPES_H
+#endif // __GRTYPES_H

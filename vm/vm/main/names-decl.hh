@@ -138,6 +138,66 @@ private:
 #include "GlobalName-implem-decl-after.hh"
 #endif
 
+////////////////
+// UniqueName //
+////////////////
+
+class UniqueName;
+
+#ifndef MOZART_GENERATOR
+#include "UniqueName-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<UniqueName>: public LiteralHelper<UniqueName>,
+  Copyable, StoredAs<unique_name_t>, WithValueBehavior {
+public:
+  typedef SelfType<UniqueName>::Self Self;
+public:
+  static constexpr UUID uuid = "{f6cdb080-98ad-47bf-9e67-629385261e9f}";
+
+  Implementation(unique_name_t value) : _value(value) {}
+
+  static void build(unique_name_t& self, VM vm, unique_name_t value) {
+    self = value;
+  }
+
+  inline
+  static void build(unique_name_t& self, VM vm, GR gr, Self from);
+
+public:
+  unique_name_t value() const {
+    return _value;
+  }
+
+  inline
+  bool equals(VM vm, Self right);
+
+  inline
+  int compareFeatures(VM vm, Self right);
+
+public:
+  // NameLike interface
+
+  OpResult isName(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+public:
+  // Miscellaneous
+
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
+private:
+  unique_name_t _value;
+};
+
+#ifndef MOZART_GENERATOR
+#include "UniqueName-implem-decl-after.hh"
+#endif
+
 }
 
 #endif // __NAMES_DECL_H

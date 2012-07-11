@@ -41,18 +41,18 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   failed = atomTable.get(vm, MOZART_STR("failed"));
   merged = atomTable.get(vm, MOZART_STR("merged"));
 
-  ooMeth = atomTable.get(vm, MOZART_STR("ooMeth"));
-  ooFastMeth = atomTable.get(vm, MOZART_STR("ooFastMeth"));
-  ooDefaults = atomTable.get(vm, MOZART_STR("ooDefaults"));
-  ooAttr = atomTable.get(vm, MOZART_STR("ooAttr"));
-  ooFeat = atomTable.get(vm, MOZART_STR("ooFeat"));
-  ooFreeFeat = atomTable.get(vm, MOZART_STR("ooFreeFeat"));
-  ooFreeFlag = atomTable.get(vm, MOZART_STR("ooFreeFlag"));
-  ooMethSrc = atomTable.get(vm, MOZART_STR("ooMethSrc"));
-  ooAttrSrc = atomTable.get(vm, MOZART_STR("ooAttrSrc"));
-  ooFeatSrc = atomTable.get(vm, MOZART_STR("ooFeatSrc"));
-  ooPrintName = atomTable.get(vm, MOZART_STR("ooPrintName"));
-  ooFallback = atomTable.get(vm, MOZART_STR("ooFallback"));
+  ooMeth = atomTable.getUniqueName(vm, MOZART_STR("ooMeth"));
+  ooFastMeth = atomTable.getUniqueName(vm, MOZART_STR("ooFastMeth"));
+  ooDefaults = atomTable.getUniqueName(vm, MOZART_STR("ooDefaults"));
+  ooAttr = atomTable.getUniqueName(vm, MOZART_STR("ooAttr"));
+  ooFeat = atomTable.getUniqueName(vm, MOZART_STR("ooFeat"));
+  ooFreeFeat = atomTable.getUniqueName(vm, MOZART_STR("ooFreeFeat"));
+  ooFreeFlag = atomTable.getUniqueName(vm, MOZART_STR("ooFreeFlag"));
+  ooMethSrc = atomTable.getUniqueName(vm, MOZART_STR("ooMethSrc"));
+  ooAttrSrc = atomTable.getUniqueName(vm, MOZART_STR("ooAttrSrc"));
+  ooFeatSrc = atomTable.getUniqueName(vm, MOZART_STR("ooFeatSrc"));
+  ooPrintName = atomTable.getUniqueName(vm, MOZART_STR("ooPrintName"));
+  ooFallback = atomTable.getUniqueName(vm, MOZART_STR("ooFallback"));
 
   outOfRange = atomTable.get(vm, MOZART_STR("outOfRange"));
   surrogate = atomTable.get(vm, MOZART_STR("surrogate"));

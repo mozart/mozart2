@@ -189,6 +189,7 @@ private:
   friend class SpaceCloner;
   friend class Runnable;
   friend class Implementation<Atom>;
+  friend class Implementation<UniqueName>;
 
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);

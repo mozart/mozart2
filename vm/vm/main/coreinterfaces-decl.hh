@@ -65,7 +65,7 @@ class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
-                ReifiedThread, Unit, String, ByteString> {
+                ReifiedThread, Unit, String, ByteString, UniqueName> {
 
   /**
    * Precondition:

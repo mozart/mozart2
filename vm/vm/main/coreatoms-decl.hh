@@ -41,18 +41,18 @@ struct CoreAtoms {
   atom_t sharp;
 
   // Object Orientation
-  atom_t ooMeth;
-  atom_t ooFastMeth;
-  atom_t ooDefaults;
-  atom_t ooAttr;
-  atom_t ooFeat;
-  atom_t ooFreeFeat;
-  atom_t ooFreeFlag;
-  atom_t ooMethSrc;
-  atom_t ooAttrSrc;
-  atom_t ooFeatSrc;
-  atom_t ooPrintName;
-  atom_t ooFallback;
+  unique_name_t ooMeth;
+  unique_name_t ooFastMeth;
+  unique_name_t ooDefaults;
+  unique_name_t ooAttr;
+  unique_name_t ooFeat;
+  unique_name_t ooFreeFeat;
+  unique_name_t ooFreeFlag;
+  unique_name_t ooMethSrc;
+  unique_name_t ooAttrSrc;
+  unique_name_t ooFeatSrc;
+  unique_name_t ooPrintName;
+  unique_name_t ooFallback;
 
   // Space status
   atom_t succeeded;

@@ -40,6 +40,10 @@ static constexpr size_t bitsPerChar = std::is_same<nchar, char32_t>::value ? 5 :
                                       std::is_same<nchar, char16_t>::value ? 4 : 3;
 static constexpr size_t charBitsMask = (1 << bitsPerChar) - 1;
 
+//////////////
+// AtomImpl //
+//////////////
+
 class AtomImpl {
 public:
   size_t length() const {
@@ -74,22 +78,56 @@ private:
     side[1-d]=other;
   }
 
-  size_t size;              // number of bits in this atom.
+  size_t size;           // number of bits in this atom.
   const nchar* data;     // the string content
   size_t critBit;
   AtomImpl* side[2];
 };
 
+//////////////////
+// basic_atom_t //
+//////////////////
+
+template <size_t atom_type>
+size_t basic_atom_t<atom_type>::length() const {
+  return _impl->length();
+}
+
+template <size_t atom_type>
+const nchar* basic_atom_t<atom_type>::contents() const {
+  return _impl->contents();
+}
+
+template <size_t atom_type>
+bool basic_atom_t<atom_type>::equals(const basic_atom_t<atom_type>& rhs) const {
+  return _impl == rhs._impl;
+}
+
+template <size_t atom_type>
+int basic_atom_t<atom_type>::compare(const basic_atom_t<atom_type>& rhs) const {
+  return _impl->compare(rhs._impl);
+}
+
+///////////////
+// AtomTable //
+///////////////
+
 class AtomTable {
 public:
   AtomTable() : root(nullptr), _count(0) {}
 
-  AtomImpl* get(VM vm, const nchar* data) {
+  size_t count() {return _count;}
+
+  atom_t get(VM vm, const nchar* data) {
     return get(vm, std::char_traits<nchar>::length(data), data);
   }
 
+  atom_t get(VM vm, size_t size, const nchar* data) {
+    return atom_t(getInternal(vm, size, data));
+  }
+private:
   __attribute__((noinline))
-  AtomImpl* get(VM vm, size_t size, const nchar* data) {
+  AtomImpl* getInternal(VM vm, size_t size, const nchar* data) {
     assert(size == (size << (bitsPerChar+1)) >> (bitsPerChar+1));   // ??
     size <<= bitsPerChar;
     if(root == nullptr){
@@ -119,7 +157,6 @@ public:
       curP = &(cur->side[bitAt(size, data, cur->critBit)]);
     }
   }
-  size_t count() {return _count;}
 private:
   int bitAt(size_t size, const nchar* data, size_t pos) {
     if(pos >= size) return 1;

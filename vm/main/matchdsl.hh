@@ -197,7 +197,7 @@ struct PrimitiveTypeToOzType<nativeint> {
 };
 
 template <>
-struct PrimitiveTypeToOzType<const AtomImpl*> {
+struct PrimitiveTypeToOzType<atom_t> {
   typedef Atom result;
 };
 
@@ -375,8 +375,8 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
     return false;
   }
 
-  size_t length = value.as<Atom>().value()->length();
-  const nchar* valueContents = value.as<Atom>().value()->contents();
+  size_t length = value.as<Atom>().value().length();
+  const nchar* valueContents = value.as<Atom>().value().contents();
 
   return std::char_traits<nchar>::compare(
     valueContents, pattern, length) == 0;
@@ -384,7 +384,7 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, AtomImpl* pattern) {
+bool matchesSimple(VM vm, OpResult& result, RichNode value, atom_t pattern) {
   if (!value.is<Atom>()) {
     internal::waitForIfTransient(vm, result, value);
     return false;

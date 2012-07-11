@@ -37,9 +37,9 @@ namespace mozart {
 
 #include "Atom-implem.hh"
 
-void Implementation<Atom>::build(AtomImpl*& self, VM vm, GR gr, Self from) {
-  const AtomImpl* fromValue = from.get().value();
-  self = vm->atomTable.get(vm, fromValue->length(), fromValue->contents());
+void Implementation<Atom>::build(atom_t& self, VM vm, GR gr, Self from) {
+  atom_t fromValue = from.get().value();
+  self = vm->atomTable.get(vm, fromValue.length(), fromValue.contents());
 }
 
 bool Implementation<Atom>::equals(VM vm, Self right) {
@@ -47,44 +47,44 @@ bool Implementation<Atom>::equals(VM vm, Self right) {
 }
 
 int Implementation<Atom>::compareFeatures(VM vm, Self right) {
-  const AtomImpl* lhs = value();
-  const AtomImpl* rhs = right.get().value();
+  atom_t lhs = value();
+  atom_t rhs = right.get().value();
 
-  return lhs->compare(rhs);
+  return lhs.compare(rhs);
 }
 
 OpResult Implementation<Atom>::compare(Self self, VM vm,
                                        RichNode right, int& result) {
-  const AtomImpl* rightAtomValue = nullptr;
+  atom_t rightAtomValue;
   MOZART_GET_ARG(rightAtomValue, right, MOZART_STR("atom"));
 
-  result = value()->compare(rightAtomValue);
+  result = value().compare(rightAtomValue);
 
   return OpResult::proceed();
 }
 
 OpResult Implementation<Atom>::toString(Self self, VM vm,
                                         std::basic_ostream<nchar>& sink) {
-  const AtomImpl* a = value();
+  atom_t a = value();
   if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
-    sink.write(a->contents(), a->length());
+    sink.write(a.contents(), a.length());
   }
   return OpResult::proceed();
 }
 
 OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
-  const AtomImpl* a = value();
+  atom_t a = value();
   if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
     result = 0;
   else
-    result = codePointCount(makeLString(a->contents(), a->length()));
+    result = codePointCount(makeLString(a.contents(), a.length()));
   return OpResult::proceed();
 }
 
 void Implementation<Atom>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
-  const AtomImpl* a = value();
-  out << '\'' << toUTF<char>(makeLString(a->contents(), a->length())) << '\'';
+  atom_t a = value();
+  out << '\'' << toUTF<char>(makeLString(a.contents(), a.length())) << '\'';
 }
 
 }

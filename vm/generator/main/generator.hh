@@ -64,8 +64,10 @@ void withFileOutputStream(const std::string& fileName,
 
 std::string typeToString(clang::QualType type);
 
-std::string getTypeParamAsString(const SpecDecl* specDecl);
-std::string getTypeParamAsString(clang::CXXRecordDecl* arg);
+std::string getTypeParamAsString(const SpecDecl* specDecl,
+                                 bool basicName = true);
+std::string getTypeParamAsString(clang::CXXRecordDecl* arg,
+                                 bool basicName = true);
 
 void printTemplateParameters(llvm::raw_fd_ostream& Out,
   const clang::TemplateParameterList *Params,

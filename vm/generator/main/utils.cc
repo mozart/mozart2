@@ -28,24 +28,31 @@
 
 using namespace clang;
 
-std::string typeToString(QualType type) {
+std::string basicTypeToString(QualType type) {
   if (isa<TagType>(type.getTypePtr()))
     return dyn_cast<TagType>(type.getTypePtr())->getDecl()->getNameAsString();
   else
     return type.getAsString(context->getPrintingPolicy());
 }
 
-std::string getTypeParamAsString(const SpecDecl* specDecl) {
+std::string typeToString(QualType type) {
+  return type.getAsString(context->getPrintingPolicy());
+}
+
+std::string getTypeParamAsString(const SpecDecl* specDecl, bool basicName) {
   const TemplateArgumentList& templateArgs = specDecl->getTemplateArgs();
 
   assert(templateArgs.size() == 1);
   assert(templateArgs[0].getKind() == TemplateArgument::Type);
 
-  return typeToString(templateArgs[0].getAsType());
+  if (basicName)
+    return basicTypeToString(templateArgs[0].getAsType());
+  else
+    return typeToString(templateArgs[0].getAsType());
 }
 
-std::string getTypeParamAsString(CXXRecordDecl* arg) {
-  return getTypeParamAsString(dyn_cast<SpecDecl>(arg));
+std::string getTypeParamAsString(CXXRecordDecl* arg, bool basicName) {
+  return getTypeParamAsString(dyn_cast<SpecDecl>(arg), basicName);
 }
 
 void printTemplateParameters(llvm::raw_fd_ostream& Out,
@@ -121,8 +128,7 @@ void parseFunction(const clang::FunctionDecl* function,
                    bool hasSelfParam) {
 
   name = function->getNameAsString();
-  resultType = function->getResultType().getAsString(
-    context->getPrintingPolicy());
+  resultType = typeToString(function->getResultType());
 
   auto param_begin = function->param_begin() + (hasSelfParam ? 1 : 0);
   auto param_end = function->param_end();

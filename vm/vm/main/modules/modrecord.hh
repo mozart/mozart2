@@ -71,7 +71,7 @@ public:
       size_t intResult = 0;
       MOZART_CHECK_OPRESULT(RecordLike(record).width(vm, intResult));
 
-      result = trivialBuild(vm, intResult);
+      result = build(vm, intResult);
       return OpResult::proceed();
     }
   };

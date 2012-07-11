@@ -50,10 +50,10 @@ public:
     OpResult operator()(VM vm, In clazz, Out result) {
       UnstableNode attrModel, featModel;
 
-      UnstableNode ooAttr = trivialBuild(vm, vm->coreatoms.ooAttr);
+      UnstableNode ooAttr = build(vm, vm->coreatoms.ooAttr);
       MOZART_CHECK_OPRESULT(Dottable(clazz).dot(vm, ooAttr, attrModel));
 
-      UnstableNode ooFeat = trivialBuild(vm, vm->coreatoms.ooFeat);
+      UnstableNode ooFeat = build(vm, vm->coreatoms.ooFeat);
       MOZART_CHECK_OPRESULT(Dottable(clazz).dot(vm, ooFeat, featModel));
 
       size_t attrCount = 0;

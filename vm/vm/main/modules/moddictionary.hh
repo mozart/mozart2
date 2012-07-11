@@ -86,7 +86,7 @@ public:
       MOZART_CHECK_OPRESULT(DictionaryLike(dict).dictMember(
         vm, feature, boolResult));
 
-      result = trivialBuild(vm, boolResult);
+      result = build(vm, boolResult);
       return OpResult::proceed();
     }
   };

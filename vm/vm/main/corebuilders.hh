@@ -36,9 +36,9 @@ namespace mozart {
 /**
  * Build unstable nodes from primitive C++ values
  *
- * The trivialBuild() functions are a bunch of overloads for creating an
+ * The build() functions are a bunch of overloads for creating an
  * UnstableNode from a primitive C++ value.
- * E.g., applying trivialBuild() on a nativeint will return a node whose type
+ * E.g., applying build() on a nativeint will return a node whose type
  * is SmallInt.
  *
  * It is useful to have these methods be overloads, so that they can be used
@@ -46,12 +46,12 @@ namespace mozart {
  */
 
 inline
-UnstableNode trivialBuild(VM vm, nativeint value) {
+UnstableNode build(VM vm, nativeint value) {
   return SmallInt::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, size_t value) {
+UnstableNode build(VM vm, size_t value) {
   return SmallInt::build(vm, value);
 }
 
@@ -66,62 +66,62 @@ namespace internal {
 }
 
 inline
-UnstableNode trivialBuild(VM vm, internal::intIfDifferentFromNativeInt value) {
+UnstableNode build(VM vm, internal::intIfDifferentFromNativeInt value) {
   return SmallInt::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, bool value) {
+UnstableNode build(VM vm, bool value) {
   return Boolean::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, unit_t value) {
+UnstableNode build(VM vm, unit_t value) {
   return Unit::build(vm);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, double value) {
+UnstableNode build(VM vm, double value) {
   return Float::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, const nchar* value) {
+UnstableNode build(VM vm, const nchar* value) {
   return Atom::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, atom_t value) {
+UnstableNode build(VM vm, atom_t value) {
   return Atom::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, unique_name_t value) {
+UnstableNode build(VM vm, unique_name_t value) {
   return UniqueName::build(vm, value);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, builtins::BaseBuiltin& builtin) {
+UnstableNode build(VM vm, builtins::BaseBuiltin& builtin) {
   return BuiltinProcedure::build(vm, builtin);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, UnstableNode&& node) {
+UnstableNode build(VM vm, UnstableNode&& node) {
   return std::move(node);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, UnstableNode& node) {
+UnstableNode build(VM vm, UnstableNode& node) {
   return UnstableNode(vm, node);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, StableNode& node) {
+UnstableNode build(VM vm, StableNode& node) {
   return UnstableNode(vm, node);
 }
 
 inline
-UnstableNode trivialBuild(VM vm, RichNode node) {
+UnstableNode build(VM vm, RichNode node) {
   return UnstableNode(vm, node);
 }
 
@@ -130,7 +130,7 @@ UnstableNode trivialBuild(VM vm, RichNode node) {
 template <size_t i, class T, class U>
 inline
 void staticInitElement(VM vm, TypedRichNode<T> aggregate, U&& value) {
-  UnstableNode valueNode = trivialBuild(vm, std::forward<U>(value));
+  UnstableNode valueNode = build(vm, std::forward<U>(value));
   aggregate.initElement(vm, i, valueNode);
 }
 
@@ -152,7 +152,7 @@ void staticInitElementsInner(VM vm, TypedRichNode<T> aggregate,
  * @param vm          Contextual VM
  * @param aggregate   The aggregate to initialize, as a typed RichNode.
  * @param args...     The elements to initialize
- *                    (in any form supported by trivialBuild())
+ *                    (in any form supported by build())
  */
 template <class T, class... Args>
 inline
@@ -166,12 +166,12 @@ template <class LT>
 inline
 UnstableNode buildTuple(VM vm, LT&& label) {
   // Degenerated case, which is just an atom
-  return trivialBuild(vm, std::forward<LT>(label));
+  return build(vm, std::forward<LT>(label));
 }
 
 /**
  * Build an Oz tuple inside a node, with its label and fields
- * The label and the arguments can be in any form supported by trivialBuild().
+ * The label and the arguments can be in any form supported by build().
  * @param vm        Contextual VM
  * @param label     Label of the tuple
  * @param args...   Fields of the tuple
@@ -179,7 +179,7 @@ UnstableNode buildTuple(VM vm, LT&& label) {
 template <class LT, class... Args>
 inline
 UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
-  UnstableNode labelNode = trivialBuild(vm, std::forward<LT>(label));
+  UnstableNode labelNode = build(vm, std::forward<LT>(label));
   UnstableNode result = Tuple::build(vm, sizeof...(args), labelNode);
   staticInitElements<Tuple>(vm, RichNode(result).as<Tuple>(),
                             std::forward<Args>(args)...);
@@ -188,7 +188,7 @@ UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
 
 /**
  * Build an Oz cons pair, with a head and a tail
- * The head and tail can be in any form supported by trivialBuild().
+ * The head and tail can be in any form supported by build().
  * @param vm     Contextual VM
  * @param head   Head of the cons
  * @param tail   Tail of the cons
@@ -196,14 +196,14 @@ UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
 template <class HT, class TT>
 inline
 UnstableNode buildCons(VM vm, HT&& head, TT&& tail) {
-  UnstableNode headNode = trivialBuild(vm, std::forward<HT>(head));
-  UnstableNode tailNode = trivialBuild(vm, std::forward<TT>(tail));
+  UnstableNode headNode = build(vm, std::forward<HT>(head));
+  UnstableNode tailNode = build(vm, std::forward<TT>(tail));
   return Cons::build(vm, headNode, tailNode);
 }
 
 /**
  * Build a constant arity, with its label and features
- * The label and the features can be in any form supported by trivialBuild().
+ * The label and the features can be in any form supported by build().
  * @param vm        Contextual VM
  * @param label     Label of the arity
  * @param args...   Features of the arity
@@ -218,7 +218,7 @@ UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
 
 /**
  * Build an Oz record inside a node, with its arity and fields
- * The arity and the arguments can be in any form supported by trivialBuild().
+ * The arity and the arguments can be in any form supported by build().
  * @param vm        Contextual VM
  * @param arity     Arity of the record
  * @param args...   Fields of the record
@@ -226,7 +226,7 @@ UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
 template <class AT, class... Args>
 inline
 UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
-  UnstableNode arityNode = trivialBuild(vm, std::forward<AT>(arity));
+  UnstableNode arityNode = build(vm, std::forward<AT>(arity));
   UnstableNode result = Record::build(vm, sizeof...(args), arityNode);
   staticInitElements<Record>(vm, RichNode(result).as<Record>(),
                              std::forward<Args>(args)...);

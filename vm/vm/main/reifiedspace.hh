@@ -92,7 +92,7 @@ public:
     if (value > _alternatives)
       return -value;
 
-    UnstableNode valueNode = trivialBuild(vm, value);
+    UnstableNode valueNode = build(vm, value);
     new (vm) UnifyThread(vm, space, &_var, &valueNode);
 
     return 0;

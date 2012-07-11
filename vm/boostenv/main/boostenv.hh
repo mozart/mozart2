@@ -221,7 +221,7 @@ OpResult ozStringToStdString(VM vm, RichNode value, std::string& result) {
 }
 
 OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
-  UnstableNode res = trivialBuild(vm, vm->coreatoms.nil);
+  UnstableNode res = build(vm, vm->coreatoms.nil);
 
   for (auto iter = value.rbegin(); iter != value.rend(); ++iter) {
     res = buildCons(vm, *iter, std::move(res));

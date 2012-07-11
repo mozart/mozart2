@@ -557,7 +557,7 @@ OpResult Implementation<Dictionary>::dictRemoveAll(Self self, VM vm) {
 OpResult Implementation<Dictionary>::dictKeys(
   Self self, VM vm, UnstableNode& result) {
 
-  result = dict.foldRight<UnstableNode>(trivialBuild(vm, vm->coreatoms.nil),
+  result = dict.foldRight<UnstableNode>(build(vm, vm->coreatoms.nil),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm, key, std::move(previous));
     }
@@ -569,7 +569,7 @@ OpResult Implementation<Dictionary>::dictKeys(
 OpResult Implementation<Dictionary>::dictEntries(
   Self self, VM vm, UnstableNode& result) {
 
-  result = dict.foldRight<UnstableNode>(trivialBuild(vm, vm->coreatoms.nil),
+  result = dict.foldRight<UnstableNode>(build(vm, vm->coreatoms.nil),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm,
                        buildTuple(vm, vm->coreatoms.sharp, key, value),
@@ -583,7 +583,7 @@ OpResult Implementation<Dictionary>::dictEntries(
 OpResult Implementation<Dictionary>::dictItems(
   Self self, VM vm, UnstableNode& result) {
 
-  result = dict.foldRight<UnstableNode>(trivialBuild(vm, vm->coreatoms.nil),
+  result = dict.foldRight<UnstableNode>(build(vm, vm->coreatoms.nil),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm, value, std::move(previous));
     }

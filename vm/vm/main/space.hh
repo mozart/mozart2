@@ -246,7 +246,7 @@ void Space::fail(VM vm) {
   deinstallThisFailed();
   vm->setCurrentSpace(parent);
 
-  bindStatusVar(vm, trivialBuild(vm, vm->coreatoms.failed));
+  bindStatusVar(vm, build(vm, vm->coreatoms.failed));
 }
 
 OpResult Space::merge(VM vm, Space* dest) {
@@ -297,7 +297,7 @@ void Space::kill(VM vm) {
   clearStatusVar(vm);
 
   assert(vm->getCurrentSpace() == parent);
-  bindStatusVar(vm, trivialBuild(vm, vm->coreatoms.failed));
+  bindStatusVar(vm, build(vm, vm->coreatoms.failed));
 }
 
 // Status variable

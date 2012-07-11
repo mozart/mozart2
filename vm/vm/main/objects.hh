@@ -186,10 +186,10 @@ OpResult Implementation<Object>::getCallInfo(
   if (!_GsInitialized) {
     UnstableNode fallback, fallbackApply;
 
-    UnstableNode ooFallback = trivialBuild(vm, vm->coreatoms.ooFallback);
+    UnstableNode ooFallback = build(vm, vm->coreatoms.ooFallback);
     MOZART_CHECK_OPRESULT(Dottable(_clazz).dot(vm, ooFallback, fallback));
 
-    UnstableNode apply = trivialBuild(vm, MOZART_STR("apply"));
+    UnstableNode apply = build(vm, MOZART_STR("apply"));
     MOZART_CHECK_OPRESULT(Dottable(fallback).dot(vm, apply, fallbackApply));
 
     _Gs[0].init(vm, RichNode(self));

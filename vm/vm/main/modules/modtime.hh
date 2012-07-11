@@ -50,7 +50,7 @@ public:
       MOZART_GET_ARG(intDelay, delay, MOZART_STR("integer"));
 
       if (intDelay <= 0) {
-        result = trivialBuild(vm, unit);
+        result = build(vm, unit);
       } else {
         result = Variable::build(vm, vm->getTopLevelSpace());
         vm->setAlarm(intDelay, RichNode(result).getStableRef(vm));
@@ -65,7 +65,7 @@ public:
     GetReferenceTime(): Builtin("getReferenceTime") {}
 
     OpResult operator()(VM vm, Out result) {
-      result = trivialBuild(vm, vm->getReferenceTime());
+      result = build(vm, vm->getReferenceTime());
       return OpResult::proceed();
     }
   };

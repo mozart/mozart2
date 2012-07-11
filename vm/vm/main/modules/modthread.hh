@@ -86,9 +86,9 @@ public:
       MOZART_CHECK_OPRESULT(ThreadLike(thread).getThreadPriority(vm, prio));
 
       switch (prio) {
-        case tpLow: result = trivialBuild(vm, MOZART_STR("low")); break;
-        case tpMiddle: result = trivialBuild(vm, MOZART_STR("medium")); break;
-        case tpHi: result = trivialBuild(vm, MOZART_STR("high")); break;
+        case tpLow: result = build(vm, MOZART_STR("low")); break;
+        case tpMiddle: result = build(vm, MOZART_STR("medium")); break;
+        case tpHi: result = build(vm, MOZART_STR("high")); break;
 
         default: assert(false);
       }

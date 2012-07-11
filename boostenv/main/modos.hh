@@ -106,7 +106,7 @@ public:
       if (file == nullptr)
         return raiseLastOSError(vm);
 
-      result = trivialBuild(vm, BoostBasedVM::forVM(vm).registerFile(file));
+      result = build(vm, BoostBasedVM::forVM(vm).registerFile(file));
       return OpResult::proceed();
     }
   };
@@ -124,7 +124,7 @@ public:
       MOZART_GET_ARG(intCount, count, MOZART_STR("integer"));
 
       if (intCount <= 0) {
-        actualCount = trivialBuild(vm, 0);
+        actualCount = build(vm, 0);
         result.copy(vm, end);
         return OpResult::proceed();
       }
@@ -148,7 +148,7 @@ public:
 
       vm->free(buffer, bufferSize);
 
-      actualCount = trivialBuild(vm, readCount);
+      actualCount = build(vm, readCount);
       result = std::move(res);
 
       return OpResult::proceed();
@@ -176,7 +176,7 @@ public:
       if (std::fwrite(buffer, 1, size, file) != size)
         return raiseLastOSError(vm);
 
-      writtenCount = trivialBuild(vm, size);
+      writtenCount = build(vm, size);
       return OpResult::proceed();
     }
   };
@@ -431,7 +431,7 @@ public:
 
       // 0 size
       if (tcpConnection->getWriteData().size() == 0) {
-        status = trivialBuild(vm, 0);
+        status = build(vm, 0);
         return OpResult::proceed();
       }
 

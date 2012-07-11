@@ -49,7 +49,7 @@ OpResult BaseRecord<T>::width(Self self, VM vm, size_t& result) {
 template <class T>
 OpResult BaseRecord<T>::arityList(Self self, VM vm,
                                   UnstableNode& result) {
-  UnstableNode res = trivialBuild(vm, vm->coreatoms.nil);
+  UnstableNode res = build(vm, vm->coreatoms.nil);
 
   for (size_t i = getWidth(); i > 0; i--) {
     UnstableNode feature;

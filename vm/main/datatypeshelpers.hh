@@ -76,7 +76,7 @@ OpResult LiteralHelper<T>::width(Self self, VM vm, size_t& result) {
 
 template <class T>
 OpResult LiteralHelper<T>::arityList(Self self, VM vm, UnstableNode& result) {
-  result = trivialBuild(vm, vm->coreatoms.nil);
+  result = build(vm, vm->coreatoms.nil);
   return OpResult::proceed();
 }
 

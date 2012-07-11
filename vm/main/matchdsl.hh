@@ -211,6 +211,11 @@ struct PrimitiveTypeToOzType<double> {
   typedef Float result;
 };
 
+template <>
+struct PrimitiveTypeToOzType<unique_name_t> {
+  typedef UniqueName result;
+};
+
 template <class T>
 inline
 bool ozValueToPrimitiveValue(VM vm, RichNode value, T& primitive) {
@@ -391,6 +396,18 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value, atom_t pattern) {
   }
 
   return value.as<Atom>().value() == pattern;
+}
+
+template <>
+inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
+                   unique_name_t pattern) {
+  if (!value.is<UniqueName>()) {
+    internal::waitForIfTransient(vm, result, value);
+    return false;
+  }
+
+  return value.as<UniqueName>().value() == pattern;
 }
 
 template <>

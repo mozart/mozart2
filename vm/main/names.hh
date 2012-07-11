@@ -72,6 +72,35 @@ int Implementation<GlobalName>::compareFeatures(VM vm, Self right) {
     return 1;
 }
 
+////////////////
+// UniqueName //
+////////////////
+
+#include "UniqueName-implem.hh"
+
+void Implementation<UniqueName>::build(unique_name_t& self, VM vm, GR gr,
+                                       Self from) {
+  unique_name_t fromValue = from.get().value();
+  self = vm->atomTable.getUniqueName(vm, fromValue.length(),
+                                     fromValue.contents());
+}
+
+bool Implementation<UniqueName>::equals(VM vm, Self right) {
+  return value() == right.get().value();
+}
+
+int Implementation<UniqueName>::compareFeatures(VM vm, Self right) {
+  return value().compare(right.get().value());
+}
+
+void Implementation<UniqueName>::printReprToStream(Self self, VM vm,
+                                                   std::ostream& out,
+                                                   int depth) {
+  out << "<UniqueName '";
+  out << toUTF<char>(makeLString(value().contents(), value().length()));
+  out << "'>";
+}
+
 }
 
 #endif // MOZART_GENERATOR

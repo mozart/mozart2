@@ -89,8 +89,7 @@ prepare
    %%
    IsName        = Boot_Name.is
    NewName       = Boot_Name.new
-   %NewUniqueName = Boot_Name.newUnique % not exported
-   NewUniqueName = fun {$ X} X end
+   NewUniqueName = Boot_Name.newUnique % not exported
 
    %%
    %% Chunk

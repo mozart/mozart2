@@ -95,6 +95,7 @@ bool operator!=(const basic_atom_t<atom_type>& lhs,
 }
 
 typedef basic_atom_t<1> atom_t;
+typedef basic_atom_t<2> unique_name_t;
 
 class Type;
 

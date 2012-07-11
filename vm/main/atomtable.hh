@@ -34,6 +34,7 @@
 namespace mozart {
 
 class Atom;
+class UniqueName;
 class AtomTable;
 
 static constexpr size_t bitsPerChar = std::is_same<nchar, char32_t>::value ? 5 :
@@ -124,6 +125,14 @@ public:
 
   atom_t get(VM vm, size_t size, const nchar* data) {
     return atom_t(getInternal(vm, size, data));
+  }
+
+  unique_name_t getUniqueName(VM vm, const nchar* data) {
+    return getUniqueName(vm, std::char_traits<nchar>::length(data), data);
+  }
+
+  unique_name_t getUniqueName(VM vm, size_t size, const nchar* data) {
+    return unique_name_t(getInternal(vm, size, data));
   }
 private:
   __attribute__((noinline))

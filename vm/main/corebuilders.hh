@@ -96,6 +96,11 @@ UnstableNode trivialBuild(VM vm, atom_t value) {
 }
 
 inline
+UnstableNode trivialBuild(VM vm, unique_name_t value) {
+  return UniqueName::build(vm, value);
+}
+
+inline
 UnstableNode trivialBuild(VM vm, builtins::BaseBuiltin& builtin) {
   return BuiltinProcedure::build(vm, builtin);
 }

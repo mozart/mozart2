@@ -46,7 +46,7 @@ OpResult raiseIllegalArity(VM vm, int expected, int actual) {
 
 template <class... Args>
 OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
-  AtomImpl* reasonAtom;
+  atom_t reasonAtom;
   switch (reason) {
     case UnicodeErrorReason::outOfRange:
       reasonAtom = vm->coreatoms.outOfRange;

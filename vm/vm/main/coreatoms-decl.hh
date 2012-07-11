@@ -36,51 +36,51 @@ struct CoreAtoms {
   void initialize(VM vm, AtomTable& atomTable);
 
   // nil, '|' and '#'
-  AtomImpl* nil;
-  AtomImpl* pipe;
-  AtomImpl* sharp;
+  atom_t nil;
+  atom_t pipe;
+  atom_t sharp;
 
   // Object Orientation
-  AtomImpl* ooMeth;
-  AtomImpl* ooFastMeth;
-  AtomImpl* ooDefaults;
-  AtomImpl* ooAttr;
-  AtomImpl* ooFeat;
-  AtomImpl* ooFreeFeat;
-  AtomImpl* ooFreeFlag;
-  AtomImpl* ooMethSrc;
-  AtomImpl* ooAttrSrc;
-  AtomImpl* ooFeatSrc;
-  AtomImpl* ooPrintName;
-  AtomImpl* ooFallback;
+  atom_t ooMeth;
+  atom_t ooFastMeth;
+  atom_t ooDefaults;
+  atom_t ooAttr;
+  atom_t ooFeat;
+  atom_t ooFreeFeat;
+  atom_t ooFreeFlag;
+  atom_t ooMethSrc;
+  atom_t ooAttrSrc;
+  atom_t ooFeatSrc;
+  atom_t ooPrintName;
+  atom_t ooFallback;
 
   // Space status
-  AtomImpl* succeeded;
-  AtomImpl* entailed;
-  AtomImpl* stuck;
-  AtomImpl* suspended;
-  AtomImpl* alternatives;
-  AtomImpl* failed;
-  AtomImpl* merged;
+  atom_t succeeded;
+  atom_t entailed;
+  atom_t stuck;
+  atom_t suspended;
+  atom_t alternatives;
+  atom_t failed;
+  atom_t merged;
 
   // Unicode error types
-  AtomImpl* outOfRange;
-  AtomImpl* surrogate;
-  AtomImpl* invalidUTF8;
-  AtomImpl* invalidUTF16;
-  AtomImpl* truncated;
+  atom_t outOfRange;
+  atom_t surrogate;
+  atom_t invalidUTF8;
+  atom_t invalidUTF16;
+  atom_t truncated;
 
   // Exceptions
-  AtomImpl* failure;
-  AtomImpl* typeError;
-  AtomImpl* illegalFieldSelection;
-  AtomImpl* illegalArity;
-  AtomImpl* unicodeError;
-  AtomImpl* spaceAdmissible;
-  AtomImpl* spaceNoChoice;
-  AtomImpl* spaceAltRange;
-  AtomImpl* spaceMerged;
-  AtomImpl* indexOutOfBounds;
+  atom_t failure;
+  atom_t typeError;
+  atom_t illegalFieldSelection;
+  atom_t illegalArity;
+  atom_t unicodeError;
+  atom_t spaceAdmissible;
+  atom_t spaceNoChoice;
+  atom_t spaceAltRange;
+  atom_t spaceMerged;
+  atom_t indexOutOfBounds;
 };
 
 }

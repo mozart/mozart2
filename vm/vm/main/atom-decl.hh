@@ -42,32 +42,34 @@ class Atom;
 
 template <>
 class Implementation<Atom>: public LiteralHelper<Atom>,
-  Copyable, StoredAs<AtomImpl*>, WithValueBehavior {
+  Copyable, StoredAs<atom_t>, WithValueBehavior {
 public:
   typedef SelfType<Atom>::Self Self;
 public:
   static constexpr UUID uuid = "{55ed333b-1eaf-4c8a-a151-626d3f96efe8}";
 
-  Implementation(const AtomImpl* value) : _value(value) {}
+  Implementation(atom_t value) : _value(value) {}
 
-  static void build(AtomImpl*& self, VM vm, std::size_t length,
+  static void build(atom_t& self, VM vm, std::size_t length,
                     const nchar* contents) {
     self = vm->atomTable.get(vm, length, contents);
   }
 
-  static void build(AtomImpl*& self, VM vm, const nchar* contents) {
+  static void build(atom_t& self, VM vm, const nchar* contents) {
     self = vm->atomTable.get(vm, contents);
   }
 
-  static void build(AtomImpl*& self, VM vm, AtomImpl* value) {
+  static void build(atom_t& self, VM vm, atom_t value) {
     self = value;
   }
 
   inline
-  static void build(AtomImpl*& self, VM vm, GR gr, Self from);
+  static void build(atom_t& self, VM vm, GR gr, Self from);
 
 public:
-  const AtomImpl* value() const { return _value; }
+  atom_t value() const {
+    return _value;
+  }
 
   inline
   bool equals(VM vm, Self right);
@@ -110,7 +112,7 @@ public:
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
 private:
-  const AtomImpl* _value;
+  atom_t _value;
 };
 
 #ifndef MOZART_GENERATOR

@@ -63,8 +63,8 @@ private:
 
     variant = EncodingVariant::none;
     return ozListForEach(vm, encodingVariantList,
-      [&](const AtomImpl* atom) -> OpResult {
-        auto atomLStr = makeLString(atom->contents(), atom->length());
+      [&](atom_t atom) -> OpResult {
+        auto atomLStr = makeLString(atom.contents(), atom.length());
         if (atomLStr == MOZART_STR("bom")) {
           variant |= EncodingVariant::hasBOM;
         } else if (atomLStr == MOZART_STR("littleEndian")) {

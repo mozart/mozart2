@@ -50,8 +50,8 @@ protected:
     if (!EXPECT_IS<Atom>(actual))
       return false;
 
-    const AtomImpl* impl = actual.as<Atom>().value();
-    auto actualString = makeLString(impl->contents(), impl->length());
+    atom_t impl = actual.as<Atom>().value();
+    auto actualString = makeLString(impl.contents(), impl.length());
     EXPECT_EQ(expected, actualString);
     return expected == actualString;
   }

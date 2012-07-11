@@ -46,6 +46,56 @@ struct unit_t {
 
 const unit_t unit = unit_t();
 
+class AtomImpl;
+
+template <size_t atom_type>
+struct basic_atom_t {
+public:
+  basic_atom_t(): _impl(nullptr) {}
+
+  /** Explicit conversion from another atom type */
+  template <size_t other_atom_type>
+  explicit basic_atom_t(const basic_atom_t<other_atom_type>& from):
+    _impl(from._impl) {}
+private:
+  friend class AtomTable;
+
+  explicit basic_atom_t(const AtomImpl* impl): _impl(impl) {}
+public:
+  inline
+  size_t length() const;
+
+  inline
+  const nchar* contents() const;
+
+  inline
+  bool equals(const basic_atom_t<atom_type>& rhs) const;
+
+  inline
+  int compare(const basic_atom_t<atom_type>& rhs) const;
+private:
+  template <size_t other_atom_type>
+  friend struct basic_atom_t;
+
+  const AtomImpl* _impl;
+};
+
+template <size_t atom_type>
+inline
+bool operator==(const basic_atom_t<atom_type>& lhs,
+                const basic_atom_t<atom_type>& rhs) {
+  return lhs.equals(rhs);
+}
+
+template <size_t atom_type>
+inline
+bool operator!=(const basic_atom_t<atom_type>& lhs,
+                const basic_atom_t<atom_type>& rhs) {
+  return !lhs.equals(rhs);
+}
+
+typedef basic_atom_t<1> atom_t;
+
 class Type;
 
 class Node;

@@ -191,3 +191,22 @@ case class OzPatMatWildcard() extends OzValue {
 case class OzPatMatCapture(variable: symtab.Symbol) extends OzValue {
   def syntax() = variable.toString()
 }
+
+/** Special value representing an open record pattern */
+case class OzPatMatOpenRecord(label: OzLiteral,
+    fields: List[OzRecordField]) extends OzValue {
+  def syntax() = {
+    if (fields.isEmpty) {
+      label.syntax() + "(...)"
+    } else {
+      val untilFirstField = label.syntax() + "(" + fields.head.syntax()
+
+      fields.tail.foldLeft(untilFirstField) {
+        (prev, field) => prev + " " + field.syntax()
+      } + " ...)"
+    }
+  }
+
+  /** Arity of this record */
+  lazy val arity = OzArity(label, fields map (_.feature))
+}

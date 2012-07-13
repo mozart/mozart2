@@ -438,18 +438,26 @@ case class RecordField(feature: Expression, value: Expression) extends Node {
   /** Returns true if the feature and value are both constant */
   def isConstant =
     feature.isInstanceOf[Constant] && value.isInstanceOf[Constant]
+
+  /** Returns this record field as a constant
+   *
+   *  @require `this.isConstant`
+   */
+  def getAsConstant = {
+    require(isConstant)
+    val RecordField(Constant(feature:OzFeature), Constant(value)) = this
+    OzRecordField(feature, value)
+  }
 }
 
-/** Record builder
- *
- *  {{{
- *  <label>(<fields>...)
- *  }}}
- */
-case class Record(label: Expression,
-    fields: List[RecordField]) extends Expression {
+/** Abstract base class for Record and OpenRecord */
+abstract sealed class BaseRecord extends Expression {
+  val label: Expression
+  val fields: List[RecordField]
+  val isOpen: Boolean
+
   def syntax(indent: String) = fields.toList match {
-    case Nil => label.syntax()
+    case Nil => label.syntax() + (if (isOpen) "(...)" else "()")
 
     case firstField :: otherFields => {
       val prefix = label.syntax() + "("
@@ -459,7 +467,7 @@ case class Record(label: Expression,
 
       otherFields.foldLeft(firstLine) {
         _ + "\n" + subIndent + _.syntax(subIndent)
-      } + ")"
+      } + (if (isOpen) " ...)" else ")")
     }
   }
 
@@ -481,6 +489,17 @@ case class Record(label: Expression,
 
     OzArity(ozLabel, ozFeatures)
   }
+}
+
+/** Record builder
+ *
+ *  {{{
+ *  <label>(<fields>...)
+ *  }}}
+ */
+case class Record(label: Expression,
+    fields: List[RecordField]) extends BaseRecord {
+  val isOpen = false
 
   /** Returns true if this record should be optimized as a tuple */
   def isTuple = hasConstantArity && getConstantArity.isTupleArity
@@ -500,13 +519,37 @@ case class Record(label: Expression,
     require(isConstant)
 
     val Constant(ozLabel:OzLiteral) = label
-    val ozFields = {
-      for (RecordField(Constant(feature:OzFeature),
-          Constant(value)) <- fields)
-        yield OzRecordField(feature, value)
-    }
+    val ozFields = fields map (_.getAsConstant)
 
     OzRecord(ozLabel, ozFields)
+  }
+}
+
+/** Open record pattern
+ *
+ *  {{{
+ *  <label>(<fields>... ...)
+ *  }}}
+ */
+case class OpenRecordPattern(label: Expression,
+    fields: List[RecordField]) extends BaseRecord {
+  val isOpen = true
+
+  /** Returns true if this pattern is a compile-time constant */
+  def isConstant =
+    label.isInstanceOf[Constant] && (fields forall (_.isConstant))
+
+  /** Returns this pattern as a compile-time constant
+   *
+   *  @require `this.isConstant`
+   */
+  def getAsConstant: OzValue = {
+    require(isConstant)
+
+    val Constant(ozLabel:OzLiteral) = label
+    val ozFields = fields map (_.getAsConstant)
+
+    OzPatMatOpenRecord(ozLabel, ozFields)
   }
 }
 

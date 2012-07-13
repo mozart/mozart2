@@ -188,6 +188,10 @@ class TreeCopier {
   def Record(tree: Node, label: Expression, fields: List[RecordField]) =
     new Record(label, fields).copyAttrs(tree)
 
+  def OpenRecordPattern(tree: Node, label: Expression,
+      fields: List[RecordField]) =
+    new OpenRecordPattern(label, fields).copyAttrs(tree)
+
   // Match clauses
 
   def MatchStatementClause(tree: Node, pattern: Expression,

@@ -214,6 +214,10 @@ object CodeGen extends Transformer with TreeDSL {
                 for (OzRecordField(_, fieldValue) <- fields)
                   walk(fieldValue)
 
+              case OzPatMatOpenRecord(label, fields) =>
+                for (OzRecordField(_, fieldValue) <- fields)
+                  walk(fieldValue)
+
               case _ => ()
             }
 

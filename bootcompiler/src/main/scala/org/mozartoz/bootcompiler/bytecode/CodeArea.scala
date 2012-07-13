@@ -148,7 +148,7 @@ class CodeArea(val abstraction: Abstraction) {
     out << "  temp = ";
 
     constant match {
-      case _:OzArity | _:OzRecord =>
+      case _:OzArity | _:OzRecord | _:OzPatMatOpenRecord =>
         produceCCForConstant(out, constant)
 
       case _ =>
@@ -236,6 +236,17 @@ class CodeArea(val abstraction: Abstraction) {
 
       case OzPatMatCapture(symbol) =>
         out << "PatMatCapture::build(vm, %d)" % symbol.captureIndex
+
+      case record @ OzPatMatOpenRecord(label, fields) =>
+        out << "buildPatMatOpenRecord(vm, "
+        produceCCForConstant(out, record.arity)
+
+        for (OzRecordField(feature, value) <- fields) {
+          out << ", "
+          produceCCForConstant(out, value)
+        }
+
+        out << ")"
     }
   }
 }

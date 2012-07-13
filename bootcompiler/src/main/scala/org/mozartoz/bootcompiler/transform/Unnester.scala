@@ -137,13 +137,7 @@ object Unnester extends Transformer with TreeDSL {
       program.reportError("Illegal use of nesting marker", rhs)
       treeCopy.SkipStatement(rhs)
 
-    case _:RawVariable | _:RawLocalExpression | _:Self |
-        _:FunExpression | _:ThreadExpression |
-        _:LockExpression | _:LockObjectExpression |
-        _:TryFinallyExpression | _:FunctorExpression | _:ClassExpression |
-        _:EscapedVariable | _:DotAssignExpression |
-        _:UnaryOp | _:BinaryOp | _:ShortCircuitBinaryOp |
-        _:AutoFeature | _:CreateAbstraction =>
+    case _ =>
       throw new Exception(
           "illegal tree in Unnester.transformBindVarToExpression\n" + rhs)
   }

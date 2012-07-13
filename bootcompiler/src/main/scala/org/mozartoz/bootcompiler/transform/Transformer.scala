@@ -216,11 +216,11 @@ abstract class Transformer extends (Program => Unit) {
     case AutoFeature() => expression
 
     case Record(label, fields) =>
-      def transformRecordField(field: RecordField): RecordField =
-        treeCopy.RecordField(field,
-            transformExpr(field.feature), transformExpr(field.value))
-
       treeCopy.Record(expression, transformExpr(label),
+          fields map transformRecordField)
+
+    case OpenRecordPattern(label, fields) =>
+      treeCopy.OpenRecordPattern(expression, transformExpr(label),
           fields map transformRecordField)
 
     // Classes
@@ -244,6 +244,11 @@ abstract class Transformer extends (Program => Unit) {
     case stat:Statement => transformStat(stat)
     case _ => declaration
   }
+
+  /** Transforms a record field */
+  private def transformRecordField(field: RecordField): RecordField =
+    treeCopy.RecordField(field,
+        transformExpr(field.feature), transformExpr(field.value))
 
   /** Transforms a clause of a match statement */
   def transformClauseStat(clause: MatchStatementClause) =

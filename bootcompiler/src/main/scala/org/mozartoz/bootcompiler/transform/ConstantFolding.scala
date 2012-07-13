@@ -52,6 +52,9 @@ object ConstantFolding extends Transformer with TreeDSL {
       case record:Record =>
         transformRecord(record)
 
+      case record:OpenRecordPattern =>
+        transformOpenRecordPattern(record)
+
       case Constant(record:OzRecord) dot Constant(feature:OzFeature) =>
         val value = record.select(feature)
         if (value.isDefined)
@@ -82,16 +85,34 @@ object ConstantFolding extends Transformer with TreeDSL {
     } else if (fields.isEmpty) {
       label
     } else {
-      val sortedFields = fields.sortWith { (leftField, rightField) =>
-        val Constant(left:OzFeature) = leftField.feature
-        val Constant(right:OzFeature) = rightField.feature
-        left feature_< right
-      }
-
-      val newRecord = treeCopy.Record(record, label, sortedFields)
+      val newRecord = treeCopy.Record(record, label, sortRecordFields(fields))
 
       if (newRecord.isConstant) newRecord.getAsConstant
       else newRecord
+    }
+  }
+
+  private def transformOpenRecordPattern(
+      record: OpenRecordPattern): Expression = {
+    val OpenRecordPattern(label, fields) = record
+
+    if (!record.hasConstantArity) {
+      record
+    } else {
+      val newRecord = treeCopy.OpenRecordPattern(record,
+          label, sortRecordFields(fields))
+
+      if (newRecord.isConstant) newRecord.getAsConstant
+      else newRecord
+    }
+  }
+
+  /** Sort the fields of a record according to their features */
+  private def sortRecordFields(fields: List[RecordField]) = {
+    fields.sortWith { (leftField, rightField) =>
+      val Constant(left:OzFeature) = leftField.feature
+      val Constant(right:OzFeature) = rightField.feature
+      left feature_< right
     }
   }
 

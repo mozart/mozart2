@@ -91,6 +91,9 @@ object CodeGen extends Transformer with TreeDSL {
         for (stat <- statements)
           generate(stat)
 
+      case BaseEnvStatement(baseEnv, body) =>
+        generate(body)
+
       case Variable(lhs) === Variable(rhs) =>
         XReg(0) := lhs
         XReg(0) === rhs

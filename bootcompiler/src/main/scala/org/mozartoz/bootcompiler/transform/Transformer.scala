@@ -15,8 +15,19 @@ abstract class Transformer extends (Program => Unit) {
   /** Builtin manager of the program */
   def builtins = program.builtins
 
+  /** Base environment */
+  var baseEnvironment: Map[String, Symbol] = Map.empty
+
   /** Tree copier */
   val treeCopy = new TreeCopier
+
+  /** Evaluates a statement in the context of a new base environment */
+  protected def withBaseEnvironment[A](env: Map[String, Symbol])(f: => A) = {
+    val savedEnv = baseEnvironment
+    baseEnvironment = env
+    try f
+    finally baseEnvironment = savedEnv
+  }
 
   /** Applies the transformation phase to a program */
   def apply(program: Program) {
@@ -61,6 +72,10 @@ abstract class Transformer extends (Program => Unit) {
     case LocalStatement(declarations, body) =>
       treeCopy.LocalStatement(statement, declarations,
           transformStat(body))
+
+    case BaseEnvStatement(baseEnv, body) =>
+      treeCopy.BaseEnvStatement(statement, baseEnv,
+          withBaseEnvironment(baseEnv)(transformStat(body)))
 
     case CallStatement(callable, args) =>
       treeCopy.CallStatement(statement, transformExpr(callable),

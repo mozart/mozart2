@@ -36,6 +36,9 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   /** Current environment */
   private var env: Env = Map.empty
 
+  /** Indicates whether identifying the base env has already been done */
+  private var baseEnvDone = false
+
   /** Computes a sub expression with a new given environment
    *
    *  @param newEnv environment to use
@@ -74,14 +77,23 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       val (decls, stats) = extractDecls(declarations)
       val stat = statsAndStatToStat(stats, body)
 
-      withEnvironmentFromDecls(decls) {
-        /* The top-level local statement (hence the first that is encountered)
-         * is the one declaring the base environment. */
-        if (program.baseEnvironment.isEmpty)
-          program.baseEnvironment ++= env
-
-        if (decls.isEmpty) transformStat(stat)
-        else treeCopy.LocalStatement(local, decls, transformStat(stat))
+      if (decls.isEmpty) transformStat(stat)
+      else {
+        treeCopy.LocalStatement(local, decls, {
+          withEnvironmentFromDecls(decls) {
+            /* The top-level local statement (hence the first that is
+             * encountered) is the one declaring the base environment. */
+            if (!baseEnvDone) {
+              baseEnvDone = true
+              val baseEnv = env filter {
+                case (name, _) => program.baseDeclarations contains name
+              }
+              BaseEnvStatement(baseEnv, transformStat(stat))
+            } else {
+              transformStat(stat)
+            }
+          }
+        })
       }
 
     /* Input:
@@ -254,6 +266,9 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
 
     /* See transformFunctor() */
     case functor: FunctorExpression =>
+      // Entering a functor means that this is not the base environment
+      baseEnvDone = true
+
       transformFunctor(functor)
 
     /* See transformClass() */
@@ -296,7 +311,8 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
         imports, define,
         exports) = functor
 
-    val (requireDecls, newRequire) = transformFunctorImports(require)
+    val requireWithBase = makeBaseImport() :: require
+    val (requireDecls, newRequire) = transformFunctorImports(requireWithBase)
 
     withEnvironmentFromDecls(requireDecls) {
       val (prepareDecls, newPrepare) = transformFunctorDefine(prepare)
@@ -316,6 +332,15 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
         }
       }
     }
+  }
+
+  def makeBaseImport() = {
+    val aliases =
+      for (name <- program.baseDeclarations.toList)
+        yield AliasedFeature(Constant(OzAtom(name)), Some(RawVariable(name)))
+
+    FunctorImport(RawVariable("$BaseEnv"), aliases,
+        Some("x-oz://system/Base"))
   }
 
   def transformFunctorImports(imports: List[FunctorImport]) = {

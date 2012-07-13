@@ -302,8 +302,8 @@ object Main {
   /** Applies the successive transformation phases to a program */
   private def applyTransforms(prog: Program) {
     Namer(prog)
-    DesugarClass(prog)
     DesugarFunctor(prog)
+    DesugarClass(prog)
     Desugar(prog)
     ConstantFolding(prog)
     PatternMatcher(prog)

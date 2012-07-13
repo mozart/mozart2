@@ -18,8 +18,8 @@ class Program {
   /** Builtin manager */
   val builtins = new Builtins
 
-  /** Base environment */
-  val baseEnvironment = new HashMap[String, Symbol]
+  /** Variables declared by the base environment */
+  val baseDeclarations = new ArrayBuffer[String]
 
   /** Implicit top-level abstraction */
   val topLevelAbstraction = new Abstraction(NoAbstraction, "<TopLevel>")

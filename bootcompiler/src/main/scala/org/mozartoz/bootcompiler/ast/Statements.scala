@@ -48,6 +48,15 @@ case class LocalStatement(declarations: List[Variable],
   protected val body = statement
 }
 
+/** Special wrapper to introduce a new base environment */
+case class BaseEnvStatement(baseEnv: Map[String, symtab.Symbol],
+    body: Statement) extends Statement {
+  def syntax(indent: String) = {
+    val subIndent = indent + "   "
+    "<baseenv>\n" + subIndent + body.syntax(subIndent) + "\n" + indent + "<end>"
+  }
+}
+
 /** Call statement
  *
  *  {{{

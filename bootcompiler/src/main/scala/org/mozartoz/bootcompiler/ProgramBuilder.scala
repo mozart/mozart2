@@ -82,55 +82,76 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       programFunctors: List[(String, Expression)],
       mainFunctorURL: String) {
 
-    def functorVar(url: String) =
-      RawVariable("`Functor:"+url+"`")
+    val initialization = buildInitialization(prog, bootModulesMap,
+        baseFunctors)
 
-    val bootModule = Constant(OzBuiltin(prog.builtins.getBootMM))
-    val bootMM = RawVariable("$BootMM")
-
-    val baseDeclarations =
-      baseFunctors map (baseFunctorToBaseDeclarations(bootModulesMap, _))
-
-    val programFunctorsDecls =
-      for ((url, functorExpr) <- programFunctors) yield {
-        functorVar(url) === functorExpr
+    val registerProgramFunctorsStat = CompoundStatement {
+      val registerProc = getBootMMProc(prog, "registerFunctor")
+      for ((url, functor) <- programFunctors) yield {
+        val functorVar = RawVariable("$Functor")
+        RAWLOCAL (functorVar) IN {
+          (functorVar === functor) ~
+          registerProc.call(OzAtom(url), functorVar)
+        }
       }
+    }
+
+    val run = {
+      val runProc = getBootMMProc(prog, "run")
+      runProc.call(OzAtom(mainFunctorURL))
+    }
+
+    val program = {
+      initialization ~
+      registerProgramFunctorsStat ~
+      run
+    }
+
+    prog.rawCode = program
+  }
+
+  private def buildInitialization(prog: Program,
+      bootModulesMap: Map[String, Expression],
+      baseFunctors: List[Expression]): Statement = {
+
+    val bases = baseFunctors map (parseBaseEnv(bootModulesMap, _))
+
+    for {
+      (_, fields) <- bases
+      RecordField(Constant(OzAtom(name)), _) <- fields
+    } {
+      prog.baseDeclarations += name
+    }
 
     val registerBootModulesStat = CompoundStatement {
-      val registerProc = bootMM dot OzAtom("registerModule")
+      val registerProc = getBootMMProc(prog, "registerModule")
       for ((url, module) <- bootModulesMap.toList) yield {
         registerProc.call(OzAtom(url), module)
       }
     }
 
-    val registerFunctorsStat = CompoundStatement {
-      val registerProc = bootMM dot OzAtom("registerFunctor")
-      for ((url, _) <- programFunctors) yield {
-        registerProc.call(OzAtom(url), functorVar(url))
-      }
+    val registerBaseModuleStat = {
+      val registerProc = getBootMMProc(prog, "registerModule")
+      val baseModule = Record(OzAtom("base"), bases.flatMap(_._2))
+      registerProc.call(OzAtom("x-oz://system/Base"), baseModule)
     }
 
-    val run = {
-      val runProc = bootMM dot OzAtom("run")
-      runProc.call(OzAtom(mainFunctorURL))
+    val registerBaseThingsStat = {
+      registerBootModulesStat ~
+      registerBaseModuleStat
     }
 
-    val wholeProgram = {
-      RAWLOCAL (baseDeclarations:_*) IN {
-        RAWLOCAL ((bootMM :: programFunctorsDecls):_*) IN {
-          Constant(OzBuiltin(prog.builtins.getBootMM)).call(bootMM) ~
-          registerBootModulesStat ~
-          registerFunctorsStat ~
-          run
+    bases.foldRight(registerBaseThingsStat) {
+      case ((statement, _), inner) =>
+        RAWLOCAL (statement) IN {
+          inner
         }
-      }
     }
-
-    prog.rawCode = wholeProgram
   }
 
-  private def baseFunctorToBaseDeclarations(
-      bootModulesMap: Map[String, Expression], baseFunctor: Expression) = {
+  private def parseBaseEnv(bootModulesMap: Map[String, Expression],
+      baseFunctor: Expression): (Statement, List[RecordField]) = {
+
     val FunctorExpression(_, baseRequire,
         Some(RawLocalStatement(baseDecls, baseStat)),
         Nil, None, baseExports) = baseFunctor
@@ -148,8 +169,24 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       case v:RawVariable => atPos(v)(v === UnboundExpression())
     }
 
-    RAWLOCAL (bootModulesDecls:_*) IN {
-      statsAndStatToStat(baseDeclsAsStats, baseStat)
+    val statement = {
+      RAWLOCAL (bootModulesDecls:_*) IN {
+        statsAndStatToStat(baseDeclsAsStats, baseStat)
+      }
     }
+
+    val baseEnvRecordFields = for {
+      FunctorExport(feature, value) <- baseExports
+    } yield RecordField(feature, value)
+
+    (statement, baseEnvRecordFields)
+  }
+
+  private def getBootMMProc(prog: Program, proc: String): Expression = {
+    getBootMM(prog) dot OzAtom(proc)
+  }
+
+  private def getBootMM(prog: Program): Expression = {
+    Constant(OzBuiltin(prog.builtins.getBootMM)).callExpr()
   }
 }

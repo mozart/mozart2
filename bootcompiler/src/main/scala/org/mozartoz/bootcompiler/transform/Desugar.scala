@@ -26,7 +26,7 @@ object Desugar extends Transformer with TreeDSL {
         transformStat(body)
       }
 
-      program.baseEnvironment("LockIn") call (transformExpr(lock), proc)
+      baseEnvironment("LockIn") call (transformExpr(lock), proc)
 
     case TryFinallyStatement(body, finallyBody) =>
       transformStat {

@@ -11,9 +11,9 @@ import symtab._
 object DesugarClass extends Transformer with TreeDSL {
   case class MethodInfo(symbol: Symbol, label: Expression, proc: Expression)
 
-  def ooFreeFlag = program.baseEnvironment("`ooFreeFlag`")
-  def ooFallback = program.baseEnvironment("`ooFallback`")
-  def OoExtensions = program.baseEnvironment("OoExtensions")
+  def ooFreeFlag = baseEnvironment("`ooFreeFlag`")
+  def ooFallback = baseEnvironment("`ooFallback`")
+  def OoExtensions = baseEnvironment("OoExtensions")
 
   var selfSymbol: Option[Symbol] = None
 

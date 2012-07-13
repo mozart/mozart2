@@ -116,14 +116,27 @@ object DesugarFunctor extends Transformer with TreeDSL {
         val statements = new ListBuffer[Statement]
         def exec(statement: Statement) = statements += statement
 
-        // Load imported decls
-        val ByNeedDot = program.baseEnvironment("ByNeedDot")
+        val baseEnv = new scala.collection.mutable.HashMap[String, Symbol]
+        var ByNeedDot: Symbol = null
 
         for (FunctorImport(module:Variable, aliases, _) <- imports) {
+          val isBase = module.symbol.name == "$BaseEnv"
+
           exec(module === (importsParam dot OzAtom(module.symbol.name)))
 
-          for (AliasedFeature(feature, Some(variable)) <- aliases) {
-            exec(variable === (ByNeedDot callExpr (module, feature)))
+          for (AliasedFeature(feature, Some(variable:Variable)) <- aliases) {
+            if (isBase) {
+              exec(variable === (module dot feature))
+
+              val symbol = variable.symbol
+              baseEnv += (symbol.name -> symbol)
+
+              if (symbol.name == "ByNeedDot")
+                ByNeedDot = symbol
+            } else {
+              require(ByNeedDot ne null)
+              exec(variable === (ByNeedDot callExpr (module, feature)))
+            }
           }
         }
 
@@ -140,7 +153,8 @@ object DesugarFunctor extends Transformer with TreeDSL {
         val exportRec = Record(OzAtom("export"), exportFields)
 
         // Final body
-        CompoundStatement(statements.toList) ~>
+        BaseEnvStatement(Map.empty ++ baseEnv,
+            CompoundStatement(statements.toList)) ~>
         exportRec
       }
     }

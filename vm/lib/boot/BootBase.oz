@@ -1,5 +1,8 @@
 functor
 
+require
+   Boot_Boot at 'x-oz://boot/Boot'
+
 prepare
 
    FunctorMap = {Dictionary.new}
@@ -57,20 +60,24 @@ prepare
 
    BootMM = {New BootModuleManager init}
 
-in
-
-   proc {`Boot:RegisterModule` URL Mod}
+   proc {RegisterModule URL Mod}
       {BootMM enter(URL Mod)}
    end
 
-   proc {`Boot:RegisterFunctor` URL Func}
+   proc {RegisterFunctor URL Func}
       {Dictionary.put FunctorMap URL Func}
    end
 
-   proc {`Boot:Run` MainURL}
+   proc {Run MainURL}
       MainModule = {BootMM link(MainURL $)}
    in
       {Wait MainModule}
    end
+
+in
+
+   {Boot_Boot.getBootMM} = bootMM(registerModule:RegisterModule
+                                  registerFunctor:RegisterFunctor
+                                  run:Run)
 
 end

@@ -159,6 +159,10 @@ public:
     return environment;
   }
 
+  StableNode* getBootMM() {
+    return _bootMM;
+  }
+
   inline
   UUID genUUID();
 
@@ -222,6 +226,8 @@ private:
   Space* _currentSpace;
   Runnable* _currentThread;
   bool _isOnTopLevel;
+
+  StableNode* _bootMM;
 
   RunnableList aliveThreads;
 

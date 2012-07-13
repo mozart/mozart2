@@ -402,4 +402,203 @@ prepare
    %\insert 'BitString.oz'
    \insert 'ByteString.oz'
 
+export
+   %% Value
+   'Value'              : Value
+   'Wait'               : Wait
+   'WaitOr'             : WaitOr
+   'WaitNeeded'         : WaitNeeded
+   'IsFree'             : IsFree
+   'IsKinded'           : IsKinded
+   'IsFuture'           : IsFuture
+   'IsFailed'           : IsFailed
+   'IsDet'              : IsDet
+   'IsNeeded'           : IsNeeded
+   'Min'                : Min
+   'Max'                : Max
+   'CondSelect'         : CondSelect
+   'HasFeature'         : HasFeature
+   'ByNeed'             : ByNeed
+   'ByNeedFuture'       : ByNeedFuture
+   %% Literal
+   'Literal'            : Literal
+   'IsLiteral'          : IsLiteral
+   %% Unit
+   'Unit'               : Unit
+   'IsUnit'             : IsUnit
+   %% Lock
+   'Lock'               : Lock
+   'IsLock'             : IsLock
+   'NewLock'            : NewLock
+   %% Cell
+   'Cell'               : Cell
+   'IsCell'             : IsCell
+   'NewCell'            : NewCell
+   'Exchange'           : Exchange
+   'Assign'             : Assign
+   'Access'             : Access
+   %% Port
+   'Port'               : Port
+   'IsPort'             : IsPort
+   'NewPort'            : NewPort
+   'Send'               : Send
+   %% Atom
+   'Atom'               : Atom
+   'IsAtom'             : IsAtom
+   'AtomToString'       : AtomToString
+   %% Name
+   'Name'               : Name
+   'IsName'             : IsName
+   'NewName'            : NewName
+   %% Bool
+   'Bool'               : Bool
+   'IsBool'             : IsBool
+   'And'                : And
+   'Or'                 : Or
+   'Not'                : Not
+   %% UnicodeString
+   'UnicodeString'      : UnicodeString
+   'IsUnicodeString'    : IsUnicodeString
+   'UnicodeStringToAtom': UnicodeStringToAtom
+   %'UnicodeStringToInt' : UnicodeStringToInt
+   %'UnicodeStringToFloat': UnicodeStringToFloat
+   %% Char
+   %'Char'               : Char
+   %'IsChar'             : IsChar
+   %% Int
+   'Int'                : Int
+   'IsInt'              : IsInt
+   'IsNat'              : IsNat
+   'IsOdd'              : IsOdd
+   'IsEven'             : IsEven
+   %'IntToFloat'         : IntToFloat
+   'IntToString'        : IntToString
+   %% Float
+   'Float'              : Float
+   'IsFloat'            : IsFloat
+   /*'Exp'                : Exp
+   'Log'                : Log
+   'Sqrt'               : Sqrt
+   'Ceil'               : Ceil
+   'Floor'              : Floor
+   'Sin'                : Sin
+   'Cos'                : Cos
+   'Tan'                : Tan
+   'Asin'               : Asin
+   'Acos'               : Acos
+   'Atan'               : Atan
+   'Atan2'              : Atan2
+   'Round'              : Round*/
+   %'FloatToInt'         : FloatToInt
+   'FloatToString'      : FloatToString
+   %% Number
+   'Number'             : Number
+   'IsNumber'           : IsNumber
+   %'Pow'                : Pow
+   %'Abs'                : Abs
+   %% Tuple
+   'Tuple'              : Tuple
+   'IsTuple'            : IsTuple
+   'MakeTuple'          : MakeTuple
+   %% List
+   'List'               : List
+   'MakeList'           : MakeList
+   'IsList'             : IsList
+   'Append'             : Append
+   'Member'             : Member
+   'Length'             : Length
+   'Nth'                : Nth
+   'Reverse'            : Reverse
+   'Map'                : Map
+   'FoldL'              : FoldL
+   'FoldR'              : FoldR
+   'FoldLTail'          : FoldLTail
+   'FoldRTail'          : FoldRTail
+   'ForAll'             : ForAll
+   'All'                : All
+   'ForAllTail'         : ForAllTail
+   'AllTail'            : AllTail
+   'Some'               : Some
+   'Filter'             : Filter
+   'Sort'               : Sort
+   'Merge'              : Merge
+   'Flatten'            : Flatten
+   %% Procedure
+   'Procedure'          : Procedure
+   'IsProcedure'        : IsProcedure
+   'ProcedureArity'     : ProcedureArity
+   %% Loop
+   'Loop'               : Loop
+   'For'                : For
+   'ForThread'          : ForThread
+   %% Record
+   'Record'             : Record
+   'IsRecord'           : IsRecord
+   'Arity'              : Arity
+   'Label'              : Label
+   'Width'              : Width
+   'Adjoin'             : Adjoin
+   'AdjoinList'         : AdjoinList
+   'AdjoinAt'           : AdjoinAt
+   'MakeRecord'         : MakeRecord
+   %% Chunk
+   'Chunk'              : Chunk
+   'IsChunk'            : IsChunk
+   'NewChunk'           : NewChunk
+   %% VirtualString
+   'VirtualString'      : VirtualString
+   'IsVirtualString'    : IsVirtualString
+   %% WeakDictionary
+   /*'WeakDictionary'     : WeakDictionary
+   'IsWeakDictionary'   : IsWeakDictionary
+   'NewWeakDictionary'  : NewWeakDictionary*/
+   %% Dictionary
+   'Dictionary'         : Dictionary
+   'IsDictionary'       : IsDictionary
+   'NewDictionary'      : NewDictionary
+   %% Array
+   'Array'              : Array
+   'IsArray'            : IsArray
+   'NewArray'           : NewArray
+   'Put'                : Put
+   'Get'                : Get
+   %% Object
+   'Object'             : Object
+   'IsObject'           : IsObject
+   'BaseObject'         : BaseObject
+   'New'                : New
+   %% Class
+   'Class'              : Class
+   'IsClass'            : IsClass
+   %% Thread
+   'Thread'             : Thread
+   'IsThread'           : IsThread
+   %% Time
+   'Time'               : Time
+   'Alarm'              : Alarm
+   'Delay'              : Delay
+   %% Exception
+   'Exception'          : Exception
+   'Raise'              : Raise
+   %% Functor
+   %'Functor'            : Functor
+   %% BitArray
+   %'BitArray'           : BitArray
+   %'IsBitArray'         : IsBitArray
+   %% ForeignPointer
+   %'ForeignPointer'     : ForeignPointer
+   %'IsForeignPointer'   : IsForeignPointer
+   %% BitString
+   /*'BitString'          : BitString
+   'ByteString'         : ByteString
+   'IsBitString'        : IsBitString
+   'IsByteString'       : IsByteString*/
+
+   %% Will be removed by the compiler
+   'ByNeedDot'          : ByNeedDot
+   'LockIn'             : LockIn
+   'OoExtensions'       : OoExtensions
+   '`ooFreeFlag`'       : `ooFreeFlag`
+   '`ooFallback`'       : `ooFallback`
+
 end

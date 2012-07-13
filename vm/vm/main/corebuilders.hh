@@ -211,9 +211,11 @@ UnstableNode buildCons(VM vm, HT&& head, TT&& tail) {
 template <class LT, class... Args>
 inline
 UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
-  UnstableNode tuple = buildTuple(vm, std::forward<LT>(label),
-                                  std::forward<Args>(args)...);
-  return Arity::build(vm, tuple);
+  UnstableNode labelNode = build(vm, std::forward<LT>(label));
+  UnstableNode result = Arity::build(vm, sizeof...(args), labelNode);
+  staticInitElements<Arity>(vm, RichNode(result).as<Arity>(),
+                            std::forward<Args>(args)...);
+  return result;
 }
 
 /**

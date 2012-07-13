@@ -281,48 +281,69 @@ class Arity;
  * Arity (of a record)
  */
 template <>
-class Implementation<Arity>: WithStructuralBehavior {
+class Implementation<Arity>:
+  StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Arity>::Self Self;
 public:
   inline
-  Implementation(VM vm, RichNode tuple);
+  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
+                 RichNode label);
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
+                 GR gr, Self from);
 
 public:
-  StableNode* getTuple() {
-    return &_tuple;
+  StableNode* getLabel() {
+    return &_label;
   }
 
+  size_t getWidth() {
+    return _width;
+  }
+
+  size_t getArraySize() {
+    return _width;
+  }
+
+  inline
+  StableNode* getElement(Self self, size_t index);
+
 public:
+  // StructuralEquatable interface
+
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
 public:
-  inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
+  // ArrayInitializer interface
 
   inline
-  OpResult lookupFeature(VM vm, RichNode feature, size_t& result);
+  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+
+public:
+  // Arity methods
 
   inline
-  OpResult requireFeature(VM vm, RichNode container,
+  OpResult lookupFeature(Self self, VM vm, RichNode feature, size_t& result);
+
+  inline
+  OpResult requireFeature(Self self, VM vm, RichNode container,
                           RichNode feature, size_t& result);
 
   inline
-  OpResult hasFeature(VM vm, RichNode feature, bool& result);
-
-  inline
-  void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
+  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
 public:
+  // Miscellaneous
+
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
 private:
-  StableNode _tuple;
+  StableNode _label;
+  size_t _width;
 };
 
 #ifndef MOZART_GENERATOR

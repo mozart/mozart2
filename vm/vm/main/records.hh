@@ -225,9 +225,9 @@ bool Implementation<Tuple>::hasSharpLabel(VM vm) {
   return label.is<Atom>() && label.as<Atom>().value() == vm->coreatoms.sharp;
 }
 
-///////////
+//////////
 // Cons //
-///////////
+//////////
 
 #include "Cons-implem.hh"
 
@@ -376,42 +376,62 @@ void Implementation<Cons>::printReprToStream(Self self, VM vm,
 
 #include "Arity-implem.hh"
 
-Implementation<Arity>::Implementation(VM vm, RichNode tuple) {
-  assert(tuple.is<Tuple>());
+Implementation<Arity>::Implementation(VM vm, size_t width,
+                                      StaticArray<StableNode> _elements,
+                                      RichNode label) {
+  _label.init(vm, label);
+  _width = width;
 
-  _tuple.init(vm, tuple);
+  // Initialize elements with non-random data
+  // TODO An Uninitialized type?
+  for (size_t i = 0; i < width; i++)
+    _elements[i].init(vm);
 }
 
-Implementation<Arity>::Implementation(VM vm, GR gr, Self from) {
-  gr->copyStableNode(_tuple, from->_tuple);
+Implementation<Arity>::Implementation(VM vm, size_t width,
+                                      StaticArray<StableNode> _elements,
+                                      GR gr, Self from) {
+  _width = width;
+  gr->copyStableNode(_label, from->_label);
+
+  for (size_t i = 0; i < width; i++)
+    gr->copyStableNode(_elements[i], from[i]);
+}
+
+StableNode* Implementation<Arity>::getElement(Self self, size_t index) {
+  return &self[index];
 }
 
 bool Implementation<Arity>::equals(Self self, VM vm, Self right,
                                    WalkStack& stack) {
-  stack.push(vm, &_tuple, &right->_tuple);
+  if (_width != right->_width)
+    return false;
+
+  stack.pushArray(vm, self.getArray(), right.getArray(), _width);
+  stack.push(vm, &_label, &right->_label);
 
   return true;
 }
 
-OpResult Implementation<Arity>::label(Self self, VM vm,
-                                      UnstableNode& result) {
-  return RichNode(_tuple).as<Tuple>().label(vm, result);
+OpResult Implementation<Arity>::initElement(
+  Self self, VM vm, size_t index, RichNode value) {
+
+  self[index].init(vm, value);
+  return OpResult::proceed();
 }
 
-OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
+OpResult Implementation<Arity>::lookupFeature(Self self, VM vm,
+                                              RichNode feature,
                                               size_t& result) {
   MOZART_REQUIRE_FEATURE(feature);
 
-  auto tuple = RichNode(_tuple).as<Tuple>();
-
   // Dichotomic search
   size_t lo = 0;
-  size_t hi = tuple.getArraySize();
+  size_t hi = getWidth();
 
   while (lo < hi) {
     size_t mid = (lo + hi) / 2; // no need to worry about overflow, here
-    UnstableNode temp(vm, *tuple.getElement(mid));
-    int comparison = compareFeatures(vm, feature, temp);
+    int comparison = compareFeatures(vm, feature, self[mid]);
 
     if (comparison == 0) {
       result = mid;
@@ -426,10 +446,11 @@ OpResult Implementation<Arity>::lookupFeature(VM vm, RichNode feature,
   return OpResult::fail();
 }
 
-OpResult Implementation<Arity>::requireFeature(VM vm, RichNode container,
+OpResult Implementation<Arity>::requireFeature(Self self, VM vm,
+                                               RichNode container,
                                                RichNode feature,
                                                size_t& result) {
-  OpResult res = lookupFeature(vm, feature, result);
+  OpResult res = lookupFeature(self, vm, feature, result);
 
   if (res.kind() == OpResult::orFail)
     return raise(vm, vm->coreatoms.illegalFieldSelection, container, feature);
@@ -437,21 +458,28 @@ OpResult Implementation<Arity>::requireFeature(VM vm, RichNode container,
     return res;
 }
 
-OpResult Implementation<Arity>::hasFeature(VM vm, RichNode feature,
+OpResult Implementation<Arity>::hasFeature(Self self, VM vm, RichNode feature,
                                            bool& result) {
   size_t dummy;
-  return lookupFeature(vm, feature, dummy).mapProceedFailToTrueFalse(result);
-}
-
-void Implementation<Arity>::getFeatureAt(Self self, VM vm, size_t index,
-                                         UnstableNode& result) {
-  MOZART_ASSERT_PROCEED(RichNode(_tuple).as<Tuple>().dotNumber(
-    vm, index+1, result));
+  return lookupFeature(self, vm, feature,
+                       dummy).mapProceedFailToTrueFalse(result);
 }
 
 void Implementation<Arity>::printReprToStream(Self self, VM vm,
                                               std::ostream& out, int depth) {
-  out << "<Arity/" << repr(vm, _tuple, depth) << ">";
+  out << "<Arity " << repr(vm, _label, depth) << "(";
+
+  if (depth <= 1) {
+    out << "...";
+  } else {
+    for (size_t i = 0; i < _width; i++) {
+      if (i > 0)
+        out << " ";
+      out << repr(vm, self[i], depth);
+    }
+  }
+
+  out << ")>";
 }
 
 ////////////
@@ -497,12 +525,13 @@ bool Implementation<Record>::equals(Self self, VM vm, Self right,
 
 void Implementation<Record>::getFeatureAt(Self self, VM vm, size_t index,
                                           UnstableNode& result) {
-  RichNode(_arity).as<Arity>().getFeatureAt(vm, index, result);
+  result.copy(vm, *RichNode(_arity).as<Arity>().getElement(index));
 }
 
 OpResult Implementation<Record>::label(Self self, VM vm,
                                        UnstableNode& result) {
-  return RichNode(_arity).as<Arity>().label(vm, result);
+  result.copy(vm, *RichNode(_arity).as<Arity>().getLabel());
+  return OpResult::proceed();
 }
 
 OpResult Implementation<Record>::clone(Self self, VM vm,

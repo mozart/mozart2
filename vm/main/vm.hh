@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 ////////////////////
@@ -42,6 +44,9 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _currentSpace = _topLevelSpace;
   _currentThread = nullptr;
   _isOnTopLevel = true;
+
+  _bootMM = new (this) StableNode;
+  _bootMM->init(this, OptVar::build(this, _topLevelSpace));
 
   _envUseDynamicPreemption = environment.useDynamicPreemption();
   _preemptRequested = false;
@@ -128,6 +133,9 @@ void VirtualMachine::startGC(GC gc) {
   // Top-level space
   gc->copySpace(_topLevelSpaceRef, _topLevelSpaceRef);
 
+  // Boot MM
+  gc->copyStableRef(_bootMM, _bootMM);
+
   // Runnable threads
   getThreadPool().gCollect(gc);
 
@@ -152,5 +160,7 @@ void* operator new (size_t size, mozart::VM vm) {
 void* operator new[] (size_t size, mozart::VM vm) {
   return vm->getMemory(size);
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __VM_H

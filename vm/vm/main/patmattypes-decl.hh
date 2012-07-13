@@ -134,6 +134,65 @@ private:
 #include "PatMatConjunction-implem-decl-after.hh"
 #endif
 
+//////////////////////
+// PatMatOpenRecord //
+//////////////////////
+
+class PatMatOpenRecord;
+
+#ifndef MOZART_GENERATOR
+#include "PatMatOpenRecord-implem-decl.hh"
+#endif
+
+/**
+ * Open record in pattern matching
+ * label(f1:P1 f2:P2 ...)
+ */
+template <>
+class Implementation<PatMatOpenRecord>: StoredWithArrayOf<StableNode> {
+public:
+  typedef SelfType<PatMatOpenRecord>::Self Self;
+public:
+  inline
+  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
+                 RichNode arity);
+
+  inline
+  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
+                 GR gr, Self from);
+
+public:
+  size_t getArraySize() {
+    return _width;
+  }
+
+  inline
+  StableNode* getElement(Self self, size_t index);
+
+public:
+  StableNode* getArity() {
+    return &_arity;
+  }
+
+public:
+  // ArrayInitializer interface
+
+  inline
+  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+
+public:
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
+private:
+  StableNode _arity;
+  size_t _width;
+};
+
+#ifndef MOZART_GENERATOR
+#include "PatMatOpenRecord-implem-decl-after.hh"
+#endif
+
 }
 
 #endif // __PATMATTYPES_DECL_H

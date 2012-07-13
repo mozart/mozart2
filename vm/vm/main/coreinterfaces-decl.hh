@@ -498,7 +498,7 @@ struct Interface<ObjectLike>: ImplementedBy<Object> {
 class ArrayInitializer;
 template<>
 struct Interface<ArrayInitializer>:
-  ImplementedBy<Tuple, Record, Abstraction, CodeArea> {
+  ImplementedBy<Tuple, Record, Abstraction, CodeArea, PatMatOpenRecord> {
 
   OpResult initElement(RichNode self, VM vm, size_t index, RichNode value) {
     return raiseTypeError(vm, MOZART_STR("Array initializer"), self);

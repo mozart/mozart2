@@ -85,6 +85,9 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     def functorVar(url: String) =
       RawVariable("`Functor:"+url+"`")
 
+    val bootModule = Constant(OzBuiltin(prog.builtins.getBootMM))
+    val bootMM = RawVariable("$BootMM")
+
     val baseDeclarations =
       baseFunctors map (baseFunctorToBaseDeclarations(bootModulesMap, _))
 
@@ -94,26 +97,28 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       }
 
     val registerBootModulesStat = CompoundStatement {
-      val registerProc = RawVariable("`Boot:RegisterModule`")
+      val registerProc = bootMM dot OzAtom("registerModule")
       for ((url, module) <- bootModulesMap.toList) yield {
         registerProc.call(OzAtom(url), module)
       }
     }
 
     val registerFunctorsStat = CompoundStatement {
-      val registerProc = RawVariable("`Boot:RegisterFunctor`")
+      val registerProc = bootMM dot OzAtom("registerFunctor")
       for ((url, _) <- programFunctors) yield {
         registerProc.call(OzAtom(url), functorVar(url))
       }
     }
 
     val run = {
-      RawVariable("`Boot:Run`").call(OzAtom(mainFunctorURL))
+      val runProc = bootMM dot OzAtom("run")
+      runProc.call(OzAtom(mainFunctorURL))
     }
 
     val wholeProgram = {
       RAWLOCAL (baseDeclarations:_*) IN {
-        RAWLOCAL (programFunctorsDecls:_*) IN {
+        RAWLOCAL ((bootMM :: programFunctorsDecls):_*) IN {
+          Constant(OzBuiltin(prog.builtins.getBootMM)).call(bootMM) ~
           registerBootModulesStat ~
           registerFunctorsStat ~
           run

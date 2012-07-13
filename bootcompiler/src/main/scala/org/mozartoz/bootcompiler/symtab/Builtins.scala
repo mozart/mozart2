@@ -53,6 +53,8 @@ class Builtins {
       ":=" -> builtinByName("Cell", "exchangeFun")
   )
 
+  lazy val getBootMM = builtinByName("Boot", "getBootMM")
+
   lazy val createThread = builtinByName("Thread", "create")
 
   lazy val makeRecordDynamic = builtinByName("Record", "makeDynamic")

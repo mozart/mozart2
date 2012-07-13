@@ -166,6 +166,9 @@ OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
                            RichNode label, size_t width, T elements[]) {
   using internal::featureOf;
 
+  // Check that the label is a literal
+  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+
   // Check that all features are features
   for (size_t i = 0; i < width; i++)
     MOZART_REQUIRE_FEATURE(featureOf(elements[i]));
@@ -178,14 +181,12 @@ OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
   if (isTuple)
     return OpResult::proceed();
 
-  // Make the tuple
-  UnstableNode tuple;
-  MOZART_CHECK_OPRESULT(buildTupleDynamic(
-    vm, tuple, label, width, elements,
-    [] (T& element) -> UnstableNode& { return featureOf(element); }));
+  // Make the arity
+  result = Arity::build(vm, width, label);
+  auto arity = RichNode(result).as<Arity>();
 
-  // Make the result
-  result = Arity::build(vm, tuple);
+  for (size_t i = 0; i < width; i++)
+    arity.getElement(i)->init(vm, featureOf(elements[i]));
 
   return OpResult::proceed();
 }
@@ -193,8 +194,6 @@ OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
 OpResult buildRecordDynamic(VM vm, UnstableNode& result,
                             RichNode label, size_t width,
                             UnstableField elements[]) {
-  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
-
   // Make the arity - this sorts elements along the way
   bool isTuple = false;
   UnstableNode arity;

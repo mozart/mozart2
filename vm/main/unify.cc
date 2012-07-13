@@ -65,6 +65,9 @@ private:
   inline
   void doConjunction(VM vm, RichNode value, RichNode conjunction);
 
+  inline
+  OpResult doOpenRecord(VM vm, RichNode value, RichNode pattern);
+
   VM vm;
   Kind kind;
 
@@ -235,6 +238,8 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
     } else if (rightType == PatMatConjunction::type()) {
       doConjunction(vm, left, right);
       return OpResult::proceed();
+    } else if (rightType == PatMatOpenRecord::type()) {
+      return doOpenRecord(vm, left, right);
     }
   }
 
@@ -334,6 +339,46 @@ void StructuralDualWalk::doConjunction(VM vm, RichNode value,
 
   for (size_t i = conj.getCount(); i > 0; i--)
     stack.push(vm, stableValue, conj.getElement(i));
+}
+
+OpResult StructuralDualWalk::doOpenRecord(VM vm, RichNode value,
+                                          RichNode pattern) {
+  bool boolResult = false;
+  auto pat = pattern.as<PatMatOpenRecord>();
+  auto arity = RichNode(*pat.getArity()).as<Arity>();
+
+  // Check that the value is a record
+
+  MOZART_CHECK_OPRESULT(RecordLike(value).isRecord(vm, boolResult));
+  if (!boolResult)
+    return OpResult::fail();
+
+  // Check that the labels match
+
+  UnstableNode recordLabel;
+  MOZART_CHECK_OPRESULT(RecordLike(value).label(vm, recordLabel));
+
+  MOZART_CHECK_OPRESULT(equals(vm, *arity.getLabel(), recordLabel, boolResult));
+  if (!boolResult)
+    return OpResult::fail();
+
+  // Now iterate over the features of the pattern
+
+  for (size_t i = 0; i < arity.getArraySize(); i++) {
+    RichNode feature = *arity.getElement(i);
+
+    MOZART_CHECK_OPRESULT(Dottable(value).hasFeature(vm, feature, boolResult));
+    if (!boolResult)
+      return OpResult::fail();
+
+    UnstableNode lhsValue;
+    MOZART_CHECK_OPRESULT(Dottable(value).dot(vm, feature, lhsValue));
+    StableNode* rhsValue = pat.getElement(i);
+
+    stack.push(vm, RichNode(lhsValue).getStableRef(vm), rhsValue);
+  }
+
+  return OpResult::proceed();
 }
 
 }

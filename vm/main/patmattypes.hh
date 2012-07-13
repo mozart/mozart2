@@ -118,6 +118,63 @@ void Implementation<PatMatConjunction>::printReprToStream(
   out << ")";
 }
 
+//////////////////////
+// PatMatOpenRecord //
+//////////////////////
+
+#include "PatMatOpenRecord-implem.hh"
+
+Implementation<PatMatOpenRecord>::Implementation(
+  VM vm, size_t width, StaticArray<StableNode> _elements, RichNode arity) {
+
+  assert(arity.is<Arity>());
+
+  _arity.init(vm, arity);
+  _width = width;
+
+  // Initialize elements with non-random data
+  // TODO An Uninitialized type?
+  for (size_t i = 0; i < width; i++)
+    _elements[i].init(vm);
+}
+
+Implementation<PatMatOpenRecord>::Implementation(
+  VM vm, size_t width, StaticArray<StableNode> _elements, GR gr, Self from) {
+
+  gr->copyStableNode(_arity, from->_arity);
+  _width = width;
+
+  for (size_t i = 0; i < width; i++)
+    gr->copyStableNode(_elements[i], from[i]);
+}
+
+StableNode* Implementation<PatMatOpenRecord>::getElement(Self self,
+                                                         size_t index) {
+  return &self[index];
+}
+
+OpResult Implementation<PatMatOpenRecord>::initElement(
+  Self self, VM vm, size_t index, RichNode value) {
+
+  self[index].init(vm, value);
+  return OpResult::proceed();
+}
+
+void Implementation<PatMatOpenRecord>::printReprToStream(
+  Self self, VM vm, std::ostream& out, int depth) {
+
+  auto arity = RichNode(_arity).as<Arity>();
+
+  out << "<PatMatOpenRecord " << repr(vm, *arity.getLabel(), depth) << "(";
+
+  for (size_t i = 0; i < _width; i++) {
+    out << repr(vm, *arity.getElement(i), depth) << ":";
+    out << repr(vm, self[i], depth) << " ";
+  }
+
+  out << "...)>";
+}
+
 }
 
 #endif // MOZART_GENERATOR

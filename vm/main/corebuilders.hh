@@ -235,6 +235,23 @@ UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
   return result;
 }
 
+/**
+ * Build an patmat open record inside a node, with its arity and fields
+ * The arity and the arguments can be in any form supported by build().
+ * @param vm        Contextual VM
+ * @param arity     Arity of the open record
+ * @param args...   Fields of the open record
+ */
+template <class AT, class... Args>
+inline
+UnstableNode buildPatMatOpenRecord(VM vm, AT&& arity, Args&&... args) {
+  UnstableNode arityNode = build(vm, std::forward<AT>(arity));
+  UnstableNode result = PatMatOpenRecord::build(vm, sizeof...(args), arityNode);
+  staticInitElements<PatMatOpenRecord>(
+    vm, RichNode(result).as<PatMatOpenRecord>(), std::forward<Args>(args)...);
+  return result;
+}
+
 }
 
 #endif // MOZART_GENERATOR

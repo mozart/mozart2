@@ -206,6 +206,11 @@ struct Interface<Callable>:
 class CodeAreaProvider;
 template<>
 struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
+  OpResult isCodeAreaProvider(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   OpResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter& start,
                            int& Xcount, StaticArray<StableNode>& Ks) {
     return raiseTypeError(vm, MOZART_STR("CodeArea"), self);

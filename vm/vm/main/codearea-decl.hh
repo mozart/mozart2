@@ -63,6 +63,11 @@ public:
   inline
   OpResult initElement(Self self, VM vm, size_t index, RichNode value);
 
+  OpResult isCodeAreaProvider(VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
   inline
   OpResult getCodeAreaInfo(Self self, VM vm,
                            ProgramCounter& start, int& Xcount,

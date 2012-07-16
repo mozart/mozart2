@@ -192,9 +192,6 @@ public:
 ///////////////
 
 inline
-OpResult ozListLength(VM vm, RichNode list, size_t& result);
-
-inline
 OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer);
 
 inline

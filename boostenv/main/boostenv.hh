@@ -135,23 +135,6 @@ OpResult BoostBasedVM::getFile(RichNode fd, std::FILE*& result) {
 ///////////////
 
 namespace internal {
-  inline
-  OpResult ozListLengthEx(VM vm, RichNode list, size_t& accumulator) {
-    using namespace patternmatching;
-
-    OpResult res = OpResult::proceed();
-    UnstableNode tail;
-
-    if (matchesCons(vm, res, list, wildcard(), capture(tail))) {
-      accumulator++;
-      return ozListLengthEx(vm, tail, accumulator);
-    } else if (matches(vm, res, list, vm->coreatoms.nil)) {
-      return OpResult::proceed();
-    } else {
-      return matchTypeError(vm, res, list, MOZART_STR("list"));
-    }
-  }
-
   template <class T>
   inline
   OpResult ozListForEach(VM vm, RichNode list, size_t index,
@@ -172,11 +155,6 @@ namespace internal {
       return matchTypeError(vm, res, list, expectedType);
     }
   }
-}
-
-OpResult ozListLength(VM vm, RichNode list, size_t& result) {
-  result = 0;
-  return internal::ozListLengthEx(vm, list, result);
 }
 
 OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {

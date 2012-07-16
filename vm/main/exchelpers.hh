@@ -36,8 +36,10 @@ OpResult raise(VM vm, LT&& label, Args&&... args) {
   return OpResult::raise(vm, exception);
 }
 
-OpResult raiseTypeError(VM vm, const nchar* expected, RichNode actual) {
-  return raise(vm, vm->coreatoms.typeError, expected, actual);
+template <class Actual>
+OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
+  return raise(vm, vm->coreatoms.typeError, expected,
+               std::forward<Actual>(actual));
 }
 
 OpResult raiseIllegalArity(VM vm, int expected, int actual) {

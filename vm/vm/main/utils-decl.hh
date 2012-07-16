@@ -53,6 +53,9 @@ inline
 OpResult ozListForEach(VM vm, RichNode list, const F& onHead,
                        const nchar* expectedType);
 
+inline
+OpResult ozListLength(VM vm, RichNode list, size_t& result);
+
 }
 
 #endif // __UTILS_DECL_H

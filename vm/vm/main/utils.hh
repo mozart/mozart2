@@ -27,6 +27,8 @@
 
 #include "mozart.hh"
 
+#include <type_traits>
+
 #ifndef MOZART_GENERATOR
 
 namespace mozart {
@@ -39,7 +41,8 @@ OpResult ozListForEach(VM vm, RichNode cons, const F& onHead, const G& onTail) {
     using namespace patternmatching;
 
     OpResult matchRes = OpResult::proceed();
-    typename function_traits<F>::template arg<0>::type head;
+    typename std::remove_reference<
+      typename function_traits<F>::template arg<0>::type>::type head;
     UnstableNode tail;
 
     if (matchesCons(vm, matchRes, cons, capture(head), capture(tail))) {
@@ -64,6 +67,29 @@ OpResult ozListForEach(VM vm, RichNode cons, const F& onHead,
   return ozListForEach(vm, cons, onHead, [=](RichNode node) {
     return raiseTypeError(vm, expectedType, node);
   });
+}
+
+OpResult ozListLength(VM vm, RichNode list, size_t& result) {
+  result = 0;
+
+  UnstableNode nextList;
+
+  while (true) {
+    using namespace patternmatching;
+
+    OpResult matchRes = OpResult::proceed();
+    UnstableNode tail;
+
+    if (matchesCons(vm, matchRes, list, wildcard(), capture(tail))) {
+      result++;
+      nextList = std::move(tail);
+      list = nextList;
+    } else if (matches(vm, matchRes, list, vm->coreatoms.nil)) {
+      return OpResult::proceed();
+    } else {
+      return matchTypeError(vm, matchRes, list, MOZART_STR("list"));
+    }
+  }
 }
 
 }

@@ -470,6 +470,14 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
   }
 }
 
+template <>
+inline
+bool matchesSimple(VM vm, OpResult& result, RichNode value,
+                   PrimitiveCapturePattern<UnstableNode> pattern) {
+  pattern.value.copy(vm, value);
+  return true;
+}
+
 } // namespace internal
 
 //////////////////////////

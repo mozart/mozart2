@@ -9,17 +9,20 @@ import transform._
 object ProgramBuilder extends TreeDSL with TransformUtils {
   val treeCopy = new TreeCopier
 
-  /** Builds a program from its parts
+  /** Builds a program that registers a user-defined module (i.e., a functor)
    *
-   *  A program has three parts:
-   *
-   *  <ul>
-   *    <li>Several builtin modules</li>
-   *    <li>One or more base functors that define the Base environment</li>
-   *    <li>A map from URLs to non-base functors that define the program</li>
-   *  </ul>
-   *
-   *  The URL of the main non-base functor must be provided too.
+   *  Given a URL <url> and a functor <functor>, the whole program is
+   *  straightforward:
+   *  {{{
+   *  {<BootMM>.registerFunctor '<url>' <functor>}
+   *  }}}
+   */
+  def buildModuleProgram(prog: Program, url: String, functor: Expression) {
+    val registerProc = getBootMMProc(prog, "registerFunctor")
+    prog.rawCode = registerProc.call(OzAtom(url), functor)
+  }
+
+  /** Builds a program that creates the base environment
    *
    *  The base functors must have the following structure:
    *  {{{
@@ -49,23 +52,12 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  end
    *  }}}
    *
-   *  The program functors make up the program statement as follows:
+   *  The program statement registers boot modules and the base module in the
+   *  boot manager:
    *  {{{
-   *  local
-   *     `Functor:<URL1>` = <content of File1.oz>
-   *     `Functor:<URL2>` = <content of File2.oz>
-   *     ...
-   *  in
-   *     {`Boot:RegisterModule` '<BootURL1>' <constant boot module 1>}
-   *     {`Boot:RegisterModule` '<BootURL2>' <constant boot module 2>}
-   *     ...
-   *
-   *     {`Boot:RegisterFunctor` '<URL1>' `Functor:<URL1>`}
-   *     {`Boot:RegisterFunctor` '<URL2>' `Functor:<URL2>`}
-   *     ...
-   *
-   *     {`Boot:Run` '<MainURL>'}
-   *  end
+   *  {<BootMM>.registerModule 'x-oz://boot/ModA' <constant Boot ModA>}
+   *  ...
+   *  {<BootMM>.registerModule 'x-oz://system/Base' base(<exports>)}
    *  }}}
    *
    *  The whole program is assembled like this:
@@ -77,42 +69,9 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  end
    *  }}}
    */
-  def build(prog: Program, bootModulesMap: Map[String, Expression],
-      baseFunctors: List[Expression],
-      programFunctors: List[(String, Expression)],
-      mainFunctorURL: String) {
-
-    val initialization = buildInitialization(prog, bootModulesMap,
-        baseFunctors)
-
-    val registerProgramFunctorsStat = CompoundStatement {
-      val registerProc = getBootMMProc(prog, "registerFunctor")
-      for ((url, functor) <- programFunctors) yield {
-        val functorVar = RawVariable("$Functor")
-        RAWLOCAL (functorVar) IN {
-          (functorVar === functor) ~
-          registerProc.call(OzAtom(url), functorVar)
-        }
-      }
-    }
-
-    val run = {
-      val runProc = getBootMMProc(prog, "run")
-      runProc.call(OzAtom(mainFunctorURL))
-    }
-
-    val program = {
-      initialization ~
-      registerProgramFunctorsStat ~
-      run
-    }
-
-    prog.rawCode = program
-  }
-
-  private def buildInitialization(prog: Program,
+  def buildBaseEnvProgram(prog: Program,
       bootModulesMap: Map[String, Expression],
-      baseFunctors: List[Expression]): Statement = {
+      baseFunctors: List[Expression]) {
 
     val bases = baseFunctors map (parseBaseEnv(bootModulesMap, _))
 
@@ -141,12 +100,16 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       registerBaseModuleStat
     }
 
-    bases.foldRight(registerBaseThingsStat) {
-      case ((statement, _), inner) =>
-        RAWLOCAL (statement) IN {
-          inner
-        }
+    val wholeProgram = {
+      bases.foldRight(registerBaseThingsStat) {
+        case ((statement, _), inner) =>
+          RAWLOCAL (statement) IN {
+            inner
+          }
+      }
     }
+
+    prog.rawCode = wholeProgram
   }
 
   private def parseBaseEnv(bootModulesMap: Map[String, Expression],
@@ -180,6 +143,18 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     } yield RecordField(feature, value)
 
     (statement, baseEnvRecordFields)
+  }
+
+  /** Builds a linker program
+   *
+   *  The statement that is built is straightforward:
+   *  {{{
+   *  {<BootMM>.run '<mainURL>'}
+   *  }}}
+   */
+  def buildLinkerProgram(prog: Program, urls: List[String], mainURL: String) {
+    val runProc = getBootMMProc(prog, "run")
+    prog.rawCode = runProc.call(OzAtom(mainURL))
   }
 
   private def getBootMMProc(prog: Program, proc: String): Expression = {

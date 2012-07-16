@@ -20,28 +20,66 @@ For this reason, a design goal of this bootstrap compiler is to stay minimal. In
 
 See [sjrd/mozart-app-test](https://github.com/sjrd/mozart-app-test) for an integrated way of using this bootcompiler.
 
-Roughly, the program must be executed with 4 kinds of command-line arguments (that can be repeated, except for the first one):
+The bootcompiler has 3 modes:
 
-*   Under option `-o`, the output file (a `.cc` file),
-*   Under option `-m`, a path to a file or directory where it can find builtin information,
-*   Under option `-b`, a path to a functor that must be part of the base environment,
-*   A list of `.oz` files containing the functors of the application (the first one being the main functor).
+*   Module (default): compiles a .oz file containing a functor
+*   BaseEnv (`--baseenv`): compiles the base environment
+*   Linker (`--linker`): compiles a linker for one to many compiled functors
 
-Normally you need two base functors: the file `Base.oz` which contains the regular base environment of Oz; and the file `BootBase.oz` which contains only the boot module manager.
+An entire program that must be built with the bootcompiler must call the BaseEnv mode once, the Module mode once per source `.oz` file, and the Linker mode once.
 
-In the list of regular functors, you must give all the system functors used by the application, so that they can be linked in.
+The resulting `.cc` must all be compiled and linked together in one executable.
 
-For example:
+### The BaseEnv mode
+
+The BaseEnv mode is used to compile the base environment. It yields a `.cc` file that executes the statements necessary to 1) create the base environment and 2) register the boot modules and the base modules in the boot module manager. It also generates a file describing the features exported by the base environment, to be used by the other modes.
+
+This mode should be called as follows:
 
     $ java -jar "./target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar" \
-        -o output.cc \
-        -m "/path/to/mozart/build/boostenv/main/" \
-        -b "/path/to/mozart/lib/base/Base.oz" \
-        -b "/path/to/mozart/lib/boot/BootBase.oz" \
-        Main.oz SomeOtherFunctor.oz \
-        "/path/to/mozart/lib/sys/System.oz" # and others
+        --baseenv
+        -o "/path/to/output/Base.cc"
+        -h "boostenv.hh"
+        -m "/path/to/mozart/build/boostenv/main/"
+        -b "/path/to/output/baseenv.txt"
+        "/path/to/mozart/lib/base/Base.oz" \
+        "/path/to/mozart/lib/boot/BootBase.oz"
 
-The generated program will (lazily) load all the given functors, and request the main one (effectively executing the instructions therein).
+The files `Base.oz` and `BootBase.oz` will be compiled together as base functors. Declarations made by `Base.oz` are visible in `BootBase.oz`, but not the reverse.
+
+Information about the features exported by the base functors will be written to `baseenv.txt`.
+
+### The Module mode
+
+The Module mode must be called once for each non-base functor. It yields a `.cc` file that registers the functor in the boot module manager.
+
+This mode should be called as follows:
+
+    $ java -jar "./target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar" \
+        -o "/path/to/output/FunctorName.cc"
+        -h "boostenv.hh"
+        -m "/path/to/mozart/build/boostenv/main/"
+        -b "/path/to/output/baseenv.txt"
+        "/path/to/source/FunctorName.oz"
+
+### The Linker mode
+
+The Linker mode generates a `.cc` file to link them all. This `.cc` file contains a `main()` procedure.
+
+This mode should be called as follows:
+
+    $ java -jar "./target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar" \
+        --linker
+        -o "/path/to/output/LinkerMain.cc"
+        -h "boostenv.hh"
+        -m "/path/to/mozart/build/boostenv/main/"
+        -b "/path/to/output/baseenv.txt"
+        "/path/to/source/MainFunctor.oz"
+        "/path/to/source/FunctorName1.oz"
+        ...
+        "/path/to/source/FunctorNameN.oz"
+
+The listed functors will all be linked together, and the resulting program will force the application of the main functor (the first listed), effectively executing the instructions therein.
 
 ## See also ##
 

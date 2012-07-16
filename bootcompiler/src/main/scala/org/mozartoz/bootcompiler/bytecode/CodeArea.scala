@@ -119,21 +119,18 @@ class CodeArea(val abstraction: Abstraction) {
     out << """
        |  };
        |
-       |  %s = new (vm) UnstableNode;
-       |  *%s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d);
-       |""".stripMargin % (ccCodeArea, ccCodeArea,
-           constants.size, computeXCount())
+       |  %s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d);
+       |""".stripMargin % (ccCodeArea, constants.size, computeXCount())
 
     if (!constants.isEmpty) {
       out << """
-         |  ArrayInitializer initializer = *%s;
+         |  ArrayInitializer initializer = %s;
          |  UnstableNode temp;
          |""".stripMargin % ccCodeArea
 
       for ((constant, index) <- constants.zipWithIndex) {
         produceCCInitConstant(out, constant)
-        out << "  initializer.initElement(vm, %d, temp);\n" % (
-            index, index)
+        out << "  initializer.initElement(vm, %d, temp);\n" % index
       }
     }
 
@@ -168,7 +165,7 @@ class CodeArea(val abstraction: Abstraction) {
         out << "::%s::builtin()" % builtin.ccFullName
 
       case OzCodeArea(codeArea) =>
-        out << "*%s" % codeArea.ccCodeArea
+        out << "%s" % codeArea.ccCodeArea
 
       case OzInt(value) =>
         out << value.toString()

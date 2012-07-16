@@ -15,11 +15,24 @@ import transform._
 import symtab._
 import util._
 
+/** Companion object for Config */
+object Config {
+  /** Mode */
+  object Mode extends Enumeration {
+    val Module, BaseEnv, Linker = Value
+  }
+
+  /** Mode */
+  type Mode = Mode.Value
+}
+
 case class Config(
-    fileNames: List[String] = Nil,
+    mode: Config.Mode = Config.Mode.Module,
     outputStream: () => PrintStream = () => Console.out,
-    baseModules: List[String] = Nil,
-    moduleDefs: List[String] = Nil
+    headers: List[String] = List("mozart.hh"),
+    moduleDefs: List[String] = Nil,
+    baseDeclsFileName: String = "",
+    fileNames: List[String] = Nil
 )
 
 /** Entry point for the Mozart2 bootstrap compiler */
@@ -29,41 +42,46 @@ object Main {
     // Define command-line options
     val optParser = new scopt.immutable.OptionParser[Config]("scopt", "2.x") {
       def options = Seq(
+        flag("baseenv", "switch to base environment mode") {
+          c => c.copy(mode = Config.Mode.BaseEnv)
+        },
+        flag("linker", "switch to linker mode") {
+          c => c.copy(mode = Config.Mode.Linker)
+        },
         opt("o", "output", "output file") {
-          (v: String, c: Config) => c.copy(
-              outputStream = () => new PrintStream(v))
+          (v, c) => c.copy(outputStream = () => new PrintStream(v))
         },
-        opt("m", "module", "module definition file") {
-          (v: String, c: Config) => c.copy(moduleDefs = v :: c.moduleDefs)
+        opt("h", "header", "additional C++ header file to include") {
+          (v, c) => c.copy(headers = v :: c.headers)
         },
-        opt("b", "base", "path to the base functor") {
-          (v: String, c: Config) => c.copy(baseModules = v :: c.baseModules)
+        opt("m", "module", "module definition file or directory") {
+          (v, c) => c.copy(moduleDefs = v :: c.moduleDefs)
         },
-        arglist("<files>", "input files (main file must be first)") {
-          (v: String, c: Config) => c.copy(fileNames = v :: c.fileNames)
+        opt("b", "base", "path to the base declarations file") {
+          (v, c) => c.copy(baseDeclsFileName = v)
+        },
+        arglist("<files>", "input files (for linker, main file must be first)") {
+          (v, c) => c.copy(fileNames = v :: c.fileNames)
         }
       )
     }
 
     // Parse the options
-    optParser.parse(args, Config()) map { config =>
+    optParser.parse(args, Config()) map { config0 =>
       // OK, we're good to go
-      import config._
+      val config = config0.copy(
+          headers = config0.headers.reverse,
+          fileNames = config0.fileNames.reverse)
 
       try {
-        val baseFunctors =
-          for (baseModule <- baseModules.reverse)
-            yield parseExpression(readerForFile(baseModule),
-                new File(baseModule))
-
-        val functors =
-          for (fileName <- fileNames.reverse)
-            yield fileName -> parseExpression(readerForFile(fileName),
-                new File(fileName))
-
-        val program = buildProgram(moduleDefs, baseFunctors, functors)
-
-        produce(program, outputStream)
+        config.mode match {
+          case Config.Mode.Module =>
+            mainModule(config)
+          case Config.Mode.BaseEnv =>
+            mainBaseEnv(config)
+          case Config.Mode.Linker =>
+            mainLinker(config)
+        }
       } catch {
         case th: Throwable =>
           th.printStackTrace()
@@ -74,6 +92,98 @@ object Main {
       optParser.showUsage
       sys.exit(1)
     }
+  }
+
+  /** Performs the Module mode */
+  private def mainModule(config: Config) {
+    import config._
+
+    if (fileNames.size != 1)
+      throw new Exception("Requires exactly one file name")
+
+    val (program, _) = createProgram(moduleDefs, Some(baseDeclsFileName))
+
+    val fileName = fileNames.head
+    val url = fileNameToURL(fileName)
+    val functor = parseExpression(readerForFile(fileName), new File(fileName))
+
+    ProgramBuilder.buildModuleProgram(program, url, functor)
+    compile(program)
+
+    program.produceCC(new Output(outputStream()), urlToProcName(url), headers)
+  }
+
+  /** Performs the BaseEnv mode */
+  private def mainBaseEnv(config: Config) {
+    import config._
+
+    val (program, bootModules) = createProgram(moduleDefs, None)
+
+    val functors =
+      for (fileName <- fileNames)
+        yield parseExpression(readerForFile(fileName), new File(fileName))
+
+    ProgramBuilder.buildBaseEnvProgram(program, bootModules, functors)
+    compile(program)
+
+    program.produceCC(new Output(outputStream()), "createBaseEnv", headers)
+
+    writeFileLines(new File(baseDeclsFileName), program.baseDeclarations)
+  }
+
+  /** Performs the Linker mode */
+  private def mainLinker(config: Config) {
+    import config._
+
+    val (program, _) = createProgram(moduleDefs, Some(baseDeclsFileName))
+
+    val urls = fileNames map fileNameToURL
+
+    ProgramBuilder.buildLinkerProgram(program, urls, urls.head)
+    compile(program)
+
+    val out = new Output(outputStream())
+    program.produceCC(out, "createRunThread", headers)
+
+    // Create the main() proc
+    import Output._
+
+    out << "void createBaseEnv(VM vm);\n";
+
+    for (url <- urls)
+      out << "void %s(VM vm);\n" % urlToProcName(url)
+
+    out << """
+       |int main(int argc, char** argv) {
+       |  boostenv::BoostBasedVM boostBasedVM;
+       |  VM vm = boostBasedVM.vm;
+       |
+       |  createBaseEnv(vm);
+       |""".stripMargin
+
+    for (url <- urls)
+      out << "  %s(vm);\n" % urlToProcName(url)
+
+    out << """
+       |  boostBasedVM.run();
+       |
+       |  createRunThread(vm);
+       |  boostBasedVM.run();
+       |}
+       |""".stripMargin
+  }
+
+  /** Creates a new Program */
+  private def createProgram(moduleDefs: List[String],
+      baseDeclsFileName: Option[String]) = {
+    val program = new Program
+    val bootModules = loadModuleDefs(program, moduleDefs)
+
+    baseDeclsFileName foreach { fileName =>
+      program.baseDeclarations ++= readFileLines(new File(fileName))
+    }
+
+    (program, bootModules)
   }
 
   /** Parses an Oz statement from a reader
@@ -154,65 +264,25 @@ object Main {
         getClass.getResourceAsStream(resourceName))))
   }
 
-  /** Builds a whole [[org.mozartoz.bootcompiler.symtab.Program]] from its parts
-   *
-   *  See [[org.mozartoz.bootcompiler.ProgramBuilder]] for details on the
-   *  transformation performed.
-   *
-   *  @param moduleDefs list of files that define builtin modules
-   *  @param baseFunctors ASTs of the base functors
-   *  @param programFunctors File names to ASTs of the program functors
-   */
-  private def buildProgram(moduleDefs: List[String],
-      baseFunctors: List[Expression],
-      programFunctors: List[(String, Expression)]): Program = {
-    val prog = new Program
-
-    val bootModulesMap = loadModuleDefs(prog, moduleDefs)
-
-    val programFunctorsWithURLs =
-      for ((fileName, functorExpr) <- programFunctors)
-        yield (fileNameToURL(fileName), functorExpr)
-
-    val mainFunctorURL = programFunctorsWithURLs.head._1
-
-    ProgramBuilder.build(prog, bootModulesMap, baseFunctors,
-        programFunctorsWithURLs, mainFunctorURL)
-
-    prog
-  }
-
   /** Returns the appropriate URL for a file name */
   private def fileNameToURL(fileName: String) = {
-    val nameAndExt = new File(fileName).getName
-    val nameOnly =
-      if (!(nameAndExt contains '.')) nameAndExt
-      else nameAndExt.substring(0, nameAndExt.lastIndexOf('.'))
+    val name = removeExt(new File(fileName).getName)
 
-    if (!SystemModules.isSystemModule(nameOnly)) nameOnly + ".ozf"
-    else "x-oz://system/" + nameOnly + ".ozf"
+    if (!SystemModules.isSystemModule(name)) name + ".ozf"
+    else "x-oz://system/" + name + ".ozf"
   }
 
-  /** Compiles a program and produces the corresponding C++ code
-   *
-   *  @param prog program to compiler
-   *  @param outputStream function returning the output stream
-   */
-  private def produce(prog: Program, outputStream: () => PrintStream) {
-    applyTransforms(prog)
+  /** Returns the main proc name for registering a functor */
+  private def urlToProcName(url: String) = {
+    val name = removeExt(url.substring(url.lastIndexOf('/') + 1))
 
-    if (prog.hasErrors) {
-      for ((message, pos) <- prog.errors) {
-        Console.err.println(
-            "Error at %s\n".format(pos.toString) +
-            message + "\n" +
-            pos.longString)
-      }
+    "createFunctor_" + name
+  }
 
-      sys.exit(2)
-    } else {
-      prog.produceCC(new Output(outputStream()))
-    }
+  /** Removes the extension from a file name */
+  private def removeExt(fileName: String) = {
+    if (!(fileName contains '.')) fileName
+    else fileName.substring(0, fileName.lastIndexOf('.'))
   }
 
   /** Loads the definitions of builtin modules
@@ -299,6 +369,26 @@ object Main {
     }
   }
 
+  /** Compiles a program
+   *
+   *  @param prog program to compile
+   *  @param outputStream function returning the output stream
+   */
+  private def compile(prog: Program) {
+    applyTransforms(prog)
+
+    if (prog.hasErrors) {
+      for ((message, pos) <- prog.errors) {
+        Console.err.println(
+            "Error at %s\n".format(pos.toString) +
+            message + "\n" +
+            pos.longString)
+      }
+
+      sys.exit(2)
+    }
+  }
+
   /** Applies the successive transformation phases to a program */
   private def applyTransforms(prog: Program) {
     Namer(prog)
@@ -321,5 +411,31 @@ object Main {
     val source = io.Source.fromFile(file)
     try source.mkString
     finally source.close()
+  }
+
+  /** Reads the lines in a file
+   *
+   *  @param file file to read
+   *  @return the lines in the file
+   */
+  private def readFileLines(file: File) = {
+    val source = io.Source.fromFile(file)
+    try source.getLines().toList
+    finally source.close()
+  }
+
+  /** Writes lines in a file
+   *
+   *  @param file  file to write
+   *  @param lines the lines to write
+   */
+  private def writeFileLines(file: File, lines: TraversableOnce[String]) = {
+    val sink = new PrintWriter(file)
+    try {
+      for (line <- lines)
+        sink.println(line)
+    } finally {
+      sink.close()
+    }
   }
 }

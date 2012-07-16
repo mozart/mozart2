@@ -63,32 +63,32 @@ class Program {
   }
 
   /** Produces the C++ code that will execute the program */
-  def produceCC(out: Output) {
+  def produceCC(out: Output, mainProcName: String,
+      headers: TraversableOnce[String] = List("mozart.hh")) {
     import Output._
 
     val codeAreas = abstractions map (_.codeArea)
 
-    out << """
-       |#include <mozart.hh>
-       |#include <boostenv.hh>
-       |
-       |using namespace mozart;
-       |""".stripMargin
+    for (header <- headers)
+      out << "#include <%s>\n" % header
 
     out << """
+       |using namespace mozart;
+       |
+       |namespace {
+       |
        |class Program {
        |public:
-       |  Program();
+       |  Program(VM vm);
        |
-       |  void run();
+       |  void createRunThread();
        |private:
-       |  boostenv::BoostBasedVM boostBasedVM;
        |  VM vm;
        |""".stripMargin
 
     for (codeArea <- codeAreas) {
       out << """
-         |  UnstableNode* %s;
+         |  UnstableNode %s;
          |  void %s();
          |""".stripMargin % (codeArea.ccCodeArea, codeArea.ccCreateMethodName)
     }
@@ -96,12 +96,7 @@ class Program {
     out << """
        |};
        |
-       |int main(int argc, char** argv) {
-       |  Program program;
-       |  program.run();
-       |}
-       |
-       |Program::Program(): vm(boostBasedVM.vm) {
+       |Program::Program(VM vm): vm(vm) {
        |
        |""".stripMargin
 
@@ -111,17 +106,24 @@ class Program {
     out << """
        |}
        |
-       |void Program::run() {
-       |  UnstableNode topLevelAbstraction = Abstraction::build(vm, 0, 0, *%s);
+       |void Program::createRunThread() {
+       |  UnstableNode topLevelAbstraction = Abstraction::build(vm, 0, 0, %s);
        |
        |  UnstableNode* initialThreadParams[] = { &topLevelAbstraction };
        |  builtins::ModThread::Create::builtin().call(vm, initialThreadParams);
-       |
-       |  boostBasedVM.run();
        |}
        |""".stripMargin % topLevelAbstraction.codeArea.ccCodeArea
 
     for (codeArea <- codeAreas)
       codeArea.produceCC(out)
+
+    out << """
+       |} // namespace
+       |
+       |void %s(VM vm) {
+       |  Program program(vm);
+       |  program.createRunThread();
+       |}
+       |""".stripMargin % mainProcName
   }
 }

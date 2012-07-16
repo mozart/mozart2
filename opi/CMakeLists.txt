@@ -45,7 +45,26 @@ include_directories("${MOZART_DIR}/boostenv/main"
     "${MOZART_BUILD_DIR}/boostenv/main")
 
 
-# Generate main.cc from Main.oz
+# Generate the .cc files using the boot compiler
+
+set(BOOTCOMPILER_JAR "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar")
+
+set(BASE_FUNCTORS
+    "${MOZART_DIR}/lib/base/Base.oz"
+    "${MOZART_DIR}/lib/boot/BootBase.oz")
+
+add_custom_command(
+  OUTPUT "Base.cc"
+  COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
+    --baseenv
+    -o "${CMAKE_CURRENT_BINARY_DIR}/Base.cc"
+    -h "boostenv.hh"
+    -m "${MOZART_BUILD_DIR}/boostenv/main/"
+    -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+    ${BASE_FUNCTORS}
+  DEPENDS ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
+  COMMENT Compiling the base environment
+  VERBATIM)
 
 file(GLOB SYS_FUNCTORS
     "${MOZART_DIR}/lib/sys/*.oz"
@@ -53,21 +72,45 @@ file(GLOB SYS_FUNCTORS
     "${MOZART_DIR}/lib/cp/*.oz"
     "${MOZART_DIR}/boostenv/lib/*.oz")
 
+set(ALL_FUNCTORS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz" # Main.oz must be first
+    ${SYS_FUNCTORS})
+
+set(ALL_CCFILES "LinkerMain.cc" "Base.cc")
+
+foreach(functor ${ALL_FUNCTORS})
+  get_filename_component(basename ${functor} NAME_WE)
+  set(ccfile "${basename}.cc")
+
+  set(ALL_CCFILES ${ALL_CCFILES} ${ccfile})
+
+  add_custom_command(
+    OUTPUT ${ccfile}
+    COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
+      -o "${CMAKE_CURRENT_BINARY_DIR}/${ccfile}"
+      -h "boostenv.hh"
+      -m "${MOZART_BUILD_DIR}/boostenv/main/"
+      -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+      "${functor}"
+    DEPENDS ${functor} "Base.cc"
+    COMMENT "${basename}.oz"
+    VERBATIM)
+endforeach()
+
 add_custom_command(
-  OUTPUT main.cc
-  COMMAND ${JAVA} -jar
-    "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar"
-    -o "${CMAKE_CURRENT_BINARY_DIR}/main.cc"
+  OUTPUT LinkerMain.cc
+  COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
+    --linker
+    -o "${CMAKE_CURRENT_BINARY_DIR}/LinkerMain.cc"
+    -h "boostenv.hh"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
-    -b "${MOZART_DIR}/lib/base/Base.oz"
-    -b "${MOZART_DIR}/lib/boot/BootBase.oz"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz"
-    ${SYS_FUNCTORS}
-  DEPENDS Main.oz ${SYS_FUNCTORS}
-  COMMENT Compiling Main.oz
+    -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+    ${ALL_FUNCTORS}
+  DEPENDS "Base.cc"
+  COMMENT linker
   VERBATIM)
 
 # Compile the executable
 
-add_executable(testmozart main.cc)
+add_executable(testmozart ${ALL_CCFILES})
 target_link_libraries(testmozart mozartvmboost mozartvm ${Boost_LIBRARIES})

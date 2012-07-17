@@ -338,7 +338,7 @@ void StructuralDualWalk::doConjunction(VM vm, RichNode value,
   StableNode* stableValue = value.getStableRef(vm);
 
   for (size_t i = conj.getCount(); i > 0; i--)
-    stack.push(vm, stableValue, conj.getElement(i));
+    stack.push(vm, stableValue, conj.getElement(i-1));
 }
 
 OpResult StructuralDualWalk::doOpenRecord(VM vm, RichNode value,

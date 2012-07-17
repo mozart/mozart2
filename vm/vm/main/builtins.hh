@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 namespace builtins {
@@ -34,6 +36,12 @@ namespace builtins {
 /////////////////
 // BaseBuiltin //
 /////////////////
+
+UnstableNode BaseBuiltin::getNameAtom(VM vm) {
+  auto utf8Name = makeLString(_name.c_str(), _name.length());
+  auto nativeName = toUTF<nchar>(utf8Name);
+  return Atom::build(vm, nativeName.length, nativeName.string);
+}
 
 OpResult BaseBuiltin::getCallInfo(
   RichNode self, VM vm, int& arity, ProgramCounter& start, int& Xcount,
@@ -117,5 +125,7 @@ void BaseBuiltin::buildCodeBlock(VM vm, RichNode self) {
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __BUILTINS_H

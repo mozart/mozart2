@@ -77,7 +77,7 @@ public:
     }
   };
 
-  class GetClass: public Builtin<GetClass>, InlineAs<OpInlineGetClass> {
+  class GetClass: public Builtin<GetClass>, public InlineAs<OpInlineGetClass> {
   public:
     GetClass(): Builtin("getClass") {}
 

@@ -131,6 +131,49 @@ public:
   }
 };
 
+/////////////////////
+// ExtractInlineAs //
+/////////////////////
+
+/**
+ * Metafunction that tests whether T has a member "getInlineAsOpCodeInternal"
+ * Taken from
+ * http://cplusplus.co.il/2009/09/11/substitution-failure-is-not-an-error-1/
+ */
+template<typename T>
+struct HasGetInlineAsOpCodeInternal {
+  struct Fallback {
+    int getInlineAsOpCodeInternal;
+  };
+
+  struct Derived : T, Fallback {};
+
+  template<typename C, C>
+  struct ChT;
+
+  template<typename C>
+  static char (&f(ChT<int Fallback::*, &C::getInlineAsOpCodeInternal>*))[1];
+
+  template<typename C>
+  static char (&f(...))[2];
+
+  static constexpr bool value = sizeof(f<Derived>(0)) == 2;
+};
+
+template <class T, bool hasInlineAsOpCode>
+struct ExtractInlineAs {
+  static constexpr nativeint get() {
+    return -1;
+  }
+};
+
+template <class T>
+struct ExtractInlineAs<T, true> {
+  static constexpr nativeint get() {
+    return T::getInlineAsOpCodeInternal();
+  }
+};
+
 }
 
 ////////////
@@ -162,9 +205,11 @@ class BaseBuiltin {
 public:
   BaseBuiltin(const std::string& name, size_t arity,
               SpecializedBuiltinEntryPoint entryPoint,
-              GenericBuiltinEntryPoint genericEntryPoint):
+              GenericBuiltinEntryPoint genericEntryPoint,
+              nativeint opCode):
     _name(name), _arity(arity), _entryPoint(entryPoint),
-    _genericEntryPoint(genericEntryPoint), _codeBlock(nullptr) {
+    _genericEntryPoint(genericEntryPoint), _inlineAsOpCode(opCode),
+    _codeBlock(nullptr) {
 
     _params = StaticArray<ParamInfo>(new ParamInfo[arity], arity);
   }
@@ -172,6 +217,9 @@ public:
   const std::string& getName() {
     return _name;
   }
+
+  inline
+  UnstableNode getNameAtom(VM vm);
 
   size_t getArity() {
     return _arity;
@@ -183,6 +231,10 @@ public:
 
   StaticArray<ParamInfo> getParamArray() {
     return _params;
+  }
+
+  nativeint getInlineAs() {
+    return _inlineAsOpCode;
   }
 
   OpResult call(VM vm, UnstableNode* args[]) {
@@ -213,6 +265,8 @@ private:
   // Entry points
   SpecializedBuiltinEntryPoint _entryPoint;
   GenericBuiltinEntryPoint _genericEntryPoint;
+
+  nativeint _inlineAsOpCode;
 
   // CodeArea-like data
   ByteCode* _codeBlock;
@@ -261,7 +315,8 @@ private:
   };
 public:
   Builtin(const std::string& name): BaseBuiltin(
-    name, arity(), getEntryPoint(), getGenericEntryPoint()) {
+    name, arity(), getEntryPoint(), getGenericEntryPoint(),
+    getInlineAsInternal()) {
 
     ExtractArity<decltype(&Self::operator())>::initParams(
       this->getParamArray());
@@ -284,6 +339,11 @@ private:
     constexpr size_t ar = arity(); // work around a limitation of the compiler
     return internal::BuiltinEntryPoint<Self, ar>::getGenericEntryPoint();
   }
+
+  static constexpr nativeint getInlineAsInternal() {
+    return internal::ExtractInlineAs<Self,
+      internal::HasGetInlineAsOpCodeInternal<Self>::value>::get();
+  }
 private:
   static Self rawBuiltin;
 };
@@ -295,8 +355,12 @@ Self Builtin<Self>::rawBuiltin;
 // Markers for builtins //
 //////////////////////////
 
-template <size_t opCode>
-struct InlineAs {};
+template <ByteCode opCode>
+struct InlineAs {
+  static constexpr ByteCode getInlineAsOpCodeInternal() {
+    return opCode;
+  }
+};
 
 }
 

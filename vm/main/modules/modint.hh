@@ -72,7 +72,7 @@ public:
     }
   };
 
-  class Plus1: public Builtin<Plus1>, InlineAs<OpInlinePlus1> {
+  class Plus1: public Builtin<Plus1>, public InlineAs<OpInlinePlus1> {
   public:
     Plus1(): Builtin("+1") {}
 
@@ -81,7 +81,7 @@ public:
     }
   };
 
-  class Minus1: public Builtin<Minus1>, InlineAs<OpInlineMinus1> {
+  class Minus1: public Builtin<Minus1>, public InlineAs<OpInlineMinus1> {
   public:
     Minus1(): Builtin("-1") {}
 

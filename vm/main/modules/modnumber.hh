@@ -63,7 +63,7 @@ public:
     }
   };
 
-  class Add: public Builtin<Add>, InlineAs<OpInlineAdd> {
+  class Add: public Builtin<Add>, public InlineAs<OpInlineAdd> {
   public:
     Add(): Builtin("+") {}
 
@@ -72,7 +72,7 @@ public:
     }
   };
 
-  class Subtract: public Builtin<Subtract>, InlineAs<OpInlineSubtract> {
+  class Subtract: public Builtin<Subtract>, public InlineAs<OpInlineSubtract> {
   public:
     Subtract(): Builtin("-") {}
 

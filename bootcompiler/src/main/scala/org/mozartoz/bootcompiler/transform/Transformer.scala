@@ -238,6 +238,9 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.OpenRecordPattern(expression, transformExpr(label),
           fields map transformRecordField)
 
+    case PatternConjunction(parts) =>
+      treeCopy.PatternConjunction(expression, parts map transformExpr)
+
     // Classes
 
     case ClassExpression(name, parents, features, attributes,

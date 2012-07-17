@@ -569,44 +569,48 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
 
   /** Processes a pattern */
   def processPattern(pattern: Expression): (List[Variable], Expression) = {
-    def processRecordFields(
-        fields: List[RecordField]): (List[Variable], List[RecordField]) = {
-      val variables = new ListBuffer[Variable]
-      val newFields = {
-        for (field @ RecordField(feature, value) <- fields) yield {
-          val (subVars, newValue) = processPattern(value)
-          variables ++= subVars
-          treeCopy.RecordField(field, feature, newValue)
-        }
+    val variables = new ListBuffer[Variable]
+    val newPattern = processPatternInner(pattern, variables)
+    (variables.toList, newPattern)
+  }
+
+  /** Processes a pattern (inner) */
+  private def processPatternInner(pattern: Expression,
+      variables: ListBuffer[Variable]): Expression = {
+
+    def processRecordFields(fields: List[RecordField]) = {
+      for (field @ RecordField(feature, value) <- fields) yield {
+        val newValue = processPatternInner(value, variables)
+        treeCopy.RecordField(field, feature, newValue)
       }
-      (variables.toList, newFields)
     }
 
     pattern match {
       /* Wildcard */
       case UnboundExpression() =>
-        (Nil, treeCopy.Constant(pattern, OzPatMatWildcard()))
+        treeCopy.Constant(pattern, OzPatMatWildcard())
 
       /* Capture */
       case v @ RawVariable(name) =>
         val symbol = new Symbol(name, capture = true)
-        val variable = treeCopy.Variable(v, symbol)
-        (List(variable), treeCopy.Constant(pattern, OzPatMatCapture(symbol)))
+        variables += treeCopy.Variable(v, symbol)
+        treeCopy.Constant(pattern, OzPatMatCapture(symbol))
 
       /* Dive into records */
       case record @ Record(label, fields) =>
-        val (variables, newFields) = processRecordFields(fields)
-        val newRecord = treeCopy.Record(record, label, newFields)
-        (variables, newRecord)
+        treeCopy.Record(record, label, processRecordFields(fields))
 
       /* Dive into open record patterns */
       case pattern @ OpenRecordPattern(label, fields) =>
-        val (variables, newFields) = processRecordFields(fields)
-        val newPattern = treeCopy.OpenRecordPattern(pattern, label, newFields)
-        (variables, newPattern)
+        treeCopy.OpenRecordPattern(pattern, label, processRecordFields(fields))
+
+      /* Dive into pattern conjunctions */
+      case conj @ PatternConjunction(parts) =>
+        val newParts = parts map (processPatternInner(_, variables))
+        treeCopy.PatternConjunction(conj, newParts)
 
       case _ =>
-        (Nil, pattern)
+        pattern
     }
   }
 

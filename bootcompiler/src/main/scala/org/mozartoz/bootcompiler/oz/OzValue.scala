@@ -192,6 +192,18 @@ case class OzPatMatCapture(variable: symtab.Symbol) extends OzValue {
   def syntax() = variable.toString()
 }
 
+/** Special value representing a pattern conjunction */
+case class OzPatMatConjunction(parts: List[OzValue]) extends OzValue {
+  def syntax() = {
+    if (parts.isEmpty) "_"
+    else {
+      parts.tail.foldLeft(parts.head.syntax()) {
+        (prev, part) => prev + " = " + part.syntax()
+      }
+    }
+  }
+}
+
 /** Special value representing an open record pattern */
 case class OzPatMatOpenRecord(label: OzLiteral,
     fields: List[OzRecordField]) extends OzValue {

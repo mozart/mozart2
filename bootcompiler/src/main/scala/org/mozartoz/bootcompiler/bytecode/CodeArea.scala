@@ -234,6 +234,14 @@ class CodeArea(val abstraction: Abstraction) {
       case OzPatMatCapture(symbol) =>
         out << "PatMatCapture::build(vm, %d)" % symbol.captureIndex
 
+      case OzPatMatConjunction(parts) =>
+        out << "buildPatMatConjunction(vm"
+        for (part <- parts) {
+          out << ", "
+          produceCCForConstant(out, part)
+        }
+        out << ")"
+
       case record @ OzPatMatOpenRecord(label, fields) =>
         out << "buildPatMatOpenRecord(vm, "
         produceCCForConstant(out, record.arity)

@@ -196,6 +196,9 @@ class TreeCopier {
       fields: List[RecordField]) =
     new OpenRecordPattern(label, fields).copyAttrs(tree)
 
+  def PatternConjunction(tree: Node, parts: List[Expression]) =
+    new PatternConjunction(parts).copyAttrs(tree)
+
   // Match clauses
 
   def MatchStatementClause(tree: Node, pattern: Expression,

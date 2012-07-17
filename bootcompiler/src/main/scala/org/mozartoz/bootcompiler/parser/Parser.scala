@@ -208,17 +208,24 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   lazy val pattern: PackratParser[Expression] = (
-      positioned((pattern1 <~ "|") ~ pattern ^^ cons)
+      positioned((pattern1 <~ "=") ~ pattern ^^ {
+        case lhs ~ rhs => PatternConjunction(List(lhs, rhs))
+      })
     | pattern1
   )
 
   lazy val pattern1: PackratParser[Expression] = (
-      pattern2 ~ rep1("#" ~> pattern2) ^^ { case f ~ r => sharp(f :: r) }
+      positioned((pattern2 <~ "|") ~ pattern1 ^^ cons)
     | pattern2
   )
 
   lazy val pattern2: PackratParser[Expression] = (
-      // TODO escaped variable (and <pattern> = <pattern> ?)
+      pattern3 ~ rep1("#" ~> pattern3) ^^ { case f ~ r => sharp(f :: r) }
+    | pattern3
+  )
+
+  lazy val pattern3: PackratParser[Expression] = (
+      // TODO escaped variable
       positioned {
         literalLabelExpr ~ rep(patternRecordField) ~ opt("...") <~ ")" ^^ {
           case label ~ fields ~ openMarker =>

@@ -579,6 +579,20 @@ object Cons extends ((Expression, Expression) => Record) {
   }
 }
 
+/** Pattern conjunction
+ *
+ *  {{{
+ *  <left> = <right>
+ *  }}}
+ */
+case class PatternConjunction(parts: List[Expression]) extends Expression {
+  def syntax(indent: String) = {
+    parts.tail.foldLeft(parts.head.syntax(indent)) {
+      (prev, part) => prev + " = " + part.syntax(indent)
+    }
+  }
+}
+
 // Classes
 
 case class FeatOrAttr(name: Expression,

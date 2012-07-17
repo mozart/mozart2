@@ -221,6 +221,9 @@ object CodeGen extends Transformer with TreeDSL {
                 for (OzRecordField(_, fieldValue) <- fields)
                   walk(fieldValue)
 
+              case OzPatMatConjunction(parts) =>
+                parts foreach walk
+
               case _ => ()
             }
 

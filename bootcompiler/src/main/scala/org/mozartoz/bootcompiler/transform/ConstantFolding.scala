@@ -55,6 +55,11 @@ object ConstantFolding extends Transformer with TreeDSL {
       case record:OpenRecordPattern =>
         transformOpenRecordPattern(record)
 
+      case conj @ PatternConjunction(parts)
+      if parts.forall(_.isInstanceOf[Constant]) =>
+        val constantParts = parts map { _.asInstanceOf[Constant].value }
+        treeCopy.Constant(conj, OzPatMatConjunction(constantParts))
+
       case Constant(record:OzRecord) dot Constant(feature:OzFeature) =>
         val value = record.select(feature)
         if (value.isDefined)

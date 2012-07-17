@@ -40,11 +40,21 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
 
   def floatLiteral =
     stringOf1(digit) ~ stringOf1('.', digit) ^^ {
-      case int ~ fract => FloatLit(int + fract)
+      case int ~ fract => FloatLit((int+fract).toDouble)
     }
 
-  def integerLiteral =
-    stringOf1(digit) ^^ NumericLit
+  def integerLiteral = (
+      ('0' ~ (elem('x') | 'X')) ~> rep1(hexDigit) ^^ {
+        digits => digits.foldLeft(0L)(_ * 16 + _)
+      }
+    | ('0' ~ (elem('b') | 'B')) ~> rep1(binDigit) ^^ {
+        digits => digits.foldLeft(0L)(_ * 2 + _)
+      }
+    | '0' ~> rep1(octalDigit) ^^ {
+        digits => digits.foldLeft(0L)(_ * 8 + _)
+      }
+    | stringOf1(digit) ^^ (chars => chars.toLong)
+  ) ^^ IntLit
 
   def atomLiteral = (
       stringOf1(lowerCaseLetter, identChar) ^^ processKeyword
@@ -75,6 +85,9 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
       }
     | escapeChar
   )
+
+  def binDigit =
+    elem("binary digit", c => c == '0' || c == '1') ^^ (_ - '0')
 
   def octalDigit =
     elem("octal digit", c => '0' <= c && c <= '7') ^^ (_ - '0')

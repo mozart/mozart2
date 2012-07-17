@@ -4,8 +4,15 @@ package parser
 import scala.util.parsing.combinator.token._
 
 trait OzTokens extends StdTokens {
+  /** The class of integer literal tokens */
+  case class IntLit(value: Long) extends Token {
+    override def chars = value.toString
+    override def toString() = chars
+  }
+
   /** The class of float literal tokens */
-  case class FloatLit(chars: String) extends Token {
+  case class FloatLit(value: Double) extends Token {
+    override def chars = value.toString
     override def toString() = chars
   }
 

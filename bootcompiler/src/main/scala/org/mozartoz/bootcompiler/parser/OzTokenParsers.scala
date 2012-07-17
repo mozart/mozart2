@@ -12,9 +12,13 @@ trait OzTokenParsers extends StdTokenParsers with OzPreprocessor {
 
   import lexical._
 
+  /** A parser which matches an int literal */
+  def intLit: Parser[Long] =
+    accept("int literal", { case IntLit(value) => value })
+
   /** A parser which matches a float literal */
-  def floatLit: Parser[String] =
-    elem("float literal", _.isInstanceOf[FloatLit]) ^^ (_.chars)
+  def floatLit: Parser[Double] =
+    accept("float literal", { case FloatLit(value) => value })
 
   /** A parser which matches an atom literal */
   def atomLit: Parser[String] =

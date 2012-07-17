@@ -668,12 +668,12 @@ class OzParser extends OzTokenParsers with PackratParsers
   // Constants
 
   lazy val integerConst: PackratParser[OzInt] = (
-      numericLit ^^ (chars => OzInt(chars.toInt))
-    | charLit ^^ (char => OzInt(char.toInt))
+      intLit ^^ (value => OzInt(value))
+    | charLit ^^ (char => OzInt(char.toLong))
   )
 
   lazy val floatConst: PackratParser[OzFloat] =
-    floatLit ^^ (chars => OzFloat(chars.toInt))
+    floatLit ^^ (value => OzFloat(value))
 
   lazy val literalConst: PackratParser[OzLiteral] = (
       "true" ^^^ True()

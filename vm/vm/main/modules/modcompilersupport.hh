@@ -134,6 +134,60 @@ public:
       return OpResult::proceed();
     }
   };
+
+  class IsBuiltin: public Builtin<IsBuiltin> {
+  public:
+    IsBuiltin(): Builtin("isBuiltin") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(BuiltinCallable(value).isBuiltin(vm, boolResult));
+
+      result = Boolean::build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
+  class GetBuiltinInfo: public Builtin<GetBuiltinInfo> {
+  public:
+    GetBuiltinInfo(): Builtin("getBuiltinInfo") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      BaseBuiltin* builtin = nullptr;
+      MOZART_CHECK_OPRESULT(BuiltinCallable(value).getBuiltin(vm, builtin));
+
+      UnstableNode name = builtin->getNameAtom(vm);
+      UnstableNode arity = build(vm, builtin->getArity());
+
+      UnstableNode params = build(vm, vm->coreatoms.nil);
+      for (size_t i = builtin->getArity(); i > 0; i--) {
+        auto& paramInfo = builtin->getParams(i-1);
+        UnstableNode param = buildRecord(
+          vm, buildArity(vm, MOZART_STR("param"), MOZART_STR("kind")),
+          paramInfo.kind == ParamInfo::Kind::pkIn ?
+            MOZART_STR("in") : MOZART_STR("out"));
+        params = buildCons(vm, std::move(param), std::move(params));
+      }
+
+      UnstableNode inlineAs;
+      if (builtin->getInlineAs() < 0)
+        inlineAs = build(vm, MOZART_STR("none"));
+      else
+        inlineAs = buildTuple(vm, MOZART_STR("some"), builtin->getInlineAs());
+
+      result = buildRecord(
+        vm, buildArity(vm,
+                       MOZART_STR("builtin"),
+                       MOZART_STR("arity"),
+                       MOZART_STR("inlineAs"),
+                       MOZART_STR("name"),
+                       MOZART_STR("params")),
+        std::move(arity), std::move(inlineAs), std::move(name),
+        std::move(params));
+
+      return OpResult::proceed();
+    }
+  };
 };
 
 }

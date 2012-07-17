@@ -29,6 +29,7 @@
 
 #include "coredatatypes-decl.hh"
 #include "exchelpers-decl.hh"
+#include "builtins-decl.hh"
 
 namespace mozart {
 
@@ -165,6 +166,11 @@ struct Interface<PotentialFeature>: ImplementedBy<OptName> {
 class BuiltinCallable;
 template<>
 struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
+  OpResult isBuiltin(RichNode self, VM vm, bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
   OpResult callBuiltin(RichNode self, VM vm, int argc,
                        UnstableNode* args[]) {
     return raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
@@ -172,6 +178,10 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
 
   template <class... Args>
   OpResult callBuiltin(RichNode self, VM vm, Args&&... args) {
+    return raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
+  }
+
+  OpResult getBuiltin(RichNode self, VM vm, builtins::BaseBuiltin*& result) {
     return raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
   }
 };

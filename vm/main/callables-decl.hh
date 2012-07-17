@@ -77,6 +77,11 @@ public:
 public:
   // BuiltinCallable interface
 
+  OpResult isBuiltin(VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
   /**
    * Call the builtin
    * @param vm     Contextual VM
@@ -89,6 +94,11 @@ public:
   template <class... Args>
   inline
   OpResult callBuiltin(Self self, VM vm, Args&&... args);
+
+  OpResult getBuiltin(RichNode self, VM vm, builtins::BaseBuiltin*& result) {
+    result = _builtin;
+    return OpResult::proceed();
+  }
 
 public:
   // Callable interface

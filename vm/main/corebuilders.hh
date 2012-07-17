@@ -235,6 +235,34 @@ UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
   return result;
 }
 
+inline
+UnstableNode buildPatMatConjunction(VM vm) {
+  // Degenerated case, which is just a wildcard
+  return PatMatCapture::build(vm, -1);
+}
+
+template <class PT>
+inline
+UnstableNode buildPatMatConjunction(VM vm, PT&& part) {
+  // Degenerated case, which is just the only part
+  return build(vm, std::forward<PT>(part));
+}
+
+/**
+ * Build a pattern conjunction
+ * The parts can be in any form supported by build().
+ * @param vm         Contextual VM
+ * @param parts...   Parts of the conjunction
+ */
+template <class... Args>
+inline
+UnstableNode buildPatMatConjunction(VM vm, Args&&... parts) {
+  UnstableNode result = PatMatConjunction::build(vm, sizeof...(parts));
+  staticInitElements<PatMatConjunction>(
+    vm, RichNode(result).as<PatMatConjunction>(), std::forward<Args>(parts)...);
+  return result;
+}
+
 /**
  * Build an patmat open record inside a node, with its arity and fields
  * The arity and the arguments can be in any form supported by build().

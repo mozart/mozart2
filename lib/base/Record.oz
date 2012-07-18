@@ -47,6 +47,78 @@ in
    end
 end
 
+local
+   fun {CountNewFeatures R1 Fs Acc}
+      case Fs
+      of H|T then
+         if {HasFeature R1 H} then
+            {CountNewFeatures R1 T Acc}
+         else
+            {CountNewFeatures R1 T Acc+1}
+         end
+      [] nil then
+         Acc
+      end
+   end
+
+   proc {FillTuple1 T R2 Fs Offset}
+      case Fs
+      of H|Ts then
+         T.Offset = H
+         T.(Offset+1) = R2.H
+         {FillTuple1 T R2 Ts Offset+2}
+      [] nil then
+         skip
+      end
+   end
+
+   proc {FillTuple2 T R1 R2 Fs Offset}
+      case Fs
+      of H|Ts then
+         if {HasFeature R2 H} then
+            {FillTuple2 T R1 R2 Ts Offset}
+         else
+            T.Offset = H
+            T.(Offset+1) = R1.H
+            {FillTuple2 T R1 R2 Ts Offset+2}
+         end
+      [] nil then
+         skip
+      end
+   end
+
+   fun {FoldL Xs P Z}
+      case Xs of nil then Z
+      [] X|Xr then {FoldL Xr P {P Z X}}
+      end
+   end
+in
+   fun {Adjoin R1 R2}
+      Fs1 = {Arity R1}
+      Fs2 = {Arity R2}
+      NewWidth = {CountNewFeatures R1 Fs2 {Width R1}}
+      T = {MakeTuple '#' NewWidth*2}
+   in
+      {FillTuple1 T R2 Fs2 1}
+      {FillTuple2 T R1 R2 Fs1 {Width R2}*2+1}
+      {Boot_Record.makeDynamic {Label R2} T}
+   end
+
+   fun {AdjoinAt R F X}
+      L = {Label R}
+   in
+      {Adjoin R L(F:X)}
+   end
+
+   fun {AdjoinList R Ts}
+      {FoldL Ts
+       fun {$ R T}
+          {AdjoinAt R T.1 T.2}
+       end
+       R}
+   end
+end
+
 %%
 %% Module
 %%

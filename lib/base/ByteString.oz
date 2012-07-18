@@ -25,6 +25,17 @@
 %%
 
 local
+   ByteStringLength = Boot_VirtualString.length
+
+   fun {ByteStringToStringWithTail BS From To Tail}
+      if From < To then
+         {Boot_String.charAt BS From} |
+            {ByteStringToStringWithTail BS From+1 To Tail}
+      else
+         Tail
+      end
+   end
+
    fun {IsVariant Opt}
       Opt == littleEndian orelse Opt == bigEndian orelse Opt == bom
    end
@@ -50,10 +61,16 @@ in
       get: Boot_String.charAt
       append: Boot_String.append
       slice: Boot_String.slice
-      width: Boot_VirtualString.length
-      length: Boot_VirtualString.length
-      %toString: ---
-      %toStringWithTail: ---
+      width: ByteStringLength
+      length: ByteStringLength
+      toString:
+         fun {$ BS}
+            {ByteStringToStringWithTail BS 0 {ByteStringLength BS} nil}
+         end
+      toStringWithTail:
+         fun {$ BS Tail}
+            {ByteStringToStringWithTail BS 0 {ByteStringLength BS} Tail}
+         end
 
       strchr: fun {$ BS From Chr}
                  if {IsInt Chr} then

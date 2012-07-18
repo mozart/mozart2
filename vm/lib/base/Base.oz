@@ -81,8 +81,9 @@ prepare
    %%
    %% Atom
    %%
-   IsAtom       = Boot_Atom.is
-   %AtomToString = Boot_Atom.toString
+   IsAtom              = Boot_Atom.is
+   AtomToUnicodeString % Defined in Atom.oz
+   AtomToString        % Defined in Atom.oz
 
    %%
    %% Name
@@ -100,82 +101,17 @@ prepare
    %%
    %% Lock
    %%
-   local
-      LockTag = {NewName}
-   in
-      fun {IsLock X}
-         {IsChunk X} andthen {HasFeature X LockTag}
-      end
-
-      fun {NewLock}
-         CurrentThread = {NewCell unit}
-         Token = {NewCell unit}
-         proc {Lock P}
-            ThisThread = {Boot_Thread.this}
-         in
-            if ThisThread == @CurrentThread then
-               {P}
-            else
-               NewToken
-            in
-               try
-                  {Wait Token := NewToken}
-                  CurrentThread := ThisThread
-                  {P}
-               finally
-                  CurrentThread := unit
-                  NewToken = unit
-               end
-            end
-         end
-      in
-         {NewChunk 'lock'(LockTag:Lock)}
-      end
-
-      proc {LockIn Lock P}
-         if {IsLock Lock} then
-            {Lock.LockTag P}
-         else
-            raise typeError('lock' Lock) end
-         end
-      end
-   end
+   IsLock  % Defined in Lock.oz
+   NewLock % Defined in Lock.oz
+   LockIn  % Defined in Lock.oz
 
    %%
    %% Port
    %%
-   local
-      PortTag = {NewName}
-   in
-      fun {IsPort X}
-         {IsChunk X} andthen {HasFeature X PortTag}
-      end
-
-      fun {NewPort ?S}
-         Head
-         Tail = {NewCell Head}
-         proc {Send X}
-            NewTail
-         in
-            {Exchange Tail X|!!NewTail NewTail}
-         end
-      in
-         S = !!Head
-         {NewChunk port(PortTag:Send)}
-      end
-
-      proc {Send P X}
-         if {IsPort P} then
-            {P.PortTag X}
-         else
-            raise typeError('port' P) end
-         end
-      end
-
-      proc {SendRecv P X Y}
-         {Send P X#Y}
-      end
-   end
+   IsPort   % Defined in Port.oz
+   NewPort  % Defined in Port.oz
+   Send     % Defined in Port.oz
+   SendRecv % Defined in Port.oz
 
    %%
    %% Bool
@@ -194,19 +130,54 @@ prepare
    %UnicodeStringToFloat = Boot_String.toFloat
 
    %%
+   %% String
+   %%
+   IsString      % Defined in String.oz
+   StringToAtom  % Defined in String.oz
+   %StringToInt   % Defined in String.oz
+   %StringToFloat % Defined in String.oz
+
+   %%
+   %% Char
+   %%
+   IsChar = fun {$ X} {IsInt X} andthen X >= 0 andthen X < 256 end
+
+   %%
    %% Int
    %%
-   IsInt = Boot_Int.is
+   IsInt              = Boot_Int.is
+   %IntToFloat         = Boot_Int.toFloat
+   IntToUnicodeString % Defined in Int.oz
+   IntToString        % Defined in Int.oz
 
    %%
    %% Float
    %%
-   IsFloat = Boot_Float.is
+   IsFloat              = Boot_Float.is
+   /*Exp                  = Boot_Float.exp
+   Log                  = Boot_Float.log
+   Sqrt                 = Boot_Float.sqrt
+   Ceil                 = Boot_Float.ceil
+   Floor                = Boot_Float.floor
+   Sin                  = Boot_Float.sin
+   Cos                  = Boot_Float.cos
+   Tan                  = Boot_Float.tan
+   Asin                 = Boot_Float.asin
+   Acos                 = Boot_Float.acos
+   Atan                 = Boot_Float.atan
+   Atan2                = Boot_Float.atan2
+   Round                = Boot_Float.round
+   FloatToInt           = Boot_Float.toInt*/
+   FloatToUnicodeString % Defined in Float.oz
+   FloatToString        % Defined in Float.oz
 
    %%
    %% Number
    %%
    IsNumber = Boot_Number.is
+   Abs      = fun {$ X}
+                 if X < if {IsInt X} then 0 else 0.0 end then ~X else X end
+              end
 
    %%
    %% Tuple
@@ -221,6 +192,12 @@ prepare
    ProcedureArity = Boot_Procedure.arity
 
    %%
+   %% Weak Dictionary
+   %%
+   %IsWeakDictionary  = Boot_WeakDictionary.is
+   %NewWeakDictionary = Boot_WeakDictionary.new
+
+   %%
    %% Dictionary
    %%
    IsDictionary  = Boot_Dictionary.is
@@ -229,82 +206,13 @@ prepare
    %%
    %% Record
    %%
-   IsRecord = Boot_Record.is
-   Arity    = Boot_Record.arity
-   Label    = Boot_Record.label
-   Width    = Boot_Record.width
-
-   local
-      fun {CountNewFeatures R1 Fs Acc}
-         case Fs
-         of H|T then
-            if {HasFeature R1 H} then
-               {CountNewFeatures R1 T Acc}
-            else
-               {CountNewFeatures R1 T Acc+1}
-            end
-         [] nil then
-            Acc
-         end
-      end
-
-      proc {FillTuple1 T R2 Fs Offset}
-         case Fs
-         of H|Ts then
-            T.Offset = H
-            T.(Offset+1) = R2.H
-            {FillTuple1 T R2 Ts Offset+2}
-         [] nil then
-            skip
-         end
-      end
-
-      proc {FillTuple2 T R1 R2 Fs Offset}
-         case Fs
-         of H|Ts then
-            if {HasFeature R2 H} then
-               {FillTuple2 T R1 R2 Ts Offset}
-            else
-               T.Offset = H
-               T.(Offset+1) = R1.H
-               {FillTuple2 T R1 R2 Ts Offset+2}
-            end
-         [] nil then
-            skip
-         end
-      end
-
-      fun {FoldL Xs P Z}
-         case Xs of nil then Z
-         [] X|Xr then {FoldL Xr P {P Z X}}
-         end
-      end
-   in
-      fun {Adjoin R1 R2}
-         Fs1 = {Arity R1}
-         Fs2 = {Arity R2}
-         NewWidth = {CountNewFeatures R1 Fs2 {Width R1}}
-         T = {MakeTuple '#' NewWidth*2}
-      in
-         {FillTuple1 T R2 Fs2 1}
-         {FillTuple2 T R1 R2 Fs1 {Width R2}*2+1}
-         {Boot_Record.makeDynamic {Label R2} T}
-      end
-
-      fun {AdjoinAt R F X}
-         L = {Label R}
-      in
-         {Adjoin R L(F:X)}
-      end
-
-      fun {AdjoinList R Ts}
-         {FoldL Ts
-          fun {$ R T}
-             {AdjoinAt R T.1 T.2}
-          end
-          R}
-      end
-   end
+   IsRecord   = Boot_Record.is
+   Arity      = Boot_Record.arity
+   Label      = Boot_Record.label
+   Width      = Boot_Record.width
+   Adjoin     % Defined in Record.oz
+   AdjoinAt   % Defined in Record.oz
+   AdjoinList % Defined in Record.oz
 
    %%
    %% VirtualString
@@ -347,6 +255,16 @@ prepare
    `ooObjLock`   = {NewUniqueName 'ooObjLock'}
 
    %%
+   %% BitArray
+   %%
+   IsBitArray % Defined in BitArray.oz
+
+   %%
+   %% ForeignPointer
+   %%
+   %IsForeignPointer = Boot_ForeignPointer.is
+
+   %%
    %% Thread
    %%
    IsThread = Boot_Thread.is
@@ -365,7 +283,7 @@ prepare
    %%
    %% BitString ByteString
    %%
-   %IsBitString  = Boot_BitString.is
+   IsBitString  % Defined in BitString.oz
    IsByteString = Boot_ByteString.is
 
    \insert 'Exception.oz'
@@ -379,8 +297,8 @@ prepare
    \insert 'Name.oz'
    \insert 'Bool.oz'
    \insert 'UnicodeString.oz'
-   %\insert 'String.oz'
-   %\insert 'Char.oz'
+   \insert 'String.oz'
+   \insert 'Char.oz'
    \insert 'Int.oz'
    \insert 'Float.oz'
    \insert 'Number.oz'
@@ -395,11 +313,12 @@ prepare
    \insert 'VirtualString.oz'
    \insert 'Array.oz'
    \insert 'Object.oz'
-   %\insert 'BitArray.oz'
+   \insert 'BitArray.oz'
    %\insert 'ForeignPointer.oz'
    \insert 'Thread.oz'
    \insert 'Time.oz'
-   %\insert 'BitString.oz'
+   \insert 'Functor.oz'
+   \insert 'BitString.oz'
    \insert 'ByteString.oz'
 
 export
@@ -462,9 +381,15 @@ export
    'UnicodeStringToAtom': UnicodeStringToAtom
    %'UnicodeStringToInt' : UnicodeStringToInt
    %'UnicodeStringToFloat': UnicodeStringToFloat
+   %% String
+   'String'             : String
+   'IsString'           : IsString
+   'StringToAtom'       : StringToAtom
+   %'StringToInt'        : StringToInt
+   %'StringToFloat'      : StringToFloat
    %% Char
-   %'Char'               : Char
-   %'IsChar'             : IsChar
+   'Char'               : Char
+   'IsChar'             : IsChar
    %% Int
    'Int'                : Int
    'IsInt'              : IsInt
@@ -472,6 +397,7 @@ export
    'IsOdd'              : IsOdd
    'IsEven'             : IsEven
    %'IntToFloat'         : IntToFloat
+   'IntToUnicodeString' : IntToUnicodeString
    'IntToString'        : IntToString
    %% Float
    'Float'              : Float
@@ -490,12 +416,13 @@ export
    'Atan2'              : Atan2
    'Round'              : Round*/
    %'FloatToInt'         : FloatToInt
+   'FloatToUnicodeString': FloatToUnicodeString
    'FloatToString'      : FloatToString
    %% Number
    'Number'             : Number
    'IsNumber'           : IsNumber
    %'Pow'                : Pow
-   %'Abs'                : Abs
+   'Abs'                : Abs
    %% Tuple
    'Tuple'              : Tuple
    'IsTuple'            : IsTuple
@@ -581,18 +508,18 @@ export
    'Exception'          : Exception
    'Raise'              : Raise
    %% Functor
-   %'Functor'            : Functor
+   'Functor'            : Functor
    %% BitArray
-   %'BitArray'           : BitArray
-   %'IsBitArray'         : IsBitArray
+   'BitArray'           : BitArray
+   'IsBitArray'         : IsBitArray
    %% ForeignPointer
    %'ForeignPointer'     : ForeignPointer
    %'IsForeignPointer'   : IsForeignPointer
    %% BitString
-   /*'BitString'          : BitString
+   'BitString'          : BitString
    'ByteString'         : ByteString
    'IsBitString'        : IsBitString
-   'IsByteString'       : IsByteString*/
+   'IsByteString'       : IsByteString
 
    %% Will be removed by the compiler
    'ByNeedDot'          : ByNeedDot

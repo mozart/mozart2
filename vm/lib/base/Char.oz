@@ -22,40 +22,19 @@
 %%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %%% POSSIBILITY OF SUCH DAMAGE.
 
-local
-   PortID = {NewUniqueName portID}
-in
-   fun {IsPort X}
-      {IsChunk X} andthen {HasFeature X PortID}
-   end
-
-   fun {NewPort ?S}
-      Head
-      Tail = {NewCell Head}
-      proc {Send X}
-         NewTail
-      in
-         {Exchange Tail X|!!NewTail NewTail}
-      end
-   in
-      S = !!Head
-      {NewChunk port(PortID:Send)}
-   end
-
-   proc {Send P X}
-      if {IsPort P} then
-         {P.PortID X}
-      else
-         raise typeError('port' P) end
-      end
-   end
-
-   proc {SendRecv P X Y}
-      {Send P X#Y}
-   end
-end
-
-Port = port(is:       IsPort
-            new:      NewPort
-            send:     Send
-            sendRecv: SendRecv)
+Char = char(is:       IsChar
+            /*isAlpha:  Boot_Char.isAlpha
+            isUpper:  Boot_Char.isUpper
+            isLower:  Boot_Char.isLower
+            isDigit:  Boot_Char.isDigit
+            isXDigit: Boot_Char.isXDigit
+            isAlNum:  Boot_Char.isAlNum
+            isSpace:  Boot_Char.isSpace
+            isGraph:  Boot_Char.isGraph
+            isPrint:  Boot_Char.isPrint
+            isPunct:  Boot_Char.isPunct
+            isCntrl:  Boot_Char.isCntrl
+            toUpper:  Boot_Char.toUpper
+            toLower:  Boot_Char.toLower*/
+            toAtom:   fun {$ C} {String.toAtom C|nil} end
+            /*type:     Boot_Char.type*/)

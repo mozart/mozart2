@@ -28,17 +28,17 @@ local
    %%
    %% Class manipulation
    %%
-   ClassTag = {NewName}
+   ClassID            = {NewUniqueName classID}
    `ooClassIsSited`   = {NewUniqueName 'ooClassIsSited'}
    `ooClassIsLocking` = {NewUniqueName 'ooClassIsLocking'}
 
    fun {IsClass X}
-      {IsChunk X} andthen {HasFeature X ClassTag}
+      {IsChunk X} andthen {HasFeature X ClassID}
    end
 
    fun {BuildClass Info IsLocking IsSited}
       {Chunk.new {Adjoin Info
-                  'class'(ClassTag:true
+                  'class'(ClassID:unit
                           `ooClassIsLocking`:IsLocking
                           `ooClassIsSited`:IsSited)}}
    end

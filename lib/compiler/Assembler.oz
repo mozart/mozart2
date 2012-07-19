@@ -515,7 +515,8 @@ define
          else {Assembler append(I1)}
          end
          {Peephole Rest Assembler}
-      [] deAllocateL(I)|return|(Rest=lbl(_)|deAllocateL(!I)|return|_) then
+      [] deAllocateL(I)|return|(Rest=lbl(_)|deAllocateL(J)|return|_) andthen
+            I == J then
          {Peephole Rest Assembler}
       [] deAllocateL(I)|Rest then
          {MakeDeAllocate I Assembler}

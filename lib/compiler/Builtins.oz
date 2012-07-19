@@ -57,7 +57,7 @@ require
 prepare
    BuiltinTable = {GroundZip.zip
                    builtinTable(
-                      \insert compiler-Builtins
+                      %\insert compiler-Builtins
                       )}
 
    proc {E Name T}

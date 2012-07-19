@@ -281,6 +281,10 @@ define
             Ss <- (Y|I)|@Ss
          end
 
+         /* Mozart 2 does not support FD constraint solving yet.
+          * So this great optimization routine must be left aside for now.
+          */
+         /*
          meth Optimize(AddNs $)
             LNs = @Ns
             LCDs = {Sort @CDs fun {$ C1|_ C2|_}
@@ -375,6 +379,56 @@ define
                 end
              end ~1}+1
          end
+         */
+
+         /* Instead, we use this naive fallback */
+         meth Optimize(AddNS $)
+            LEs = @Es
+            LSs = @Ss
+            LN = @N-1
+
+            Alloc = {MakeTuple res LN}
+            AllocatedIs = {BitArray.new 0 LN}
+
+            proc {AllocateNew ?I}
+               I = {BitArray.complementToList AllocatedIs}.1
+               {BitArray.set AllocatedIs I}
+            end
+         in
+            %% Process equality constraints
+            {ForAll LEs
+             proc {$ Y1|Y2}
+                Alloc.Y1 = Alloc.Y2
+             end}
+
+            %% Do hard assignments
+            {ForAll LSs
+             proc {$ Y|I}
+                Alloc.Y = I
+                {BitArray.set AllocatedIs I}
+             end}
+
+            %% Assign naively the remaining Ys
+            {For 1 LN 1
+             proc {$ Y}
+                if {IsFree Alloc.Y} then
+                   Alloc.Y = {AllocateNew}
+                end
+             end}
+
+            %% Make the result
+            {Record.foldLInd Alloc
+             fun {$ I M J}
+                %% Because of fixed register assignment (\switch +staticvarname)
+                %% some registers may not be in use.
+                if {Dictionary.member self.Mapping I} then
+                   {Dictionary.get self.Mapping I}=J
+                   {Max M J}
+                else M
+                end
+             end ~1}+1
+         end
+
          %% PR#571, PR#931, PR#1244
          %% To fix register allocation bugs we have added inequality
          %% constraints between source/target Y registers involved in

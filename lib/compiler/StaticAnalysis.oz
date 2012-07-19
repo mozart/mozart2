@@ -3363,9 +3363,10 @@ define
          Env = {GetGlobalEnv @globalVars}
          T N
       in
-         for A in @formalArgs do
-            {A checkFeature(Ctrl @label)}
-         end
+         {ForAll @formalArgs
+          proc {$ A}
+             {A checkFeature(Ctrl @label)}
+          end}
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
          SAStatement, saBody(Ctrl @statements)

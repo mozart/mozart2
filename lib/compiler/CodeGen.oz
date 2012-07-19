@@ -329,6 +329,8 @@ define
                   else
                      AlwaysSucceeds = false
                   end
+               % Mozart 2.0 does not support record constraints yet.
+               /*
                elsecase {Value.status Value1}
                of kinded(record) andthen
                   {Member Feature {RecordC.reflectArity Value1}}
@@ -340,6 +342,7 @@ define
                   %% away references to e.g. List.last.
                   AlwaysSucceeds = true
                   ValueF = Value1^Feature
+               */
                else
                   AlwaysSucceeds = false
                end

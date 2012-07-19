@@ -489,6 +489,8 @@ define
          end
       end
       meth UnnestToVar(FE Origin ?GEqs ?GVO)
+         SubtreeGVO % Moved here because of a limitation of the bootcompiler
+      in
          case FE of fVar(PrintName C) then
             GEqs = nil
             {@BA refer(PrintName C ?GVO)}
@@ -512,12 +514,12 @@ define
                {GV occ({GV getCoord($)} ?GVO)}
             end
          [] fOpApply('.' [fVar(X C) fAtom(Y _)] _)
-            andthen SubtreeGVO in {@BA referImport(X C Y $ ?SubtreeGVO)}
+            andthen /*SubtreeGVO in*/ {@BA referImport(X C Y $ ?SubtreeGVO)}
          then
             GEqs = nil
             GVO = SubtreeGVO
          elseof fOpApply('.' [fVar(X C) fInt(Y _)] _)
-            andthen SubtreeGVO in {@BA referImport(X C Y $ ?SubtreeGVO)}
+            andthen /*SubtreeGVO in*/ {@BA referImport(X C Y $ ?SubtreeGVO)}
          then
             GEqs = nil
             GVO = SubtreeGVO
@@ -1248,6 +1250,8 @@ define
             FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fAtom(false C) C) C)
             Unnester, UnnestStatement(FS $)
          [] fOpApply(Op FEs C) then
+            LeftGVO % Moved here because of a limitation of the bootcompiler
+         in
             if {DollarsInScope FEs 0} \= 0 then OpKind in
                OpKind = case FEs of [_] then 'prefix' else 'infix' end
                {@reporter
@@ -1255,12 +1259,12 @@ define
                       msg: OpKind#' operator cannot take $ as argument')}
             end
             case FE of fOpApply('.' [fVar(X C2) fAtom(Y _)] C3)
-               andthen LeftGVO in {@BA referImport(X C2 Y $ ?LeftGVO)}
+               andthen /*LeftGVO in*/ {@BA referImport(X C2 Y $ ?LeftGVO)}
             then RightGVO in
                {ToGV occ(C3 ?RightGVO)}
                {New Core.equation init(LeftGVO RightGVO C)}
             elseof fOpApply('.' [fVar(X C2) fInt(Y _)] C3)
-               andthen LeftGVO in {@BA referImport(X C2 Y $ ?LeftGVO)}
+               andthen /*LeftGVO in*/ {@BA referImport(X C2 Y $ ?LeftGVO)}
             then RightGVO in
                {ToGV occ(C3 ?RightGVO)}
                {New Core.equation init(LeftGVO RightGVO C)}

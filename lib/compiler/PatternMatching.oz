@@ -121,7 +121,9 @@ local
          %% Tree is unreachable
          NewTree = leaf(Then {NewCell 0} _)
       [] Pos#Test|Rest then
-         case Tree of node(!Pos _ _ _ _ _) andthen Hole RestTree in
+         Hole RestTree % Moved here because of a limitation of the bootcompiler
+      in
+         case Tree of node(!Pos _ _ _ _ _) andthen % Hole RestTree in % moved above
             {FindTest Tree Pos Test ?NewTree ?Hole ?RestTree}
          then
             Hole = {MergeSub Rest Then RestTree}

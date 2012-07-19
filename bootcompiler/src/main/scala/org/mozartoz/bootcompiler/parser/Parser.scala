@@ -414,9 +414,10 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // Raise
 
-  lazy val raiseStatement: PackratParser[Statement] = positioned {
-    "raise" ~> inExpression <~ "end" ^^ RaiseStatement
-  }
+  lazy val raiseStatement: PackratParser[Statement] = positioned(
+      "raise" ~> inExpression <~ "end" ^^ RaiseStatement
+    | "fail" ^^^ RaiseStatement(Constant(OzAtom("failure")))
+  )
 
   lazy val raiseExpression: PackratParser[Expression] = positioned {
     "raise" ~> inExpression <~ "end" ^^ RaiseExpression

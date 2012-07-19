@@ -73,8 +73,13 @@ package object ast {
   }
 
   /** Builds an Oz #-tuple */
-  def sharp(fields: List[Expression]) = atPos(fields.head) {
-    Record(Constant(OzAtom("#")), fields map withAutoFeature)
+  def sharp(fields: List[Expression]) = {
+    if (fields.isEmpty) Constant(OzAtom("#"))
+    else {
+      atPos(fields.head) {
+        Record(Constant(OzAtom("#")), fields map withAutoFeature)
+      }
+    }
   }
 
   /** Equips an expression with an AutoFeature */

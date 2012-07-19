@@ -128,14 +128,9 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
   // see `whitespace in `Scanners'
   def whitespace: Parser[Any] = rep(
       whitespaceChar
-    | '/' ~ '*' ~ comment
+    | '/' ~ '*' ~ rep(not('*' ~ '/') ~> chrExcept(EofCh)) ~ '*' ~ '/'
     | '%' ~ rep( chrExcept(EofCh, '\n') )
     | '/' ~ '*' ~ failure("unclosed comment")
-  )
-
-  protected def comment: Parser[Any] = (
-      '*' ~ '/'  ^^ { case _ => ' ' }
-    | chrExcept(EofCh) ~ comment
   )
 
   def preprocessorDirective = (

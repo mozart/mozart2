@@ -368,25 +368,18 @@ class OzParser extends OzTokenParsers with PackratParsers
     "functor" ~> opt("$") ~> innerFunctor <~ "end"
 
   lazy val innerFunctor: PackratParser[FunctorExpression] = positioned {
-    require ~ prepare ~ imports ~ exports ~ define ^^ {
-      case r ~ p ~ i ~ e ~ d => FunctorExpression("", r, p, i, d, e)
+    rep(functorClause) ^^ {
+      _.foldLeft(partialFunctor())(mergePartialFunctors)
     }
   }
 
-  lazy val require: PackratParser[List[FunctorImport]] =
-    opt("require" ~> rep(importElem)) ^^ (_.getOrElse(Nil))
-
-  lazy val prepare: PackratParser[Option[RawLocalStatement]] =
-    opt("prepare" ~> defineBody)
-
-  lazy val imports: PackratParser[List[FunctorImport]] =
-    opt("import" ~> rep(importElem)) ^^ (_.getOrElse(Nil))
-
-  lazy val exports: PackratParser[List[FunctorExport]] =
-    opt("export" ~> rep(exportElem)) ^^ (_.getOrElse(Nil))
-
-  lazy val define: PackratParser[Option[RawLocalStatement]] =
-    opt("define" ~> defineBody)
+  lazy val functorClause: PackratParser[FunctorExpression] = (
+      "require" ~> rep(importElem) ^^ (r => partialFunctor(require = r))
+    | "prepare" ~> defineBody ^^ (p => partialFunctor(prepare = Some(p)))
+    | "import" ~> rep(importElem) ^^ (i => partialFunctor(imports = i))
+    | "define" ~> defineBody ^^ (d => partialFunctor(define = Some(d)))
+    | "export" ~> rep(exportElem) ^^ (e => partialFunctor(exports = e))
+  )
 
   lazy val importElem: PackratParser[FunctorImport] = positioned(
       variable ~ success(Nil) ~ opt(importLocation) ^^ FunctorImport
@@ -420,6 +413,28 @@ class OzParser extends OzTokenParsers with PackratParsers
   }
 
   lazy val featureNoVar = positioned(featureConst ^^ Constant)
+
+  def partialFunctor(name: String = "",
+    require: List[FunctorImport] = Nil,
+    prepare: Option[LocalStatementOrRaw] = None,
+    imports: List[FunctorImport] = Nil,
+    define: Option[LocalStatementOrRaw] = None,
+    exports: List[FunctorExport] = Nil) = {
+    FunctorExpression(name, require, prepare, imports, define, exports)
+  }
+
+  def mergePartialFunctors(lhs: FunctorExpression, rhs: FunctorExpression) = {
+    val FunctorExpression(lhsName, lhsRequire, lhsPrepare,
+        lhsImports, lhsDefine, lhsExports) = lhs
+
+    val FunctorExpression(rhsName, rhsRequire, rhsPrepare,
+        rhsImports, rhsDefine, rhsExports) = rhs
+
+    FunctorExpression(if (lhsName.isEmpty) rhsName else lhsName,
+        lhsRequire ::: rhsRequire, lhsPrepare orElse rhsPrepare,
+        lhsImports ::: rhsImports, lhsDefine orElse rhsDefine,
+        lhsExports ::: rhsExports)
+  }
 
   // Class
 

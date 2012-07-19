@@ -12,12 +12,23 @@ trait OzPreprocessor {
   val lexical = new OzLexical
   import lexical._
 
+  /** Preprocessor state */
+  private case class PreprocessorState(
+      in: Reader[Token],
+      currentFile: File,
+      fileStack: List[(Reader[Token], File)] = Nil,
+      offset: Int = 0
+  ) {
+    def pos = new PreprocessorPosition(offset)(in.pos, currentFile)
+  }
+
   /** Preprocessor */
-  class Preprocessor(in: Reader[Token], val file: File,
-      stack: List[(Reader[Token], File)] = Nil,
-      _offset: Int = 0) extends Reader[Token] {
+  class Preprocessor(state: PreprocessorState) extends Reader[Token] {
+    def this(in: Reader[Token], file: File) =
+      this(PreprocessorState(in = in, currentFile = file))
+
     private val (_first, _rest0, _pos, _atEnd) =
-      preprocess(in, file, stack, _offset)
+      preprocess(state)
 
     private lazy val _rest = _rest0()
 
@@ -27,35 +38,36 @@ trait OzPreprocessor {
     def atEnd = _atEnd
   }
 
-  private def preprocess(in: Reader[Token], file: File,
-      stack: List[(Reader[Token], File)],
-      offset: Int): (Token, () => Reader[Token], Position, Boolean) = {
+  private def preprocess(state: PreprocessorState):
+      (Token, () => Reader[Token], Position, Boolean) = {
+    import state._
+
     if (in.atEnd) {
-      if (stack.isEmpty) {
+      if (fileStack.isEmpty) {
         // Totally the end
-        (in.first, () => in,
-            new PreprocessorPosition(offset)(in.pos, file), true)
+        (in.first, () => in, pos, true)
       } else {
         // Get out of one file
-        preprocess(stack.head._1, stack.head._2, stack.tail, offset)
+        val (newIn, newFile) :: newStack = fileStack
+        preprocess(state.copy(in = newIn, currentFile = newFile,
+            fileStack = newStack))
       }
     } else {
       in.first match {
         // TODO Process a preprocessor token
 
         case PreprocessorDirectiveWithArg("insert", fileName) =>
-          val subFile = new File(file.getParentFile, fileName)
+          val subFile = new File(currentFile.getParentFile, fileName)
           val subReader = readerForFile(subFile)
           val subScanner = new Scanner(subReader)
 
-          val subStack = (in.rest, file) :: stack
-          preprocess(subScanner, subFile, subStack, offset)
+          val subStack = (in.rest, currentFile) :: fileStack
+          preprocess(state.copy(in = subScanner, currentFile = subFile,
+              fileStack = subStack))
 
         case _ =>
-          def rest() =
-            new Preprocessor(in.rest, file, stack, offset+1)
-          (in.first, rest,
-              new PreprocessorPosition(offset)(in.pos, file), false)
+          val nextState = state.copy(in = in.rest, offset = offset+1)
+          (in.first, () => new Preprocessor(nextState), pos, false)
       }
     }
   }

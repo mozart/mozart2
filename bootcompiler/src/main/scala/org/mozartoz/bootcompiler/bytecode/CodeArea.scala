@@ -176,6 +176,14 @@ class CodeArea(val abstraction: Abstraction) {
       case OzAtom(value) =>
         out << "MOZART_STR(\"%s\")" % (value map {
           case '\\' => "\\\\"
+          case '"' => "\\\""
+          case '\u0007' => "\\a"
+          case '\u0008' => "\\b"
+          case '\u0009' => "\\t"
+          case '\u000A' => "\\n"
+          case '\u000B' => "\\v"
+          case '\u000C' => "\\f"
+          case '\u000D' => "\\r"
           case c => c
         } mkString "")
 

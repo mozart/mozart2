@@ -121,6 +121,12 @@ object Desugar extends Transformer with TreeDSL {
       val newRecord = treeCopy.Record(expression, label, fieldsNoAuto)
       super.transformExpr(newRecord)
 
+    case OpenRecordPattern(label, fields) =>
+      val fieldsNoAuto = fillAutoFeatures(fields)
+      val newPattern = treeCopy.OpenRecordPattern(
+          expression, label, fieldsNoAuto)
+      super.transformExpr(newPattern)
+
     case _ =>
       super.transformExpr(expression)
   }

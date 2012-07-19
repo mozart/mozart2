@@ -609,6 +609,10 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
         val newParts = parts map (processPatternInner(_, variables))
         treeCopy.PatternConjunction(conj, newParts)
 
+      /* Escaped variable */
+      case EscapedVariable(v) =>
+        transformExpr(v)
+
       case _ =>
         pattern
     }

@@ -289,7 +289,6 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   lazy val pattern3: PackratParser[Expression] = (
-      // TODO escaped variable
       positioned {
         literalLabelExpr ~ rep(patternRecordField) ~ opt("...") <~ ")" ^^ {
           case label ~ fields ~ openMarker =>
@@ -300,6 +299,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     | positioned("[" ~> rep1(pattern) <~ "]" ^^ exprListToListExpr)
     | integerConstExpr | floatConstExpr | literalConstExpr
     | variable
+    | escapedVariable
     | wildcardExpr
     | "(" ~> pattern <~ ")"
   )

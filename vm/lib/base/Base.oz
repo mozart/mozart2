@@ -262,7 +262,7 @@ prepare
    %%
    %% ForeignPointer
    %%
-   %IsForeignPointer = Boot_ForeignPointer.is
+   IsForeignPointer = fun {$ X} false end
 
    %%
    %% Thread
@@ -314,7 +314,7 @@ prepare
    \insert 'Array.oz'
    \insert 'Object.oz'
    \insert 'BitArray.oz'
-   %\insert 'ForeignPointer.oz'
+   \insert 'ForeignPointer.oz'
    \insert 'Thread.oz'
    \insert 'Time.oz'
    \insert 'Functor.oz'
@@ -513,8 +513,8 @@ export
    'BitArray'           : BitArray
    'IsBitArray'         : IsBitArray
    %% ForeignPointer
-   %'ForeignPointer'     : ForeignPointer
-   %'IsForeignPointer'   : IsForeignPointer
+   'ForeignPointer'     : ForeignPointer
+   'IsForeignPointer'   : IsForeignPointer
    %% BitString
    'BitString'          : BitString
    'ByteString'         : ByteString

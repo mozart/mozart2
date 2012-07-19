@@ -68,10 +68,20 @@ add_custom_command(
 
 file(GLOB SYS_FUNCTORS
     "${MOZART_DIR}/lib/sys/*.oz"
+    "${MOZART_DIR}/lib/support/*.oz"
     "${MOZART_DIR}/lib/op/*.oz"
-    "${MOZART_DIR}/lib/compiler/*.oz"
     "${MOZART_DIR}/lib/cp/*.oz"
     "${MOZART_DIR}/boostenv/lib/*.oz")
+
+set(COMPILER_FUNCTORS
+    "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
+    "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Compiler.oz" "Core.oz"
+    "ForLoop.oz" "GroundZip.oz" "Macro.oz" "PrintName.oz" "RunTime.oz"
+    "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz")
+
+foreach(FUNCTOR ${COMPILER_FUNCTORS})
+  set(SYS_FUNCTORS ${SYS_FUNCTORS} "${MOZART_DIR}/lib/compiler/${FUNCTOR}")
+endforeach()
 
 set(ALL_FUNCTORS
     "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz" # Main.oz must be first

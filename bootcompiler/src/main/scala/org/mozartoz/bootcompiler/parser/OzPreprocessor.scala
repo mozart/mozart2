@@ -45,9 +45,9 @@ trait OzPreprocessor {
   @scala.annotation.tailrec
   private def preprocess(state0: PreprocessorState):
       (Token, () => Reader[Token], Position, Boolean) = {
-    val in = state0.in
+    import state0.{ in, pos }
     val state = state0.copy(in = in.rest)
-    import state.{ in => _, _ }
+    import state.{ in => _, pos => _, _ }
 
     if (in.atEnd) {
       if (fileStack.isEmpty) {
@@ -102,13 +102,23 @@ trait OzPreprocessor {
           preprocess(state)
 
         case PreprocessorDirectiveWithArg("insert", fileName) =>
-          val subFile = new File(currentFile.getParentFile, fileName)
-          val subReader = readerForFile(subFile)
-          val subScanner = new Scanner(subReader)
+          val file0 = new File(currentFile.getParentFile, fileName)
 
-          val subStack = (in.rest, currentFile) :: fileStack
-          preprocess(state.copy(in = subScanner, currentFile = subFile,
-              fileStack = subStack))
+          val file = {
+            if (file0.exists()) file0
+            else {
+              val altFile = new File(currentFile.getParentFile, fileName+".oz")
+              if (altFile.exists()) altFile
+              else file0
+            }
+          }
+
+          val reader = readerForFile(file)
+          val scanner = new Scanner(reader)
+
+          val newStack = (in.rest, currentFile) :: fileStack
+          preprocess(state.copy(in = scanner, currentFile = file,
+              fileStack = newStack))
 
         case _ =>
           val nextState = state.copy(offset = offset+1)

@@ -84,11 +84,11 @@ class TreeCopier {
 
   // Complex expressions
 
-  def ProcExpression(tree: Node, name: String, args: List[FormalArg],
+  def ProcExpression(tree: Node, name: String, args: List[VariableOrRaw],
       body: Statement, flags: List[String]) =
     new ProcExpression(name, args, body, flags).copyAttrs(tree)
 
-  def FunExpression(tree: Node, name: String, args: List[FormalArg],
+  def FunExpression(tree: Node, name: String, args: List[VariableOrRaw],
       body: Expression, flags: List[String]) =
     new FunExpression(name, args, body, flags).copyAttrs(tree)
 

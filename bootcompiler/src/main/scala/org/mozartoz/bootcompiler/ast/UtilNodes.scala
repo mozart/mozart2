@@ -3,8 +3,6 @@ package ast
 
 import symtab._
 
-trait FormalArg extends Node
-
 trait RawDeclarationOrVar extends Node
 trait RawDeclaration extends RawDeclarationOrVar
 

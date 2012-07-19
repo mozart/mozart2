@@ -3,6 +3,8 @@ package parser
 
 import java.io.File
 
+import scala.collection.mutable.ListBuffer
+
 import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input._
@@ -15,6 +17,9 @@ object OzParser {
 
   private def generateExcIdent() =
     "<exc$" + generatedIdentCounter.next() + ">"
+
+  private def generateParamIdent() =
+    "<arg$" + generatedIdentCounter.next() + ">"
 }
 
 /**
@@ -23,7 +28,7 @@ object OzParser {
 class OzParser extends OzTokenParsers with PackratParsers
     with ImplicitConversions {
 
-  import OzParser.generateExcIdent
+  import OzParser._
 
   lexical.reserved ++= List(
       "andthen", "at", "attr", "case", "catch", "choice",
@@ -111,27 +116,33 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val procStatement: PackratParser[Statement] = positioned {
     (("proc" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
-      case flags ~ left ~ args ~ body =>
+      case flags ~ left ~ args0 ~ body0 =>
+        val (args, body) = postProcessArgsAndBody(args0, body0)
         BindStatement(left, ProcExpression(nameOf(left), args, body, flags))
     }
   }
 
   lazy val funStatement: PackratParser[Statement] = positioned {
     (("fun" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
-      case flags ~ left ~ args ~ body =>
+      case flags ~ left ~ args0 ~ body0 =>
+        val (args, body) = postProcessArgsAndBody(args0, body0)
         BindStatement(left, FunExpression(nameOf(left), args, body, flags))
     }
   }
 
   lazy val procExpression: PackratParser[Expression] = positioned {
     (("proc" ~> procFlags <~ "{" ~ "$") ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
-      case flags ~ args ~ body => ProcExpression("", args, body, flags)
+      case flags ~ args0 ~ body0 =>
+        val (args, body) = postProcessArgsAndBody(args0, body0)
+        ProcExpression("", args, body, flags)
     }
   }
 
   lazy val funExpression: PackratParser[Expression] = positioned {
     (("fun" ~> procFlags <~ "{" ~ "$") ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
-      case flags ~ args ~ body => FunExpression("", args, body, flags)
+      case flags ~ args0 ~ body0 =>
+        val (args, body) = postProcessArgsAndBody(args0, body0)
+        FunExpression("", args, body, flags)
     }
   }
 
@@ -139,7 +150,60 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val formalArgs = rep(formalArg)
 
-  lazy val formalArg = variable
+  lazy val formalArg = pattern
+
+  def postProcessArgsAndBody(args: List[Expression], body: Statement) = {
+    if (args forall isRawVariable) {
+      (args map asRawVariable, body)
+    } else {
+      val (newArgs, patMatValue, pattern) = postProcessArgsInner(args)
+      (newArgs, MatchStatement(patMatValue,
+          List(MatchStatementClause(pattern, None, body)),
+          RaiseStatement(makeMatchErrorException())))
+    }
+  }
+
+  def postProcessArgsAndBody(args: List[Expression], body: Expression) = {
+    if (args forall isRawVariable) {
+      (args map asRawVariable, body)
+    } else {
+      val (newArgs, patMatValue, pattern) = postProcessArgsInner(args)
+      (newArgs, MatchExpression(patMatValue,
+          List(MatchExpressionClause(pattern, None, body)),
+          RaiseExpression(makeMatchErrorException())))
+    }
+  }
+
+  def postProcessArgsInner(args: List[Expression]) = {
+    val newArgs = new ListBuffer[RawVariable]
+    val patMatValueItems = new ListBuffer[RawVariable]
+    val patternItems = new ListBuffer[Expression]
+
+    for (arg <- args) {
+      arg match {
+        case v: RawVariable =>
+          newArgs += v
+
+        case _ =>
+          val newArg = RawVariable(generateParamIdent())
+          newArgs += newArg
+          patMatValueItems += newArg
+          patternItems += arg
+      }
+    }
+
+    assert(!patMatValueItems.isEmpty)
+
+    if (patMatValueItems.size == 1) {
+      (newArgs.toList, patMatValueItems.head, patternItems.head)
+    } else {
+      (newArgs.toList, sharp(patMatValueItems.toList),
+          sharp(patternItems.toList))
+    }
+  }
+
+  private def isRawVariable(expr: Expression) = expr.isInstanceOf[RawVariable]
+  private def asRawVariable(expr: Expression) = expr.asInstanceOf[RawVariable]
 
   // Call
 
@@ -180,7 +244,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   }
 
   lazy val innerCaseStatement: PackratParser[Statement] = ( // !positioned
-      expression ~ ("of" ~> caseStatementClauses) ~ elseStatement
+      expression ~ ("of" ~> caseStatementClauses) ~ elseStatementCase
           ^^ MatchStatement
   )
 
@@ -248,11 +312,20 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // else clauses of if and case
 
-  lazy val elseStatement: PackratParser[Statement] = (
+  lazy val elseStatementBase: PackratParser[Statement] = (
       "else" ~> inStatement
     | positioned("elseif" ~> innerIfStatement)
     | positioned("elsecase" ~> innerCaseStatement)
+  )
+
+  lazy val elseStatement: PackratParser[Statement] = (
+      elseStatementBase
     | positioned(success(SkipStatement()))
+  )
+
+  lazy val elseStatementCase: PackratParser[Statement] = (
+      elseStatementBase
+    | positioned(success(RaiseStatement(makeMatchErrorException())))
   )
 
   lazy val elseExpression: PackratParser[Expression] = (
@@ -263,8 +336,11 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val elseExpressionCase: PackratParser[Expression] = (
       elseExpression
-    | positioned(success(Constant(OzAtom("matchError"))))
+    | positioned(success(RaiseExpression(makeMatchErrorException())))
   )
+
+  def makeMatchErrorException() =
+    Constant(OzAtom("matchError"))
 
   // Thread
 

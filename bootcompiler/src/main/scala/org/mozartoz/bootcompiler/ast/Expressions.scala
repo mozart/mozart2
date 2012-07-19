@@ -65,7 +65,7 @@ case class LocalExpression(declarations: List[Variable],
  *  end
  *  }}}
  */
-case class ProcExpression(name: String, args: List[FormalArg],
+case class ProcExpression(name: String, args: List[VariableOrRaw],
     body: Statement, flags: List[String]) extends Expression
     with ProcFunExpression {
   protected val keyword = "proc"
@@ -79,7 +79,7 @@ case class ProcExpression(name: String, args: List[FormalArg],
  *  end
  *  }}}
  */
-case class FunExpression(name: String, args: List[FormalArg],
+case class FunExpression(name: String, args: List[VariableOrRaw],
     body: Expression, flags: List[String]) extends Expression
     with ProcFunExpression {
   protected val keyword = "fun"
@@ -353,15 +353,14 @@ trait VarOrConst extends Expression
 trait VariableOrRaw extends Expression
 
 /** Raw variable (unnamed) */
-case class RawVariable(name: String) extends VariableOrRaw
-    with FormalArg with RawDeclaration {
+case class RawVariable(name: String) extends VariableOrRaw with RawDeclaration {
   def syntax(indent: String) =
     name
 }
 
 /** Variable */
 case class Variable(symbol: Symbol) extends VarOrConst with VariableOrRaw
-    with FormalArg with RawDeclarationOrVar {
+    with RawDeclarationOrVar {
   def syntax(indent: String) =
     symbol.fullName
 }

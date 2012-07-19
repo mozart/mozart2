@@ -23,7 +23,7 @@ trait LocalCommon extends StatOrExpr {
 trait ProcFunExpression extends StatOrExpr {
   protected val keyword: String
 
-  protected val args: List[FormalArg]
+  protected val args: List[VariableOrRaw]
   protected val body: StatOrExpr
   protected val flags: List[String]
 

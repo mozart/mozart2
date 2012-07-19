@@ -627,7 +627,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   }
 
   /** Names a list of formal parameters */
-  def nameFormals(args: List[FormalArg]) = {
+  def nameFormals(args: List[VariableOrRaw]) = {
     for (v @ RawVariable(name) <- args) yield {
       val symbol = new Symbol(name, formal = true)
       treeCopy.Variable(v, symbol)

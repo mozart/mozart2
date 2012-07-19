@@ -44,6 +44,11 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
     }
 
   def integerLiteral = (
+      integerLiteralBase ^^ IntLit
+    | '~' ~> integerLiteralBase ^^ (x => IntLit(-x))
+  )
+
+  def integerLiteralBase = (
       ('0' ~ (elem('x') | 'X')) ~> rep1(hexDigit) ^^ {
         digits => digits.foldLeft(0L)(_ * 16 + _)
       }
@@ -54,7 +59,7 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
         digits => digits.foldLeft(0L)(_ * 8 + _)
       }
     | stringOf1(digit) ^^ (chars => chars.toLong)
-  ) ^^ IntLit
+  )
 
   def atomLiteral = (
       stringOf1(lowerCaseLetter, identChar) ^^ processKeyword

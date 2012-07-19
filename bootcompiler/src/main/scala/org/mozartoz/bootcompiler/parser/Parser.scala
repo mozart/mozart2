@@ -297,7 +297,7 @@ class OzParser extends OzTokenParsers with PackratParsers
         }
       }
     | positioned("[" ~> rep1(pattern) <~ "]" ^^ exprListToListExpr)
-    | integerConstExpr | floatConstExpr | literalConstExpr
+    | integerConstExpr | floatConstExpr | literalConstExpr | stringConstExpr
     | variable
     | escapedVariable
     | wildcardExpr

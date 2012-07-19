@@ -17,7 +17,11 @@ trait OzPreprocessor {
       in: Reader[Token],
       currentFile: File,
       fileStack: List[(Reader[Token], File)] = Nil,
-      offset: Int = 0
+      offset: Int = 0,
+
+      defines: Set[String] = Set.empty,
+      skipping: Boolean = false,
+      skipDepth: Int = 0
   ) {
     def pos = new PreprocessorPosition(offset)(in.pos, currentFile)
   }
@@ -38,9 +42,12 @@ trait OzPreprocessor {
     def atEnd = _atEnd
   }
 
-  private def preprocess(state: PreprocessorState):
+  @scala.annotation.tailrec
+  private def preprocess(state0: PreprocessorState):
       (Token, () => Reader[Token], Position, Boolean) = {
-    import state._
+    val in = state0.in
+    val state = state0.copy(in = in.rest)
+    import state.{ in => _, _ }
 
     if (in.atEnd) {
       if (fileStack.isEmpty) {
@@ -52,9 +59,47 @@ trait OzPreprocessor {
         preprocess(state.copy(in = newIn, currentFile = newFile,
             fileStack = newStack))
       }
+    } else if (skipping) {
+      in.first match {
+        case PreprocessorDirective("ifdef" | "ifndef") =>
+          preprocess(state.copy(skipDepth = skipDepth+1))
+
+        case PreprocessorDirective("else" | "endif") if (skipDepth == 1) =>
+          preprocess(state.copy(skipping = false, skipDepth = 0))
+
+        case PreprocessorDirective("endif") =>
+          preprocess(state.copy(skipDepth = skipDepth-1))
+
+        case _ =>
+          preprocess(state)
+      }
     } else {
       in.first match {
-        // TODO Process a preprocessor token
+        case PreprocessorDirectiveWithArg("define", name) =>
+          preprocess(state.copy(defines = defines + name))
+
+        case PreprocessorDirectiveWithArg("undef", name) =>
+          preprocess(state.copy(defines = defines - name))
+
+        case PreprocessorDirectiveWithArg("ifdef", name) =>
+          if (defines contains name) {
+            preprocess(state)
+          } else {
+            preprocess(state.copy(skipping = true, skipDepth = 1))
+          }
+
+        case PreprocessorDirectiveWithArg("ifndef", name) =>
+          if (!(defines contains name)) {
+            preprocess(state)
+          } else {
+            preprocess(state.copy(skipping = true, skipDepth = 1))
+          }
+
+        case PreprocessorDirective("else") =>
+          preprocess(state.copy(skipping = true, skipDepth = 1))
+
+        case PreprocessorDirective("endif") =>
+          preprocess(state)
 
         case PreprocessorDirectiveWithArg("insert", fileName) =>
           val subFile = new File(currentFile.getParentFile, fileName)
@@ -66,7 +111,7 @@ trait OzPreprocessor {
               fileStack = subStack))
 
         case _ =>
-          val nextState = state.copy(in = in.rest, offset = offset+1)
+          val nextState = state.copy(offset = offset+1)
           (in.first, () => new Preprocessor(nextState), pos, false)
       }
     }

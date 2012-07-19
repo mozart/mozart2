@@ -33,7 +33,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   lexical.reserved ++= List(
       "andthen", "at", "attr", "case", "catch", "choice",
       "class", "cond", "declare", "define", "dis",
-      "div", "else", "elsecase", "elseif", "end",
+      "div", "else", "elsecase", "elseif", "elseof", "end",
       "export", "fail", "false", "feat", "finally", "from",
       "fun", "functor", "if", "import", "in", "local",
       "lock", "meth", "mod", "not", "of", "or", "orelse",
@@ -254,7 +254,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   lazy val caseStatementClauses: PackratParser[List[MatchStatementClause]] =
-    rep1(caseStatementClause, "[]" ~> caseStatementClause)
+    rep1(caseStatementClause, ("[]" | "elseof") ~> caseStatementClause)
 
   lazy val caseStatementClause: PackratParser[MatchStatementClause] = (
       positioned(
@@ -263,7 +263,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   )
 
   lazy val caseExpressionClauses: PackratParser[List[MatchExpressionClause]] =
-    rep1(caseExpressionClause, "[]" ~> caseExpressionClause)
+    rep1(caseExpressionClause, ("[]" | "elseof") ~> caseExpressionClause)
 
   lazy val caseExpressionClause: PackratParser[MatchExpressionClause] = (
       positioned(

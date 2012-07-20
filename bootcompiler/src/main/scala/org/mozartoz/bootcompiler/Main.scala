@@ -84,6 +84,8 @@ object Main {
         }
       } catch {
         case th: Throwable =>
+          Console.err.println(
+              "Fatal error when called with:\n  %s" format args.mkString(" "))
           th.printStackTrace()
           sys.exit(2)
       }
@@ -108,7 +110,7 @@ object Main {
     val functor = parseExpression(readerForFile(fileName), new File(fileName))
 
     ProgramBuilder.buildModuleProgram(program, url, functor)
-    compile(program)
+    compile(program, fileName)
 
     program.produceCC(new Output(outputStream()), urlToProcName(url), headers)
   }
@@ -124,7 +126,7 @@ object Main {
         yield parseExpression(readerForFile(fileName), new File(fileName))
 
     ProgramBuilder.buildBaseEnvProgram(program, bootModules, functors)
-    compile(program)
+    compile(program, "the base environment")
 
     program.produceCC(new Output(outputStream()), "createBaseEnv", headers)
 
@@ -140,7 +142,7 @@ object Main {
     val urls = fileNames map fileNameToURL
 
     ProgramBuilder.buildLinkerProgram(program, urls, urls.head)
-    compile(program)
+    compile(program, "the linker")
 
     val out = new Output(outputStream())
     program.produceCC(out, "createRunThread", headers)
@@ -372,12 +374,14 @@ object Main {
   /** Compiles a program
    *
    *  @param prog program to compile
-   *  @param outputStream function returning the output stream
+   *  @param fileName top-level file that is being processed
    */
-  private def compile(prog: Program) {
+  private def compile(prog: Program, fileName: String) {
     applyTransforms(prog)
 
     if (prog.hasErrors) {
+      Console.err.println(
+          "There were errors while compiling %s" format fileName)
       for ((message, pos) <- prog.errors) {
         Console.err.println(
             "Error at %s\n".format(pos.toString) +

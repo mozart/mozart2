@@ -17,8 +17,6 @@ set(GTEST_BUILD_DIR ${DEFAULT_GTEST_BUILD_DIR} CACHE PATH "Path to GTest build")
 add_subdirectory(generator)
 
 set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG")
+
 add_subdirectory(vm)
-
-add_subdirectory(lib)
-
 add_subdirectory(boostenv)

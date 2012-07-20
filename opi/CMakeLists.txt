@@ -75,16 +75,17 @@ file(GLOB SYS_FUNCTORS
 
 set(COMPILER_FUNCTORS
     "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
-    "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Compiler.oz" "Core.oz"
+    "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Main.oz" "Core.oz"
     "ForLoop.oz" "GroundZip.oz" "Macro.oz" "PrintName.oz" "RunTime.oz"
-    "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz")
+    "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz"
+    "NewAssembler.oz")
 
 foreach(FUNCTOR ${COMPILER_FUNCTORS})
-  set(SYS_FUNCTORS ${SYS_FUNCTORS} "${MOZART_DIR}/lib/compiler/${FUNCTOR}")
+  set(SYS_FUNCTORS ${SYS_FUNCTORS} "${MOZART_DIR}/../compiler-mozart/${FUNCTOR}")
 endforeach()
 
 set(ALL_FUNCTORS
-    "${CMAKE_CURRENT_SOURCE_DIR}/Main.oz" # Main.oz must be first
+    "${CMAKE_CURRENT_SOURCE_DIR}/MainTest.oz" # MainTest.oz must be first
     ${SYS_FUNCTORS})
 
 set(ALL_CCFILES "LinkerMain.cc" "Base.cc")

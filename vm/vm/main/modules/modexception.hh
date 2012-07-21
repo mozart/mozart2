@@ -51,6 +51,26 @@ public:
       return OpResult::raise(vm, value);
     }
   };
+
+  class RaiseError: public Builtin<RaiseError> {
+  public:
+    RaiseError(): Builtin("raiseError") {}
+
+    OpResult operator()(VM vm, In value) {
+      return raise(vm, buildRecord(
+        vm, buildArity(vm, MOZART_STR("error"), 1, MOZART_STR("debug")),
+        value, unit));
+    }
+  };
+
+  class Fail: public Builtin<Fail> {
+  public:
+    Fail(): Builtin("fail") {}
+
+    OpResult operator()(VM vm) {
+      return OpResult::fail();
+    }
+  };
 };
 
 }

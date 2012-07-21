@@ -25,10 +25,7 @@
 %%
 
 Exception = exception('raise':    Raise
-                      %raiseError: Boot_Exception.raiseError
-                      raiseError: proc {$ E}
-                                     {Raise error(E debug: unit)}
-                                  end
+                      raiseError: Boot_Exception.raiseError
                       %%
                       %% wrapper functions
                       %%

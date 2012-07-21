@@ -32,6 +32,7 @@ case class Config(
     headers: List[String] = List("mozart.hh"),
     moduleDefs: List[String] = Nil,
     baseDeclsFileName: String = "",
+    defines: Set[String] = Set.empty,
     fileNames: List[String] = Nil
 )
 
@@ -59,6 +60,9 @@ object Main {
         },
         opt("b", "base", "path to the base declarations file") {
           (v, c) => c.copy(baseDeclsFileName = v)
+        },
+        opt("D", "define", "add a symbol to the conditional defines") {
+          (v, c) => c.copy(defines = c.defines + v)
         },
         arglist("<files>", "input files (for linker, main file must be first)") {
           (v, c) => c.copy(fileNames = v :: c.fileNames)
@@ -107,7 +111,8 @@ object Main {
 
     val fileName = fileNames.head
     val url = fileNameToURL(fileName)
-    val functor = parseExpression(readerForFile(fileName), new File(fileName))
+    val functor = parseExpression(readerForFile(fileName), new File(fileName),
+        defines)
 
     ProgramBuilder.buildModuleProgram(program, url, functor)
     compile(program, fileName)
@@ -123,7 +128,8 @@ object Main {
 
     val functors =
       for (fileName <- fileNames)
-        yield parseExpression(readerForFile(fileName), new File(fileName))
+        yield parseExpression(readerForFile(fileName), new File(fileName),
+            defines)
 
     ProgramBuilder.buildBaseEnvProgram(program, bootModules, functors)
     compile(program, "the base environment")
@@ -196,8 +202,9 @@ object Main {
    *  @param reader input reader
    *  @return The statement AST
    */
-  private def parseStatement(reader: PagedSeqReader, file: File) =
-    new ParserWrapper().parseStatement(reader, file)
+  private def parseStatement(reader: PagedSeqReader, file: File,
+      defines: Set[String]) =
+    new ParserWrapper().parseStatement(reader, file, defines)
 
   /** Parses an Oz expression from a reader
    *
@@ -207,8 +214,9 @@ object Main {
    *  @param reader input reader
    *  @return The expression AST
    */
-  private def parseExpression(reader: PagedSeqReader, file: File) =
-    new ParserWrapper().parseExpression(reader, file)
+  private def parseExpression(reader: PagedSeqReader, file: File,
+      defines: Set[String]) =
+    new ParserWrapper().parseExpression(reader, file, defines)
 
   /** Utility wrapper for an [[org.mozartoz.bootcompiler.parser.OzParser]]
    *
@@ -218,11 +226,13 @@ object Main {
     /** Underlying parser */
     private val parser = new OzParser()
 
-    def parseStatement(reader: PagedSeqReader, file: File) =
-      processResult(parser.parseStatement(reader, file))
+    def parseStatement(reader: PagedSeqReader, file: File,
+        defines: Set[String]) =
+      processResult(parser.parseStatement(reader, file, defines))
 
-    def parseExpression(reader: PagedSeqReader, file: File) =
-      processResult(parser.parseExpression(reader, file))
+    def parseExpression(reader: PagedSeqReader, file: File,
+        defines: Set[String]) =
+      processResult(parser.parseExpression(reader, file, defines))
 
     /** Processes a parse result
      *

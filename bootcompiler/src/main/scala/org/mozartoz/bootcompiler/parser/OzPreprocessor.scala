@@ -28,8 +28,8 @@ trait OzPreprocessor {
 
   /** Preprocessor */
   class Preprocessor(state: PreprocessorState) extends Reader[Token] {
-    def this(in: Reader[Token], file: File) =
-      this(PreprocessorState(in = in, currentFile = file))
+    def this(in: Reader[Token], file: File, defines: Set[String]) =
+      this(PreprocessorState(in = in, currentFile = file, defines = defines))
 
     private val (_first, _rest0, _pos, _atEnd) =
       preprocess(state)

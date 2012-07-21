@@ -30,6 +30,8 @@ An entire program that must be built with the bootcompiler must call the BaseEnv
 
 The resulting `.cc` must all be compiled and linked together in one executable.
 
+All modes support zero to many `-D` arguments that specify initial conditional defines for `\ifdef`'s.
+
 ### The BaseEnv mode
 
 The BaseEnv mode is used to compile the base environment. It yields a `.cc` file that executes the statements necessary to 1) create the base environment and 2) register the boot modules and the base modules in the boot module manager. It also generates a file describing the features exported by the base environment, to be used by the other modes.

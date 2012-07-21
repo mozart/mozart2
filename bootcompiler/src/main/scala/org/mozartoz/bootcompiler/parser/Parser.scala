@@ -50,14 +50,15 @@ class OzParser extends OzTokenParsers with PackratParsers
       ">=", "=:", "\\=:", "<:", "=<:", ">:", ">=:", "::", ":::"
   )
 
-  def parseStatement(input: Reader[Char], file: File) =
-    phrase(statement)(makePreprocessor(input, file))
+  def parseStatement(input: Reader[Char], file: File, defines: Set[String]) =
+    phrase(statement)(makePreprocessor(input, file, defines))
 
-  def parseExpression(input: Reader[Char], file: File) =
-    phrase(expression)(makePreprocessor(input, file))
+  def parseExpression(input: Reader[Char], file: File, defines: Set[String]) =
+    phrase(expression)(makePreprocessor(input, file, defines))
 
-  private def makePreprocessor(input: Reader[Char], file: File) =
-    new Preprocessor(new lexical.Scanner(input), file)
+  private def makePreprocessor(input: Reader[Char], file: File,
+      defines: Set[String]) =
+    new Preprocessor(new lexical.Scanner(input), file, defines)
 
   // Statements
 

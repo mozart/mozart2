@@ -43,12 +43,89 @@ class ModSystem: public Module {
 public:
   ModSystem(): Module("System") {}
 
-  class Show: public Builtin<Show> {
+  class PrintRepr: public Builtin<PrintRepr> {
   public:
-    Show(): Builtin("show") {}
+    PrintRepr(): Builtin("printRepr") {}
 
-    OpResult operator()(VM vm, In value) {
-      std::cout << repr(vm, value) << std::endl;
+    OpResult operator()(VM vm, In value, In toStdErr, In newLine) {
+      bool boolToStdErr = false, boolNewLine = false;
+      MOZART_GET_ARG(boolToStdErr, toStdErr, MOZART_STR("Boolean"));
+      MOZART_GET_ARG(boolNewLine, newLine, MOZART_STR("Boolean"));
+
+      auto& stream = boolToStdErr ? std::cerr : std::cout;
+      stream << repr(vm, value);
+      if (boolNewLine)
+        stream << std::endl;
+
+      return OpResult::proceed();
+    }
+  };
+
+  class GetRepr: public Builtin<GetRepr> {
+  public:
+    GetRepr(): Builtin("getRepr") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      std::basic_stringstream<char> buffer;
+      buffer << repr(vm, value);
+      auto bufferStr = buffer.str();
+
+      auto utf8str = makeLString(bufferStr.c_str(), bufferStr.size());
+      auto str = toUTF<nchar>(utf8str);
+
+      result = Atom::build(vm, str.length, str.string);
+      return OpResult::proceed();
+    }
+  };
+
+  class PrintVS: public Builtin<PrintVS> {
+  public:
+    PrintVS(): Builtin("printVS") {}
+
+    OpResult operator()(VM vm, In value, In toStdErr, In newLine) {
+      bool boolToStdErr = false, boolNewLine = false;
+      MOZART_GET_ARG(boolToStdErr, toStdErr, MOZART_STR("Boolean"));
+      MOZART_GET_ARG(boolNewLine, newLine, MOZART_STR("Boolean"));
+
+      std::basic_stringstream<nchar> buffer;
+      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, buffer));
+      auto bufferStr = buffer.str();
+
+      auto& stream = boolToStdErr ? std::cerr : std::cout;
+      stream << toUTF<char>(makeLString(bufferStr.c_str(), bufferStr.size()));
+      if (boolNewLine)
+        stream << std::endl;
+
+      return OpResult::proceed();
+    }
+  };
+
+  class GCDo: public Builtin<GCDo> {
+  public:
+    GCDo(): Builtin("gcDo") {}
+
+    OpResult operator()(VM vm) {
+      // TODO
+      return OpResult::proceed();
+    }
+  };
+
+  class Eq: public Builtin<Eq> {
+  public:
+    Eq(): Builtin("eq") {}
+
+    OpResult operator()(VM vm, In lhs, In rhs, Out result) {
+      result = build(vm, lhs.isSameNode(rhs));
+      return OpResult::proceed();
+    }
+  };
+
+  class OnTopLevel: public Builtin<OnTopLevel> {
+  public:
+    OnTopLevel(): Builtin("onTopLevel") {}
+
+    OpResult operator()(VM vm, Out result) {
+      result = build(vm, vm->isOnTopLevel());
       return OpResult::proceed();
     }
   };

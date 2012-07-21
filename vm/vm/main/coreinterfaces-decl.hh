@@ -347,6 +347,22 @@ struct Interface<Dottable>:
   }
 };
 
+class DotAssignable;
+template<>
+struct Interface<DotAssignable>:
+  ImplementedBy<Array, Dictionary> {
+
+  OpResult dotAssign(RichNode self, VM vm, RichNode feature,
+                     RichNode newValue) {
+    return raiseTypeError(vm, MOZART_STR("Array or Dictionary"), self);
+  }
+
+  OpResult dotExchange(RichNode self, VM vm, RichNode feature,
+                       RichNode newValue, UnstableNode& oldValue) {
+    return raiseTypeError(vm, MOZART_STR("Array or Dictionary"), self);
+  }
+};
+
 class RecordLike;
 template<>
 struct Interface<RecordLike>:

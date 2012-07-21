@@ -87,6 +87,18 @@ protected:
   void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
 
 public:
+  // DotAssignable interface
+
+  OpResult dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
+    return arrayPut(self, vm, feature, newValue);
+  }
+
+  OpResult dotExchange(Self self, VM vm, RichNode feature,
+                       RichNode newValue, UnstableNode& oldValue) {
+    return arrayExchange(self, vm, feature, newValue, oldValue);
+  }
+
+public:
   // ArrayLike interface
 
   OpResult isArray(Self self, VM vm, bool& result) {

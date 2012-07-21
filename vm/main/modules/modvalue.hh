@@ -45,8 +45,140 @@ public:
   public:
     Dot(): Builtin(".") {}
 
-    OpResult operator()(VM vm, In record, In feature, Out result) {
-      return Dottable(record).dot(vm, feature, result);
+    OpResult operator()(VM vm, In value, In feature, Out result) {
+      return Dottable(value).dot(vm, feature, result);
+    }
+  };
+
+  class DotAssign: public Builtin<DotAssign> {
+  public:
+    DotAssign(): Builtin("dotAssign") {}
+
+    OpResult operator()(VM vm, In value, In feature, In newValue) {
+      return DotAssignable(value).dotAssign(vm, feature, newValue);
+    }
+  };
+
+  class DotExchange: public Builtin<DotExchange> {
+  public:
+    DotExchange(): Builtin("dotExchange") {}
+
+    OpResult operator()(VM vm, In value, In feature, In newValue,
+                        Out oldValue) {
+      return DotAssignable(value).dotExchange(vm, feature, newValue, oldValue);
+    }
+  };
+
+  class CatAccess: public Builtin<CatAccess> {
+  public:
+    CatAccess(): Builtin("catAccess") {}
+
+    OpResult operator()(VM vm, In reference, Out result) {
+      return catHelper(vm, reference,
+        [&result] (VM vm, Dottable dotAssignable,
+                   RichNode feature) -> OpResult {
+          return dotAssignable.dot(vm, feature, result);
+        },
+        [&result] (VM vm, CellLike cellLike) -> OpResult {
+          return cellLike.access(vm, result);
+        }
+      );
+    }
+  };
+
+  class CatAssign: public Builtin<CatAssign> {
+  public:
+    CatAssign(): Builtin("catAssign") {}
+
+    OpResult operator()(VM vm, In reference, In newValue) {
+      return catHelper(vm, reference,
+        [newValue] (VM vm, DotAssignable dotAssignable,
+                    RichNode feature) -> OpResult {
+          return dotAssignable.dotAssign(vm, feature, newValue);
+        },
+        [newValue] (VM vm, CellLike cellLike) -> OpResult {
+          return cellLike.assign(vm, newValue);
+        }
+      );
+    }
+  };
+
+  class CatExchange: public Builtin<CatExchange> {
+  public:
+    CatExchange(): Builtin("catExchange") {}
+
+    OpResult operator()(VM vm, In reference, In newValue, Out oldValue) {
+      return catHelper(vm, reference,
+        [newValue, &oldValue] (VM vm, DotAssignable dotAssignable,
+                               RichNode feature) -> OpResult {
+          return dotAssignable.dotExchange(vm, feature, newValue, oldValue);
+        },
+        [newValue, &oldValue] (VM vm, CellLike cellLike) -> OpResult {
+          return cellLike.exchange(vm, newValue, oldValue);
+        }
+      );
+    }
+  };
+
+  class CatAccessOO: public Builtin<CatAccessOO> {
+  public:
+    CatAccessOO(): Builtin("catAccessOO") {}
+
+    OpResult operator()(VM vm, In self, In reference, Out result) {
+      return catOOHelper(vm, self, reference,
+        [&result] (VM vm, Dottable dotAssignable,
+                   RichNode feature) -> OpResult {
+          return dotAssignable.dot(vm, feature, result);
+        },
+        [&result] (VM vm, CellLike cellLike) -> OpResult {
+          return cellLike.access(vm, result);
+        },
+        [&result] (VM vm, ObjectLike self, RichNode attr) -> OpResult {
+          return self.attrGet(vm, attr, result);
+        }
+      );
+    }
+  };
+
+  class CatAssignOO: public Builtin<CatAssignOO> {
+  public:
+    CatAssignOO(): Builtin("catAssignOO") {}
+
+    OpResult operator()(VM vm, In self, In reference, In newValue) {
+      return catOOHelper(vm, self, reference,
+        [newValue] (VM vm, DotAssignable dotAssignable,
+                    RichNode feature) -> OpResult {
+          return dotAssignable.dotAssign(vm, feature, newValue);
+        },
+        [newValue] (VM vm, CellLike cellLike) -> OpResult {
+          return cellLike.assign(vm, newValue);
+        },
+        [newValue] (VM vm, ObjectLike self, RichNode attr) -> OpResult {
+          return self.attrPut(vm, attr, newValue);
+        }
+      );
+    }
+  };
+
+  class CatExchangeOO: public Builtin<CatExchangeOO> {
+  public:
+    CatExchangeOO(): Builtin("catExchangeOO") {}
+
+    OpResult operator()(VM vm, In self, In reference,
+                        In newValue, Out oldValue) {
+      return catOOHelper(vm, self, reference,
+        [newValue, &oldValue] (VM vm, DotAssignable dotAssignable,
+                               RichNode feature) -> OpResult {
+          return dotAssignable.dotExchange(vm, feature, newValue, oldValue);
+        },
+        [newValue, &oldValue] (VM vm, CellLike cellLike) -> OpResult {
+          return cellLike.exchange(vm, newValue, oldValue);
+        },
+        [newValue, &oldValue] (VM vm, ObjectLike self,
+                               RichNode attr) -> OpResult {
+          return self.attrExchange(vm, attr, newValue, oldValue);
+        }
+      );
     }
   };
 
@@ -337,6 +469,58 @@ public:
       return OpResult::proceed();
     }
   };
+
+private:
+  template <class FDotAssignable, class FCellLike, class FOther>
+  static OpResult catHelperBase(VM vm, RichNode value,
+                                const FDotAssignable& fDotAssignable,
+                                const FCellLike& fCellLike,
+                                const FOther& fOther) {
+    using namespace patternmatching;
+
+    OpResult matchRes = OpResult::proceed();
+    UnstableNode dotAssignable, feature;
+
+    if (matchesSharp(vm, matchRes, value,
+                     capture(dotAssignable), capture(feature))) {
+      return fDotAssignable(vm, dotAssignable, feature);
+    } else if (matchRes.isProceed()) {
+      bool isCell;
+      MOZART_CHECK_OPRESULT(CellLike(value).isCell(vm, isCell));
+
+      if (isCell)
+        return fCellLike(vm, value);
+      else
+        return fOther(vm, value);
+    } else {
+      return matchRes;
+    }
+  }
+
+  template <class FDotAssignable, class FCellLike>
+  static OpResult catHelper(VM vm, RichNode value,
+                            const FDotAssignable& fDotAssignable,
+                            const FCellLike& fCellLike) {
+    return catHelperBase(vm, value,
+      fDotAssignable, fCellLike,
+      [] (VM vm, RichNode value) -> OpResult {
+        return raiseTypeError(vm, MOZART_STR("Cell or A#I or D#F"), value);
+      }
+    );
+  }
+
+  template <class FDotAssignable, class FCellLike, class FObjectLike>
+  static OpResult catOOHelper(VM vm, RichNode self, RichNode value,
+                              const FDotAssignable& fDotAssignable,
+                              const FCellLike& fCellLike,
+                              const FObjectLike& fObjectLike) {
+    return catHelperBase(vm, value,
+      fDotAssignable, fCellLike,
+      [self, &fObjectLike] (VM vm, RichNode value) -> OpResult {
+        return fObjectLike(vm, self, value);
+      }
+    );
+  }
 };
 
 }

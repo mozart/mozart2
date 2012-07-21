@@ -225,6 +225,18 @@ public:
   OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
 
 public:
+  // DotAssignable interface
+
+  OpResult dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
+    return dictPut(self, vm, feature, newValue);
+  }
+
+  OpResult dotExchange(Self self, VM vm, RichNode feature,
+                       RichNode newValue, UnstableNode& oldValue) {
+    return dictExchange(self, vm, feature, newValue, oldValue);
+  }
+
+public:
   // DictionaryLike interface
 
   inline

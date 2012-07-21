@@ -33,10 +33,53 @@ require
    Boot_System at 'x-oz://boot/System'
 
 export
+   Print
    Show
+   PrintName
+   PrintInfo
+   ShowInfo
+   PrintError
+   ShowError
+   gcDo: GCDo
+   % Postmortem
+   Eq
+   % NbSusps
+   OnTopLevel
 
 define
 
-   Show = Boot_System.show
+   proc {Print Value}
+      {Boot_System.printRepr Value false false}
+   end
+
+   proc {Show Value}
+      {Boot_System.printRepr Value false true}
+   end
+
+   fun {PrintName Value}
+      {Boot_System.getRepr Value}
+   end
+
+   proc {PrintInfo VS}
+      {Boot_System.printVS VS false false}
+   end
+
+   proc {ShowInfo VS}
+      {Boot_System.printVS VS false true}
+   end
+
+   proc {PrintError VS}
+      {Boot_System.printVS VS true false}
+   end
+
+   proc {ShowError VS}
+      {Boot_System.printVS VS true true}
+   end
+
+   GCDo = Boot_System.gcDo
+
+   Eq = Boot_System.eq
+
+   OnTopLevel = Boot_System.onTopLevel
 
 end

@@ -51,6 +51,7 @@ namespace mozart {
 #include "FloatValue-interf.hh"
 #include "BooleanValue-interf.hh"
 #include "Dottable-interf.hh"
+#include "DotAssignable-interf.hh"
 #include "RecordLike-interf.hh"
 #include "ArrayLike-interf.hh"
 #include "DictionaryLike-interf.hh"

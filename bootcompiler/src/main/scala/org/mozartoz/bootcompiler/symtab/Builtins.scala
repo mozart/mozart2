@@ -27,7 +27,7 @@ class Builtins {
   lazy val unaryOpToBuiltin = Map(
       "~" -> builtinByName("Number", "~"),
 
-      "@" -> builtinByName("Cell", "access"),
+      "@" -> builtinByName("Value", "catAccess"),
       "!!" -> builtinByName("Value", "readOnly")
   )
 
@@ -50,10 +50,25 @@ class Builtins {
 
       "." -> builtinByName("Value", "."),
 
-      ":=" -> builtinByName("Cell", "exchangeFun")
+      ":=" -> builtinByName("Value", "catExchange")
   )
 
   lazy val getBootMM = builtinByName("Boot", "getBootMM")
+
+  lazy val dotAssign = builtinByName("Value", "dotAssign")
+  lazy val dotExchange = builtinByName("Value", "dotExchange")
+
+  lazy val catAccess = builtinByName("Value", "catAccess")
+  lazy val catAssign = builtinByName("Value", "catAssign")
+  lazy val catExchange = builtinByName("Value", "catExchange")
+
+  lazy val catAccessOO = builtinByName("Value", "catAccessOO")
+  lazy val catAssignOO = builtinByName("Value", "catAssignOO")
+  lazy val catExchangeOO = builtinByName("Value", "catExchangeOO")
+
+  lazy val attrGet = builtinByName("Object", "attrGet")
+  lazy val attrPut = builtinByName("Object", "attrPut")
+  lazy val attrExchangeFun = builtinByName("Object", "attrExchangeFun")
 
   lazy val createThread = builtinByName("Thread", "create")
 
@@ -64,24 +79,8 @@ class Builtins {
 
   lazy val newName = builtinByName("Name", "new")
 
-  lazy val attrGet = builtinByName("Object", "attrGet")
-  lazy val attrPut = builtinByName("Object", "attrPut")
-  lazy val attrExchangeFun = builtinByName("Object", "attrExchangeFun")
-
-  lazy val cellOrAttrGet = builtinByName("Object", "cellOrAttrGet")
-  lazy val cellOrAttrPut = builtinByName("Object", "cellOrAttrPut")
-  lazy val cellOrAttrExchangeFun = builtinByName("Object",
-      "cellOrAttrExchangeFun")
-
   lazy val plus1 = builtinByName("Int", "+1")
   lazy val minus1 = builtinByName("Int", "-1")
-
-  lazy val cellExchange = builtinByName("Cell", "exchangeFun")
-  lazy val cellAccess = builtinByName("Cell", "access")
-  lazy val cellAssign = builtinByName("Cell", "assign")
-
-  lazy val arrayPut = builtinByName("Array", "put")
-  lazy val arrayExchange = builtinByName("Array", "exchangeFun")
 
   lazy val raise = builtinByName("Exception", "raise")
 }

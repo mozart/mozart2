@@ -60,7 +60,7 @@ object DesugarClass extends Transformer with TreeDSL {
     case BinaryOpStatement(lhs, ":=", rhs) if selfSymbol.isDefined =>
       transformStat {
         atPos(statement) {
-          builtins.cellOrAttrPut call (selfSymbol.get, lhs, rhs)
+          builtins.catAssignOO call (selfSymbol.get, lhs, rhs)
         }
       }
 
@@ -142,7 +142,7 @@ object DesugarClass extends Transformer with TreeDSL {
     case UnaryOp("@", rhs) if selfSymbol.isDefined =>
       transformExpr {
         atPos(expression) {
-          builtins.cellOrAttrGet callExpr (selfSymbol.get, rhs)
+          builtins.catAccessOO callExpr (selfSymbol.get, rhs)
         }
       }
 
@@ -166,7 +166,7 @@ object DesugarClass extends Transformer with TreeDSL {
     case BinaryOp(lhs, ":=", rhs) if selfSymbol.isDefined =>
       transformExpr {
         atPos(expression) {
-          builtins.cellOrAttrExchangeFun callExpr (selfSymbol.get, lhs, rhs)
+          builtins.catExchangeOO callExpr (selfSymbol.get, lhs, rhs)
         }
       }
 

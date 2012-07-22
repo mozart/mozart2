@@ -107,11 +107,11 @@ void GraphReplicator::processThreadInternal(Runnable*& thread) {
 }
 
 template <class Self, class NodeType, class GCedType>
-void GraphReplicator::processNodeInternal(NodeType*& list) {
-  NodeType* to = list;
+void GraphReplicator::processNodeInternal(Node*& list) {
+  NodeType* to = static_cast<NodeType*>(list);
   list = to->grNext;
 
-  RichNode from = *to->grFrom;
+  RichNode from = *static_cast<NodeType*>(to->grFrom);
 
   static_cast<Self*>(this)->template processNode<NodeType, GCedType>(to, from);
 }

@@ -84,7 +84,7 @@ private:
 
   template <class Self, class NodeType, class GCedType>
   inline
-  void processNodeInternal(NodeType*& list);
+  void processNodeInternal(Node*& list);
 
   template <class Self>
   inline
@@ -99,8 +99,8 @@ private:
   struct {
     MemManagedList<SpaceRef*> spaces;
     MemManagedList<Runnable**> threads;
-    StableNode* stableNodes;
-    UnstableNode* unstableNodes;
+    Node* stableNodes;
+    Node* unstableNodes;
     MemManagedList<StableNode**> stableRefs;
   } todos;
 };

@@ -48,6 +48,7 @@ include_directories("${MOZART_DIR}/boostenv/main"
 # Generate the .cc files using the boot compiler
 
 set(BOOTCOMPILER_JAR "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar")
+set(BOOTCOMPILER_DEFINES -D NO_GUMP)
 
 set(BASE_FUNCTORS
     "${MOZART_DIR}/lib/base/Base.oz"
@@ -61,6 +62,7 @@ add_custom_command(
     -h "boostenv.hh"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+    ${BOOTCOMPILER_DEFINES}
     ${BASE_FUNCTORS}
   DEPENDS ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
   COMMENT Compiling the base environment
@@ -103,6 +105,7 @@ foreach(functor ${ALL_FUNCTORS})
       -h "boostenv.hh"
       -m "${MOZART_BUILD_DIR}/boostenv/main/"
       -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+      ${BOOTCOMPILER_DEFINES}
       "${functor}"
     DEPENDS ${functor} "Base.cc"
     COMMENT "${basename}.oz"
@@ -117,6 +120,7 @@ add_custom_command(
     -h "boostenv.hh"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+    ${BOOTCOMPILER_DEFINES}
     ${ALL_FUNCTORS}
   DEPENDS "Base.cc"
   COMMENT linker

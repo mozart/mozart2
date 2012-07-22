@@ -70,6 +70,7 @@ add_custom_command(
 
 file(GLOB SYS_FUNCTORS
     "${MOZART_DIR}/lib/sys/*.oz"
+    "${MOZART_DIR}/lib/sp/*.oz"
     "${MOZART_DIR}/lib/support/*.oz"
     "${MOZART_DIR}/lib/op/*.oz"
     "${MOZART_DIR}/lib/cp/*.oz"

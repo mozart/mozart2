@@ -231,7 +231,7 @@ bool Space::isAncestor(Space* potentialAncestor) {
 // Speculative bindings
 
 void Space::makeBackupForSpeculativeBinding(StableNode* node) {
-  trail.push_back_new(vm, node, node->node);
+  trail.push_back_new(vm, node, *node);
 }
 
 // Operations
@@ -547,8 +547,8 @@ void Space::deinstallThis() {
     TrailEntry& trailEntry = trail.front();
     ScriptEntry& scriptEntry = script.append(vm);
 
-    scriptEntry.left.node = trailEntry.node->node;
-    trailEntry.node->node = trailEntry.saved;
+    scriptEntry.left.set(*trailEntry.node);
+    trailEntry.node->set(trailEntry.saved);
     scriptEntry.right = Reference::build(vm, trailEntry.node);
 
     if (hasNoRunnableThreads) {
@@ -565,7 +565,7 @@ void Space::deinstallThis() {
 void Space::deinstallThisFailed() {
   while (!trail.empty()) {
     TrailEntry& trailEntry = trail.front();
-    trailEntry.node->node = trailEntry.saved;
+    trailEntry.node->set(trailEntry.saved);
     trail.remove_front(vm);
   }
 }

@@ -50,6 +50,8 @@ private:
   friend class StableNode;
   friend class UnstableNode;
   friend class RichNode;
+  friend class GraphReplicator;
+  friend class Space;
 
   template <class T>
   friend class BaseSelf;
@@ -57,14 +59,49 @@ private:
   template <class T>
   friend class WritableSelfType;
 
+  Node() {}
+
   template<class T, class... Args>
   void make(VM vm, Args&&... args) {
     typedef Accessor<T, typename Storage<T>::Type> Access;
-    Access::init(type, value, vm, std::forward<Args>(args)...);
+    Access::init(data.type, data.value, vm, std::forward<Args>(args)...);
   }
 
-  const Type* type;
-  MemWord value;
+  const Type* type() {
+    return data.type;
+  }
+
+  MemWord value() {
+    return data.value;
+  }
+
+  inline
+  bool isCopyable();
+
+  inline
+  StableNode* asStable();
+
+  inline
+  UnstableNode* asUnstable();
+
+  void set(const Node& from) {
+    data.type = from.data.type;
+    data.value = from.data.value;
+  }
+
+  union {
+    // Regular structure
+    struct {
+      const Type* type;
+      MemWord value;
+    } data;
+
+    // Graph replicator hack
+    struct {
+      Node* grNext;
+      Node* grFrom;
+    };
+  };
 };
 
 struct NodeBackup {
@@ -88,9 +125,7 @@ class TypedRichNode {
 };
 
 /**
- * A rich node is a discriminated union of StableNode* and UnstableNode*
- * Its purpose is to offer read access to nodes, with transparent
- * dereferencing.
+ * A rich node provides read access to nodes, with transparent dereferencing.
  */
 class RichNode {
 public:
@@ -104,7 +139,7 @@ public:
 
   __attribute__((always_inline))
   const Type* type() {
-    return node()->type;
+    return node()->type();
   }
 
   __attribute__((always_inline))
@@ -175,32 +210,40 @@ private:
 
   __attribute__((always_inline))
   MemWord value() {
-    return node()->value;
+    return node()->value();
   }
 private:
   friend class StableNode;
   friend class UnstableNode;
 
   __attribute__((always_inline))
-  inline
-  Node* node();
+  Node* node() {
+    return _node;
+  }
 
   __attribute__((always_inline))
   bool isStable() {
     return _isStable;
   }
+
+  __attribute__((always_inline))
+  StableNode& asStable() {
+    return *node()->asStable();
+  }
+
+  __attribute__((always_inline))
+  UnstableNode& asUnstable() {
+    return *node()->asUnstable();
+  }
 private:
-  union {
-    StableNode* _stable;
-    UnstableNode* _unstable;
-  };
+  Node* _node;
   bool _isStable;
 };
 
 /**
  * Stable node, which is guaranteed never to change
  */
-class StableNode {
+class StableNode: public Node {
 public:
   StableNode() {}
 
@@ -209,10 +252,6 @@ public:
   inline void init(VM vm, UnstableNode&& from);
   inline void init(VM vm, RichNode from);
   inline void init(VM vm);
-
-  NodeBackup makeBackup() {
-    return NodeBackup(&node);
-  }
 public:
   // Make this class non-copyable and non-movable
   StableNode(const StableNode& from) = delete;
@@ -220,31 +259,12 @@ public:
 
   StableNode(StableNode&& from) = delete;
   StableNode& operator=(StableNode&& from) = delete;
-private:
-  friend struct NodeBackup;
-  friend class UnstableNode;
-  friend class RichNode;
-  friend class GraphReplicator;
-  friend class Space;
-
-  inline
-  bool isCopyable();
-
-  union {
-    Node node;
-
-    // Graph replicator hack
-    struct {
-      StableNode* grNext;
-      StableNode* grFrom;
-    };
-  };
 };
 
 /**
  * Unstable node, which is allowed to change over time
  */
-class UnstableNode {
+class UnstableNode: public Node {
 public:
   UnstableNode() {}
 
@@ -271,18 +291,11 @@ public:
   inline void copy(VM vm, UnstableNode&& from);
   inline void copy(VM vm, RichNode from);
 
-  inline void swap(UnstableNode& from);
-  inline void reset(VM vm);
-
   template<class T, class... Args>
   static UnstableNode build(VM vm, Args&&... args) {
     UnstableNode result;
-    result.node.make<T>(vm, std::forward<Args>(args)...);
+    result.make<T>(vm, std::forward<Args>(args)...);
     return result;
-  }
-
-  NodeBackup makeBackup() {
-    return NodeBackup(&node);
   }
 public:
   // Make this class non-copyable
@@ -290,34 +303,8 @@ public:
   UnstableNode& operator=(const UnstableNode& from) = delete;
 
   // But make it movable
-
-  UnstableNode(UnstableNode&& from) {
-    node = from.node;
-  }
-
-  UnstableNode& operator=(UnstableNode&& from) {
-    node = from.node;
-    return *this;
-  }
-private:
-  friend struct NodeBackup;
-  friend class StableNode;
-  friend class RichNode;
-  friend class GraphReplicator;
-  friend class Space;
-
-  inline
-  bool isCopyable();
-
-  union {
-    Node node;
-
-    // Graph replicator hack
-    struct {
-      UnstableNode* grNext;
-      UnstableNode* grFrom;
-    };
-  };
+  UnstableNode(UnstableNode&& from) = default;
+  UnstableNode& operator=(UnstableNode&& from) = default;
 };
 
 /**

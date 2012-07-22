@@ -124,6 +124,16 @@ case class ThreadStatement(
   protected val body = statement
 }
 
+/** Fail statement
+ *
+ *  {{{
+ *  fail
+ *  }}}
+ */
+case class FailStatement() extends Statement {
+  def syntax(indent: String) = "fail"
+}
+
 /** Lock statement
  *
  *  {{{

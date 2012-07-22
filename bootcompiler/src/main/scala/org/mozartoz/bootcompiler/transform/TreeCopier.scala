@@ -54,6 +54,9 @@ class TreeCopier {
   def RaiseStatement(tree: Node, exception: Expression) =
     new RaiseStatement(exception).copyAttrs(tree)
 
+  def FailStatement(tree: Node) =
+    new FailStatement().copyAttrs(tree)
+
   def BindStatement(tree: Node, left: Expression, right: Expression) =
     new BindStatement(left, right).copyAttrs(tree)
 

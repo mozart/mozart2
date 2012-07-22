@@ -66,6 +66,13 @@ object Unnester extends Transformer with TreeDSL {
         }
       }
 
+    case failStat @ FailStatement() =>
+      transformStat {
+        atPos(failStat) {
+          builtins.fail call ()
+        }
+      }
+
     case _ =>
       super.transformStat(statement)
   }

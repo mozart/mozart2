@@ -110,6 +110,9 @@ abstract class Transformer extends (Program => Unit) {
     case RaiseStatement(body) =>
       treeCopy.RaiseStatement(statement, transformExpr(body))
 
+    case FailStatement() =>
+      statement
+
     case BindStatement(left, right) =>
       treeCopy.BindStatement(statement, transformExpr(left),
           transformExpr(right))

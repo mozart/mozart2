@@ -68,6 +68,23 @@ public:
     }
   };
 
+  class NewNamed: public Builtin<NewNamed> {
+  public:
+    NewNamed(): Builtin("newNamed") {}
+
+    OpResult operator()(VM vm, In atom, Out result) {
+      bool isAtom = false;
+      MOZART_CHECK_OPRESULT(RecordLike(atom).isRecord(vm, isAtom));
+
+      if (isAtom) {
+        result = NamedName::build(vm, atom);
+        return OpResult::proceed();
+      } else {
+        return raiseTypeError(vm, MOZART_STR("Atom"), atom);
+      }
+    }
+  };
+
   class Is: public Builtin<Is> {
   public:
     Is(): Builtin("is") {}

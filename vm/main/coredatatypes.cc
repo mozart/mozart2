@@ -29,10 +29,11 @@ namespace mozart {
 // Definitions of the uuid's of data types
 constexpr UUID Implementation<Atom>::uuid;
 constexpr UUID Implementation<Boolean>::uuid;
+constexpr UUID Implementation<ByteString>::uuid;
 constexpr UUID Implementation<GlobalName>::uuid;
+constexpr UUID Implementation<NamedName>::uuid;
 constexpr UUID Implementation<SmallInt>::uuid;
 constexpr UUID Implementation<String>::uuid;
-constexpr UUID Implementation<ByteString>::uuid;
 constexpr UUID Implementation<Unit>::uuid;
 
 // Bytecode for object dispatch procedure

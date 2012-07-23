@@ -42,28 +42,28 @@ private:
 private:
   T* _array;
 
-#ifndef NDEBUG
+#ifdef MOZART_STATICARRAY_WITH_SIZE
   int _size;
 #endif
 
 public:
   /** Create an array with s elements */
   StaticArray(T* array, int s) : _array(array) {
-#ifndef NDEBUG
+#ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = s;
 #endif
   }
 
   /** Create an array with no element */
   StaticArray() : _array(nullptr) {
-#ifndef NDEBUG
+#ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = 0;
 #endif
   }
 
   /** Convert from nullptr */
   StaticArray(nullptr_t nullp) : _array(nullptr) {
-#ifndef NDEBUG
+#ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = 0;
 #endif
   }
@@ -71,7 +71,9 @@ public:
   /** Zero-based access to elements (read-write) */
   inline
   T& operator[](int i) {
+#ifdef MOZART_STATICARRAY_WITH_SIZE
     assert(0 <= i && i < _size);
+#endif
     return _array[i];
   }
 
@@ -85,7 +87,7 @@ public:
   inline
   void operator=(nullptr_t nullp) {
     _array = nullptr;
-#ifndef NDEBUG
+#ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = 0;
 #endif
   }

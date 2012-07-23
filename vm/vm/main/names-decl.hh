@@ -138,6 +138,69 @@ private:
 #include "GlobalName-implem-decl-after.hh"
 #endif
 
+///////////////
+// NamedName //
+///////////////
+
+class NamedName;
+
+#ifndef MOZART_GENERATOR
+#include "NamedName-implem-decl.hh"
+#endif
+
+template <>
+class Implementation<NamedName>: public WithHome,
+  public LiteralHelper<NamedName> {
+public:
+  typedef SelfType<NamedName>::Self Self;
+public:
+  static constexpr UUID uuid = "{f9873e5a-65db-4894-9dd5-bcd276df14af}";
+
+  Implementation(VM vm, RichNode printName, UUID uuid):
+    WithHome(vm), _uuid(uuid) {
+    _printName.init(vm, printName);
+  }
+
+  Implementation(VM vm, RichNode printName):
+    WithHome(vm), _uuid(vm->genUUID()) {
+    _printName.init(vm, printName);
+  }
+
+  inline
+  Implementation(VM vm, GR gr, Self from);
+
+public:
+  const UUID& getUUID() {
+    return _uuid;
+  }
+
+  inline
+  int compareFeatures(VM vm, Self right);
+
+public:
+  // NameLike interface
+
+  OpResult isName(Self self, VM vm, bool& result) {
+    result = true;
+    return OpResult::proceed();
+  }
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<Name/" << repr(vm, _printName) << ">";
+  }
+
+private:
+  StableNode _printName;
+  UUID _uuid;
+};
+
+#ifndef MOZART_GENERATOR
+#include "NamedName-implem-decl-after.hh"
+#endif
+
 ////////////////
 // UniqueName //
 ////////////////

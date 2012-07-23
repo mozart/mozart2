@@ -72,6 +72,34 @@ int Implementation<GlobalName>::compareFeatures(VM vm, Self right) {
     return 1;
 }
 
+///////////////
+// NamedName //
+///////////////
+
+#include "NamedName-implem.hh"
+
+Implementation<NamedName>::Implementation(VM vm, GR gr, Self from):
+  WithHome(vm, gr, from->home()) {
+
+  gr->copyStableNode(_printName, from->_printName);
+
+  if (gr->kind() == GraphReplicator::grkSpaceCloning)
+    _uuid = vm->genUUID();
+  else
+    _uuid = from->_uuid;
+}
+
+int Implementation<NamedName>::compareFeatures(VM vm, Self right) {
+  const UUID& rhsUUID = right->getUUID();
+
+  if (_uuid == rhsUUID)
+    return 0;
+  else if (_uuid < rhsUUID)
+    return -1;
+  else
+    return 1;
+}
+
 ////////////////
 // UniqueName //
 ////////////////

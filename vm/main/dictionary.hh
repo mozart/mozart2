@@ -256,7 +256,6 @@ void NodeDictionary::fixRemove(VM vm, Node* node, Node* parent) {
         rotateLeft(parent, sibling);
       else
         rotateRight(parent, sibling);
-      parent = sibling;
       sibling = parent->getTheOtherChild(node);
     }
 

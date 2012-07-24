@@ -77,5 +77,6 @@
 #include "modules/modvirtualstring.hh"
 #include "modules/modbytestring.hh"
 #include "modules/modcompilersupport.hh"
+#include "modules/moddebug.hh"
 
 #endif // __MOZART_H

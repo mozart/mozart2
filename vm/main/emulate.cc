@@ -762,6 +762,13 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
     case OpResult::orWaitQuietBefore: {
       RichNode waitee = *result.getWaiteeNode();
 
+      if (getRaiseOnBlock() && (waitee.is<OptVar>() || waitee.is<Variable>())) {
+        OpResult blockError = raiseKernelError(vm, MOZART_STR("block"), waitee);
+        return applyOpResult(vm, blockError, preempted,
+                             abstraction, PC, yregCount,
+                             xregs, yregs, gregs, kregs);
+      }
+
       if (result.kind() != OpResult::orWaitQuietBefore) {
         if (waitee.is<FailedValue>()) {
           return applyOpResult(vm, waitee.as<FailedValue>().raiseUnderlying(vm),

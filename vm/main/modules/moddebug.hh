@@ -22,82 +22,58 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REIFIEDTHREAD_DECL_H
-#define __REIFIEDTHREAD_DECL_H
+#ifndef __MODDEBUG_H
+#define __MODDEBUG_H
 
-#include "mozartcore-decl.hh"
+#include "../mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-///////////////////
-// ReifiedThread //
-///////////////////
+namespace builtins {
 
-class ReifiedThread;
+//////////////////
+// Debug module //
+//////////////////
 
-#ifndef MOZART_GENERATOR
-#include "ReifiedThread-implem-decl.hh"
-#endif
-
-template <>
-class Implementation<ReifiedThread>:
-  StoredAs<Runnable*>, Copyable, WithValueBehavior {
+class ModDebug: public Module {
 public:
-  typedef SelfType<ReifiedThread>::Self Self;
-public:
-  static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("thread"));
-  }
+  ModDebug(): Module("Debug") {}
 
-  Implementation(Runnable* runnable): _runnable(runnable) {}
+  class GetRaiseOnBlock: public Builtin<GetRaiseOnBlock> {
+  public:
+    GetRaiseOnBlock(): Builtin("getRaiseOnBlock") {}
 
-  static void build(Runnable*& self, VM vm, Runnable* runnable) {
-    self = runnable;
-  }
+    OpResult operator()(VM vm, In thread, Out result) {
+      Runnable* runnable = nullptr;
+      MOZART_GET_ARG(runnable, thread, MOZART_STR("Thread"));
 
-  inline
-  static void build(Runnable*& self, VM vm, GR gr, Self from);
+      result = build(vm, runnable->getRaiseOnBlock());
+      return OpResult::proceed();
+    }
+  };
 
-public:
-  inline
-  bool equals(VM vm, Self right);
+  class SetRaiseOnBlock: public Builtin<SetRaiseOnBlock> {
+  public:
+    SetRaiseOnBlock(): Builtin("setRaiseOnBlock") {}
 
-public:
-  Runnable* value() {
-    return _runnable;
-  }
+    OpResult operator()(VM vm, In thread, In value) {
+      Runnable* runnable = nullptr;
+      bool boolValue = false;
+      MOZART_GET_ARG(runnable, thread, MOZART_STR("Thread"));
+      MOZART_GET_ARG(boolValue, value, MOZART_STR("Boolean"));
 
-public:
-  // Wakeable interface
-
-  inline
-  OpResult wakeUp(VM vm);
-
-  inline
-  bool shouldWakeUpUnderSpace(VM vm, Space* space);
-
-public:
-  // ThreadLike interface
-
-  OpResult isThread(Self self, VM vm, bool& result) {
-    result = true;
-    return OpResult::proceed();
-  }
-
-  inline
-  OpResult getThreadPriority(VM vm, ThreadPriority& result);
-
-  inline
-  OpResult setThreadPriority(VM vm, ThreadPriority priority);
-
-private:
-  Runnable* _runnable;
+      runnable->setRaiseOnBlock(boolValue);
+      return OpResult::proceed();
+    }
+  };
 };
-
-#ifndef MOZART_GENERATOR
-#include "ReifiedThread-implem-decl-after.hh"
-#endif
 
 }
 
-#endif // __REIFIEDTHREAD_DECL_H
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODDEBUG_H

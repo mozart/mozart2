@@ -41,6 +41,19 @@ class ModCompilerSupport: public Module {
 public:
   ModCompilerSupport(): Module("CompilerSupport") {}
 
+  class FeatureLess: public Builtin<FeatureLess> {
+  public:
+    FeatureLess(): Builtin("featureLess") {}
+
+    OpResult operator()(VM vm, In lhs, In rhs, Out result) {
+      MOZART_REQUIRE_FEATURE(lhs);
+      MOZART_REQUIRE_FEATURE(rhs);
+
+      result = build(vm, compareFeatures(vm, lhs, rhs) < 0);
+      return OpResult::proceed();
+    }
+  };
+
   class NewCodeArea: public Builtin<NewCodeArea> {
   public:
     NewCodeArea(): Builtin("newCodeArea") {}
@@ -185,6 +198,19 @@ public:
         std::move(arity), std::move(inlineAs), std::move(name),
         std::move(params));
 
+      return OpResult::proceed();
+    }
+  };
+
+  class IsUniqueName: public Builtin<IsUniqueName> {
+  public:
+    IsUniqueName(): Builtin("isUniqueName") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      if (value.isTransient())
+        return OpResult::waitFor(vm, value);
+
+      result = build(vm, value.is<UniqueName>());
       return OpResult::proceed();
     }
   };

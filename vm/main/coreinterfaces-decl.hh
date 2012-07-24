@@ -171,7 +171,7 @@ struct Interface<BuiltinCallable>: ImplementedBy<BuiltinProcedure> {
     return OpResult::proceed();
   }
 
-  OpResult callBuiltin(RichNode self, VM vm, int argc,
+  OpResult callBuiltin(RichNode self, VM vm, size_t argc,
                        UnstableNode* args[]) {
     return raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
   }
@@ -201,12 +201,12 @@ struct Interface<Callable>:
     return OpResult::proceed();
   }
 
-  OpResult procedureArity(RichNode self, VM vm, int& result) {
+  OpResult procedureArity(RichNode self, VM vm, size_t& result) {
     return raiseTypeError(vm, MOZART_STR("Abstraction"), self);
   }
 
-  OpResult getCallInfo(RichNode self, VM vm, int& arity,
-                       ProgramCounter& start, int& Xcount,
+  OpResult getCallInfo(RichNode self, VM vm, size_t& arity,
+                       ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks) {
     return raiseTypeError(vm, MOZART_STR("Abstraction"), self);
@@ -221,8 +221,14 @@ struct Interface<CodeAreaProvider>: ImplementedBy<CodeArea> {
     return OpResult::proceed();
   }
 
-  OpResult getCodeAreaInfo(RichNode self, VM vm, ProgramCounter& start,
-                           int& Xcount, StaticArray<StableNode>& Ks) {
+  OpResult getCodeAreaInfo(RichNode self, VM vm, size_t& arity,
+                           ProgramCounter& start, size_t& Xcount,
+                           StaticArray<StableNode>& Ks) {
+    return raiseTypeError(vm, MOZART_STR("CodeArea"), self);
+  }
+
+  OpResult getCodeAreaDebugInfo(RichNode self, VM vm,
+                                atom_t& printName, UnstableNode& debugData) {
     return raiseTypeError(vm, MOZART_STR("CodeArea"), self);
   }
 };

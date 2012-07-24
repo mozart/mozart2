@@ -33,10 +33,10 @@ namespace mozart {
 
 namespace builtins {
 
-OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
-  int arity = 0;
+OpResult expectCallable(VM vm, RichNode target, size_t expectedArity) {
+  size_t arity = 0;
   ProgramCounter start;
-  int Xcount;
+  size_t Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 

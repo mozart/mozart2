@@ -37,13 +37,17 @@ namespace mozart {
 
 #include "CodeArea-implem.hh"
 
-Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
-                                         StaticArray<StableNode> _Ks,
-                                         ByteCode* codeBlock, int size,
-                                         int Xcount)
-  : _size(size), _Xcount(Xcount), _Kc(Kc) {
+Implementation<CodeArea>::Implementation(
+  VM vm, size_t Kc, StaticArray<StableNode> _Ks,
+  ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
+  atom_t printName, RichNode debugData)
+
+  : _size(size), _arity(arity), _Xcount(Xcount), _Kc(Kc),
+    _printName(printName) {
 
   _setCodeBlock(vm, codeBlock, size);
+
+  _debugData.init(vm, debugData);
 
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
@@ -55,10 +59,14 @@ Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
                                          StaticArray<StableNode> _Ks,
                                          GR gr, Self from) {
   _size = from->_size;
+  _arity = from->_arity;
   _Xcount = from->_Xcount;
   _Kc = Kc;
 
   _setCodeBlock(vm, from->_codeBlock, _size);
+
+  _printName = gr->copyAtom(from->_printName);
+  gr->copyStableNode(_debugData, from->_debugData);
 
   for (size_t i = 0; i < Kc; i++)
     gr->copyStableNode(_Ks[i], from[i]);
@@ -71,14 +79,23 @@ OpResult Implementation<CodeArea>::initElement(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult
-Implementation<CodeArea>::getCodeAreaInfo(Self self, VM vm,
-                                          ProgramCounter& start,
-                                          int& Xcount,
-                                          StaticArray<StableNode>& Ks) {
+OpResult Implementation<CodeArea>::getCodeAreaInfo(
+  Self self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
+  StaticArray<StableNode>& Ks) {
+
+  arity = _arity;
   start = _codeBlock;
   Xcount = _Xcount;
   Ks = self.getArray();
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<CodeArea>::getCodeAreaDebugInfo(
+  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
+
+  printName = _printName;
+  debugData.copy(vm, _debugData);
 
   return OpResult::proceed();
 }

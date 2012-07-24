@@ -71,7 +71,7 @@ public:
   /**
    * Arity of this builtin
    */
-  int getArity() {
+  size_t getArity() {
     return _builtin->getArity();
   }
 
@@ -93,7 +93,7 @@ public:
    * @param args   Actual parameters
    */
   inline
-  OpResult callBuiltin(Self self, VM vm, int argc, UnstableNode* args[]);
+  OpResult callBuiltin(Self self, VM vm, size_t argc, UnstableNode* args[]);
 
   template <class... Args>
   inline
@@ -118,18 +118,18 @@ public:
   }
 
   inline
-  OpResult procedureArity(Self self, VM vm, int& result);
+  OpResult procedureArity(Self self, VM vm, size_t& result);
 
   inline
-  OpResult getCallInfo(Self self, VM vm, int& arity,
-                       ProgramCounter& start, int& Xcount,
+  OpResult getCallInfo(Self self, VM vm, size_t& arity,
+                       ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
 public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
-    out << "<P/" << _builtin->getArity() << ">";
+    out << "<P/" << _builtin->getArity() << " " << _builtin->getName() << ">";
   }
 private:
   Builtin* _builtin;
@@ -164,7 +164,7 @@ public:
 
   inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 int arity, RichNode body);
+                 RichNode body);
 
   inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
@@ -173,9 +173,6 @@ public:
   size_t getArraySize() {
     return _Gc;
   }
-
-public:
-  int getArity() { return _arity; }
 
 public:
   // ArrayInitializer interface
@@ -197,7 +194,7 @@ public:
   }
 
   inline
-  OpResult procedureArity(Self self, VM vm, int& result);
+  OpResult procedureArity(Self self, VM vm, size_t& result);
 
   /**
    * Get the information needed to call this abstraction
@@ -209,26 +206,34 @@ public:
    * @param Ks       Output: K registers
    */
   inline
-  OpResult getCallInfo(Self self, VM vm, int& arity,
-                       ProgramCounter& start, int& Xcount,
+  OpResult getCallInfo(Self self, VM vm, size_t& arity,
+                       ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
-    out << "<P/" << _arity << ">";
-  }
+  inline
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+
 private:
-  int _arity;
+  inline
+  OpResult ensureCodeAreaCacheValid(VM vm);
+
+  __attribute__((noinline))
+  inline
+  OpResult fillCodeAreaCache(VM vm);
+
+private:
   StableNode _body;
   size_t _Gc;
 
   // cache for information of the code area
   bool _codeAreaCacheValid;
+  size_t _arity;
   ProgramCounter _start;
-  int _Xcount;
+  size_t _Xcount;
   StaticArray<StableNode> _Ks;
 };
 

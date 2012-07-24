@@ -170,7 +170,7 @@ class Thread : public Runnable {
 private:
   typedef Runnable Super;
 
-  static constexpr int InitXRegisters = 64;
+  static constexpr size_t InitXRegisters = 64;
 public:
   Thread(VM vm, Space* space, RichNode abstraction,
          bool createSuspended = false);
@@ -232,7 +232,7 @@ private:
 
   __attribute__((always_inline))
   inline
-  void call(RichNode target, int actualArity, bool isTailCall,
+  void call(RichNode target, size_t actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
             ProgramCounter& PC, size_t& yregCount,
             XRegArray* xregs,

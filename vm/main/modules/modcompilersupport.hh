@@ -58,8 +58,8 @@ public:
   public:
     NewCodeArea(): Builtin("newCodeArea") {}
 
-    OpResult operator()(VM vm, In byteCodeList, In XCount, In KsList,
-                        Out result) {
+    OpResult operator()(VM vm, In byteCodeList, In arity, In XCount, In KsList,
+                        In printName, In debugData, Out result) {
       // Read byte code
       std::vector<ByteCode> byteCode;
 
@@ -77,9 +77,12 @@ public:
         MOZART_STR("List of byte code elements")
       );
 
-      // Read X count
-      nativeint intXCount = 0;
+      // Read scalar args
+      nativeint intArity = 0, intXCount = 0;
+      atom_t atomPrintName;
+      MOZART_GET_ARG(intArity, arity, MOZART_STR("positive integer"));
       MOZART_GET_ARG(intXCount, XCount, MOZART_STR("positive integer"));
+      MOZART_GET_ARG(atomPrintName, printName, MOZART_STR("Atom"));
 
       // Read number of K registers
       size_t KCount = 0;
@@ -88,7 +91,7 @@ public:
       // Create the code area
       result = CodeArea::build(vm, KCount, &byteCode.front(),
                                byteCode.size() * sizeof(ByteCode),
-                               intXCount);
+                               intArity, intXCount, atomPrintName, debugData);
 
       // Fill the K registers
       ArrayInitializer KInitializer = result;
@@ -129,7 +132,7 @@ public:
       MOZART_CHECK_OPRESULT(ozListLength(vm, GsList, GCount));
 
       // Create the abstraction
-      result = Abstraction::build(vm, GCount, intArity, body);
+      result = Abstraction::build(vm, GCount, body);
 
       // Fill the G registers
       ArrayInitializer GInitializer = result;

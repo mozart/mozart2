@@ -35,6 +35,9 @@ struct CoreAtoms {
   inline
   void initialize(VM vm, AtomTable& atomTable);
 
+  // ''
+  atom_t empty;
+
   // nil, '|' and '#'
   atom_t nil;
   atom_t pipe;

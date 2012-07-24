@@ -66,6 +66,9 @@ public:
 
   inline
   void copyStableRef(StableNode*& to, StableNode* from);
+
+  inline
+  atom_t copyAtom(atom_t from);
 protected:
   template <class Self>
   void runCopyLoop();

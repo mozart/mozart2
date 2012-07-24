@@ -31,6 +31,8 @@
 #include <string>
 #include <type_traits>
 
+#include "utf-decl.hh"
+
 namespace mozart {
 
 class Atom;
@@ -107,6 +109,12 @@ bool basic_atom_t<atom_type>::equals(const basic_atom_t<atom_type>& rhs) const {
 template <size_t atom_type>
 int basic_atom_t<atom_type>::compare(const basic_atom_t<atom_type>& rhs) const {
   return _impl->compare(rhs._impl);
+}
+
+template <class C, size_t atom_type>
+std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
+                                  const basic_atom_t<atom_type>& atom) {
+  return out << makeLString(atom.contents(), atom.length());
 }
 
 ///////////////

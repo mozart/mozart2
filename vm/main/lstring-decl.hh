@@ -32,7 +32,6 @@
 #include <ostream>
 
 #include "core-forward-decl.hh"
-#include "utils-decl.hh"
 #include "functiontraits-decl.hh"
 
 namespace mozart {
@@ -130,9 +129,9 @@ inline bool operator==(const BaseLString<C>& a, const C (&str)[n]) {
 /**
  * Write the string to an output stream.
  */
-template <class C>
-inline std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
-                                         const BaseLString<C>& input);
+template <class OutC, class InC>
+inline std::basic_ostream<OutC>& operator<<(std::basic_ostream<OutC>& out,
+                                            const BaseLString<InC>& input);
 
 // LString ---------------------------------------------------------------------
 // "The" LString with persistent/VM storage.

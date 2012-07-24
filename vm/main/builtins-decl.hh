@@ -248,8 +248,8 @@ public:
   }
 
   inline
-  OpResult getCallInfo(RichNode self, VM vm, int& arity,
-                       ProgramCounter& start, int& Xcount,
+  OpResult getCallInfo(RichNode self, VM vm, size_t& arity,
+                       ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
 

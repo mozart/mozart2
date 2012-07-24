@@ -174,13 +174,14 @@ OpResult Implementation<Object>::getAttrOffset(Self self, VM vm,
     vm, self, attribute, offset);
 }
 
-OpResult Implementation<Object>::procedureArity(Self self, VM vm, int& result) {
+OpResult Implementation<Object>::procedureArity(Self self, VM vm,
+                                                size_t& result) {
   return Interface<Callable>().procedureArity(self, vm, result);
 }
 
 OpResult Implementation<Object>::getCallInfo(
-  Self self, VM vm, int& arity,
-  ProgramCounter& start, int& Xcount,
+  Self self, VM vm, size_t& arity,
+  ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (!_GsInitialized) {

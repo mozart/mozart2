@@ -47,7 +47,7 @@ bool Implementation<BuiltinProcedure>::equals(VM vm, Self right) {
 }
 
 OpResult Implementation<BuiltinProcedure>::callBuiltin(
-  Self self, VM vm, int argc, UnstableNode* args[]) {
+  Self self, VM vm, size_t argc, UnstableNode* args[]) {
 
   assert(argc == getArity());
   return _builtin->call(vm, args);
@@ -62,14 +62,14 @@ OpResult Implementation<BuiltinProcedure>::callBuiltin(
 }
 
 OpResult Implementation<BuiltinProcedure>::procedureArity(Self self, VM vm,
-                                                          int& result) {
+                                                          size_t& result) {
   result = getArity();
   return OpResult::proceed();
 }
 
 OpResult Implementation<BuiltinProcedure>::getCallInfo(
-  Self self, VM vm, int& arity, ProgramCounter& start,
-  int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
+  Self self, VM vm, size_t& arity, ProgramCounter& start,
+  size_t& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   return _builtin->getCallInfo(self, vm, arity, start, Xcount, Gs, Ks);
 }
@@ -82,8 +82,8 @@ OpResult Implementation<BuiltinProcedure>::getCallInfo(
 
 Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             StaticArray<StableNode> _Gs,
-                                            int arity, RichNode body)
-  : WithHome(vm), _arity(arity), _Gc(Gc) {
+                                            RichNode body)
+  : WithHome(vm), _Gc(Gc) {
   _body.init(vm, body);
   _codeAreaCacheValid = false;
 
@@ -98,7 +98,6 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
                                             GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
-  _arity = from->_arity;
   gr->copyStableNode(_body, from->_body);
   _Gc = Gc;
 
@@ -116,21 +115,18 @@ OpResult Implementation<Abstraction>::initElement(Self self, VM vm,
 }
 
 OpResult Implementation<Abstraction>::procedureArity(Self self, VM vm,
-                                                     int& result) {
-  result = getArity();
+                                                     size_t& result) {
+  MOZART_CHECK_OPRESULT(ensureCodeAreaCacheValid(vm));
+
+  result = _arity;
   return OpResult::proceed();
 }
 
 OpResult Implementation<Abstraction>::getCallInfo(
-  Self self, VM vm, int& arity, ProgramCounter& start,
-  int& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
+  Self self, VM vm, size_t& arity, ProgramCounter& start,
+  size_t& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
-  if (!_codeAreaCacheValid) {
-    MOZART_CHECK_OPRESULT(
-      CodeAreaProvider(_body).getCodeAreaInfo(vm, _start, _Xcount, _Ks));
-
-    _codeAreaCacheValid = true;
-  }
+  MOZART_CHECK_OPRESULT(ensureCodeAreaCacheValid(vm));
 
   arity = _arity;
   start = _start;
@@ -138,6 +134,41 @@ OpResult Implementation<Abstraction>::getCallInfo(
   Gs = self.getArray();
   Ks = _Ks;
 
+  return OpResult::proceed();
+}
+
+void Implementation<Abstraction>::printReprToStream(
+  Self self, VM vm, std::ostream& out, int depth) {
+
+  ensureCodeAreaCacheValid(vm);
+
+  if (!_codeAreaCacheValid) {
+    out << "<P/?>";
+  } else {
+    atom_t printName;
+    UnstableNode debugData;
+    MOZART_ASSERT_PROCEED(
+      CodeAreaProvider(_body).getCodeAreaDebugInfo(vm, printName, debugData));
+
+    out << "<P/" << _arity;
+    if (printName != vm->coreatoms.empty)
+      out << " " << printName;
+    out << ">";
+  }
+}
+
+OpResult Implementation<Abstraction>::ensureCodeAreaCacheValid(VM vm) {
+  if (_codeAreaCacheValid)
+    return OpResult::proceed();
+  else
+    return fillCodeAreaCache(vm);
+}
+
+OpResult Implementation<Abstraction>::fillCodeAreaCache(VM vm) {
+  MOZART_CHECK_OPRESULT(
+    CodeAreaProvider(_body).getCodeAreaInfo(vm, _arity, _start, _Xcount, _Ks));
+
+  _codeAreaCacheValid = true;
   return OpResult::proceed();
 }
 

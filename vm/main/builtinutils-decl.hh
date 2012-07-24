@@ -32,7 +32,7 @@ namespace mozart {
 namespace builtins {
 
 inline
-OpResult expectCallable(VM vm, RichNode target, int expectedArity);
+OpResult expectCallable(VM vm, RichNode target, size_t expectedArity);
 
 }
 

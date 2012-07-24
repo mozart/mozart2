@@ -144,8 +144,17 @@ object PatternMatcher extends Transformer with TreeDSL {
       clauses: List[MatchStatementClause],
       elseStat: Statement): Statement = {
 
-    if (clauses.isEmpty) elseStat
-    else {
+    if (clauses.isEmpty) {
+      elseStat match {
+        case NoElseStatement() =>
+          atPos(original) {
+            MatchStatement(value, Nil, elseStat)
+          }
+
+        case _ =>
+          elseStat
+      }
+    } else {
       val (clausesNoGuard, clausesGuard) = clauses.span(!_.hasGuard)
 
       if (clausesGuard.isEmpty) {
@@ -171,8 +180,17 @@ object PatternMatcher extends Transformer with TreeDSL {
       clauses: List[MatchExpressionClause],
       elseExpr: Expression): Expression = {
 
-    if (clauses.isEmpty) elseExpr
-    else {
+    if (clauses.isEmpty) {
+      elseExpr match {
+        case NoElseExpression() =>
+          atPos(original) {
+            MatchExpression(value, Nil, elseExpr)
+          }
+
+        case _ =>
+          elseExpr
+      }
+    } else {
       val (clausesNoGuard, clausesGuard) = clauses.span(!_.hasGuard)
 
       if (clausesGuard.isEmpty) {

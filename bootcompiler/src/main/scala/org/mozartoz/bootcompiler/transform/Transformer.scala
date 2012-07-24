@@ -89,6 +89,9 @@ abstract class Transformer extends (Program => Unit) {
       treeCopy.MatchStatement(statement, transformExpr(value),
           clauses map transformClauseStat, transformStat(elseStatement))
 
+    case NoElseStatement() =>
+      statement
+
     case ThreadStatement(body) =>
       treeCopy.ThreadStatement(statement, transformStat(body))
 
@@ -164,6 +167,9 @@ abstract class Transformer extends (Program => Unit) {
     case MatchExpression(value, clauses, elseExpression) =>
       treeCopy.MatchExpression(expression, transformExpr(value),
           clauses map transformClauseExpr, transformExpr(elseExpression))
+
+    case NoElseExpression() =>
+      expression
 
     case ThreadExpression(body) =>
       treeCopy.ThreadExpression(expression, transformExpr(body))

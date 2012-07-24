@@ -34,6 +34,9 @@ class TreeCopier {
       clauses: List[MatchStatementClause], elseStatement: Statement) =
     new MatchStatement(value, clauses, elseStatement).copyAttrs(tree)
 
+  def NoElseStatement(tree: Node) =
+    new NoElseStatement().copyAttrs(tree)
+
   def ThreadStatement(tree: Node, statement: Statement) =
     new ThreadStatement(statement).copyAttrs(tree)
 
@@ -105,6 +108,9 @@ class TreeCopier {
   def MatchExpression(tree: Node, value: Expression,
       clauses: List[MatchExpressionClause], elseExpression: Expression) =
     new MatchExpression(value, clauses, elseExpression).copyAttrs(tree)
+
+  def NoElseExpression(tree: Node) =
+    new NoElseExpression().copyAttrs(tree)
 
   def ThreadExpression(tree: Node, expression: Expression) =
     new ThreadExpression(expression).copyAttrs(tree)

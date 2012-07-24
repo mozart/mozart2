@@ -6,6 +6,7 @@ import scala.collection.mutable.ListBuffer
 import ast._
 import oz._
 import symtab._
+import util.FilePosition
 
 object Unnester extends Transformer with TreeDSL {
   override def transformStat(statement: Statement) = statement match {
@@ -47,14 +48,36 @@ object Unnester extends Transformer with TreeDSL {
       val newClauses = clauses map transformClauseStat
       val newElseStat = transformStat(elseStat)
 
+      def makeNewElseStat(v: Variable) = newElseStat match {
+        case NoElseStatement() =>
+          transformStat {
+            atPos(newElseStat) {
+              val exception = Tuple(Constant(OzAtom("kernel")), List(
+                  Constant(OzAtom("noElse")),
+                  Constant(OzAtom(FilePosition.fileNameOf(matchStat))),
+                  Constant(OzInt(matchStat.pos.line)),
+                  v))
+
+              builtins.raiseError call (exception)
+            }
+          }
+
+        case _ =>
+          newElseStat
+      }
+
       value match {
         case v:Variable =>
-          treeCopy.MatchStatement(matchStat, v, newClauses, newElseStat)
+          if (newClauses.isEmpty) makeNewElseStat(v)
+          else treeCopy.MatchStatement(matchStat, v, newClauses,
+              makeNewElseStat(v))
 
         case _ =>
           statementWithTemp { temp =>
             transformStat(temp === value) ~ {
-              treeCopy.MatchStatement(matchStat, temp, newClauses, newElseStat)
+              if (newClauses.isEmpty) makeNewElseStat(temp)
+              else treeCopy.MatchStatement(matchStat, temp, newClauses,
+                  makeNewElseStat(temp))
             }
           }
       }
@@ -108,7 +131,13 @@ object Unnester extends Transformer with TreeDSL {
               clause, pattern, guard, v === body)
       }
 
-      val newElse = (v === elseExpr)
+      val newElse = elseExpr match {
+        case NoElseExpression() =>
+          treeCopy.NoElseStatement(elseExpr)
+
+        case _ =>
+          v === elseExpr
+      }
 
       transformStat(treeCopy.MatchStatement(rhs, value, newClauses, newElse))
 

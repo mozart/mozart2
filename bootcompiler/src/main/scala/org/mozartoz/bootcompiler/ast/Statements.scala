@@ -111,6 +111,11 @@ case class MatchStatementClause(pattern: Expression, guard: Option[Expression],
   def hasGuard = guard.isDefined
 }
 
+/** Special node to mark that there is no else statement */
+case class NoElseStatement() extends Statement {
+  def syntax(indent: String) = "<noelse>"
+}
+
 /** Thread statement
  *
  *  {{{

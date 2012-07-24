@@ -8,6 +8,8 @@ import scala.collection.immutable.PagedSeq
 import scala.util.parsing.input._
 import scala.util.parsing.combinator.token._
 
+import util.FilePosition
+
 trait OzPreprocessor {
   val lexical = new OzLexical
   import lexical._
@@ -137,14 +139,17 @@ trait OzPreprocessor {
   }
 
   private case class PreprocessorPosition(offset: Int)(
-      underlying: Position, val file: File) extends Position {
+      underlying: Position, _file: File) extends FilePosition {
     def line = underlying.line
     def column = underlying.column
+
+    def file = Some(_file)
+    override def fileName = _file.getName
 
     protected def lineContents: String = "" // cheat
 
     override def toString =
-      "line %d, column %d (in file %s)".format(line, column, file.getName)
+      "line %d, column %d (in file %s)".format(line, column, fileName)
 
     override def longString = underlying.longString
 

@@ -160,7 +160,7 @@ class OzParser extends OzTokenParsers with PackratParsers
       val (newArgs, patMatValue, pattern) = postProcessArgsInner(args)
       (newArgs, MatchStatement(patMatValue,
           List(MatchStatementClause(pattern, None, body)),
-          RaiseStatement(makeMatchErrorException())))
+          NoElseStatement()))
     }
   }
 
@@ -171,7 +171,7 @@ class OzParser extends OzTokenParsers with PackratParsers
       val (newArgs, patMatValue, pattern) = postProcessArgsInner(args)
       (newArgs, MatchExpression(patMatValue,
           List(MatchExpressionClause(pattern, None, body)),
-          RaiseExpression(makeMatchErrorException())))
+          NoElseExpression()))
     }
   }
 
@@ -313,21 +313,14 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // else clauses of if and case
 
-  lazy val elseStatementBase: PackratParser[Statement] = (
+  lazy val elseStatement: PackratParser[Statement] = (
       "else" ~> inStatement
     | positioned("elseif" ~> innerIfStatement)
     | positioned("elsecase" ~> innerCaseStatement)
+    | positioned(success(NoElseStatement()))
   )
 
-  lazy val elseStatement: PackratParser[Statement] = (
-      elseStatementBase
-    | positioned(success(SkipStatement()))
-  )
-
-  lazy val elseStatementCase: PackratParser[Statement] = (
-      elseStatementBase
-    | positioned(success(RaiseStatement(makeMatchErrorException())))
-  )
+  lazy val elseStatementCase = elseStatement
 
   lazy val elseExpression: PackratParser[Expression] = (
       "else" ~> inExpression
@@ -337,11 +330,8 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   lazy val elseExpressionCase: PackratParser[Expression] = (
       elseExpression
-    | positioned(success(RaiseExpression(makeMatchErrorException())))
+    | positioned(success(NoElseExpression()))
   )
-
-  def makeMatchErrorException() =
-    Constant(OzAtom("matchError"))
 
   // Thread
 

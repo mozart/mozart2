@@ -14,6 +14,12 @@ object Desugar extends Transformer with TreeDSL {
       builtins.dotAssign call (transformExpr(left), transformExpr(center),
           transformExpr(right))
 
+    case ifStat @ IfStatement(cond, trueStat, falseStat:NoElseStatement) =>
+      transformStat {
+        treeCopy.IfStatement(ifStat, cond, trueStat,
+            treeCopy.SkipStatement(falseStat))
+      }
+
     case thread @ ThreadStatement(body) =>
       val proc = PROC("", Nil) {
         transformStat(body)

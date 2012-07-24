@@ -38,8 +38,7 @@ namespace mozart {
 #include "Atom-implem.hh"
 
 void Implementation<Atom>::build(atom_t& self, VM vm, GR gr, Self from) {
-  atom_t fromValue = from.get().value();
-  self = vm->getAtom(fromValue.length(), fromValue.contents());
+  self = gr->copyAtom(from.get().value());
 }
 
 bool Implementation<Atom>::equals(VM vm, Self right) {

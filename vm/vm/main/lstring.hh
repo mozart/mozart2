@@ -77,13 +77,31 @@ constexpr const BaseLString<C> BaseLString<C>::unsafeSlice(nativeint from,
       : BaseLString<C>(string + from, to - from);
 }
 
-template <class C>
-std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
-                                  const BaseLString<C>& input) {
-  if (input.isError())
-    return out << "(error " << (nativeint)input.error << ")";
-  else
-    return out.write(input.string, input.length);
+namespace mutinternal {
+  template <class OutC, class InC>
+  struct WriteLStringToStreamHelper {
+    static std::basic_ostream<OutC>& write(std::basic_ostream<OutC>& out,
+                                           const BaseLString<InC>& input) {
+      return out << toUTF<OutC>(input);
+    }
+  };
+
+  template <class C>
+  struct WriteLStringToStreamHelper<C, C> {
+    static std::basic_ostream<C>& write(std::basic_ostream<C>& out,
+                                        const BaseLString<C>& input) {
+      if (input.isError())
+        return out << "(error " << (nativeint) input.error << ")";
+      else
+        return out.write(input.string, input.length);
+    }
+  };
+}
+
+template <class OutC, class InC>
+std::basic_ostream<OutC>& operator<<(std::basic_ostream<OutC>& out,
+                                     const BaseLString<InC>& input) {
+  return mutinternal::WriteLStringToStreamHelper<OutC, InC>::write(out, input);
 }
 
 // LString ---------------------------------------------------------------------

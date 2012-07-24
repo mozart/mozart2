@@ -60,9 +60,9 @@ void StackEntry::beforeGR(VM vm, StableNode*& abs) {
     abs = abstraction;
   assert(abs != nullptr);
 
-  int arity;
+  size_t arity;
   ProgramCounter start = nullptr;
-  int Xcount;
+  size_t Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
@@ -76,9 +76,9 @@ void StackEntry::afterGR(VM vm, StableNode*& abs) {
     abs = abstraction;
   assert(abs != nullptr);
 
-  int arity;
+  size_t arity;
   ProgramCounter start = nullptr;
-  int Xcount;
+  size_t Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
@@ -140,16 +140,16 @@ void Thread::constructor(VM vm, RichNode abstraction,
                          bool createSuspended) {
   // getCallInfo
 
-  int arity = 0;
+  size_t arity = 0;
   ProgramCounter start = nullptr;
-  int Xcount = 0;
+  size_t Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
   MOZART_ASSERT_PROCEED(Callable(abstraction).getCallInfo(
     vm, arity, start, Xcount, Gs, Ks));
 
-  assert(arity >= 0 && (size_t) arity == argc);
+  assert(arity >= 0 && arity == argc);
 
   // Set up
 
@@ -557,16 +557,16 @@ void Thread::run() {
       }
 
       case OpCreateAbstractionX: {
-        XPC(4) = Abstraction::build(vm, IntPC(3), IntPC(1), XPC(2));
+        XPC(3) = Abstraction::build(vm, IntPC(2), XPC(1));
 
-        advancePC(4);
+        advancePC(3);
         break;
       }
 
       case OpCreateAbstractionK: {
-        XPC(4) = Abstraction::build(vm, IntPC(3), IntPC(1), KPC(2));
+        XPC(3) = Abstraction::build(vm, IntPC(2), KPC(1));
 
-        advancePC(4);
+        advancePC(3);
         break;
       }
 
@@ -658,7 +658,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
     } \
   } while (false)
 
-void Thread::call(RichNode target, int actualArity, bool isTailCall,
+void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
                   ProgramCounter& PC, size_t& yregCount,
                   XRegArray* xregs,
@@ -666,9 +666,9 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
                   StaticArray<StableNode>& gregs,
                   StaticArray<StableNode>& kregs,
                   bool& preempted) {
-  int formalArity = 0;
+  size_t formalArity = 0;
   ProgramCounter start = nullptr;
-  int Xcount = 0;
+  size_t Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
@@ -677,7 +677,7 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
 
   if (actualArity != formalArity) {
     RichNode actualArgs[actualArity];
-    for (size_t i = 0; i < (size_t) actualArity; i++)
+    for (size_t i = 0; i < actualArity; i++)
       actualArgs[i] = (*xregs)[i];
 
     CHECK_OPRESULT_RETURN(

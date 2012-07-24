@@ -34,6 +34,7 @@
 #include <utility>
 #include <cstdlib>
 #include <cstdint>
+#include <ostream>
 
 namespace mozart {
 
@@ -93,6 +94,11 @@ bool operator!=(const basic_atom_t<atom_type>& lhs,
                 const basic_atom_t<atom_type>& rhs) {
   return !lhs.equals(rhs);
 }
+
+template <class C, size_t atom_type>
+inline
+std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
+                                  const basic_atom_t<atom_type>& atom);
 
 typedef basic_atom_t<1> atom_t;
 typedef basic_atom_t<2> unique_name_t;

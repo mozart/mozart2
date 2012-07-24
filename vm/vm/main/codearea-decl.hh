@@ -54,7 +54,8 @@ public:
 
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 ByteCode* codeBlock, int size, int Xcount);
+                 ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
+                 atom_t printName, RichNode debugData);
 
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
@@ -73,9 +74,13 @@ public:
   }
 
   inline
-  OpResult getCodeAreaInfo(Self self, VM vm,
-                           ProgramCounter& start, int& Xcount,
+  OpResult getCodeAreaInfo(Self self, VM vm, size_t& arity,
+                           ProgramCounter& start, size_t& Xcount,
                            StaticArray<StableNode>& Ks);
+
+  inline
+  OpResult getCodeAreaDebugInfo(Self self, VM vm,
+                                atom_t& printName, UnstableNode& debugData);
 private:
   void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {
     _codeBlock = new (vm) ByteCode[size / sizeof(ByteCode)];
@@ -83,10 +88,14 @@ private:
   }
 
   ByteCode* _codeBlock; // actual byte-code in this code area
-  int _size;            // size of the codeBlock
+  size_t _size;         // size of the codeBlock
 
-  int _Xcount; // number of X registers used in this area
-  size_t _Kc;  // number of K registers
+  size_t _arity;  // arity of this area (number of input registers)
+  size_t _Xcount; // number of X registers used in this area
+  size_t _Kc;     // number of K registers
+
+  atom_t _printName;
+  StableNode _debugData;
 };
 
 #ifndef MOZART_GENERATOR

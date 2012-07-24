@@ -59,7 +59,7 @@ public:
     Arity(): Builtin("arity") {}
 
     OpResult operator()(VM vm, In procedure, Out result) {
-      int intResult = 0;
+      size_t intResult = 0;
       MOZART_CHECK_OPRESULT(Callable(procedure).procedureArity(vm, intResult));
 
       result = SmallInt::build(vm, intResult);

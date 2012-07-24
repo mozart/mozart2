@@ -69,6 +69,13 @@ void GraphReplicator::copyStableRef(StableNode*& to, StableNode* from) {
   todos.stableRefs.push_front(secondMM, &to);
 }
 
+atom_t GraphReplicator::copyAtom(atom_t from) {
+  if (kind() == grkGarbageCollection)
+    return vm->getAtom(from.length(), from.contents());
+  else
+    return from;
+}
+
 template <class Self>
 void GraphReplicator::runCopyLoop() {
   while (!todos.spaces.empty() ||

@@ -51,6 +51,10 @@ class Implementation<Array>: public WithHome,
 public:
   typedef SelfType<Array>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("array"));
+  }
+
   inline
   Implementation(VM vm, size_t width, StaticArray<UnstableNode> _elements,
                  nativeint low, RichNode initValue);

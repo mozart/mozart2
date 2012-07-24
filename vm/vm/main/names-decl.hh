@@ -47,6 +47,10 @@ class Implementation<OptName>: public WithHome,
 public:
   typedef SelfType<OptName>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("name"));
+  }
+
   Implementation(SpaceRef home): WithHome(home) {}
 
   static void build(SpaceRef& self, VM vm) {
@@ -99,6 +103,10 @@ public:
   typedef SelfType<GlobalName>::Self Self;
 public:
   static constexpr UUID uuid = "{3330919d-1e2f-41a4-a073-620dd36dd582}";
+
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("name"));
+  }
 
   Implementation(VM vm, UUID uuid): WithHome(vm), _uuid(uuid) {}
 
@@ -155,6 +163,10 @@ public:
   typedef SelfType<NamedName>::Self Self;
 public:
   static constexpr UUID uuid = "{f9873e5a-65db-4894-9dd5-bcd276df14af}";
+
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("name"));
+  }
 
   Implementation(VM vm, RichNode printName, UUID uuid):
     WithHome(vm), _uuid(uuid) {
@@ -218,6 +230,10 @@ public:
   typedef SelfType<UniqueName>::Self Self;
 public:
   static constexpr UUID uuid = "{f6cdb080-98ad-47bf-9e67-629385261e9f}";
+
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("name"));
+  }
 
   Implementation(unique_name_t value) : _value(value) {}
 

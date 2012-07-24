@@ -92,6 +92,9 @@ public:
     out << "<" << _name << ">";
   }
 
+  inline
+  virtual atom_t getTypeAtom(VM vm) const;
+
   virtual void gCollect(GC gc, RichNode from, StableNode& to) const = 0;
   virtual void gCollect(GC gc, RichNode from, UnstableNode& to) const = 0;
 

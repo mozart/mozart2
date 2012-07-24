@@ -45,6 +45,10 @@ class Implementation<ReifiedThread>:
 public:
   typedef SelfType<ReifiedThread>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("thread"));
+  }
+
   Implementation(Runnable* runnable): _runnable(runnable) {}
 
   static void build(Runnable*& self, VM vm, Runnable* runnable) {

@@ -48,8 +48,31 @@ Value = value(wait:            Wait
               isFuture:        IsFuture
               isFailed:        IsFailed
               isDet:           IsDet
-              status:          Boot_Value.status
-              type:            Boot_Value.type
+
+              status:
+                 fun {$ X}
+                    R = {Boot_Value.status X}
+                 in
+                    case R
+                    of det(T) then T = {Value.type X}
+                    else skip
+                    end
+                    R
+                 end
+
+              type:
+                 fun {$ X}
+                    R = {Boot_Value.type X}
+                 in
+                    if R \= chunk then R
+                    elseif {IsPort X} then port
+                    elseif {IsLock X} then 'lock'
+                    elseif {IsClass X} then 'class'
+                    elseif {IsBitArray X} then bitArray
+                    elseif {IsBitString X} then bitString
+                    else R
+                    end
+                 end
 
               isNeeded:        IsNeeded
               waitNeeded:      WaitNeeded
@@ -62,5 +85,8 @@ Value = value(wait:            Wait
               byNeedFail:      FailedValue
               failed:          FailedValue
 
-              %toVirtualString: Boot_Value.toVirtualString
+              toVirtualString:
+                 fun {$ X Depth Width}
+                    {Boot_System.getRepr X}
+                 end
              )

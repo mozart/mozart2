@@ -94,6 +94,10 @@ class Implementation<Tuple>: public BaseRecord<Tuple>,
 public:
   typedef SelfType<Tuple>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("tuple"));
+  }
+
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
                  RichNode label);
@@ -186,6 +190,10 @@ class Implementation<Cons>: public IntegerDottableHelper<Cons>,
 public:
   typedef SelfType<Cons>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("tuple"));
+  }
+
   inline
   Implementation(VM vm, RichNode head, RichNode tail);
 
@@ -286,6 +294,10 @@ class Implementation<Arity>:
 public:
   typedef SelfType<Arity>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("arity"));
+  }
+
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
                  RichNode label);
@@ -370,6 +382,10 @@ class Implementation<Record>: public BaseRecord<Record>,
 public:
   typedef SelfType<Record>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("record"));
+  }
+
   inline
   Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
                  RichNode arity);
@@ -441,6 +457,10 @@ class Implementation<Chunk>: StoredAs<StableNode*> {
 public:
   typedef SelfType<Chunk>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("chunk"));
+  }
+
   Implementation(StableNode* underlying): _underlying(underlying) {}
 
   static void build(StableNode*& self, VM vm, StableNode* underlying) {

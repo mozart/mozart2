@@ -40,6 +40,10 @@ class Implementation<Float>: Copyable, StoredAs<double>, WithValueBehavior {
 public:
   typedef SelfType<Float>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("float"));
+  }
+
   Implementation(double value) : _value(value) {}
 
   static void build(double& self, VM, double value) {

@@ -32,7 +32,7 @@ local
    `ooClassIsSited`   = {NewUniqueName 'ooClassIsSited'}
    `ooClassIsLocking` = {NewUniqueName 'ooClassIsLocking'}
 
-   fun {IsClass X}
+   fun {!IsClass X}
       {IsChunk X} andthen {HasFeature X ClassID}
    end
 

@@ -89,6 +89,7 @@ struct ImplementationDef {
     withHome = false;
     base = "Type";
     hasUUID = false;
+    hasGetTypeAtom = false;
     hasPrintReprToStream = false;
     autoGCollect = true;
     autoSClone = true;
@@ -109,6 +110,7 @@ struct ImplementationDef {
   bool withHome;
   std::string base;
   bool hasUUID;
+  bool hasGetTypeAtom;
   bool hasPrintReprToStream;
   bool autoGCollect;
   bool autoSClone;
@@ -158,22 +160,25 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
       method = ImplemMethodDef(function, funTemplate);
     }
 
-    if (!function->isCXXInstanceMember())
-      continue;
-    if (isa<CXXConstructorDecl>(function))
-      continue;
+    if (!function->isCXXInstanceMember()) {
+      if (function->getNameAsString() == "getTypeAtom")
+        definition.hasGetTypeAtom = true;
+    } else {
+      if (isa<CXXConstructorDecl>(function))
+        continue;
 
-    if (function->getNameAsString() == "printReprToStream")
-      definition.hasPrintReprToStream = true;
-    else if (function->getNameAsString() == "compareFeatures")
-      definition.feature = true;
+      if (function->getNameAsString() == "printReprToStream")
+        definition.hasPrintReprToStream = true;
+      else if (function->getNameAsString() == "compareFeatures")
+        definition.feature = true;
 
-    method.hasSelfParam = (function->param_size() > 0) &&
-      ((*function->param_begin())->getNameAsString() == "self");
+      method.hasSelfParam = (function->param_size() > 0) &&
+        ((*function->param_begin())->getNameAsString() == "self");
 
-    method.parseTheFunction();
+      method.parseTheFunction();
 
-    definition.methods.push_back(method);
+      definition.methods.push_back(method);
+    }
   }
 }
 
@@ -278,6 +283,13 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "    return UnstableNode::build<" << name
      << ">(vm, std::forward<Args>(args)...);\n";
   to << "  }\n";
+
+  if (hasGetTypeAtom) {
+    to << "\n";
+    to << "  atom_t getTypeAtom(VM vm) const {\n";
+    to << "    return Implementation<" << name << ">::getTypeAtom(vm);\n";
+    to << "  }\n";
+  }
 
   if (hasPrintReprToStream) {
     to << "\n";

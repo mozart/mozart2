@@ -39,7 +39,7 @@ namespace mozart {
 
 void Implementation<Atom>::build(atom_t& self, VM vm, GR gr, Self from) {
   atom_t fromValue = from.get().value();
-  self = vm->atomTable.get(vm, fromValue.length(), fromValue.contents());
+  self = vm->getAtom(fromValue.length(), fromValue.contents());
 }
 
 bool Implementation<Atom>::equals(VM vm, Self right) {

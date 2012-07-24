@@ -44,6 +44,10 @@ class Implementation<ReifiedSpace>: public WithHome, StoredAs<SpaceRef> {
 public:
   typedef SelfType<ReifiedSpace>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("space"));
+  }
+
   Implementation(SpaceRef space):
     WithHome(space->getParent()), _space(space) {}
 
@@ -107,6 +111,10 @@ class Implementation<DeletedSpace>: StoredAs<DeletedSpaceKind> {
 public:
   typedef SelfType<DeletedSpace>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("space"));
+  }
+
   Implementation(DeletedSpaceKind kind): _kind(kind) {}
 
   static void build(DeletedSpaceKind& self, VM vm, DeletedSpaceKind kind) {

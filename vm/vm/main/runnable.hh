@@ -33,7 +33,9 @@ namespace mozart {
 
 Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
-  _runnable(false), _terminated(false), _dead(false), _replicate(nullptr) {
+  _runnable(false), _terminated(false), _dead(false),
+  _raiseOnBlock(false),
+  _replicate(nullptr) {
 
   _reification.init(vm, ReifiedThread::build(vm, this));
 
@@ -50,6 +52,8 @@ Runnable::Runnable(GR gr, Runnable& from) :
   _runnable = from._runnable;
   _terminated = from._terminated;
   _dead = from._dead;
+
+  _raiseOnBlock = from._raiseOnBlock;
 
   _reification.init(vm, ReifiedThread::build(gr->vm, this));
 

@@ -71,6 +71,14 @@ public:
   inline
   virtual void kill();
 
+  bool getRaiseOnBlock() {
+    return _raiseOnBlock;
+  }
+
+  void setRaiseOnBlock(bool value) {
+    _raiseOnBlock = value;
+  }
+
   virtual void beforeGR() {}
   virtual void afterGR() {}
 
@@ -103,6 +111,8 @@ private:
   bool _runnable;
   bool _terminated;
   bool _dead;
+
+  bool _raiseOnBlock;
 
   StableNode _reification;
 

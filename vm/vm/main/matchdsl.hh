@@ -216,6 +216,11 @@ struct PrimitiveTypeToOzType<unique_name_t> {
   typedef UniqueName result;
 };
 
+template <>
+struct PrimitiveTypeToOzType<Runnable*> {
+  typedef ReifiedThread result;
+};
+
 template <class T>
 inline
 bool ozValueToPrimitiveValue(VM vm, RichNode value, T& primitive) {

@@ -48,15 +48,19 @@ public:
 public:
   static constexpr UUID uuid = "{55ed333b-1eaf-4c8a-a151-626d3f96efe8}";
 
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("atom"));
+  }
+
   Implementation(atom_t value) : _value(value) {}
 
   static void build(atom_t& self, VM vm, std::size_t length,
                     const nchar* contents) {
-    self = vm->atomTable.get(vm, length, contents);
+    self = vm->getAtom(length, contents);
   }
 
   static void build(atom_t& self, VM vm, const nchar* contents) {
-    self = vm->atomTable.get(vm, contents);
+    self = vm->getAtom(contents);
   }
 
   static void build(atom_t& self, VM vm, atom_t value) {

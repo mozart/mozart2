@@ -174,6 +174,22 @@ public:
   void setAlarm(std::int64_t delay, StableNode* wakeable);
 public:
   CoreAtoms coreatoms;
+
+  atom_t getAtom(const nchar* data) {
+    return atomTable.get(this, data);
+  }
+
+  atom_t getAtom(size_t length, const nchar* data) {
+    return atomTable.get(this, length, data);
+  }
+
+  unique_name_t getUniqueName(const nchar* data) {
+    return atomTable.getUniqueName(this, data);
+  }
+
+  unique_name_t getUniqueName(size_t length, const nchar* data) {
+    return atomTable.getUniqueName(this, length, data);
+  }
 public:
   // Influence from the external world
   void requestPreempt() {
@@ -192,8 +208,6 @@ private:
   friend class GarbageCollector;
   friend class SpaceCloner;
   friend class Runnable;
-  friend class Implementation<Atom>;
-  friend class Implementation<UniqueName>;
 
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);

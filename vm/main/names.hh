@@ -109,8 +109,7 @@ int Implementation<NamedName>::compareFeatures(VM vm, Self right) {
 void Implementation<UniqueName>::build(unique_name_t& self, VM vm, GR gr,
                                        Self from) {
   unique_name_t fromValue = from.get().value();
-  self = vm->atomTable.getUniqueName(vm, fromValue.length(),
-                                     fromValue.contents());
+  self = vm->getUniqueName(fromValue.length(), fromValue.contents());
 }
 
 bool Implementation<UniqueName>::equals(VM vm, Self right) {

@@ -50,6 +50,10 @@ public:
 private:
   typedef builtins::BaseBuiltin Builtin;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("procedure"));
+  }
+
   Implementation(Builtin* builtin): _builtin(builtin) {}
 
   static void build(Builtin*& self, VM vm, Builtin* builtin) {
@@ -154,6 +158,10 @@ class Implementation<Abstraction>: public WithHome,
 public:
   typedef SelfType<Abstraction>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("procedure"));
+  }
+
   inline
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
                  int arity, RichNode body);

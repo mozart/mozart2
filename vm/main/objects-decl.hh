@@ -54,6 +54,10 @@ private:
   // defined in coredatatypes.cc
   static const ByteCode dispatchByteCode[9];
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("object"));
+  }
+
   inline
   Implementation(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
                  RichNode clazz, RichNode attrModel, RichNode featModel);

@@ -22,6 +22,7 @@ require
    Boot_Exception at 'x-oz://boot/Exception'
    Boot_Time      at 'x-oz://boot/Time'
    Boot_ByteString at 'x-oz://boot/ByteString'
+   Boot_System    at 'x-oz://boot/System'
 
 prepare
 

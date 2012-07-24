@@ -206,6 +206,10 @@ class Implementation<Dictionary>: public WithHome,
 public:
   typedef SelfType<Dictionary>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("dictionary"));
+  }
+
   Implementation(VM vm): WithHome(vm) {}
 
   Implementation(VM vm, NodeDictionary& src): WithHome(vm) {

@@ -43,6 +43,10 @@ public:
 public:
   static constexpr UUID uuid = "{00000000-0000-4f00-0000-000000000001}";
 
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("int"));
+  }
+
   Implementation(nativeint value) : _value(value) {}
 
   static void build(nativeint& self, VM vm, nativeint value) {

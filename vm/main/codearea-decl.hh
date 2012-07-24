@@ -48,6 +48,10 @@ class Implementation<CodeArea>: StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<CodeArea>::Self Self;
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("codeArea"));
+  }
+
   inline
   Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
                  ByteCode* codeBlock, int size, int Xcount);

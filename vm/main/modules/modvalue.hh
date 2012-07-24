@@ -321,10 +321,7 @@ public:
         else
           result = Atom::build(vm, MOZART_STR("free"));
       } else {
-        UnstableNode type;
-        MOZART_CHECK_OPRESULT(TypeOf::builtin()(vm, value, type));
-
-        result = buildTuple(vm, MOZART_STR("det"), std::move(type));
+        result = buildTuple(vm, MOZART_STR("det"), OptVar::build(vm));
       }
 
       return OpResult::proceed();
@@ -339,8 +336,7 @@ public:
       if (value.isTransient())
         return OpResult::waitFor(vm, value);
 
-      // TODO
-      result = Atom::build(vm, MOZART_STR("value"));
+      result = build(vm, value.type()->getTypeAtom(vm));
       return OpResult::proceed();
     }
   };

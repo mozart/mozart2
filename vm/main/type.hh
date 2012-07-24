@@ -29,6 +29,14 @@
 
 namespace mozart {
 
+//////////
+// Type //
+//////////
+
+atom_t Type::getTypeAtom(VM vm) const {
+  return vm->getAtom(MOZART_STR("value"));
+}
+
 //////////////
 // WithHome //
 //////////////

@@ -58,6 +58,10 @@ public:
 public:
   static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("byteString"));
+  }
+
   Implementation(VM vm, const LString<unsigned char>& bytes) : _bytes(bytes) {}
 
   inline

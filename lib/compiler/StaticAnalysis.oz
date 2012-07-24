@@ -30,7 +30,7 @@ import
                    newProcedureRef newCopyableProcedureRef
                    nameVariable chunkArity
                    isBuiltin
-                   isLocalDet) at 'x-oz://boot/CompilerSupport'
+                   isLocalDet)
    System(eq printName
 \ifdef DEBUGSA
           show
@@ -78,15 +78,19 @@ export
    variable:               SAVariable
    variableOccurrence:     SAVariableOccurrence
    token:                  SAToken
+\ifdef HAS_CSS
 require
    Space(waitStable)
    Search(base)
    FD(less distinct distribute record sup)
    FS(var value include subset reflect monitorIn)
+\endif
 prepare
    \insert POTypes
 
+   \ifdef HAS_CSS
    FdSup = FD.sup
+   \endif
 
    fun {MakeDummyProcedure N}
       case N
@@ -409,7 +413,9 @@ define
                case T
                of int then
                   {OTE if {IsChar V} then char
+                       \ifdef HAS_CSS
                        elseif V=<FdSup andthen V>=0 then fdIntC
+                       \endif
                        else int
                        end nil}
                [] float then
@@ -1114,11 +1120,12 @@ define
       end
 
       meth beginVirtualToplevel(Coord)
-         case @toCopy of unit then skip
+         /*case @toCopy of unit then skip
          elseof Xs then
             savedToCopy <- Xs|@savedToCopy
          end
-         toCopy <- nil
+         toCopy <- nil*/
+         skip
       end
       meth declareToplevelName(PrintName ?N)
          case @toCopy of unit then
@@ -1141,12 +1148,12 @@ define
       end
       meth endVirtualToplevel(?Xs)
          Xs = @toCopy
-         case @savedToCopy of Ys1|Ysr then
+         /*case @savedToCopy of Ys1|Ysr then
             toCopy <- Ys1
             savedToCopy <- Ysr
          [] nil then
             toCopy <- unit
-         end
+         end*/
       end
 
       meth setErrorMsg(E)
@@ -1451,10 +1458,10 @@ define
                procedureRef <- {Ctrl declareToplevelProcedure($)}
             end
             {@designator unifyVal(Ctrl Value)}
-         end
 \ifdef DEBUGSA
-         {System.show lookedAhead({@designator getPrintName($)} Value)}
+            {System.show lookedAhead({@designator getPrintName($)} Value)}
 \endif
+         end
       end
       meth saDescend(Ctrl)
          Env = {GetGlobalEnv @globalVars}
@@ -1658,7 +1665,8 @@ define
       %%          the arguments have been tested
 
       meth checkArguments(Ctrl Det $)
-         N         = {System.printName {GetData @designator}}
+         %N         = {System.printName {GetData @designator}}
+         N         = {GetData @designator}
          BIInfo    = {Builtins.getInfo N}
          NumArgs   = {Length @actualArgs}
          BIData    = {GetData @designator}
@@ -2464,14 +2472,16 @@ define
          if
             SAApplication, checkDesignatorBuiltin($)
          then
-            BIName = {System.printName {GetData @designator}}
+            %BIName = {System.printName {GetData @designator}}
+            BIName = {GetData @designator}
             ArgsOk
          in
 \ifdef DEBUGSA
             {System.show applying(BIName)}
 \endif
             case
-               {CondSelect BINameToMethod BIName unit}
+               %{CondSelect BINameToMethod BIName unit}
+               unit
             of
                unit
             then

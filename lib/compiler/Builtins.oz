@@ -1,31 +1,31 @@
+%%% Copyright © 2012, Université catholique de Louvain
+%%% All rights reserved.
 %%%
-%%% Author:
-%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+%%% Redistribution and use in source and binary forms, with or without
+%%% modification, are permitted provided that the following conditions are met:
 %%%
-%%% Contributors:
-%%%   Martin Mueller <mmueller@ps.uni-sb.de>
+%%% *  Redistributions of source code must retain the above copyright notice,
+%%%    this list of conditions and the following disclaimer.
+%%% *  Redistributions in binary form must reproduce the above copyright notice,
+%%%    this list of conditions and the following disclaimer in the documentation
+%%%    and/or other materials provided with the distribution.
 %%%
-%%% Copyright:
-%%%   Leif Kornstaedt, 1997
-%%%
-%%% Last change:
-%%%   $Date$ by $Author$
-%%%   $Revision$
-%%%
-%%% This file is part of Mozart, an implementation of Oz 3:
-%%%    http://www.mozart-oz.org
-%%%
-%%% See the file "LICENSE" or
-%%%    http://www.mozart-oz.org/LICENSE.html
-%%% for information on usage and redistribution
-%%% of this file, and for a DISCLAIMER OF ALL
-%%% WARRANTIES.
-%%%
+%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%% POSSIBILITY OF SUCH DAMAGE.
 
 %%
 %% This defines a function `GetBuiltinInfo' that returns information
-%% about the builtin with a given name A.  Raises an exception if no
-%% builtin with A is known, else returns a record as follows:
+%% about a given builtin A.  Raises an exception if no A is not a builtin
+%% value, else returns a record as follows:
 %%
 %%    builtin(types: [...] det: [...] imods: [bool] ...)
 %%
@@ -50,70 +50,36 @@
 %%
 
 functor
+
 export
    getInfo: GetBuiltinInfo
-require
-   GroundZip(zip)
-prepare
-   BuiltinTable = {GroundZip.zip
-                   builtinTable(
-                      %\insert compiler-Builtins
-                      )}
 
-   proc {E Name T}
-      {Exception.raiseError compiler(badBuiltinTableEntry Name T)}
-   end
+import
+   CompilerSupport(getBuiltinInfo:BootGetBuiltinInfo)
 
-   %%
-   %% Do some consistency checks on the builtin table
-   %%
+define
 
-   {Record.forAllInd BuiltinTable
-    proc {$ Name Entry}
-       if {HasFeature Entry types} andthen {IsList Entry.types} then skip
-       else {E Name types}
-       end
-       if {HasFeature Entry det} andthen {IsList Entry.det} then skip
-       else {E Name det}
-       end
-       if {Length Entry.types} == {Length Entry.det} then skip
-       else {E Name typesdet}
-       end
-       if {Not {HasFeature Entry imods}} then skip
-       elseif {IsList Entry.imods} then skip
-       elseif {Length Entry.imods} =< Entry.iarity then skip
-       else {E Name imods}
-       end
-       if {Not {HasFeature Entry test}} then skip
-       elseif {IsBool Entry.test} then skip
-       else {E Name test}
-       end
-       if {HasFeature Entry negated} then NBI = Entry.negated in
-          if {IsAtom NBI} then
-             if {HasFeature Entry test} then
-                if {HasFeature BuiltinTable NBI} then
-                   if {HasFeature BuiltinTable.NBI test} then skip
-                   else {E Name negatedNotTest2}
-                   end
-                else {E Name undefinedNegatedBuiltin}
-                end
-             else {E Name negatedNotTest}
-             end
-          else {E Name negated}
-          end
-       else skip
-       end
-       if {Not {HasFeature Entry doesNotReturn}} then skip
-       elseif {IsBool Entry.doesNotReturn} then skip
-       else {E Name doesNotReturn}
-       end
-    end}
+   fun {NewInfoToOldInfo Info}
+      case Info
+      of builtin(name:Name arity:Arity params:Params ...) then
+         InParams OutParams
+         {List.takeDropWhile Params
+          fun {$ param(kind:K ...)} K == 'in' end
+          ?InParams ?OutParams}
 
-   fun {GetBuiltinInfo Name}
-      try
-         BuiltinTable.Name
-      catch _ then
-         {Exception.raiseError compiler(internal unknownBuiltin Name)} unit
+         IArity = {Length InParams}
+         OArity = Arity - IArity
+
+         Types = {Map Params fun {$ X} value end}
+         Det = {Map Params fun {$ X} any end}
+         IMods = {Map InParams fun {$ X} false end}
+      in
+         builtin(iarity:IArity oarity:OArity types:Types det:Det imods:IMods)
       end
    end
+
+   fun {GetBuiltinInfo Builtin}
+      {NewInfoToOldInfo {BootGetBuiltinInfo Builtin}}
+   end
+
 end

@@ -41,7 +41,7 @@
 
 functor
 import
-   CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
+   CompilerSupport(concatenateAtomAndInt)
    System(printName)
    StaticAnalysis
    CodeGen

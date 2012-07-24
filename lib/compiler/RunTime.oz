@@ -29,7 +29,9 @@ import
    Combinator('not' 'cond' 'or' 'dis')
    Space('choose')
    RecordC('^' tellSize)
+   \ifdef HAS_CSS
    FD(int dom sum sumC sumCN reified)
+   \endif
 export
    Literals
    Tokens
@@ -37,10 +39,10 @@ export
    ProcValues
    MakeVar
 require
-   BootRecord(test testLabel testFeature aritySublist)
-   at 'x-oz://boot/Record'
+   %BootRecord(test testLabel testFeature aritySublist)
+   %at 'x-oz://boot/Record'
 
-   BootObject(ooGetLock ',' '@' '<-' ooExch)
+   BootObject(attrGet attrPut attrExchangeFun)
    at 'x-oz://boot/Object'
 
    BootException('fail' raiseError:RaiseError)
@@ -52,8 +54,9 @@ require
    BootName(newUnique: NewUniqueName)
    at 'x-oz://boot/Name'
 
-   BootValue(newReadOnly:NewReadOnly bindReadOnly:BindReadOnly
-             dotAssign dotExchange catAccess catAssign catExchange catAccessOO catAssignOO catExchangeOO) at 'x-oz://boot/Value'
+   BootValue(dotAssign dotExchange
+             catAccess catAssign catExchange
+             catAccessOO catAssignOO catExchangeOO) at 'x-oz://boot/Value'
 prepare
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
@@ -99,16 +102,15 @@ prepare
                      'List.append': Append
 
                      %% Record
-                     'Record.width': Record.width
-                     'Record.test': BootRecord.test
-                     'Record.testLabel': BootRecord.testLabel
-                     'Record.testFeature': BootRecord.testFeature
+                     %'Record.width': Record.width
+                     %'Record.test': BootRecord.test
+                     %'Record.testLabel': BootRecord.testLabel
+                     %'Record.testFeature': BootRecord.testFeature
 
                      %% Object
-                     'Object.\'@\'': BootObject.'@'
-                     'Object.\'<-\'': BootObject.'<-'
-                     'Object.exchange': BootObject.ooExch
-                     'Object.\',\'': BootObject.','
+                     'Object.\'@\'': BootObject.attrGet
+                     'Object.\'<-\'': BootObject.attrPut
+                     'Object.exchange': BootObject.attrExchangeFun
                      'Object.\'class\'': OoExtensions.'class'
 
                      %% Thread
@@ -122,8 +124,8 @@ prepare
                      'Functor.new': Functor.new
 
                      %% Internal
-                     'ooGetLock': BootObject.ooGetLock
-                     'aritySublist': BootRecord.aritySublist
+                     'ooGetLock': OoExtensions.getObjLock
+                     %'aritySublist': BootRecord.aritySublist
                      'Thread.create': BootThread.create)
 
    LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
@@ -195,18 +197,20 @@ prepare
          {Access C.1}
       end
       proc {RetYield C}
-         {BindReadOnly {Access C} nil}
+         %{BindReadOnly {Access C} nil}
+         {Access C} = nil
       end
       proc {Yield C X}
          O
-         N={NewReadOnly}
+         N%={NewReadOnly}
       in
          {Exchange C O N}
-         {BindReadOnly O X|N}
+         %{BindReadOnly O X|N}
+         O = X|N
          {WaitNeeded N}
       end
       proc {MkYield C L}
-         {NewReadOnly L}
+         %{NewReadOnly L}
          {NewCell L C}
          {WaitNeeded L}
       end
@@ -295,6 +299,7 @@ define
       {Space.choose X Y}
    end
 
+\ifdef HAS_CSS
    proc {FDInt A B}
       {FD.int A B}
    end
@@ -334,6 +339,7 @@ define
    fun {FDReifiedSumCN A X O D}
       {FD.reified.sumCN A X O D}
    end
+\endif
 
    ProcValues = {Adjoin ProcValuesAll
                  env(%% RecordC
@@ -352,6 +358,7 @@ define
                      %% Space
                      'Space.choose': SpaceChoose
 
+                     \ifdef HAS_CSS
                      %% FD
                      'FD.int': FDInt
                      'FD.dom': FDDom
@@ -362,7 +369,9 @@ define
                      'FD.reified.dom': FDReifiedDom
                      'FD.reified.sum': FDReifiedSum
                      'FD.reified.sumC': FDReifiedSumC
-                     'FD.reified.sumCN': FDReifiedSumCN)}
+                     'FD.reified.sumCN': FDReifiedSumCN
+                     \endif
+                    )}
 
    Procs = {Record.mapInd ProcValues MakeVar}
 end

@@ -46,8 +46,8 @@
 
 functor
 import
-   CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
-   BootName(newNamed:NewNamedName)        at 'x-oz://boot/Name'
+   CompilerSupport(concatenateAtomAndInt)
+   BootName(newNamed:NewNamedName) at 'x-oz://boot/Name'
 \ifndef NO_GUMP
    Gump(transformParser transformScanner)
 \endif

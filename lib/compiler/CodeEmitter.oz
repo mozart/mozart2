@@ -25,8 +25,10 @@
 
 functor
 import
-   CompilerSupport(isCopyableName) at 'x-oz://boot/CompilerSupport'
+   CompilerSupport(isCopyableName)
+   \ifdef HAS_CSS
    FD(decl int distinct assign)
+   \endif
    Space(new waitStable ask merge)
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    Property(get)
@@ -281,6 +283,7 @@ define
             Ss <- (Y|I)|@Ss
          end
 
+         \ifdef HAS_CSS
          /* Mozart 2 does not support FD constraint solving yet.
           * So this great optimization routine must be left aside for now.
           */
@@ -380,6 +383,7 @@ define
              end ~1}+1
          end
          */
+         \endif
 
          /* Instead, we use this naive fallback */
          meth Optimize(AddNS $)

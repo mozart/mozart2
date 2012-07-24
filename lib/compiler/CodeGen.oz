@@ -35,9 +35,11 @@
 functor
 import
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
-   CompilerSupport(isBuiltin featureLess) at 'x-oz://boot/CompilerSupport'
+   CompilerSupport(isBuiltin featureLess)
    Space(new ask merge)
+   \ifdef HAS_CSS
    FD(decl distinct sumC reflect assign)
+   \endif
    System(show printName eq)
    Property(get)
    Builtins(getInfo)
@@ -429,7 +431,7 @@ define
 
       proc {MakeDirectApplication Value Coord ActualArgs CS VHd VTl}
          if {CompilerSupport.isBuiltin Value} then Builtinname in
-            Builtinname = {System.printName Value}
+            Builtinname = Value % {System.printName Value}
             {MakeBuiltinApplication Builtinname Coord ActualArgs CS VHd VTl}
          else
             VHd = vCallConstant(_ Value {GetRegs ActualArgs} Coord VTl)

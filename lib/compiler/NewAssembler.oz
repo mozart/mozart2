@@ -25,11 +25,9 @@
 functor
 
 import
-   CompilerSupport at 'x-oz://boot/CompilerSupport'
-   System(show:Show)
+   CompilerSupport
 
 export
-   InternalAssemble
    Assemble
 
 define
@@ -567,26 +565,7 @@ define
       end
    end
 
-   % First pass to accept old-style allocateL and deAllocateL
-   fun {FixAllocDeallocY Code}
-      case Code
-      of allocateL(0)|Rest then
-         {FixAllocDeallocY Rest}
-      [] allocateL(I)|Rest then
-         allocateY(I)|{FixAllocDeallocY Rest}
-      [] deAllocateL(0)|Rest then
-         {FixAllocDeallocY Rest}
-      [] deAllocateL(_)|Rest then
-         deallocateY|{FixAllocDeallocY Rest}
-      [] H|Rest then
-         H|{FixAllocDeallocY Rest}
-      [] nil then
-         nil
-      end
-   end
-
-   fun {Assemble Arity Code0 Switches}
-      Code = {FixAllocDeallocY Code0}
+   fun {Assemble Arity Code Switches}
       Verify = {CondSelect Switches verify true}
       DoPeephole = {CondSelect Switches peephole true}
       Assembler = {New AssemblerClass init()}

@@ -21,9 +21,9 @@
 
 functor
 import
-   Debug                         at 'x-oz://boot/Debug'
-   Parser                        at 'x-oz://boot/Parser'
-   CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
+   Debug at 'x-oz://boot/Debug'
+   Parser
+   CompilerSupport(nameVariable)
    Property(get condGet)
    Error(extendedVSToVS exceptionToMessage registerFormatter printException)
    Type(ask)

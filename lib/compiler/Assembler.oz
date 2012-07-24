@@ -38,13 +38,19 @@
 
 functor
 import
+\ifdef MOZART_1_ASSEMBLER
    System(printName)
-   CompilerSupport at 'x-oz://boot/CompilerSupport'
+   CompilerSupport
    Builtins(getInfo)
+\else
+   NewAssembler(assemble)
+   CompilerSupport(newAbstraction)
+\endif
 export
    InternalAssemble
    Assemble
 define
+\ifdef MOZART_1_ASSEMBLER
    InstructionSizes = {CompilerSupport.getInstructionSizes}
 
    local
@@ -733,4 +739,99 @@ define
       {Assembler load(Globals ?P)}
       VS = {ByNeedFuture fun {$} {Assembler output($)} end}
    end
+
+\else
+
+   class CompatAssemblerClass
+      feat codeArea
+
+      meth init(CodeArea)
+         self.codeArea = CodeArea
+      end
+
+      meth load(Globals ?P)
+         P = {CompilerSupport.newAbstraction 0 self.codeArea Globals}
+      end
+
+      meth output(?VS)
+         VS = {Value.toVirtualString self.codeArea 10 10}
+      end
+   end
+
+   % Magical conversion function that turns old code into new code
+
+   fun {OldCodeToNewCode Code AssembleInner}
+      fun {MakeInitArray ArrayReg Index SourceRegs Rest}
+         case SourceRegs
+         of SrcReg|SrcRegTail then
+            arrayInitElement(ArrayReg Index SrcReg) |
+               {MakeInitArray ArrayReg Index+1 SrcRegTail Rest}
+
+         [] nil then
+            {Loop Rest}
+         end
+      end
+
+      fun {Loop Code}
+         case Code
+
+         % allocateL / deAllocateL become allocateY / deallocateY
+         of allocateL(0) | Rest then
+            {Loop Rest}
+         [] allocateL(I) | Rest then
+            allocateY(I) | {Loop Rest}
+         [] deAllocateL(0) | Rest then
+            {Loop Rest}
+         [] deAllocateL(_) | Rest then
+            deallocateY | {Loop Rest}
+
+         % putConstant(Value Reg) become moveKX / moveKY
+         [] putConstant(Value R) | Rest then
+            move(k(Value) R) | {Loop Rest}
+
+         % callBI becomes callBuiltin
+         [] callBI(Builtin InArgs#OutArgs) | Rest then
+            callBuiltin(k(Builtin) {Append InArgs OutArgs}) | {Loop Rest}
+
+         % the monster: definition + endDefinition become createAbstraction
+         [] definition(Dest Lab pid(Name Arity Pos Flags NLiveRegs)
+                       unit GRegRef InnerCode) |
+               endDefinition(EndLab) | Rest then
+            InnerCodeArea = {AssembleInner Arity InnerCode}
+            GCount = {Length GRegRef}
+         in
+            createAbstraction(Arity k(InnerCodeArea) GCount Dest) |
+               {MakeInitArray Dest 0 GRegRef Rest}
+
+         % other things are kept as is
+         [] H|Rest then
+            H|{Loop Rest}
+         [] nil then
+            nil
+         end
+      end
+   in
+      {Loop Code}
+   end
+
+   proc {InternalAssemble Code Switches ?Assembler}
+      fun {AssembleInner Arity Code}
+         NewCode = {OldCodeToNewCode Code AssembleInner}
+      in
+         {NewAssembler.assemble Arity NewCode Switches}
+      end
+
+      CodeArea = {AssembleInner 0 Code}
+   in
+      Assembler = {New CompatAssemblerClass init(CodeArea)}
+   end
+
+   proc {Assemble Code Globals Switches ?P ?VS}
+      Assembler = {InternalAssemble Code Switches}
+   in
+      {Assembler load(Globals ?P)}
+      VS = {ByNeedFuture fun {$} {Assembler output($)} end}
+   end
+\endif
+
 end

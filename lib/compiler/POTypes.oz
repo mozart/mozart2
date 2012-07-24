@@ -43,6 +43,7 @@ local
        nil}
    end
 
+\ifdef HAS_CSS
    proc {PartialOrder Ord Def ?Name2Lists ?Name2Index}
 
       Names = {GetNames Ord}
@@ -105,6 +106,98 @@ local
       % compute mapping (basic) names <-> lists of integers
       Name2Lists = {Record.map Name2Sets FS.monitorIn}
    end
+\else
+   Set = set(
+      new: NewDictionary
+      member: Dictionary.member
+      include: proc {$ S X} {Dictionary.put S X unit} end
+      exclude: Dictionary.remove
+      isEmpty: Dictionary.isEmpty
+      putAll: proc {$ S Xs}
+                 {ForAll Xs proc {$ X} {Dictionary.put S X unit} end}
+              end
+      toList: Dictionary.keys
+   )
+
+   proc {PartialOrder Ord Def ?Name2Lists ?Name2Index}
+      Names = {GetNames Ord}
+      N = {Length Names}
+      Index2Name
+
+      proc {Assign_Index2Name_And_Name2Index_Through_TopologicalSort}
+         !Index2Name = {MakeTuple i2n N}
+         !Name2Index = {MakeRecord n2i Names}
+
+         GraphAsDictOfIngoingEdges = {NewDictionary}
+         {ForAll Names
+          proc {$ Name}
+             {Dictionary.put GraphAsDictOfIngoingEdges Name {Set.new}}
+          end}
+
+         WithNoOutgoingEdge = {Set.new}
+         {Set.putAll WithNoOutgoingEdge Names}
+
+         Visited = {Set.new}
+         NextIndex = {NewCell 1}
+
+         proc {GetNextIndex ?I}
+            I = @NextIndex
+            NextIndex := I + 1
+         end
+
+         {ForAll Ord
+          proc {$ SubType#SuperType}
+             IngoingEdges = {Dictionary.get GraphAsDictOfIngoingEdges SuperType}
+          in
+             {Set.include IngoingEdges SubType}
+             {Set.exclude WithNoOutgoingEdge SubType}
+          end}
+
+         proc {Visit Name}
+            if {Not {Set.member Visited Name}} then
+               IngoingEdges
+               Index
+            in
+               {Set.include Visited Name}
+
+               IngoingEdges = {Dictionary.get GraphAsDictOfIngoingEdges Name}
+               {ForAll {Set.toList IngoingEdges} Visit}
+
+               Index = {GetNextIndex}
+               Index2Name.Index = Name
+               Name2Index.Name = Index
+            end
+         end
+      in
+         {ForAll {Set.toList WithNoOutgoingEdge} Visit}
+      end
+
+      proc {Assign_Name2Lists}
+         Name2Bits = {MakeRecord n2b Names}
+      in
+         Name2Lists = {MakeRecord n2s Names}
+
+         {For 1 N 1
+          proc {$ I}
+             Name = Index2Name.I
+             Bits = {BitArray.new 1 N}
+          in
+             {BitArray.set Bits I}
+             {ForAll Ord
+              proc {$ SubType#SuperType}
+                 if SuperType == Name then
+                    {BitArray.disj Bits Name2Bits.SubType}
+                 end
+              end}
+             Name2Bits.Name = Bits
+             Name2Lists.Name = {BitArray.toList Bits}
+          end}
+      end
+   in
+      {Assign_Index2Name_And_Name2Index_Through_TopologicalSort}
+      {Assign_Name2Lists}
+   end
+\endif
 
    fun {MkPartialOrder Name2Lists Name2Index DefinedNames}
 

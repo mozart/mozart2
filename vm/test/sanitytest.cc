@@ -6,9 +6,9 @@
 using namespace mozart;
 
 TEST_F(MozartTest, ExpectRaise_Sanity) {
-  EXPECT_RAISE(MOZART_STR("illegalArity"), raiseIllegalArity(vm, 2, 4));
+  EXPECT_RAISE(MOZART_STR("foo"), raise(vm, MOZART_STR("foo"), 2));
   EXPECT_NONFATAL_FAILURE(
     EXPECT_RAISE(MOZART_STR("null"), OpResult::proceed()), "");
   EXPECT_NONFATAL_FAILURE(
-    EXPECT_RAISE(MOZART_STR("null"), raiseIllegalArity(vm, 2, 4)), "");
+    EXPECT_RAISE(MOZART_STR("null"), raise(vm, MOZART_STR("foo"), 2)), "");
 }

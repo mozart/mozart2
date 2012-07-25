@@ -33,12 +33,17 @@ template <class LT, class... Args>
 inline
 OpResult raise(VM vm, LT&& label, Args&&... args);
 
+template <class LT, class... Args>
+inline
+OpResult raiseError(VM vm, LT&& label, Args&&... args);
+
 template <class Actual>
 inline
 OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual);
 
 inline
-OpResult raiseIllegalArity(VM vm, int expected, int actual);
+OpResult raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
+                           RichNode actualArgs[]);
 
 template <class... Args>
 inline

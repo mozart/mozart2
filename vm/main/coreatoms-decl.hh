@@ -71,10 +71,11 @@ struct CoreAtoms {
   atom_t truncated;
 
   // Exceptions
+  atom_t debug;
+  atom_t error;
+  atom_t system;
   atom_t failure;
-  atom_t typeError;
   atom_t illegalFieldSelection;
-  atom_t illegalArity;
   atom_t unicodeError;
   atom_t spaceAdmissible;
   atom_t spaceNoChoice;

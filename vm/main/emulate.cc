@@ -676,7 +676,12 @@ void Thread::call(RichNode target, int actualArity, bool isTailCall,
     vm, formalArity, start, Xcount, Gs, Ks));
 
   if (actualArity != formalArity) {
-    CHECK_OPRESULT_RETURN(raiseIllegalArity(vm, formalArity, actualArity));
+    RichNode actualArgs[actualArity];
+    for (size_t i = 0; i < (size_t) actualArity; i++)
+      actualArgs[i] = (*xregs)[i];
+
+    CHECK_OPRESULT_RETURN(
+      raiseIllegalArity(vm, target, actualArity, actualArgs));
   }
 
   advancePC(2);

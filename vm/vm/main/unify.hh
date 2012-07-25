@@ -75,16 +75,16 @@ OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
 #ifndef MOZART_GENERATOR
 
 OpResult unify(VM vm, RichNode left, RichNode right) {
-  const Type* leftType = left.type();
-  const Type* rightType = right.type();
+  auto leftType = left.type();
+  auto rightType = right.type();
 
-  StructuralBehavior leftBehavior = leftType->getStructuralBehavior();
-  StructuralBehavior rightBehavior = rightType->getStructuralBehavior();
+  StructuralBehavior leftBehavior = leftType.getStructuralBehavior();
+  StructuralBehavior rightBehavior = rightType.getStructuralBehavior();
 
   // Code duplicate with unify.cc. Is it possible to avoid this?
   if (leftBehavior == sbVariable) {
     if (rightBehavior == sbVariable) {
-      if (leftType->getBindingPriority() > rightType->getBindingPriority())
+      if (leftType.getBindingPriority() > rightType.getBindingPriority())
         return DataflowVariable(left).bind(vm, right);
       else
         return DataflowVariable(right).bind(vm, left);
@@ -104,11 +104,11 @@ OpResult equals(VM vm, RichNode left, RichNode right, bool& result) {
     return OpResult::proceed();
   }
 
-  const Type* leftType = left.type();
-  const Type* rightType = right.type();
+  auto leftType = left.type();
+  auto rightType = right.type();
 
-  StructuralBehavior leftBehavior = leftType->getStructuralBehavior();
-  StructuralBehavior rightBehavior = rightType->getStructuralBehavior();
+  StructuralBehavior leftBehavior = leftType.getStructuralBehavior();
+  StructuralBehavior rightBehavior = rightType.getStructuralBehavior();
 
   if (leftBehavior != sbVariable && rightBehavior != sbVariable) {
     if (leftType != rightType) {

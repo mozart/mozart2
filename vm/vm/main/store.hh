@@ -37,10 +37,6 @@ namespace mozart {
 // Node //
 //////////
 
-bool Node::isCopyable() {
-  return type()->isCopyable();
-}
-
 StableNode* Node::asStable() {
   return static_cast<StableNode*>(this);
 }
@@ -159,11 +155,11 @@ RichNode::RichNode(UnstableNode& origin) {
 }
 
 bool RichNode::isTransient() {
-  return type()->isTransient();
+  return type().isTransient();
 }
 
 bool RichNode::isFeature() {
-  return type()->isFeature();
+  return type().isFeature();
 }
 
 StableNode* RichNode::getStableRef(VM vm) {

@@ -27,6 +27,7 @@
 
 #include "core-forward-decl.hh"
 
+#include "type-decl.hh"
 #include "memword.hh"
 #include "arrays.hh"
 
@@ -75,7 +76,7 @@ template<class T, class U>
 class Accessor {
 public:
   template<class... Args>
-  static void init(const Type*& type, MemWord& value, VM vm, Args&&... args) {
+  static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
     value.alloc<U>(vm);
     Implementation<T>::build(value.get<U>(), vm, std::forward<Args>(args)...);
@@ -92,7 +93,7 @@ public:
   typedef Implementation<T> Impl;
 
   template<class... Args>
-  static void init(const Type*& type, MemWord& value, VM vm, Args&&... args) {
+  static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
     Impl* val = new (vm) Impl(vm, std::forward<Args>(args)...);
     value.init<Impl*>(vm, val);
@@ -109,7 +110,7 @@ public:
   typedef Implementation<T> Impl;
 
   template<class... Args>
-  static void init(const Type*& type, MemWord& value, VM vm,
+  static void init(Type& type, MemWord& value, VM vm,
                    size_t elemCount, Args&&... args) {
     // Allocate memory
     void* memory = operator new (sizeof(Impl) + elemCount*sizeof(E), vm);

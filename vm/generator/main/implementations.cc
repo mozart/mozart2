@@ -87,7 +87,7 @@ struct ImplementationDef {
     structuralBehavior = sbTokenEq;
     bindingPriority = 0;
     withHome = false;
-    base = "Type";
+    base = "TypeInfo";
     hasUUID = false;
     hasGetTypeAtom = false;
     hasPrintReprToStream = false;
@@ -274,8 +274,12 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
      << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
      << ") {}\n";
   to << "\n";
-  to << "  static const " << name << "* const type() {\n";
+  to << "  static const " << name << "* const instance() {\n";
   to << "    return &RawType<" << name << ">::rawType;\n";
+  to << "  }\n";
+  to << "\n";
+  to << "  static Type type() {\n";
+  to << "    return Type(instance());\n";
   to << "  }\n";
   to << "\n";
   to << "  template <class... Args>\n";

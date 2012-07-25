@@ -82,18 +82,21 @@ const OpCode OpUnifyXX = 0x30;
 const OpCode OpUnifyXY = 0x31;
 const OpCode OpUnifyXK = 0x32;
 const OpCode OpUnifyXG = 0x33;
+const OpCode OpUnifyYK = 0x34;
+const OpCode OpUnifyGK = 0x35;
 
 const OpCode OpArrayInitElementX = 0x40;
 const OpCode OpArrayInitElementY = 0x41;
 const OpCode OpArrayInitElementG = 0x42;
 const OpCode OpArrayInitElementK = 0x43;
+const OpCode OpArrayInitElementsVars = 0x44;
 
-const OpCode OpCreateAbstractionX = 0x44;
-const OpCode OpCreateAbstractionK = 0x45;
+const OpCode OpCreateAbstractionX = 0x45;
+const OpCode OpCreateAbstractionK = 0x46;
 
-const OpCode OpCreateTupleK = 0x46;
-const OpCode OpCreateRecordK = 0x47;
-const OpCode OpCreateConsXX = 0x48;
+const OpCode OpCreateTupleK = 0x47;
+const OpCode OpCreateRecordK = 0x48;
+const OpCode OpCreateConsXX = 0x49;
 
 // Inlines for some builtins
 const OpCode OpInlineEqualsInteger = 0x50;

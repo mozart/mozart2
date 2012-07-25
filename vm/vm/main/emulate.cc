@@ -522,6 +522,20 @@ void Thread::run() {
         break;
       }
 
+      case OpUnifyYK: {
+        CHECK_OPRESULT_BREAK(unify(vm, YPC(1), KPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
+      case OpUnifyGK: {
+        CHECK_OPRESULT_BREAK(unify(vm, GPC(1), KPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
       // Creation of data structures
 
       case OpArrayInitElementX: {
@@ -554,6 +568,17 @@ void Thread::run() {
 
         advancePC(3);
         break;
+      }
+
+      case OpArrayInitElementsVars: {
+        ArrayInitializer initializer = XPC(1);
+        size_t startIndex = IntPC(2);
+        size_t endIndex = startIndex + IntPC(3);
+
+        for (; startIndex < endIndex; startIndex++) {
+          UnstableNode var = OptVar::build(vm);
+          initializer.initElement(vm, startIndex, var);
+        }
       }
 
       case OpCreateAbstractionX: {

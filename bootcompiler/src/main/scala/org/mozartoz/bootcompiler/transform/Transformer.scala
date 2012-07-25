@@ -260,9 +260,9 @@ abstract class Transformer extends (Program => Unit) {
 
     // Synthetic-only
 
-    case CreateAbstraction(arity, body, globals) =>
-      treeCopy.CreateAbstraction(expression, transformExpr(arity),
-          transformExpr(body), globals map transformExpr)
+    case CreateAbstraction(body, globals) =>
+      treeCopy.CreateAbstraction(expression, transformExpr(body),
+          globals map transformExpr)
   }
 
   /** Transforms a declaration */

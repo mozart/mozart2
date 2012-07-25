@@ -77,7 +77,7 @@ object Flattener extends Transformer with TreeDSL {
         g => transformExpr(g).asInstanceOf[Variable]
       }
 
-      treeCopy.CreateAbstraction(proc, OzInt(abs.arity),
+      treeCopy.CreateAbstraction(proc,
           OzCodeArea(abs.codeArea), newGlobalArgs)
 
     case v @ FreeVar(sym) =>

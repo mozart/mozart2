@@ -679,10 +679,10 @@ case class ClassExpression(name: String, parents: List[Expression],
  *
  *  This class has no correspondence in actual Oz code. It is internal only.
  */
-case class CreateAbstraction(arity: Expression, body: Expression,
+case class CreateAbstraction(body: Expression,
     globals: List[Expression]) extends Expression {
   def syntax(indent: String) = {
-    "{CreateAbstraction %s %s [%s]}" format (
-        arity.syntax(indent), body.syntax(indent), globals mkString " ")
+    "{CreateAbstraction %s [%s]}" format (
+        body.syntax(indent), globals mkString " ")
   }
 }

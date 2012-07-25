@@ -124,11 +124,11 @@ case class OpArrayInitElementG(target: XReg,
 case class OpArrayInitElementK(target: XReg,
     index: ImmInt, value: KReg) extends OpCode
 
-/** Create an abstraction of given `arity`, `body` (code area) and
+/** Create an abstraction with the given `body` (code area) and
  *  `globalCount` (number of G registers) and store it in `dest` */
-case class OpCreateAbstractionX(arity: ImmInt, body: XReg,
+case class OpCreateAbstractionX(body: XReg,
     globalCount: ImmInt, dest: XReg) extends OpCode
-case class OpCreateAbstractionK(arity: ImmInt, body: KReg,
+case class OpCreateAbstractionK(body: KReg,
     globalCount: ImmInt, dest: XReg) extends OpCode
 
 /** Create a tuple of given `label' and `width'

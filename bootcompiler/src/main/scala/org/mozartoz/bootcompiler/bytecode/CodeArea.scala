@@ -119,8 +119,14 @@ class CodeArea(val abstraction: Abstraction) {
     out << """
        |  };
        |
-       |  %s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d);
-       |""".stripMargin % (ccCodeArea, constants.size, computeXCount())
+       |  atom_t printName = vm->getAtom(%s);
+       |  UnstableNode debugData = build(vm, unit);
+       |
+       |  %s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d, %d,
+       |                       printName, debugData);
+       |""".stripMargin % (
+           stringToMozartStr(abstraction.name),
+           ccCodeArea, constants.size, abstraction.arity, computeXCount())
 
     if (!constants.isEmpty) {
       out << """
@@ -174,18 +180,7 @@ class CodeArea(val abstraction: Abstraction) {
         out << value.toString()
 
       case OzAtom(value) =>
-        out << "MOZART_STR(\"%s\")" % (value map {
-          case '\\' => "\\\\"
-          case '"' => "\\\""
-          case '\u0007' => "\\a"
-          case '\u0008' => "\\b"
-          case '\u0009' => "\\t"
-          case '\u000A' => "\\n"
-          case '\u000B' => "\\v"
-          case '\u000C' => "\\f"
-          case '\u000D' => "\\r"
-          case c => c
-        } mkString "")
+        out << stringToMozartStr(value)
 
       case True() =>
         out << "true"
@@ -261,5 +256,20 @@ class CodeArea(val abstraction: Abstraction) {
 
         out << ")"
     }
+  }
+
+  private def stringToMozartStr(string: String) = {
+    "MOZART_STR(\"%s\")" format (string map {
+      case '\\' => "\\\\"
+      case '"' => "\\\""
+      case '\u0007' => "\\a"
+      case '\u0008' => "\\b"
+      case '\u0009' => "\\t"
+      case '\u000A' => "\\n"
+      case '\u000B' => "\\v"
+      case '\u000C' => "\\f"
+      case '\u000D' => "\\r"
+      case c => c
+    } mkString "")
   }
 }

@@ -243,7 +243,7 @@ class TreeCopier {
 
   // Synthetic-only
 
-  def CreateAbstraction(tree: Node, arity: Expression, body: Expression,
+  def CreateAbstraction(tree: Node, body: Expression,
       globals: List[Expression]) =
-    new CreateAbstraction(arity, body, globals).copyAttrs(tree)
+    new CreateAbstraction(body, globals).copyAttrs(tree)
 }

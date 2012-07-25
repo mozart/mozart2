@@ -107,7 +107,7 @@ class Program {
        |}
        |
        |void Program::createRunThread() {
-       |  UnstableNode topLevelAbstraction = Abstraction::build(vm, 0, 0, %s);
+       |  UnstableNode topLevelAbstraction = Abstraction::build(vm, 0, %s);
        |
        |  UnstableNode* initialThreadParams[] = { &topLevelAbstraction };
        |  builtins::ModThread::Create::builtin().call(vm, initialThreadParams);

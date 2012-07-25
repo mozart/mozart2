@@ -224,11 +224,11 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
   if (left.isSameNode(right))
     return OpResult::proceed();
 
-  const Type* leftType = left.type();
-  const Type* rightType = right.type();
+  auto leftType = left.type();
+  auto rightType = right.type();
 
-  StructuralBehavior leftBehavior = leftType->getStructuralBehavior();
-  StructuralBehavior rightBehavior = rightType->getStructuralBehavior();
+  StructuralBehavior leftBehavior = leftType.getStructuralBehavior();
+  StructuralBehavior rightBehavior = rightType.getStructuralBehavior();
 
   // Handle captures
   if (kind == wkPatternMatch) {
@@ -248,7 +248,7 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
     case wkUnify: {
       if (leftBehavior == sbVariable) {
         if (rightBehavior == sbVariable) {
-          if (leftType->getBindingPriority() > rightType->getBindingPriority())
+          if (leftType.getBindingPriority() > rightType.getBindingPriority())
             return DataflowVariable(left).bind(vm, right);
           else
             return DataflowVariable(right).bind(vm, left);
@@ -265,10 +265,10 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
     case wkEquals:
     case wkPatternMatch: {
       if (leftBehavior == sbVariable) {
-        assert(leftType->isTransient());
+        assert(leftType.isTransient());
         return OpResult::waitFor(vm, left);
       } else if (rightBehavior == sbVariable) {
-        assert(rightType->isTransient());
+        assert(rightType.isTransient());
         return OpResult::waitFor(vm, right);
       }
 

@@ -35,14 +35,14 @@ namespace mozart {
 
 class GRedToStable;
 
-class GRedToStableBase: public Type {
+class GRedToStableBase: public TypeInfo {
 public:
   GRedToStableBase(std::string name, const UUID& uuid,
                    bool copyable, bool transient, bool feature,
                    StructuralBehavior structuralBehavior,
                    unsigned char bindingPriority) :
-    Type(name, uuid, copyable, transient, feature, structuralBehavior,
-         bindingPriority) {}
+    TypeInfo(name, uuid, copyable, transient, feature,
+             structuralBehavior, bindingPriority) {}
 
   inline
   void gCollect(GC gc, RichNode from, StableNode& to) const;
@@ -88,14 +88,14 @@ private:
 
 class GRedToUnstable;
 
-class GRedToUnstableBase: public Type {
+class GRedToUnstableBase: public TypeInfo {
 public:
   GRedToUnstableBase(std::string name, const UUID& uuid,
                      bool copyable, bool transient, bool feature,
                      StructuralBehavior structuralBehavior,
                      unsigned char bindingPriority) :
-    Type(name, uuid, copyable, transient, feature, structuralBehavior,
-         bindingPriority) {}
+    TypeInfo(name, uuid, copyable, transient, feature,
+             structuralBehavior, bindingPriority) {}
 
   inline
   void gCollect(GC gc, RichNode from, StableNode& to) const;

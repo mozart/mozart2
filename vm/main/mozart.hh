@@ -43,6 +43,7 @@
 #include "store.hh"
 #include "threadpool.hh"
 #include "type.hh"
+#include "typeinfo.hh"
 #include "unify.hh"
 #include "utf.hh"
 #include "utils.hh"

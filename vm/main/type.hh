@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,24 +33,24 @@ namespace mozart {
 // Type //
 //////////
 
-atom_t Type::getTypeAtom(VM vm) const {
-  return vm->getAtom(MOZART_STR("value"));
+bool Type::isCopyable() const {
+  return info()->isCopyable();
 }
 
-//////////////
-// WithHome //
-//////////////
-
-WithHome::WithHome(VM vm) {
-  _home = vm->getCurrentSpace();
+bool Type::isTransient() const {
+  return info()->isTransient();
 }
 
-WithHome::WithHome(VM vm, GR gr, SpaceRef fromHome) {
-  gr->copySpace(_home, fromHome);
+bool Type::isFeature() const {
+  return info()->isFeature();
 }
 
-bool WithHome::isHomedInCurrentSpace(VM vm) {
-  return ((Space*) _home) == vm->getCurrentSpace();
+StructuralBehavior Type::getStructuralBehavior() const {
+  return info()->getStructuralBehavior();
+}
+
+unsigned char Type::getBindingPriority() const {
+  return info()->getBindingPriority();
 }
 
 }

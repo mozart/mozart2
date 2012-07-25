@@ -22,68 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_DECL_H
-#define __TYPE_DECL_H
+#ifndef __TYPEINFO_H
+#define __TYPEINFO_H
 
-#include "core-forward-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 
-enum StructuralBehavior {
-  sbValue,      // Simple, non-aggregate value
-  sbStructural, // Aggregate value compared with structural equality
-  sbTokenEq,    // Data with token equality
-  sbVariable    // Variable with binding opportunity
-};
+//////////////
+// TypeInfo //
+//////////////
 
-/**
- * Type of a node
- */
-struct Type {
-public:
-  explicit constexpr Type(const TypeInfo* info): _info(info) {}
-
-public:
-  const TypeInfo* info() const {
-    return _info;
-  }
-
-  const TypeInfo* operator->() const {
-    return info();
-  }
-
-  inline
-  bool isCopyable() const;
-
-  inline
-  bool isTransient() const;
-
-  inline
-  bool isFeature() const;
-
-  inline
-  StructuralBehavior getStructuralBehavior() const;
-
-  inline
-  unsigned char getBindingPriority() const;
-
-private:
-  const TypeInfo* _info;
-};
-
-static_assert(sizeof(Type) <= sizeof(char*),
-              "Ouch! TypeInfo is bigger than a memory word");
-
-inline
-bool operator==(const Type& lhs, const Type& rhs) {
-  return lhs.info() == rhs.info();
+atom_t TypeInfo::getTypeAtom(VM vm) const {
+  return vm->getAtom(MOZART_STR("value"));
 }
 
-inline
-bool operator!=(const Type& lhs, const Type& rhs) {
-  return lhs.info() != rhs.info();
+//////////////
+// WithHome //
+//////////////
+
+WithHome::WithHome(VM vm) {
+  _home = vm->getCurrentSpace();
+}
+
+WithHome::WithHome(VM vm, GR gr, SpaceRef fromHome) {
+  gr->copySpace(_home, fromHome);
+}
+
+bool WithHome::isHomedInCurrentSpace(VM vm) {
+  return ((Space*) _home) == vm->getCurrentSpace();
 }
 
 }
 
-#endif // __TYPE_DECL_H
+#endif // __TYPEINFO_H

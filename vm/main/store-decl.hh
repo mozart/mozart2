@@ -26,6 +26,7 @@
 #define __STORE_DECL_H
 
 #include "core-forward-decl.hh"
+#include "type-decl.hh"
 #include "memword.hh"
 #include "storage.hh"
 
@@ -67,7 +68,7 @@ private:
     Access::init(data.type, data.value, vm, std::forward<Args>(args)...);
   }
 
-  const Type* type() {
+  Type type() {
     return data.type;
   }
 
@@ -75,8 +76,9 @@ private:
     return data.value;
   }
 
-  inline
-  bool isCopyable();
+  bool isCopyable() {
+    return type().isCopyable();
+  }
 
   inline
   StableNode* asStable();
@@ -92,7 +94,7 @@ private:
   union {
     // Regular structure
     struct {
-      const Type* type;
+      Type type;
       MemWord value;
     } data;
 
@@ -138,7 +140,7 @@ public:
   RichNode(UnstableNode& origin);
 
   __attribute__((always_inline))
-  const Type* type() {
+  Type type() {
     return node()->type();
   }
 

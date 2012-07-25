@@ -176,9 +176,9 @@ TEST_F(ByteStringTest, StrChr) {
     }
   }
 
-  EXPECT_RAISE(MOZART_STR("typeError"),
+  EXPECT_RAISE(MOZART_STR("error"), // type error
                StringLike(b).stringSearch(vm, zero, minusOne, begin, end));
-  EXPECT_RAISE(MOZART_STR("typeError"),
+  EXPECT_RAISE(MOZART_STR("error"), // type error
                StringLike(b).stringSearch(vm, zero, char256, begin, end));
 }
 

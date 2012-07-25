@@ -44,7 +44,7 @@ OpResult expectCallable(VM vm, RichNode target, int expectedArity) {
     vm, arity, start, Xcount, Gs, Ks));
 
   if (arity != expectedArity)
-    return raiseIllegalArity(vm, expectedArity, arity);
+    return raise(vm, MOZART_STR("illegalArity"), expectedArity, arity);
 
   return OpResult::proceed();
 }

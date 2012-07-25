@@ -131,6 +131,8 @@ class TypedRichNode {
  */
 class RichNode {
 public:
+  RichNode() {}
+
   __attribute__((always_inline))
   inline
   RichNode(StableNode& origin);

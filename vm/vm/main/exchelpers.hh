@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 template <class LT, class... Args>
@@ -36,14 +38,32 @@ OpResult raise(VM vm, LT&& label, Args&&... args) {
   return OpResult::raise(vm, exception);
 }
 
-template <class Actual>
-OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
-  return raise(vm, vm->coreatoms.typeError, expected,
-               std::forward<Actual>(actual));
+template <class LT, class... Args>
+OpResult raiseError(VM vm, LT&& label, Args&&... args) {
+  UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
+                                      std::forward<Args>(args)...);
+
+  UnstableNode error = buildRecord(
+    vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
+    std::move(exception), unit);
+
+  return OpResult::raise(vm, error);
 }
 
-OpResult raiseIllegalArity(VM vm, int expected, int actual) {
-  return raise(vm, vm->coreatoms.illegalArity, expected, actual);
+template <class Actual>
+OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
+  return raiseError(vm, MOZART_STR("kernel"), MOZART_STR("type"), expected,
+                    std::forward<Actual>(actual));
+}
+
+OpResult raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
+                           RichNode actualArgs[]) {
+  UnstableNode actualArgList = build(vm, vm->coreatoms.nil);
+  for (size_t i = actualArgCount; i > 0; i--)
+    actualArgList = buildCons(vm, actualArgs[i-1], actualArgList);
+
+  return raiseError(vm, MOZART_STR("kernel"),
+                    MOZART_STR("arity"), target, std::move(actualArgList));
 }
 
 template <class... Args>
@@ -79,5 +99,7 @@ OpResult raiseIndexOutOfBounds(VM vm, Args&&... args) {
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __EXCHELPERS_H

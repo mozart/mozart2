@@ -49,20 +49,16 @@ bool Implementation<BuiltinProcedure>::equals(VM vm, Self right) {
 OpResult Implementation<BuiltinProcedure>::callBuiltin(
   Self self, VM vm, int argc, UnstableNode* args[]) {
 
-  if (argc == getArity())
-    return _builtin->call(vm, args);
-  else
-    return raiseIllegalArity(vm, getArity(), argc);
+  assert(argc == getArity());
+  return _builtin->call(vm, args);
 }
 
 template <class... Args>
 OpResult Implementation<BuiltinProcedure>::callBuiltin(
   Self self, VM vm, Args&&... args) {
 
-  if (sizeof...(args) == getArity())
-    return _builtin->call(vm, std::forward<Args>(args)...);
-  else
-    return raiseIllegalArity(vm, getArity(), sizeof...(args));
+  assert(sizeof...(args) == getArity());
+  return _builtin->call(vm, std::forward<Args>(args)...);
 }
 
 OpResult Implementation<BuiltinProcedure>::procedureArity(Self self, VM vm,

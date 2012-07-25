@@ -797,10 +797,10 @@ define
          [] definition(Dest Lab pid(Name Arity Pos Flags NLiveRegs)
                        unit GRegRef InnerCode) |
                endDefinition(EndLab) | Rest then
-            InnerCodeArea = {AssembleInner Arity InnerCode}
+            InnerCodeArea = {AssembleInner Arity InnerCode Name unit}
             GCount = {Length GRegRef}
          in
-            createAbstraction(Arity k(InnerCodeArea) GCount Dest) |
+            createAbstraction(k(InnerCodeArea) GCount Dest) |
                {MakeInitArray Dest 0 GRegRef Rest}
 
          % other things are kept as is
@@ -815,13 +815,13 @@ define
    end
 
    proc {InternalAssemble Code Switches ?Assembler}
-      fun {AssembleInner Arity Code}
+      fun {AssembleInner Arity Code PrintName DebugData}
          NewCode = {OldCodeToNewCode Code AssembleInner}
       in
-         {NewAssembler.assemble Arity NewCode Switches}
+         {NewAssembler.assemble Arity NewCode PrintName DebugData Switches}
       end
 
-      CodeArea = {AssembleInner 0 Code}
+      CodeArea = {AssembleInner 0 Code '' unit}
    in
       Assembler = {New CompatAssemblerClass init(CodeArea)}
    end

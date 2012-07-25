@@ -154,8 +154,8 @@ define
       [] arrayInitElement(T I V=g(_)) then arrayInitElementG(T I V)
       [] arrayInitElement(T I V=k(_)) then arrayInitElementK(T I V)
 
-      [] createAbstraction(A B=x(_) C D) then createAbstractionX(A B C D)
-      [] createAbstraction(A B=k(_) C D) then createAbstractionK(A B C D)
+      [] createAbstraction(B=x(_) C D) then createAbstractionX(B C D)
+      [] createAbstraction(B=k(_) C D) then createAbstractionK(B C D)
 
       [] createTuple(L=k(_) W D) then createTupleK(L W D)
       [] createRecord(A=k(_) W D) then createRecordK(A W D)
@@ -176,6 +176,8 @@ define
 
       attr
          arity
+         printName
+         debugData
          xRegCount
          gRegCount
          kRegCount
@@ -183,8 +185,10 @@ define
          byteCode
          byteCodeTail
 
-      meth init(Arity)
+      meth init(Arity PrintName <= '' DebugData <= unit)
          arity := Arity
+         printName := PrintName
+         debugData := DebugData
          xRegCount := Arity
          gRegCount := 0
          kRegCount := 0
@@ -265,12 +269,13 @@ define
 
       meth output($)
          {self MarkEnd()}
-         {CompilerSupport.newCodeArea @byteCode @xRegCount {Reverse @kRegs}}
+         {CompilerSupport.newCodeArea @byteCode @arity @xRegCount
+          {Reverse @kRegs} @printName @debugData}
       end
    end
 
-   fun {InternalAssemble Arity Instructions}
-      Assembler = {New InternalAssemblerClass init(Arity)}
+   fun {InternalAssemble Arity Instructions PrintName DebugData}
+      Assembler = {New InternalAssemblerClass init(Arity PrintName DebugData)}
    in
       {ForAll Instructions
        proc {$ Instr}
@@ -565,7 +570,7 @@ define
       end
    end
 
-   fun {Assemble Arity Code Switches}
+   fun {Assemble Arity Code PrintName DebugData Switches}
       Verify = {CondSelect Switches verify true}
       DoPeephole = {CondSelect Switches peephole true}
       Assembler = {New AssemblerClass init()}
@@ -583,7 +588,7 @@ define
          {Assembler checkLabels()}
       end
 
-      {InternalAssemble Arity {Assembler output($)}}
+      {InternalAssemble Arity {Assembler output($)} PrintName DebugData}
    end
 
 end

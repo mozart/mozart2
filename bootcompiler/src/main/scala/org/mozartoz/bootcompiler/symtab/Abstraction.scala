@@ -2,6 +2,7 @@ package org.mozartoz.bootcompiler
 package symtab
 
 import scala.collection.mutable.{ ArrayBuffer, Map }
+import scala.util.parsing.input.{ Position, NoPosition }
 
 import ast._
 import bytecode._
@@ -12,7 +13,7 @@ object Abstraction {
 }
 
 /** Abstraction */
-class Abstraction(val owner: Abstraction, val name: String) {
+class Abstraction(val owner: Abstraction, val name: String, val pos: Position) {
   /** Numeric ID of the abstraction */
   val id = Abstraction.nextID()
 
@@ -54,8 +55,8 @@ class Abstraction(val owner: Abstraction, val name: String) {
     else owner.fullName + "::" + name
 
   /** Creates a new abstraction that is inner to this abstraction */
-  def newAbstraction(name: String) =
-    new Abstraction(this, name)
+  def newAbstraction(name: String, pos: Position) =
+    new Abstraction(this, name, pos)
 
   /** Maps a free variable to the corresponding global variable
    *
@@ -91,6 +92,6 @@ class Abstraction(val owner: Abstraction, val name: String) {
 }
 
 /** No abstraction marker */
-object NoAbstraction extends Abstraction(null, "<NoAbstraction>") {
+object NoAbstraction extends Abstraction(null, "<NoAbstraction>", NoPosition) {
   override val owner = this
 }

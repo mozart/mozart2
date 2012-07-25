@@ -92,6 +92,20 @@ class CodeArea(val abstraction: Abstraction) {
     maxX + 1
   }
 
+  lazy val debugData = {
+    implicit def pair2recordField(pair: (OzFeature, OzValue)) =
+      OzRecordField(pair._1, pair._2)
+
+    val pos = abstraction.pos
+    val fileName = FilePosition.fileNameOf(pos, "")
+
+    OzRecord(OzAtom("d"), List(
+        OzAtom("column") -> OzInt(pos.column),
+        OzAtom("file") -> OzAtom(fileName),
+        OzAtom("line") -> OzInt(pos.line)
+    ))
+  }
+
   val ccCodeArea = "codeArea" + abstraction.id.toString()
   val ccCreateMethodName = "createCodeArea" + abstraction.id.toString()
 
@@ -120,12 +134,16 @@ class CodeArea(val abstraction: Abstraction) {
        |  };
        |
        |  atom_t printName = vm->getAtom(%s);
-       |  UnstableNode debugData = build(vm, unit);
+       |  UnstableNode debugData = """.stripMargin % (
+           stringToMozartStr(abstraction.name))
+
+    produceCCForConstantTopLevel(out, debugData)
+
+    out << """;
        |
        |  %s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d, %d,
        |                       printName, debugData);
        |""".stripMargin % (
-           stringToMozartStr(abstraction.name),
            ccCodeArea, constants.size, abstraction.arity, computeXCount())
 
     if (!constants.isEmpty) {
@@ -149,6 +167,12 @@ class CodeArea(val abstraction: Abstraction) {
     import Output._
 
     out << "  temp = ";
+    produceCCForConstantTopLevel(out, constant)
+    out << ";\n"
+  }
+
+  private def produceCCForConstantTopLevel(out: Output, constant: OzValue) {
+    import Output._
 
     constant match {
       case _:OzArity | _:OzRecord | _:OzPatMatOpenRecord =>
@@ -159,8 +183,6 @@ class CodeArea(val abstraction: Abstraction) {
         produceCCForConstant(out, constant)
         out << ")"
     }
-
-    out << ";\n"
   }
 
   private def produceCCForConstant(out: Output, constant: OzValue) {

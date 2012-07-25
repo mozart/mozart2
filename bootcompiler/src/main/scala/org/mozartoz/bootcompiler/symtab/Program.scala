@@ -22,7 +22,8 @@ class Program {
   val baseDeclarations = new ArrayBuffer[String]
 
   /** Implicit top-level abstraction */
-  val topLevelAbstraction = new Abstraction(NoAbstraction, "<TopLevel>")
+  val topLevelAbstraction =
+    new Abstraction(NoAbstraction, "<TopLevel>", NoPosition)
 
   /** After flattening, list of the abstractions */
   val abstractions = new ListBuffer[Abstraction]

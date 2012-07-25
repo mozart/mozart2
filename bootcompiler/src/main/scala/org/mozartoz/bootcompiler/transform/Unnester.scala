@@ -54,7 +54,7 @@ object Unnester extends Transformer with TreeDSL {
             atPos(newElseStat) {
               val exception = Tuple(Constant(OzAtom("kernel")), List(
                   Constant(OzAtom("noElse")),
-                  Constant(OzAtom(FilePosition.fileNameOf(matchStat))),
+                  Constant(OzAtom(FilePosition.fileNameOf(matchStat.pos))),
                   Constant(OzInt(matchStat.pos.line)),
                   v))
 

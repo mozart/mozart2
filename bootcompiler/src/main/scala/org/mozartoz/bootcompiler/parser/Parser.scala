@@ -115,7 +115,7 @@ class OzParser extends OzTokenParsers with PackratParsers
 
   // Procedure and function definition
 
-  lazy val procStatement: PackratParser[Statement] = positioned {
+  lazy val procStatement: PackratParser[Statement] = deepPositioned {
     (("proc" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
       case flags ~ left ~ args0 ~ body0 =>
         val (args, body) = postProcessArgsAndBody(args0, body0)
@@ -123,7 +123,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     }
   }
 
-  lazy val funStatement: PackratParser[Statement] = positioned {
+  lazy val funStatement: PackratParser[Statement] = deepPositioned {
     (("fun" ~> procFlags <~ "{") ~ expression ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
       case flags ~ left ~ args0 ~ body0 =>
         val (args, body) = postProcessArgsAndBody(args0, body0)
@@ -131,7 +131,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     }
   }
 
-  lazy val procExpression: PackratParser[Expression] = positioned {
+  lazy val procExpression: PackratParser[Expression] = deepPositioned {
     (("proc" ~> procFlags <~ "{" ~ "$") ~ formalArgs <~ "}") ~ inStatement <~ "end" ^^ {
       case flags ~ args0 ~ body0 =>
         val (args, body) = postProcessArgsAndBody(args0, body0)
@@ -139,7 +139,7 @@ class OzParser extends OzTokenParsers with PackratParsers
     }
   }
 
-  lazy val funExpression: PackratParser[Expression] = positioned {
+  lazy val funExpression: PackratParser[Expression] = deepPositioned {
     (("fun" ~> procFlags <~ "{" ~ "$") ~ formalArgs <~ "}") ~ inExpression <~ "end" ^^ {
       case flags ~ args0 ~ body0 =>
         val (args, body) = postProcessArgsAndBody(args0, body0)
@@ -819,5 +819,14 @@ class OzParser extends OzTokenParsers with PackratParsers
   private def nameOf(expression: Expression) = expression match {
     case RawVariable(name) => name
     case _ => ""
+  }
+
+  /** Like positioned, but dives into nodes as long as they have no pos */
+  def deepPositioned[T <: Node](
+      p: => Parser[T]): Parser[T] = Parser { in =>
+    p(in) match {
+      case Success(t, in1) => Success(atPos(in.pos)(t), in1)
+      case ns: NoSuccess => ns
+    }
   }
 }

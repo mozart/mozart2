@@ -19,12 +19,6 @@ object FilePosition {
     case _ => None
   }
 
-  def fileOf(positional: Positional): Option[File] =
-    fileOf(positional.pos)
-
-  def fileNameOf(position: Position) =
-    fileOf(position) map (_.getName) getOrElse NoFileName
-
-  def fileNameOf(positional: Positional): String =
-    fileNameOf(positional.pos)
+  def fileNameOf(position: Position, default: String = NoFileName) =
+    fileOf(position) map (_.getName) getOrElse default
 }

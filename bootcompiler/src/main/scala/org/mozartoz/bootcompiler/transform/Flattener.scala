@@ -52,7 +52,7 @@ object Flattener extends Transformer with TreeDSL {
       transformExpr(expr)
 
     case proc @ ProcExpression(name, args, body, flags) =>
-      val abs = abstraction.newAbstraction(name)
+      val abs = abstraction.newAbstraction(name, proc.pos)
 
       program.abstractions += abs
 

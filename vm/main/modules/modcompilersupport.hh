@@ -151,6 +151,36 @@ public:
     }
   };
 
+  class MakeArityDynamic: public Builtin<MakeArityDynamic> {
+  public:
+    MakeArityDynamic(): Builtin("makeArityDynamic") {}
+
+    OpResult operator()(VM vm, In label, In features, Out result) {
+      using namespace patternmatching;
+
+      OpResult res = OpResult::proceed();
+      size_t width = 0;
+      std::unique_ptr<UnstableNode[]> featuresData;
+
+      if (matchesVariadicSharp(vm, res, features, width,
+                               featuresData)) {
+        bool isTuple = false;
+        UnstableNode arity;
+        MOZART_CHECK_OPRESULT(buildArityDynamic(
+          vm, isTuple, result, label, width, featuresData.get()));
+
+        if (isTuple)
+          result = build(vm, false);
+        else
+          result = std::move(arity);
+
+        return OpResult::proceed();
+      } else {
+        return matchTypeError(vm, res, features, MOZART_STR("#-tuple"));
+      }
+    }
+  };
+
   class IsBuiltin: public Builtin<IsBuiltin> {
   public:
     IsBuiltin(): Builtin("isBuiltin") {}

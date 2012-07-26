@@ -81,7 +81,7 @@ set(COMPILER_FUNCTORS
     "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Main.oz" "Core.oz"
     "ForLoop.oz" "GroundZip.oz" "Macro.oz" "PrintName.oz" "RunTime.oz"
     "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz"
-    "NewAssembler.oz")
+    "NewAssembler.oz" "Parser.oz" "PEG.oz")
 
 foreach(FUNCTOR ${COMPILER_FUNCTORS})
   set(SYS_FUNCTORS ${SYS_FUNCTORS} "${MOZART_DIR}/../compiler-mozart/${FUNCTOR}")

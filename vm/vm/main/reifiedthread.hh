@@ -47,7 +47,8 @@ bool Implementation<ReifiedThread>::equals(VM vm, Self right) {
 }
 
 OpResult Implementation<ReifiedThread>::wakeUp(VM vm) {
-  _runnable->resume();
+  if (!_runnable->isRunnable())
+    _runnable->resume();
   return OpResult::proceed();
 }
 
@@ -67,6 +68,13 @@ OpResult Implementation<ReifiedThread>::setThreadPriority(
   VM vm, ThreadPriority priority) {
 
   _runnable->setPriority(priority);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<ReifiedThread>::injectException(
+  VM vm, RichNode exception) {
+
+  _runnable->injectException(exception.getStableRef(vm));
   return OpResult::proceed();
 }
 

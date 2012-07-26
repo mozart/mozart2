@@ -161,6 +161,8 @@ void Thread::constructor(VM vm, RichNode abstraction,
 
   pushFrame(vm, abstraction.getStableRef(vm), start, 0, nullptr, Gs, Ks);
 
+  injectedException = nullptr;
+
   // Resume the thread unless createSuspended
   if (!createSuspended)
     resume();
@@ -180,6 +182,13 @@ Thread::Thread(GR gr, Thread& from): Runnable(gr, from) {
        iterator != from.stack.end(); iterator++) {
     stack.push_back_new(vm, gr, *iterator);
   }
+
+  // Misc
+
+  if (from.injectedException == nullptr)
+    injectedException = nullptr;
+  else
+    gr->copyStableRef(injectedException, from.injectedException);
 }
 
 #define CHECK_OPRESULT_BREAK(operation) \
@@ -223,6 +232,14 @@ void Thread::run() {
   // Preemption
 
   bool preempted = false;
+
+  // Now's the right time to inject an exception that was thrown at us
+
+  if (injectedException != nullptr) {
+    applyOpResult(vm, OpResult::raise(vm, *injectedException), preempted,
+                  abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+    injectedException = nullptr;
+  }
 
   // The big loop
 

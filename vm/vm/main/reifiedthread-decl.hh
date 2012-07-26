@@ -90,6 +90,9 @@ public:
   inline
   OpResult setThreadPriority(VM vm, ThreadPriority priority);
 
+  inline
+  OpResult injectException(VM vm, RichNode exception);
+
 private:
   Runnable* _runnable;
 };

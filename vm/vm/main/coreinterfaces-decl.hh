@@ -590,6 +590,10 @@ struct Interface<ThreadLike>: ImplementedBy<ReifiedThread> {
   OpResult setThreadPriority(RichNode self, VM vm, ThreadPriority priority) {
     return raiseTypeError(vm, MOZART_STR("Thread"), self);
   }
+
+  OpResult injectException(RichNode self, VM vm, RichNode exception) {
+    return raiseTypeError(vm, MOZART_STR("Thread"), self);
+  }
 };
 
 class CellLike;

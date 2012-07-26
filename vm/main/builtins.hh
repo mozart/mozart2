@@ -37,10 +37,10 @@ namespace builtins {
 // BaseBuiltin //
 /////////////////
 
-UnstableNode BaseBuiltin::getNameAtom(VM vm) {
+atom_t BaseBuiltin::getNameAtom(VM vm) {
   auto utf8Name = makeLString(_name.c_str(), _name.length());
   auto nativeName = toUTF<nchar>(utf8Name);
-  return Atom::build(vm, nativeName.length, nativeName.string);
+  return vm->getAtom(nativeName.length, nativeName.string);
 }
 
 OpResult BaseBuiltin::getCallInfo(

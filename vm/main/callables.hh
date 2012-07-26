@@ -74,6 +74,15 @@ OpResult Implementation<BuiltinProcedure>::getCallInfo(
   return _builtin->getCallInfo(self, vm, arity, start, Xcount, Gs, Ks);
 }
 
+OpResult Implementation<BuiltinProcedure>::getDebugInfo(
+  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
+
+  printName = _builtin->getNameAtom(vm);
+  debugData = mozart::build(vm, unit);
+
+  return OpResult::proceed();
+}
+
 /////////////////
 // Abstraction //
 /////////////////
@@ -135,6 +144,12 @@ OpResult Implementation<Abstraction>::getCallInfo(
   Ks = _Ks;
 
   return OpResult::proceed();
+}
+
+OpResult Implementation<Abstraction>::getDebugInfo(
+  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
+
+  return CodeAreaProvider(_body).getCodeAreaDebugInfo(vm, printName, debugData);
 }
 
 void Implementation<Abstraction>::printReprToStream(

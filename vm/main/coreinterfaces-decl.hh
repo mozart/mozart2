@@ -211,6 +211,11 @@ struct Interface<Callable>:
                        StaticArray<StableNode>& Ks) {
     return raiseTypeError(vm, MOZART_STR("Abstraction"), self);
   }
+
+  OpResult getDebugInfo(RichNode self, VM vm,
+                        atom_t& printName, UnstableNode& debugData) {
+    return raiseTypeError(vm, MOZART_STR("Abstraction"), self);
+  }
 };
 
 class CodeAreaProvider;

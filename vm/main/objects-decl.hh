@@ -135,6 +135,10 @@ public:
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
 
+  inline
+  OpResult getDebugInfo(Self self, VM vm,
+                        atom_t& printName, UnstableNode& debugData);
+
 public:
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
     out << "<Object>";

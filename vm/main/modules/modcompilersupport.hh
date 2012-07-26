@@ -202,7 +202,7 @@ public:
       BaseBuiltin* builtin = nullptr;
       MOZART_CHECK_OPRESULT(BuiltinCallable(value).getBuiltin(vm, builtin));
 
-      UnstableNode name = builtin->getNameAtom(vm);
+      UnstableNode name = build(vm, builtin->getNameAtom(vm));
       UnstableNode arity = build(vm, builtin->getArity());
 
       UnstableNode params = build(vm, vm->coreatoms.nil);

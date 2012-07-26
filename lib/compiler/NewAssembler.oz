@@ -81,18 +81,21 @@ define
       unifyXY: 0x31
       unifyXK: 0x32
       unifyXG: 0x33
+      unifyYK: 0x34
+      unifyGK: 0x35
 
       arrayInitElementX: 0x40
       arrayInitElementY: 0x41
       arrayInitElementG: 0x42
       arrayInitElementK: 0x43
+      arrayInitElementsVars: 0x44
 
-      createAbstractionX: 0x44
-      createAbstractionK: 0x45
+      createAbstractionX: 0x45
+      createAbstractionK: 0x46
 
-      createTupleK: 0x46
-      createRecordK: 0x47
-      createConsXX: 0x48
+      createTupleK: 0x47
+      createRecordK: 0x48
+      createConsXX: 0x49
 
       inlineEqualsInteger: 0x50
    )
@@ -144,10 +147,12 @@ define
       [] tailCall(T=x(_) A) then tailCallX(T A)
       [] tailCall(T=g(_) A) then tailCallG(T A)
 
-      [] unify(L R=x(_)) then unifyXX(L R)
-      [] unify(L R=y(_)) then unifyXY(L R)
-      [] unify(L R=g(_)) then unifyXG(L R)
-      [] unify(L R=k(_)) then unifyXK(L R)
+      [] unify(L=x(_) R=x(_)) then unifyXX(L R)
+      [] unify(L=x(_) R=y(_)) then unifyXY(L R)
+      [] unify(L=x(_) R=g(_)) then unifyXG(L R)
+      [] unify(L=x(_) R=k(_)) then unifyXK(L R)
+      [] unify(L=y(_) R=k(_)) then unifyYK(L R)
+      [] unify(L=g(_) R=k(_)) then unifyGK(L R)
 
       [] arrayInitElement(T I V=x(_)) then arrayInitElementX(T I V)
       [] arrayInitElement(T I V=y(_)) then arrayInitElementY(T I V)

@@ -772,6 +772,28 @@ define
          end
       end
 
+      fun {SetInstrsToInitArray ArrayReg Index Width Code}
+         if Index == Width then
+            {Loop Code}
+         elsecase Code
+         of setConstant(Value) | Rest then
+            arrayInitElement(ArrayReg Index k(Value)) |
+               {SetInstrsToInitArray ArrayReg Index+1 Width Rest}
+
+         [] setValue(R) | Rest then
+            arrayInitElement(ArrayReg Index R) |
+               {SetInstrsToInitArray ArrayReg Index+1 Width Rest}
+
+         [] setVariable(R) | Rest then
+            createVar(R) | arrayInitElement(ArrayReg Index R) |
+               {SetInstrsToInitArray ArrayReg Index+1 Width Rest}
+
+         [] setVoid(N) | Rest then
+            arrayInitElementsVars(ArrayReg Index N) |
+               {SetInstrsToInitArray ArrayReg Index+N Width Rest}
+         end
+      end
+
       fun {Loop Code}
          case Code
 
@@ -785,13 +807,48 @@ define
          [] deAllocateL(_) | Rest then
             deallocateY | {Loop Rest}
 
+         % createVariable and createVariableMove are renamed
+         [] createVariable(R) | Rest then
+            createVar(R) | {Loop Rest}
+         [] createVariableMove(R1 R2) | Rest then
+            createVarMove(R1 R2) | {Loop Rest}
+
          % putConstant(Value Reg) become moveKX / moveKY
          [] putConstant(Value R) | Rest then
             move(k(Value) R) | {Loop Rest}
 
+         % putRecord and putList followed by setThings
+         [] putRecord(Label WidthOrArity Dest) | Rest then
+            if {IsInt WidthOrArity} then
+               % Tuple
+               Width = WidthOrArity
+            in
+               createTuple(k(Label) Width Dest) |
+                  {SetInstrsToInitArray Dest 0 Width Rest}
+            else
+               % Record
+               Arity = {CompilerSupport.makeArity Label WidthOrArity}
+               Width = {Length WidthOrArity}
+            in
+               createRecord(k(Arity) Width Dest) |
+                  {SetInstrsToInitArray Dest 0 Width Rest}
+            end
+
+         % getNumber(I R) and getLiteral(L R) become unifyRK
+         [] getNumber(I R) | Rest then
+            unify(R k(I)) | {Loop Rest}
+         [] getLiteral(L R) | Rest then
+            unify(R k(L)) | {Loop Rest}
+
          % callBI becomes callBuiltin
          [] callBI(Builtin InArgs#OutArgs) | Rest then
             callBuiltin(k(Builtin) {Append InArgs OutArgs}) | {Loop Rest}
+
+         % testBool(R L1 L2) becomes condBranch(R L1 L3 L2) | lbl(L3)
+         [] testBool(R L1 L2) | Rest then
+            L3 = {NewName}
+         in
+            condBranch(R L1 L3 L2) | lbl(L3) | {Loop Rest}
 
          % the monster: definition + endDefinition become createAbstraction
          [] definition(Dest Lab pid(Name Arity Pos Flags NLiveRegs)

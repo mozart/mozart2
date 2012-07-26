@@ -504,6 +504,8 @@ OpResult Implementation<Dictionary>::dictExchange(
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
+  MOZART_REQUIRE_FEATURE(feature);
+
   UnstableNode* value = nullptr;
   if (dict.lookup(vm, feature, value)) {
     oldValue.copy(vm, *value);
@@ -520,6 +522,8 @@ OpResult Implementation<Dictionary>::dictCondExchange(
 
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
+
+  MOZART_REQUIRE_FEATURE(feature);
 
   UnstableNode* value = nullptr;
   if (dict.lookupOrCreate(vm, feature, value)) {

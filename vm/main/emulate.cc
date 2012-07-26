@@ -909,7 +909,7 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
         return;
       }
 
-      result = raise(vm, vm->coreatoms.failure);
+      result = raiseError(vm, vm->coreatoms.failure);
       // fall through
     }
 

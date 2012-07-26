@@ -28,6 +28,7 @@
 #include "../mozartcore.hh"
 
 #include <sstream>
+#include <cstdlib>
 
 #ifndef MOZART_GENERATOR
 
@@ -76,6 +77,38 @@ public:
       nativeint length = 0;
       MOZART_CHECK_OPRESULT(VirtualString(value).vsLength(vm, length));
       result = SmallInt::build(vm, length);
+      return OpResult::proceed();
+    }
+  };
+
+  class ToFloat : public Builtin<ToFloat> {
+  public:
+    ToFloat() : Builtin("toFloat") {}
+
+    OpResult operator()(VM vm, In value, Out result) {
+      std::basic_ostringstream<nchar> stringStream;
+      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, stringStream));
+
+      auto bufferStr = stringStream.str();
+      auto nstr = makeLString(bufferStr.c_str(), bufferStr.size());
+      auto utf8str = toUTF<char>(nstr);
+      std::stringstream strStream;
+      strStream << utf8str;
+
+      auto str = strStream.str();
+
+      for (auto iter = str.begin(); iter != str.end(); ++iter)
+        if (*iter == '~')
+          *iter = '-';
+
+      char* end = nullptr;
+      double doubleResult = 0.0;
+      doubleResult = std::strtod(str.c_str(), &end);
+
+      if (*end != '\0')
+        return raiseKernelError(vm, MOZART_STR("stringNoFloat"), value);
+
+      result = build(vm, doubleResult);
       return OpResult::proceed();
     }
   };

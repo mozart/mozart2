@@ -27,6 +27,8 @@
 
 #include "core-forward-decl.hh"
 
+#include <cassert>
+
 namespace mozart {
 
 // This enum is often used for indexing in arrays
@@ -70,6 +72,14 @@ public:
 
   inline
   virtual void kill();
+
+  inline
+  virtual void injectException(StableNode* exception) {
+    /* We cannot come here because there's no way the Oz code has gained a
+     * reference to a thread that is not an emulated thread.
+     */
+    assert(false);
+  }
 
   bool getRaiseOnBlock() {
     return _raiseOnBlock;

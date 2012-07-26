@@ -188,6 +188,13 @@ public:
     Super::kill();
   }
 
+  void injectException(StableNode* exception) {
+    injectedException = exception;
+
+    if (!isRunnable())
+      resume();
+  }
+
   void beforeGR();
   void afterGR();
 
@@ -260,6 +267,7 @@ private:
 
   XRegArray xregs;
   ThreadStack stack;
+  StableNode* injectedException;
 };
 
 }

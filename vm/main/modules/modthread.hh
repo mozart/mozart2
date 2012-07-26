@@ -121,6 +121,15 @@ public:
       return ThreadLike(thread).setThreadPriority(vm, prio);
     }
   };
+
+  class InjectException: public Builtin<InjectException> {
+  public:
+    InjectException(): Builtin("injectException") {}
+
+    OpResult operator()(VM vm, In thread, In exception) {
+      return ThreadLike(thread).injectException(vm, exception);
+    }
+  };
 };
 
 }

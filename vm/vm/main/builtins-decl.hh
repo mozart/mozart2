@@ -219,7 +219,7 @@ public:
   }
 
   inline
-  UnstableNode getNameAtom(VM vm);
+  atom_t getNameAtom(VM vm);
 
   size_t getArity() {
     return _arity;

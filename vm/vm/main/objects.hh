@@ -208,6 +208,15 @@ OpResult Implementation<Object>::getCallInfo(
   return OpResult::proceed();
 }
 
+OpResult Implementation<Object>::getDebugInfo(
+  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
+
+  printName = vm->getAtom(MOZART_STR("<Object>"));
+  debugData = mozart::build(vm, unit);
+
+  return OpResult::proceed();
+}
+
 }
 
 #endif // MOZART_GENERATOR

@@ -98,6 +98,10 @@ public:
                             StaticArray<UnstableNode>& yregs,
                             StaticArray<StableNode>& gregs,
                             StaticArray<StableNode>& kregs);
+
+  inline
+  UnstableNode buildStackTrace(VM vm, StableNode* abstraction,
+                               ProgramCounter PC);
 };
 
 class XRegArray {
@@ -264,6 +268,10 @@ private:
                      StaticArray<UnstableNode>& yregs,
                      StaticArray<StableNode>& gregs,
                      StaticArray<StableNode>& kregs);
+
+  UnstableNode preprocessException(VM vm, RichNode exception,
+                                   StableNode* abstraction,
+                                   ProgramCounter PC);
 
   XRegArray xregs;
   ThreadStack stack;

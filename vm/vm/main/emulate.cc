@@ -120,6 +120,74 @@ bool ThreadStack::findExceptionHandler(VM vm, StableNode*& abstraction,
   return false;
 }
 
+namespace {
+  template <class Feat, class Def>
+  inline
+  UnstableNode handyCondSelect(VM vm, RichNode record, Feat&& feature,
+                               Def&& def) {
+    UnstableNode featureNode = build(vm, std::forward<Feat>(feature));
+    UnstableNode defaultNode = build(vm, std::forward<Def>(def));
+
+    UnstableNode result;
+    MOZART_ASSERT_PROCEED(builtins::ModValue::CondSelect::builtin()(
+      vm, record, featureNode, defaultNode, result));
+    return result;
+  }
+
+  inline
+  UnstableNode buildStackTraceItem(VM vm, StableNode* abstraction,
+                                   ProgramCounter PC) {
+    atom_t printName;
+    UnstableNode debugData;
+    MOZART_ASSERT_PROCEED(
+      Callable(*abstraction).getDebugInfo(vm, printName, debugData));
+
+    UnstableNode kind = build(vm, MOZART_STR("call"));
+    UnstableNode data = build(vm, *abstraction);
+
+    UnstableNode file = handyCondSelect(vm, debugData, MOZART_STR("file"),
+                                        vm->coreatoms.empty);
+    UnstableNode line = handyCondSelect(vm, debugData, MOZART_STR("line"),
+                                        unit);
+    UnstableNode column = handyCondSelect(vm, debugData, MOZART_STR("column"),
+                                          -1);
+
+    UnstableNode PCNode = build(vm, reinterpret_cast<std::intptr_t>(PC));
+
+    return buildRecord(
+      vm, buildArity(vm, MOZART_STR("entry"),
+                     MOZART_STR("PC"),
+                     MOZART_STR("column"),
+                     MOZART_STR("data"),
+                     MOZART_STR("file"),
+                     MOZART_STR("kind"),
+                     MOZART_STR("line")),
+      std::move(PCNode), std::move(column), std::move(data), std::move(file),
+      std::move(kind), std::move(line)
+    );
+  }
+}
+
+UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
+                                          ProgramCounter PC) {
+  UnstableNode result = buildCons(vm, buildStackTraceItem(vm, abstraction, PC),
+                                  vm->coreatoms.nil);
+
+  for (auto iter = begin(); iter != end(); ++iter) {
+    StackEntry& entry = *iter;
+
+    if (!entry.isExceptionHandler()) {
+      abstraction = entry.abstraction;
+      PC = entry.PC;
+
+      result = buildCons(vm, buildStackTraceItem(vm, abstraction, PC),
+                         std::move(result));
+    }
+  }
+
+  return result;
+}
+
 ////////////
 // Thread //
 ////////////
@@ -594,7 +662,7 @@ void Thread::run() {
 
         for (; startIndex < endIndex; startIndex++) {
           UnstableNode var = OptVar::build(vm);
-          initializer.initElement(vm, startIndex, var);
+          CHECK_OPRESULT_BREAK(initializer.initElement(vm, startIndex, var));
         }
       }
 
@@ -846,16 +914,19 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
     }
 
     case OpResult::orRaise: {
+      UnstableNode preprocessedException = preprocessException(
+        vm, *result.getExceptionNode(), abstraction, PC);
+
       bool handlerFound = stack.findExceptionHandler(
         vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
       if (handlerFound) {
         // Store the exception value in X(0)
-        (*xregs)[0].copy(vm, *result.getExceptionNode());
+        (*xregs)[0].copy(vm, std::move(preprocessedException));
       } else {
         // Uncaught exception
         std::cout << "Uncaught exception" << std::endl;
-        std::cout << repr(vm, *result.getExceptionNode()) << std::endl;
+        std::cout << repr(vm, preprocessedException, 100) << std::endl;
 
         terminate();
         preempted = true;
@@ -864,6 +935,49 @@ void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
       break;
     }
   }
+}
+
+UnstableNode Thread::preprocessException(VM vm, RichNode exception,
+                                         StableNode* abstraction,
+                                         ProgramCounter PC) {
+  if (!exception.is<Record>())
+    return build(vm, exception);
+
+  auto srcRecord = exception.as<Record>();
+  auto arity = RichNode(*srcRecord.getArity()).as<Arity>();
+
+  UnstableNode debugAtom = build(vm, vm->coreatoms.debug);
+  bool hasFeatureDebug = false;
+  size_t debugFeatureIndex = 0;
+
+  MOZART_ASSERT_PROCEED(arity.lookupFeature(
+    vm, debugAtom, debugFeatureIndex).mapProceedFailToTrueFalse(
+      hasFeatureDebug));
+
+  if (!hasFeatureDebug)
+    return build(vm, exception);
+
+  if (!RichNode(*srcRecord.getElement(debugFeatureIndex)).is<Unit>())
+    return build(vm, exception);
+
+  size_t width = srcRecord.getWidth();
+  UnstableNode result = Record::build(vm, width, arity);
+
+  auto destRecord = RichNode(result).as<Record>();
+  for (size_t i = 0; i < width; i++) {
+    if (i == debugFeatureIndex) {
+      UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
+      UnstableNode debugField = buildRecord(
+        vm, buildArity(vm, MOZART_STR("d"), MOZART_STR("info"),
+                       MOZART_STR("stack")),
+        unit, std::move(stackTrace));
+      destRecord.getElement(i)->init(vm, std::move(debugField));
+    } else {
+      destRecord.getElement(i)->init(vm, *srcRecord.getElement(i));
+    }
+  }
+
+  return result;
 }
 
 void Thread::beforeGR()

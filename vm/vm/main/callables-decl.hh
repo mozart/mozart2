@@ -125,6 +125,10 @@ public:
                        ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
+
+  inline
+  OpResult getDebugInfo(Self self, VM vm,
+                        atom_t& printName, UnstableNode& debugData);
 public:
   // Miscellaneous
 
@@ -210,6 +214,10 @@ public:
                        ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Gs,
                        StaticArray<StableNode>& Ks);
+
+  inline
+  OpResult getDebugInfo(Self self, VM vm,
+                        atom_t& printName, UnstableNode& debugData);
 
 public:
   // Miscellaneous

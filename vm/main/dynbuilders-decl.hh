@@ -56,6 +56,19 @@ OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
                            size_t width, T elements[],
                            ElemToValue elemToValue);
 
+///////////
+// Lists //
+///////////
+
+template <class T>
+inline
+UnstableNode buildListDynamic(VM vm, size_t length, T elements[]);
+
+template <class T, class ElemToValue>
+inline
+UnstableNode buildListDynamic(VM vm, size_t length, T elements[],
+                              ElemToValue elemToValue);
+
 /////////////
 // Records //
 /////////////

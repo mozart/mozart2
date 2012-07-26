@@ -37,6 +37,10 @@ template <class LT, class... Args>
 inline
 OpResult raiseError(VM vm, LT&& label, Args&&... args);
 
+template <class... Args>
+inline
+OpResult raiseKernelError(VM vm, Args&&... args);
+
 template <class Actual>
 inline
 OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual);

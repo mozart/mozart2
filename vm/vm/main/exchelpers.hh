@@ -50,20 +50,23 @@ OpResult raiseError(VM vm, LT&& label, Args&&... args) {
   return OpResult::raise(vm, error);
 }
 
+template <class... Args>
+OpResult raiseKernelError(VM vm, Args&&... args) {
+  return raiseError(vm, vm->coreatoms.kernel, std::forward<Args>(args)...);
+}
+
 template <class Actual>
 OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
-  return raiseError(vm, MOZART_STR("kernel"), MOZART_STR("type"), expected,
-                    std::forward<Actual>(actual));
+  return raiseKernelError(vm, MOZART_STR("type"),
+                          unit, buildList(vm, actual), expected, 1,
+                          vm->coreatoms.nil);
 }
 
 OpResult raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
                            RichNode actualArgs[]) {
-  UnstableNode actualArgList = build(vm, vm->coreatoms.nil);
-  for (size_t i = actualArgCount; i > 0; i--)
-    actualArgList = buildCons(vm, actualArgs[i-1], actualArgList);
-
-  return raiseError(vm, MOZART_STR("kernel"),
-                    MOZART_STR("arity"), target, std::move(actualArgList));
+  return raiseKernelError(vm, MOZART_STR("arity"),
+                          target,
+                          buildListDynamic(vm, actualArgCount, actualArgs));
 }
 
 template <class... Args>

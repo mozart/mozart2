@@ -119,6 +119,31 @@ OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
   return OpResult::proceed();
 }
 
+///////////
+// Lists //
+///////////
+
+template <class T>
+UnstableNode buildListDynamic(VM vm, size_t length, T elements[]) {
+  UnstableNode result = build(vm, vm->coreatoms.nil);
+
+  for (size_t i = length; i > 0; i--)
+    result = buildCons(vm, elements[i-1], std::move(result));
+
+  return result;
+}
+
+template <class T, class ElemToValue>
+UnstableNode buildListDynamic(VM vm, size_t length, T elements[],
+                              ElemToValue elemToValue) {
+  UnstableNode result = build(vm, vm->coreatoms.nil);
+
+  for (size_t i = length; i > 0; i--)
+    result = buildCons(vm, elemToValue(elements[i-1]), std::move(result));
+
+  return result;
+}
+
 /////////////
 // Records //
 /////////////

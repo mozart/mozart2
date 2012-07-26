@@ -201,6 +201,24 @@ UnstableNode buildCons(VM vm, HT&& head, TT&& tail) {
   return Cons::build(vm, headNode, tailNode);
 }
 
+// Build a list
+
+inline
+UnstableNode buildList(VM vm) {
+  return build(vm, vm->coreatoms.nil);
+}
+
+/**
+ * Build an Oz list with a statically known number of elements
+ * The elements can be in any form supported by build().
+ */
+template <class Head, class... Tail>
+inline
+UnstableNode buildList(VM vm, Head&& head, Tail&&... tail) {
+  return buildCons(vm, std::forward<Head>(head),
+                   buildList(vm, std::forward<Tail>(tail)...));
+}
+
 /**
  * Build a constant arity, with its label and features
  * The label and the features can be in any form supported by build().

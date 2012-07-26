@@ -78,6 +78,7 @@ struct CoreAtoms {
   atom_t error;
   atom_t system;
   atom_t failure;
+  atom_t kernel;
   atom_t illegalFieldSelection;
   atom_t unicodeError;
   atom_t spaceAdmissible;

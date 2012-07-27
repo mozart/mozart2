@@ -116,6 +116,10 @@ Implementation<Abstraction>::Implementation(VM vm, size_t Gc,
     gr->copyStableNode(_Gs[i], from[i]);
 }
 
+StaticArray<StableNode> Implementation<Abstraction>::getElementsArray(Self self) {
+  return self.getArray();
+}
+
 OpResult Implementation<Abstraction>::initElement(Self self, VM vm,
                                                   size_t index,
                                                   RichNode value) {

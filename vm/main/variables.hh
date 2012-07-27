@@ -190,20 +190,32 @@ void Implementation<OptVar>::markNeeded(Self self, VM vm) {
   DataflowVariable(self).markNeeded(vm);
 }
 
+OpResult Implementation<OptVar>::bind(Self self, VM vm, UnstableNode&& src) {
+  makeBackupForSpeculativeBindingIfNeeded(self, vm);
+  self.become(vm, std::move(src));
+
+  return OpResult::proceed();
+}
+
 OpResult Implementation<OptVar>::bind(Self self, VM vm, RichNode src) {
+  makeBackupForSpeculativeBindingIfNeeded(self, vm);
+  self.become(vm, src);
+
+  return OpResult::proceed();
+}
+
+void Implementation<OptVar>::makeBackupForSpeculativeBindingIfNeeded(
+  Self& self, VM vm) {
+
   // Is it a speculative binding?
   if (!vm->isOnTopLevel()) {
     Space* currentSpace = vm->getCurrentSpace();
     if (home() != currentSpace) {
+      // Yes it is, make the backup
       currentSpace->makeBackupForSpeculativeBinding(
         RichNode(self).getStableRef(vm));
     }
   }
-
-  // Actual binding
-  self.become(vm, src);
-
-  return OpResult::proceed();
 }
 
 //////////////

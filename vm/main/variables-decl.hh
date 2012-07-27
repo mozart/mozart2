@@ -157,7 +157,14 @@ public:
   void markNeeded(Self self, VM vm);
 
   inline
+  OpResult bind(Self self, VM vm, UnstableNode&& src);
+
+  inline
   OpResult bind(Self self, VM vm, RichNode src);
+
+private:
+  inline
+  void makeBackupForSpeculativeBindingIfNeeded(Self& self, VM vm);
 
 public:
   // Miscellaneous

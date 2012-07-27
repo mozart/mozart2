@@ -174,9 +174,13 @@ public:
   Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
                  GR gr, Self from);
 
+public:
   size_t getArraySize() {
     return _Gc;
   }
+
+  inline
+  StaticArray<StableNode> getElementsArray(Self self);
 
 public:
   // ArrayInitializer interface

@@ -85,27 +85,92 @@ const OpCode OpUnifyXG = 0x33;
 const OpCode OpUnifyYK = 0x34;
 const OpCode OpUnifyGK = 0x35;
 
-const OpCode OpArrayInitElementX = 0x40;
-const OpCode OpArrayInitElementY = 0x41;
-const OpCode OpArrayInitElementG = 0x42;
-const OpCode OpArrayInitElementK = 0x43;
-const OpCode OpArrayInitElementsVars = 0x44;
+const OpCode OpCreateStructBase = 0x40;
 
-const OpCode OpCreateAbstractionX = 0x45;
-const OpCode OpCreateAbstractionK = 0x46;
+const OpCode OpCreateStructWhatMask = 0x03;
+const OpCode OpCreateStructAbstraction = 0;
+const OpCode OpCreateStructCons = 1;
+const OpCode OpCreateStructTuple = 2;
+const OpCode OpCreateStructRecord = 3;
 
-const OpCode OpCreateTupleK = 0x47;
-const OpCode OpCreateRecordK = 0x48;
-const OpCode OpCreateConsXX = 0x49;
+const OpCode OpCreateStructWhereMask = 0x07 << 2;
+const OpCode OpCreateStructStoreX = 0 << 2;
+const OpCode OpCreateStructStoreY = 1 << 2;
+const OpCode OpCreateStructUnifyX = 2 << 2;
+const OpCode OpCreateStructUnifyY = 3 << 2;
+const OpCode OpCreateStructUnifyG = 4 << 2;
+const OpCode OpCreateStructUnifyK = 5 << 2;
+
+const OpCode OpCreateAbstractionStoreX =
+  OpCreateStructBase | OpCreateStructAbstraction | OpCreateStructStoreX;
+const OpCode OpCreateConsStoreX =
+  OpCreateStructBase | OpCreateStructCons | OpCreateStructStoreX;
+const OpCode OpCreateTupleStoreX =
+  OpCreateStructBase | OpCreateStructTuple | OpCreateStructStoreX;
+const OpCode OpCreateRecordStoreX =
+  OpCreateStructBase | OpCreateStructRecord | OpCreateStructStoreX;
+
+const OpCode OpCreateAbstractionStoreY =
+  OpCreateStructBase | OpCreateStructAbstraction | OpCreateStructStoreY;
+const OpCode OpCreateConsStoreY =
+  OpCreateStructBase | OpCreateStructCons | OpCreateStructStoreY;
+const OpCode OpCreateTupleStoreY =
+  OpCreateStructBase | OpCreateStructTuple | OpCreateStructStoreY;
+const OpCode OpCreateRecordStoreY =
+  OpCreateStructBase | OpCreateStructRecord | OpCreateStructStoreY;
+
+const OpCode OpCreateAbstractionUnifyX =
+  OpCreateStructBase | OpCreateStructAbstraction | OpCreateStructUnifyX;
+const OpCode OpCreateConsUnifyX =
+  OpCreateStructBase | OpCreateStructCons | OpCreateStructUnifyX;
+const OpCode OpCreateTupleUnifyX =
+  OpCreateStructBase | OpCreateStructTuple | OpCreateStructUnifyX;
+const OpCode OpCreateRecordUnifyX =
+  OpCreateStructBase | OpCreateStructRecord | OpCreateStructUnifyX;
+
+const OpCode OpCreateAbstractionUnifyY =
+  OpCreateStructBase | OpCreateStructAbstraction | OpCreateStructUnifyY;
+const OpCode OpCreateConsUnifyY =
+  OpCreateStructBase | OpCreateStructCons | OpCreateStructUnifyY;
+const OpCode OpCreateTupleUnifyY =
+  OpCreateStructBase | OpCreateStructTuple | OpCreateStructUnifyY;
+const OpCode OpCreateRecordUnifyY =
+  OpCreateStructBase | OpCreateStructRecord | OpCreateStructUnifyY;
+
+const OpCode OpCreateAbstractionUnifyG =
+  OpCreateStructBase | OpCreateStructAbstraction | OpCreateStructUnifyG;
+const OpCode OpCreateConsUnifyG =
+  OpCreateStructBase | OpCreateStructCons | OpCreateStructUnifyG;
+const OpCode OpCreateTupleUnifyG =
+  OpCreateStructBase | OpCreateStructTuple | OpCreateStructUnifyG;
+const OpCode OpCreateRecordUnifyG =
+  OpCreateStructBase | OpCreateStructRecord | OpCreateStructUnifyG;
+
+const OpCode OpCreateAbstractionUnifyK =
+  OpCreateStructBase | OpCreateStructAbstraction | OpCreateStructUnifyK;
+const OpCode OpCreateConsUnifyK =
+  OpCreateStructBase | OpCreateStructCons | OpCreateStructUnifyK;
+const OpCode OpCreateTupleUnifyK =
+  OpCreateStructBase | OpCreateStructTuple | OpCreateStructUnifyK;
+const OpCode OpCreateRecordUnifyK =
+  OpCreateStructBase | OpCreateStructRecord | OpCreateStructUnifyK;
+
+const OpCode SubOpArrayFillX = 0;
+const OpCode SubOpArrayFillY = 1;
+const OpCode SubOpArrayFillG = 2;
+const OpCode SubOpArrayFillK = 3;
+const OpCode SubOpArrayFillNewVarX = 4;
+const OpCode SubOpArrayFillNewVarY = 5;
+const OpCode SubOpArrayFillNewVars = 6;
 
 // Inlines for some builtins
-const OpCode OpInlineEqualsInteger = 0x50;
-const OpCode OpInlineAdd = 0x51;
-const OpCode OpInlineSubtract = 0x52;
-const OpCode OpInlinePlus1 = 0x53;
-const OpCode OpInlineMinus1 = 0x54;
+const OpCode OpInlineEqualsInteger = 0x60;
+const OpCode OpInlineAdd = 0x61;
+const OpCode OpInlineSubtract = 0x62;
+const OpCode OpInlinePlus1 = 0x63;
+const OpCode OpInlineMinus1 = 0x64;
 
-const OpCode OpInlineGetClass = 0x60;
+const OpCode OpInlineGetClass = 0x70;
 
 }
 

@@ -40,7 +40,7 @@ class BaseRecord {
 private:
   typedef typename SelfType<T>::Self Self;
 public:
-  nativeint getWidth() {
+  size_t getWidth() {
     return static_cast<Implementation<T>*>(this)->_width;
   }
 
@@ -110,6 +110,9 @@ public:
   StableNode* getLabel() {
     return &_label;
   }
+
+  inline
+  StaticArray<StableNode> getElementsArray(Self self);
 
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
@@ -198,15 +201,22 @@ public:
   Implementation(VM vm, RichNode head, RichNode tail);
 
   inline
+  Implementation(VM vm);
+
+  inline
   Implementation(VM vm, GR gr, Self from);
 
 public:
   StableNode* getHead() {
-    return &_head;
+    return &_elements[0];
   }
 
   StableNode* getTail() {
-    return &_tail;
+    return &_elements[1];
+  }
+
+  StaticArray<StableNode> getElementsArray() {
+    return { _elements, 2 };
   }
 
   inline
@@ -267,8 +277,7 @@ public:
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
 private:
-  StableNode _head;
-  StableNode _tail;
+  StableNode _elements[2];
 };
 
 #ifndef MOZART_GENERATOR
@@ -398,6 +407,9 @@ public:
   StableNode* getArity() {
     return &_arity;
   }
+
+  inline
+  StaticArray<StableNode> getElementsArray(Self self);
 
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);

@@ -123,6 +123,10 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
+StaticArray<StableNode> Implementation<Tuple>::getElementsArray(Self self) {
+  return self.getArray();
+}
+
 bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
                                    WalkStack& stack) {
   if (_width != right->_width)
@@ -232,19 +236,24 @@ bool Implementation<Tuple>::hasSharpLabel(VM vm) {
 #include "Cons-implem.hh"
 
 Implementation<Cons>::Implementation(VM vm, RichNode head, RichNode tail) {
-  _head.init(vm, head);
-  _tail.init(vm, tail);
+  _elements[0].init(vm, head);
+  _elements[1].init(vm, tail);
+}
+
+Implementation<Cons>::Implementation(VM vm) {
+  _elements[0].init(vm);
+  _elements[1].init(vm);
 }
 
 Implementation<Cons>::Implementation(VM vm, GR gr, Self from) {
-  gr->copyStableNode(_head, from->_head);
-  gr->copyStableNode(_tail, from->_tail);
+  gr->copyStableNode(_elements[0], from->_elements[0]);
+  gr->copyStableNode(_elements[1], from->_elements[1]);
 }
 
 bool Implementation<Cons>::equals(Self self, VM vm, Self right,
                                   WalkStack& stack) {
-  stack.push(vm, &_tail, &right->_tail);
-  stack.push(vm, &_head, &right->_head);
+  stack.push(vm, &_elements[1], &right->_elements[1]);
+  stack.push(vm, &_elements[0], &right->_elements[0]);
 
   return true;
 }
@@ -252,10 +261,7 @@ bool Implementation<Cons>::equals(Self self, VM vm, Self right,
 void Implementation<Cons>::getValueAt(Self self, VM vm,
                                       nativeint feature,
                                       UnstableNode& result) {
-  if (feature == 1)
-    result.copy(vm, _head);
-  else
-    result.copy(vm, _tail);
+  result.copy(vm, _elements[feature-1]);
 }
 
 OpResult Implementation<Cons>::label(Self self, VM vm,
@@ -271,7 +277,7 @@ OpResult Implementation<Cons>::width(Self self, VM vm, size_t& result) {
 
 OpResult Implementation<Cons>::arityList(Self self, VM vm,
                                          UnstableNode& result) {
-  result = buildCons(vm, 1, buildCons(vm, 2, vm->coreatoms.nil));
+  result = buildList(vm, 1, 2);
   return OpResult::proceed();
 }
 
@@ -283,8 +289,8 @@ OpResult Implementation<Cons>::clone(Self self, VM vm,
 
 OpResult Implementation<Cons>::waitOr(Self self, VM vm,
                                       UnstableNode& result) {
-  RichNode head = _head;
-  RichNode tail = _tail;
+  RichNode head = _elements[0];
+  RichNode tail = _elements[1];
 
   // If there is a field which is bound, then return its feature
   if (!head.isTransient()) {
@@ -367,7 +373,7 @@ OpResult Implementation<Cons>::vsLength(Self self, VM vm, nativeint& result) {
 
 void Implementation<Cons>::printReprToStream(Self self, VM vm,
                                              std::ostream& out, int depth) {
-  out << repr(vm, _head, depth) << "|" << repr(vm, _tail, depth);
+  out << repr(vm, _elements[0], depth) << "|" << repr(vm, _elements[1], depth);
 }
 
 ///////////
@@ -510,6 +516,10 @@ Implementation<Record>::Implementation(VM vm, size_t width,
 
   for (size_t i = 0; i < width; i++)
     gr->copyStableNode(_elements[i], from[i]);
+}
+
+StaticArray<StableNode> Implementation<Record>::getElementsArray(Self self) {
+  return self.getArray();
 }
 
 bool Implementation<Record>::equals(Self self, VM vm, Self right,

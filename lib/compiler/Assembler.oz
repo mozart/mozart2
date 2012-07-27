@@ -761,11 +761,10 @@ define
    % Magical conversion function that turns old code into new code
 
    fun {OldCodeToNewCode Code AssembleInner}
-      fun {MakeInitArray ArrayReg Index SourceRegs Rest}
+      fun {MakeInitGRegs SourceRegs Rest}
          case SourceRegs
          of SrcReg|SrcRegTail then
-            arrayInitElement(ArrayReg Index SrcReg) |
-               {MakeInitArray ArrayReg Index+1 SrcRegTail Rest}
+            arrayFill(SrcReg) | {MakeInitGRegs SrcRegTail Rest}
 
          [] nil then
             {Loop Rest}
@@ -817,28 +816,78 @@ define
          [] putConstant(Value R) | Rest then
             move(k(Value) R) | {Loop Rest}
 
-         % putRecord and putList followed by setThings
+         % putList and putRecord become createConsStore and Co.
+         [] putRecord('|' 2 Dest) | Rest then
+            createConsStore(Dest) | {Loop Rest}
+         [] putList(Dest) | Rest then
+            createConsStore(Dest) | {Loop Rest}
          [] putRecord(Label WidthOrArity Dest) | Rest then
             if {IsInt WidthOrArity} then
                % Tuple
                Width = WidthOrArity
             in
-               createTuple(k(Label) Width Dest) |
-                  {SetInstrsToInitArray Dest 0 Width Rest}
+               createTupleStore(k(Label) Width Dest) | {Loop Rest}
             else
                % Record
                Arity = {CompilerSupport.makeArity Label WidthOrArity}
                Width = {Length WidthOrArity}
             in
-               createRecord(k(Arity) Width Dest) |
-                  {SetInstrsToInitArray Dest 0 Width Rest}
+               createRecordStore(k(Arity) Width Dest) | {Loop Rest}
             end
+
+         % setThings become arrayFillThings
+         [] setConstant(Value) | Rest then
+            arrayFill(k(Value)) | {Loop Rest}
+         [] setValue(R) | Rest then
+            arrayFill(R) | {Loop Rest}
+         [] setVariable(R) | Rest then
+            arrayFillNewVar(R) | {Loop Rest}
+         [] setVoid(N) | Rest then
+            arrayFillNewVars(N) | {Loop Rest}
 
          % getNumber(I R) and getLiteral(L R) become unifyRK
          [] getNumber(I R) | Rest then
             unify(R k(I)) | {Loop Rest}
          [] getLiteral(L R) | Rest then
             unify(R k(L)) | {Loop Rest}
+
+         % getList and getRecord become createConsUnify and Co.
+         [] getRecord('|' 2 Dest) | Rest then
+            createConsUnify(Dest) | {Loop Rest}
+         [] getList(Dest) | Rest then
+            createConsUnify(Dest) | {Loop Rest}
+         [] getRecord(Label WidthOrArity Dest) | Rest then
+            if {IsInt WidthOrArity} then
+               % Tuple
+               Width = WidthOrArity
+            in
+               createTupleUnify(k(Label) Width Dest) | {Loop Rest}
+            else
+               % Record
+               Arity = {CompilerSupport.makeArity Label WidthOrArity}
+               Width = {Length WidthOrArity}
+            in
+               createRecordUnify(k(Arity) Width Dest) | {Loop Rest}
+            end
+
+         % getListValVar is desugared for now
+         [] getListValVar(D R1 R2) | Rest then
+            createConsUnify(D) | arrayFill(R1) | arrayFillNewVar(R2) |
+               {Loop Rest}
+
+         % unifyThings become arrayFillThings
+         [] unifyNumber(Value) | Rest then
+            arrayFill(k(Value)) | {Loop Rest}
+         [] unifyLiteral(Value) | Rest then
+            arrayFill(k(Value)) | {Loop Rest}
+         [] unifyValue(R) | Rest then
+            arrayFill(R) | {Loop Rest}
+         [] unifyVariable(R) | Rest then
+            arrayFillNewVar(R) | {Loop Rest}
+         [] unifyValVar(R1 R2) | Rest then
+            arrayFill(R1) | arrayFillNewVar(R2) | {Loop Rest}
+         [] unifyVoid(N) | Rest then
+            arrayFillNewVars(N) | {Loop Rest}
 
          % callBI becomes callBuiltin
          [] callBI(Builtin InArgs#OutArgs) | Rest then
@@ -857,8 +906,8 @@ define
             InnerCodeArea = {AssembleInner Arity InnerCode Name unit}
             GCount = {Length GRegRef}
          in
-            createAbstraction(k(InnerCodeArea) GCount Dest) |
-               {MakeInitArray Dest 0 GRegRef Rest}
+            createAbstractionStore(k(InnerCodeArea) GCount Dest) |
+               {MakeInitGRegs GRegRef Rest}
 
          % other things are kept as is
          [] H|Rest then

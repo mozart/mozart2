@@ -84,20 +84,45 @@ define
       unifyYK: 0x34
       unifyGK: 0x35
 
-      arrayInitElementX: 0x40
-      arrayInitElementY: 0x41
-      arrayInitElementG: 0x42
-      arrayInitElementK: 0x43
-      arrayInitElementsVars: 0x44
+      createAbstractionStoreX: 0x40
+      createConsStoreX: 0x41
+      createTupleStoreX: 0x42
+      createRecordStoreX: 0x43
 
-      createAbstractionX: 0x45
-      createAbstractionK: 0x46
+      createAbstractionStoreY: 0x44
+      createConsStoreY: 0x45
+      createTupleStoreY: 0x46
+      createRecordStoreY: 0x47
 
-      createTupleK: 0x47
-      createRecordK: 0x48
-      createConsXX: 0x49
+      createAbstractionUnifyX: 0x48
+      createConsUnifyX: 0x49
+      createTupleUnifyX: 0x4A
+      createRecordUnifyX: 0x4B
 
-      inlineEqualsInteger: 0x50
+      createAbstractionUnifyY: 0x4C
+      createConsUnifyY: 0x4D
+      createTupleUnifyY: 0x4E
+      createRecordUnifyY: 0x4F
+
+      createAbstractionUnifyG: 0x50
+      createConsUnifyG: 0x51
+      createTupleUnifyG: 0x52
+      createRecordUnifyG: 0x53
+
+      createAbstractionUnifyK: 0x54
+      createConsUnifyK: 0x55
+      createTupleUnifyK: 0x56
+      createRecordUnifyK: 0x57
+
+      arrayFillX: 0
+      arrayFillY: 1
+      arrayFillG: 2
+      arrayFillK: 3
+      arrayFillNewVarX: 4
+      arrayFillNewVarY: 5
+      arrayFillNewVars: 6
+
+      inlineEqualsInteger: 0x60
    )
 
    fun {GetInstrSize Instr}
@@ -154,17 +179,48 @@ define
       [] unify(L=y(_) R=k(_)) then unifyYK(L R)
       [] unify(L=g(_) R=k(_)) then unifyGK(L R)
 
-      [] arrayInitElement(T I V=x(_)) then arrayInitElementX(T I V)
-      [] arrayInitElement(T I V=y(_)) then arrayInitElementY(T I V)
-      [] arrayInitElement(T I V=g(_)) then arrayInitElementG(T I V)
-      [] arrayInitElement(T I V=k(_)) then arrayInitElementK(T I V)
+      [] createAbstractionStore(B C D=x(_)) then createAbstractionStoreX(B C D)
+      [] createAbstractionStore(B C D=y(_)) then createAbstractionStoreY(B C D)
 
-      [] createAbstraction(B=x(_) C D) then createAbstractionX(B C D)
-      [] createAbstraction(B=k(_) C D) then createAbstractionK(B C D)
+      [] createAbstractionUnify(B C D=x(_)) then createAbstractionUnifyX(B C D)
+      [] createAbstractionUnify(B C D=y(_)) then createAbstractionUnifyY(B C D)
+      [] createAbstractionUnify(B C D=g(_)) then createAbstractionUnifyG(B C D)
+      [] createAbstractionUnify(B C D=k(_)) then createAbstractionUnifyK(B C D)
 
-      [] createTuple(L=k(_) W D) then createTupleK(L W D)
-      [] createRecord(A=k(_) W D) then createRecordK(A W D)
-      [] createCons(H=x(_) T=x(_)) then createConsXX(H T)
+      [] createConsStore(D) then {ResolveOverload createConsStore(0 2 D)}
+      [] createConsUnify(D) then {ResolveOverload createConsUnify(0 2 D)}
+
+      [] createConsStore(B C D=x(_)) then createConsStoreX(B C D)
+      [] createConsStore(B C D=y(_)) then createConsStoreY(B C D)
+
+      [] createConsUnify(B C D=x(_)) then createConsUnifyX(B C D)
+      [] createConsUnify(B C D=y(_)) then createConsUnifyY(B C D)
+      [] createConsUnify(B C D=g(_)) then createConsUnifyG(B C D)
+      [] createConsUnify(B C D=k(_)) then createConsUnifyK(B C D)
+
+      [] createTupleStore(B C D=x(_)) then createTupleStoreX(B C D)
+      [] createTupleStore(B C D=y(_)) then createTupleStoreY(B C D)
+
+      [] createTupleUnify(B C D=x(_)) then createTupleUnifyX(B C D)
+      [] createTupleUnify(B C D=y(_)) then createTupleUnifyY(B C D)
+      [] createTupleUnify(B C D=g(_)) then createTupleUnifyG(B C D)
+      [] createTupleUnify(B C D=k(_)) then createTupleUnifyK(B C D)
+
+      [] createRecordStore(B C D=x(_)) then createRecordStoreX(B C D)
+      [] createRecordStore(B C D=y(_)) then createRecordStoreY(B C D)
+
+      [] createRecordUnify(B C D=x(_)) then createRecordUnifyX(B C D)
+      [] createRecordUnify(B C D=y(_)) then createRecordUnifyY(B C D)
+      [] createRecordUnify(B C D=g(_)) then createRecordUnifyG(B C D)
+      [] createRecordUnify(B C D=k(_)) then createRecordUnifyK(B C D)
+
+      [] arrayFill(S=x(_)) then arrayFillX(S)
+      [] arrayFill(S=y(_)) then arrayFillY(S)
+      [] arrayFill(S=g(_)) then arrayFillG(S)
+      [] arrayFill(S=k(_)) then arrayFillK(S)
+
+      [] arrayFillNewVar(S=x(_)) then arrayFillNewVarX(S)
+      [] arrayFillNewVar(S=y(_)) then arrayFillNewVarY(S)
 
       [] custom(...) then Instr
 

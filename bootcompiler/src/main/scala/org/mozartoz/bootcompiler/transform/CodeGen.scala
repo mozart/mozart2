@@ -37,26 +37,21 @@ object CodeGen extends Transformer with TreeDSL {
         case right:KReg => code += OpUnifyXK(self, right)
       }
     }
-
-    def array(index: ImmInt)(implicit ev: A <:< XReg) = new {
-      def := (value: Register) {
-        value match {
-          case v:XReg => code += OpArrayInitElementX(self, index, v)
-          case v:YReg => code += OpArrayInitElementY(self, index, v)
-          case v:GReg => code += OpArrayInitElementG(self, index, v)
-          case v:KReg => code += OpArrayInitElementK(self, index, v)
-        }
-      }
-    }
-
-    def initArrayWith(values: List[Expression])(implicit ev: A <:< XReg) {
-      for ((value:VarOrConst, index) <- values.zipWithIndex)
-        array(index) := value
-    }
   }
 
   private implicit def symbol2ops2(self: Symbol) = new {
     def toReg = symbol2reg(self)
+  }
+
+  def initArrayWith(values: List[Expression]) {
+    for (value <- values) {
+      varorconst2reg(value.asInstanceOf[VarOrConst]) match {
+        case v:XReg => code += SubOpArrayFillX(v)
+        case v:YReg => code += SubOpArrayFillY(v)
+        case v:GReg => code += SubOpArrayFillG(v)
+        case v:KReg => code += SubOpArrayFillK(v)
+      }
+    }
   }
 
   override def applyToAbstraction() {
@@ -105,11 +100,11 @@ object CodeGen extends Transformer with TreeDSL {
       case Variable(lhs) === (rhs @ Record(_, fields)) if rhs.isCons =>
         val List(RecordField(_, head:VarOrConst),
             RecordField(_, tail:VarOrConst)) = fields
+        val dest = XReg(0)
 
-        XReg(0) := code.registerFor(head)
-        XReg(1) := code.registerFor(tail)
-        code += OpCreateConsXX(XReg(0), XReg(1), XReg(2))
-        XReg(2) === lhs
+        code += OpCreateConsStoreX(dest)
+        initArrayWith(List(head, tail))
+        dest === lhs
 
       case Variable(lhs) === (rhs @ Record(Constant(label), fields))
       if rhs.isTuple =>
@@ -117,41 +112,29 @@ object CodeGen extends Transformer with TreeDSL {
         val fieldCount = fields.size
         val dest = XReg(0)
 
-        code += OpCreateTupleK(labelReg, fieldCount, dest)
-
-        dest.initArrayWith(fields map (_.value))
+        code += OpCreateTupleStoreX(labelReg, fieldCount, dest)
+        initArrayWith(fields map (_.value))
         dest === lhs
 
       case Variable(lhs) === (rhs @ Record(_, fields))
       if rhs.hasConstantArity =>
+        val arityReg = code.registerFor(rhs.getConstantArity)
         val fieldCount = fields.size
         val dest = XReg(0)
 
-        val arityReg = code.registerFor(rhs.getConstantArity)
-
-        code += OpCreateRecordK(arityReg, fieldCount, dest)
-
-        dest.initArrayWith(fields map (_.value))
+        code += OpCreateRecordStoreX(arityReg, fieldCount, dest)
+        initArrayWith(fields map (_.value))
         dest === lhs
 
       case Variable(lhs) === (rhs @ CreateAbstraction(
-          body:VarOrConst, globals)) =>
+          Constant(body), globals)) =>
 
+        val bodyReg = code.registerFor(body)
         val globalCount = globals.size
         val dest = XReg(0)
 
-        code.registerFor(body) match {
-          case reg:XReg =>
-            code += OpCreateAbstractionX(reg, globalCount, dest)
-          case reg:KReg =>
-            code += OpCreateAbstractionK(reg, globalCount, dest)
-
-          case reg =>
-            XReg(1) := reg
-            code += OpCreateAbstractionX(XReg(1), globalCount, dest)
-        }
-
-        dest.initArrayWith(globals)
+        code += OpCreateAbstractionStoreX(bodyReg, globalCount, dest)
+        initArrayWith(globals)
         dest === lhs
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>

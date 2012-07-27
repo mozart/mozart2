@@ -113,36 +113,34 @@ case class OpUnifyXY(lhs: XReg, rhs: YReg) extends OpCode
 case class OpUnifyXG(lhs: XReg, rhs: GReg) extends OpCode
 case class OpUnifyXK(lhs: XReg, rhs: KReg) extends OpCode
 
-/** Initialize the element `index` of the array stored with the `target`
- *  with the `value`. */
-case class OpArrayInitElementX(target: XReg,
-    index: ImmInt, value: XReg) extends OpCode
-case class OpArrayInitElementY(target: XReg,
-    index: ImmInt, value: YReg) extends OpCode
-case class OpArrayInitElementG(target: XReg,
-    index: ImmInt, value: GReg) extends OpCode
-case class OpArrayInitElementK(target: XReg,
-    index: ImmInt, value: KReg) extends OpCode
-
 /** Create an abstraction with the given `body` (code area) and
- *  `globalCount` (number of G registers) and store it in `dest` */
-case class OpCreateAbstractionX(body: XReg,
-    globalCount: ImmInt, dest: XReg) extends OpCode
-case class OpCreateAbstractionK(body: KReg,
+ *  `globalCount` (number of G registers) and store it in `dest`
+ *  G registers must be initialized with `SubOpArrayFill_` afterwards. */
+case class OpCreateAbstractionStoreX(body: KReg,
     globalCount: ImmInt, dest: XReg) extends OpCode
 
-/** Create a tuple of given `label' and `width'
- *  Elements must be initialized with `OpArrayInitElement_' afterwards. */
-case class OpCreateTupleK(label: KReg, width: ImmInt,
+/** Create a cons and store it in `dest`
+ *  Elements must be initialized with `SubOpArrayFill_' afterwards. */
+case class OpCreateConsStoreX(dest: XReg) extends OpCode {
+  override def argumentCount = 3
+  override def arguments = List(ImmInt(0), ImmInt(2), dest)
+}
+
+/** Create a tuple of given `label' and `width' and store it in `dest`
+ *  Elements must be initialized with `SubOpArrayFill_' afterwards. */
+case class OpCreateTupleStoreX(label: KReg, width: ImmInt,
     dest: XReg) extends OpCode
 
-/** Create a record of given `arity' and `width'
- *  Elements must be initialized with `OpArrayInitElement_' afterwards. */
-case class OpCreateRecordK(arity: KReg, width: ImmInt,
+/** Create a record of given `arity' and `width' and  store it in `dest`
+ *  Elements must be initialized with `SubOpArrayFill_' afterwards. */
+case class OpCreateRecordStoreX(arity: KReg, width: ImmInt,
     dest: XReg) extends OpCode
 
-/** Create a cons with given `head' and `tail' */
-case class OpCreateConsXX(head: XReg, tail: XReg, dest: XReg) extends OpCode
+/** Fill a newly created array */
+case class SubOpArrayFillX(value: XReg) extends OpCode
+case class SubOpArrayFillY(value: YReg) extends OpCode
+case class SubOpArrayFillG(value: GReg) extends OpCode
+case class SubOpArrayFillK(value: KReg) extends OpCode
 
 // Special
 

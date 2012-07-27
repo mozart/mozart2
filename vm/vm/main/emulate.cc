@@ -623,81 +623,357 @@ void Thread::run() {
 
       // Creation of data structures
 
-      case OpArrayInitElementX: {
-        CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), XPC(3)));
+      case OpCreateAbstractionStoreX:
+      case OpCreateConsStoreX:
+      case OpCreateTupleStoreX:
+      case OpCreateRecordStoreX:
 
-        advancePC(3);
-        break;
-      }
+      case OpCreateAbstractionStoreY:
+      case OpCreateConsStoreY:
+      case OpCreateTupleStoreY:
+      case OpCreateRecordStoreY:
 
-      case OpArrayInitElementY: {
-        CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), YPC(3)));
+      case OpCreateAbstractionUnifyX:
+      case OpCreateConsUnifyX:
+      case OpCreateTupleUnifyX:
+      case OpCreateRecordUnifyX:
 
-        advancePC(3);
-        break;
-      }
+      case OpCreateAbstractionUnifyY:
+      case OpCreateConsUnifyY:
+      case OpCreateTupleUnifyY:
+      case OpCreateRecordUnifyY:
 
-      case OpArrayInitElementG: {
-        CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), GPC(3)));
+      case OpCreateAbstractionUnifyG:
+      case OpCreateConsUnifyG:
+      case OpCreateTupleUnifyG:
+      case OpCreateRecordUnifyG:
 
-        advancePC(3);
-        break;
-      }
+      {
+        auto what = op & OpCreateStructWhatMask;
+        auto where = op & OpCreateStructWhereMask;
 
-      case OpArrayInitElementK: {
-        CHECK_OPRESULT_BREAK(
-          ArrayInitializer(XPC(1)).initElement(vm, IntPC(2), KPC(3)));
+        bool isStoreMode;
+        UnstableNode* writeDest;
+        RichNode readDest;
 
-        advancePC(3);
-        break;
-      }
+        switch (where) {
+          case OpCreateStructStoreX: {
+            isStoreMode = true;
+            writeDest = &XPC(3);
+            break;
+          }
 
-      case OpArrayInitElementsVars: {
-        ArrayInitializer initializer = XPC(1);
-        size_t startIndex = IntPC(2);
-        size_t endIndex = startIndex + IntPC(3);
+          case OpCreateStructStoreY: {
+            isStoreMode = true;
+            writeDest = &YPC(3);
+            break;
+          }
 
-        for (; startIndex < endIndex; startIndex++) {
-          UnstableNode var = OptVar::build(vm);
-          CHECK_OPRESULT_BREAK(initializer.initElement(vm, startIndex, var));
-        }
-      }
+          case OpCreateStructUnifyX: {
+            isStoreMode = false;
+            readDest = XPC(3);
+            break;
+          }
 
-      case OpCreateAbstractionX: {
-        XPC(3) = Abstraction::build(vm, IntPC(2), XPC(1));
+          case OpCreateStructUnifyY: {
+            isStoreMode = false;
+            readDest = YPC(3);
+            break;
+          }
 
-        advancePC(3);
-        break;
-      }
+          case OpCreateStructUnifyG: {
+            isStoreMode = false;
+            readDest = GPC(3);
+            break;
+          }
 
-      case OpCreateAbstractionK: {
-        XPC(3) = Abstraction::build(vm, IntPC(2), KPC(1));
+          case OpCreateStructUnifyK: {
+            isStoreMode = false;
+            readDest = KPC(3);
+            break;
+          }
 
-        advancePC(3);
-        break;
-      }
+          default: {
+            assert(false);
+            return;
+          }
+        } // switch (where)
 
-      case OpCreateTupleK: {
-        XPC(3) = Tuple::build(vm, IntPC(2), KPC(1));
+        StaticArray<StableNode> array;
+        size_t length = IntPC(2);
 
-        advancePC(3);
-        break;
-      }
+        if (isStoreMode || readDest.isTransient()) {
+          /* In all these cases, we need to create the structure */
+          UnstableNode createdStruct;
 
-      case OpCreateRecordK: {
-        XPC(3) = Record::build(vm, IntPC(2), KPC(1));
+          switch (what) {
+            case OpCreateStructAbstraction: {
+              createdStruct = Abstraction::build(vm, length, KPC(1));
+              array = RichNode(createdStruct).as<Abstraction>().getElementsArray();
+              break;
+            }
 
-        advancePC(3);
-        break;
-      }
+            case OpCreateStructCons: {
+              assert(length == 2);
+              createdStruct = Cons::build(vm);
+              array = RichNode(createdStruct).as<Cons>().getElementsArray();
+              break;
+            }
 
-      case OpCreateConsXX: {
-        XPC(3) = Cons::build(vm, XPC(1), XPC(2));
+            case OpCreateStructTuple: {
+              createdStruct = Tuple::build(vm, length, KPC(1));
+              array = RichNode(createdStruct).as<Tuple>().getElementsArray();
+              break;
+            }
 
-        advancePC(3);
+            case OpCreateStructRecord: {
+              createdStruct = Record::build(vm, length, KPC(1));
+              array = RichNode(createdStruct).as<Record>().getElementsArray();
+              break;
+            }
+
+            default: {
+              assert(false);
+              return;
+            }
+          }
+
+          /* In some situations, we can short-circuit unification and switch
+           * to store mode. */
+          if (isStoreMode) {
+            *writeDest = std::move(createdStruct);
+          } else if (readDest.is<OptVar>()) {
+            // Make sure to give an r-value ref, to avoid stabilizing the node
+            MOZART_ASSERT_PROCEED(
+              readDest.as<OptVar>().bind(vm, std::move(createdStruct)));
+            isStoreMode = true;
+          } else if (readDest.is<Variable>()) {
+            MOZART_ASSERT_PROCEED(
+              readDest.as<Variable>().bind(vm, createdStruct));
+            isStoreMode = true;
+          } else {
+            /* In other cases, the bind() method might look at the contents
+             * of the created structure (e.g., think of kinded variables).
+             * Hence we have to make a true binding with an array that
+             * contains meaningful values (i.e., OptVar's). And we cannot
+             * switch to store mode.
+             */
+            for (size_t i = 0; i < length; i++)
+              array[i].init(vm, OptVar::build(vm));
+
+            CHECK_OPRESULT_BREAK(
+              DataflowVariable(readDest).bind(vm, createdStruct));
+          }
+        } else { // isStoreMode || readDest.isTransient()
+          /* Here, we are in unify mode and the destination is not
+           * transient. We check if that destination has the right type and
+           * shallow structure, and if it has, we fetch its internal array and
+           * continue in unify mode.
+           * If it fails to meet these requirements, it is a failure.
+           *
+           * Note that this part of the code has some overlapping with the
+           * structural equality tests of Cons, Tuple and Record.
+           */
+
+          OpResult shallowStructResult = OpResult::proceed();
+
+          switch (what) {
+            case OpCreateStructAbstraction: {
+              // Abstractions have token equality, so it's always a failure
+              shallowStructResult = OpResult::fail();
+              break;
+            }
+
+            case OpCreateStructCons: {
+              if (readDest.is<Cons>()) {
+                array = readDest.as<Cons>().getElementsArray();
+              } else {
+                shallowStructResult = OpResult::fail();
+              }
+              break;
+            }
+
+            case OpCreateStructTuple: {
+              if (readDest.is<Tuple>() &&
+                  (readDest.as<Tuple>().getWidth() == length)) {
+                bool sameLabel = false;
+                shallowStructResult = equals(
+                  vm, *readDest.as<Tuple>().getLabel(), KPC(1), sameLabel);
+
+                if (shallowStructResult.isProceed()) {
+                  if (sameLabel) {
+                    array = readDest.as<Tuple>().getElementsArray();
+                  } else {
+                    shallowStructResult = OpResult::fail();
+                  }
+                }
+              } else {
+                shallowStructResult = OpResult::fail();
+              }
+              break;
+            }
+
+            case OpCreateStructRecord: {
+              // Don't test the width. It's not needed and usually it succeeds.
+              if (readDest.is<Record>()) {
+                bool sameArity = false;
+                shallowStructResult = equals(
+                  vm, *readDest.as<Record>().getArity(), KPC(1), sameArity);
+
+                if (shallowStructResult.isProceed()) {
+                  if (sameArity) {
+                    array = readDest.as<Record>().getElementsArray();
+                  } else {
+                    shallowStructResult = OpResult::fail();
+                  }
+                }
+              } else {
+                shallowStructResult = OpResult::fail();
+              }
+              break;
+            }
+
+            default: {
+              assert(false);
+              return;
+            }
+          }
+
+          CHECK_OPRESULT_BREAK(shallowStructResult);
+        } // isStoreMode || readDest.isTransient()
+
+        /* Now, `length`, `array` and `isStoreMode` are set appropriately,
+         * and we are sure that the shallow structures are OK.
+         * We can proceed to filling the array. In store mode, the code is
+         * much optimized, of course, and cannot fail.
+         * In all cases, all but the three mentioned variables are still
+         * needed.
+         */
+
+        if (isStoreMode) {
+          /* In this mode, nothing can go wrong. We can use PC directly. */
+          advancePC(3);
+
+          for (size_t index = 0; index < length; index++) {
+            auto subOpCode = *PC;
+
+            switch (subOpCode) {
+              case SubOpArrayFillX: {
+                array[index].init(vm, XPC(1));
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillY: {
+                array[index].init(vm, YPC(1));
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillG: {
+                array[index].init(vm, GPC(1));
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillK: {
+                array[index].init(vm, KPC(1));
+                advancePC(1);
+                break;
+              }
+
+              case SubOpArrayFillNewVarX: {
+                array[index].init(vm, OptVar::build(vm));
+                XPC(1) = Reference::build(vm, &array[index]);
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillNewVarY: {
+                array[index].init(vm, OptVar::build(vm));
+                YPC(1) = Reference::build(vm, &array[index]);
+                advancePC(1);
+                break;
+              }
+
+              case SubOpArrayFillNewVars: {
+                for (size_t count = IntPC(1); count > 0; count--)
+                  array[index++].init(vm, OptVar::build(vm));
+                index--;
+                advancePC(1);
+                break;
+              }
+
+              default: {
+                assert(false);
+                return;
+              }
+            }
+          }
+        } else { // isStoreMode
+          /* Here, things get tricky, because inner initialization can
+           * suspend, fail or raise exceptions.
+           * If we wait, we need to restore PC to the value it had at the
+           * beginning, because everything must be replayed when we are
+           * waken up.
+           */
+
+          auto savedPC = PC;
+          advancePC(3);
+          OpResult result = OpResult::proceed();
+
+          for (size_t index = 0; result.isProceed() && (index < length); index++) {
+            auto subOpCode = *PC;
+
+            switch (subOpCode) {
+              case SubOpArrayFillX: {
+                result = unify(vm, array[index], XPC(1));
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillY: {
+                result = unify(vm, array[index], YPC(1));
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillG: {
+                result = unify(vm, array[index], GPC(1));
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillK: {
+                result = unify(vm, array[index], KPC(1));
+                advancePC(1);
+                break;
+              }
+
+              case SubOpArrayFillNewVarX: {
+                XPC(1).copy(vm, array[index]);
+                advancePC(1);
+                break;
+              }
+              case SubOpArrayFillNewVarY: {
+                YPC(1).copy(vm, array[index]);
+                advancePC(1);
+                break;
+              }
+
+              case SubOpArrayFillNewVars: {
+                index += (IntPC(1) - 1);
+                advancePC(1);
+                break;
+              }
+
+              default: {
+                assert(false);
+                return;
+              }
+            }
+          }
+
+          if (!result.isProceed()) {
+            PC = savedPC;
+            applyOpResult(vm, result, preempted, abstraction, PC,
+                          yregCount, xregs, yregs, gregs, kregs);
+          }
+        } // isStoreMode
+
         break;
       }
 
@@ -718,8 +994,8 @@ void Thread::run() {
       }
 
 #include "emulate-inline.cc"
-    }
-  }
+    } // Big switch testing the opcode
+  } // Big loop iterating over opcodes
 
 #undef IntPC
 #undef XPC

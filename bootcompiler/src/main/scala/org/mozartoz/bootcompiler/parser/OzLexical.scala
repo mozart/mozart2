@@ -79,7 +79,7 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
     quoteChar ~> stringOf(inQuoteChar(quoteChar)) <~ quoteChar
 
   def inQuoteChar(quoteChar: Char) =
-    chrExcept('\\', '\n', quoteChar, EofCh) | pseudoChar
+    chrExcept('\\', quoteChar, EofCh) | pseudoChar
 
   def pseudoChar = '\\' ~> (
       octalDigit ~ octalDigit ~ octalDigit ^^ {

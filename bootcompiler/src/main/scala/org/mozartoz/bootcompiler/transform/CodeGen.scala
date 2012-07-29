@@ -221,7 +221,7 @@ object CodeGen extends Transformer with TreeDSL {
         val totalSize = jumpOffsets(clauseCount)
         val patternsInfo = OzSharp(patterns.toList)
 
-        matchHole fillWith OpPatternMatch(
+        matchHole fillWith OpPatternMatchX(
             XReg(0), code.registerFor(patternsInfo))
 
         for (index <- 0 until clauseCount) {

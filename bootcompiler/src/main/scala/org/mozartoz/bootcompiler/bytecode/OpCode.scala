@@ -105,7 +105,7 @@ case class OpCondBranch(test: XReg, falseDistance: ImmInt,
     trueDistance: ImmInt, errorDistance: ImmInt) extends OpCode
 
 /** Pattern matching */
-case class OpPatternMatch(value: XReg, patterns: KReg) extends OpCode
+case class OpPatternMatchX(value: XReg, patterns: KReg) extends OpCode
 
 /** Unify `lhs` with `rhs`, i.e., `lhs = rhs` */
 case class OpUnifyXX(lhs: XReg, rhs: XReg) extends OpCode

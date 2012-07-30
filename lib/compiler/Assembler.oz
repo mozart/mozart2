@@ -854,6 +854,12 @@ define
          [] createVariableMove(R1 R2) | Rest then
             createVarMove(R1 R2) | {Loop Rest}
 
+         % exHandler and popEx are renamed
+         [] exHandler(Lbl) | Rest then
+            setupExceptionHandler(Lbl) | {Loop Rest}
+         [] popEx | Rest then
+            popExceptionHandler | {Loop Rest}
+
          % putConstant(Value Reg) become moveKX / moveKY
          [] putConstant(Value R) | Rest then
             move(k(Value) R) | {Loop Rest}

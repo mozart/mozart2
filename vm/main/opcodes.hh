@@ -70,22 +70,41 @@ const OpCode OpCallBuiltin5 = 0x25;
 const OpCode OpCallBuiltinN = 0x26;
 
 const OpCode OpCallX = 0x27;
-const OpCode OpCallG = 0x28;
-const OpCode OpTailCallX = 0x29;
-const OpCode OpTailCallG = 0x2A;
-const OpCode OpReturn = 0x2B;
-const OpCode OpBranch = 0x2C;
-const OpCode OpCondBranch = 0x2D;
-const OpCode OpPatternMatch = 0x2E;
+const OpCode OpCallY = 0x28;
+const OpCode OpCallG = 0x29;
+const OpCode OpCallK = 0x2A;
+const OpCode OpTailCallX = 0x2B;
+const OpCode OpTailCallY = 0x2C;
+const OpCode OpTailCallG = 0x2D;
+const OpCode OpTailCallK = 0x2E;
 
-const OpCode OpUnifyXX = 0x30;
-const OpCode OpUnifyXY = 0x31;
-const OpCode OpUnifyXK = 0x32;
-const OpCode OpUnifyXG = 0x33;
-const OpCode OpUnifyYK = 0x34;
-const OpCode OpUnifyGK = 0x35;
+const OpCode OpSendMsgX = 0x30;
+const OpCode OpSendMsgY = 0x31;
+const OpCode OpSendMsgG = 0x32;
+const OpCode OpSendMsgK = 0x33;
+const OpCode OpTailSendMsgX = 0x34;
+const OpCode OpTailSendMsgY = 0x35;
+const OpCode OpTailSendMsgG = 0x36;
+const OpCode OpTailSendMsgK = 0x37;
 
-const OpCode OpCreateStructBase = 0x40;
+const OpCode OpReturn = 0x40;
+const OpCode OpBranch = 0x41;
+const OpCode OpCondBranch = 0x42;
+
+const OpCode OpPatternMatchX = 0x43;
+const OpCode OpPatternMatchY = 0x44;
+const OpCode OpPatternMatchG = 0x45;
+
+const OpCode OpUnifyXX = 0x46;
+const OpCode OpUnifyXY = 0x47;
+const OpCode OpUnifyXK = 0x48;
+const OpCode OpUnifyXG = 0x49;
+const OpCode OpUnifyYK = 0x4A;
+const OpCode OpUnifyGK = 0x4B;
+
+const OpCode OpCreateStructBase = 0x60;
+static_assert((OpCreateStructBase & 0x1F) == 0,
+              "OpCreateStructBase must be aligned on 0x20");
 
 const OpCode OpCreateStructWhatMask = 0x03;
 const OpCode OpCreateStructAbstraction = 0;
@@ -164,13 +183,13 @@ const OpCode SubOpArrayFillNewVarY = 5;
 const OpCode SubOpArrayFillNewVars = 6;
 
 // Inlines for some builtins
-const OpCode OpInlineEqualsInteger = 0x60;
-const OpCode OpInlineAdd = 0x61;
-const OpCode OpInlineSubtract = 0x62;
-const OpCode OpInlinePlus1 = 0x63;
-const OpCode OpInlineMinus1 = 0x64;
+const OpCode OpInlineEqualsInteger = 0x80;
+const OpCode OpInlineAdd = 0x81;
+const OpCode OpInlineSubtract = 0x82;
+const OpCode OpInlinePlus1 = 0x83;
+const OpCode OpInlineMinus1 = 0x84;
 
-const OpCode OpInlineGetClass = 0x70;
+const OpCode OpInlineGetClass = 0x90;
 
 }
 

@@ -99,8 +99,12 @@ const OpCode OpUnifyXX = 0x46;
 const OpCode OpUnifyXY = 0x47;
 const OpCode OpUnifyXK = 0x48;
 const OpCode OpUnifyXG = 0x49;
-const OpCode OpUnifyYK = 0x4A;
-const OpCode OpUnifyGK = 0x4B;
+const OpCode OpUnifyYY = 0x4A;
+const OpCode OpUnifyYG = 0x4B;
+const OpCode OpUnifyYK = 0x4C;
+const OpCode OpUnifyGG = 0x4D;
+const OpCode OpUnifyGK = 0x4E;
+const OpCode OpUnifyKK = 0x4F;
 
 const OpCode OpCreateStructBase = 0x60;
 static_assert((OpCreateStructBase & 0x1F) == 0,

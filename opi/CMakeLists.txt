@@ -8,6 +8,11 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2"
 set(MOZART_BUILD_DIR "${MOZART_DIR}/build"
     CACHE PATH "Path to Mozart2 build directory")
 
+set(MOZART_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2-library"
+    CACHE PATH "Path to Mozart2 library directory")
+set(MOZART_COMPILER_DIR "${MOZART_LIB_DIR}/../mozart2-compiler"
+    CACHE PATH "Path to Mozart2 compiler directory")
+
 set(BOOTCOMPILER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2-bootcompiler"
     CACHE PATH "Path to Mozart2 boot compiler directory")
 
@@ -51,8 +56,8 @@ set(BOOTCOMPILER_JAR "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-
 set(BOOTCOMPILER_DEFINES -D NO_GUMP)
 
 set(BASE_FUNCTORS
-    "${MOZART_DIR}/lib/base/Base.oz"
-    "${MOZART_DIR}/lib/boot/BootBase.oz")
+    "${MOZART_LIB_DIR}/base/Base.oz"
+    "${MOZART_LIB_DIR}/boot/BootBase.oz")
 
 add_custom_command(
   OUTPUT "Base.cc"
@@ -65,15 +70,17 @@ add_custom_command(
     ${BOOTCOMPILER_DEFINES}
     ${BASE_FUNCTORS}
   DEPENDS ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
-  COMMENT Compiling the base environment
+  COMMENT "base environment"
   VERBATIM)
 
 file(GLOB SYS_FUNCTORS
-    "${MOZART_DIR}/lib/sys/*.oz"
-    "${MOZART_DIR}/lib/sp/*.oz"
-    "${MOZART_DIR}/lib/support/*.oz"
-    "${MOZART_DIR}/lib/op/*.oz"
-    "${MOZART_DIR}/lib/cp/*.oz"
+    "${MOZART_LIB_DIR}/sys/*.oz"
+    "${MOZART_LIB_DIR}/support/*.oz"
+    "${MOZART_LIB_DIR}/sp/Error.oz"
+    "${MOZART_LIB_DIR}/sp/ErrorFormatters.oz"
+    "${MOZART_LIB_DIR}/op/Open.oz"
+    "${MOZART_LIB_DIR}/cp/Combinator.oz"
+    "${MOZART_LIB_DIR}/cp/RecordC.oz"
     "${MOZART_DIR}/boostenv/lib/*.oz")
 
 set(COMPILER_FUNCTORS
@@ -84,7 +91,7 @@ set(COMPILER_FUNCTORS
     "NewAssembler.oz" "Parser.oz" "PEG.oz")
 
 foreach(FUNCTOR ${COMPILER_FUNCTORS})
-  set(SYS_FUNCTORS ${SYS_FUNCTORS} "${MOZART_DIR}/../compiler-mozart/${FUNCTOR}")
+  set(SYS_FUNCTORS ${SYS_FUNCTORS} "${MOZART_COMPILER_DIR}/${FUNCTOR}")
 endforeach()
 
 set(ALL_FUNCTORS

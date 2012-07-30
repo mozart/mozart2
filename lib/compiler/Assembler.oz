@@ -750,7 +750,7 @@ define
       end
 
       meth load(Globals ?P)
-         P = {CompilerSupport.newAbstraction 0 self.codeArea Globals}
+         P = {CompilerSupport.newAbstraction self.codeArea Globals}
       end
 
       meth output(?VS)
@@ -760,7 +760,29 @@ define
 
    % Magical conversion function that turns old code into new code
 
+   fun {ComputeXCountInOldCode Code MaxXCount}
+      case Code
+      of Head|Tail then
+         NewMaxXCount = {Record.foldL Head
+                         fun {$ Prev Arg}
+                            case Arg of x(I) then {Max Prev I+1}
+                            else Prev
+                            end
+                         end MaxXCount}
+      in
+         {ComputeXCountInOldCode Tail NewMaxXCount}
+      [] nil then
+         MaxXCount
+      end
+   end
+
+   fun {ExtractArityAndIsTail ArityAndIsTail}
+      (ArityAndIsTail div 2) # (ArityAndIsTail mod 2 \= 0)
+   end
+
    fun {OldCodeToNewCode Code AssembleInner}
+      UserXCount = {ByNeedFuture fun {$} {ComputeXCountInOldCode Code 0} end}
+
       fun {MakeInitGRegs SourceRegs Rest}
          case SourceRegs
          of SrcReg|SrcRegTail then
@@ -771,25 +793,45 @@ define
          end
       end
 
-      fun {SetInstrsToInitArray ArrayReg Index Width Code}
-         if Index == Width then
+      fun {TransformMatchItem Item}
+         case Item
+         of onScalar(Value Lbl) then
+            Value#Lbl
+         [] onRecord(Label WidthOrArity Lbl) then
+            Arity = if {IsInt WidthOrArity} then
+                       {List.number 1 WidthOrArity 1}
+                    else
+                       WidthOrArity
+                    end
+            ArityAndCaptures = {List.mapInd Arity
+                                fun {$ Index Feature}
+                                   Feature #
+                                   {CompilerSupport.newPatMatCapture
+                                    UserXCount + Index - 1}
+                                end}
+         in
+            {List.toRecord Label ArityAndCaptures} # Lbl
+         end
+      end
+
+      fun {TransformMatch R ht(ElseLbl HashList) Rest}
+         NewHashList = {Map HashList TransformMatchItem}
+         NewHashTable = {List.toTuple '#' NewHashList}
+      in
+         patternMatch(R k(NewHashTable)) | branch(ElseLbl) | {Loop Rest}
+      end
+
+      fun {TransformPatMatGets Code NextXIndex}
+         case Code
+         of getVariable(R) | Rest then
+            move(x(NextXIndex) R) | {TransformPatMatGets Rest NextXIndex+1}
+         [] getVarVar(R1 R2) | Rest then
+            move(x(NextXIndex) R1) | move(x(NextXIndex+1) R2) |
+               {TransformPatMatGets Rest NextXIndex+2}
+         [] getVoid(N) | Rest then
+            {TransformPatMatGets Rest NextXIndex+N}
+         else
             {Loop Code}
-         elsecase Code
-         of setConstant(Value) | Rest then
-            arrayInitElement(ArrayReg Index k(Value)) |
-               {SetInstrsToInitArray ArrayReg Index+1 Width Rest}
-
-         [] setValue(R) | Rest then
-            arrayInitElement(ArrayReg Index R) |
-               {SetInstrsToInitArray ArrayReg Index+1 Width Rest}
-
-         [] setVariable(R) | Rest then
-            createVar(R) | arrayInitElement(ArrayReg Index R) |
-               {SetInstrsToInitArray ArrayReg Index+1 Width Rest}
-
-         [] setVoid(N) | Rest then
-            arrayInitElementsVars(ArrayReg Index N) |
-               {SetInstrsToInitArray ArrayReg Index+N Width Rest}
          end
       end
 
@@ -893,13 +935,60 @@ define
          [] callBI(Builtin InArgs#OutArgs) | Rest then
             callBuiltin(k(Builtin) {Append InArgs OutArgs}) | {Loop Rest}
 
+         % callConstant becomes callK
+         [] callConstant(P ArityAndIsTail) | Rest then
+            Arity # IsTail = {ExtractArityAndIsTail ArityAndIsTail}
+         in
+            if IsTail then
+               tailCall(k(P) Arity)
+            else
+               call(k(P) Arity)
+            end | {Loop Rest}
+
+         % callGlobal becomes call
+         [] callGlobal(R=g(_) ArityAndIsTail) | Rest then
+            Arity # IsTail = {ExtractArityAndIsTail ArityAndIsTail}
+         in
+            if IsTail then
+               tailCall(R Arity)
+            else
+               call(R Arity)
+            end | {Loop Rest}
+
+         % sendMsg and tailSendMsg change format
+         [] sendMsg(Label ObjR ArityOrWidth _) | Rest then
+            if {IsInt ArityOrWidth} then
+               sendMsg(ObjR k(Label) ArityOrWidth)
+            else
+               sendMsg(ObjR
+                       k({CompilerSupport.makeArity Label ArityOrWidth})
+                       {Length ArityOrWidth})
+            end | {Loop Rest}
+         [] tailSendMsg(Label ObjR ArityOrWidth _) | Rest then
+            if {IsInt ArityOrWidth} then
+               tailSendMsg(ObjR k(Label) ArityOrWidth)
+            else
+               tailSendMsg(ObjR
+                           k({CompilerSupport.makeArity Label ArityOrWidth})
+                           {Length ArityOrWidth})
+            end | {Loop Rest}
+
          % testBool(R L1 L2) becomes condBranch(R L1 L3 L2) | lbl(L3)
          [] testBool(R L1 L2) | Rest then
             L3 = {NewName}
          in
             condBranch(R L1 L3 L2) | lbl(L3) | {Loop Rest}
 
-         % the monster: definition + endDefinition become createAbstraction
+         % match and other testX become a deep pattern matching
+         [] match(R HashTable) | Rest then
+            {TransformMatch R HashTable Rest}
+
+         % Following pattern matching statements, getVariable fetches a capture
+         [] getVariable(_) | _ then {TransformPatMatGets Code UserXCount}
+         [] getVarVar(_ _) | _ then {TransformPatMatGets Code UserXCount}
+         [] getVoid(_)     | _ then {TransformPatMatGets Code UserXCount}
+
+         % definition + endDefinition become createAbstraction
          [] definition(Dest Lab pid(Name Arity Pos Flags NLiveRegs)
                        unit GRegRef InnerCode) |
                endDefinition(EndLab) | Rest then

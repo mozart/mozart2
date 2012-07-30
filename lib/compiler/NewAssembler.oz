@@ -69,50 +69,67 @@ define
       callBuiltinN: 0x26
 
       callX: 0x27
-      callG: 0x28
-      tailCallX: 0x29
-      tailCallG: 0x2A
-      return: 0x2B
-      branch: 0x2C
-      condBranch: 0x2D
-      patternMatch: 0x2E
+      callY: 0x28
+      callG: 0x29
+      callK: 0x2A
+      tailCallX: 0x2B
+      tailCallY: 0x2C
+      tailCallG: 0x2D
+      tailCallK: 0x2E
 
-      unifyXX: 0x30
-      unifyXY: 0x31
-      unifyXK: 0x32
-      unifyXG: 0x33
-      unifyYK: 0x34
-      unifyGK: 0x35
+      sendMsgX: 0x30
+      sendMsgY: 0x31
+      sendMsgG: 0x32
+      sendMsgK: 0x33
+      tailSendMsgX: 0x34
+      tailSendMsgY: 0x35
+      tailSendMsgG: 0x36
+      tailSendMsgK: 0x37
 
-      createAbstractionStoreX: 0x40
-      createConsStoreX: 0x41
-      createTupleStoreX: 0x42
-      createRecordStoreX: 0x43
+      return: 0x40
+      branch: 0x41
+      condBranch: 0x42
 
-      createAbstractionStoreY: 0x44
-      createConsStoreY: 0x45
-      createTupleStoreY: 0x46
-      createRecordStoreY: 0x47
+      patternMatchX: 0x43
+      patternMatchY: 0x44
+      patternMatchG: 0x45
 
-      createAbstractionUnifyX: 0x48
-      createConsUnifyX: 0x49
-      createTupleUnifyX: 0x4A
-      createRecordUnifyX: 0x4B
+      unifyXX: 0x46
+      unifyXY: 0x47
+      unifyXK: 0x48
+      unifyXG: 0x49
+      unifyYK: 0x4A
+      unifyGK: 0x4B
 
-      createAbstractionUnifyY: 0x4C
-      createConsUnifyY: 0x4D
-      createTupleUnifyY: 0x4E
-      createRecordUnifyY: 0x4F
+      createAbstractionStoreX: 0x60
+      createConsStoreX: 0x61
+      createTupleStoreX: 0x62
+      createRecordStoreX: 0x63
 
-      createAbstractionUnifyG: 0x50
-      createConsUnifyG: 0x51
-      createTupleUnifyG: 0x52
-      createRecordUnifyG: 0x53
+      createAbstractionStoreY: 0x64
+      createConsStoreY: 0x65
+      createTupleStoreY: 0x66
+      createRecordStoreY: 0x67
 
-      createAbstractionUnifyK: 0x54
-      createConsUnifyK: 0x55
-      createTupleUnifyK: 0x56
-      createRecordUnifyK: 0x57
+      createAbstractionUnifyX: 0x68
+      createConsUnifyX: 0x69
+      createTupleUnifyX: 0x6A
+      createRecordUnifyX: 0x6B
+
+      createAbstractionUnifyY: 0x6C
+      createConsUnifyY: 0x6D
+      createTupleUnifyY: 0x6E
+      createRecordUnifyY: 0x6F
+
+      createAbstractionUnifyG: 0x70
+      createConsUnifyG: 0x71
+      createTupleUnifyG: 0x72
+      createRecordUnifyG: 0x73
+
+      createAbstractionUnifyK: 0x74
+      createConsUnifyK: 0x75
+      createTupleUnifyK: 0x76
+      createRecordUnifyK: 0x77
 
       arrayFillX: 0
       arrayFillY: 1
@@ -122,7 +139,7 @@ define
       arrayFillNewVarY: 5
       arrayFillNewVars: 6
 
-      inlineEqualsInteger: 0x60
+      inlineEqualsInteger: 0x80
    )
 
    fun {GetInstrSize Instr}
@@ -168,9 +185,28 @@ define
          {List.toTuple callBuiltinN T|N|Args}
 
       [] call(T=x(_) A) then callX(T A)
+      [] call(T=y(_) A) then callY(T A)
       [] call(T=g(_) A) then callG(T A)
+      [] call(T=k(_) A) then callK(T A)
+
       [] tailCall(T=x(_) A) then tailCallX(T A)
+      [] tailCall(T=y(_) A) then tailCallY(T A)
       [] tailCall(T=g(_) A) then tailCallG(T A)
+      [] tailCall(T=k(_) A) then tailCallK(T A)
+
+      [] sendMsg(O=x(_) LoA W) then sendMsgX(O LoA W)
+      [] sendMsg(O=y(_) LoA W) then sendMsgY(O LoA W)
+      [] sendMsg(O=g(_) LoA W) then sendMsgG(O LoA W)
+      [] sendMsg(O=k(_) LoA W) then sendMsgK(O LoA W)
+
+      [] tailSendMsg(O=x(_) LoA W) then tailSendMsgX(O LoA W)
+      [] tailSendMsg(O=y(_) LoA W) then tailSendMsgY(O LoA W)
+      [] tailSendMsg(O=g(_) LoA W) then tailSendMsgG(O LoA W)
+      [] tailSendMsg(O=k(_) LoA W) then tailSendMsgK(O LoA W)
+
+      [] patternMatch(R=x(_) T) then patternMatchX(R T)
+      [] patternMatch(R=y(_) T) then patternMatchY(R T)
+      [] patternMatch(R=g(_) T) then patternMatchG(R T)
 
       [] unify(L=x(_) R=x(_)) then unifyXX(L R)
       [] unify(L=x(_) R=y(_)) then unifyXY(L R)
@@ -297,7 +333,7 @@ define
                {self AppendElem(Idx)}
             [] k(Value) then
                {self AppendElem({self GetKRegFor(Value $)})}
-            [] Immediate then
+            [] Immediate andthen {IsInt Immediate} then
                {self AppendElem(Immediate)}
             end
 
@@ -434,13 +470,12 @@ define
             {self declareLabel(L2)}
             {self declareLabel(L3)}
 
-         [] patternMatch(_ k(Patterns)) then
-            {Record.forAll Patterns
-             proc {$ Pattern}
-                Pat#L = Pattern
-             in
-                {self declareLabel(L)}
-             end}
+         [] patternMatchX(_ Patterns) then
+            {self DeclareLabelsInPatterns(Patterns)}
+         [] patternMatchY(_ Patterns) then
+            {self DeclareLabelsInPatterns(Patterns)}
+         [] patternMatchG(_ Patterns) then
+            {self DeclareLabelsInPatterns(Patterns)}
 
          [] inlineEqualsInteger(_ _ L) then
             {self declareLabel(L)}
@@ -448,6 +483,17 @@ define
          else
             skip
          end
+      end
+
+      meth DeclareLabelsInPatterns(KReg)
+         k(Patterns) = KReg
+      in
+         {Record.forAll Patterns
+          proc {$ Pattern}
+             Pat#L = Pattern
+          in
+             {self declareLabel(L)}
+          end}
       end
 
       meth TranslateInstrLabels(InstrAndEndAddr $)
@@ -471,16 +517,12 @@ define
          in
             condBranch(X A1 A2 A3)
 
-         [] patternMatch(X k(Patterns)) then
-            NewPatterns = {Record.map Patterns
-                           fun {$ Pattern}
-                              Pat#L = Pattern
-                              A = {self TranslateLabel(L EndAddr $)}
-                           in
-                              Pat#A
-                           end}
-         in
-            patternMatch(X k(NewPatterns))
+         [] patternMatchX(X Patterns) then
+            patternMatchX(X {self TranslatePatterns(Patterns EndAddr $)})
+         [] patternMatchY(X Patterns) then
+            patternMatchY(X {self TranslatePatterns(Patterns EndAddr $)})
+         [] patternMatchG(X Patterns) then
+            patternMatchG(X {self TranslatePatterns(Patterns EndAddr $)})
 
          [] inlineEqualsInteger(X V L) then
             A = {self TranslateLabel(L EndAddr $)}
@@ -494,6 +536,18 @@ define
 
       meth TranslateLabel(L EndAddr $)
          {Dictionary.get @LabelDict L} - EndAddr
+      end
+
+      meth TranslatePatterns(KReg EndAddr $)
+         k(Patterns) = KReg
+      in
+         k({Record.map Patterns
+            fun {$ Pattern}
+               Pat#L = Pattern
+               A = {self TranslateLabel(L EndAddr $)}
+            in
+               Pat#A
+            end})
       end
    end
 
@@ -620,6 +674,22 @@ define
 
       [] call(T Arity) | return | Rest then
          {Assembler append(tailCall(T Arity))}
+         {EliminateDeadCode Rest Assembler}
+
+      [] sendMsg(Obj LabelOrArity Width) | deallocateY | return | Rest then
+         NewObj
+      in
+         case Obj of y(_) then
+            {Assembler append(move(Obj NewObj=x(Width)))}
+         else
+            NewObj = Obj
+         end
+         {Assembler append(deallocateY)}
+         {Assembler append(tailSendMsg(NewObj LabelOrArity Width))}
+         {EliminateDeadCode Rest Assembler}
+
+      [] sendMsg(Obj LabelOrArity Width) | return | Rest then
+         {Assembler append(tailSendMsg(Obj LabelOrArity Width))}
          {EliminateDeadCode Rest Assembler}
 
       [] I1|Rest then

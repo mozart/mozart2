@@ -1,26 +1,26 @@
-%%%
-%%% Authors:
-%%%   Denys Duchier <duchier@ps.uni-sb.de>
-%%%   Christian Schulte <schulte@ps.uni-sb.de>
-%%%
-%%% Copyright:
-%%%   Denys Duchier, 1998
-%%%   Christian Schulte, 1997, 1998
-%%%
-%%% Last change:
-%%%   $Date$ by $Author$
-%%%   $Revision$
-%%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
-%%%    http://www.mozart-oz.org
-%%%
-%%% See the file "LICENSE" or
-%%%    http://www.mozart-oz.org/LICENSE.html
-%%% for information on usage and redistribution
-%%% of this file, and for a DISCLAIMER OF ALL
-%%% WARRANTIES.
-%%%
+%% Copyright © 2012, Université catholique de Louvain
+%% All rights reserved.
+%%
+%% Redistribution and use in source and binary forms, with or without
+%% modification, are permitted provided that the following conditions are met:
+%%
+%% *  Redistributions of source code must retain the above copyright notice,
+%%    this list of conditions and the following disclaimer.
+%% *  Redistributions in binary form must reproduce the above copyright notice,
+%%    this list of conditions and the following disclaimer in the documentation
+%%    and/or other materials provided with the distribution.
+%%
+%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%% POSSIBILITY OF SUCH DAMAGE.
 
 
 functor
@@ -28,39 +28,26 @@ functor
 require
    Boot_Value           at 'x-oz://boot/Value'
    Boot_Literal         at 'x-oz://boot/Literal'
-   Boot_Unit            at 'x-oz://boot/Unit'
-   Boot_Lock            at 'x-oz://boot/Lock'
    Boot_Cell            at 'x-oz://boot/Cell'
-   Boot_Port            at 'x-oz://boot/Port'
    Boot_Atom            at 'x-oz://boot/Atom'
    Boot_Name            at 'x-oz://boot/Name'
-   Boot_Bool            at 'x-oz://boot/Bool'
    Boot_String          at 'x-oz://boot/String'
-   Boot_Char            at 'x-oz://boot/Char'
    Boot_Int             at 'x-oz://boot/Int'
    Boot_Float           at 'x-oz://boot/Float'
    Boot_Number          at 'x-oz://boot/Number'
    Boot_Tuple           at 'x-oz://boot/Tuple'
-   Boot_List            at 'x-oz://boot/List'
    Boot_Procedure       at 'x-oz://boot/Procedure'
-   Boot_WeakDictionary  at 'x-oz://boot/WeakDictionary'
    Boot_Dictionary      at 'x-oz://boot/Dictionary'
    Boot_Record          at 'x-oz://boot/Record'
    Boot_Chunk           at 'x-oz://boot/Chunk'
    Boot_VirtualString   at 'x-oz://boot/VirtualString'
    Boot_Array           at 'x-oz://boot/Array'
    Boot_Object          at 'x-oz://boot/Object'
-   Boot_Class           at 'x-oz://boot/Class'
-   Boot_BitArray        at 'x-oz://boot/BitArray'
-   Boot_ForeignPointer  at 'x-oz://boot/ForeignPointer'
    Boot_Thread          at 'x-oz://boot/Thread'
    Boot_Exception       at 'x-oz://boot/Exception'
    Boot_Time            at 'x-oz://boot/Time'
-   Boot_BitString       at 'x-oz://boot/BitString'
    Boot_ByteString      at 'x-oz://boot/ByteString'
-\ifdef SITE_PROPERTY
-   Boot_SiteProperty    at 'x-oz://boot/SiteProperty'
-\endif
+   Boot_System          at 'x-oz://boot/System'
 
 prepare
 
@@ -68,7 +55,7 @@ prepare
    %% Value
    %%
    Wait         = Boot_Value.wait
-   WaitOr       = Boot_Value.waitOr
+   WaitOr       = proc {$ X Y} {Boot_Record.waitOr X#Y _} end
    WaitQuiet    = Boot_Value.waitQuiet
    WaitNeeded   = Boot_Value.waitNeeded
    MakeNeeded   = Boot_Value.makeNeeded
@@ -78,195 +65,201 @@ prepare
    IsFailed     = Boot_Value.isFailed
    IsDet        = Boot_Value.isDet
    IsNeeded     = Boot_Value.isNeeded
-   Max          = Boot_Value.max
-   Min          = Boot_Value.min
+   Max          = fun {$ A B} if A < B then B else A end end
+   Min          = fun {$ A B} if A < B then A else B end end
    CondSelect   = Boot_Value.condSelect
    HasFeature   = Boot_Value.hasFeature
    FailedValue  = Boot_Value.failedValue
-   NewReadOnly  = Boot_Value.newReadOnly
-   BindReadOnly = Boot_Value.bindReadOnly
    ByNeed       = proc {$ P X} thread {WaitNeeded X} {P X} end end
-   ByNeedFuture = proc {$ P X}
-                     R={NewReadOnly}
-                  in
-                     thread
-                        {WaitNeeded R}
-                        try Y in
-                           {MakeNeeded Y}
-                           {P Y}
-                           {WaitQuiet Y} {BindReadOnly R Y}
-                        catch E then
-                           {BindReadOnly R {FailedValue E}}
-                        end
+   ByNeedFuture = fun {$ P}
+                     !!{ByNeed fun {$}
+                                  try {P}
+                                  catch E then {FailedValue E}
+                                  end
+                               end}
+                  end
+   ByNeedDot    = fun {$ X F}
+                     if {IsDet X} andthen {IsDet F}
+                     then try X.F catch E then {FailedValue E} end
+                     else {ByNeedFuture fun {$} X.F end}
                      end
-                     X=R
                   end
 
    %%
    %% Literal
    %%
-   IsLiteral    = Boot_Literal.is
+   IsLiteral = Boot_Literal.is
 
    %%
    %% Unit
    %%
-   IsUnit       = Boot_Unit.is
-   `unit`       = {Boot_Name.newUnique 'unit'}
+   IsUnit = fun {$ X} X == unit end
 
    %%
    %% Lock
    %%
-   IsLock       = Boot_Lock.is
-   NewLock      = Boot_Lock.new
+   IsLock  % Defined in Lock.oz
+   NewLock % Defined in Lock.oz
+   LockIn  % Defined in Lock.oz
 
    %%
    %% Cell
    %%
-   IsCell       = Boot_Cell.is
-   NewCell      = Boot_Cell.new
-   Exchange     = proc {$ C Old New} Old = {Boot_Cell.exchangeFun C New} end
-   Assign       = Boot_Cell.assign
-   Access       = Boot_Cell.access
+   IsCell   = Boot_Cell.is
+   NewCell  = Boot_Cell.new
+   Exchange = proc {$ C Old New} Old = {Boot_Cell.exchangeFun C New} end
+   Assign   = Boot_Cell.assign
+   Access   = Boot_Cell.access
 
    %%
    %% Port
    %%
-   IsPort       = Boot_Port.is
-   NewPort      = proc {$ Str Prt}   % fixes bug #1521
-                     S in {Boot_Port.new S Prt} Str=S
-                  end
-   Send         = Boot_Port.send
-   SendRecv     = Boot_Port.sendRecv
+   IsPort   % Defined in Port.oz
+   NewPort  % Defined in Port.oz
+   Send     % Defined in Port.oz
+   SendRecv % Defined in Port.oz
 
    %%
    %% Atom
    %%
-   IsAtom       = Boot_Atom.is
-   AtomToString = Boot_Atom.toString
+   IsAtom              = Boot_Atom.is
+   AtomToUnicodeString % Defined in Atom.oz
+   AtomToString        % Defined in Atom.oz
 
    %%
    %% Name
    %%
-   IsName       = Boot_Name.is
-   NewName      = Boot_Name.new
-   NewUniqueName= Boot_Name.newUnique % not exported
+   IsName        = Boot_Name.is
+   NewName       = Boot_Name.new
+   NewUniqueName = Boot_Name.newUnique % not exported
 
    %%
    %% Bool
    %%
-   IsBool       = Boot_Bool.is
-   Not          = Boot_Bool.'not'
-   And          = Boot_Bool.'and'
-   Or           = Boot_Bool.'or'
-   `true`       = {NewUniqueName 'true'}
-   `false`      = {NewUniqueName 'false'}
+   IsBool = fun {$ X} X == true orelse X == false end
+   Not    = fun {$ X} if X then false else true end end
+   And    = fun {$ X Y} X andthen Y end
+   Or     = fun {$ X Y} X orelse Y end
+
+   %%
+   %% UnicodeString
+   %%
+   IsUnicodeString      = Boot_String.is
+   UnicodeStringToAtom  = Boot_String.toAtom
+   UnicodeStringToInt   = fun {$ S} {StringToInt {UnicodeString.toString S}} end
+   UnicodeStringToFloat = Boot_VirtualString.toFloat
 
    %%
    %% String
    %%
-   IsString     = Boot_String.is
-   StringToAtom = Boot_String.toAtom
-   StringToInt  = Boot_String.toInt
-   StringToFloat= Boot_String.toFloat
+   IsString      % Defined in String.oz
+   StringToAtom  % Defined in String.oz
+   StringToInt   % Defined in String.oz
+   StringToFloat % Defined in String.oz
 
    %%
    %% Char
    %%
-   IsChar       = Boot_Char.is
+   IsChar = fun {$ X} {IsInt X} andthen X >= 0 andthen X < 256 end
 
    %%
    %% Int
    %%
-   IsInt        = Boot_Int.is
-   IntToFloat   = Boot_Int.toFloat
-   IntToString  = Boot_Int.toString
+   IsInt              = Boot_Int.is
+   %IntToFloat         = Boot_Int.toFloat
+   IntToUnicodeString % Defined in Int.oz
+   IntToString        % Defined in Int.oz
 
    %%
    %% Float
    %%
-   IsFloat      = Boot_Float.is
-   Exp          = Boot_Float.exp
-   Log          = Boot_Float.log
-   Sqrt         = Boot_Float.sqrt
-   Ceil         = Boot_Float.ceil
-   Floor        = Boot_Float.floor
-   Sin          = Boot_Float.sin
-   Cos          = Boot_Float.cos
-   Tan          = Boot_Float.tan
-   Asin         = Boot_Float.asin
-   Acos         = Boot_Float.acos
-   Atan         = Boot_Float.atan
-   Atan2        = Boot_Float.atan2
-   Round        = Boot_Float.round
-   FloatToInt   = Boot_Float.toInt
-   FloatToString= Boot_Float.toString
+   IsFloat              = Boot_Float.is
+   /*Exp                  = Boot_Float.exp
+   Log                  = Boot_Float.log
+   Sqrt                 = Boot_Float.sqrt
+   Ceil                 = Boot_Float.ceil
+   Floor                = Boot_Float.floor
+   Sin                  = Boot_Float.sin
+   Cos                  = Boot_Float.cos
+   Tan                  = Boot_Float.tan
+   Asin                 = Boot_Float.asin
+   Acos                 = Boot_Float.acos
+   Atan                 = Boot_Float.atan
+   Atan2                = Boot_Float.atan2
+   Round                = Boot_Float.round
+   FloatToInt           = Boot_Float.toInt*/
+   FloatToUnicodeString % Defined in Float.oz
+   FloatToString        % Defined in Float.oz
 
    %%
    %% Number
    %%
-   IsNumber     = Boot_Number.is
-   Abs          = Boot_Number.abs
+   IsNumber = Boot_Number.is
+   Abs      = fun {$ X}
+                 if X < if {IsInt X} then 0 else 0.0 end then ~X else X end
+              end
 
    %%
    %% Tuple
    %%
-   IsTuple      = Boot_Tuple.is
-   MakeTuple    = Boot_Tuple.make
+   IsTuple   = Boot_Tuple.is
+   MakeTuple = Boot_Tuple.make
 
    %%
    %% Procedure
    %%
-   IsProcedure          = Boot_Procedure.is
-   ProcedureArity       = Boot_Procedure.arity
+   IsProcedure    = Boot_Procedure.is
+   ProcedureArity = Boot_Procedure.arity
 
    %%
    %% Weak Dictionary
    %%
-   IsWeakDictionary     = Boot_WeakDictionary.is
-   NewWeakDictionary    = Boot_WeakDictionary.new
+   %IsWeakDictionary  = Boot_WeakDictionary.is
+   %NewWeakDictionary = Boot_WeakDictionary.new
 
    %%
    %% Dictionary
    %%
-   IsDictionary = Boot_Dictionary.is
-   NewDictionary= Boot_Dictionary.new
+   IsDictionary  = Boot_Dictionary.is
+   NewDictionary = Boot_Dictionary.new
 
    %%
    %% Record
    %%
-   Arity        = Boot_Record.arity
-   IsRecord     = Boot_Record.is
-   Label        = Boot_Record.label
-   Width        = Boot_Record.width
-   Adjoin       = Boot_Record.adjoin
-   AdjoinList   = Boot_Record.adjoinList
-   AdjoinAt     = Boot_Record.adjoinAt
+   IsRecord   = Boot_Record.is
+   Arity      = Boot_Record.arity
+   Label      = Boot_Record.label
+   Width      = Boot_Record.width
+   Adjoin     % Defined in Record.oz
+   AdjoinAt   % Defined in Record.oz
+   AdjoinList % Defined in Record.oz
 
    %%
    %% Chunk
    %%
-   IsChunk      = Boot_Chunk.is
-   NewChunk     = Boot_Chunk.new
+   IsChunk  = Boot_Chunk.is
+   NewChunk = Boot_Chunk.new
 
    %%
    %% VirtualString
    %%
-   IsVirtualString      = Boot_VirtualString.is
+   IsVirtualString = Boot_VirtualString.is
 
    %%
    %% Array
    %%
-   NewArray     = Boot_Array.new
-   IsArray      = Boot_Array.is
-   Put          = Boot_Array.put
-   Get          = Boot_Array.get
+   NewArray = Boot_Array.new
+   IsArray  = Boot_Array.is
+   Put      = Boot_Array.put
+   Get      = Boot_Array.get
 
    %%
    %% Object, Class, and OoExtensions
    %%
    IsObject      = Boot_Object.is
-   New           = Boot_Object.new
-   IsClass       = Boot_Class.is
+   New           % defined in Object.oz
+   IsClass       % defined in Object.oz
+   BaseObject    % defined in Object.oz
    %% Methods
    `ooMeth`      = {NewUniqueName 'ooMeth'}
    `ooFastMeth`  = {NewUniqueName 'ooFastMeth'}
@@ -284,36 +277,39 @@ prepare
    %% Other
    `ooPrintName` = {NewUniqueName 'ooPrintName'}
    `ooFallback`  = {NewUniqueName 'ooFallback'}
+   %% Object lock
+   `ooObjLock`   = {NewUniqueName 'ooObjLock'}
 
    %%
    %% BitArray
    %%
-   IsBitArray   = Boot_BitArray.is
+   IsBitArray % Defined in BitArray.oz
 
    %%
    %% ForeignPointer
    %%
-   IsForeignPointer     = Boot_ForeignPointer.is
+   IsForeignPointer = fun {$ X} false end
 
    %%
    %% Thread
    %%
-   IsThread     = Boot_Thread.is
+   IsThread = Boot_Thread.is
 
    %%
    %% Exception
    %%
-   Raise        = Boot_Exception.'raise'
+   Raise = Boot_Exception.'raise'
 
    %%
    %% Time
    %%
-   Alarm        = Boot_Time.alarm
+   Alarm = Boot_Time.alarm
+   Delay = proc {$ T} {Wait {Alarm T}} end
 
    %%
    %% BitString ByteString
    %%
-   IsBitString  = Boot_BitString.is
+   IsBitString  % Defined in BitString.oz
    IsByteString = Boot_ByteString.is
 
    \insert 'Exception.oz'
@@ -326,6 +322,7 @@ prepare
    \insert 'Atom.oz'
    \insert 'Name.oz'
    \insert 'Bool.oz'
+   \insert 'UnicodeString.oz'
    \insert 'String.oz'
    \insert 'Char.oz'
    \insert 'Int.oz'
@@ -335,7 +332,7 @@ prepare
    \insert 'List.oz'
    \insert 'Procedure.oz'
    \insert 'Loop.oz'
-   \insert 'WeakDictionary.oz'
+   %\insert 'WeakDictionary.oz'
    \insert 'Dictionary.oz'
    \insert 'Record.oz'
    \insert 'Chunk.oz'
@@ -349,9 +346,6 @@ prepare
    \insert 'Functor.oz'
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
-\ifdef SITE_PROPERTY
-   \insert 'SiteProperty'
-\endif
 
 export
    %% Value
@@ -407,6 +401,12 @@ export
    'And'                : And
    'Or'                 : Or
    'Not'                : Not
+   %% UnicodeString
+   'UnicodeString'      : UnicodeString
+   'IsUnicodeString'    : IsUnicodeString
+   'UnicodeStringToAtom': UnicodeStringToAtom
+   'UnicodeStringToInt' : UnicodeStringToInt
+   'UnicodeStringToFloat': UnicodeStringToFloat
    %% String
    'String'             : String
    'IsString'           : IsString
@@ -422,12 +422,13 @@ export
    'IsNat'              : IsNat
    'IsOdd'              : IsOdd
    'IsEven'             : IsEven
-   'IntToFloat'         : IntToFloat
+   %'IntToFloat'         : IntToFloat
+   'IntToUnicodeString' : IntToUnicodeString
    'IntToString'        : IntToString
    %% Float
    'Float'              : Float
    'IsFloat'            : IsFloat
-   'Exp'                : Exp
+   /*'Exp'                : Exp
    'Log'                : Log
    'Sqrt'               : Sqrt
    'Ceil'               : Ceil
@@ -439,13 +440,14 @@ export
    'Acos'               : Acos
    'Atan'               : Atan
    'Atan2'              : Atan2
-   'Round'              : Round
-   'FloatToInt'         : FloatToInt
+   'Round'              : Round*/
+   %'FloatToInt'         : FloatToInt
+   'FloatToUnicodeString': FloatToUnicodeString
    'FloatToString'      : FloatToString
    %% Number
    'Number'             : Number
    'IsNumber'           : IsNumber
-   'Pow'                : Pow
+   %'Pow'                : Pow
    'Abs'                : Abs
    %% Tuple
    'Tuple'              : Tuple
@@ -500,9 +502,9 @@ export
    'VirtualString'      : VirtualString
    'IsVirtualString'    : IsVirtualString
    %% WeakDictionary
-   'WeakDictionary'     : WeakDictionary
+   /*'WeakDictionary'     : WeakDictionary
    'IsWeakDictionary'   : IsWeakDictionary
-   'NewWeakDictionary'  : NewWeakDictionary
+   'NewWeakDictionary'  : NewWeakDictionary*/
    %% Dictionary
    'Dictionary'         : Dictionary
    'IsDictionary'       : IsDictionary
@@ -546,11 +548,10 @@ export
    'IsByteString'       : IsByteString
 
    %% Will be removed by the compiler
+   'ByNeedDot'          : ByNeedDot
+   'LockIn'             : LockIn
    'OoExtensions'       : OoExtensions
-
-\ifdef SITE_PROPERTY
-   %% SiteProperty
-   'SiteProperty'       : SiteProperty
-\endif
+   '`ooFreeFlag`'       : `ooFreeFlag`
+   '`ooFallback`'       : `ooFallback`
 
 end

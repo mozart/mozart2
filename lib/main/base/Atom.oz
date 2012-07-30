@@ -26,5 +26,19 @@
 %%
 %% Module
 %%
-Atom = atom(is:       IsAtom
-            toString: AtomToString)
+
+fun {AtomToUnicodeString A}
+   if {IsAtom A} then
+      {VirtualString.toUnicodeString A}
+   else
+      raise typeError('Atom' A) end
+   end
+end
+
+fun {AtomToString A}
+   {UnicodeString.toString {AtomToUnicodeString A}}
+end
+
+Atom = atom(is:              IsAtom
+            toUnicodeString: AtomToUnicodeString
+            toString:        AtomToString)

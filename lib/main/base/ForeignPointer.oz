@@ -25,4 +25,4 @@
 %% Module
 %%
 ForeignPointer = foreignPointer(is:    IsForeignPointer
-                                toInt: Boot_ForeignPointer.toInt)
+                                /*toInt: Boot_ForeignPointer.toInt*/)

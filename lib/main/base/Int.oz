@@ -27,18 +27,33 @@
 %% Global
 %%
 
-fun {IsNat X}  0=<X         end
-fun {IsOdd X} X mod 2 \= 0 end
+fun {IsNat X}  0 =< X       end
+fun {IsOdd X}  X mod 2 \= 0 end
 fun {IsEven X} X mod 2 == 0 end
 
 %%
 %% Module
 %%
-Int = int(is:       IsInt
-          isNat:    IsNat
-          isOdd:    IsOdd
-          isEven:   IsEven
-          'div':    Boot_Int.'div'
-          'mod':    Boot_Int.'mod'
-          toFloat:  IntToFloat
-          toString: IntToString)
+fun {IntToUnicodeString I}
+   if {IsInt I} then
+      {VirtualString.toUnicodeString I}
+   else
+      raise typeError('Integer' I) end
+   end
+end
+
+fun {IntToString I}
+   {UnicodeString.toString {IntToUnicodeString I}}
+end
+
+Int = int(is:              IsInt
+          isNat:           IsNat
+          isOdd:           IsOdd
+          isEven:          IsEven
+          'div':           Boot_Int.'div'
+          'mod':           Boot_Int.'mod'
+          '+1':            Boot_Int.'+1'
+          '-1':            Boot_Int.'-1'
+          %toFloat:         IntToFloat
+          toUnicodeString: IntToUnicodeString
+          toString:        IntToString)

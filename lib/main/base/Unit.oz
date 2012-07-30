@@ -25,4 +25,4 @@
 %% Module
 %%
 Unit = 'unit'(is:     IsUnit
-              'unit': `unit`)
+              'unit': unit)

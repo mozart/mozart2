@@ -146,11 +146,13 @@ prepare
 
 
 import
+\ifdef HAS_CSS
    FDB(is: IsFDIntC)
    at 'x-oz://boot/FDB'
    FSB('value.is': IsFSet
        'var.is':   IsFSetC)
    at 'x-oz://boot/FSB'
+\endif
    Space(is: IsSpace)
    RecordC(is: IsRecordC)
    System(printName)
@@ -160,6 +162,12 @@ export
    ask:     Ask
 
 define
+
+\ifndef HAS_CSS
+   fun {IsFDIntC X} false end
+   fun {IsFSet X} false end
+   fun {IsFSetC X} false end
+\endif
 
    fun {IsRecordCOrChunk X}
       {IsRecordC X} orelse {IsChunk X}

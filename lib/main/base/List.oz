@@ -430,6 +430,25 @@ local
       end
    end
 
+   local
+      proc {EnterArgs Ts N T}
+         case Ts of nil then skip
+         [] (F#V)|Tr then
+            T.N = F
+            T.(N+1) = V
+            {EnterArgs Tr N+2 T}
+         end
+      end
+   in
+      fun {ToRecord L Ts}
+         Len = {Length Ts}
+         T = {MakeTuple '#' 2*Len}
+      in
+         {EnterArgs Ts 1 T}
+         {Boot_Record.makeDynamic L T}
+      end
+   end
+
    fun {IsPrefix Xs Ys}
       case Xs of nil then true
       [] X|Xr then
@@ -468,7 +487,7 @@ in
                takeDrop:      TakeDrop
 
                toTuple:       ToTuple
-               toRecord:      Boot_List.toRecord
+               toRecord:      ToRecord
 
                map:           Map
                foldL:         FoldL

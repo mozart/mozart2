@@ -30,5 +30,5 @@ Bool = bool(is:      IsBool
             and:     And
             'or':    Or
             'not':   Not
-            'true':  `true`
-            'false': `false`)
+            'true':  true
+            'false': false)

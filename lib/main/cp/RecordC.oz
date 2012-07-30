@@ -23,6 +23,7 @@
 functor
 
 import
+   /*
    BootRecordC(is:           Is
                width:        Width
                tell:         Tell
@@ -31,6 +32,7 @@ import
                hasLabel:     HasLabel
                monitorArity: MonArity)
    at 'x-oz://boot/RecordC'
+   */
    Space(is)
 
 export
@@ -43,6 +45,7 @@ define
 
    {Wait Space.is}
 
+/*
    proc {MonitorArity R P S}
       U
    in
@@ -52,6 +55,42 @@ define
 
    proc {ReflectArity R S}
       {MonArity R unit S}
+   end
+*/
+
+   % Temporary implementation that works for Records
+
+   fun {Is X}
+      {IsRecord X}
+   end
+
+   fun {Width R}
+      {Record.width R}
+   end
+
+   proc {Tell L ?R}
+      {Exception.raiseError kernel(notImplemented 'RecordC.tell')}
+   end
+
+   proc {TellSize L ?R}
+      {Exception.raiseError kernel(notImplemented 'RecordC.tellSize')}
+   end
+
+   fun {HasLabel R L}
+      {Label R} == L
+   end
+
+   proc {MonitorArity R ?P ?S}
+      S = {ReflectArity R}
+      proc {P} skip end
+   end
+
+   fun {ReflectArity R}
+      {Record.arity R}
+   end
+
+   fun {`^` R F}
+      R.F
    end
 
 end

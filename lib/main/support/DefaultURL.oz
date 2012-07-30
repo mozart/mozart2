@@ -32,10 +32,10 @@ prepare
    PickleExt   = '.ozp'
    FunctorExt  = '.ozf'
    OzScheme    = 'x-oz'
-   OzVersion   = '@OZVERSION@'
+   % OzVersion = {Property.get 'oz.version'}
 
-   HomeUrl    = {UrlMake 'x-oz://system'}%{UrlMake '@HOMEURL@/share/'}
-   ContribUrl = {UrlMake 'x-oz://contrib'}%{UrlMake '@HOMEURL@/contrib/'}
+   HomeUrl    = {UrlMake 'x-oz://system'}
+   ContribUrl = {UrlMake 'x-oz://contrib'}
    SystemUrl  = {UrlMake OzScheme#'://system/'}
    BootUrl    = {UrlMake OzScheme#'://system/'}
 
@@ -44,14 +44,14 @@ prepare
          {Map Xs fun {$ X}
                     case X of A#_ then A else X end
                  end}}
-      for X in Xs do
+      {ForAll Xs proc {$ X}
          case X of A#SubNamespace then
             R.A={UrlResolve {UrlMake OzScheme#'://system/'#SubNamespace#'/'}
                  {UrlMake A#FunctorExt}}
          else
             R.X={UrlResolve SystemUrl {UrlMake X#FunctorExt}}
          end
-      end
+      end}
    end
 
    local
@@ -140,7 +140,7 @@ export
    BootUrl
 
    OzScheme
-   OzVersion
+   % OzVersion
 
    PickleExt
    FunctorExt

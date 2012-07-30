@@ -22,9 +22,13 @@
 %%% WARRANTIES.
 %%%
 
-proc {Delay T} {Wait {Alarm T}} end
 
 local
+
+   fun {GetTime}
+      % FIXME Only seconds in the *current year*
+      {Boot_Time.getReferenceTime} div 1000
+   end
 
    %%%
    %%% default initialization
@@ -193,7 +197,7 @@ local
 
 in
 
-   Time = time(time:   Boot_Time.time
+   Time = time(time:   GetTime
                delay:  Delay
                alarm:  Alarm
                repeat: Repeat)

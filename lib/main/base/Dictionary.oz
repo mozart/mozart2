@@ -42,6 +42,8 @@ Dictionary = dictionary(new:              NewDictionary
                         removeAll:        Boot_Dictionary.removeAll
                         clone:            Boot_Dictionary.clone
                         member:           Boot_Dictionary.member
-                        toRecord:         Boot_Dictionary.toRecord
-                        weak:             WeakDictionary
+                        toRecord:         fun {$ L D}
+                                             {List.toRecord L {Boot_Dictionary.entries D}}
+                                          end
+                        %weak:             WeakDictionary
                        )

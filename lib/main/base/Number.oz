@@ -27,6 +27,7 @@
 %% Global
 %%
 
+/*
 local
    FloatPow = Boot_Float.fPow
    fun {IntPow X N A}
@@ -43,6 +44,7 @@ in
       end
    end
 end
+*/
 
 
 %%
@@ -52,6 +54,6 @@ Number = number(is:  IsNumber
                 '+': Boot_Number.'+'
                 '-': Boot_Number.'-'
                 '*': Boot_Number.'*'
-                '~': Boot_Number.'~'
-                pow: Pow
-                abs: Abs)
+                '~': Boot_Number.'~')
+                %pow: Pow
+                %abs: Abs)

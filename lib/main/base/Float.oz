@@ -26,27 +26,40 @@
 %%
 %% Module
 %%
-Float = float(is:       IsFloat
-              '/':      Boot_Float.'/'
-              'mod':    Boot_Float.fMod
-              exp:      Exp
-              log:      Log
-              sqrt:     Sqrt
-              ceil:     Ceil
-              floor:    Floor
-              round:    Round
-              sin:      Sin
-              cos:      Cos
-              tan:      Tan
-              asin:     Asin
-              acos:     Acos
-              atan:     Atan
-              atan2:    Atan2
-              sinh:     Boot_Float.sinh
-              cosh:     Boot_Float.cosh
-              tanh:     Boot_Float.tanh
-              asinh:    Boot_Float.asinh
-              acosh:    Boot_Float.acosh
-              atanh:    Boot_Float.atanh
-              toInt:    FloatToInt
-              toString: FloatToString)
+fun {FloatToUnicodeString F}
+   if {IsFloat F} then
+      {VirtualString.toUnicodeString F}
+   else
+      raise typeError('Float' F) end
+   end
+end
+
+fun {FloatToString F}
+   {UnicodeString.toString {FloatToUnicodeString F}}
+end
+
+Float = float(is:              IsFloat
+              '/':             Boot_Float.'/'
+              /*'mod':           Boot_Float.fMod
+              exp:             Exp
+              log:             Log
+              sqrt:            Sqrt
+              ceil:            Ceil
+              floor:           Floor
+              round:           Round
+              sin:             Sin
+              cos:             Cos
+              tan:             Tan
+              asin:            Asin
+              acos:            Acos
+              atan:            Atan
+              atan2:           Atan2
+              sinh:            Boot_Float.sinh
+              cosh:            Boot_Float.cosh
+              tanh:            Boot_Float.tanh
+              asinh:           Boot_Float.asinh
+              acosh:           Boot_Float.acosh
+              atanh:           Boot_Float.atanh
+              toInt:           FloatToInt*/
+              toUnicodeString: FloatToUnicodeString
+              toString:        FloatToString)

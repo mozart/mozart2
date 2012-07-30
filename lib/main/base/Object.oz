@@ -21,35 +21,46 @@
 %%%
 
 
-BaseObject
-
 local
+
+   GetClass = Boot_Object.getClass
+
+   %%
+   %% Class manipulation
+   %%
+   ClassID            = {NewUniqueName classID}
+   `ooClassIsSited`   = {NewUniqueName 'ooClassIsSited'}
+   `ooClassIsLocking` = {NewUniqueName 'ooClassIsLocking'}
+
+   fun {!IsClass X}
+      {IsChunk X} andthen {HasFeature X ClassID}
+   end
+
+   fun {BuildClass Info IsLocking IsSited}
+      {Chunk.new {Adjoin Info
+                  'class'(ClassID:unit
+                          `ooClassIsLocking`:IsLocking
+                          `ooClassIsSited`:IsSited)}}
+   end
 
    %%
    %% Fallback routines that are supplied with classes
    %%
    local
-      proc {FbApply C Mess}
+      proc {FbApply Mess Obj C}
          Meth = C.`ooMeth`
          L    = {Label Mess}
       in
          case {Dictionary.condGet Meth L false} of false then
             case {Dictionary.condGet Meth otherwise false} of false then
                {Exception.raiseError object(lookup C Mess)}
-            elseof M then {M otherwise(Mess)}
+            [] M then {M Obj otherwise(Mess)}
             end
-         elseof M then {M Mess}
+         [] M then {M Obj Mess}
          end
       end
 
-      local
-         NewObject = Boot_Object.newObject
-      in
-         fun {FbNew C Message}
-            O={NewObject C} in {O Message} O
-         end
-      end
-
+      FbNew = New
    in
       Fallback = fallback(new:   FbNew
                           apply: FbApply)
@@ -61,15 +72,21 @@ local
    fun {ClassIsFinal C}
       {Not {HasFeature C `ooMethSrc`}}
    end
-   ClassIsSited   = Boot_Class.isSited
-   ClassIsLocking = Boot_Class.isLocking
+
+   fun {ClassIsSited C}
+      C.`ooClassIsSited`
+   end
+
+   fun {ClassIsLocking C}
+      C.`ooClassIsLocking`
+   end
 
    local
       %%
       %% Builtins needed for class creation
       %%
-      MarkSafe   = Boot_Dictionary.markSafe
-      BuildClass = Boot_Class.new
+      %MarkSafe   = Boot_Dictionary.markSafe
+      MarkSafe = proc {$ D} skip end
 
       %%
       %% Inheritance does very little, it just determines the classes
@@ -289,7 +306,7 @@ local
       %%
       %% The real class creation
       %%
-      proc {NewFullClass Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
+      proc {NewFullClass Parents NewMeth NewAttr NewFeat0 NewProp PrintName ?C}
          {CheckParents Parents PrintName}
          %% To be computed for methods
          Meth FastMeth Defaults MethSrc
@@ -303,6 +320,12 @@ local
          IsSited   = ({Member sited NewProp}  orelse
                       {Some Parents ClassIsSited})
          IsFinal   = {Member final NewProp}
+         NewFeat = if IsLocking then
+                      %% Include `ooObjLock` in NewFeat
+                      {AdjoinAt NewFeat0 `ooObjLock` `ooFreeFlag`}
+                   else
+                      NewFeat0
+                   end
          NoNewMeth = {Width NewMeth}
          AsNewAttr = {Arity NewAttr}
          AsNewFeat = {Arity NewFeat}
@@ -525,15 +548,23 @@ local
    %% Oo Extensions
    %%
 
-   GetClass = Boot_Object.getClass
-
    fun {GetC OC}
       if {IsObject OC} then {GetClass OC} else OC end
    end
 
 in
 
-   BaseObject = {NewFullClass nil '#'(noop # proc {$ noop} skip end)
+   fun {New C Mess}
+      Obj = {Boot_Object.new C}
+   in
+      if {ClassIsLocking C} then
+         Obj.`ooObjLock` = {NewLock}
+      end
+      {Obj Mess}
+      Obj
+   end
+
+   BaseObject = {NewFullClass nil '#'(noop # proc {$ Obj Noop} skip end)
                  'attr' 'feat' nil 'Object.base'}
 
    Object = object(is:   IsObject
@@ -567,5 +598,8 @@ in
                                        if {ClassIsLocking C} then [locking]
                                        else nil
                                        end}
+                                   end
+                     getObjLock:   fun {$ O}
+                                      O.`ooObjLock`
                                    end)
 end

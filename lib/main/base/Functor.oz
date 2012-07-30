@@ -20,14 +20,14 @@
 %%%
 
 local
-   FunctorID = {Boot_Name.newUnique functorID}
+   FunctorID = {NewUniqueName functorID}
 
    fun {IsFunctor X}
       {IsChunk X} andthen {HasFeature X FunctorID}
    end
 
    fun {NewFunctor Import Export Apply}
-      %--** assert that the arguments have the expected types
+      % TODO assert that the arguments have the expected types
       {NewChunk f(FunctorID: unit
                   'import': Import
                   'export': Export

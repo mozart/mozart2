@@ -26,7 +26,99 @@
 %% Module
 %%
 
+fun {IsString Is}
+   case Is
+   of I|Ir then
+      {IsChar I} andthen {IsString Ir}
+   [] nil then
+      true
+   else
+      false
+   end
+end
+
+fun {StringToAtom Is}
+   if {IsString Is} then
+      {VirtualString.toAtom Is}
+   else
+      raise typeError('String' Is) end
+   end
+end
+
 local
+   HexBase = base(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7 &8:8 &9:9
+                  &A:10 &B:11 &C:12 &D:14 &E:15
+                  &a:10 &b:11 &c:12 &d:14 &e:15)
+
+   DecBase = base(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7 &8:8 &9:9)
+   OctBase = base(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7)
+   BinBase = base(&0:0 &1:1)
+
+   fun {RaiseStringNoInt Is}
+      {Exception.raiseError kernel(stringNoInt Is)}
+      unit
+   end
+
+   fun {StringToIntBase Base BaseRec Is OriginalIs Acc IsFirst}
+      case Is
+      of nil then
+         if IsFirst then
+            {RaiseStringNoInt OriginalIs}
+         else
+            Acc
+         end
+      [] I|Ir then
+         Value = {CondSelect BaseRec I false}
+      in
+         if Value == false then
+            {RaiseStringNoInt OriginalIs}
+         else
+            {StringToIntBase Base BaseRec Ir OriginalIs Acc*Base+Value false}
+         end
+      else
+         {Exception.raiseError kernel(type 'String.toInt' [OriginalIs]
+                                      'ProperString' 1)}
+         unit
+      end
+   end
+in
+   fun {StringToInt Is}
+      case Is
+      of &~|&~|_ then
+         {RaiseStringNoInt Is}
+      [] &~|Ir then
+         ~{StringToInt Ir}
+      [] &0|nil then
+         0
+      [] &0|&X|Ir then
+         {StringToIntBase 16 HexBase Ir Is 0 true}
+      [] &0|&x|Ir then
+         {StringToIntBase 16 HexBase Ir Is 0 true}
+      [] &0|&B|Ir then
+         {StringToIntBase 2 BinBase Ir Is 0 true}
+      [] &0|&b|Ir then
+         {StringToIntBase 2 BinBase Ir Is 0 true}
+      [] &0|Ir then
+         {StringToIntBase 8 OctBase Ir Is 0 true}
+      else
+         {StringToIntBase 10 DecBase Is Is 0 true}
+      end
+   end
+end
+
+fun {StringToFloat Is}
+   {Boot_VirtualString.toFloat Is}
+end
+
+local
+   fun {StringToUnicodeString Is}
+      if {IsString Is} then
+         {VirtualString.toUnicodeString Is}
+      else
+         raise typeError('String' Is) end
+      end
+   end
+
    proc {Token Is J ?T ?R}
       case Is of nil then T=nil R=nil
       [] I|Ir then
@@ -48,13 +140,17 @@ local
       end
    end
 
+   /* It used to be that atoms could not contain '\0' (the null character).
+    * So this function tested against any 0 in the string.
+    * As of Mozart 2.0, any string can be converted to an atom, so this
+    * function always returns true.
+    */
    fun {StringIsAtom Is}
-      case Is of nil then true
-      [] I|Ir then I\=0 andthen {StringIsAtom Ir}
-      end
+      true
    end
 
 in
+
    String = string(is:      IsString
                    isAtom:  StringIsAtom
                    toAtom:  StringToAtom

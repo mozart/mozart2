@@ -26,13 +26,12 @@ import
 
    Space
 
-   BootDictionary(waitOr: DictWaitOr)
-   at 'x-oz://boot/Dictionary'
-
+\ifdef HAS_CSS
    FDB(int:           FdInt
        bool:          FdBool
        'reflect.dom': FdReflectDom)
    at 'x-oz://boot/FDB'
+\endif
 
 export
    Choice
@@ -42,10 +41,16 @@ export
    Not
    Reify
 
+\ifdef HAS_CSS
 require
    CpSupport(expand:         Expand)
+\endif
 
 prepare
+
+   fun {DictWaitOr Dict}
+      {Record.waitOr {Dictionary.toRecord dict Dict}}
+   end
 
    local
       proc {Skip}
@@ -75,9 +80,11 @@ prepare
 
 define
 
+\ifdef HAS_CSS
    fun {GetDomList X}
       {Expand {FdReflectDom X}}
    end
+\endif
 
    fun {NewGuard C}
       {Space.new {Guardify C}}
@@ -226,6 +233,7 @@ define
       {C.{Space.choose {Width C}}}
    end
 
+\ifdef HAS_CSS
    local
       proc {CommitOrKill G J I ?B}
          if I==J then B={Space.merge G} else {Space.kill G} end
@@ -272,6 +280,11 @@ define
          end
       end
    end
+\else
+   proc {Dis C}
+      raise notImplemented('Combinator.\'dis\'') end
+   end
+\endif
 
    proc {Not P}
       S={Space.new proc {$ X} X=unit {P} end}
@@ -288,7 +301,9 @@ define
    proc {Reify P B}
       S={Space.new proc {$ X} X=unit {P} end}
    in
+      \ifdef HAS_CSS
       {FdBool B}
+      \endif
       thread
          case {Deref {Space.askVerbose S}}
          of failed   then B=0

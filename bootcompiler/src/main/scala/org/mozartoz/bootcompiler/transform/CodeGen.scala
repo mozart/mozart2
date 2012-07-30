@@ -233,20 +233,20 @@ object CodeGen extends Transformer with TreeDSL {
         val setupHandlerHole = code.addHole()
         var branchHole: CodeArea#Hole = null
 
-        val bodySize = code.counting {
-          generate(body)
-          code += OpPopExceptionHandler()
-          branchHole = code.addHole(2)
-        }
-
         val catchSize = code.counting {
           exceptionVar.symbol.toReg.asInstanceOf[YReg] := XReg(0)
           generate(catchBody)
+          branchHole = code.addHole(2)
         }
 
-        setupHandlerHole fillWith OpSetupExceptionHandler(bodySize)
+        val bodySize = code.counting {
+          generate(body)
+          code += OpPopExceptionHandler()
+        }
 
-        branchHole fillWith OpBranch(catchSize)
+        setupHandlerHole fillWith OpSetupExceptionHandler(catchSize)
+
+        branchHole fillWith OpBranch(bodySize)
 
       case CallStatement(Constant(callable @ OzBuiltin(builtin)), args) =>
         val argCount = args.size

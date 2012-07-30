@@ -17,30 +17,20 @@ object CodeGen extends Transformer with TreeDSL {
 
   private implicit def reg2ops[A <: Register](self: A) = new {
     def := (source: Register)(implicit ev: A <:< XOrYReg) {
-      (source, self:XOrYReg) match {
-        case (src:XReg, dest:XReg) => code += OpMoveXX(src, dest)
-        case (src:XReg, dest:YReg) => code += OpMoveXY(src, dest)
-        case (src:YReg, dest:XReg) => code += OpMoveYX(src, dest)
-        case (src:YReg, dest:YReg) => code += OpMoveYY(src, dest)
-        case (src:GReg, dest:XReg) => code += OpMoveGX(src, dest)
-        case (src:GReg, dest:YReg) => code += OpMoveGY(src, dest)
-        case (src:KReg, dest:XReg) => code += OpMoveKX(src, dest)
-        case (src:KReg, dest:YReg) => code += OpMoveKY(src, dest)
-      }
+      code += OpMove(source, self)
     }
 
-    def === (rhs: Register)(implicit ev: A <:< XReg) {
-      rhs match {
-        case right:XReg => code += OpUnifyXX(self, right)
-        case right:YReg => code += OpUnifyXY(self, right)
-        case right:GReg => code += OpUnifyXG(self, right)
-        case right:KReg => code += OpUnifyXK(self, right)
-      }
+    def === (rhs: Register) {
+      code += OpUnify(self, rhs)
     }
   }
 
   private implicit def symbol2ops2(self: Symbol) = new {
     def toReg = symbol2reg(self)
+  }
+
+  private implicit def value2ops(self: OzValue) = new {
+    def toReg = code.registerFor(self)
   }
 
   def initArrayWith(values: List[Expression]) {
@@ -62,7 +52,7 @@ object CodeGen extends Transformer with TreeDSL {
 
     // Save formals in local variables
     for ((formal, index) <- abstraction.formals.zipWithIndex)
-      code += OpMoveXY(XReg(index), formal.toReg.asInstanceOf[YReg])
+      code += OpMove(XReg(index), formal.toReg.asInstanceOf[XOrYReg])
 
     // Create new variables for the other locals
     for (local <- abstraction.locals)
@@ -90,52 +80,33 @@ object CodeGen extends Transformer with TreeDSL {
         generate(body)
 
       case Variable(lhs) === Variable(rhs) =>
-        XReg(0) := lhs
-        XReg(0) === rhs
+        lhs.toReg === rhs.toReg
 
       case Variable(lhs) === Constant(rhs) =>
-        XReg(0) := code.registerFor(rhs)
-        XReg(0) === lhs
+        lhs.toReg === rhs.toReg
 
       case Variable(lhs) === (rhs @ Record(_, fields)) if rhs.isCons =>
         val List(RecordField(_, head:VarOrConst),
             RecordField(_, tail:VarOrConst)) = fields
-        val dest = XReg(0)
 
-        code += OpCreateConsStoreX(dest)
+        code += OpCreateConsUnify(lhs)
         initArrayWith(List(head, tail))
-        dest === lhs
 
       case Variable(lhs) === (rhs @ Record(Constant(label), fields))
       if rhs.isTuple =>
-        val labelReg = code.registerFor(label)
-        val fieldCount = fields.size
-        val dest = XReg(0)
-
-        code += OpCreateTupleStoreX(labelReg, fieldCount, dest)
+        code += OpCreateTupleUnify(label.toReg, fields.size, lhs)
         initArrayWith(fields map (_.value))
-        dest === lhs
 
       case Variable(lhs) === (rhs @ Record(_, fields))
       if rhs.hasConstantArity =>
-        val arityReg = code.registerFor(rhs.getConstantArity)
-        val fieldCount = fields.size
-        val dest = XReg(0)
-
-        code += OpCreateRecordStoreX(arityReg, fieldCount, dest)
+        code += OpCreateRecordUnify(rhs.getConstantArity.toReg,
+            fields.size, lhs)
         initArrayWith(fields map (_.value))
-        dest === lhs
 
       case Variable(lhs) === (rhs @ CreateAbstraction(
           Constant(body), globals)) =>
-
-        val bodyReg = code.registerFor(body)
-        val globalCount = globals.size
-        val dest = XReg(0)
-
-        code += OpCreateAbstractionStoreX(bodyReg, globalCount, dest)
+        code += OpCreateAbstractionUnify(body.toReg, globals.size, lhs)
         initArrayWith(globals)
-        dest === lhs
 
       case IfStatement(cond:Variable, trueStat, falseStat) =>
         XReg(0) := cond.symbol
@@ -160,8 +131,7 @@ object CodeGen extends Transformer with TreeDSL {
 
         branchHole fillWith OpBranch(falseBranchSize)
 
-      case MatchStatement(value:Variable, clauses, elseStat) =>
-        XReg(0) := value.symbol
+      case MatchStatement(Variable(value), clauses, elseStat) =>
         val matchHole = code.addHole()
 
         val clauseCount = clauses.size
@@ -221,20 +191,19 @@ object CodeGen extends Transformer with TreeDSL {
         val totalSize = jumpOffsets(clauseCount)
         val patternsInfo = OzSharp(patterns.toList)
 
-        matchHole fillWith OpPatternMatchX(
-            XReg(0), code.registerFor(patternsInfo))
+        matchHole fillWith OpPatternMatch(value, patternsInfo.toReg)
 
         for (index <- 0 until clauseCount) {
           branchToAfterHoles(index) fillWith OpBranch(
               totalSize - jumpOffsets(index))
         }
 
-      case TryStatement(body, exceptionVar:Variable, catchBody) =>
+      case TryStatement(body, Variable(exceptionVar), catchBody) =>
         val setupHandlerHole = code.addHole()
         var branchHole: CodeArea#Hole = null
 
         val catchSize = code.counting {
-          exceptionVar.symbol.toReg.asInstanceOf[YReg] := XReg(0)
+          exceptionVar.toReg.asInstanceOf[YReg] := XReg(0)
           generate(catchBody)
           branchHole = code.addHole(2)
         }
@@ -284,20 +253,11 @@ object CodeGen extends Transformer with TreeDSL {
           }
         }
 
-      case CallStatement(callable:Variable, args) =>
-        val argCount = args.size
-
+      case CallStatement(Variable(target), args) =>
         for ((arg:VarOrConst, index) <- args.zipWithIndex)
           XReg(index) := arg
 
-        callable.symbol.toReg match {
-          case reg:XReg => code += OpCallX(reg, argCount)
-          case reg:GReg => code += OpCallG(reg, argCount)
-          case _ =>
-            val reg = XReg(argCount)
-            reg := callable.symbol
-            code += OpCallX(reg, argCount)
-        }
+        code += OpCall(target, args.size)
     }
   }
 }

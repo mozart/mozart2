@@ -21,10 +21,11 @@ sealed abstract class Register(letter: String) extends OpCodeArg {
   override def toString() = "%s(%d)" format (letter, index)
 }
 
-trait XOrYReg extends Register
-trait XOrGReg extends Register
-trait XOrKReg extends Register
-trait YOrGReg extends Register
+sealed trait NotKReg extends Register
+sealed trait XOrYReg extends NotKReg
+sealed trait XOrGReg extends NotKReg
+sealed trait XOrKReg extends Register
+sealed trait YOrGReg extends NotKReg
 
 case class XReg(index: Int) extends Register("X")
     with XOrYReg with XOrGReg with XOrKReg

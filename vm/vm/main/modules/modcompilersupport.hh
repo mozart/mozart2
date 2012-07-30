@@ -63,7 +63,7 @@ public:
       // Read byte code
       std::vector<ByteCode> byteCode;
 
-      ozListForEach(vm, byteCodeList,
+      MOZART_CHECK_OPRESULT(ozListForEach(vm, byteCodeList,
         [&] (nativeint elem) -> OpResult {
           if ((elem < std::numeric_limits<ByteCode>::min()) ||
               (elem > std::numeric_limits<ByteCode>::max())) {
@@ -75,7 +75,7 @@ public:
           }
         },
         MOZART_STR("List of byte code elements")
-      );
+      ));
 
       // Read scalar args
       nativeint intArity = 0, intXCount = 0;
@@ -97,7 +97,7 @@ public:
       ArrayInitializer KInitializer = result;
       size_t index = 0;
 
-      ozListForEach(vm, KsList,
+      return ozListForEach(vm, KsList,
         [&] (UnstableNode& elem) -> OpResult {
           KInitializer.initElement(vm, index, elem);
           index++;
@@ -105,8 +105,6 @@ public:
         },
         MOZART_STR("list")
       );
-
-      return OpResult::proceed();
     }
   };
 
@@ -114,11 +112,7 @@ public:
   public:
     NewAbstraction(): Builtin("newAbstraction") {}
 
-    OpResult operator()(VM vm, In arity, In body, In GsList, Out result) {
-      // Read arity
-      nativeint intArity = 0;
-      MOZART_GET_ARG(intArity, arity, MOZART_STR("positive integer"));
-
+    OpResult operator()(VM vm, In body, In GsList, Out result) {
       // Check the type of the code area
       bool bodyIsCodeArea = false;
       MOZART_CHECK_OPRESULT(
@@ -138,7 +132,7 @@ public:
       ArrayInitializer GInitializer = result;
       size_t index = 0;
 
-      ozListForEach(vm, GsList,
+      return ozListForEach(vm, GsList,
         [&] (UnstableNode& elem) -> OpResult {
           GInitializer.initElement(vm, index, elem);
           index++;
@@ -146,8 +140,6 @@ public:
         },
         MOZART_STR("list")
       );
-
-      return OpResult::proceed();
     }
   };
 
@@ -167,7 +159,7 @@ public:
         bool isTuple = false;
         UnstableNode arity;
         MOZART_CHECK_OPRESULT(buildArityDynamic(
-          vm, isTuple, result, label, width, featuresData.get()));
+          vm, isTuple, arity, label, width, featuresData.get()));
 
         if (isTuple)
           result = build(vm, false);
@@ -178,6 +170,29 @@ public:
       } else {
         return matchTypeError(vm, res, features, MOZART_STR("#-tuple"));
       }
+    }
+  };
+
+  class NewPatPatWildcard: public Builtin<NewPatPatWildcard> {
+  public:
+    NewPatPatWildcard(): Builtin("newPatMatWildcard") {}
+
+    OpResult operator()(VM vm, Out result) {
+      result = PatMatCapture::build(vm, -1);
+      return OpResult::proceed();
+    }
+  };
+
+  class NewPatPatCapture: public Builtin<NewPatPatCapture> {
+  public:
+    NewPatPatCapture(): Builtin("newPatMatCapture") {}
+
+    OpResult operator()(VM vm, In index, Out result) {
+      nativeint intIndex;
+      MOZART_GET_ARG(intIndex, index, MOZART_STR("Integer"));
+
+      result = PatMatCapture::build(vm, intIndex);
+      return OpResult::proceed();
     }
   };
 

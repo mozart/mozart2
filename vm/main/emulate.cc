@@ -431,9 +431,9 @@ void Thread::run() {
         int distance = IntPC(1);
         advancePC(1);
 
-        ProgramCounter handlerPC = PC + distance;
-        stack.pushExceptionHandler(vm, handlerPC);
+        stack.pushExceptionHandler(vm, PC);
 
+        PC += distance;
         break;
       }
 

@@ -705,6 +705,20 @@ void Thread::run() {
         break;
       }
 
+      case OpUnifyYY: {
+        CHECK_OPRESULT_BREAK(unify(vm, YPC(1), YPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
+      case OpUnifyYG: {
+        CHECK_OPRESULT_BREAK(unify(vm, YPC(1), GPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
       case OpUnifyYK: {
         CHECK_OPRESULT_BREAK(unify(vm, YPC(1), KPC(2)));
 
@@ -712,8 +726,22 @@ void Thread::run() {
         break;
       }
 
+      case OpUnifyGG: {
+        CHECK_OPRESULT_BREAK(unify(vm, GPC(1), GPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
       case OpUnifyGK: {
         CHECK_OPRESULT_BREAK(unify(vm, GPC(1), KPC(2)));
+
+        advancePC(2);
+        break;
+      }
+
+      case OpUnifyKK: {
+        CHECK_OPRESULT_BREAK(unify(vm, KPC(1), KPC(2)));
 
         advancePC(2);
         break;

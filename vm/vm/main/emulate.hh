@@ -241,8 +241,6 @@ private:
                 StaticArray<StableNode>& gregs,
                 StaticArray<StableNode>& kregs);
 
-  __attribute__((always_inline))
-  inline
   void call(RichNode target, size_t actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
             ProgramCounter& PC, size_t& yregCount,
@@ -250,7 +248,18 @@ private:
             StaticArray<UnstableNode>& yregs,
             StaticArray<StableNode>& gregs,
             StaticArray<StableNode>& kregs,
-            bool& preempted);
+            bool& preempted,
+            std::ptrdiff_t opcodeArgCount = 2);
+
+  void sendMsg(RichNode target, RichNode labelOrArity, size_t width,
+               bool isTailCall,
+               VM vm, StableNode*& abstraction,
+               ProgramCounter& PC, size_t& yregCount,
+               XRegArray* xregs,
+               StaticArray<UnstableNode>& yregs,
+               StaticArray<StableNode>& gregs,
+               StaticArray<StableNode>& kregs,
+               bool& preempted);
 
   void patternMatch(VM vm, RichNode value, RichNode patterns,
                     StableNode*& abstraction,

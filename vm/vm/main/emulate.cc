@@ -513,8 +513,22 @@ void Thread::run() {
         break;
       }
 
+      case OpCallY: {
+        call(YPC(1), IntPC(2), false,
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
       case OpCallG: {
         call(GPC(1), IntPC(2), false,
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpCallK: {
+        call(KPC(1), IntPC(2), false,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
         break;
@@ -527,10 +541,80 @@ void Thread::run() {
         break;
       }
 
+      case OpTailCallY: {
+        call(YPC(1), IntPC(2), true,
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
       case OpTailCallG: {
         call(GPC(1), IntPC(2), true,
              vm, abstraction, PC, yregCount,
              xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpTailCallK: {
+        call(KPC(1), IntPC(2), true,
+             vm, abstraction, PC, yregCount,
+             xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpSendMsgX: {
+        sendMsg(XPC(1), KPC(2), IntPC(3), false,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpSendMsgY: {
+        sendMsg(YPC(1), KPC(2), IntPC(3), false,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpSendMsgG: {
+        sendMsg(GPC(1), KPC(2), IntPC(3), false,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpSendMsgK: {
+        sendMsg(KPC(1), KPC(2), IntPC(3), false,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpTailSendMsgX: {
+        sendMsg(XPC(1), KPC(2), IntPC(3), true,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpTailSendMsgY: {
+        sendMsg(YPC(1), KPC(2), IntPC(3), true,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpTailSendMsgG: {
+        sendMsg(GPC(1), KPC(2), IntPC(3), true,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
+        break;
+      }
+
+      case OpTailSendMsgK: {
+        sendMsg(KPC(1), KPC(2), IntPC(3), true,
+                vm, abstraction, PC, yregCount,
+                xregs, yregs, gregs, kregs, preempted);
         break;
       }
 
@@ -570,8 +654,22 @@ void Thread::run() {
         break;
       }
 
-      case OpPatternMatch: {
+      case OpPatternMatchX: {
         patternMatch(vm, XPC(1), KPC(2),
+                     abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                     preempted);
+        break;
+      }
+
+      case OpPatternMatchY: {
+        patternMatch(vm, YPC(1), KPC(2),
+                     abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                     preempted);
+        break;
+      }
+
+      case OpPatternMatchG: {
+        patternMatch(vm, GPC(1), KPC(2),
                      abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
                      preempted);
         break;
@@ -994,6 +1092,13 @@ void Thread::run() {
       }
 
 #include "emulate-inline.cc"
+
+      default: {
+        assert(false);
+        std::cerr << "Bad opcode: " << op << "\n";
+        terminate();
+        return;
+      }
     } // Big switch testing the opcode
   } // Big loop iterating over opcodes
 
@@ -1051,7 +1156,8 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
                   StaticArray<UnstableNode>& yregs,
                   StaticArray<StableNode>& gregs,
                   StaticArray<StableNode>& kregs,
-                  bool& preempted) {
+                  bool& preempted,
+                  std::ptrdiff_t opcodeArgCount) {
   size_t formalArity = 0;
   ProgramCounter start = nullptr;
   size_t Xcount = 0;
@@ -1070,7 +1176,7 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
       raiseIllegalArity(vm, target, actualArity, actualArgs));
   }
 
-  advancePC(2);
+  advancePC(opcodeArgCount);
 
   if (!isTailCall) {
     pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
@@ -1091,6 +1197,53 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
   // (there is no infinite execution path that does not traverse a call)
   if (vm->testPreemption())
     preempted = true;
+}
+
+void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
+                     bool isTailCall,
+                     VM vm, StableNode*& abstraction,
+                     ProgramCounter& PC, size_t& yregCount,
+                     XRegArray* xregs,
+                     StaticArray<UnstableNode>& yregs,
+                     StaticArray<StableNode>& gregs,
+                     StaticArray<StableNode>& kregs,
+                     bool& preempted) {
+  // "Just make it work" implementation that always delegates to call()
+
+  if (target.isTransient()) {
+    CHECK_OPRESULT_RETURN(OpResult::waitFor(vm, target));
+  }
+
+  using namespace patternmatching;
+
+  UnstableNode message;
+  StaticArray<StableNode> args;
+
+  if (width == 0) {
+    // labelOrArity is the message
+    message.init(vm, labelOrArity);
+  } else if (labelOrArity.is<Arity>()) {
+    // labelOrArity is the arity of the message, which is a record
+    message = Record::build(vm, width, labelOrArity);
+    args = RichNode(message).as<Record>().getElementsArray();
+  } else if ((width == 2) && labelOrArity.is<Atom>() &&
+             (labelOrArity.as<Atom>().value() == vm->coreatoms.pipe)) {
+    // the message should be a Cons
+    message = Cons::build(vm);
+    args = RichNode(message).as<Cons>().getElementsArray();
+  } else {
+    // the message should be a Tuple
+    message = Tuple::build(vm, width, labelOrArity);
+    args = RichNode(message).as<Tuple>().getElementsArray();
+  }
+
+  for (size_t i = 0; i < width; i++)
+    args[i].init(vm, (*xregs)[i]);
+
+  (*xregs)[0] = std::move(message);
+  call(target, 1, isTailCall,
+       vm, abstraction, PC, yregCount,
+       xregs, yregs, gregs, kregs, preempted, 3);
 }
 
 void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,

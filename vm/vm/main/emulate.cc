@@ -636,6 +636,12 @@ void Thread::run() {
         break;
       }
 
+      case OpBranchBackward: {
+        int distance = IntPC(1);
+        advancePC(1 - distance);
+        break;
+      }
+
       case OpCondBranch: {
         BoolOrNotBool testValue = bNotBool;
 

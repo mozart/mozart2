@@ -90,7 +90,7 @@ prepare
       {Property.put 'errors.handler' ErrorHandler}
    end
 
-   \insert 'init/Module.oz'
+   \insert 'Module.oz'
 
 \ifdef DENYS_EVENTS
    functor Event
@@ -194,8 +194,8 @@ define
    GET    = Property.get
 
    %% usual system initialization
-   \insert 'init/Prop.oz'
-   \insert 'init/Resolve.oz'
+   \insert 'Prop.oz'
+   \insert 'Resolve.oz'
 
    {SET load Resolve.load}
 

@@ -36,7 +36,7 @@ prepare
          try
             Func = {Dictionary.get FunctorMap URL}
          catch dictKeyNotFound(_ _) then
-            raise system(module(notFound URL)) end
+            raise system(module(notFound load URL)) end
          end
 
          {self apply(URL Func Module)}
@@ -60,24 +60,127 @@ prepare
 
    BootMM = {New BootModuleManager init}
 
-   proc {RegisterModule URL Mod}
-      {BootMM enter(URL Mod)}
+   proc {RegisterModule URLV Mod}
+      {BootMM enter({VirtualString.toAtom URLV} Mod)}
    end
 
-   proc {RegisterFunctor URL Func}
-      {Dictionary.put FunctorMap URL Func}
+   proc {RegisterFunctor URLV Func}
+      {Dictionary.put FunctorMap {VirtualString.toAtom URLV} Func}
    end
 
+   /** The magic Run routine
+    *  Sets up all the necessary things to be able to launch Init.ozf out of
+    *  nowhere.
+    *  @param MainURL
+    *          URL of the application functor (the main functor)
+    */
    proc {Run MainURL}
-      MainModule = {BootMM link(MainURL $)}
+      % First checkout the critical modules from the boot module manager
+      OS         = {BootMM link('x-oz://system/OS.ozf' $)}
+      Property   = {BootMM link('x-oz://system/Property.ozf' $)}
+      System     = {BootMM link('x-oz://system/System.ozf' $)}
+      URL        = {BootMM link('x-oz://system/URL.ozf' $)}
+      DefaultURL = {BootMM link('x-oz://system/DefaultURL.ozf' $)}
+
+      /** RemoveCWD - removes the prefix CWD from FileNameV if present */
+      local
+         CWD = {VirtualString.toString {OS.getCWD}}
+
+         fun {StripPrefix Xs Ys Else}
+            case Xs#Ys
+            of (X|Xr)#nil then
+               if X == &/ orelse X == &\\ then
+                  Xr
+               else
+                  Xs
+               end
+            [] (X|Xr)#(Y|Yr) andthen X == Y then
+               {StripPrefix Xr Yr Else}
+            else
+               Else
+            end
+         end
+      in
+         fun {RemoveCWD FileNameV}
+            FileNameS = {VirtualString.toString FileNameV}
+         in
+            {StripPrefix FileNameS CWD FileNameS}
+         end
+      end
+
+      /** Loads a functor located a given URL
+       *  This never goes to the file system, but looks up functors in the
+       *  global FunctorMap instead.
+       *  Basically it uses FunctorMap as a virtual file system.
+       */
+      proc {URLLoad URL ?F}
+         URLAtom = {VirtualString.toAtom {RemoveCWD URL}}
+      in
+         try
+            F = {Dictionary.get FunctorMap URLAtom}
+         catch dictKeyNotFound(_ _) then
+            raise system(module(notFound load URLAtom)) end
+         end
+      end
+
+      /** The boot URL module (stub version) */
+      BURL = 'export'(
+         localize: fun {$ U} U end
+         open:     proc {$ U ?V}
+                      {Exception.raiseError notImplemented('URL.open')}
+                   end
+         load:     URLLoad
+      )
+
+      /** The boot Pickle module (stub version) */
+      Pickle = 'export'(
+         load: proc {$ VI ?VO}
+                  {Exception.raiseError notImplemented('Pickle.load')}
+               end
+      )
+
+      /** The boot Boot module */
+      local
+         /** Loads a boot module from its name */
+         fun {GetInternal Name}
+            case Name
+            of 'URL' then BURL
+            [] 'OS' then OS
+            [] 'Pickle' then Pickle
+            [] 'Property' then Property
+            [] 'System' then System
+            else
+               {BootMM link({VirtualString.toAtom 'x-oz://boot/'#Name} $)}
+            end
+         end
+
+         /** Stub for Boot.getNative */
+         proc {GetNative Name ?M}
+            {Exception.raiseError notImplemented('Boot.getNative')}
+         end
+      in
+         Boot = 'export'(
+            getInternal: GetInternal
+            getNative:   GetNative
+         )
+      end
+
+      % Sets up 'application.url' - Init.ozf will use this
+      {Property.put 'application.url' MainURL}
+
+      % And finally load the Init.ozf functor and apply it
+      InitFunctor = {URLLoad 'Init.ozf'}
    in
-      {Wait MainModule}
+      {InitFunctor.apply 'import'('URL':        URL
+                                  'DefaultURL': DefaultURL
+                                  'Boot':       Boot) _}
    end
 
-in
+   ExportedBootMM = bootMM(registerModule:RegisterModule
+                           registerFunctor:RegisterFunctor
+                           run:Run)
 
-   {Boot_Boot.getBootMM} = bootMM(registerModule:RegisterModule
-                                  registerFunctor:RegisterFunctor
-                                  run:Run)
+export
+   '$BootMM': ExportedBootMM
 
 end

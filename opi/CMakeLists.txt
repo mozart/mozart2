@@ -76,11 +76,13 @@ add_custom_command(
 file(GLOB SYS_FUNCTORS
     "${MOZART_LIB_DIR}/sys/*.oz"
     "${MOZART_LIB_DIR}/support/*.oz"
+    "${MOZART_LIB_DIR}/init/Init.oz"
     "${MOZART_LIB_DIR}/sp/Error.oz"
     "${MOZART_LIB_DIR}/sp/ErrorFormatters.oz"
     "${MOZART_LIB_DIR}/op/Open.oz"
     "${MOZART_LIB_DIR}/cp/Combinator.oz"
     "${MOZART_LIB_DIR}/cp/RecordC.oz"
+    "${MOZART_LIB_DIR}/dp/URL.oz"
     "${MOZART_DIR}/boostenv/lib/*.oz")
 
 set(COMPILER_FUNCTORS

@@ -92,6 +92,41 @@ OpResult ozListLength(VM vm, RichNode list, size_t& result) {
   }
 }
 
+namespace internal {
+  template <class C>
+  struct VSToStringHelper {
+    inline
+    static OpResult call(VM vm, RichNode vs, std::basic_string<C>& result);
+  };
+
+  template <>
+  struct VSToStringHelper<nchar> {
+    static OpResult call(VM vm, RichNode vs, std::basic_string<nchar>& result) {
+      std::basic_stringstream<nchar> buffer;
+      MOZART_CHECK_OPRESULT(VirtualString(vs).toString(vm, buffer));
+
+      result = buffer.str();
+      return OpResult::proceed();
+    }
+  };
+
+  template <class C>
+  OpResult VSToStringHelper<C>::call(VM vm, RichNode vs,
+                                     std::basic_string<C>& result) {
+    std::basic_string<nchar> nresult;
+    MOZART_CHECK_OPRESULT(VSToStringHelper<nchar>::call(vm, vs, nresult));
+
+    auto str = toUTF<C>(makeLString(nresult.c_str(), nresult.size()));
+    result = std::basic_string<C>(str.string, str.length);
+    return OpResult::proceed();
+  }
+}
+
+template <class C>
+OpResult vsToString(VM vm, RichNode vs, std::basic_string<C>& result) {
+  return internal::VSToStringHelper<C>::call(vm, vs, result);
+}
+
 }
 
 #endif

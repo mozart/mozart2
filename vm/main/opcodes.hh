@@ -89,22 +89,23 @@ const OpCode OpTailSendMsgK = 0x37;
 
 const OpCode OpReturn = 0x40;
 const OpCode OpBranch = 0x41;
-const OpCode OpCondBranch = 0x42;
+const OpCode OpBranchBackward = 0x42;
+const OpCode OpCondBranch = 0x43;
 
-const OpCode OpPatternMatchX = 0x43;
-const OpCode OpPatternMatchY = 0x44;
-const OpCode OpPatternMatchG = 0x45;
+const OpCode OpPatternMatchX = 0x44;
+const OpCode OpPatternMatchY = 0x45;
+const OpCode OpPatternMatchG = 0x46;
 
-const OpCode OpUnifyXX = 0x46;
-const OpCode OpUnifyXY = 0x47;
-const OpCode OpUnifyXK = 0x48;
-const OpCode OpUnifyXG = 0x49;
-const OpCode OpUnifyYY = 0x4A;
-const OpCode OpUnifyYG = 0x4B;
-const OpCode OpUnifyYK = 0x4C;
-const OpCode OpUnifyGG = 0x4D;
-const OpCode OpUnifyGK = 0x4E;
-const OpCode OpUnifyKK = 0x4F;
+const OpCode OpUnifyXX = 0x50;
+const OpCode OpUnifyXY = 0x51;
+const OpCode OpUnifyXK = 0x52;
+const OpCode OpUnifyXG = 0x53;
+const OpCode OpUnifyYY = 0x54;
+const OpCode OpUnifyYG = 0x55;
+const OpCode OpUnifyYK = 0x56;
+const OpCode OpUnifyGG = 0x57;
+const OpCode OpUnifyGK = 0x58;
+const OpCode OpUnifyKK = 0x59;
 
 const OpCode OpCreateStructBase = 0x60;
 static_assert((OpCreateStructBase & 0x1F) == 0,

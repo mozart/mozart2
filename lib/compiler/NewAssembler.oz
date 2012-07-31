@@ -88,18 +88,23 @@ define
 
       return: 0x40
       branch: 0x41
-      condBranch: 0x42
+      branchBackward: 0x42
+      condBranch: 0x43
 
-      patternMatchX: 0x43
-      patternMatchY: 0x44
-      patternMatchG: 0x45
+      patternMatchX: 0x44
+      patternMatchY: 0x45
+      patternMatchG: 0x46
 
-      unifyXX: 0x46
-      unifyXY: 0x47
-      unifyXK: 0x48
-      unifyXG: 0x49
-      unifyYK: 0x4A
-      unifyGK: 0x4B
+      unifyXX: 0x50
+      unifyXY: 0x51
+      unifyXK: 0x52
+      unifyXG: 0x53
+      unifyYY: 0x54
+      unifyYG: 0x55
+      unifyYK: 0x56
+      unifyGG: 0x57
+      unifyGK: 0x58
+      unifyKK: 0x59
 
       createAbstractionStoreX: 0x60
       createConsStoreX: 0x61
@@ -508,7 +513,7 @@ define
          [] branch(L) then
             A = {self TranslateLabel(L EndAddr $)}
          in
-            branch(A)
+            if A >= 0 then branch(A) else branchBackward(~A) end
 
          [] condBranch(X L1 L2 L3) then
             A1 = {self TranslateLabel(L1 EndAddr $)}

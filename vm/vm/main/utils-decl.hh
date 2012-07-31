@@ -56,6 +56,10 @@ OpResult ozListForEach(VM vm, RichNode list, const F& onHead,
 inline
 OpResult ozListLength(VM vm, RichNode list, size_t& result);
 
+template <class C>
+inline
+OpResult vsToString(VM vm, RichNode vs, std::basic_string<C>& result);
+
 }
 
 #endif // __UTILS_DECL_H

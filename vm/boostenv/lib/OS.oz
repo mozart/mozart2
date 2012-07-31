@@ -38,7 +38,11 @@ export
    Srand
    RandLimits
 
+   % Environment
+   GetEnv
+
    % File I/0
+   GetCWD
    Fopen
    Fread
    Fwrite
@@ -76,7 +80,13 @@ define
    Srand = Boot_OS.srand
    RandLimits = Boot_OS.randLimits
 
+   % Environment
+
+   GetEnv = Boot_OS.getEnv
+
    % File I/0
+
+   GetCWD = Boot_OS.getCWD
 
    Fopen = Boot_OS.fopen
 

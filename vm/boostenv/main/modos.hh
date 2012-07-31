@@ -33,6 +33,8 @@
 
 #include <iostream>
 
+#include <boost/filesystem.hpp>
+
 #ifndef MOZART_GENERATOR
 
 namespace mozart { namespace boostenv {
@@ -91,7 +93,42 @@ public:
     }
   };
 
+  // Environment
+
+  class GetEnv: public Builtin<GetEnv> {
+  public:
+    GetEnv(): Builtin("getEnv") {}
+
+    OpResult operator()(VM vm, In var, Out result) {
+      std::string strVar;
+      MOZART_CHECK_OPRESULT(vsToString(vm, var, strVar));
+
+      auto value = std::getenv(strVar.c_str());
+
+      if (value == nullptr)
+        result = build(vm, false);
+      else
+        result = build(vm, value);
+
+      return OpResult::proceed();
+    }
+  };
+
   // File I/O
+
+  class GetCWD: public Builtin<GetCWD> {
+  public:
+    GetCWD(): Builtin("getCWD") {}
+
+    OpResult operator()(VM vm, Out result) {
+      auto nativeStr = boost::filesystem::current_path().native();
+      auto nresult = toUTF<nchar>(makeLString(nativeStr.c_str(),
+                                              nativeStr.size()));
+
+      result = Atom::build(vm, nresult.length, nresult.string);
+      return OpResult::proceed();
+    }
+  };
 
   class Fopen: public Builtin<Fopen> {
   public:

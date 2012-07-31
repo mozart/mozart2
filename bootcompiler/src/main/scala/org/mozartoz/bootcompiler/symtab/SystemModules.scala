@@ -8,6 +8,8 @@ object SystemModules {
       "Combinator", "Space", "Connection", "Remote", "URL", "Resolve", "Fault",
       "Open", "OS", "Pickle", "Property", "Error", "Finalize", "System",
       "Tk", "TkTools", "Browser", "Panel", "Explorer", "Ozcar", "Profiler",
-      "ObjectSupport"
+      "ObjectSupport",
+
+      "CompilerSupport", "DefaultURL", "ErrorFormatters", "ZlibIO"
   )
 }

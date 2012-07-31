@@ -96,6 +96,9 @@ prepare
                      'Cell.exchange': Exchange
                      'Cell.new': NewCell
 
+                     %% Lock
+                     'Lock.\'lock\'': LockIn
+
                      %% List
                      'List.toTuple': List.toTuple
                      'List.toRecord': List.toRecord

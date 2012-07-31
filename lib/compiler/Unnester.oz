@@ -1045,19 +1045,26 @@ define
                        {New Core.elseNode init(GBody)}
                     end
             GFrontEq|{New Core.patternCase init(GVO GCs GElse C)}
-         [] fLockThen(FE FS C) then GFrontEq GVO GS in
-            Unnester, UnnestToVar(FE 'Lock' ?GFrontEq ?GVO)
-            Unnester, UnnestStatement(FS ?GS)
-            GFrontEq|{New Core.lockNode init(GVO GS C)}
-         [] fLock(FS C) then GS in
+         [] fLockThen(FE FS C) then CND NewFS in
+            CND = {CoordNoDebug C}
+            NewFS = fStepPoint(fOpApplyStatement('Lock.\'lock\''
+                                                 [FE
+                                                  fProc(fDollar(CND) nil FS
+                                                        [fAtom('dynamic' unit)]
+                                                        CND)]
+                                                 CND) 'lock' C)
+            Unnester, UnnestStatement(NewFS $)
+         [] fLock(FS C) then CND FE NewFS in
             if @Stateful then
                StateUsed <- true
             else
                {@reporter error(coord: C kind: ExpansionError
                                 msg: 'object lock used outside of method')}
             end
-            Unnester, UnnestStatement(FS ?GS)
-            {New Core.objectLockNode init(GS C)}
+            CND = {CoordNoDebug C}
+            FE = fOpApply('ooGetLock' [fSelf(CND)] CND)
+            NewFS = fLockThen(FE FS C)
+            Unnester, UnnestStatement(NewFS $)
          [] fThread(FS C) then CND NewFS in
             CND = {CoordNoDebug C}
             NewFS = fStepPoint(fOpApplyStatement('Thread.create'

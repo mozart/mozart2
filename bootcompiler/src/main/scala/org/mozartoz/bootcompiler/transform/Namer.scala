@@ -340,7 +340,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
         yield AliasedFeature(Constant(OzAtom(name)), Some(RawVariable(name)))
 
     FunctorImport(RawVariable("$BaseEnv"), aliases,
-        Some("x-oz://system/Base"))
+        Some("x-oz://system/Base.ozf"))
   }
 
   def transformFunctorImports(imports: List[FunctorImport]) = {

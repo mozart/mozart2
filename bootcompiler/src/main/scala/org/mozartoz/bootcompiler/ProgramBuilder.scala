@@ -92,7 +92,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     val registerBaseModuleStat = {
       val registerProc = getBootMMProc(prog, "registerModule")
       val baseModule = Record(OzAtom("base"), bases.flatMap(_._2))
-      registerProc.call(OzAtom("x-oz://system/Base"), baseModule)
+      registerProc.call(OzAtom("x-oz://system/Base.ozf"), baseModule)
     }
 
     val registerBaseThingsStat = {

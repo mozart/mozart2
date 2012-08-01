@@ -63,11 +63,15 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  end
    *  }}}
    *
-   *  The resulting Base module must export the boot module manager under
-   *  feature '$BootMM'. The program continues with registering the boot
+   *  The resulting Base module must export an unbound variable under feature
+   *  'Base', and the boot module manager it is supposed to have created under
+   *  feature '$BootMM'.
+   *
+   *  The program then binds <Base>.'Base' to <Base>, and registers the boot
    *  modules in the boot module manager.
    *
    *  {{{
+   *  <Base>.'Base' = <Base>
    *  <BootMM> = <Base>.'$BootMM'
    *  {<BootMM>.registerModule 'x-oz://boot/ModA' <constant Boot ModA>}
    *  ...
@@ -104,6 +108,11 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       (baseFunctor dot OzAtom("apply")) call (imports, prog.baseEnvSymbol)
     }
 
+    // Fill in <Base>.'Base'
+    val bindBaseBaseStat = {
+      (prog.baseEnvSymbol dot OzAtom("Base")) === prog.baseEnvSymbol
+    }
+
     // Fetch the boot MM
     val fetchBootMMStat = {
       prog.bootMMSymbol === (prog.baseEnvSymbol dot OzAtom("$BootMM"))
@@ -120,6 +129,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     // Put things together
     val wholeProgram = {
       applyBaseFunctorStat ~
+      bindBaseBaseStat ~
       fetchBootMMStat ~
       registerBootModulesStat
     }

@@ -72,6 +72,22 @@ export
    lSeek: CompatLSeek
    close: CompatClose
 
+   acceptSelect: CompatAcceptSelect
+   readSelect:   CompatReadSelect
+   writeSelect:  CompatWriteSelect
+   deSelect:     CompatDeSelect
+
+   socket:      CompatSocket
+   bind:        CompatBind
+   listen:      CompatListen
+   accept:      CompatAccept
+   connect:     CompatConnect
+   shutDown:    CompatShutDown
+   getSockName: CompatGetSockName
+   send:        CompatSend
+   sendTo:      CompatSendTo
+   receiveFrom: CompatReceiveFrom
+
 define
 
    % Random number generation
@@ -90,8 +106,8 @@ define
 
    Fopen = Boot_OS.fopen
 
-   proc {Fread FD Max ?Head Tail ?Count}
-      {Boot_OS.fread FD Max Tail Count Head}
+   proc {Fread File Max ?Head Tail ?Count}
+      {Boot_OS.fread File Max Tail Count Head}
    end
 
    Fwrite = Boot_OS.fwrite
@@ -140,7 +156,126 @@ define
    TCPConnectionShutdown = Boot_OS.tcpConnectionShutdown
    TCPConnectionClose = Boot_OS.tcpConnectionClose
 
+   %% POSIX-like file descriptor management
+
+   local
+      DescDictLock = {NewLock}
+      DescDict = {NewDictionary}
+   in
+      local
+         fun {AllocDescEx Underlying I}
+            if {Dictionary.member DescDict I} then
+               {AllocDescEx Underlying I+1}
+            else
+               {Dictionary.put DescDict I Underlying}
+               I
+            end
+         end
+      in
+         fun {AllocDesc Underlying}
+            lock DescDictLock then
+               {AllocDescEx Underlying 0}
+            end
+         end
+      end
+
+      fun {DescGet I}
+         lock DescDictLock then
+            case {Dictionary.condGet DescDict I false}
+            of false then
+               raise
+                  system(os(os "unknown" 9 "Bad filedescriptor") debug:unit)
+               end
+            [] Underlying then
+               Underlying
+            end
+         end
+      end
+
+      proc {FreeDesc I}
+         lock DescDictLock then
+            {Dictionary.remove DescDict I}
+         end
+      end
+
+      DescStdin = {AllocDesc Stdin}
+      DescStdout = {AllocDesc Stdout}
+      DescStderr = {AllocDesc Stderr}
+   end
+
+   %% POSIX-like generic compatibility layer
+
+   class CompatIOClass
+      feat desc
+
+      meth init(desc:Desc <= _)
+         Desc = self.desc = {AllocDesc self}
+      end
+
+      meth close()
+         {FreeDesc self.desc}
+      end
+   end
+
+   proc {CompatRead FD Max ?Head Tail ?Count}
+      {{DescGet FD} read(Max ?Head Tail ?Count)}
+   end
+
+   proc {CompatWrite FD Data ?Count}
+      {{DescGet FD} write(Data ?Count)}
+   end
+
+   proc {CompatLSeek FD Whence Offset ?Where}
+      {{DescGet FD} lSeek(Whence Offset ?Where)}
+   end
+
+   proc {CompatClose FD}
+      {{DescGet FD} close()}
+   end
+
+   proc {CompatAcceptSelect FD}
+      skip
+   end
+
+   proc {CompatReadSelect FD}
+      skip
+   end
+
+   proc {CompatWriteSelect FD}
+      skip
+   end
+
+   proc {CompatDeSelect FD}
+      skip
+   end
+
    %% POSIX-like file I/O compatibility
+
+   class CompatFileClass from CompatIOClass
+      feat file
+
+      meth init(File desc:Desc <= _)
+         CompatIOClass, init(desc:Desc)
+         self.file = File
+      end
+
+      meth read(Max ?Head Tail ?Count)
+         {Fread self.file Max ?Head Tail ?Count}
+      end
+
+      meth write(Data ?Count)
+         {Fwrite self.file Data ?Count}
+      end
+
+      meth lSeek(Whence Offset ?Where)
+         {Fseek self.file Offset Whence ?Where}
+      end
+
+      meth close()
+         CompatIOClass, close()
+         {Fclose self.file}
+      end
+   end
 
    fun {FlagsToMode Flags}
       if {Member 'O_WRONLY' Flags} then
@@ -163,31 +298,164 @@ define
    end
 
    fun {CompatOpen FileName Flags CreateMode}
-      {Boot_OS.fopen FileName {FlagsToMode Flags}}
+      File = {Fopen FileName {FlagsToMode Flags}}
+   in
+      {New CompatFileClass init(File desc:$) _}
    end
 
    fun {CompatFileDesc DescName}
       case DescName
-      of 'STDIN_FILENO'  then Stdin
-      [] 'STDOUT_FILENO' then Stdout
-      [] 'STDERR_FILENO' then Stderr
+      of 'STDIN_FILENO'  then DescStdin
+      [] 'STDOUT_FILENO' then DescStdout
+      [] 'STDERR_FILENO' then DescStderr
       end
    end
 
-   proc {CompatRead FD Max ?Head Tail ?Count}
-      {Boot_OS.fread FD Max Tail Count Head}
+   % POSIX-like socket I/O compatibility
+
+   class CompatSocketClass from CompatIOClass
    end
 
-   fun {CompatWrite FD Data}
-      {Boot_OS.fwrite FD Data}
+   class CompatTCPSocketClass from CompatSocketClass
+      attr
+         mode: unit
+         bindPort: unit
+         backLog: unit
+
+         acceptor: unit
+
+      meth init(desc:Desc <= _)
+         true = @mode == unit
+
+         CompatSocketClass, init(desc:Desc)
+         mode := init
+      end
+
+      meth bind(Port)
+         true = @mode == init
+         if Port \= 0 then
+            bindPort := Port
+         else
+            % Generate a random port - let's do something stupid for now
+            bindPort := {Rand} mod 100 + 1234
+         end
+         mode := bound
+      end
+
+      meth listen(BackLog)
+         true = @mode == bound
+         backLog := BackLog
+
+         acceptor := {TCPAcceptorCreate 4 @bindPort}
+         mode := acceptor
+      end
+
+      meth accept(?Host ?Port ?Desc)
+         true = @mode == acceptor
+         Connection = {TCPAccept @acceptor}
+      in
+         {New CompatTCPConnectionClass init(Connection desc:?Desc) _}
+      end
+
+      meth connect(Host Port ?Desc)
+         true = @mode == init
+         Connection = {TCPConnect Host Port}
+      in
+         {New CompatTCPConnectionClass init(Connection desc:?Desc) _}
+      end
+
+      meth getSockName(?Port)
+         Port = @bindPort
+      end
+
+      meth close()
+         CompatSocketClass, close()
+
+         if @mode == acceptor then
+            {TCPAcceptorClose @acceptor}
+         end
+
+         mode := closed
+      end
    end
 
-   proc {CompatLSeek FD Whence Offset ?Where}
-      {Boot_OS.fseek FD Offset Whence Where}
+   class CompatTCPConnectionClass from CompatSocketClass
+      attr
+         connection
+
+      meth init(Connection desc:Desc <= _)
+         CompatSocketClass, init(desc:Desc)
+
+         connection := Connection
+      end
+
+      meth read(Max ?Head Tail ?Count)
+         {TCPConnectionRead @connection Max ?Head Tail ?Count}
+      end
+
+      meth write(Data ?Count)
+         {TCPConnectionWrite @connection Data ?Count}
+      end
+
+      meth shutDown(How)
+         What = case How
+                of 0 then receive
+                [] 1 then send
+                else both
+                end
+      in
+         {TCPConnectionShutdown @connection What}
+      end
+
+      meth close()
+         CompatSocketClass, close()
+         {TCPConnectionClose @connection}
+      end
    end
 
-   proc {CompatClose FD}
-      {Boot_OS.fclose FD}
+   fun {CompatSocket Domain Type Proto}
+      case Domain of 'PF_INET' then
+         case Type
+         of 'SOCK_STREAM' then
+            {New CompatTCPSocketClass init(desc:$) _}
+         end
+      end
+   end
+
+   proc {CompatBind Sock Port}
+      {{DescGet Sock} bind(Port)}
+   end
+
+   proc {CompatListen Sock BackLog}
+      {{DescGet Sock} listen(BackLog)}
+   end
+
+   proc {CompatAccept Sock ?Host ?Port ?Desc}
+      {{DescGet Sock} accept(?Host ?Port ?Desc)}
+   end
+
+   proc {CompatConnect Sock Host Port}
+      {{DescGet Sock} connect(Host Port)}
+   end
+
+   proc {CompatShutDown Sock How}
+      {{DescGet Sock} shutDown(How)}
+   end
+
+   proc {CompatGetSockName Sock ?Port}
+      {{DescGet Sock} getSockName(?Port)}
+   end
+
+   proc {CompatSend Sock Msg Flags ?Len}
+      {{DescGet Sock} send(Msg Flags ?Len)}
+   end
+
+   proc {CompatSendTo Sock Msg Flags Host Port ?Len}
+      {{DescGet Sock} sendTo(Msg Flags Host Port ?Len)}
+   end
+
+   proc {CompatReceiveFrom Sock Max Flags ?Head Tail ?Host ?Port ?Len}
+      {{DescGet Sock} receiveFrom(Max Flags ?Head Tail ?Host ?Port ?Len)}
    end
 
 end

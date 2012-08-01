@@ -494,7 +494,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
   /** Returns (named(PV(D)), D without singleton vars) for a given D */
   def extractDecls(
       declarations: List[RawDeclaration]): (List[Variable], List[Statement]) = {
-    val decls = patternVariables(declarations)
+    val decls = patternVariables(declarations).toList
     val namedDecls = nameDecls(decls)
 
     val statements = for {
@@ -511,8 +511,10 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
    *    Definition of the PV set</a>
    */
   private def patternVariables(
-      declarations: List[RawDeclaration]): List[RawVariable] = {
-    declarations flatMap patternVariables
+      declarations: List[RawDeclaration]): Set[RawVariable] = {
+    declarations.foldLeft(Set.empty[RawVariable]) {
+      (prev, declaration) => prev ++ patternVariables(declaration)
+    }
   }
 
   /** Compute the PV set for a single declaration
@@ -521,9 +523,9 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
    *    Definition of the PV set</a>
    */
   private def patternVariables(
-      declaration: RawDeclaration): List[RawVariable] = declaration match {
+      declaration: RawDeclaration): Set[RawVariable] = declaration match {
     case v: RawVariable =>
-      List(v)
+      Set(v)
 
     case CompoundStatement(statements) =>
       patternVariables(statements)
@@ -535,7 +537,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       patternVariables(lhs)
 
     case _ =>
-      Nil
+      Set.empty
   }
 
   /** Compute the PV set for an expression
@@ -544,27 +546,26 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
    *    Definition of the PV set</a>
    */
   private def patternVariables(
-      expression: Expression): List[RawVariable] = expression match {
+      expression: Expression): Set[RawVariable] = expression match {
     case v: RawVariable =>
-      List(v)
+      Set(v)
 
     case StatAndExpression(statement, expr) =>
       patternVariables(statement) ++ patternVariables(expr)
 
     case RawLocalExpression(decls, expr) =>
-      patternVariables(expr) filterNot (patternVariables(decls) contains)
+      patternVariables(expr) -- patternVariables(decls)
 
     case BindExpression(lhs, rhs) =>
       patternVariables(lhs) ++ patternVariables(rhs)
 
     case Record(_, fields) =>
-      for {
-        RecordField(_, value) <- fields
-        v <- patternVariables(value)
-      } yield v
+      fields.foldLeft(Set.empty[RawVariable]) {
+        case (prev, (RecordField(_, value))) => prev ++ patternVariables(value)
+      }
 
     case _ =>
-      Nil
+      Set.empty
   }
 
   /** Processes a pattern */

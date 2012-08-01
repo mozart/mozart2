@@ -347,6 +347,8 @@ prepare
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
 
+   Base % filled by the code applying this functor to be myself
+
 export
    %% Value
    'Value'              : Value
@@ -546,6 +548,9 @@ export
    'ByteString'         : ByteString
    'IsBitString'        : IsBitString
    'IsByteString'       : IsByteString
+
+   %% Reflexive me
+   'Base'               : Base
 
    %% Will be removed by the compiler
    'ByNeedDot'          : ByNeedDot

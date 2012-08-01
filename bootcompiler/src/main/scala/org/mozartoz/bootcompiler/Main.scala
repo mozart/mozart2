@@ -124,7 +124,7 @@ object Main {
   private def mainBaseEnv(config: Config) {
     import config._
 
-    val (program, bootModules) = createProgram(moduleDefs, None)
+    val (program, bootModules) = createProgram(moduleDefs, None, true)
 
     val functors =
       for (fileName <- fileNames)
@@ -156,26 +156,31 @@ object Main {
     // Create the main() proc
     import Output._
 
-    out << "void createBaseEnv(VM vm);\n";
+    out << "\n"
+    out << "void createBaseEnv(VM vm, RichNode baseEnv, RichNode bootMM);\n"
 
     for (url <- urls)
-      out << "void %s(VM vm);\n" % urlToProcName(url)
+      out << ("void %s(VM vm, RichNode baseEnv, RichNode bootMM);\n" %
+          urlToProcName(url))
 
     out << """
        |int main(int argc, char** argv) {
        |  boostenv::BoostBasedVM boostBasedVM;
        |  VM vm = boostBasedVM.vm;
        |
-       |  createBaseEnv(vm);
+       |  UnstableNode baseEnv = OptVar::build(vm);
+       |  UnstableNode bootMM = OptVar::build(vm);
+       |
+       |  createBaseEnv(vm, baseEnv, bootMM);
        |""".stripMargin
 
     for (url <- urls)
-      out << "  %s(vm);\n" % urlToProcName(url)
+      out << "  %s(vm, baseEnv, bootMM);\n" % urlToProcName(url)
 
     out << """
        |  boostBasedVM.run();
        |
-       |  createRunThread(vm);
+       |  createRunThread(vm, baseEnv, bootMM);
        |  boostBasedVM.run();
        |}
        |""".stripMargin
@@ -183,8 +188,8 @@ object Main {
 
   /** Creates a new Program */
   private def createProgram(moduleDefs: List[String],
-      baseDeclsFileName: Option[String]) = {
-    val program = new Program
+      baseDeclsFileName: Option[String], isBaseEnvironment: Boolean = false) = {
+    val program = new Program(isBaseEnvironment)
     val bootModules = loadModuleDefs(program, moduleDefs)
 
     baseDeclsFileName foreach { fileName =>

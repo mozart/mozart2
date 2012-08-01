@@ -109,34 +109,31 @@ object DesugarFunctor extends Transformer with TreeDSL {
       case None => (Nil, SkipStatement())
     }
 
-    val allDecls = importedDecls ++ definedDecls
+    val (utilsDecls, importsDot) = {
+      if (program.isBaseEnvironment) {
+        val regularDot = Constant(OzBuiltin(builtins.binaryOpToBuiltin(".")))
+        (None, regularDot)
+      } else {
+        val byNeedDot = Variable.newSynthetic("ByNeedDot")
+        (Some(byNeedDot), byNeedDot)
+      }
+    }
+
+    val allDecls = importedDecls ++ definedDecls ++ utilsDecls
 
     FUN("<Apply>", List(importsParam)) {
       LOCAL (allDecls:_*) IN {
         val statements = new ListBuffer[Statement]
         def exec(statement: Statement) = statements += statement
 
-        val baseEnv = new scala.collection.mutable.HashMap[String, Symbol]
-        var ByNeedDot: Symbol = null
+        if (!program.isBaseEnvironment)
+          exec(importsDot === baseEnvironment("ByNeedDot"))
 
         for (FunctorImport(module:Variable, aliases, _) <- imports) {
-          val isBase = module.symbol.name == "$BaseEnv"
-
           exec(module === (importsParam dot OzAtom(module.symbol.name)))
 
           for (AliasedFeature(feature, Some(variable:Variable)) <- aliases) {
-            if (isBase) {
-              exec(variable === (module dot feature))
-
-              val symbol = variable.symbol
-              baseEnv += (symbol.name -> symbol)
-
-              if (symbol.name == "ByNeedDot")
-                ByNeedDot = symbol
-            } else {
-              require(ByNeedDot ne null)
-              exec(variable === (ByNeedDot callExpr (module, feature)))
-            }
+            exec(variable === (importsDot callExpr (module, feature)))
           }
         }
 
@@ -153,8 +150,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
         val exportRec = Record(OzAtom("export"), exportFields)
 
         // Final body
-        BaseEnvStatement(Map.empty ++ baseEnv,
-            CompoundStatement(statements.toList)) ~>
+        CompoundStatement(statements.toList) ~>
         exportRec
       }
     }

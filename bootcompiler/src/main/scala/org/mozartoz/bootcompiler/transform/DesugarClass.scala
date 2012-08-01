@@ -198,7 +198,7 @@ object DesugarClass extends Transformer with TreeDSL {
     val specs = for {
       featOrAttr @ FeatOrAttr(name, value) <- featOrAttrs
     } yield {
-      val newValue = value getOrElse Variable(ooFreeFlag)
+      val newValue = value getOrElse ooFreeFlag
       treeCopy.RecordField(featOrAttr, name, newValue)
     }
 

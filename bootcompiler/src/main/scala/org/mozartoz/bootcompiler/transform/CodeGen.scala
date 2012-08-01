@@ -76,9 +76,6 @@ object CodeGen extends Transformer with TreeDSL {
         for (stat <- statements)
           generate(stat)
 
-      case BaseEnvStatement(baseEnv, body) =>
-        generate(body)
-
       case Variable(lhs) === Variable(rhs) =>
         lhs.toReg === rhs.toReg
 

@@ -19,10 +19,6 @@ class TreeCopier {
       statement: Statement) =
     new LocalStatement(declarations, statement).copyAttrs(tree)
 
-  def BaseEnvStatement(tree: Node, baseEnv: Map[String, Symbol],
-      body: Statement) =
-    new BaseEnvStatement(baseEnv, body).copyAttrs(tree)
-
   def CallStatement(tree: Node, callable: Expression, args: List[Expression]) =
     new CallStatement(callable, args).copyAttrs(tree)
 

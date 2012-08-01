@@ -8,7 +8,7 @@ import ast._
 import util._
 
 /** Program to be compiled */
-class Program {
+class Program(val isBaseEnvironment: Boolean = false) {
   /** Before flattening, abstract syntax tree of the whole program */
   var rawCode: Statement = SkipStatement()
 
@@ -21,9 +21,27 @@ class Program {
   /** Variables declared by the base environment */
   val baseDeclarations = new ArrayBuffer[String]
 
+  /** Outer-global Base environment variable */
+  val baseEnvSymbol = new Symbol("<Base>", synthetic = true, global = true)
+
+  /** Outer-global BootMM variable */
+  val bootMMSymbol = new Symbol("<BootMM>", synthetic = true, global = true)
+
+  /** All the outer-global variables */
+  val outerGlobalSymbols = Seq(baseEnvSymbol, bootMMSymbol)
+
+  /** Map of base symbols (only in base environment mode) */
+  val baseSymbols = new HashMap[String, Symbol]
+
   /** Implicit top-level abstraction */
   val topLevelAbstraction =
     new Abstraction(NoAbstraction, "<TopLevel>", NoPosition)
+
+  {
+    // Impose the globals of the top-level abstraction to be the outer-globals
+    for (sym <- outerGlobalSymbols)
+      topLevelAbstraction.acquire(sym)
+  }
 
   /** After flattening, list of the abstractions */
   val abstractions = new ListBuffer[Abstraction]
@@ -82,7 +100,7 @@ class Program {
        |public:
        |  Program(VM vm);
        |
-       |  void createRunThread();
+       |  void createRunThread(RichNode baseEnv, RichNode bootMM);
        |private:
        |  VM vm;
        |""".stripMargin
@@ -107,13 +125,21 @@ class Program {
     out << """
        |}
        |
-       |void Program::createRunThread() {
-       |  UnstableNode topLevelAbstraction = Abstraction::build(vm, 0, %s);
+       |void Program::createRunThread(RichNode baseEnv, RichNode bootMM) {
+       |  UnstableNode topLevelAbstraction = Abstraction::build(vm, 2, %s);
+       |  auto globalsArray =
+       |    RichNode(topLevelAbstraction).as<Abstraction>().getElementsArray();
        |
-       |  UnstableNode* initialThreadParams[] = { &topLevelAbstraction };
-       |  builtins::ModThread::Create::builtin().call(vm, initialThreadParams);
+       |  globalsArray[0].init(vm, baseEnv);
+       |  globalsArray[1].init(vm, bootMM);
+       |
+       |  auto thread = new (vm) Thread(vm, vm->getTopLevelSpace(),
+       |                                topLevelAbstraction);
+       |  thread->setRaiseOnBlock(%s);
        |}
-       |""".stripMargin % topLevelAbstraction.codeArea.ccCodeArea
+       |""".stripMargin % (
+           topLevelAbstraction.codeArea.ccCodeArea,
+           if (isBaseEnvironment) "true" else "false")
 
     for (codeArea <- codeAreas)
       codeArea.produceCC(out)
@@ -121,9 +147,9 @@ class Program {
     out << """
        |} // namespace
        |
-       |void %s(VM vm) {
+       |void %s(VM vm, RichNode baseEnv, RichNode bootMM) {
        |  Program program(vm);
-       |  program.createRunThread();
+       |  program.createRunThread(baseEnv, bootMM);
        |}
        |""".stripMargin % mainProcName
   }

@@ -24,12 +24,13 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
 
   /** Builds a program that creates the base environment
    *
-   *  The base functors must have the following structure:
+   *  The base functors must be functors indeed, and should have the following
+   *  structure:
    *  {{{
    *  functor
    *
    *  require
-   *     BootModA at 'x-oz://boot/ModA'
+   *     Boot_ModA at 'x-oz://boot/ModA'
    *     ...
    *
    *  prepare
@@ -41,47 +42,74 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  end
    *  }}}
    *
-   *  Boot modules are lookup up in the builtin modules map, and resolved
-   *  statically. These two parts define the ''base declarations'' as so
+   *  All the base functors are merged together as a single functor, that we
+   *  call the base functor and write <BaseFunctor> from here.
+   *
+   *  The program statement applies this functor, giving it as imports all
+   *  the boot modules. These are looked up in the boot modules map.
+   *  The result of the application, which is the Base module, is stored in
+   *  the outer-global variable <Base>.
+   *
+   *  Hence the program looks like this:
    *  {{{
    *  local
-   *     BootModA = <constant lookup up in the builtin modules map>
-   *     ...
+   *     Imports = 'import'(
+   *        'Boot_ModA': <constant looked up in the boot modules map>
+   *        ...
+   *        'Boot_ModN': <...>
+   *     )
    *  in
-   *     <contents of the prepare section above>
+   *     <Base> = {<BaseFunctor>.apply Imports}
    *  end
    *  }}}
    *
-   *  The program statement registers boot modules and the base module in the
-   *  boot manager:
+   *  The resulting Base module must export the boot module manager under
+   *  feature '$BootMM'. The program continues with registering the boot
+   *  modules in the boot module manager.
+   *
    *  {{{
+   *  <BootMM> = <Base>.'$BootMM'
    *  {<BootMM>.registerModule 'x-oz://boot/ModA' <constant Boot ModA>}
    *  ...
-   *  {<BootMM>.registerModule 'x-oz://system/Base' base(<exports>)}
-   *  }}}
-   *
-   *  The whole program is assembled like this:
-   *  {{{
-   *  local
-   *     <base declarations>
-   *  in
-   *     <program statement>
-   *  end
+   *  {<BootMM>.registerModule 'x-oz://boot/ModN' <constant Boot ModN>}
    *  }}}
    */
   def buildBaseEnvProgram(prog: Program,
       bootModulesMap: Map[String, Expression],
       baseFunctors: List[Expression]) {
 
-    val bases = baseFunctors map (parseBaseEnv(bootModulesMap, _))
+    // Merge all the base functors in one
+    val baseFunctor = mergeBaseFunctors(
+        baseFunctors map (_.asInstanceOf[FunctorExpression]))
 
-    for {
-      (_, fields) <- bases
-      RecordField(Constant(OzAtom(name)), _) <- fields
-    } {
+    // Extract exports to fill in `prog.baseDeclarations`
+    for (FunctorExport(Constant(OzAtom(name)), _) <- baseFunctor.exports) {
       prog.baseDeclarations += name
     }
 
+    // Now starts the synthesis of the program statement
+
+    // Application of the base functor
+    val applyBaseFunctorStat = {
+      val imports = {
+        val reqs = baseFunctor.require ++ baseFunctor.imports
+
+        val fields =
+          for (FunctorImport(RawVariable(name), _, Some(location)) <- reqs)
+            yield RecordField(OzAtom(name), bootModulesMap(location))
+
+        Record(OzAtom("import"), fields.toList)
+      }
+
+      (baseFunctor dot OzAtom("apply")) call (imports, prog.baseEnvSymbol)
+    }
+
+    // Fetch the boot MM
+    val fetchBootMMStat = {
+      prog.bootMMSymbol === (prog.baseEnvSymbol dot OzAtom("$BootMM"))
+    }
+
+    // Register the boot modules
     val registerBootModulesStat = CompoundStatement {
       val registerProc = getBootMMProc(prog, "registerModule")
       for ((url, module) <- bootModulesMap.toList) yield {
@@ -89,60 +117,43 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       }
     }
 
-    val registerBaseModuleStat = {
-      val registerProc = getBootMMProc(prog, "registerModule")
-      val baseModule = Record(OzAtom("base"), bases.flatMap(_._2))
-      registerProc.call(OzAtom("x-oz://system/Base.ozf"), baseModule)
-    }
-
-    val registerBaseThingsStat = {
-      registerBootModulesStat ~
-      registerBaseModuleStat
-    }
-
+    // Put things together
     val wholeProgram = {
-      bases.foldRight(registerBaseThingsStat) {
-        case ((statement, _), inner) =>
-          RAWLOCAL (statement) IN {
-            inner
-          }
-      }
+      applyBaseFunctorStat ~
+      fetchBootMMStat ~
+      registerBootModulesStat
     }
 
     prog.rawCode = wholeProgram
   }
 
-  private def parseBaseEnv(bootModulesMap: Map[String, Expression],
-      baseFunctor: Expression): (Statement, List[RecordField]) = {
+  private def mergeBaseFunctors(functors: List[FunctorExpression]) = {
+    atPos(functors.head) {
+      functors.tail.foldLeft(functors.head) { (lhs, rhs) =>
+        val FunctorExpression(lhsName, lhsRequire, lhsPrepare,
+            lhsImports, lhsDefine, lhsExports) = lhs
 
-    val FunctorExpression(_, baseRequire,
-        Some(RawLocalStatement(baseDecls, baseStat)),
-        Nil, None, baseExports) = baseFunctor
+        val FunctorExpression(rhsName, rhsRequire, rhsPrepare,
+            rhsImports, rhsDefine, rhsExports) = rhs
 
-    val bootModulesDecls = for {
-      imp @ FunctorImport(moduleVar, Nil, Some(url)) <- baseRequire
-    } yield {
-      atPos(imp) {
-        BindStatement(moduleVar, bootModulesMap(url))
+        FunctorExpression(if (lhsName.isEmpty) rhsName else lhsName,
+            lhsRequire ::: rhsRequire, mergePrepares(lhsPrepare, rhsPrepare),
+            lhsImports ::: rhsImports, mergePrepares(lhsDefine, rhsDefine),
+            lhsExports ::: rhsExports)
       }
     }
+  }
 
-    val baseDeclsAsStats = baseDecls map {
-      case stat:Statement => stat
-      case v:RawVariable => atPos(v)(v === UnboundExpression())
+  private def mergePrepares(lhs: Option[LocalStatementOrRaw],
+      rhs: Option[LocalStatementOrRaw]) = {
+    if (lhs.isEmpty) rhs
+    else if (rhs.isEmpty) lhs
+    else {
+      val RawLocalStatement(lhsDecls, lhsStat) = lhs.get
+      val RawLocalStatement(rhsDecls, rhsStat) = rhs.get
+
+      Some(RawLocalStatement(lhsDecls ::: rhsDecls, lhsStat ~ rhsStat))
     }
-
-    val statement = {
-      RAWLOCAL (bootModulesDecls:_*) IN {
-        statsAndStatToStat(baseDeclsAsStats, baseStat)
-      }
-    }
-
-    val baseEnvRecordFields = for {
-      FunctorExport(feature, value) <- baseExports
-    } yield RecordField(feature, value)
-
-    (statement, baseEnvRecordFields)
   }
 
   /** Builds a linker program
@@ -158,10 +169,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
   }
 
   private def getBootMMProc(prog: Program, proc: String): Expression = {
-    getBootMM(prog) dot OzAtom(proc)
-  }
-
-  private def getBootMM(prog: Program): Expression = {
-    Constant(OzBuiltin(prog.builtins.getBootMM)).callExpr()
+    Variable(prog.bootMMSymbol) dot OzAtom(proc)
   }
 }

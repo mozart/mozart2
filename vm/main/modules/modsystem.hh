@@ -129,6 +129,19 @@ public:
       return OpResult::proceed();
     }
   };
+
+  class Exit: public Builtin<Exit> {
+  public:
+    Exit(): Builtin("exit") {}
+
+    OpResult operator()(VM vm, In exitCode) {
+      nativeint intExitCode = 0;
+      MOZART_GET_ARG(intExitCode, exitCode, MOZART_STR("Integer"));
+
+      std::exit(intExitCode);
+      return OpResult::proceed();
+    }
+  };
 };
 
 }

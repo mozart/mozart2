@@ -89,7 +89,7 @@
 
 functor
 import
-   BootApplication(exit: Exit) at 'x-oz://boot/Application'
+   BootSystem(exit: Exit) at 'x-oz://boot/System'
    OS(getEnv)
    Open(file)
    Property(get condGet)

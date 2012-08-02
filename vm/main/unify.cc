@@ -120,10 +120,17 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
 
       case OpResult::orWaitBefore:
       case OpResult::orWaitQuietBefore: {
-        // TODO Do we need to actually support the *quiet* here?
-        suspendTrail.push_back_new(vm, left.getStableRef(vm),
-                                   right.getStableRef(vm));
-        break;
+        if (!RichNode(*pairResult.getWaiteeNode()).is<FailedValue>()) {
+          // TODO Do we need to actually support the *quiet* here?
+          suspendTrail.push_back_new(vm, left.getStableRef(vm),
+                                     right.getStableRef(vm));
+          break;
+        } else {
+          stack.clear(vm);
+          suspendTrail.clear(vm);
+          undoBindings(vm);
+          return pairResult;
+        }
       }
 
       case OpResult::orProceed: {

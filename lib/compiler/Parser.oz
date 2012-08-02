@@ -256,7 +256,7 @@ define
                  pos] #fun{$ [P1 S M D E P2]}fFloat({String.toFloat {Flatten [S M D E]}} {MkPos P1 P2}) end
 
       fileName: alt(
-                   star(alt(alNum &~ &. &/ &-))
+                   plus(alt(alNum &~ &. &/ &-))
                    [&' star(atomChar) &'] #fun{$ [_ L _]} L end
                    )
       pp_whiteSpace: star(alt(
@@ -684,12 +684,16 @@ define
                  lvl0)
       feature:alt(variable atom integer character kwValue)
       caseClause:alt(
-                    [pB lvl0 'andthen' opt(seq1(phrase 'in') fSkip(unit)) phrase pE 'then' inPhrase]
+                    [pB pat0 'andthen' opt(seq1(phrase 'in') fSkip(unit)) phrase pE 'then' inPhrase]
                     #fun{$ [P1 S1 _ OS S2 P2 _ S3]}
                         fCaseClause(fSideCondition(S1 OS S2 {MkPos P1 P2}) S3)
                      end
-                    [lvl0 'then' inPhrase]#fun{$ [S1 _ S2]}fCaseClause(S1 S2)end
+                    [pat0 'then' inPhrase]#fun{$ [S1 _ S2]}fCaseClause(S1 S2)end
                     )
+      pat0:alt(
+              [pB lvl4 '=' pat0 pE]#fun{$ [P1 S1 _ S2 P2]}fEq(S1 S2 {MkPos P1 P2})end
+              lvl4
+              )
       )
 
    TG={Translate {Record.adjoinList Rules RulesL}}

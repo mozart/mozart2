@@ -93,6 +93,8 @@ void Runnable::suspend(bool skipUnschedule) {
 }
 
 void Runnable::suspendOnVar(VM vm, RichNode variable, bool skipUnschedule) {
+  assert(variable.isTransient() && !variable.is<FailedValue>());
+
   suspend(skipUnschedule);
 
   DataflowVariable(variable).addToSuspendList(vm, _reification);

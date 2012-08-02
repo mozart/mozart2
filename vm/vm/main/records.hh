@@ -75,9 +75,12 @@ OpResult BaseRecord<T>::waitOr(Self self, VM vm,
                                UnstableNode& result) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < getArraySize(); i++) {
-    if (!RichNode(self[i]).isTransient()) {
+    RichNode element = self[i];
+    if (!element.isTransient()) {
       static_cast<Implementation<T>*>(this)->getFeatureAt(self, vm, i, result);
       return OpResult::proceed();
+    } else if (element.is<FailedValue>()) {
+      return OpResult::waitFor(vm, element);
     }
   }
 
@@ -300,6 +303,12 @@ OpResult Implementation<Cons>::waitOr(Self self, VM vm,
     result = SmallInt::build(vm, 2);
     return OpResult::proceed();
   }
+
+  // If there is a feature which is a failed value, wait for it
+  if (head.is<FailedValue>())
+    return OpResult::waitFor(vm, head);
+  else if (tail.is<FailedValue>())
+    return OpResult::waitFor(vm, tail);
 
   // Create the control variable
   UnstableNode unstableControlVar = Variable::build(vm);

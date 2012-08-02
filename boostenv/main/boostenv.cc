@@ -120,6 +120,9 @@ void BoostBasedVM::run() {
   // Tear down
   delete work;
   asioRunThread.join();
+
+  // Get ready for a later call to run()
+  io_service.reset();
 }
 
 void BoostBasedVM::onPreemptionTimerExpire(

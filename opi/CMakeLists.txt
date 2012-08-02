@@ -83,6 +83,7 @@ file(GLOB SYS_FUNCTORS
     "${MOZART_LIB_DIR}/cp/Combinator.oz"
     "${MOZART_LIB_DIR}/cp/RecordC.oz"
     "${MOZART_LIB_DIR}/dp/URL.oz"
+    "${MOZART_LIB_DIR}/ap/Application.oz"
     "${MOZART_DIR}/boostenv/lib/*.oz")
 
 set(COMPILER_FUNCTORS
@@ -97,7 +98,11 @@ foreach(FUNCTOR ${COMPILER_FUNCTORS})
 endforeach()
 
 set(ALL_FUNCTORS
-    "${CMAKE_CURRENT_SOURCE_DIR}/MainTest.oz" # MainTest.oz must be first
+    #"${CMAKE_CURRENT_SOURCE_DIR}/MainTest.oz" # MainTest.oz must be first
+    "${CMAKE_CURRENT_SOURCE_DIR}/OPI.oz"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Emacs.oz"
+    "${CMAKE_CURRENT_SOURCE_DIR}/OPIServer.oz"
+    "${CMAKE_CURRENT_SOURCE_DIR}/OPIEnv.oz"
     ${SYS_FUNCTORS})
 
 set(ALL_CCFILES "LinkerMain.cc" "Base.cc")

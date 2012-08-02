@@ -68,4 +68,7 @@ define
 
    {Put 'limits.bytecode.xregisters' 65535}
 
+   {Put 'application.args' nil}
+   {Put 'application.gui' false}
+
 end

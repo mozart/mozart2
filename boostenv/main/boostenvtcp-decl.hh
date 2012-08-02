@@ -73,11 +73,20 @@ public:
   void startAsyncRead(StableNode** tailNode, StableNode** statusNode);
 
   inline
+  void startAsyncReadSome(StableNode** tailNode, StableNode** statusNode);
+
+  inline
   void startAsyncWrite(StableNode** statusNode);
 
 private:
   inline
   TCPConnection(BoostBasedVM& environment);
+
+private:
+  inline
+  void readHandler(const boost::system::error_code& error,
+                   size_t bytes_transferred,
+                   StableNode** tailNode, StableNode** statusNode);
 
 private:
   BoostBasedVM& _environment;

@@ -447,7 +447,7 @@ public:
       StableNode** statusNode;
       env.createAsyncIOFeedbackNode(statusNode, status);
 
-      tcpConnection->startAsyncRead(tailNode, statusNode);
+      tcpConnection->startAsyncReadSome(tailNode, statusNode);
 
       return OpResult::proceed();
     }

@@ -82,26 +82,20 @@ void TCPConnection::startAsyncRead(StableNode** tailNode,
                                    StableNode** statusNode) {
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
-    _environment.postVMEvent([=] () {
-      if (!error) {
-        VM vm = _environment.vm;
-
-        UnstableNode head(vm, **tailNode);
-        for (size_t i = bytes_transferred; i > 0; i--)
-          head = buildCons(vm, _readData[i-1], std::move(head));
-
-        _environment.bindAndReleaseAsyncIOFeedbackNode(
-          statusNode, MOZART_STR("succeeded"), bytes_transferred, std::move(head));
-      } else {
-        _environment.raiseAndReleaseAsyncIOFeedbackNode(
-          statusNode, MOZART_STR("socket"), MOZART_STR("read"), error.value());
-      }
-
-      _environment.releaseAsyncIONode(tailNode);
-    });
+    readHandler(error, bytes_transferred, tailNode, statusNode);
   };
 
   boost::asio::async_read(_socket, boost::asio::buffer(_readData), handler);
+}
+
+void TCPConnection::startAsyncReadSome(StableNode** tailNode,
+                                       StableNode** statusNode) {
+  auto handler = [=] (const boost::system::error_code& error,
+                      size_t bytes_transferred) {
+    readHandler(error, bytes_transferred, tailNode, statusNode);
+  };
+
+  _socket.async_read_some(boost::asio::buffer(_readData), handler);
 }
 
 void TCPConnection::startAsyncWrite(StableNode** statusNode) {
@@ -119,6 +113,29 @@ void TCPConnection::startAsyncWrite(StableNode** statusNode) {
   };
 
   boost::asio::async_write(_socket, boost::asio::buffer(_writeData), handler);
+}
+
+void TCPConnection::readHandler(const boost::system::error_code& error,
+                                size_t bytes_transferred,
+                                StableNode** tailNode,
+                                StableNode** statusNode) {
+  _environment.postVMEvent([=] () {
+    if (!error) {
+      VM vm = _environment.vm;
+
+      UnstableNode head(vm, **tailNode);
+      for (size_t i = bytes_transferred; i > 0; i--)
+        head = buildCons(vm, _readData[i-1], std::move(head));
+
+      _environment.bindAndReleaseAsyncIOFeedbackNode(
+        statusNode, MOZART_STR("succeeded"), bytes_transferred, std::move(head));
+    } else {
+      _environment.raiseAndReleaseAsyncIOFeedbackNode(
+        statusNode, MOZART_STR("socket"), MOZART_STR("read"), error.value());
+    }
+
+    _environment.releaseAsyncIONode(tailNode);
+  });
 }
 
 /////////////////

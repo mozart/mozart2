@@ -110,7 +110,12 @@ define
       {Boot_OS.fread File Max Tail Count Head}
    end
 
-   Fwrite = Boot_OS.fwrite
+   proc {Fwrite File DataV ?Count}
+      Data = {VirtualString.toString DataV}
+   in
+      {Boot_OS.fwrite File DataV ?Count}
+   end
+
    Fclose = Boot_OS.fclose
    Fseek = Boot_OS.fseek
    Fclose = Boot_OS.fclose
@@ -149,7 +154,9 @@ define
       end
    end
 
-   fun {TCPConnectionWrite Connection Data}
+   fun {TCPConnectionWrite Connection DataV}
+      Data = {VirtualString.toString DataV}
+   in
       {WaitResult {Boot_OS.tcpConnectionWrite Connection Data}}
    end
 

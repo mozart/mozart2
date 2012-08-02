@@ -68,6 +68,24 @@ public:
       return OpResult::proceed();
     }
   };
+
+  class SetId: public Builtin<SetId> {
+  public:
+    SetId(): Builtin("setId") {}
+
+    OpResult operator()(VM vm, In thread, In id) {
+      return OpResult::proceed();
+    }
+  };
+
+  class Breakpoint: public Builtin<Breakpoint> {
+  public:
+    Breakpoint(): Builtin("breakpoint") {}
+
+    OpResult operator()(VM vm) {
+      return OpResult::proceed();
+    }
+  };
 };
 
 }

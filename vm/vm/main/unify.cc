@@ -169,11 +169,15 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
       left = *suspendTrail.front().left;
       right = *suspendTrail.front().right;
 
-      if (left.isTransient())
+      if (left.isTransient()) {
+        DataflowVariable(left).markNeeded(vm);
         DataflowVariable(left).addToSuspendList(vm, controlVar);
+      }
 
-      if (right.isTransient())
+      if (right.isTransient()) {
+        DataflowVariable(right).markNeeded(vm);
         DataflowVariable(right).addToSuspendList(vm, controlVar);
+      }
     } else {
       UnstableNode label = Atom::build(vm, vm->coreatoms.pipe);
 
@@ -190,15 +194,19 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
         leftTuple.initElement(vm, i, leftTemp);
 
         RichNode richLeftTemp = leftTemp;
-        if (richLeftTemp.isTransient())
+        if (richLeftTemp.isTransient()) {
+          DataflowVariable(richLeftTemp).markNeeded(vm);
           DataflowVariable(richLeftTemp).addToSuspendList(vm, controlVar);
+        }
 
         UnstableNode rightTemp(vm, *iter->right);
         rightTuple.initElement(vm, i, rightTemp);
 
         RichNode richRightTemp = rightTemp;
-        if (richRightTemp.isTransient())
+        if (richRightTemp.isTransient()) {
+          DataflowVariable(richRightTemp).markNeeded(vm);
           DataflowVariable(richRightTemp).addToSuspendList(vm, controlVar);
+        }
       }
     }
 

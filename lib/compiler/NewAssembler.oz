@@ -390,12 +390,15 @@ define
       prop final
 
       attr
+         VSInstrsHd
+         VSInstrsTl
          InstrsHd
          InstrsTl
          LabelDict
          Size
 
       meth init()
+         VSInstrsHd <- @VSInstrsTl
          InstrsHd <- @InstrsTl
          LabelDict <- {NewDictionary}
          Size <- 0
@@ -440,9 +443,12 @@ define
          of lbl(L) then
             {self setLabel(L)}
          else
+            NewVSTl
             NewTl
             Instr = {ResolveOverload OverloadedInstr}
          in
+            @VSInstrsTl = (@Size#OverloadedInstr) | NewVSTl
+            VSInstrsTl <- NewVSTl
             {self DeclareLabelsInInstr(Instr)}
             Size <- @Size + {GetInstrSize Instr}
             @InstrsTl = (Instr#@Size) | NewTl
@@ -459,6 +465,7 @@ define
       end
 
       meth MarkEnd()
+         @VSInstrsTl = nil
          @InstrsTl = nil
       end
 
@@ -553,6 +560,42 @@ define
             in
                Pat#A
             end})
+      end
+
+      meth outputVS($)
+         {self MarkEnd()}
+
+         AddrToLabelDict = {NewDictionary}
+      in
+         {ForAll {Dictionary.entries @LabelDict}
+          proc {$ Label#Addr}
+             if {IsDet Addr} then
+                {Dictionary.put AddrToLabelDict Addr Label}
+             end
+          end}
+
+         '%% Code Size:\n'#@Size#' % bytecode elements\n'#
+         AssemblerClass, CodeToVS(@VSInstrsHd AddrToLabelDict $)
+      end
+
+      meth CodeToVS(Code AddrToLabelDict $)
+         case Code
+         of (Addr#Instr) | CodeTail then
+            Label = {Dictionary.condGet AddrToLabelDict Addr unit}
+            LabelS = if Label == unit then nil else
+                        {VirtualString.toString
+                         'lbl('#{Value.toVirtualString Label 2 2}#')'}
+                     end
+            PaddingLength = 16 - {Length LabelS}
+            Padding = {MakeList PaddingLength}
+         in
+            {ForAll Padding proc {$ X} X = 32 end}
+            LabelS#Padding#{Value.toVirtualString Instr 30 10} # '\n' #
+            (AssemblerClass, CodeToVS(CodeTail AddrToLabelDict $))
+
+         [] nil then
+            nil
+         end
       end
    end
 
@@ -706,7 +749,7 @@ define
       end
    end
 
-   fun {Assemble Arity Code PrintName DebugData Switches}
+   proc {Assemble Arity Code PrintName DebugData Switches ?CodeArea ?VS}
       Verify = {CondSelect Switches verify true}
       DoPeephole = {CondSelect Switches peephole true}
       Assembler = {New AssemblerClass init()}
@@ -724,7 +767,9 @@ define
          {Assembler checkLabels()}
       end
 
-      {InternalAssemble Arity {Assembler output($)} PrintName DebugData}
+      CodeArea = {InternalAssemble Arity {Assembler output($)}
+                  PrintName DebugData}
+      VS = {ByNeedFuture fun {$} {Assembler outputVS($)} end}
    end
 
 end

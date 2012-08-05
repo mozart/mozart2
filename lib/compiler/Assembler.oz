@@ -743,18 +743,33 @@ define
 \else
 
    class CompatAssemblerClass
-      feat codeArea
+      attr
+         codeAreas
+         mainCodeArea
 
-      meth init(CodeArea)
-         self.codeArea = CodeArea
+      meth init()
+         codeAreas := nil
+         mainCodeArea := unit
+      end
+
+      meth addCodeArea(CodeArea VS)
+         codeAreas := (CodeArea#VS) | @codeAreas
+      end
+
+      meth setMainCodeArea(CodeArea)
+         mainCodeArea := CodeArea
       end
 
       meth load(Globals ?P)
-         P = {CompilerSupport.newAbstraction self.codeArea Globals}
+         P = {CompilerSupport.newAbstraction @mainCodeArea Globals}
       end
 
       meth output(?VS)
-         VS = {Value.toVirtualString self.codeArea 10 10}
+         VS = {FoldL @codeAreas
+               fun {$ Prev CodeArea#VS}
+                  {Wait VS}
+                  Prev#'\n'#VS
+               end nil}
       end
    end
 
@@ -1016,15 +1031,20 @@ define
    end
 
    proc {InternalAssemble Code Switches ?Assembler}
-      fun {AssembleInner Arity Code PrintName DebugData}
+      !Assembler = {New CompatAssemblerClass init()}
+
+      proc {AssembleInner Arity Code PrintName DebugData ?CodeArea}
          NewCode = {OldCodeToNewCode Code AssembleInner}
+         VS
       in
-         {NewAssembler.assemble Arity NewCode PrintName DebugData Switches}
+         {NewAssembler.assemble Arity NewCode PrintName DebugData Switches
+          ?CodeArea ?VS}
+         {Assembler addCodeArea(CodeArea VS)}
       end
 
       CodeArea = {AssembleInner 0 Code '' unit}
    in
-      Assembler = {New CompatAssemblerClass init(CodeArea)}
+      {Assembler setMainCodeArea(CodeArea)}
    end
 
    proc {Assemble Code Globals Switches ?P ?VS}

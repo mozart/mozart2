@@ -61,8 +61,6 @@ define
             lock Sock Port in
                thread
                   Sock = {New TextSocket server(port: ?Port)}
-                  {System.show 'received a connection'}
-                  {System.showError 'stderr: received a connection'}
                end
                {Wait Port}
                {Wait OPIServer.port}
@@ -72,8 +70,6 @@ define
                                      end#Port#' '#OPIServer.port#'\''}
                {System.showInfo ''}
                Listener.'class', init(CompilerObject Serve)
-               {System.show 'just telling you I\'m there'}
-               {System.showError 'and telling you on stderr too'}
             end
          end
          meth close()

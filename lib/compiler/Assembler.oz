@@ -875,6 +875,13 @@ define
          [] popEx | Rest then
             popExceptionHandler | {Loop Rest}
 
+         % patch for putConstant followed by setValue/unifyValue (TODO unsafe!)
+         % IMO it's a bug in the codegen in the first place
+         [] putConstant(Value R1) | setValue(R2) | Rest andthen R1 == R2 then
+            {Loop setConstant(Value) | Rest}
+         [] putConstant(Value R1) | unifyValue(R2) | Rest andthen R1 == R2 then
+            {Loop unifyConstant(Value) | Rest}
+
          % putConstant(Value Reg) become moveKX / moveKY
          [] putConstant(Value R) | Rest then
             move(k(Value) R) | {Loop Rest}
@@ -939,6 +946,8 @@ define
                {Loop Rest}
 
          % unifyThings become arrayFillThings
+         [] unifyConstant(Value) | Rest then
+            arrayFill(k(Value)) | {Loop Rest}
          [] unifyNumber(Value) | Rest then
             arrayFill(k(Value)) | {Loop Rest}
          [] unifyLiteral(Value) | Rest then

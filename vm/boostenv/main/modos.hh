@@ -130,6 +130,21 @@ public:
     }
   };
 
+  class Tmpnam: public Builtin<Tmpnam> {
+  public:
+    Tmpnam(): Builtin("tmpnam") {}
+
+    OpResult operator()(VM vm, Out result) {
+      std::string nativeStr =
+        std::string("/tmp/temp-") + vm->genUUID().toString();
+      auto nresult = toUTF<nchar>(makeLString(nativeStr.c_str(),
+                                              nativeStr.size()));
+
+      result = Atom::build(vm, nresult.length, nresult.string);
+      return OpResult::proceed();
+    }
+  };
+
   class Fopen: public Builtin<Fopen> {
   public:
     Fopen(): Builtin("fopen") {}

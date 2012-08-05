@@ -43,6 +43,8 @@ export
 
    % File I/0
    GetCWD
+   Tmpnam
+
    Fopen
    Fread
    Fwrite
@@ -103,8 +105,12 @@ define
    % File I/0
 
    GetCWD = Boot_OS.getCWD
+   Tmpnam = Boot_OS.tmpnam
 
-   Fopen = Boot_OS.fopen
+   fun {Fopen FileName Mode}
+      {Boot_OS.fopen {VirtualString.toString FileName}
+       {VirtualString.toString Mode}}
+   end
 
    proc {Fread File Max ?Head Tail ?Count}
       {Boot_OS.fread File Max Tail Count Head}
@@ -113,7 +119,7 @@ define
    proc {Fwrite File DataV ?Count}
       Data = {VirtualString.toString DataV}
    in
-      {Boot_OS.fwrite File DataV ?Count}
+      {Boot_OS.fwrite File Data ?Count}
    end
 
    Fclose = Boot_OS.fclose
@@ -143,7 +149,9 @@ define
    TCPAcceptorClose = Boot_OS.tcpAcceptorClose
 
    fun {TCPConnect Host Service}
-      {WaitResult {Boot_OS.tcpConnect Host Service}}
+      {WaitResult {Boot_OS.tcpConnect
+                   {VirtualString.toString Host}
+                   {VirtualString.toString Service}}}
    end
 
    proc {TCPConnectionRead Connection Count ?Head Tail ?ReadCount}

@@ -201,8 +201,7 @@ class Dictionary;
  * Dictionary
  */
 template <>
-class Implementation<Dictionary>: public WithHome,
-  public DottableHelper<Dictionary> {
+class Implementation<Dictionary>: public WithHome {
 public:
   typedef SelfType<Dictionary>::Self Self;
 public:
@@ -223,10 +222,12 @@ public:
   // Dottable interface
 
   inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+  OpResult lookupFeature(Self self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value);
 
 public:
   // DotAssignable interface

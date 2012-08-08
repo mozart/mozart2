@@ -113,14 +113,18 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
   _GsInitialized = false;
 }
 
-OpResult Implementation<Object>::dot(Self self, VM vm,
-                                     RichNode feature, UnstableNode& result) {
-  return Dottable(_features).dot(vm, feature, result);
+OpResult Implementation<Object>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  return Dottable(_features).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Implementation<Object>::hasFeature(Self self, VM vm, RichNode feature,
-                                            bool& result) {
-  return Dottable(_features).hasFeature(vm, feature, result);
+OpResult Implementation<Object>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  return Dottable(_features).lookupFeature(vm, feature, found, value);
 }
 
 OpResult Implementation<Object>::getClass(Self self, VM vm,
@@ -167,11 +171,19 @@ OpResult Implementation<Object>::attrExchange(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Object>::getAttrOffset(Self self, VM vm,
-                                               RichNode attribute,
-                                               size_t& offset) {
-  return RichNode(_attrArity).as<Arity>().requireFeature(
-    vm, self, attribute, offset);
+OpResult Implementation<Object>::getAttrOffset(
+  Self self, VM vm, RichNode attribute, size_t& offset) {
+
+  bool found = false;
+  MOZART_CHECK_OPRESULT(
+    RichNode(_attrArity).as<Arity>().lookupFeature(
+      vm, attribute, found, offset));
+
+  if (found)
+    return OpResult::proceed();
+  else
+    return raiseError(vm, MOZART_STR("object"),
+                      MOZART_STR("@"), self, attribute);
 }
 
 OpResult Implementation<Object>::procedureArity(Self self, VM vm,

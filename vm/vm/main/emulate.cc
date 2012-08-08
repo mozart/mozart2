@@ -1414,8 +1414,7 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
   size_t debugFeatureIndex = 0;
 
   MOZART_ASSERT_PROCEED(arity.lookupFeature(
-    vm, debugAtom, debugFeatureIndex).mapProceedFailToTrueFalse(
-      hasFeatureDebug));
+    vm, debugAtom, hasFeatureDebug, debugFeatureIndex));
 
   if (!hasFeatureDebug)
     return build(vm, exception);

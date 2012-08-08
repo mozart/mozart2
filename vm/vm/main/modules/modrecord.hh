@@ -27,6 +27,8 @@
 
 #include "../mozartcore.hh"
 
+#include "modcompilersupport.hh"
+
 #ifndef MOZART_GENERATOR
 
 namespace mozart {
@@ -130,6 +132,75 @@ public:
         return matchTypeError(vm, res, contents,
                               MOZART_STR("#-tuple with even arity"));
       }
+    }
+  };
+
+  // Pattern matching helpers
+
+  class Test: public Builtin<Test> {
+  public:
+    Test(): Builtin("test") {}
+
+    OpResult operator()(VM vm, In value, In patLabel, In patFeatures,
+                        Out result) {
+      using namespace patternmatching;
+
+      UnstableNode patArityUnstable;
+      MOZART_CHECK_OPRESULT(
+        ModCompilerSupport::MakeArityDynamic::builtin()(
+          vm, patLabel, patFeatures, patArityUnstable));
+      RichNode patArity = patArityUnstable;
+
+      bool boolResult = false;
+
+      if (patArity.is<Boolean>()) {
+        assert(patArity.as<Boolean>().value() == false);
+        size_t patWidth = 0;
+        MOZART_ASSERT_PROCEED(RecordLike(patFeatures).width(vm, patWidth));
+
+        MOZART_CHECK_OPRESULT(
+          RecordLike(value).testTuple(vm, patLabel, patWidth, boolResult));
+      } else {
+        assert(patArity.is<mozart::Arity>());
+
+        MOZART_CHECK_OPRESULT(
+          RecordLike(value).testRecord(vm, patArity, boolResult));
+      }
+
+      result = build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
+  class TestLabel: public Builtin<TestLabel> {
+  public:
+    TestLabel(): Builtin("testLabel") {}
+
+    OpResult operator()(VM vm, In value, In patLabel, Out result) {
+      bool boolResult = false;
+      MOZART_CHECK_OPRESULT(
+        RecordLike(value).testLabel(vm, patLabel, boolResult));
+
+      result = build(vm, boolResult);
+      return OpResult::proceed();
+    }
+  };
+
+  class TestFeature: public Builtin<TestFeature> {
+  public:
+    TestFeature(): Builtin("testFeature") {}
+
+    OpResult operator()(VM vm, In value, In patFeature,
+                        Out found, Out fieldValue) {
+      bool boolFound = false;
+      MOZART_CHECK_OPRESULT(
+        Dottable(value).lookupFeature(vm, patFeature, boolFound, fieldValue));
+
+      found = build(vm, boolFound);
+      if (!boolFound)
+        fieldValue = build(vm, unit);
+
+      return OpResult::proceed();
     }
   };
 };

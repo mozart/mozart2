@@ -419,16 +419,27 @@ Implementation<Dictionary>::Implementation(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()), dict(gr, from->dict) {
 }
 
-OpResult Implementation<Dictionary>::dot(
-  Self self, VM vm, RichNode feature, UnstableNode& result) {
+OpResult Implementation<Dictionary>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
 
-  return dictGet(self, vm, feature, result);
+  MOZART_REQUIRE_FEATURE(feature);
+
+  UnstableNode* valueNode = nullptr;
+  found = dict.lookup(vm, feature, valueNode);
+
+  if (found && value.isDefined())
+    value.get().copy(vm, *valueNode);
+
+  return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::hasFeature(
-  Self self, VM vm, RichNode feature, bool& result) {
+OpResult Implementation<Dictionary>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
 
-  return dictMember(self, vm, feature, result);
+  UnstableNode featureNode = build(vm, feature);
+  return lookupFeature(self, vm, featureNode, found, value);
 }
 
 OpResult Implementation<Dictionary>::isDictionary(Self self, VM vm,

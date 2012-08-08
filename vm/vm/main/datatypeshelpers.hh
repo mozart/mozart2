@@ -42,23 +42,21 @@ OpResult LiteralHelper<T>::isLiteral(Self self, VM vm, bool& result) {
 }
 
 template <class T>
-OpResult LiteralHelper<T>::dot(Self self, VM vm,
-                               RichNode feature, UnstableNode& result) {
+OpResult LiteralHelper<T>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
+
   MOZART_REQUIRE_FEATURE(feature);
-  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
+  found = false;
+  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::dotNumber(Self self, VM vm,
-                                     nativeint feature, UnstableNode& result) {
-  return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-}
+OpResult LiteralHelper<T>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
 
-template <class T>
-OpResult LiteralHelper<T>::hasFeature(Self self, VM vm,
-                                      RichNode feature, bool& result) {
-  MOZART_REQUIRE_FEATURE(feature);
-  result = false;
+  found = false;
   return OpResult::proceed();
 }
 
@@ -93,71 +91,63 @@ OpResult LiteralHelper<T>::waitOr(Self self, VM vm, UnstableNode& result) {
   return OpResult::waitFor(vm, dummyVar);
 }
 
-///////////////////////////
-// IntegerDottableHelper //
-///////////////////////////
-
 template <class T>
-OpResult IntegerDottableHelper<T>::dot(Self self, VM vm,
-                                       RichNode feature, UnstableNode& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    return dotNumber(self, vm, featureIntValue, result);
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
+OpResult LiteralHelper<T>::testRecord(Self self, VM vm, RichNode arity,
+                                      bool& result) {
+  result = false;
+  return OpResult::proceed();
 }
 
 template <class T>
-OpResult IntegerDottableHelper<T>::dotNumber(Self self, VM vm,
-                                             nativeint feature,
-                                             UnstableNode& result) {
-  if (internalIsValidFeature(self, vm, feature)) {
-    // Inside bounds
-    internalGetValueAt(self, vm, feature, result);
-    return OpResult::proceed();
+OpResult LiteralHelper<T>::testTuple(Self self, VM vm, RichNode label,
+                                     size_t width, bool& result) {
+  if (width == 0) {
+    return equals(vm, self, label, result);
   } else {
-    // Out of bounds
-    return raise(vm, vm->coreatoms.illegalFieldSelection, self, feature);
-  }
-}
-
-template <class T>
-OpResult IntegerDottableHelper<T>::hasFeature(Self self, VM vm,
-                                              RichNode feature,
-                                              bool& result) {
-  using namespace patternmatching;
-
-  OpResult res = OpResult::proceed();
-  nativeint featureIntValue = 0;
-
-  // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
-    result = internalIsValidFeature(self, vm, featureIntValue);
-    return OpResult::proceed();
-  } else {
-    MOZART_REQUIRE_FEATURE(feature);
     result = false;
     return OpResult::proceed();
   }
 }
 
-////////////////////
-// DottableHelper //
-////////////////////
+template <class T>
+OpResult LiteralHelper<T>::testLabel(Self self, VM vm, RichNode label,
+                                     bool& result) {
+  return equals(vm, self, label, result);
+}
+
+///////////////////////////
+// IntegerDottableHelper //
+///////////////////////////
 
 template <class T>
-OpResult DottableHelper<T>::dotNumber(Self self, VM vm,
-                                      nativeint feature,
-                                      UnstableNode& result) {
-  UnstableNode featureNode = SmallInt::build(vm, feature);
-  return static_cast<This>(this)->dot(self, vm, featureNode, result);
+OpResult IntegerDottableHelper<T>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  using namespace patternmatching;
+
+  OpResult res = OpResult::proceed();
+  nativeint featureIntValue = 0;
+
+  // Fast-path for the integer case
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    return lookupFeature(self, vm, featureIntValue, found, value);
+  } else {
+    MOZART_REQUIRE_FEATURE(feature);
+    found = false;
+    return OpResult::proceed();
+  }
+}
+
+template <class T>
+OpResult IntegerDottableHelper<T>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  found = internalIsValidFeature(self, vm, feature);
+  if (found && value.isDefined())
+    internalGetValueAt(self, vm, feature, value.get());
+  return OpResult::proceed();
 }
 
 }

@@ -42,8 +42,7 @@ class String;
 #endif
 
 template <>
-class Implementation<String>:
-  public DottableHelper<String>, WithValueBehavior {
+class Implementation<String>: WithValueBehavior {
 public:
   typedef SelfType<String>::Self Self;
 public:
@@ -118,10 +117,12 @@ public:
   // is not trivial)
 
   inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result);
+  OpResult lookupFeature(Self self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value);
 
 public:
   // VirtualString inteface

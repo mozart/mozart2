@@ -169,6 +169,27 @@ OpResult Implementation<Tuple>::clone(Self self, VM vm,
   return OpResult::proceed();
 }
 
+OpResult Implementation<Tuple>::testRecord(Self self, VM vm, RichNode arity,
+                                           bool& result) {
+  result = false;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Tuple>::testTuple(Self self, VM vm, RichNode label,
+                                          size_t width, bool& result) {
+  if (width == _width) {
+    return mozart::equals(vm, _label, label, result);
+  } else {
+    result = false;
+    return OpResult::proceed();
+  }
+}
+
+OpResult Implementation<Tuple>::testLabel(Self self, VM vm, RichNode label,
+                                          bool& result) {
+  return mozart::equals(vm, _label, label, result);
+}
+
 void Implementation<Tuple>::printReprToStream(Self self, VM vm,
                                               std::ostream& out, int depth) {
   out << repr(vm, _label, depth) << "(";
@@ -323,6 +344,25 @@ OpResult Implementation<Cons>::waitOr(Self self, VM vm,
   return OpResult::waitFor(vm, controlVar);
 }
 
+OpResult Implementation<Cons>::testRecord(Self self, VM vm, RichNode arity,
+                                          bool& result) {
+  result = false;
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::testTuple(Self self, VM vm, RichNode label,
+                                         size_t width, bool& result) {
+  result = (width == 2) && label.is<Atom>() &&
+    (label.as<Atom>().value() == vm->coreatoms.pipe);
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Cons>::testLabel(Self self, VM vm, RichNode label,
+                                         bool& result) {
+  result = label.is<Atom>() && (label.as<Atom>().value() == vm->coreatoms.pipe);
+  return OpResult::proceed();
+}
+
 namespace internal {
 
 template <class F>
@@ -435,9 +475,9 @@ OpResult Implementation<Arity>::initElement(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Arity>::lookupFeature(Self self, VM vm,
-                                              RichNode feature,
-                                              size_t& result) {
+OpResult Implementation<Arity>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found, size_t& index) {
+
   MOZART_REQUIRE_FEATURE(feature);
 
   // Dichotomic search
@@ -449,7 +489,8 @@ OpResult Implementation<Arity>::lookupFeature(Self self, VM vm,
     int comparison = compareFeatures(vm, feature, self[mid]);
 
     if (comparison == 0) {
-      result = mid;
+      found = true;
+      index = mid;
       return OpResult::proceed();
     } else if (comparison < 0) {
       hi = mid;
@@ -458,26 +499,8 @@ OpResult Implementation<Arity>::lookupFeature(Self self, VM vm,
     }
   }
 
-  return OpResult::fail();
-}
-
-OpResult Implementation<Arity>::requireFeature(Self self, VM vm,
-                                               RichNode container,
-                                               RichNode feature,
-                                               size_t& result) {
-  OpResult res = lookupFeature(self, vm, feature, result);
-
-  if (res.kind() == OpResult::orFail)
-    return raise(vm, vm->coreatoms.illegalFieldSelection, container, feature);
-  else
-    return res;
-}
-
-OpResult Implementation<Arity>::hasFeature(Self self, VM vm, RichNode feature,
-                                           bool& result) {
-  size_t dummy;
-  return lookupFeature(self, vm, feature,
-                       dummy).mapProceedFailToTrueFalse(result);
+  found = false;
+  return OpResult::proceed();
 }
 
 void Implementation<Arity>::printReprToStream(Self self, VM vm,
@@ -547,6 +570,28 @@ void Implementation<Record>::getFeatureAt(Self self, VM vm, size_t index,
   result.copy(vm, *RichNode(_arity).as<Arity>().getElement(index));
 }
 
+OpResult Implementation<Record>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  size_t index = 0;
+  MOZART_CHECK_OPRESULT(
+    RichNode(_arity).as<Arity>().lookupFeature(vm, feature, found, index));
+
+  if (found && value.isDefined())
+    value.get().copy(vm, self[index]);
+
+  return OpResult::proceed();
+}
+
+OpResult Implementation<Record>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  UnstableNode featureNode = build(vm, feature);
+  return lookupFeature(self, vm, featureNode, found, value);
+}
+
 OpResult Implementation<Record>::label(Self self, VM vm,
                                        UnstableNode& result) {
   result.copy(vm, *RichNode(_arity).as<Arity>().getLabel());
@@ -564,19 +609,21 @@ OpResult Implementation<Record>::clone(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Record>::dot(Self self, VM vm,
-                                     RichNode feature, UnstableNode& result) {
-  size_t index = 0;
-  MOZART_CHECK_OPRESULT(RichNode(_arity).as<Arity>().requireFeature(
-    vm, self, feature, index));
+OpResult Implementation<Record>::testRecord(Self self, VM vm, RichNode arity,
+                                            bool& result) {
+  return mozart::equals(vm, _arity, arity, result);
+}
 
-  result.copy(vm, self[index]);
+OpResult Implementation<Record>::testTuple(Self self, VM vm, RichNode label,
+                                           size_t width, bool& result) {
+  result = false;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Record>::hasFeature(Self self, VM vm, RichNode feature,
-                                            bool& result) {
-  return RichNode(_arity).as<Arity>().hasFeature(vm, feature, result);
+OpResult Implementation<Record>::testLabel(Self self, VM vm, RichNode label,
+                                           bool& result) {
+  return mozart::equals(
+    vm, *RichNode(_arity).as<Arity>().getLabel(), label, result);
 }
 
 void Implementation<Record>::printReprToStream(Self self, VM vm,
@@ -613,14 +660,18 @@ void Implementation<Chunk>::build(StableNode*& self, VM vm, GR gr, Self from) {
   gr->copyStableRef(self, from.get().getUnderlying());
 }
 
-OpResult Implementation<Chunk>::dot(Self self, VM vm,
-                                    RichNode feature, UnstableNode& result) {
-  return Dottable(*_underlying).dot(vm, feature, result);
+OpResult Implementation<Chunk>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  return Dottable(*_underlying).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Implementation<Chunk>::hasFeature(Self self, VM vm, RichNode feature,
-                                           bool& result) {
-  return Dottable(*_underlying).hasFeature(vm, feature, result);
+OpResult Implementation<Chunk>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  return Dottable(*_underlying).lookupFeature(vm, feature, found, value);
 }
 
 }

@@ -343,18 +343,19 @@ struct Interface<BooleanValue>: ImplementedBy<Boolean> {
   }
 };
 
-class Dottable;
+class BaseDottable;
 template<>
-struct Interface<Dottable>:
+struct Interface<BaseDottable>:
   ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array, Dictionary,
     Atom, OptName, GlobalName, Boolean, Unit> {
 
-  OpResult dot(RichNode self, VM vm, RichNode feature,
-               UnstableNode& result) {
+  OpResult lookupFeature(RichNode self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value) {
     return raiseTypeError(vm, MOZART_STR("Record or Chunk"), self);
   }
 
-  OpResult hasFeature(RichNode self, VM vm, RichNode feature, bool& result) {
+  OpResult lookupFeature(RichNode self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value) {
     return raiseTypeError(vm, MOZART_STR("Record or Chunk"), self);
   }
 };
@@ -409,6 +410,24 @@ struct Interface<RecordLike>:
 
   OpResult waitOr(RichNode self, VM vm, UnstableNode& result) {
     return raiseTypeError(vm, MOZART_STR("Record"), self);
+  }
+
+  OpResult testRecord(RichNode self, VM vm, RichNode arity,
+                      bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult testTuple(RichNode self, VM vm, RichNode label, size_t width,
+                     bool& result) {
+    result = false;
+    return OpResult::proceed();
+  }
+
+  OpResult testLabel(RichNode self, VM vm, RichNode label,
+                     bool& result) {
+    result = false;
+    return OpResult::proceed();
   }
 };
 

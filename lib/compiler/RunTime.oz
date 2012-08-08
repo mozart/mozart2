@@ -39,8 +39,8 @@ export
    ProcValues
    MakeVar
 require
-   %BootRecord(test testLabel testFeature aritySublist)
-   %at 'x-oz://boot/Record'
+   BootRecord(test testLabel testFeature /*aritySublist*/)
+   at 'x-oz://boot/Record'
 
    BootObject(attrGet attrPut attrExchangeFun)
    at 'x-oz://boot/Object'
@@ -58,6 +58,28 @@ require
              catAccess catAssign catExchange
              catAccessOO catAssignOO catExchangeOO) at 'x-oz://boot/Value'
 prepare
+   % Emulation of weird things in BootRecord for now
+   local
+      fun {SortedSubList Xs Ys}
+         case Xs#Ys
+         of nil#_ then
+            true
+         [] (X|Xr)#(Y|Yr) then
+            if X == Y then
+               {SortedSubList Xr Yr}
+            else
+               {SortedSubList Xs Yr}
+            end
+         else
+            false
+         end
+      end
+   in
+      fun {AritySubList X Y}
+         {SortedSubList {Arity X} {Arity Y}}
+      end
+   end
+
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
                      dotAssign: BootValue.dotAssign
@@ -105,10 +127,10 @@ prepare
                      'List.append': Append
 
                      %% Record
-                     %'Record.width': Record.width
-                     %'Record.test': BootRecord.test
-                     %'Record.testLabel': BootRecord.testLabel
-                     %'Record.testFeature': BootRecord.testFeature
+                     'Record.width': Record.width
+                     'Record.test': BootRecord.test
+                     'Record.testLabel': BootRecord.testLabel
+                     'Record.testFeature': BootRecord.testFeature
 
                      %% Object
                      'Object.\'@\'': BootObject.attrGet
@@ -128,7 +150,7 @@ prepare
 
                      %% Internal
                      'ooGetLock': OoExtensions.getObjLock
-                     %'aritySublist': BootRecord.aritySublist
+                     'aritySublist': AritySubList % BootRecord.aritySublist
                      'Thread.create': BootThread.create)
 
    LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}

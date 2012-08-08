@@ -60,14 +60,28 @@ namespace internal {
     operator nativeint() { return 0; }
   };
 
+  struct AlternativeToInt64 {
+    operator nativeint() { return 0; }
+  };
+
   typedef typename std::conditional<
     std::is_same<int, nativeint>::value,
     AlternativeToInt, int>::type intIfDifferentFromNativeInt;
+
+  typedef typename std::conditional<
+    std::is_same<std::int64_t, nativeint>::value,
+    AlternativeToInt64, std::int64_t>::type int64IfDifferentFromNativeInt;
 }
 
 inline
 UnstableNode build(VM vm, internal::intIfDifferentFromNativeInt value) {
   return SmallInt::build(vm, value);
+}
+
+inline
+UnstableNode build(VM vm, internal::int64IfDifferentFromNativeInt value) {
+  // TODO Use BigInt if necessary
+  return SmallInt::build(vm, (nativeint) value);
 }
 
 inline

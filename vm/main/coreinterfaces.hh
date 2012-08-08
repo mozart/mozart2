@@ -50,7 +50,7 @@ namespace mozart {
 #include "IntegerValue-interf.hh"
 #include "FloatValue-interf.hh"
 #include "BooleanValue-interf.hh"
-#include "Dottable-interf.hh"
+#include "BaseDottable-interf.hh"
 #include "DotAssignable-interf.hh"
 #include "RecordLike-interf.hh"
 #include "ArrayLike-interf.hh"
@@ -63,6 +63,68 @@ namespace mozart {
 #include "ChunkLike-interf.hh"
 #include "StringLike-interf.hh"
 #include "VirtualString-interf.hh"
+
+struct Dottable: public BaseDottable {
+  // Not supported by compilers yet
+  // using BaseDottable::BaseDottable;
+
+  Dottable(RichNode self): BaseDottable(self) {}
+  Dottable(UnstableNode& self): BaseDottable(self) {}
+  Dottable(StableNode& self): BaseDottable(self) {}
+
+  template <class T>
+  Dottable(BaseSelf<T> self): BaseDottable(self) {}
+
+  OpResult dot(VM vm, RichNode feature, UnstableNode& result) {
+    bool found = false;
+    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+
+    if (lookupResult.isProceed() && !found)
+      return raise(vm, vm->coreatoms.illegalFieldSelection, _self, feature);
+    else
+      return lookupResult;
+  }
+
+  OpResult dot(VM vm, nativeint feature, UnstableNode& result) {
+    bool found = false;
+    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+
+    if (lookupResult.isProceed() && !found)
+      return raise(vm, vm->coreatoms.illegalFieldSelection, _self, feature);
+    else
+      return lookupResult;
+  }
+
+  OpResult hasFeature(VM vm, RichNode feature, bool& result) {
+    return lookupFeature(vm, feature, result, nullptr);
+  }
+
+  OpResult hasFeature(VM vm, nativeint feature, bool& result) {
+    return lookupFeature(vm, feature, result, nullptr);
+  }
+
+  OpResult condSelect(VM vm, RichNode feature, RichNode defaultResult,
+                      UnstableNode& result) {
+    bool found = false;
+    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+
+    if (lookupResult.isProceed() && !found)
+      result.copy(vm, defaultResult);
+
+    return lookupResult;
+  }
+
+  OpResult condSelect(VM vm, nativeint feature, RichNode defaultResult,
+                      UnstableNode& result) {
+    bool found = false;
+    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+
+    if (lookupResult.isProceed() && !found)
+      result.copy(vm, defaultResult);
+
+    return lookupResult;
+  }
+};
 
 #endif // MOZART_GENERATOR
 

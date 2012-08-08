@@ -423,16 +423,7 @@ public:
     CondSelect(): Builtin("condSelect") {}
 
     OpResult operator()(VM vm, In record, In feature, In def, Out result) {
-      bool hasFeature = false;
-      MOZART_CHECK_OPRESULT(
-        Dottable(record).hasFeature(vm, feature, hasFeature));
-
-      if (hasFeature) {
-        return Dottable(record).dot(vm, feature, result);
-      } else {
-        result.copy(vm, def);
-        return OpResult::proceed();
-      }
+      return Dottable(record).condSelect(vm, feature, def, result);
     }
   };
 

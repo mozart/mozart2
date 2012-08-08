@@ -139,7 +139,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
     to << "  }\n";
   }
 
-  to << "private:\n";
+  to << "protected:\n";
   to << "  RichNode _self;\n";
   to << "};\n\n";
 }

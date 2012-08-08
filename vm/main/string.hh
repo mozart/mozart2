@@ -231,31 +231,49 @@ OpResult Implementation<String>::stringHasSuffix(Self self, VM vm,
 
 // Dottable --------------------------------------------------------------------
 
-OpResult Implementation<String>::dot(Self self, VM vm, RichNode feature,
-                                     UnstableNode& result) {
-  nativeint character = 0;
-  MOZART_CHECK_OPRESULT(stringCharAt(self, vm, feature, character));
-  result = SmallInt::build(vm, character);
-  return OpResult::proceed();
-}
+OpResult Implementation<String>::lookupFeature(
+  Self self, VM vm, RichNode feature, bool& found,
+  nullable<UnstableNode&> value) {
 
-OpResult Implementation<String>::hasFeature(RichNode self, VM vm,
-                                            RichNode feature, bool& result) {
   using namespace patternmatching;
 
   OpResult res = OpResult::proceed();
-  nativeint index = 0;
+  nativeint featureIntValue = 0;
 
   // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(index))) {
-    LString<nchar> slice = sliceByCodePointsFromTo(_string, index, index+1);
-    result = !slice.isError();
-    return OpResult::proceed();
+  if (matches(vm, res, feature, capture(featureIntValue))) {
+    return lookupFeature(self, vm, featureIntValue, found, value);
   } else {
     MOZART_REQUIRE_FEATURE(feature);
-    result = false;
+    found = false;
     return OpResult::proceed();
   }
+}
+
+OpResult Implementation<String>::lookupFeature(
+  Self self, VM vm, nativeint feature, bool& found,
+  nullable<UnstableNode&> value) {
+
+  LString<nchar> slice = sliceByCodePointsFromTo(_string, feature, feature+1);
+  if (slice.isError()) {
+    if (slice.error == UnicodeErrorReason::indexOutOfBounds) {
+      found = false;
+      return OpResult::proceed();
+    } else {
+      return raiseUnicodeError(vm, slice.error, self);
+    }
+  }
+
+  char32_t codePoint;
+  nativeint length;
+  std::tie(codePoint, length) = fromUTF(slice.string, slice.length);
+  if (length <= 0)
+    return raiseUnicodeError(vm, (UnicodeErrorReason) length, self, feature);
+
+  found = true;
+  if (value.isDefined())
+    value.get() = build(vm, (nativeint) codePoint);
+  return OpResult::proceed();
 }
 
 // VirtualString ---------------------------------------------------------------

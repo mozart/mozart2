@@ -144,6 +144,16 @@ public:
   inline
   OpResult clone(Self self, VM vm, UnstableNode& result);
 
+  inline
+  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
+
+  inline
+  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
+                     bool& result);
+
+  inline
+  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
+
 public:
   // VirtualString inteface
 
@@ -260,6 +270,16 @@ public:
   inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
 
+  inline
+  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
+
+  inline
+  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
+                     bool& result);
+
+  inline
+  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
+
 public:
   // VirtualString inteface
 
@@ -347,14 +367,8 @@ public:
   // Arity methods
 
   inline
-  OpResult lookupFeature(Self self, VM vm, RichNode feature, size_t& result);
-
-  inline
-  OpResult requireFeature(Self self, VM vm, RichNode container,
-                          RichNode feature, size_t& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, size_t& result);
 
 public:
   // Miscellaneous
@@ -386,7 +400,6 @@ class Record;
  */
 template <>
 class Implementation<Record>: public BaseRecord<Record>,
-  public DottableHelper<Record>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Record>::Self Self;
@@ -419,6 +432,17 @@ protected:
   void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
 
 public:
+  // Dottable interface
+
+  inline
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value);
+
+  inline
+  OpResult lookupFeature(Self self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value);
+
+public:
   // RecordLike interface
 
   OpResult isTuple(Self self, VM vm, bool& result) {
@@ -433,10 +457,14 @@ public:
   OpResult clone(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
 
   inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
+                     bool& result);
+
+  inline
+  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
 
 public:
   inline
@@ -444,7 +472,6 @@ public:
 
 private:
   friend class BaseRecord<Record>;
-  friend class DottableHelper<Record>;
 
   StableNode _arity;
   size_t _width;
@@ -495,10 +522,12 @@ public:
   // Dottable interface
 
   inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+  OpResult lookupFeature(Self self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value);
 
 public:
   // ChunkLike interface

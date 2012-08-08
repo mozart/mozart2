@@ -49,13 +49,12 @@ public:
   // Dottable interface
 
   inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+  OpResult lookupFeature(Self self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value);
 
 public:
   // RecordLike interface
@@ -84,6 +83,16 @@ public:
 
   inline
   OpResult waitOr(Self self, VM vm, UnstableNode& result);
+
+  inline
+  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
+
+  inline
+  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
+                     bool& result);
+
+  inline
+  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
 };
 
 ///////////////////////////
@@ -100,13 +109,12 @@ public:
   // Dottable interface
 
   inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
+  OpResult lookupFeature(Self self, VM vm, RichNode feature,
+                         bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
+  OpResult lookupFeature(Self self, VM vm, nativeint feature,
+                         bool& found, nullable<UnstableNode&> value);
 
 private:
   bool internalIsValidFeature(Self self, VM vm, nativeint feature) {
@@ -125,31 +133,6 @@ protected:
 
   inline
   void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
-  */
-};
-
-////////////////////
-// DottableHelper //
-////////////////////
-
-template <class T>
-class DottableHelper {
-private:
-  typedef Implementation<T>* This;
-  typedef typename SelfType<T>::Self Self;
-
-public:
-  // Dottable interface
-
-  inline
-  OpResult dotNumber(Self self, VM vm, nativeint feature, UnstableNode& result);
-
-  /* To be implemented in subclasses
-  inline
-  OpResult dot(Self self, VM vm, RichNode feature, UnstableNode& result);
-
-  inline
-  OpResult hasFeature(Self self, VM vm, RichNode feature, bool& result);
   */
 };
 

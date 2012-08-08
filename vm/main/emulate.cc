@@ -1202,12 +1202,14 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
     vm, formalArity, start, Xcount, Gs, Ks));
 
   if (actualArity != formalArity) {
-    RichNode actualArgs[actualArity];
+    auto actualArgs = vm->newStaticArray<RichNode>(actualArity);
     for (size_t i = 0; i < actualArity; i++)
       actualArgs[i] = (*xregs)[i];
 
-    CHECK_OPRESULT_RETURN(
-      raiseIllegalArity(vm, target, actualArity, actualArgs));
+    auto raiseResult = raiseIllegalArity(vm, target, actualArity, actualArgs);
+
+    vm->deleteStaticArray<RichNode>(actualArgs, actualArity);
+    CHECK_OPRESULT_RETURN(raiseResult);
   }
 
   advancePC(opcodeArgCount);

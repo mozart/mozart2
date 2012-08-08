@@ -154,8 +154,6 @@ struct LString : BaseLString<C> {
 
   // Copy-construct with help of VM.
   inline LString(VM vm, const BaseLString<C>& other);
-  LString(VM vm, const LString<C>& other)
-      : LString(vm, static_cast<const BaseLString<C>&>(other)) {}
 
   template <class F>
   inline LString(VM vm, nativeint length, const F& initializer);
@@ -185,7 +183,7 @@ struct ContainedLString : mut::BaseLString<typename T::value_type> {
   inline ContainedLString(ContainedLString&& other);
 
   template <class It>
-  ContainedLString(It begin, It end) : ContainedLString(T(begin, end)) {}
+  inline ContainedLString(It begin, It end);
 
   // Insert a string at the beginning of the container.
   inline void insertPrefix(const mut::BaseLString<CharType>& prefix);

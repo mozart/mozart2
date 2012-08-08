@@ -147,7 +147,7 @@ constexpr const LString<C> LString<C>::slice(nativeint from,
 
 template <class T>
 ContainedLString<T>::ContainedLString(ContainedLString&& other)
-    : ContainedLString(std::move(other._container)) {
+    : _container(std::move(other._container)) {
   other.string = nullptr;
   other.length = 0;
 }
@@ -155,6 +155,14 @@ ContainedLString<T>::ContainedLString(ContainedLString&& other)
 template <class T>
 ContainedLString<T>::ContainedLString(T container)
     : _container(std::move(container)) {
+  this->string = _container.data();
+  this->length = _container.size();
+}
+
+template <class T>
+template <class It>
+ContainedLString<T>::ContainedLString(It begin, It end)
+    : _container(begin, end) {
   this->string = _container.data();
   this->length = _container.size();
 }

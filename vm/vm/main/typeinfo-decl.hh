@@ -170,66 +170,6 @@ std::ostream& operator<<(std::ostream& out, const repr& nodeRepr) {
   return nodeRepr(out);
 }
 
-//////////////
-// WithHome //
-//////////////
-
-class WithHome {
-public:
-  WithHome(SpaceRef home): _home(home) {}
-
-  inline
-  WithHome(VM vm);
-
-  inline
-  WithHome(VM vm, GR gr, SpaceRef fromHome);
-
-  Space* home() {
-    return _home;
-  }
-protected:
-  inline
-  bool isHomedInCurrentSpace(VM vm);
-private:
-  SpaceRef _home;
-};
-
-/////////////////////
-// Trivial markers //
-/////////////////////
-
-template<class T>
-struct Interface{};
-
-template<class...>
-struct ImplementedBy{};
-
-struct NoAutoWait{};
-
-struct Copyable{};
-
-struct Transient{};
-
-template<class>
-struct StoredAs{};
-
-template<class>
-struct StoredWithArrayOf{};
-
-struct WithValueBehavior{};
-
-struct WithStructuralBehavior{};
-
-template<unsigned char>
-struct WithVariableBehavior{};
-
-template<class>
-struct BasedOn{};
-
-struct NoAutoGCollect{};
-
-struct NoAutoSClone{};
-
 }
 
 #endif // __TYPEINFO_DECL_H

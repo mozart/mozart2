@@ -22,21 +22,76 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPEINFO_H
-#define __TYPEINFO_H
+#ifndef __DATATYPE_DECL_H
+#define __DATATYPE_DECL_H
 
-#include "mozartcore.hh"
+#include "core-forward-decl.hh"
+
+#include "store-decl.hh"
+#include "uuid-decl.hh"
 
 namespace mozart {
 
 //////////////
-// TypeInfo //
+// WithHome //
 //////////////
 
-atom_t TypeInfo::getTypeAtom(VM vm) const {
-  return vm->getAtom(MOZART_STR("value"));
-}
+class WithHome {
+public:
+  WithHome(SpaceRef home): _home(home) {}
+
+  inline
+  WithHome(VM vm);
+
+  inline
+  WithHome(VM vm, GR gr, SpaceRef fromHome);
+
+  Space* home() {
+    return _home;
+  }
+protected:
+  inline
+  bool isHomedInCurrentSpace(VM vm);
+private:
+  SpaceRef _home;
+};
+
+/////////////////////
+// Trivial markers //
+/////////////////////
+
+template<class T>
+struct Interface{};
+
+template<class...>
+struct ImplementedBy{};
+
+struct NoAutoWait{};
+
+struct Copyable{};
+
+struct Transient{};
+
+template<class>
+struct StoredAs{};
+
+template<class>
+struct StoredWithArrayOf{};
+
+struct WithValueBehavior{};
+
+struct WithStructuralBehavior{};
+
+template<unsigned char>
+struct WithVariableBehavior{};
+
+template<class>
+struct BasedOn{};
+
+struct NoAutoGCollect{};
+
+struct NoAutoSClone{};
 
 }
 
-#endif // __TYPEINFO_H
+#endif // __DATATYPE_DECL_H

@@ -22,21 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPEINFO_H
-#define __TYPEINFO_H
+#ifndef __DATATYPE_H
+#define __DATATYPE_H
 
 #include "mozartcore.hh"
 
 namespace mozart {
 
 //////////////
-// TypeInfo //
+// WithHome //
 //////////////
 
-atom_t TypeInfo::getTypeAtom(VM vm) const {
-  return vm->getAtom(MOZART_STR("value"));
+WithHome::WithHome(VM vm) {
+  _home = vm->getCurrentSpace();
+}
+
+WithHome::WithHome(VM vm, GR gr, SpaceRef fromHome) {
+  gr->copySpace(_home, fromHome);
+}
+
+bool WithHome::isHomedInCurrentSpace(VM vm) {
+  return ((Space*) _home) == vm->getCurrentSpace();
 }
 
 }
 
-#endif // __TYPEINFO_H
+#endif // __DATATYPE_H

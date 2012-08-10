@@ -34,6 +34,7 @@
 #include "opresult-decl.hh"
 #include "uuid-decl.hh"
 #include "typeinfo-decl.hh"
+#include "datatype-decl.hh"
 #include "runnable-decl.hh"
 #include "threadpool-decl.hh"
 #include "space-decl.hh"

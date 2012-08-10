@@ -37,8 +37,7 @@ class Unit;
 #include "Unit-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Unit>: public LiteralHelper<Unit>,
+class Unit: public DataType<Unit>, public LiteralHelper<Unit>,
   Copyable, StoredAs<unit_t>, WithValueBehavior {
 public:
   typedef SelfType<Unit>::Self Self;
@@ -49,13 +48,13 @@ public:
     return vm->getAtom(MOZART_STR("name")); // compatibility with Mozart 1.4.0
   }
 
-  Implementation(unit_t value) {}
+  Unit(unit_t value) {}
 
-  static void build(unit_t& self, VM vm) {
+  static void create(unit_t& self, VM vm) {
   }
 
   inline
-  static void build(unit_t& self, VM vm, GR gr, Self from);
+  static void create(unit_t& self, VM vm, GR gr, Self from);
 
 public:
   inline

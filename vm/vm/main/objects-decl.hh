@@ -45,8 +45,7 @@ class Object;
 /**
  * Object
  */
-template <>
-class Implementation<Object>: public WithHome,
+class Object: public DataType<Object>, public WithHome,
   StoredWithArrayOf<UnstableNode> {
 public:
   typedef SelfType<Object>::Self Self;
@@ -59,12 +58,12 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
-                 RichNode clazz, RichNode attrModel, RichNode featModel);
+  Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
+         RichNode clazz, RichNode attrModel, RichNode featModel);
 
   inline
-  Implementation(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
-                 GR gr, Self from);
+  Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
+         GR gr, Self from);
 
 public:
   size_t getArraySize() {

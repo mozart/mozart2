@@ -39,16 +39,15 @@ namespace mozart {
 
 #include "Float-implem.hh"
 
-void Implementation<Float>::build(double& self, VM vm, GR gr, Self from) {
+void Float::create(double& self, VM vm, GR gr, Self from) {
   self = from.get().value();
 }
 
-bool Implementation<Float>::equals(VM vm, Self right) {
+bool Float::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-OpResult Implementation<Float>::compare(Self self, VM vm,
-                                        RichNode right, int& result) {
+OpResult Float::compare(Self self, VM vm, RichNode right, int& result) {
   double rightFloatValue = 0.0;
   MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
@@ -58,85 +57,77 @@ OpResult Implementation<Float>::compare(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::equalsFloat(Self self, VM vm,
-                                            double right, bool& result) {
+OpResult Float::equalsFloat(Self self, VM vm, double right, bool& result) {
   result = value() == right;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::opposite(Self self, VM vm,
-                                         UnstableNode& result) {
+OpResult Float::opposite(Self self, VM vm, UnstableNode& result) {
   result = Float::build(vm, -value());
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::add(Self self, VM vm,
-                                    RichNode right, UnstableNode& result) {
+OpResult Float::add(Self self, VM vm, RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
   MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return addValue(self, vm, rightFloatValue, result);
 }
 
-OpResult Implementation<Float>::addValue(Self self, VM vm,
-                                         double b, UnstableNode& result) {
+OpResult Float::addValue(Self self, VM vm, double b, UnstableNode& result) {
   result = Float::build(vm, value() + b);
 
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::subtract(Self self, VM vm,
-                                         RichNode right, UnstableNode& result) {
+OpResult Float::subtract(Self self, VM vm, RichNode right,
+                         UnstableNode& result) {
   double rightFloatValue = 0.0;
   MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return subtractValue(self, vm, rightFloatValue, result);
 }
 
-OpResult Implementation<Float>::subtractValue(Self self, VM vm,
-                                              double b, UnstableNode& result) {
+OpResult Float::subtractValue(Self self, VM vm, double b,
+                              UnstableNode& result) {
   result = Float::build(vm, value() - b);
 
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::multiply(Self self, VM vm,
-                                         RichNode right, UnstableNode& result) {
+OpResult Float::multiply(Self self, VM vm, RichNode right,
+                         UnstableNode& result) {
   double rightFloatValue = 0.0;
   MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return multiplyValue(self, vm, rightFloatValue, result);
 }
 
-OpResult Implementation<Float>::multiplyValue(Self self, VM vm,
-                                              double b, UnstableNode& result) {
+OpResult Float::multiplyValue(Self self, VM vm, double b,
+                              UnstableNode& result) {
   result = Float::build(vm, value() * b);
 
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::divide(Self self, VM vm,
-                                       RichNode right, UnstableNode& result) {
+OpResult Float::divide(Self self, VM vm, RichNode right, UnstableNode& result) {
   double rightFloatValue = 0.0;
   MOZART_GET_ARG(rightFloatValue, right, MOZART_STR("float"));
 
   return divideValue(self, vm, rightFloatValue, result);
 }
 
-OpResult Implementation<Float>::divideValue(Self self, VM vm,
-                                            double b, UnstableNode& result) {
+OpResult Float::divideValue(Self self, VM vm, double b, UnstableNode& result) {
   result = Float::build(vm, value() / b);
 
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::div(Self self, VM vm,
-                                    RichNode right, UnstableNode& result) {
+OpResult Float::div(Self self, VM vm, RichNode right, UnstableNode& result) {
   return raiseTypeError(vm, MOZART_STR("Integer"), self);
 }
 
-OpResult Implementation<Float>::mod(Self self, VM vm,
-                                    RichNode right, UnstableNode& result) {
+OpResult Float::mod(Self self, VM vm, RichNode right, UnstableNode& result) {
   return raiseTypeError(vm, MOZART_STR("Integer"), self);
 }
 
@@ -202,14 +193,13 @@ struct FloatToStringHelper {
 
 }
 
-OpResult Implementation<Float>::toString(Self self, VM vm,
-                                         std::basic_ostream<nchar>& sink) {
+OpResult Float::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   const internal::FloatToStringHelper helper (value());
   sink.write(helper.string.get(), helper.length);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Float>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult Float::vsLength(Self self, VM vm, nativeint& result) {
   result = (nativeint) internal::FloatToStringHelper(value()).length;
   return OpResult::proceed();
 }

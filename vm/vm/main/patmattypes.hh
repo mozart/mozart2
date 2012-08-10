@@ -37,18 +37,16 @@ namespace mozart {
 
 #include "PatMatCapture-implem.hh"
 
-void Implementation<PatMatCapture>::build(nativeint& self, VM vm, GR gr,
-                                          Self from) {
+void PatMatCapture::create(nativeint& self, VM vm, GR gr, Self from) {
   self = from.get().index();
 }
 
-bool Implementation<PatMatCapture>::equals(VM vm, Self right) {
+bool PatMatCapture::equals(VM vm, Self right) {
   return index() == right.get().index();
 }
 
-void Implementation<PatMatCapture>::printReprToStream(
-  Self self, VM vm, std::ostream& out, int depth) {
-
+void PatMatCapture::printReprToStream(Self self, VM vm, std::ostream& out,
+                                      int depth) {
   out << "<Capture/" << index() << ">";
 }
 
@@ -58,9 +56,8 @@ void Implementation<PatMatCapture>::printReprToStream(
 
 #include "PatMatConjunction-implem.hh"
 
-Implementation<PatMatConjunction>::Implementation(
-  VM vm, size_t count, StaticArray<StableNode> _elements) {
-
+PatMatConjunction::PatMatConjunction(VM vm, size_t count,
+                                     StaticArray<StableNode> _elements) {
   _count = count;
 
   // Initialize elements with non-random data
@@ -69,22 +66,20 @@ Implementation<PatMatConjunction>::Implementation(
     _elements[i].init(vm);
 }
 
-Implementation<PatMatConjunction>::Implementation(
-  VM vm, size_t count, StaticArray<StableNode> _elements, GR gr, Self from) {
-
+PatMatConjunction::PatMatConjunction(VM vm, size_t count,
+                                     StaticArray<StableNode> _elements,
+                                     GR gr, Self from) {
   _count = count;
 
   for (size_t i = 0; i < count; i++)
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StableNode* Implementation<PatMatConjunction>::getElement(Self self,
-                                                          size_t index) {
+StableNode* PatMatConjunction::getElement(Self self, size_t index) {
   return &self[index];
 }
 
-bool Implementation<PatMatConjunction>::equals(Self self, VM vm, Self right,
-                                               WalkStack& stack) {
+bool PatMatConjunction::equals(Self self, VM vm, Self right, WalkStack& stack) {
   if (_count != right->_count)
     return false;
 
@@ -93,15 +88,14 @@ bool Implementation<PatMatConjunction>::equals(Self self, VM vm, Self right,
   return true;
 }
 
-OpResult Implementation<PatMatConjunction>::initElement(
-  Self self, VM vm, size_t index, RichNode value) {
-
+OpResult PatMatConjunction::initElement(Self self, VM vm, size_t index,
+                                        RichNode value) {
   self[index].init(vm, value);
   return OpResult::proceed();
 }
 
-void Implementation<PatMatConjunction>::printReprToStream(
-  Self self, VM vm, std::ostream& out, int depth) {
+void PatMatConjunction::printReprToStream(Self self, VM vm, std::ostream& out,
+                                          int depth) {
 
   out << "<PatMatConjunction>(";
 
@@ -124,9 +118,9 @@ void Implementation<PatMatConjunction>::printReprToStream(
 
 #include "PatMatOpenRecord-implem.hh"
 
-Implementation<PatMatOpenRecord>::Implementation(
-  VM vm, size_t width, StaticArray<StableNode> _elements, RichNode arity) {
-
+PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
+                                   StaticArray<StableNode> _elements,
+                                   RichNode arity) {
   assert(arity.is<Arity>());
 
   _arity.init(vm, arity);
@@ -138,9 +132,9 @@ Implementation<PatMatOpenRecord>::Implementation(
     _elements[i].init(vm);
 }
 
-Implementation<PatMatOpenRecord>::Implementation(
-  VM vm, size_t width, StaticArray<StableNode> _elements, GR gr, Self from) {
-
+PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
+                                   StaticArray<StableNode> _elements,
+                                   GR gr, Self from) {
   gr->copyStableNode(_arity, from->_arity);
   _width = width;
 
@@ -148,21 +142,18 @@ Implementation<PatMatOpenRecord>::Implementation(
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StableNode* Implementation<PatMatOpenRecord>::getElement(Self self,
-                                                         size_t index) {
+StableNode* PatMatOpenRecord::getElement(Self self, size_t index) {
   return &self[index];
 }
 
-OpResult Implementation<PatMatOpenRecord>::initElement(
-  Self self, VM vm, size_t index, RichNode value) {
-
+OpResult PatMatOpenRecord::initElement(Self self, VM vm, size_t index,
+                                       RichNode value) {
   self[index].init(vm, value);
   return OpResult::proceed();
 }
 
-void Implementation<PatMatOpenRecord>::printReprToStream(
-  Self self, VM vm, std::ostream& out, int depth) {
-
+void PatMatOpenRecord::printReprToStream(Self self, VM vm, std::ostream& out,
+                                         int depth) {
   auto arity = RichNode(_arity).as<Arity>();
 
   out << "<PatMatOpenRecord " << repr(vm, *arity.getLabel(), depth) << "(";

@@ -53,7 +53,7 @@ OpResult BaseRecord<T>::arityList(Self self, VM vm,
 
   for (size_t i = getWidth(); i > 0; i--) {
     UnstableNode feature;
-    static_cast<Implementation<T>*>(this)->getFeatureAt(self, vm, i-1, feature);
+    static_cast<T*>(this)->getFeatureAt(self, vm, i-1, feature);
 
     UnstableNode temp = buildCons(vm, std::move(feature), std::move(res));
     res = std::move(temp);
@@ -77,7 +77,7 @@ OpResult BaseRecord<T>::waitOr(Self self, VM vm,
   for (size_t i = 0; i < getArraySize(); i++) {
     RichNode element = self[i];
     if (!element.isTransient()) {
-      static_cast<Implementation<T>*>(this)->getFeatureAt(self, vm, i, result);
+      static_cast<T*>(this)->getFeatureAt(self, vm, i, result);
       return OpResult::proceed();
     } else if (element.is<FailedValue>()) {
       return OpResult::waitFor(vm, element);
@@ -104,9 +104,8 @@ OpResult BaseRecord<T>::waitOr(Self self, VM vm,
 
 #include "Tuple-implem.hh"
 
-Implementation<Tuple>::Implementation(VM vm, size_t width,
-                                      StaticArray<StableNode> _elements,
-                                      RichNode label) {
+Tuple::Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
+             RichNode label) {
   _label.init(vm, label);
   _width = width;
 
@@ -116,9 +115,8 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
     _elements[i].init(vm);
 }
 
-Implementation<Tuple>::Implementation(VM vm, size_t width,
-                                      StaticArray<StableNode> _elements,
-                                      GR gr, Self from) {
+Tuple::Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
+             GR gr, Self from) {
   _width = width;
   gr->copyStableNode(_label, from->_label);
 
@@ -126,12 +124,11 @@ Implementation<Tuple>::Implementation(VM vm, size_t width,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StaticArray<StableNode> Implementation<Tuple>::getElementsArray(Self self) {
+StaticArray<StableNode> Tuple::getElementsArray(Self self) {
   return self.getArray();
 }
 
-bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
-                                   WalkStack& stack) {
+bool Tuple::equals(Self self, VM vm, Self right, WalkStack& stack) {
   if (_width != right->_width)
     return false;
 
@@ -141,25 +138,22 @@ bool Implementation<Tuple>::equals(Self self, VM vm, Self right,
   return true;
 }
 
-void Implementation<Tuple>::getValueAt(Self self, VM vm,
-                                       nativeint feature,
-                                       UnstableNode& result) {
+void Tuple::getValueAt(Self self, VM vm, nativeint feature,
+                       UnstableNode& result) {
   result.copy(vm, self[(size_t) feature - 1]);
 }
 
-void Implementation<Tuple>::getFeatureAt(Self self, VM vm, size_t index,
-                                         UnstableNode& result) {
+void Tuple::getFeatureAt(Self self, VM vm, size_t index,
+                         UnstableNode& result) {
   result = SmallInt::build(vm, index+1);
 }
 
-OpResult Implementation<Tuple>::label(Self self, VM vm,
-                                      UnstableNode& result) {
+OpResult Tuple::label(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, _label);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Tuple>::clone(Self self, VM vm,
-                                      UnstableNode& result) {
+OpResult Tuple::clone(Self self, VM vm, UnstableNode& result) {
   result = Tuple::build(vm, _width, _label);
 
   auto tuple = RichNode(result).as<Tuple>();
@@ -169,14 +163,13 @@ OpResult Implementation<Tuple>::clone(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Tuple>::testRecord(Self self, VM vm, RichNode arity,
-                                           bool& result) {
+OpResult Tuple::testRecord(Self self, VM vm, RichNode arity, bool& result) {
   result = false;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Tuple>::testTuple(Self self, VM vm, RichNode label,
-                                          size_t width, bool& result) {
+OpResult Tuple::testTuple(Self self, VM vm, RichNode label, size_t width,
+                          bool& result) {
   if (width == _width) {
     return mozart::equals(vm, _label, label, result);
   } else {
@@ -185,13 +178,12 @@ OpResult Implementation<Tuple>::testTuple(Self self, VM vm, RichNode label,
   }
 }
 
-OpResult Implementation<Tuple>::testLabel(Self self, VM vm, RichNode label,
-                                          bool& result) {
+OpResult Tuple::testLabel(Self self, VM vm, RichNode label, bool& result) {
   return mozart::equals(vm, _label, label, result);
 }
 
-void Implementation<Tuple>::printReprToStream(Self self, VM vm,
-                                              std::ostream& out, int depth) {
+void Tuple::printReprToStream(Self self, VM vm, std::ostream& out,
+                              int depth) {
   out << repr(vm, _label, depth) << "(";
 
   if (depth <= 1) {
@@ -207,8 +199,7 @@ void Implementation<Tuple>::printReprToStream(Self self, VM vm,
   out << ")";
 }
 
-OpResult Implementation<Tuple>::isVirtualString(Self self, VM vm,
-                                                bool& result) {
+OpResult Tuple::isVirtualString(Self self, VM vm, bool& result) {
   result = false;
   if (hasSharpLabel(vm)) {
     for (size_t i = 0; i < _width; ++ i) {
@@ -221,8 +212,7 @@ OpResult Implementation<Tuple>::isVirtualString(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Tuple>::toString(Self self, VM vm,
-                                         std::basic_ostream<nchar>& sink) {
+OpResult Tuple::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   if (!hasSharpLabel(vm))
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
@@ -233,7 +223,7 @@ OpResult Implementation<Tuple>::toString(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult Tuple::vsLength(Self self, VM vm, nativeint& result) {
   if (!hasSharpLabel(vm))
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
@@ -248,7 +238,7 @@ OpResult Implementation<Tuple>::vsLength(Self self, VM vm, nativeint& result) {
   return OpResult::proceed();
 }
 
-bool Implementation<Tuple>::hasSharpLabel(VM vm) {
+bool Tuple::hasSharpLabel(VM vm) {
   RichNode label = _label;
   return label.is<Atom>() && label.as<Atom>().value() == vm->coreatoms.sharp;
 }
@@ -259,60 +249,54 @@ bool Implementation<Tuple>::hasSharpLabel(VM vm) {
 
 #include "Cons-implem.hh"
 
-Implementation<Cons>::Implementation(VM vm, RichNode head, RichNode tail) {
+Cons::Cons(VM vm, RichNode head, RichNode tail) {
   _elements[0].init(vm, head);
   _elements[1].init(vm, tail);
 }
 
-Implementation<Cons>::Implementation(VM vm) {
+Cons::Cons(VM vm) {
   _elements[0].init(vm);
   _elements[1].init(vm);
 }
 
-Implementation<Cons>::Implementation(VM vm, GR gr, Self from) {
+Cons::Cons(VM vm, GR gr, Self from) {
   gr->copyStableNode(_elements[0], from->_elements[0]);
   gr->copyStableNode(_elements[1], from->_elements[1]);
 }
 
-bool Implementation<Cons>::equals(Self self, VM vm, Self right,
-                                  WalkStack& stack) {
+bool Cons::equals(Self self, VM vm, Self right, WalkStack& stack) {
   stack.push(vm, &_elements[1], &right->_elements[1]);
   stack.push(vm, &_elements[0], &right->_elements[0]);
 
   return true;
 }
 
-void Implementation<Cons>::getValueAt(Self self, VM vm,
-                                      nativeint feature,
-                                      UnstableNode& result) {
+void Cons::getValueAt(Self self, VM vm, nativeint feature,
+                      UnstableNode& result) {
   result.copy(vm, _elements[feature-1]);
 }
 
-OpResult Implementation<Cons>::label(Self self, VM vm,
-                                     UnstableNode& result) {
+OpResult Cons::label(Self self, VM vm, UnstableNode& result) {
   result = Atom::build(vm, vm->coreatoms.pipe);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::width(Self self, VM vm, size_t& result) {
+OpResult Cons::width(Self self, VM vm, size_t& result) {
   result = 2;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::arityList(Self self, VM vm,
-                                         UnstableNode& result) {
+OpResult Cons::arityList(Self self, VM vm, UnstableNode& result) {
   result = buildList(vm, 1, 2);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::clone(Self self, VM vm,
-                                     UnstableNode& result) {
+OpResult Cons::clone(Self self, VM vm, UnstableNode& result) {
   result = buildCons(vm, OptVar::build(vm), OptVar::build(vm));
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::waitOr(Self self, VM vm,
-                                      UnstableNode& result) {
+OpResult Cons::waitOr(Self self, VM vm, UnstableNode& result) {
   RichNode head = _elements[0];
   RichNode tail = _elements[1];
 
@@ -344,21 +328,19 @@ OpResult Implementation<Cons>::waitOr(Self self, VM vm,
   return OpResult::waitFor(vm, controlVar);
 }
 
-OpResult Implementation<Cons>::testRecord(Self self, VM vm, RichNode arity,
-                                          bool& result) {
+OpResult Cons::testRecord(Self self, VM vm, RichNode arity, bool& result) {
   result = false;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::testTuple(Self self, VM vm, RichNode label,
-                                         size_t width, bool& result) {
+OpResult Cons::testTuple(Self self, VM vm, RichNode label, size_t width,
+                         bool& result) {
   result = (width == 2) && label.is<Atom>() &&
     (label.as<Atom>().value() == vm->coreatoms.pipe);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::testLabel(Self self, VM vm, RichNode label,
-                                         bool& result) {
+OpResult Cons::testLabel(Self self, VM vm, RichNode label, bool& result) {
   result = label.is<Atom>() && (label.as<Atom>().value() == vm->coreatoms.pipe);
   return OpResult::proceed();
 }
@@ -383,7 +365,7 @@ OpResult withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
 
 }
 
-OpResult Implementation<Cons>::isVirtualString(Self self, VM vm, bool& result) {
+OpResult Cons::isVirtualString(Self self, VM vm, bool& result) {
   OpResult res = internal::withConsAsVirtualString(vm, self, [](char32_t){});
   if (res.isProceed()) {
     result = true;
@@ -396,8 +378,7 @@ OpResult Implementation<Cons>::isVirtualString(Self self, VM vm, bool& result) {
   }
 }
 
-OpResult Implementation<Cons>::toString(Self self, VM vm,
-                                        std::basic_ostream<nchar>& sink) {
+OpResult Cons::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   MOZART_CHECK_OPRESULT(internal::withConsAsVirtualString(vm, self,
     [&](char32_t c) {
       nchar buffer[4];
@@ -409,7 +390,7 @@ OpResult Implementation<Cons>::toString(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cons>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult Cons::vsLength(Self self, VM vm, nativeint& result) {
   nativeint length = 0;
 
   MOZART_CHECK_OPRESULT(internal::withConsAsVirtualString(vm, self,
@@ -420,8 +401,7 @@ OpResult Implementation<Cons>::vsLength(Self self, VM vm, nativeint& result) {
   return OpResult::proceed();
 }
 
-void Implementation<Cons>::printReprToStream(Self self, VM vm,
-                                             std::ostream& out, int depth) {
+void Cons::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
   out << repr(vm, _elements[0], depth) << "|" << repr(vm, _elements[1], depth);
 }
 
@@ -431,9 +411,8 @@ void Implementation<Cons>::printReprToStream(Self self, VM vm,
 
 #include "Arity-implem.hh"
 
-Implementation<Arity>::Implementation(VM vm, size_t width,
-                                      StaticArray<StableNode> _elements,
-                                      RichNode label) {
+Arity::Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
+             RichNode label) {
   _label.init(vm, label);
   _width = width;
 
@@ -443,9 +422,8 @@ Implementation<Arity>::Implementation(VM vm, size_t width,
     _elements[i].init(vm);
 }
 
-Implementation<Arity>::Implementation(VM vm, size_t width,
-                                      StaticArray<StableNode> _elements,
-                                      GR gr, Self from) {
+Arity::Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
+             GR gr, Self from) {
   _width = width;
   gr->copyStableNode(_label, from->_label);
 
@@ -453,12 +431,11 @@ Implementation<Arity>::Implementation(VM vm, size_t width,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StableNode* Implementation<Arity>::getElement(Self self, size_t index) {
+StableNode* Arity::getElement(Self self, size_t index) {
   return &self[index];
 }
 
-bool Implementation<Arity>::equals(Self self, VM vm, Self right,
-                                   WalkStack& stack) {
+bool Arity::equals(Self self, VM vm, Self right, WalkStack& stack) {
   if (_width != right->_width)
     return false;
 
@@ -468,16 +445,13 @@ bool Implementation<Arity>::equals(Self self, VM vm, Self right,
   return true;
 }
 
-OpResult Implementation<Arity>::initElement(
-  Self self, VM vm, size_t index, RichNode value) {
-
+OpResult Arity::initElement(Self self, VM vm, size_t index, RichNode value) {
   self[index].init(vm, value);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Arity>::lookupFeature(
-  Self self, VM vm, RichNode feature, bool& found, size_t& index) {
-
+OpResult Arity::lookupFeature(Self self, VM vm, RichNode feature,
+                              bool& found, size_t& index) {
   MOZART_REQUIRE_FEATURE(feature);
 
   // Dichotomic search
@@ -503,8 +477,8 @@ OpResult Implementation<Arity>::lookupFeature(
   return OpResult::proceed();
 }
 
-void Implementation<Arity>::printReprToStream(Self self, VM vm,
-                                              std::ostream& out, int depth) {
+void Arity::printReprToStream(Self self, VM vm, std::ostream& out,
+                              int depth) {
   out << "<Arity " << repr(vm, _label, depth) << "(";
 
   if (depth <= 1) {
@@ -526,9 +500,8 @@ void Implementation<Arity>::printReprToStream(Self self, VM vm,
 
 #include "Record-implem.hh"
 
-Implementation<Record>::Implementation(VM vm, size_t width,
-                                       StaticArray<StableNode> _elements,
-                                       RichNode arity) {
+Record::Record(VM vm, size_t width, StaticArray<StableNode> _elements,
+               RichNode arity) {
   assert(arity.is<Arity>());
 
   _arity.init(vm, arity);
@@ -540,9 +513,8 @@ Implementation<Record>::Implementation(VM vm, size_t width,
     _elements[i].init(vm);
 }
 
-Implementation<Record>::Implementation(VM vm, size_t width,
-                                       StaticArray<StableNode> _elements,
-                                       GR gr, Self from) {
+Record::Record(VM vm, size_t width, StaticArray<StableNode> _elements,
+               GR gr, Self from) {
   gr->copyStableNode(_arity, from->_arity);
   _width = width;
 
@@ -550,12 +522,11 @@ Implementation<Record>::Implementation(VM vm, size_t width,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StaticArray<StableNode> Implementation<Record>::getElementsArray(Self self) {
+StaticArray<StableNode> Record::getElementsArray(Self self) {
   return self.getArray();
 }
 
-bool Implementation<Record>::equals(Self self, VM vm, Self right,
-                                    WalkStack& stack) {
+bool Record::equals(Self self, VM vm, Self right, WalkStack& stack) {
   if (_width != right->_width)
     return false;
 
@@ -565,15 +536,13 @@ bool Implementation<Record>::equals(Self self, VM vm, Self right,
   return true;
 }
 
-void Implementation<Record>::getFeatureAt(Self self, VM vm, size_t index,
-                                          UnstableNode& result) {
+void Record::getFeatureAt(Self self, VM vm, size_t index,
+                          UnstableNode& result) {
   result.copy(vm, *RichNode(_arity).as<Arity>().getElement(index));
 }
 
-OpResult Implementation<Record>::lookupFeature(
-  Self self, VM vm, RichNode feature, bool& found,
-  nullable<UnstableNode&> value) {
-
+OpResult Record::lookupFeature(Self self, VM vm, RichNode feature,
+                               bool& found, nullable<UnstableNode&> value) {
   size_t index = 0;
   MOZART_CHECK_OPRESULT(
     RichNode(_arity).as<Arity>().lookupFeature(vm, feature, found, index));
@@ -584,22 +553,18 @@ OpResult Implementation<Record>::lookupFeature(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Record>::lookupFeature(
-  Self self, VM vm, nativeint feature, bool& found,
-  nullable<UnstableNode&> value) {
-
-  UnstableNode featureNode = build(vm, feature);
+OpResult Record::lookupFeature(Self self, VM vm, nativeint feature,
+                               bool& found, nullable<UnstableNode&> value) {
+  UnstableNode featureNode = mozart::build(vm, feature);
   return lookupFeature(self, vm, featureNode, found, value);
 }
 
-OpResult Implementation<Record>::label(Self self, VM vm,
-                                       UnstableNode& result) {
+OpResult Record::label(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, *RichNode(_arity).as<Arity>().getLabel());
   return OpResult::proceed();
 }
 
-OpResult Implementation<Record>::clone(Self self, VM vm,
-                                       UnstableNode& result) {
+OpResult Record::clone(Self self, VM vm, UnstableNode& result) {
   result = Record::build(vm, _width, _arity);
 
   auto record = RichNode(result).as<Record>();
@@ -609,25 +574,23 @@ OpResult Implementation<Record>::clone(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Record>::testRecord(Self self, VM vm, RichNode arity,
-                                            bool& result) {
+OpResult Record::testRecord(Self self, VM vm, RichNode arity, bool& result) {
   return mozart::equals(vm, _arity, arity, result);
 }
 
-OpResult Implementation<Record>::testTuple(Self self, VM vm, RichNode label,
-                                           size_t width, bool& result) {
+OpResult Record::testTuple(Self self, VM vm, RichNode label, size_t width,
+                           bool& result) {
   result = false;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Record>::testLabel(Self self, VM vm, RichNode label,
-                                           bool& result) {
+OpResult Record::testLabel(Self self, VM vm, RichNode label, bool& result) {
   return mozart::equals(
     vm, *RichNode(_arity).as<Arity>().getLabel(), label, result);
 }
 
-void Implementation<Record>::printReprToStream(Self self, VM vm,
-                                               std::ostream& out, int depth) {
+void Record::printReprToStream(Self self, VM vm, std::ostream& out,
+                               int depth) {
   UnstableNode label;
   MOZART_ASSERT_PROCEED(this->label(self, vm, label));
 
@@ -656,21 +619,17 @@ void Implementation<Record>::printReprToStream(Self self, VM vm,
 
 #include "Chunk-implem.hh"
 
-void Implementation<Chunk>::build(StableNode*& self, VM vm, GR gr, Self from) {
+void Chunk::create(StableNode*& self, VM vm, GR gr, Self from) {
   gr->copyStableRef(self, from.get().getUnderlying());
 }
 
-OpResult Implementation<Chunk>::lookupFeature(
-  Self self, VM vm, RichNode feature, bool& found,
-  nullable<UnstableNode&> value) {
-
+OpResult Chunk::lookupFeature(Self self, VM vm, RichNode feature,
+                              bool& found, nullable<UnstableNode&> value) {
   return Dottable(*_underlying).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Implementation<Chunk>::lookupFeature(
-  Self self, VM vm, nativeint feature, bool& found,
-  nullable<UnstableNode&> value) {
-
+OpResult Chunk::lookupFeature(Self self, VM vm, nativeint feature,
+                              bool& found, nullable<UnstableNode&> value) {
   return Dottable(*_underlying).lookupFeature(vm, feature, found, value);
 }
 

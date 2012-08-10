@@ -37,11 +37,11 @@ namespace mozart {
 
 #include "OptName-implem.hh"
 
-void Implementation<OptName>::build(SpaceRef& self, VM vm, GR gr, Self from) {
+void OptName::create(SpaceRef& self, VM vm, GR gr, Self from) {
   gr->copySpace(self, from.get().home());
 }
 
-OpResult Implementation<OptName>::makeFeature(Self self, VM vm) {
+OpResult OptName::makeFeature(Self self, VM vm) {
   self.become(vm, GlobalName::build(vm));
   return OpResult::proceed();
 }
@@ -52,7 +52,7 @@ OpResult Implementation<OptName>::makeFeature(Self self, VM vm) {
 
 #include "GlobalName-implem.hh"
 
-Implementation<GlobalName>::Implementation(VM vm, GR gr, Self from):
+GlobalName::GlobalName(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   if (gr->kind() == GraphReplicator::grkSpaceCloning)
@@ -61,7 +61,7 @@ Implementation<GlobalName>::Implementation(VM vm, GR gr, Self from):
     _uuid = from->_uuid;
 }
 
-int Implementation<GlobalName>::compareFeatures(VM vm, Self right) {
+int GlobalName::compareFeatures(VM vm, Self right) {
   const UUID& rhsUUID = right->getUUID();
 
   if (_uuid == rhsUUID)
@@ -78,7 +78,7 @@ int Implementation<GlobalName>::compareFeatures(VM vm, Self right) {
 
 #include "NamedName-implem.hh"
 
-Implementation<NamedName>::Implementation(VM vm, GR gr, Self from):
+NamedName::NamedName(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   gr->copyStableNode(_printName, from->_printName);
@@ -89,7 +89,7 @@ Implementation<NamedName>::Implementation(VM vm, GR gr, Self from):
     _uuid = from->_uuid;
 }
 
-int Implementation<NamedName>::compareFeatures(VM vm, Self right) {
+int NamedName::compareFeatures(VM vm, Self right) {
   const UUID& rhsUUID = right->getUUID();
 
   if (_uuid == rhsUUID)
@@ -106,23 +106,21 @@ int Implementation<NamedName>::compareFeatures(VM vm, Self right) {
 
 #include "UniqueName-implem.hh"
 
-void Implementation<UniqueName>::build(unique_name_t& self, VM vm, GR gr,
-                                       Self from) {
+void UniqueName::create(unique_name_t& self, VM vm, GR gr, Self from) {
   unique_name_t fromValue = from.get().value();
   self = vm->getUniqueName(fromValue.length(), fromValue.contents());
 }
 
-bool Implementation<UniqueName>::equals(VM vm, Self right) {
+bool UniqueName::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-int Implementation<UniqueName>::compareFeatures(VM vm, Self right) {
+int UniqueName::compareFeatures(VM vm, Self right) {
   return value().compare(right.get().value());
 }
 
-void Implementation<UniqueName>::printReprToStream(Self self, VM vm,
-                                                   std::ostream& out,
-                                                   int depth) {
+void UniqueName::printReprToStream(Self self, VM vm, std::ostream& out,
+                                   int depth) {
   out << "<UniqueName '";
   out << toUTF<char>(makeLString(value().contents(), value().length()));
   out << "'>";

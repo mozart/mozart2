@@ -35,8 +35,8 @@ class Float;
 #include "Float-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Float>: Copyable, StoredAs<double>, WithValueBehavior {
+class Float: public DataType<Float>,
+  Copyable, StoredAs<double>, WithValueBehavior {
 public:
   typedef SelfType<Float>::Self Self;
 public:
@@ -44,14 +44,14 @@ public:
     return vm->getAtom(MOZART_STR("float"));
   }
 
-  Implementation(double value) : _value(value) {}
+  Float(double value) : _value(value) {}
 
-  static void build(double& self, VM, double value) {
+  static void create(double& self, VM, double value) {
     self = value;
   }
 
   inline
-  static void build(double& self, VM vm, GR gr, Self from);
+  static void create(double& self, VM vm, GR gr, Self from);
 
   double value() const { return _value; }
 

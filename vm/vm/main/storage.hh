@@ -79,59 +79,55 @@ public:
   static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
     value.alloc<U>(vm);
-    Implementation<T>::build(value.get<U>(), vm, std::forward<Args>(args)...);
+    T::create(value.get<U>(), vm, std::forward<Args>(args)...);
   }
 
-  static Implementation<T> get(MemWord value) {
-    return Implementation<T>(value.get<U>());
+  static T get(MemWord value) {
+    return T(value.get<U>());
   }
 };
 
 template<class T>
 class Accessor<T, DefaultStorage<T>> {
 public:
-  typedef Implementation<T> Impl;
-
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
-    Impl* val = new (vm) Impl(vm, std::forward<Args>(args)...);
-    value.init<Impl*>(vm, val);
+    T* val = new (vm) T(vm, std::forward<Args>(args)...);
+    value.init<T*>(vm, val);
   }
 
-  static Impl& get(MemWord value) {
-    return *(value.get<Impl*>());
+  static T& get(MemWord value) {
+    return *(value.get<T*>());
   }
 };
 
 template<class T, class E>
-class Accessor<T, ImplWithArray<Implementation<T>, E>> {
+class Accessor<T, ImplWithArray<T, E>> {
 public:
-  typedef Implementation<T> Impl;
-
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm,
                    size_t elemCount, Args&&... args) {
     // Allocate memory
-    void* memory = operator new (sizeof(Impl) + elemCount*sizeof(E), vm);
-    ImplWithArray<Impl, E> implWithArray(static_cast<Impl*>(memory));
+    void* memory = operator new (sizeof(T) + elemCount*sizeof(E), vm);
+    ImplWithArray<T, E> implWithArray(static_cast<T*>(memory));
 
     // Initialize the array
     E* array = implWithArray.getRawArray();
     new (array) E[elemCount];
 
     // Initialize the impl
-    Impl* impl = implWithArray.operator->();
-    new (impl) Impl(vm, elemCount, implWithArray.getArray(elemCount),
-                    std::forward<Args>(args)...);
+    T* impl = implWithArray.operator->();
+    new (impl) T(vm, elemCount, implWithArray.getArray(elemCount),
+                 std::forward<Args>(args)...);
 
     // Fill in output parameters
     type = T::type();
-    value.init<Impl*>(vm, impl);
+    value.init<T*>(vm, impl);
   }
 
-  static Impl& get(MemWord value) {
-    return *(value.get<Impl*>());
+  static T& get(MemWord value) {
+    return *(value.get<T*>());
   }
 };
 

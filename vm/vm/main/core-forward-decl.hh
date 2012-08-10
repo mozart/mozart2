@@ -147,10 +147,6 @@ private:
   Space* space;
 };
 
-template <class T>
-class Implementation {
-};
-
 }
 
 // new operators must be declared outside of any namespace

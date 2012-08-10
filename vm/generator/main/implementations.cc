@@ -128,6 +128,14 @@ private:
   }
 };
 
+bool isImplementationClass(const ClassDecl* cls) {
+  return existsBaseClassSuchThat(cls,
+    [] (const ClassDecl* cls) {
+      return isAnInstantiationOfTheTemplate(cls, "mozart::DataType");
+    }
+  );
+}
+
 void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
   // Recurse into base classes
   for (auto iter = CD->bases_begin(), e = CD->bases_end();
@@ -182,14 +190,14 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
   }
 }
 
-void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
-  const std::string name = getTypeParamAsString(ND);
+void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
+  const std::string name = CD->getNameAsString();
 
   ImplementationDef definition;
   definition.name = name;
 
   // For every marker, i.e. base class
-  for (auto iter = ND->bases_begin(), e = ND->bases_end(); iter != e; ++iter) {
+  for (auto iter = CD->bases_begin(), e = CD->bases_end(); iter != e; ++iter) {
     CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
     std::string markerLabel = marker->getNameAsString();
 
@@ -202,7 +210,7 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
       definition.storage = getTypeParamAsString(marker, false);
     } else if (markerLabel == "StoredWithArrayOf") {
       definition.storageKind = skWithArray;
-      definition.storage = "ImplWithArray<Implementation<" + name + ">, " +
+      definition.storage = "ImplWithArray<" + name + ", " +
         getTypeParamAsString(marker, false) + ">";
     } else if (markerLabel == "WithValueBehavior") {
       definition.structuralBehavior = sbValue;
@@ -224,10 +232,10 @@ void handleImplementation(const std::string outputDir, const SpecDecl* ND) {
   }
 
   // Collect methods
-  collectMethods(definition, ND);
+  collectMethods(definition, CD);
 
   // Look for a UUID
-  for (auto iter = ND->decls_begin(), e = ND->decls_end(); iter != e; ++iter) {
+  for (auto iter = CD->decls_begin(), e = CD->decls_end(); iter != e; ++iter) {
     const Decl* decl = *iter;
 
     if (const NamedDecl* named = dyn_cast<NamedDecl>(decl)) {
@@ -258,40 +266,35 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
 }
 
 void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
-  to << "class " << name << ": public " << base << " {\n";
+  to << "template <>\n";
+  to << "class TypeInfoOf<" << name << ">: public " << base << " {\n";
   to << "private:\n";
   to << "  typedef SelfType<" << name << ">::Self Self;\n";
   to << "\n";
   to << "  static constexpr UUID uuid() {\n";
   if (hasUUID)
-    to << "    return Implementation<" << name << ">::uuid;\n";
+    to << "    return " << name << "::uuid;\n";
   else
     to << "    return UUID();\n";
   to << "  }\n";
   to << "public:\n";
-  to << "  " << name << "() : " << base << "(\"" << name << "\", uuid(), "
+  to << "  TypeInfoOf() : " << base << "(\"" << name << "\", uuid(), "
      << b2s(copyable) << ", " << b2s(transient) << ", " << b2s(feature) << ", "
      << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
      << ") {}\n";
   to << "\n";
-  to << "  static const " << name << "* const instance() {\n";
+  to << "  static const TypeInfoOf<" << name << ">* const instance() {\n";
   to << "    return &RawType<" << name << ">::rawType;\n";
   to << "  }\n";
   to << "\n";
   to << "  static Type type() {\n";
   to << "    return Type(instance());\n";
   to << "  }\n";
-  to << "\n";
-  to << "  template <class... Args>\n";
-  to << "  static UnstableNode build(VM vm, Args&&... args) {\n";
-  to << "    return UnstableNode::build<" << name
-     << ">(vm, std::forward<Args>(args)...);\n";
-  to << "  }\n";
 
   if (hasGetTypeAtom) {
     to << "\n";
     to << "  atom_t getTypeAtom(VM vm) const {\n";
-    to << "    return Implementation<" << name << ">::getTypeAtom(vm);\n";
+    to << "    return " << name << "::getTypeAtom(vm);\n";
     to << "  }\n";
   }
 
@@ -354,6 +357,8 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
 }
 
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
+  std::string className = std::string("TypeInfoOf<") + name + ">";
+
   std::string _selfArrow;
   if (storageKind == skCustom)
     _selfArrow = "_self.get().";
@@ -362,7 +367,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 
   if (hasPrintReprToStream) {
     to << "\n";
-    to << "void " << name
+    to << "void " << className
        << "::printReprToStream(VM vm, RichNode self, std::ostream& out,\n";
     to << "                    int depth) const {\n";
     to << "  assert(self.is<" << name << ">());\n";
@@ -372,12 +377,12 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 
   if (autoGCollect) {
     to << "\n";
-    to << "void " << name
+    to << "void " << className
        << "::gCollect(GC gc, RichNode from, StableNode& to) const {\n";
     makeContentsOfAutoGCollect(to, true);
     to << "}\n\n";
 
-    to << "void " << name
+    to << "void " << className
        << "::gCollect(GC gc, RichNode from, UnstableNode& to) const {\n";
     makeContentsOfAutoGCollect(to, false);
     to << "}\n";
@@ -385,12 +390,12 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 
   if (autoSClone) {
     to << "\n";
-    to << "void " << name
+    to << "void " << className
        << "::sClone(SC sc, RichNode from, StableNode& to) const {\n";
     makeContentsOfAutoSClone(to, true);
     to << "}\n\n";
 
-    to << "void " << name
+    to << "void " << className
        << "::sClone(SC sc, RichNode from, UnstableNode& to) const {\n";
     makeContentsOfAutoSClone(to, false);
     to << "}\n";
@@ -398,7 +403,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 
   if (feature) {
     to << "\n";
-    to << "int " << name
+    to << "int " << className
        << "::compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {\n";
     to << "  return lhs.as<" << name << ">().compareFeatures(vm, rhs);\n";
     to << "}\n\n";

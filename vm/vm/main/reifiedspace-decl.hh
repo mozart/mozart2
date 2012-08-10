@@ -39,8 +39,8 @@ class ReifiedSpace;
 #include "ReifiedSpace-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<ReifiedSpace>: public WithHome, StoredAs<SpaceRef> {
+class ReifiedSpace: public DataType<ReifiedSpace>, public WithHome,
+  StoredAs<SpaceRef> {
 public:
   typedef SelfType<ReifiedSpace>::Self Self;
 public:
@@ -48,15 +48,15 @@ public:
     return vm->getAtom(MOZART_STR("space"));
   }
 
-  Implementation(SpaceRef space):
+  ReifiedSpace(SpaceRef space):
     WithHome(space->getParent()), _space(space) {}
 
-  static void build(SpaceRef& self, VM vm, SpaceRef space) {
+  static void create(SpaceRef& self, VM vm, SpaceRef space) {
     self = space;
   }
 
   inline
-  static void build(SpaceRef& self, VM vm, GR gr, Self from);
+  static void create(SpaceRef& self, VM vm, GR gr, Self from);
 public:
   Space* getSpace() {
     return _space;
@@ -106,8 +106,7 @@ enum DeletedSpaceKind {
 #include "DeletedSpace-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<DeletedSpace>: StoredAs<DeletedSpaceKind> {
+class DeletedSpace: public DataType<DeletedSpace>, StoredAs<DeletedSpaceKind> {
 public:
   typedef SelfType<DeletedSpace>::Self Self;
 public:
@@ -115,14 +114,14 @@ public:
     return vm->getAtom(MOZART_STR("space"));
   }
 
-  Implementation(DeletedSpaceKind kind): _kind(kind) {}
+  DeletedSpace(DeletedSpaceKind kind): _kind(kind) {}
 
-  static void build(DeletedSpaceKind& self, VM vm, DeletedSpaceKind kind) {
+  static void create(DeletedSpaceKind& self, VM vm, DeletedSpaceKind kind) {
     self = kind;
   }
 
   inline
-  static void build(DeletedSpaceKind& self, VM vm, GR gr, Self from);
+  static void create(DeletedSpaceKind& self, VM vm, GR gr, Self from);
 public:
   DeletedSpaceKind kind() {
     return _kind;

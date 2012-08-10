@@ -39,18 +39,17 @@ class Reference;
 #include "Reference-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Reference>: Copyable, StoredAs<StableNode*> {
+class Reference: public DataType<Reference>, Copyable, StoredAs<StableNode*> {
 public:
   typedef SelfType<Reference>::Self Self;
 public:
-  Implementation(StableNode* dest) : _dest(dest) {}
+  Reference(StableNode* dest) : _dest(dest) {}
 
-  static void build(StableNode*& self, VM, StableNode* dest) {
+  static void create(StableNode*& self, VM, StableNode* dest) {
     self = dest;
   }
 
-  static void build(StableNode*& self, VM vm, GR gr, Self from) {
+  static void create(StableNode*& self, VM vm, GR gr, Self from) {
     assert(false);
     self = nullptr;
   }

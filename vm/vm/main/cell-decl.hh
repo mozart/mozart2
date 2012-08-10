@@ -39,8 +39,7 @@ class Cell;
 #include "Cell-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Cell>: public WithHome {
+class Cell: public DataType<Cell>, public WithHome {
 public:
   typedef SelfType<Cell>::Self Self;
 public:
@@ -48,12 +47,12 @@ public:
     return vm->getAtom(MOZART_STR("cell"));
   }
 
-  Implementation(VM vm, RichNode initial): WithHome(vm) {
+  Cell(VM vm, RichNode initial): WithHome(vm) {
     _value.init(vm, initial);
   }
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  Cell(VM vm, GR gr, Self from);
 
 public:
   // CellLike interface

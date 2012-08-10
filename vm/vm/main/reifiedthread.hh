@@ -37,43 +37,35 @@ namespace mozart {
 
 #include "ReifiedThread-implem.hh"
 
-void Implementation<ReifiedThread>::build(Runnable*& self, VM vm, GR gr,
-                                          Self from) {
+void ReifiedThread::create(Runnable*& self, VM vm, GR gr, Self from) {
   gr->copyThread(self, from.get()._runnable);
 }
 
-bool Implementation<ReifiedThread>::equals(VM vm, Self right) {
+bool ReifiedThread::equals(VM vm, Self right) {
   return _runnable == right.get()._runnable;
 }
 
-OpResult Implementation<ReifiedThread>::wakeUp(VM vm) {
+OpResult ReifiedThread::wakeUp(VM vm) {
   if (!_runnable->isRunnable())
     _runnable->resume();
   return OpResult::proceed();
 }
 
-bool Implementation<ReifiedThread>::shouldWakeUpUnderSpace(VM vm,
-                                                           Space* space) {
+bool ReifiedThread::shouldWakeUpUnderSpace(VM vm, Space* space) {
   return _runnable->getSpace()->isAncestor(space);
 }
 
-OpResult Implementation<ReifiedThread>::getThreadPriority(
-  VM vm, ThreadPriority& result) {
-
+OpResult ReifiedThread::getThreadPriority(VM vm, ThreadPriority& result) {
   result = _runnable->getPriority();
   return OpResult::proceed();
 }
 
-OpResult Implementation<ReifiedThread>::setThreadPriority(
-  VM vm, ThreadPriority priority) {
-
+OpResult ReifiedThread::setThreadPriority(VM vm, ThreadPriority priority) {
   _runnable->setPriority(priority);
   return OpResult::proceed();
 }
 
-OpResult Implementation<ReifiedThread>::injectException(
-  VM vm, RichNode exception) {
-
+OpResult ReifiedThread::injectException(VM vm, RichNode exception) {
   _runnable->injectException(exception.getStableRef(vm));
   return OpResult::proceed();
 }

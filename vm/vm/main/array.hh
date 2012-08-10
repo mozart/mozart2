@@ -37,9 +37,8 @@ namespace mozart {
 
 #include "Array-implem.hh"
 
-Implementation<Array>::Implementation(VM vm, size_t width,
-                                      StaticArray<UnstableNode> _elements,
-                                      nativeint low, RichNode initValue):
+Array::Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
+             nativeint low, RichNode initValue):
   WithHome(vm) {
 
   _width = width;
@@ -49,9 +48,8 @@ Implementation<Array>::Implementation(VM vm, size_t width,
     _elements[i].init(vm, initValue);
 }
 
-Implementation<Array>::Implementation(VM vm, size_t width,
-                                      StaticArray<UnstableNode> _elements,
-                                      GR gr, Self from):
+Array::Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
+             GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   _width = width;
@@ -61,27 +59,23 @@ Implementation<Array>::Implementation(VM vm, size_t width,
     gr->copyUnstableNode(_elements[i], from[i]);
 }
 
-void Implementation<Array>::getValueAt(Self self, VM vm,
-                                       nativeint feature,
-                                       UnstableNode& result) {
+void Array::getValueAt(Self self, VM vm, nativeint feature,
+                       UnstableNode& result) {
   result.copy(vm, self[indexToOffset(feature)]);
 }
 
-OpResult Implementation<Array>::arrayLow(Self self, VM vm,
-                                         UnstableNode& result) {
+OpResult Array::arrayLow(Self self, VM vm, UnstableNode& result) {
   result = SmallInt::build(vm, getLow());
   return OpResult::proceed();
 }
 
-OpResult Implementation<Array>::arrayHigh(Self self, VM vm,
-                                          UnstableNode& result) {
+OpResult Array::arrayHigh(Self self, VM vm, UnstableNode& result) {
   result = SmallInt::build(vm, getHigh());
   return OpResult::proceed();
 }
 
-OpResult Implementation<Array>::arrayGet(Self self, VM vm,
-                                         RichNode index,
-                                         UnstableNode& result) {
+OpResult Array::arrayGet(Self self, VM vm, RichNode index,
+                         UnstableNode& result) {
   size_t offset = 0;
   MOZART_CHECK_OPRESULT(getOffset(self, vm, index, offset));
 
@@ -89,9 +83,7 @@ OpResult Implementation<Array>::arrayGet(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Array>::arrayPut(Self self, VM vm,
-                                         RichNode index,
-                                         RichNode value) {
+OpResult Array::arrayPut(Self self, VM vm, RichNode index, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "array");
 
@@ -102,9 +94,8 @@ OpResult Implementation<Array>::arrayPut(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
-                                              RichNode index, RichNode newValue,
-                                              UnstableNode& oldValue) {
+OpResult Array::arrayExchange(Self self, VM vm, RichNode index,
+                              RichNode newValue, UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "array");
 
@@ -116,8 +107,7 @@ OpResult Implementation<Array>::arrayExchange(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Array>::getOffset(Self self, VM vm,
-                                          RichNode index, size_t& offset) {
+OpResult Array::getOffset(Self self, VM vm, RichNode index, size_t& offset) {
   nativeint indexIntValue = 0;
   MOZART_GET_ARG(indexIntValue, index, MOZART_STR("integer"));
 
@@ -128,8 +118,7 @@ OpResult Implementation<Array>::getOffset(Self self, VM vm,
   return OpResult::proceed();
 }
 
-void Implementation<Array>::printReprToStream(Self self, VM vm,
-                                              std::ostream& out, int depth) {
+void Array::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
   out << "<Array " << getLow() << ".." << getHigh() << ">";
 }
 

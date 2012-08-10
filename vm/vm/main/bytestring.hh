@@ -40,16 +40,15 @@ namespace mozart {
 
 // Core methods ----------------------------------------------------------------
 
-Implementation<ByteString>::Implementation(VM vm, GR gr, Self from)
+ByteString::ByteString(VM vm, GR gr, Self from)
   : _bytes(vm, from->_bytes) {}
 
-bool Implementation<ByteString>::equals(VM vm, Self right) {
+bool ByteString::equals(VM vm, Self right) {
   return _bytes == right->_bytes;
 }
 
-void Implementation<ByteString>::getValueAt(Self self, VM vm,
-                                            nativeint feature,
-                                            UnstableNode& result) {
+void ByteString::getValueAt(Self self, VM vm, nativeint feature,
+                            UnstableNode& result) {
   result = SmallInt::build(vm, _bytes[feature]);
 }
 
@@ -71,8 +70,7 @@ namespace internal {
   }
 }
 
-OpResult Implementation<ByteString>::compare(Self self, VM vm,
-                                             RichNode right, int& result) {
+OpResult ByteString::compare(Self self, VM vm, RichNode right, int& result) {
   LString<unsigned char>* rightBytes = nullptr;
   MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightBytes));
   result = internal::compareByteStrings(_bytes, *rightBytes);
@@ -81,22 +79,18 @@ OpResult Implementation<ByteString>::compare(Self self, VM vm,
 
 // StringLike ------------------------------------------------------------------
 
-OpResult Implementation<ByteString>::stringGet(
-  Self self, VM vm, LString<unsigned char>*& result) {
-
+OpResult ByteString::stringGet(Self self, VM vm,
+                               LString<unsigned char>*& result) {
   result = &_bytes;
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::stringGet(
-  Self self, VM vm, LString<nchar>*& result) {
-
+OpResult ByteString::stringGet(Self self, VM vm, LString<nchar>*& result) {
   return raiseTypeError(vm, MOZART_STR("String"), self);
 }
 
-OpResult Implementation<ByteString>::stringCharAt(Self self, VM vm,
-                                                  RichNode offsetNode,
-                                                  nativeint& character) {
+OpResult ByteString::stringCharAt(Self self, VM vm, RichNode offsetNode,
+                                  nativeint& character) {
   nativeint offset = 0;
   MOZART_GET_ARG(offset, offsetNode, MOZART_STR("integer"));
 
@@ -107,9 +101,8 @@ OpResult Implementation<ByteString>::stringCharAt(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::stringAppend(Self self, VM vm,
-                                                  RichNode right,
-                                                  UnstableNode& result) {
+OpResult ByteString::stringAppend(Self self, VM vm, RichNode right,
+                                  UnstableNode& result) {
   LString<unsigned char>* rightBytes = nullptr;
   MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightBytes));
   LString<unsigned char> resultBytes = concatLString(vm, _bytes, *rightBytes);
@@ -119,9 +112,8 @@ OpResult Implementation<ByteString>::stringAppend(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::stringSlice(Self self, VM vm,
-                                                 RichNode from, RichNode to,
-                                                 UnstableNode& result) {
+OpResult ByteString::stringSlice(Self self, VM vm, RichNode from, RichNode to,
+                                 UnstableNode& result) {
   nativeint fromOffset = 0, toOffset = 0;
   MOZART_GET_ARG(fromOffset, from, MOZART_STR("integer"));
   MOZART_GET_ARG(toOffset, to, MOZART_STR("integer"));
@@ -133,7 +125,7 @@ OpResult Implementation<ByteString>::stringSlice(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::stringSearch(
+OpResult ByteString::stringSearch(
   Self self, VM vm, RichNode from, RichNode needleNode,
   UnstableNode& begin, UnstableNode& end) {
 
@@ -191,9 +183,8 @@ OpResult Implementation<ByteString>::stringSearch(
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::stringHasPrefix(Self self, VM vm,
-                                                     RichNode prefixNode,
-                                                     bool& result) {
+OpResult ByteString::stringHasPrefix(Self self, VM vm, RichNode prefixNode,
+                                     bool& result) {
   LString<unsigned char>* prefix = nullptr;
   MOZART_CHECK_OPRESULT(StringLike(prefixNode).stringGet(vm, prefix));
   if (_bytes.length < prefix->length)
@@ -203,9 +194,8 @@ OpResult Implementation<ByteString>::stringHasPrefix(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::stringHasSuffix(Self self, VM vm,
-                                                     RichNode suffixNode,
-                                                     bool& result) {
+OpResult ByteString::stringHasSuffix(Self self, VM vm, RichNode suffixNode,
+                                     bool& result) {
   LString<unsigned char>* suffix = nullptr;
   MOZART_CHECK_OPRESULT(StringLike(suffixNode).stringGet(vm, suffix));
   if (_bytes.length < suffix->length)
@@ -218,24 +208,21 @@ OpResult Implementation<ByteString>::stringHasSuffix(Self self, VM vm,
 
 // VirtualString ---------------------------------------------------------------
 
-OpResult Implementation<ByteString>::toString(Self self, VM vm,
-                                              std::basic_ostream<nchar>& sink) {
+OpResult ByteString::toString(Self self, VM vm,
+                              std::basic_ostream<nchar>& sink) {
   sink << decodeLatin1(_bytes, EncodingVariant::none);
   return OpResult::proceed();
 }
 
-OpResult Implementation<ByteString>::vsLength(Self self, VM vm,
-                                              nativeint& result) {
+OpResult ByteString::vsLength(Self self, VM vm, nativeint& result) {
   result = _bytes.length;
   return OpResult::proceed();
 }
 
 // Encode & decode -------------------------------------------------------------
 
-OpResult Implementation<ByteString>::decode(Self self, VM vm,
-                                            ByteStringEncoding encoding,
-                                            EncodingVariant variant,
-                                            UnstableNode& result) {
+OpResult ByteString::decode(Self self, VM vm, ByteStringEncoding encoding,
+                            EncodingVariant variant, UnstableNode& result) {
   DecoderFun decoder;
   switch (encoding) {
     case ByteStringEncoding::latin1: decoder = &decodeLatin1; break;
@@ -276,9 +263,8 @@ OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
 
 // Miscellaneous ---------------------------------------------------------------
 
-void Implementation<ByteString>::printReprToStream(Self self, VM vm,
-                                                   std::ostream& out,
-                                                   int depth) {
+void ByteString::printReprToStream(Self self, VM vm, std::ostream& out,
+                                   int depth) {
   out << "<ByteString \"";
   out.write(reinterpret_cast<const char*>(_bytes.string), _bytes.length);
   // TODO: Escape characters.

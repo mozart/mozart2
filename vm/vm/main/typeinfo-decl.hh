@@ -115,12 +115,20 @@ private:
 };
 
 template <class T>
-struct RawType {
-  static const T rawType;
+class TypeInfoOf {
+#ifdef IN_IDE_PARSER
+public:
+  inline static Type type();
+#endif
 };
 
 template <class T>
-const T RawType<T>::rawType;
+struct RawType {
+  static const TypeInfoOf<T> rawType;
+};
+
+template <class T>
+const TypeInfoOf<T> RawType<T>::rawType;
 
 //////////////
 // Features //

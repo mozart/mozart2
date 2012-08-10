@@ -64,6 +64,16 @@ void withFileOutputStream(const std::string& fileName,
 
 std::string typeToString(clang::QualType type);
 
+bool isTheClass(const ClassDecl* cls,
+                const std::string& fullClassName);
+
+bool isAnInstantiationOfTheTemplate(const ClassDecl* cls,
+                                    const std::string& fullClassTemplateName);
+
+bool existsBaseClassSuchThat(
+  const ClassDecl* cls,
+  const std::function<bool(const ClassDecl*)>& testBase);
+
 std::string getTypeParamAsString(const SpecDecl* specDecl,
                                  bool basicName = true);
 std::string getTypeParamAsString(clang::CXXRecordDecl* arg,
@@ -101,11 +111,13 @@ std::string b2s(bool value) {
   return value ? "true" : "false";
 }
 
-void handleInterface(const std::string outputDir, const SpecDecl* ND);
-void handleImplementation(const std::string outputDir, const SpecDecl* ND);
+bool isImplementationClass(const ClassDecl* cls);
+void handleImplementation(const std::string& outputDir, const ClassDecl* ND);
+
+void handleInterface(const std::string& outputDir, const SpecDecl* ND);
 
 bool isModuleClass(const ClassDecl* cls);
-void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD,
+void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
                          llvm::raw_fd_ostream& emulateInlinesTo);
 
 extern clang::ASTContext* context;

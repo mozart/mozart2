@@ -37,15 +37,14 @@ namespace mozart {
 
 #include "Cell-implem.hh"
 
-Implementation<Cell>::Implementation(VM vm, GR gr, Self from):
+Cell::Cell(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   gr->copyUnstableNode(_value, from->_value);
 }
 
-OpResult Implementation<Cell>::exchange(RichNode self, VM vm,
-                                        RichNode newValue,
-                                        UnstableNode& oldValue) {
+OpResult Cell::exchange(RichNode self, VM vm, RichNode newValue,
+                        UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
 
@@ -55,15 +54,13 @@ OpResult Implementation<Cell>::exchange(RichNode self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cell>::access(RichNode self, VM vm,
-                                      UnstableNode& result) {
+OpResult Cell::access(RichNode self, VM vm, UnstableNode& result) {
   result.copy(vm, _value);
 
   return OpResult::proceed();
 }
 
-OpResult Implementation<Cell>::assign(RichNode self, VM vm,
-                                      RichNode newValue) {
+OpResult Cell::assign(RichNode self, VM vm, RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
 

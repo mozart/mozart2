@@ -35,8 +35,7 @@ class SmallInt;
 #include "SmallInt-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<SmallInt>: Copyable, StoredAs<nativeint>,
+class SmallInt: public DataType<SmallInt>, Copyable, StoredAs<nativeint>,
   WithValueBehavior {
 public:
   typedef SelfType<SmallInt>::Self Self;
@@ -47,14 +46,14 @@ public:
     return vm->getAtom(MOZART_STR("int"));
   }
 
-  Implementation(nativeint value) : _value(value) {}
+  SmallInt(nativeint value) : _value(value) {}
 
-  static void build(nativeint& self, VM vm, nativeint value) {
+  static void create(nativeint& self, VM vm, nativeint value) {
     self = value;
   }
 
   inline
-  static void build(nativeint& self, VM vm, GR gr, Self from);
+  static void create(nativeint& self, VM vm, GR gr, Self from);
 
 public:
   nativeint value() const { return _value; }

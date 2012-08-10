@@ -50,8 +50,7 @@ class ByteString;
 #include "ByteString-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<ByteString>:
+class ByteString: public DataType<ByteString>,
   public IntegerDottableHelper<ByteString>, WithValueBehavior {
 public:
   typedef SelfType<ByteString>::Self Self;
@@ -62,10 +61,10 @@ public:
     return vm->getAtom(MOZART_STR("byteString"));
   }
 
-  Implementation(VM vm, const LString<unsigned char>& bytes) : _bytes(bytes) {}
+  ByteString(VM vm, const LString<unsigned char>& bytes) : _bytes(bytes) {}
 
   inline
-  Implementation(VM vm, GR gr, Self self);
+  ByteString(VM vm, GR gr, Self self);
 
 public:
   const LString<unsigned char>& value() const { return _bytes; }

@@ -76,58 +76,27 @@ struct ModuleDef {
   std::vector<BuiltinDef> builtins;
 };
 
-bool isTheModuleClass(const ClassDecl* decl) {
-  if (!isa<SpecDecl>(decl)) {
-    if (decl->getQualifiedNameAsString() == "mozart::builtins::Module")
-      return true;
-  }
-
-  return false;
-}
-
-bool isInstantiationOfBuiltin(const ClassDecl* decl) {
-  if (const SpecDecl* spec = dyn_cast<SpecDecl>(decl)) {
-    auto tpl = spec->getInstantiatedFrom();
-    if (tpl.is<ClassTemplateDecl*>()) {
-      if (tpl.get<ClassTemplateDecl*>()->getQualifiedNameAsString() ==
-          "mozart::builtins::Builtin") {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-typedef bool (*ClassDeclPred)(const ClassDecl*);
-
-bool existsBaseClassSuchThat(const ClassDecl* cls,
-                             ClassDeclPred testBase) {
-  if (!cls || !cls->isCompleteDefinition())
-    return false;
-
-  for (auto iter = cls->bases_begin(), e = cls->bases_end();
-       iter != e; ++iter) {
-    if (const ClassDecl* base = iter->getType()->getAsCXXRecordDecl()) {
-      if (testBase(base))
-        return true;
-    }
-  }
-
-  return false;
+bool isTheModuleClass(const ClassDecl* cls) {
+  return isTheClass(cls, "mozart::builtins::Module");
 }
 
 bool isModuleClass(const ClassDecl* cls) {
   return existsBaseClassSuchThat(cls, isTheModuleClass);
 }
 
+bool isInstantiationOfBuiltin(const ClassDecl* cls) {
+  return isAnInstantiationOfTheTemplate(cls, "mozart::builtins::Builtin");
+}
+
 bool isBuiltinClass(const ClassDecl* cls) {
   return existsBaseClassSuchThat(cls, isInstantiationOfBuiltin);
 }
 
-bool extractNameFromDefaultConstructor(const CXXConstructorDecl* constr,
-                                       ClassDeclPred testBase,
-                                       const Expr*& nameExpr) {
+bool extractNameFromDefaultConstructor(
+  const CXXConstructorDecl* constr,
+  const std::function<bool(const ClassDecl*)>& testBase,
+  const Expr*& nameExpr) {
+
   for (auto iter = constr->init_begin(), e = constr->init_end();
        iter != e; ++iter) {
     const CXXCtorInitializer* init = *iter;
@@ -198,7 +167,7 @@ void handleBuiltin(BuiltinDef& definition, const ClassDecl* CD) {
   }
 }
 
-void handleBuiltinModule(const std::string outputDir, const ClassDecl* CD,
+void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
                          llvm::raw_fd_ostream& emulateInlinesTo) {
   std::string name = CD->getNameAsString();
 

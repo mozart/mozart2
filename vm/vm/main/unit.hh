@@ -37,24 +37,23 @@ namespace mozart {
 
 #include "Unit-implem.hh"
 
-void Implementation<Unit>::build(unit_t& self, VM vm, GR gr, Self from) {
+void Unit::create(unit_t& self, VM vm, GR gr, Self from) {
 }
 
-bool Implementation<Unit>::equals(VM vm, Self right) {
+bool Unit::equals(VM vm, Self right) {
   return true;
 }
 
-int Implementation<Unit>::compareFeatures(VM vm, Self right) {
+int Unit::compareFeatures(VM vm, Self right) {
   return 0;
 }
 
-OpResult Implementation<Unit>::toString(Self self, VM vm,
-                                        std::basic_ostream<nchar>& sink) {
+OpResult Unit::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << MOZART_STR("unit");
   return OpResult::proceed();
 }
 
-OpResult Implementation<Unit>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult Unit::vsLength(Self self, VM vm, nativeint& result) {
   result = 4;
   return OpResult::proceed();
 }

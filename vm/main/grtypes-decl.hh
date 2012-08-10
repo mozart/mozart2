@@ -61,15 +61,14 @@ public:
 #include "GRedToStable-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<GRedToStable>: StoredAs<StableNode*>,
+class GRedToStable: public DataType<GRedToStable>, StoredAs<StableNode*>,
   NoAutoGCollect, NoAutoSClone, BasedOn<GRedToStableBase> {
 public:
   typedef SelfType<GRedToStable>::Self Self;
 public:
-  Implementation(StableNode* dest) : _dest(dest) {}
+  GRedToStable(StableNode* dest) : _dest(dest) {}
 
-  static void build(StableNode*& self, VM vm, StableNode* dest) {
+  static void create(StableNode*& self, VM vm, StableNode* dest) {
     self = dest;
   }
 
@@ -114,15 +113,14 @@ public:
 #include "GRedToUnstable-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<GRedToUnstable>: StoredAs<UnstableNode*>,
+class GRedToUnstable: public DataType<GRedToUnstable>, StoredAs<UnstableNode*>,
   NoAutoGCollect, NoAutoSClone, BasedOn<GRedToUnstableBase> {
 public:
   typedef SelfType<GRedToUnstable>::Self Self;
 public:
-  Implementation(UnstableNode* dest) : _dest(dest) {}
+  GRedToUnstable(UnstableNode* dest) : _dest(dest) {}
 
-  static void build(UnstableNode*& self, VM vm, UnstableNode* dest) {
+  static void create(UnstableNode*& self, VM vm, UnstableNode* dest) {
     self = dest;
   }
 

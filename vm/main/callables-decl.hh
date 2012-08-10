@@ -42,8 +42,7 @@ class BuiltinProcedure;
 #include "BuiltinProcedure-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<BuiltinProcedure>: Copyable,
+class BuiltinProcedure: public DataType<BuiltinProcedure>, Copyable,
   StoredAs<builtins::BaseBuiltin*>, WithValueBehavior {
 public:
   typedef SelfType<BuiltinProcedure>::Self Self;
@@ -54,18 +53,18 @@ public:
     return vm->getAtom(MOZART_STR("procedure"));
   }
 
-  Implementation(Builtin* builtin): _builtin(builtin) {}
+  BuiltinProcedure(Builtin* builtin): _builtin(builtin) {}
 
-  static void build(Builtin*& self, VM vm, Builtin* builtin) {
+  static void create(Builtin*& self, VM vm, Builtin* builtin) {
     self = builtin;
   }
 
-  static void build(Builtin*& self, VM vm, Builtin& builtin) {
+  static void create(Builtin*& self, VM vm, Builtin& builtin) {
     self = &builtin;
   }
 
   inline
-  static void build(Builtin*& self, VM vm, GR gr, Self from);
+  static void create(Builtin*& self, VM vm, GR gr, Self from);
 
 public:
   /**
@@ -156,8 +155,7 @@ class Abstraction;
 /**
  * Abstraction value, i.e., user-defined procedure
  */
-template <>
-class Implementation<Abstraction>: public WithHome,
+class Abstraction: public DataType<Abstraction>, public WithHome,
   StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<Abstraction>::Self Self;
@@ -167,12 +165,12 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 RichNode body);
+  Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
+              RichNode body);
 
   inline
-  Implementation(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                 GR gr, Self from);
+  Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
+              GR gr, Self from);
 
 public:
   size_t getArraySize() {

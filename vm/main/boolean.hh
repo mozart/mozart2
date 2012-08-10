@@ -37,15 +37,15 @@ namespace mozart {
 
 #include "Boolean-implem.hh"
 
-void Implementation<Boolean>::build(bool& self, VM vm, GR gr, Self from) {
+void Boolean::create(bool& self, VM vm, GR gr, Self from) {
   self = from.get().value();
 }
 
-bool Implementation<Boolean>::equals(VM vm, Self right) {
+bool Boolean::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-int Implementation<Boolean>::compareFeatures(VM vm, Self right) {
+int Boolean::compareFeatures(VM vm, Self right) {
   if (value() == right.get().value())
     return 0;
   else if (value())
@@ -54,13 +54,12 @@ int Implementation<Boolean>::compareFeatures(VM vm, Self right) {
     return -1;
 }
 
-OpResult Implementation<Boolean>::toString(Self self, VM vm,
-                                           std::basic_ostream<nchar>& sink) {
+OpResult Boolean::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << (value() ? MOZART_STR("true") : MOZART_STR("false"));
   return OpResult::proceed();
 }
 
-OpResult Implementation<Boolean>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult Boolean::vsLength(Self self, VM vm, nativeint& result) {
   result = value() ? 4 : 5;
   return OpResult::proceed();
 }

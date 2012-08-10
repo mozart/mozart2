@@ -40,15 +40,15 @@ namespace mozart {
 
 #include "SmallInt-implem.hh"
 
-void Implementation<SmallInt>::build(nativeint& self, VM vm, GR gr, Self from) {
+void SmallInt::create(nativeint& self, VM vm, GR gr, Self from) {
   self = from.get().value();
 }
 
-bool Implementation<SmallInt>::equals(VM vm, Self right) {
+bool SmallInt::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
+int SmallInt::compareFeatures(VM vm, Self right) {
   if (value() == right.get().value())
     return 0;
   else if (value() < right.get().value())
@@ -59,9 +59,7 @@ int Implementation<SmallInt>::compareFeatures(VM vm, Self right) {
 
 // Comparable ------------------------------------------------------------------
 
-OpResult Implementation<SmallInt>::compare(Self self, VM vm,
-                                           RichNode right,
-                                           int& result) {
+OpResult SmallInt::compare(Self self, VM vm, RichNode right, int& result) {
   nativeint rightIntValue = 0;
   MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
@@ -73,17 +71,15 @@ OpResult Implementation<SmallInt>::compare(Self self, VM vm,
 
 // IntegerValue ----------------------------------------------------------------
 
-OpResult Implementation<SmallInt>::equalsInteger(Self self, VM vm,
-                                                 nativeint right,
-                                                 bool& result) {
+OpResult SmallInt::equalsInteger(Self self, VM vm, nativeint right,
+                                 bool& result) {
   result = value() == right;
   return OpResult::proceed();
 }
 
 // Numeric ---------------------------------------------------------------------
 
-OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
-                                            UnstableNode& result) {
+OpResult SmallInt::opposite(Self self, VM vm, UnstableNode& result) {
   // Detecting overflow - platform dependent (2's complement)
   if (value() != std::numeric_limits<nativeint>::min()) {
     // No overflow
@@ -96,16 +92,16 @@ OpResult Implementation<SmallInt>::opposite(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::add(Self self, VM vm,
-                                       RichNode right, UnstableNode& result) {
+OpResult SmallInt::add(Self self, VM vm, RichNode right,
+                       UnstableNode& result) {
   nativeint rightIntValue = 0;
   MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return addValue(self, vm, rightIntValue, result);
 }
 
-OpResult Implementation<SmallInt>::addValue(Self self, VM vm,
-                                            nativeint b, UnstableNode& result) {
+OpResult SmallInt::addValue(Self self, VM vm, nativeint b,
+                            UnstableNode& result) {
   nativeint a = value();
   nativeint c = a + b;
 
@@ -121,18 +117,16 @@ OpResult Implementation<SmallInt>::addValue(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::subtract(Self self, VM vm,
-                                            RichNode right,
-                                            UnstableNode& result) {
+OpResult SmallInt::subtract(Self self, VM vm, RichNode right,
+                            UnstableNode& result) {
   nativeint rightIntValue = 0;
   MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return subtractValue(self, vm, rightIntValue, result);
 }
 
-OpResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
-                                                 nativeint b,
-                                                 UnstableNode& result) {
+OpResult SmallInt::subtractValue(Self self, VM vm, nativeint b,
+                                 UnstableNode& result) {
   nativeint a = value();
   nativeint c = a - b;
 
@@ -148,16 +142,15 @@ OpResult Implementation<SmallInt>::subtractValue(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::multiply(Self self, VM vm,
-                                            RichNode right,
-                                            UnstableNode& result) {
+OpResult SmallInt::multiply(Self self, VM vm, RichNode right,
+                            UnstableNode& result) {
   nativeint rightIntValue = 0;
   MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return multiplyValue(self, vm, rightIntValue, result);
 }
 
-bool Implementation<SmallInt>::testMultiplyOverflow(nativeint a, nativeint b) {
+bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
   // This is platform dependent (2's complement)
 
   nativeint absa = a < 0 ? -a : a;
@@ -173,9 +166,8 @@ bool Implementation<SmallInt>::testMultiplyOverflow(nativeint a, nativeint b) {
   return (b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb);
 }
 
-OpResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
-                                                 nativeint b,
-                                                 UnstableNode& result) {
+OpResult SmallInt::multiplyValue(Self self, VM vm, nativeint b,
+                                 UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -190,22 +182,21 @@ OpResult Implementation<SmallInt>::multiplyValue(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::divide(Self self, VM vm,
-                                          RichNode right,
-                                          UnstableNode& result) {
+OpResult SmallInt::divide(Self self, VM vm, RichNode right,
+                          UnstableNode& result) {
   return raiseTypeError(vm, MOZART_STR("Float"), self);
 }
 
-OpResult Implementation<SmallInt>::div(Self self, VM vm,
-                                       RichNode right, UnstableNode& result) {
+OpResult SmallInt::div(Self self, VM vm, RichNode right,
+                       UnstableNode& result) {
   nativeint rightIntValue = 0;
   MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return divValue(self, vm, rightIntValue, result);
 }
 
-OpResult Implementation<SmallInt>::divValue(Self self, VM vm,
-                                            nativeint b, UnstableNode& result) {
+OpResult SmallInt::divValue(Self self, VM vm, nativeint b,
+                            UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -220,16 +211,16 @@ OpResult Implementation<SmallInt>::divValue(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::mod(Self self, VM vm,
-                                       RichNode right, UnstableNode& result) {
+OpResult SmallInt::mod(Self self, VM vm, RichNode right,
+                       UnstableNode& result) {
   nativeint rightIntValue = 0;
   MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
 
   return modValue(self, vm, rightIntValue, result);
 }
 
-OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
-                                            nativeint b, UnstableNode& result) {
+OpResult SmallInt::modValue(Self self, VM vm, nativeint b,
+                            UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -246,8 +237,7 @@ OpResult Implementation<SmallInt>::modValue(Self self, VM vm,
 
 // VirtualString ---------------------------------------------------------------
 
-OpResult Implementation<SmallInt>::toString(Self self, VM vm,
-                                            std::basic_ostream<nchar>& sink) {
+OpResult SmallInt::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
 //sink << value();  // doesn't seem to work, don't know why.
   auto str = std::to_string(value());
   size_t length = str.length();
@@ -257,7 +247,7 @@ OpResult Implementation<SmallInt>::toString(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<SmallInt>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult SmallInt::vsLength(Self self, VM vm, nativeint& result) {
   result = (nativeint) std::to_string(value()).length();
   return OpResult::proceed();
 }

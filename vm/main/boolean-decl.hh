@@ -41,8 +41,7 @@ typedef enum BOOL_OR_NOT_BOOL {
 #include "Boolean-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Boolean>: public LiteralHelper<Boolean>,
+class Boolean: public DataType<Boolean>, public LiteralHelper<Boolean>,
   Copyable, StoredAs<bool>, WithValueBehavior {
 public:
   typedef SelfType<Boolean>::Self Self;
@@ -53,14 +52,14 @@ public:
     return vm->getAtom(MOZART_STR("name")); // compatibility with Mozart 1.4.0
   }
 
-  Implementation(bool value) : _value(value) {}
+  Boolean(bool value) : _value(value) {}
 
-  static void build(bool& self, VM, bool value) {
+  static void create(bool& self, VM, bool value) {
     self = value;
   }
 
   inline
-  static void build(bool& self, VM vm, GR gr, Self from);
+  static void create(bool& self, VM vm, GR gr, Self from);
 
 public:
   bool value() const { return _value; }

@@ -44,8 +44,7 @@ class Array;
 /**
  * Array
  */
-template <>
-class Implementation<Array>: public WithHome,
+class Array: public DataType<Array>, public WithHome,
   public IntegerDottableHelper<Array>,
   StoredWithArrayOf<UnstableNode> {
 public:
@@ -56,12 +55,12 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<UnstableNode> _elements,
-                 nativeint low, RichNode initValue);
+  Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
+        nativeint low, RichNode initValue);
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<UnstableNode> _elements,
-                 GR gr, Self from);
+  Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
+        GR gr, Self from);
 
 public:
   size_t getArraySize() {

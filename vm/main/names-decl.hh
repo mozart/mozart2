@@ -41,8 +41,7 @@ class OptName;
 #include "OptName-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<OptName>: public WithHome,
+class OptName: public DataType<OptName>, public WithHome,
   public LiteralHelper<OptName>, StoredAs<SpaceRef> {
 public:
   typedef SelfType<OptName>::Self Self;
@@ -51,14 +50,14 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  Implementation(SpaceRef home): WithHome(home) {}
+  OptName(SpaceRef home): WithHome(home) {}
 
-  static void build(SpaceRef& self, VM vm) {
+  static void create(SpaceRef& self, VM vm) {
     self = vm->getCurrentSpace();
   }
 
   inline
-  static void build(SpaceRef& self, VM vm, GR gr, Self from);
+  static void create(SpaceRef& self, VM vm, GR gr, Self from);
 
 public:
   // PotentialFeature interface
@@ -96,8 +95,7 @@ class GlobalName;
 #include "GlobalName-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<GlobalName>: public WithHome,
+class GlobalName: public DataType<GlobalName>, public WithHome,
   public LiteralHelper<GlobalName> {
 public:
   typedef SelfType<GlobalName>::Self Self;
@@ -108,12 +106,12 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  Implementation(VM vm, UUID uuid): WithHome(vm), _uuid(uuid) {}
+  GlobalName(VM vm, UUID uuid): WithHome(vm), _uuid(uuid) {}
 
-  Implementation(VM vm): WithHome(vm), _uuid(vm->genUUID()) {}
+  GlobalName(VM vm): WithHome(vm), _uuid(vm->genUUID()) {}
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  GlobalName(VM vm, GR gr, Self from);
 
 public:
   const UUID& getUUID() {
@@ -156,8 +154,7 @@ class NamedName;
 #include "NamedName-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<NamedName>: public WithHome,
+class NamedName: public DataType<NamedName>, public WithHome,
   public LiteralHelper<NamedName> {
 public:
   typedef SelfType<NamedName>::Self Self;
@@ -168,18 +165,18 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  Implementation(VM vm, RichNode printName, UUID uuid):
+  NamedName(VM vm, RichNode printName, UUID uuid):
     WithHome(vm), _uuid(uuid) {
     _printName.init(vm, printName);
   }
 
-  Implementation(VM vm, RichNode printName):
+  NamedName(VM vm, RichNode printName):
     WithHome(vm), _uuid(vm->genUUID()) {
     _printName.init(vm, printName);
   }
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  NamedName(VM vm, GR gr, Self from);
 
 public:
   const UUID& getUUID() {
@@ -223,8 +220,7 @@ class UniqueName;
 #include "UniqueName-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<UniqueName>: public LiteralHelper<UniqueName>,
+class UniqueName: public DataType<UniqueName>, public LiteralHelper<UniqueName>,
   Copyable, StoredAs<unique_name_t>, WithValueBehavior {
 public:
   typedef SelfType<UniqueName>::Self Self;
@@ -235,14 +231,14 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  Implementation(unique_name_t value) : _value(value) {}
+  UniqueName(unique_name_t value) : _value(value) {}
 
-  static void build(unique_name_t& self, VM vm, unique_name_t value) {
+  static void create(unique_name_t& self, VM vm, unique_name_t value) {
     self = value;
   }
 
   inline
-  static void build(unique_name_t& self, VM vm, GR gr, Self from);
+  static void create(unique_name_t& self, VM vm, GR gr, Self from);
 
 public:
   unique_name_t value() const {

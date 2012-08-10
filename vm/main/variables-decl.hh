@@ -39,18 +39,17 @@ class Variable;
 #include "Variable-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Variable>: public WithHome, Transient,
+class Variable: public DataType<Variable>, public WithHome, Transient,
   WithVariableBehavior<90> {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
-  Implementation(VM vm): WithHome(vm) {}
+  Variable(VM vm): WithHome(vm) {}
 
-  Implementation(VM vm, Space* home): WithHome(home) {}
+  Variable(VM vm, Space* home): WithHome(home) {}
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  Variable(VM vm, GR gr, Self from);
 
 public:
   // Wakeable interface
@@ -124,24 +123,23 @@ class OptVar;
 #include "OptVar-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<OptVar>: public WithHome, Transient, StoredAs<SpaceRef>,
-  WithVariableBehavior<100> {
+class OptVar: public DataType<OptVar>, public WithHome,
+  Transient, StoredAs<SpaceRef>, WithVariableBehavior<100> {
 public:
   typedef SelfType<OptVar>::Self Self;
 public:
-  Implementation(SpaceRef home): WithHome(home) {}
+  OptVar(SpaceRef home): WithHome(home) {}
 
-  static void build(SpaceRef& self, VM vm) {
+  static void create(SpaceRef& self, VM vm) {
     self = vm->getCurrentSpace();
   }
 
-  static void build(SpaceRef& self, VM vm, Space* home) {
+  static void create(SpaceRef& self, VM vm, Space* home) {
     self = home;
   }
 
   inline
-  static void build(SpaceRef& self, VM vm, GR gr, Self from);
+  static void create(SpaceRef& self, VM vm, GR gr, Self from);
 
 public:
   // DataflowVariable interface
@@ -188,20 +186,19 @@ class ReadOnly;
 #include "ReadOnly-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<ReadOnly>: Transient, StoredAs<StableNode*>,
+class ReadOnly: public DataType<ReadOnly>, Transient, StoredAs<StableNode*>,
   WithVariableBehavior<80> {
 public:
   typedef SelfType<ReadOnly>::Self Self;
 public:
-  Implementation(StableNode* underlying): _underlying(underlying) {}
+  ReadOnly(StableNode* underlying): _underlying(underlying) {}
 
-  static void build(StableNode*& self, VM vm, StableNode* underlying) {
+  static void create(StableNode*& self, VM vm, StableNode* underlying) {
     self = underlying;
   }
 
   inline
-  static void build(StableNode*& self, VM vm, GR gr, Self from);
+  static void create(StableNode*& self, VM vm, GR gr, Self from);
 
 public:
   StableNode* getUnderlying() {
@@ -257,20 +254,19 @@ class FailedValue;
 #include "FailedValue-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<FailedValue>: Transient, StoredAs<StableNode*>,
-  WithVariableBehavior<10> {
+class FailedValue: public DataType<FailedValue>,
+  Transient, StoredAs<StableNode*>, WithVariableBehavior<10> {
 public:
   typedef SelfType<FailedValue>::Self Self;
 public:
-  Implementation(StableNode* underlying): _underlying(underlying) {}
+  FailedValue(StableNode* underlying): _underlying(underlying) {}
 
-  static void build(StableNode*& self, VM vm, StableNode* underlying) {
+  static void create(StableNode*& self, VM vm, StableNode* underlying) {
     self = underlying;
   }
 
   inline
-  static void build(StableNode*& self, VM vm, GR gr, Self from);
+  static void create(StableNode*& self, VM vm, GR gr, Self from);
 
 public:
   StableNode* getUnderlying() {

@@ -41,15 +41,14 @@ class OzTCPConnection;
 #include "OzTCPConnection-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<OzTCPConnection> {
+class OzTCPConnection: public DataType<OzTCPConnection> {
 public:
   typedef SelfType<OzTCPConnection>::Self Self;
 public:
-  Implementation(VM vm, std::shared_ptr<boostenv::TCPConnection> p):
+  OzTCPConnection(VM vm, std::shared_ptr<boostenv::TCPConnection> p):
     _pointer(p) {}
 
-  Implementation(VM vm, GR gr, Self from):
+  OzTCPConnection(VM vm, GR gr, Self from):
     _pointer(std::move(from->_pointer)) {}
 public:
   std::shared_ptr<boostenv::TCPConnection> value() {
@@ -82,15 +81,14 @@ class OzTCPAcceptor;
 #include "OzTCPAcceptor-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<OzTCPAcceptor> {
+class OzTCPAcceptor: public DataType<OzTCPAcceptor> {
 public:
   typedef SelfType<OzTCPAcceptor>::Self Self;
 public:
-  Implementation(VM vm, std::shared_ptr<boostenv::TCPAcceptor> p):
+  OzTCPAcceptor(VM vm, std::shared_ptr<boostenv::TCPAcceptor> p):
     _pointer(p) {}
 
-  Implementation(VM vm, GR gr, Self from):
+  OzTCPAcceptor(VM vm, GR gr, Self from):
     _pointer(std::move(from->_pointer)) {}
 public:
   std::shared_ptr<boostenv::TCPAcceptor> value() {

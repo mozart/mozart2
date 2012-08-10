@@ -40,8 +40,7 @@ class Atom;
 #include "Atom-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Atom>: public LiteralHelper<Atom>,
+class Atom: public DataType<Atom>, public LiteralHelper<Atom>,
   Copyable, StoredAs<atom_t>, WithValueBehavior {
 public:
   typedef SelfType<Atom>::Self Self;
@@ -52,23 +51,23 @@ public:
     return vm->getAtom(MOZART_STR("atom"));
   }
 
-  Implementation(atom_t value) : _value(value) {}
+  Atom(atom_t value) : _value(value) {}
 
-  static void build(atom_t& self, VM vm, std::size_t length,
-                    const nchar* contents) {
+  static void create(atom_t& self, VM vm, std::size_t length,
+                     const nchar* contents) {
     self = vm->getAtom(length, contents);
   }
 
-  static void build(atom_t& self, VM vm, const nchar* contents) {
+  static void create(atom_t& self, VM vm, const nchar* contents) {
     self = vm->getAtom(contents);
   }
 
-  static void build(atom_t& self, VM vm, atom_t value) {
+  static void create(atom_t& self, VM vm, atom_t value) {
     self = value;
   }
 
   inline
-  static void build(atom_t& self, VM vm, GR gr, Self from);
+  static void create(atom_t& self, VM vm, GR gr, Self from);
 
 public:
   atom_t value() const {

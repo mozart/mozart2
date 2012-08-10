@@ -41,8 +41,7 @@ class String;
 #include "String-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<String>: WithValueBehavior {
+class String: public DataType<String>, WithValueBehavior {
 public:
   typedef SelfType<String>::Self Self;
 public:
@@ -52,10 +51,10 @@ public:
     return vm->getAtom(MOZART_STR("unicodeString"));
   }
 
-  Implementation(VM vm, const LString<nchar>& string) : _string(string) {}
+  String(VM vm, const LString<nchar>& string) : _string(string) {}
 
   inline
-  Implementation(VM vm, GR gr, Self self);
+  String(VM vm, GR gr, Self self);
 
 public:
   const LString<nchar>& value() const { return _string; }

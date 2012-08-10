@@ -37,7 +37,7 @@ namespace mozart {
 
 #include "CodeArea-implem.hh"
 
-Implementation<CodeArea>::Implementation(
+CodeArea::CodeArea(
   VM vm, size_t Kc, StaticArray<StableNode> _Ks,
   ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
   atom_t printName, RichNode debugData)
@@ -55,9 +55,8 @@ Implementation<CodeArea>::Implementation(
     _Ks[i].init(vm);
 }
 
-Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
-                                         StaticArray<StableNode> _Ks,
-                                         GR gr, Self from) {
+CodeArea::CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
+                   GR gr, Self from) {
   _size = from->_size;
   _arity = from->_arity;
   _Xcount = from->_Xcount;
@@ -72,14 +71,12 @@ Implementation<CodeArea>::Implementation(VM vm, size_t Kc,
     gr->copyStableNode(_Ks[i], from[i]);
 }
 
-OpResult Implementation<CodeArea>::initElement(Self self, VM vm,
-                                               size_t index,
-                                               RichNode value) {
+OpResult CodeArea::initElement(Self self, VM vm, size_t index, RichNode value) {
   self[index].init(vm, value);
   return OpResult::proceed();
 }
 
-OpResult Implementation<CodeArea>::getCodeAreaInfo(
+OpResult CodeArea::getCodeAreaInfo(
   Self self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Ks) {
 
@@ -91,7 +88,7 @@ OpResult Implementation<CodeArea>::getCodeAreaInfo(
   return OpResult::proceed();
 }
 
-OpResult Implementation<CodeArea>::getCodeAreaDebugInfo(
+OpResult CodeArea::getCodeAreaDebugInfo(
   Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
 
   printName = _printName;

@@ -112,14 +112,11 @@ private:
 
 #include "ReifiedSpace-implem.hh"
 
-void Implementation<ReifiedSpace>::build(SpaceRef& self, VM vm, GR gr,
-                                         Self from) {
+void ReifiedSpace::create(SpaceRef& self, VM vm, GR gr, Self from) {
   gr->copySpace(self, from.get().home());
 }
 
-OpResult Implementation<ReifiedSpace>::askSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult ReifiedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
   using namespace patternmatching;
 
   Space* space = getSpace();
@@ -141,9 +138,7 @@ OpResult Implementation<ReifiedSpace>::askSpace(
   return OpResult::proceed();
 }
 
-OpResult Implementation<ReifiedSpace>::askVerboseSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult ReifiedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
@@ -158,9 +153,7 @@ OpResult Implementation<ReifiedSpace>::askVerboseSpace(
   return OpResult::proceed();
 }
 
-OpResult Implementation<ReifiedSpace>::mergeSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult ReifiedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
   Space* currentSpace = vm->getCurrentSpace();
   Space* space = getSpace();
 
@@ -191,9 +184,7 @@ OpResult Implementation<ReifiedSpace>::mergeSpace(
   return res;
 }
 
-OpResult Implementation<ReifiedSpace>::commitSpace(
-  Self self, VM vm, RichNode value) {
-
+OpResult ReifiedSpace::commitSpace(Self self, VM vm, RichNode value) {
   using namespace patternmatching;
 
   Space* space = getSpace();
@@ -220,9 +211,7 @@ OpResult Implementation<ReifiedSpace>::commitSpace(
   }
 }
 
-OpResult Implementation<ReifiedSpace>::cloneSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult ReifiedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
@@ -238,7 +227,7 @@ OpResult Implementation<ReifiedSpace>::cloneSpace(
   return OpResult::proceed();
 }
 
-OpResult Implementation<ReifiedSpace>::killSpace(Self self, VM vm) {
+OpResult ReifiedSpace::killSpace(Self self, VM vm) {
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
@@ -254,14 +243,11 @@ OpResult Implementation<ReifiedSpace>::killSpace(Self self, VM vm) {
 
 #include "DeletedSpace-implem.hh"
 
-void Implementation<DeletedSpace>::build(DeletedSpaceKind& self,
-                                         VM vm, GR gr, Self from) {
+void DeletedSpace::create(DeletedSpaceKind& self, VM vm, GR gr, Self from) {
   self = from.get().kind();
 }
 
-OpResult Implementation<DeletedSpace>::askSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult DeletedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       result = Atom::build(vm, vm->coreatoms.failed);
@@ -280,9 +266,7 @@ OpResult Implementation<DeletedSpace>::askSpace(
   }
 }
 
-OpResult Implementation<DeletedSpace>::askVerboseSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult DeletedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       result = Atom::build(vm, vm->coreatoms.failed);
@@ -301,9 +285,7 @@ OpResult Implementation<DeletedSpace>::askVerboseSpace(
   }
 }
 
-OpResult Implementation<DeletedSpace>::mergeSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult DeletedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       return OpResult::fail();
@@ -320,9 +302,7 @@ OpResult Implementation<DeletedSpace>::mergeSpace(
   }
 }
 
-OpResult Implementation<DeletedSpace>::commitSpace(
-  Self self, VM vm, RichNode value) {
-
+OpResult DeletedSpace::commitSpace(Self self, VM vm, RichNode value) {
   switch (kind()) {
     case dsFailed: {
       return OpResult::proceed();
@@ -339,9 +319,7 @@ OpResult Implementation<DeletedSpace>::commitSpace(
   }
 }
 
-OpResult Implementation<DeletedSpace>::cloneSpace(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult DeletedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       result = DeletedSpace::build(vm, dsFailed);
@@ -359,7 +337,7 @@ OpResult Implementation<DeletedSpace>::cloneSpace(
   }
 }
 
-OpResult Implementation<DeletedSpace>::killSpace(Self self, VM vm) {
+OpResult DeletedSpace::killSpace(Self self, VM vm) {
   return OpResult::proceed();
 }
 

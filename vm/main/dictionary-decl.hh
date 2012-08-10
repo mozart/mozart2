@@ -200,8 +200,7 @@ class Dictionary;
 /**
  * Dictionary
  */
-template <>
-class Implementation<Dictionary>: public WithHome {
+class Dictionary: public DataType<Dictionary>, public WithHome {
 public:
   typedef SelfType<Dictionary>::Self Self;
 public:
@@ -209,14 +208,14 @@ public:
     return vm->getAtom(MOZART_STR("dictionary"));
   }
 
-  Implementation(VM vm): WithHome(vm) {}
+  Dictionary(VM vm): WithHome(vm) {}
 
-  Implementation(VM vm, NodeDictionary& src): WithHome(vm) {
+  Dictionary(VM vm, NodeDictionary& src): WithHome(vm) {
     dict.clone(vm, src);
   }
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  Dictionary(VM vm, GR gr, Self from);
 
 public:
   // Dottable interface

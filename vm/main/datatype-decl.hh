@@ -29,8 +29,32 @@
 
 #include "store-decl.hh"
 #include "uuid-decl.hh"
+#include "typeinfo-decl.hh"
 
 namespace mozart {
+
+//////////////
+// DataType //
+//////////////
+
+/**
+ * Base class for all data types of the VM Object Model
+ *
+ * It uses CRTP, so subclasses should be declared as:
+ * class SomeDataType: public DataType<SomeDataType> { ... };
+ */
+template <class T>
+class DataType {
+public:
+  static Type type() {
+    return TypeInfoOf<T>::type();
+  }
+
+  template <class... Args>
+  static UnstableNode build(VM vm, Args&&... args) {
+    return UnstableNode::build<T>(vm, std::forward<Args>(args)...);
+  }
+};
 
 //////////////
 // WithHome //

@@ -37,10 +37,8 @@ namespace mozart {
 
 #include "Object-implem.hh"
 
-Implementation<Object>::Implementation(VM vm, size_t attrCount,
-                                       StaticArray<UnstableNode> _attributes,
-                                       RichNode clazz, RichNode attrModel,
-                                       RichNode featModel):
+Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
+               RichNode clazz, RichNode attrModel, RichNode featModel):
   WithHome(vm) {
 
   using namespace patternmatching;
@@ -96,9 +94,8 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
   _GsInitialized = false;
 }
 
-Implementation<Object>::Implementation(VM vm, size_t attrCount,
-                                       StaticArray<UnstableNode> _attributes,
-                                       GR gr, Self from):
+Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
+               GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   gr->copyStableNode(_attrArity, from->_attrArity);
@@ -113,29 +110,27 @@ Implementation<Object>::Implementation(VM vm, size_t attrCount,
   _GsInitialized = false;
 }
 
-OpResult Implementation<Object>::lookupFeature(
+OpResult Object::lookupFeature(
   Self self, VM vm, RichNode feature, bool& found,
   nullable<UnstableNode&> value) {
 
   return Dottable(_features).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Implementation<Object>::lookupFeature(
+OpResult Object::lookupFeature(
   Self self, VM vm, nativeint feature, bool& found,
   nullable<UnstableNode&> value) {
 
   return Dottable(_features).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Implementation<Object>::getClass(Self self, VM vm,
-                                          UnstableNode& result) {
+OpResult Object::getClass(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, _clazz);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Object>::attrGet(Self self, VM vm,
-                                         RichNode attribute,
-                                         UnstableNode& result) {
+OpResult Object::attrGet(Self self, VM vm, RichNode attribute,
+                         UnstableNode& result) {
   size_t offset = 0;
   MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
 
@@ -143,9 +138,8 @@ OpResult Implementation<Object>::attrGet(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Object>::attrPut(Self self, VM vm,
-                                         RichNode attribute,
-                                         RichNode value) {
+OpResult Object::attrPut(Self self, VM vm, RichNode attribute,
+                         RichNode value) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
@@ -156,10 +150,8 @@ OpResult Implementation<Object>::attrPut(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Object>::attrExchange(Self self, VM vm,
-                                              RichNode attribute,
-                                              RichNode newValue,
-                                              UnstableNode& oldValue) {
+OpResult Object::attrExchange(Self self, VM vm, RichNode attribute,
+                              RichNode newValue, UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
@@ -171,9 +163,8 @@ OpResult Implementation<Object>::attrExchange(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Object>::getAttrOffset(
-  Self self, VM vm, RichNode attribute, size_t& offset) {
-
+OpResult Object::getAttrOffset(Self self, VM vm, RichNode attribute,
+                               size_t& offset) {
   bool found = false;
   MOZART_CHECK_OPRESULT(
     RichNode(_attrArity).as<Arity>().lookupFeature(
@@ -186,12 +177,11 @@ OpResult Implementation<Object>::getAttrOffset(
                       MOZART_STR("@"), self, attribute);
 }
 
-OpResult Implementation<Object>::procedureArity(Self self, VM vm,
-                                                size_t& result) {
+OpResult Object::procedureArity(Self self, VM vm, size_t& result) {
   return Interface<Callable>().procedureArity(self, vm, result);
 }
 
-OpResult Implementation<Object>::getCallInfo(
+OpResult Object::getCallInfo(
   Self self, VM vm, size_t& arity,
   ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
@@ -199,10 +189,10 @@ OpResult Implementation<Object>::getCallInfo(
   if (!_GsInitialized) {
     UnstableNode fallback, fallbackApply;
 
-    UnstableNode ooFallback = build(vm, vm->coreatoms.ooFallback);
+    UnstableNode ooFallback = mozart::build(vm, vm->coreatoms.ooFallback);
     MOZART_CHECK_OPRESULT(Dottable(_clazz).dot(vm, ooFallback, fallback));
 
-    UnstableNode apply = build(vm, MOZART_STR("apply"));
+    UnstableNode apply = mozart::build(vm, MOZART_STR("apply"));
     MOZART_CHECK_OPRESULT(Dottable(fallback).dot(vm, apply, fallbackApply));
 
     _Gs[0].init(vm, RichNode(self));
@@ -220,7 +210,7 @@ OpResult Implementation<Object>::getCallInfo(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Object>::getDebugInfo(
+OpResult Object::getDebugInfo(
   Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
 
   printName = vm->getAtom(MOZART_STR("<Object>"));

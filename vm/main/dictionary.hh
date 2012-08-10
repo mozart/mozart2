@@ -415,14 +415,12 @@ void NodeDictionary::rotateRight(Node* parent, Node* child) {
 
 #include "Dictionary-implem.hh"
 
-Implementation<Dictionary>::Implementation(VM vm, GR gr, Self from):
+Dictionary::Dictionary(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()), dict(gr, from->dict) {
 }
 
-OpResult Implementation<Dictionary>::lookupFeature(
-  Self self, VM vm, RichNode feature, bool& found,
-  nullable<UnstableNode&> value) {
-
+OpResult Dictionary::lookupFeature(Self self, VM vm, RichNode feature,
+                                   bool& found, nullable<UnstableNode&> value) {
   MOZART_REQUIRE_FEATURE(feature);
 
   UnstableNode* valueNode = nullptr;
@@ -434,38 +432,32 @@ OpResult Implementation<Dictionary>::lookupFeature(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::lookupFeature(
-  Self self, VM vm, nativeint feature, bool& found,
-  nullable<UnstableNode&> value) {
-
-  UnstableNode featureNode = build(vm, feature);
+OpResult Dictionary::lookupFeature(Self self, VM vm, nativeint feature,
+                                   bool& found, nullable<UnstableNode&> value) {
+  UnstableNode featureNode = mozart::build(vm, feature);
   return lookupFeature(self, vm, featureNode, found, value);
 }
 
-OpResult Implementation<Dictionary>::isDictionary(Self self, VM vm,
-                                                  bool& result) {
+OpResult Dictionary::isDictionary(Self self, VM vm, bool& result) {
   result = true;
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictIsEmpty(Self self, VM vm,
-                                                 bool& result) {
+OpResult Dictionary::dictIsEmpty(Self self, VM vm, bool& result) {
   result = dict.empty();
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictMember(
-  Self self, VM vm, RichNode feature, bool& result) {
-
+OpResult Dictionary::dictMember(Self self, VM vm, RichNode feature,
+                                bool& result) {
   MOZART_REQUIRE_FEATURE(feature);
 
   result = dict.contains(vm, feature);
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictGet(
-  Self self, VM vm, RichNode feature, UnstableNode& result) {
-
+OpResult Dictionary::dictGet(Self self, VM vm, RichNode feature,
+                             UnstableNode& result) {
   MOZART_REQUIRE_FEATURE(feature);
 
   UnstableNode* value = nullptr;
@@ -477,10 +469,8 @@ OpResult Implementation<Dictionary>::dictGet(
   }
 }
 
-OpResult Implementation<Dictionary>::dictCondGet(
-  Self self, VM vm, RichNode feature, RichNode defaultValue,
-  UnstableNode& result) {
-
+OpResult Dictionary::dictCondGet(Self self, VM vm, RichNode feature,
+                                 RichNode defaultValue, UnstableNode& result) {
   MOZART_REQUIRE_FEATURE(feature);
 
   UnstableNode* value = nullptr;
@@ -493,9 +483,8 @@ OpResult Implementation<Dictionary>::dictCondGet(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictPut(
-  Self self, VM vm, RichNode feature, RichNode newValue) {
-
+OpResult Dictionary::dictPut(Self self, VM vm, RichNode feature,
+                             RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
@@ -508,10 +497,8 @@ OpResult Implementation<Dictionary>::dictPut(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictExchange(
-  Self self, VM vm, RichNode feature, RichNode newValue,
-  UnstableNode& oldValue) {
-
+OpResult Dictionary::dictExchange(Self self, VM vm, RichNode feature,
+                                  RichNode newValue, UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
@@ -527,7 +514,7 @@ OpResult Implementation<Dictionary>::dictExchange(
   }
 }
 
-OpResult Implementation<Dictionary>::dictCondExchange(
+OpResult Dictionary::dictCondExchange(
   Self self, VM vm, RichNode feature, RichNode defaultValue,
   RichNode newValue, UnstableNode& oldValue) {
 
@@ -548,9 +535,7 @@ OpResult Implementation<Dictionary>::dictCondExchange(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictRemove(
-  Self self, VM vm, RichNode feature) {
-
+OpResult Dictionary::dictRemove(Self self, VM vm, RichNode feature) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
@@ -560,7 +545,7 @@ OpResult Implementation<Dictionary>::dictRemove(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictRemoveAll(Self self, VM vm) {
+OpResult Dictionary::dictRemoveAll(Self self, VM vm) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), "dictionary");
 
@@ -568,10 +553,8 @@ OpResult Implementation<Dictionary>::dictRemoveAll(Self self, VM vm) {
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictKeys(
-  Self self, VM vm, UnstableNode& result) {
-
-  result = dict.foldRight<UnstableNode>(build(vm, vm->coreatoms.nil),
+OpResult Dictionary::dictKeys(Self self, VM vm, UnstableNode& result) {
+  result = dict.foldRight<UnstableNode>(buildNil(vm),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm, key, std::move(previous));
     }
@@ -580,10 +563,8 @@ OpResult Implementation<Dictionary>::dictKeys(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictEntries(
-  Self self, VM vm, UnstableNode& result) {
-
-  result = dict.foldRight<UnstableNode>(build(vm, vm->coreatoms.nil),
+OpResult Dictionary::dictEntries(Self self, VM vm, UnstableNode& result) {
+  result = dict.foldRight<UnstableNode>(buildNil(vm),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm,
                        buildTuple(vm, vm->coreatoms.sharp, key, value),
@@ -594,10 +575,8 @@ OpResult Implementation<Dictionary>::dictEntries(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictItems(
-  Self self, VM vm, UnstableNode& result) {
-
-  result = dict.foldRight<UnstableNode>(build(vm, vm->coreatoms.nil),
+OpResult Dictionary::dictItems(Self self, VM vm, UnstableNode& result) {
+  result = dict.foldRight<UnstableNode>(buildNil(vm),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm, value, std::move(previous));
     }
@@ -606,16 +585,13 @@ OpResult Implementation<Dictionary>::dictItems(
   return OpResult::proceed();
 }
 
-OpResult Implementation<Dictionary>::dictClone(
-  Self self, VM vm, UnstableNode& result) {
-
+OpResult Dictionary::dictClone(Self self, VM vm, UnstableNode& result) {
   result = Dictionary::build(vm, dict);
   return OpResult::proceed();
 }
 
-void Implementation<Dictionary>::printReprToStream(
-  Self self, VM vm, std::ostream& out, int depth) {
-
+void Dictionary::printReprToStream(Self self, VM vm, std::ostream& out,
+                                   int depth) {
   out << "<Dictionary>";
 }
 

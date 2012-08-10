@@ -42,7 +42,7 @@ struct InterfaceDef {
   bool autoWait;
 };
 
-void handleInterface(const std::string outputDir, const SpecDecl* ND) {
+void handleInterface(const std::string& outputDir, const SpecDecl* ND) {
   const std::string name = getTypeParamAsString(ND);
 
   InterfaceDef definition;

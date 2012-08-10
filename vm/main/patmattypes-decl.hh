@@ -42,20 +42,19 @@ class PatMatCapture;
 /**
  * Placeholder for a capture in pattern matching
  */
-template <>
-class Implementation<PatMatCapture>: StoredAs<nativeint>,
+class PatMatCapture: public DataType<PatMatCapture>, StoredAs<nativeint>,
   Copyable, WithValueBehavior {
 public:
   typedef SelfType<PatMatCapture>::Self Self;
 public:
-  Implementation(nativeint index) : _index(index) {}
+  PatMatCapture(nativeint index) : _index(index) {}
 
-  static void build(nativeint& self, VM, nativeint index) {
+  static void create(nativeint& self, VM, nativeint index) {
     self = index;
   }
 
   inline
-  static void build(nativeint& self, VM vm, GR gr, Self from);
+  static void create(nativeint& self, VM vm, GR gr, Self from);
 
 public:
   nativeint index() const { return _index; }
@@ -88,18 +87,17 @@ class PatMatConjunction;
 /**
  * Conjunction of two patterns for pattern matching
  */
-template <>
-class Implementation<PatMatConjunction>:
+class PatMatConjunction: public DataType<PatMatConjunction>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<PatMatConjunction>::Self Self;
 public:
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements);
+  PatMatConjunction(VM vm, size_t width, StaticArray<StableNode> _elements);
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GR gr, Self from);
+  PatMatConjunction(VM vm, size_t width, StaticArray<StableNode> _elements,
+                    GR gr, Self from);
 
 public:
   size_t getCount() {
@@ -148,18 +146,18 @@ class PatMatOpenRecord;
  * Open record in pattern matching
  * label(f1:P1 f2:P2 ...)
  */
-template <>
-class Implementation<PatMatOpenRecord>: StoredWithArrayOf<StableNode> {
+class PatMatOpenRecord: public DataType<PatMatOpenRecord>,
+  StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<PatMatOpenRecord>::Self Self;
 public:
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 RichNode arity);
+  PatMatOpenRecord(VM vm, size_t width, StaticArray<StableNode> _elements,
+                   RichNode arity);
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GR gr, Self from);
+  PatMatOpenRecord(VM vm, size_t width, StaticArray<StableNode> _elements,
+                   GR gr, Self from);
 
 public:
   size_t getArraySize() {

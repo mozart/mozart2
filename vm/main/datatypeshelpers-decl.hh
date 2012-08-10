@@ -36,7 +36,7 @@ namespace mozart {
 template <class T>
 class LiteralHelper {
 private:
-  typedef Implementation<T>* This;
+  typedef T* This;
   typedef typename SelfType<T>::Self Self;
 
 public:
@@ -102,7 +102,7 @@ public:
 template <class T>
 class IntegerDottableHelper {
 private:
-  typedef Implementation<T>* This;
+  typedef T* This;
   typedef typename SelfType<T>::Self Self;
 
 public:

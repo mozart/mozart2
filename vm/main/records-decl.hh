@@ -41,11 +41,11 @@ private:
   typedef typename SelfType<T>::Self Self;
 public:
   size_t getWidth() {
-    return static_cast<Implementation<T>*>(this)->_width;
+    return static_cast<T*>(this)->_width;
   }
 
   size_t getArraySize() {
-    return static_cast<Implementation<T>*>(this)->_width;
+    return static_cast<T*>(this)->_width;
   }
 
   inline
@@ -87,8 +87,7 @@ class Tuple;
 /**
  * Tuple (specialization of Record)
  */
-template <>
-class Implementation<Tuple>: public BaseRecord<Tuple>,
+class Tuple: public DataType<Tuple>, public BaseRecord<Tuple>,
   public IntegerDottableHelper<Tuple>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
@@ -99,12 +98,12 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 RichNode label);
+  Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
+        RichNode label);
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GR gr, Self from);
+  Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
+        GR gr, Self from);
 
 public:
   StableNode* getLabel() {
@@ -197,8 +196,7 @@ class Cons;
 /**
  * Cons (specialization of Tuple with label '|' and width 2)
  */
-template <>
-class Implementation<Cons>: public IntegerDottableHelper<Cons>,
+class Cons: public DataType<Cons>, public IntegerDottableHelper<Cons>,
   WithStructuralBehavior {
 public:
   typedef SelfType<Cons>::Self Self;
@@ -208,13 +206,13 @@ public:
   }
 
   inline
-  Implementation(VM vm, RichNode head, RichNode tail);
+  Cons(VM vm, RichNode head, RichNode tail);
 
   inline
-  Implementation(VM vm);
+  Cons(VM vm);
 
   inline
-  Implementation(VM vm, GR gr, Self from);
+  Cons(VM vm, GR gr, Self from);
 
 public:
   StableNode* getHead() {
@@ -317,8 +315,7 @@ class Arity;
 /**
  * Arity (of a record)
  */
-template <>
-class Implementation<Arity>:
+class Arity: public DataType<Arity>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Arity>::Self Self;
@@ -328,12 +325,12 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 RichNode label);
+  Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
+        RichNode label);
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GR gr, Self from);
+  Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
+        GR gr, Self from);
 
 public:
   StableNode* getLabel() {
@@ -398,8 +395,7 @@ class Record;
 /**
  * Record
  */
-template <>
-class Implementation<Record>: public BaseRecord<Record>,
+class Record: public DataType<Record>, public BaseRecord<Record>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   typedef SelfType<Record>::Self Self;
@@ -409,12 +405,12 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 RichNode arity);
+  Record(VM vm, size_t width, StaticArray<StableNode> _elements,
+         RichNode arity);
 
   inline
-  Implementation(VM vm, size_t width, StaticArray<StableNode> _elements,
-                 GR gr, Self from);
+  Record(VM vm, size_t width, StaticArray<StableNode> _elements,
+         GR gr, Self from);
 
 public:
   StableNode* getArity() {
@@ -491,8 +487,7 @@ class Chunk;
 #include "Chunk-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<Chunk>: StoredAs<StableNode*> {
+class Chunk: public DataType<Chunk>, StoredAs<StableNode*> {
 public:
   typedef SelfType<Chunk>::Self Self;
 public:
@@ -500,18 +495,18 @@ public:
     return vm->getAtom(MOZART_STR("chunk"));
   }
 
-  Implementation(StableNode* underlying): _underlying(underlying) {}
+  Chunk(StableNode* underlying): _underlying(underlying) {}
 
-  static void build(StableNode*& self, VM vm, StableNode* underlying) {
+  static void create(StableNode*& self, VM vm, StableNode* underlying) {
     self = underlying;
   }
 
-  static void build(StableNode*& self, VM vm, RichNode underlying) {
+  static void create(StableNode*& self, VM vm, RichNode underlying) {
     self = underlying.getStableRef(vm);
   }
 
   inline
-  static void build(StableNode*& self, VM vm, GR gr, Self from);
+  static void create(StableNode*& self, VM vm, GR gr, Self from);
 
 public:
   StableNode* getUnderlying() {

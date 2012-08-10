@@ -27,18 +27,18 @@
 namespace mozart {
 
 // Definitions of the uuid's of data types
-constexpr UUID Implementation<Atom>::uuid;
-constexpr UUID Implementation<Boolean>::uuid;
-constexpr UUID Implementation<ByteString>::uuid;
-constexpr UUID Implementation<GlobalName>::uuid;
-constexpr UUID Implementation<NamedName>::uuid;
-constexpr UUID Implementation<SmallInt>::uuid;
-constexpr UUID Implementation<String>::uuid;
-constexpr UUID Implementation<UniqueName>::uuid;
-constexpr UUID Implementation<Unit>::uuid;
+constexpr UUID Atom::uuid;
+constexpr UUID Boolean::uuid;
+constexpr UUID ByteString::uuid;
+constexpr UUID GlobalName::uuid;
+constexpr UUID NamedName::uuid;
+constexpr UUID SmallInt::uuid;
+constexpr UUID String::uuid;
+constexpr UUID UniqueName::uuid;
+constexpr UUID Unit::uuid;
 
 // Bytecode for object dispatch procedure
-const ByteCode Implementation<Object>::dispatchByteCode[9] = {
+const ByteCode Object::dispatchByteCode[9] = {
   OpMoveGX, 0, 1,
   OpInlineGetClass, 1, 2,
   OpTailCallG, 1, 3

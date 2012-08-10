@@ -43,8 +43,7 @@ class CodeArea;
 #include "CodeArea-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<CodeArea>: StoredWithArrayOf<StableNode> {
+class CodeArea: public DataType<CodeArea>, StoredWithArrayOf<StableNode> {
 public:
   typedef SelfType<CodeArea>::Self Self;
 public:
@@ -53,13 +52,13 @@ public:
   }
 
   inline
-  Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
-                 atom_t printName, RichNode debugData);
+  CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
+           ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
+           atom_t printName, RichNode debugData);
 
   inline
-  Implementation(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                 GR gr, Self from);
+  CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
+           GR gr, Self from);
 
   size_t getArraySize() {
     return _Kc;

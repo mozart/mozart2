@@ -39,8 +39,7 @@ class ReifiedThread;
 #include "ReifiedThread-implem-decl.hh"
 #endif
 
-template <>
-class Implementation<ReifiedThread>:
+class ReifiedThread: public DataType<ReifiedThread>,
   StoredAs<Runnable*>, Copyable, WithValueBehavior {
 public:
   typedef SelfType<ReifiedThread>::Self Self;
@@ -49,14 +48,14 @@ public:
     return vm->getAtom(MOZART_STR("thread"));
   }
 
-  Implementation(Runnable* runnable): _runnable(runnable) {}
+  ReifiedThread(Runnable* runnable): _runnable(runnable) {}
 
-  static void build(Runnable*& self, VM vm, Runnable* runnable) {
+  static void create(Runnable*& self, VM vm, Runnable* runnable) {
     self = runnable;
   }
 
   inline
-  static void build(Runnable*& self, VM vm, GR gr, Self from);
+  static void create(Runnable*& self, VM vm, GR gr, Self from);
 
 public:
   inline

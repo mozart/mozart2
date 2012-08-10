@@ -48,15 +48,17 @@ void processDeclContext(const std::string outputDir, const DeclContext* ds,
     if (const SpecDecl* ND = dyn_cast<SpecDecl>(decl)) {
       if (mode == gmIntfImpl) {
         /* It's a template specialization decl, might be an
-         * Interface<T> or an Implementation<T> that we must process. */
+         * Interface<T> that we must process. */
         if (ND->getNameAsString() == "Interface") {
           handleInterface(outputDir, ND);
-        } else if (ND->getNameAsString() == "Implementation") {
-          handleImplementation(outputDir, ND);
         }
       }
     } else if (const ClassDecl* CD = dyn_cast<ClassDecl>(decl)) {
-      if (mode == gmBuiltins) {
+      if (mode == gmIntfImpl) {
+        if (isImplementationClass(CD)) {
+          handleImplementation(outputDir, CD);
+        }
+      } else if (mode == gmBuiltins) {
         if (isModuleClass(CD)) {
           handleBuiltinModule(outputDir, CD, *emulateInlineTo);
         }

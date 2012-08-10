@@ -343,12 +343,10 @@ private:
  */
 template <class T>
 class CustomStorageSelf: public BaseSelf<T> {
-private:
-  typedef Implementation<T> Impl;
 public:
   CustomStorageSelf(RichNode node) : BaseSelf<T>(node) {}
 
-  Impl get() {
+  T get() {
     return this->getBase();
   }
 };
@@ -358,12 +356,10 @@ public:
  */
 template <class T>
 class DefaultStorageSelf: public BaseSelf<T> {
-private:
-  typedef Implementation<T> Impl;
 public:
   DefaultStorageSelf(RichNode node) : BaseSelf<T>(node) {}
 
-  Impl* operator->() {
+  T* operator->() {
     return &this->getBase();
   }
 };
@@ -392,12 +388,11 @@ template <class T>
 class ImplWithArraySelf: public BaseSelf<T> {
 private:
   typedef typename BaseSelf<T>::StorageType StorageType;
-  typedef typename ExtractImplWithArray<StorageType>::Impl Impl;
   typedef typename ExtractImplWithArray<StorageType>::Elem Elem;
 public:
   ImplWithArraySelf(RichNode node) : BaseSelf<T>(node) {}
 
-  Impl* operator->() {
+  T* operator->() {
     return get().operator->();
   }
 
@@ -413,8 +408,8 @@ public:
     return get().getArray(getArraySize());
   }
 private:
-  ImplWithArray<Impl, Elem> get() {
-    return ImplWithArray<Impl, Elem>(&this->getBase());
+  ImplWithArray<T, Elem> get() {
+    return ImplWithArray<T, Elem>(&this->getBase());
   }
 };
 

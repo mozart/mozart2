@@ -55,6 +55,48 @@ std::string getTypeParamAsString(CXXRecordDecl* arg, bool basicName) {
   return getTypeParamAsString(dyn_cast<SpecDecl>(arg), basicName);
 }
 
+bool isTheClass(const ClassDecl* decl,
+                const std::string& fullClassName) {
+  if (!isa<SpecDecl>(decl)) {
+    if (decl->getQualifiedNameAsString() == fullClassName)
+      return true;
+  }
+
+  return false;
+}
+
+bool isAnInstantiationOfTheTemplate(const ClassDecl* decl,
+                                    const std::string& fullClassTemplateName) {
+  if (const SpecDecl* spec = dyn_cast<SpecDecl>(decl)) {
+    auto tpl = spec->getInstantiatedFrom();
+    if (auto classTplDecl = tpl.dyn_cast<ClassTemplateDecl*>()) {
+      if (classTplDecl->getQualifiedNameAsString() == fullClassTemplateName) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool existsBaseClassSuchThat(
+  const ClassDecl* cls,
+  const std::function<bool(const ClassDecl*)>& testBase) {
+
+  if (!cls || !cls->isCompleteDefinition())
+    return false;
+
+  for (auto iter = cls->bases_begin(), e = cls->bases_end();
+       iter != e; ++iter) {
+    if (const ClassDecl* base = iter->getType()->getAsCXXRecordDecl()) {
+      if (testBase(base))
+        return true;
+    }
+  }
+
+  return false;
+}
+
 void printTemplateParameters(llvm::raw_fd_ostream& Out,
   const TemplateParameterList *Params, const TemplateArgumentList *Args) {
 

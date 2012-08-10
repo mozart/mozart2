@@ -37,23 +37,22 @@ namespace mozart {
 
 #include "Atom-implem.hh"
 
-void Implementation<Atom>::build(atom_t& self, VM vm, GR gr, Self from) {
+void Atom::create(atom_t& self, VM vm, GR gr, Self from) {
   self = gr->copyAtom(from.get().value());
 }
 
-bool Implementation<Atom>::equals(VM vm, Self right) {
+bool Atom::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-int Implementation<Atom>::compareFeatures(VM vm, Self right) {
+int Atom::compareFeatures(VM vm, Self right) {
   atom_t lhs = value();
   atom_t rhs = right.get().value();
 
   return lhs.compare(rhs);
 }
 
-OpResult Implementation<Atom>::compare(Self self, VM vm,
-                                       RichNode right, int& result) {
+OpResult Atom::compare(Self self, VM vm, RichNode right, int& result) {
   atom_t rightAtomValue;
   MOZART_GET_ARG(rightAtomValue, right, MOZART_STR("atom"));
 
@@ -62,8 +61,7 @@ OpResult Implementation<Atom>::compare(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Atom>::toString(Self self, VM vm,
-                                        std::basic_ostream<nchar>& sink) {
+OpResult Atom::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   atom_t a = value();
   if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
     sink.write(a.contents(), a.length());
@@ -71,7 +69,7 @@ OpResult Implementation<Atom>::toString(Self self, VM vm,
   return OpResult::proceed();
 }
 
-OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
+OpResult Atom::vsLength(Self self, VM vm, nativeint& result) {
   atom_t a = value();
   if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
     result = 0;
@@ -80,8 +78,7 @@ OpResult Implementation<Atom>::vsLength(Self self, VM vm, nativeint& result) {
   return OpResult::proceed();
 }
 
-void Implementation<Atom>::printReprToStream(Self self, VM vm,
-                                             std::ostream& out, int depth) {
+void Atom::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
   atom_t a = value();
   out << '\'' << toUTF<char>(makeLString(a.contents(), a.length())) << '\'';
 }

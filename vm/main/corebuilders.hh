@@ -215,11 +215,19 @@ UnstableNode buildCons(VM vm, HT&& head, TT&& tail) {
   return Cons::build(vm, headNode, tailNode);
 }
 
+/**
+ * Build the atom 'nil'
+ */
+inline
+UnstableNode buildNil(VM vm) {
+  return build(vm, vm->coreatoms.nil);
+}
+
 // Build a list
 
 inline
 UnstableNode buildList(VM vm) {
-  return build(vm, vm->coreatoms.nil);
+  return buildNil(vm);
 }
 
 /**

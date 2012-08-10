@@ -32,6 +32,7 @@
 #include "builtins.hh"
 #include "builtinutils.hh"
 #include "coreatoms.hh"
+#include "datatype.hh"
 #include "dynbuilders.hh"
 #include "exchelpers.hh"
 #include "gcollect.hh"

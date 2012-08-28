@@ -43,7 +43,7 @@ atom_t BaseBuiltin::getNameAtom(VM vm) {
   return vm->getAtom(nativeName.length, nativeName.string);
 }
 
-OpResult BaseBuiltin::getCallInfo(
+void BaseBuiltin::getCallInfo(
   RichNode self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
@@ -55,8 +55,6 @@ OpResult BaseBuiltin::getCallInfo(
   Xcount = 2*_arity;
   Gs = nullptr;
   Ks = StaticArray<StableNode>(_selfKs, 1);
-
-  return OpResult::proceed();
 }
 
 void BaseBuiltin::buildCodeBlock(VM vm, RichNode self) {

@@ -37,27 +37,4 @@
 #include "dynbuilders-decl.hh"
 #include "utils-decl.hh"
 
-//////////////////////
-// Some more macros //
-//////////////////////
-
-#define MOZART_GET_ARG(argVar, argValue, expectedType) \
-  do { \
-    using namespace ::mozart; \
-    using namespace ::mozart::patternmatching; \
-    OpResult _macroOpResult = OpResult::proceed(); \
-    RichNode _macroValue = (argValue); \
-    if (!matches(vm, _macroOpResult, _macroValue, capture(argVar))) \
-      return matchTypeError(vm, _macroOpResult, _macroValue, (expectedType)); \
-  } while (false)
-
-#define MOZART_REQUIRE_FEATURE(featureValue) \
-  do { \
-    using namespace ::mozart; \
-    RichNode _macroValue = (featureValue); \
-    if (!_macroValue.isFeature()) { \
-      MOZART_CHECK_OPRESULT(PotentialFeature(_macroValue).makeFeature(vm)); \
-    } \
-  } while (false)
-
 #endif // __MOZARTCORE_H

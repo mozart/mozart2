@@ -51,22 +51,21 @@ public:
   inline
   StableNode* getElement(Self self, size_t index);
 public:
-  OpResult isRecord(Self self, VM vm, bool& result) {
+  void isRecord(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult width(Self self, VM vm, size_t& result);
+  void width(Self self, VM vm, size_t& result);
 
   inline
-  OpResult arityList(Self self, VM vm, UnstableNode& result);
+  void arityList(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+  void initElement(Self self, VM vm, size_t index, RichNode value);
 
   inline
-  OpResult waitOr(Self self, VM vm, UnstableNode& result);
+  void waitOr(Self self, VM vm, UnstableNode& result);
 protected:
   /* To be implemented in subclasses
   inline
@@ -132,38 +131,36 @@ protected:
 public:
   // RecordLike interface
 
-  OpResult isTuple(Self self, VM vm, bool& result) {
+  void isTuple(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
+  void label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult clone(Self self, VM vm, UnstableNode& result);
+  void clone(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
+  void testRecord(Self self, VM vm, RichNode arity, bool& result);
 
   inline
-  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
-                     bool& result);
+  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
 
   inline
-  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
+  void testLabel(Self self, VM vm, RichNode label, bool& result);
 
 public:
   // VirtualString inteface
 
   inline
-  OpResult isVirtualString(Self self, VM vm, bool& result);
+  void isVirtualString(Self self, VM vm, bool& result);
 
   inline
-  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  OpResult vsLength(Self self, VM vm, nativeint& result);
+  void vsLength(Self self, VM vm, nativeint& result);
 
 private:
   inline bool hasSharpLabel(VM vm);
@@ -243,52 +240,49 @@ protected:
 public:
   // RecordLike interface
 
-  OpResult isRecord(Self self, VM vm, bool& result) {
+  void isRecord(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
-  OpResult isTuple(Self self, VM vm, bool& result) {
+  void isTuple(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
+  void label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult width(Self self, VM vm, size_t& result);
+  void width(Self self, VM vm, size_t& result);
 
   inline
-  OpResult arityList(Self self, VM vm, UnstableNode& result);
+  void arityList(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult clone(Self self, VM vm, UnstableNode& result);
+  void clone(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult waitOr(Self self, VM vm, UnstableNode& result);
+  void waitOr(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
+  void testRecord(Self self, VM vm, RichNode arity, bool& result);
 
   inline
-  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
-                     bool& result);
+  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
 
   inline
-  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
+  void testLabel(Self self, VM vm, RichNode label, bool& result);
 
 public:
   // VirtualString inteface
 
   inline
-  OpResult isVirtualString(Self self, VM vm, bool& result);
+  void isVirtualString(Self self, VM vm, bool& result);
 
   inline
-  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  OpResult vsLength(Self self, VM vm, nativeint& result);
+  void vsLength(Self self, VM vm, nativeint& result);
 
 public:
   inline
@@ -358,14 +352,14 @@ public:
   // ArrayInitializer interface
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+  void initElement(Self self, VM vm, size_t index, RichNode value);
 
 public:
   // Arity methods
 
   inline
-  OpResult lookupFeature(Self self, VM vm, RichNode feature,
-                         bool& found, size_t& result);
+  void lookupFeature(Self self, VM vm, RichNode feature,
+                     bool& found, size_t& result);
 
 public:
   // Miscellaneous
@@ -431,36 +425,34 @@ public:
   // Dottable interface
 
   inline
-  OpResult lookupFeature(Self self, VM vm, RichNode feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, RichNode feature,
+                     bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult lookupFeature(Self self, VM vm, nativeint feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, nativeint feature,
+                     bool& found, nullable<UnstableNode&> value);
 
 public:
   // RecordLike interface
 
-  OpResult isTuple(Self self, VM vm, bool& result) {
+  void isTuple(Self self, VM vm, bool& result) {
     result = false;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult label(Self self, VM vm, UnstableNode& result);
+  void label(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult clone(Self self, VM vm, UnstableNode& result);
+  void clone(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult testRecord(Self self, VM vm, RichNode arity, bool& result);
+  void testRecord(Self self, VM vm, RichNode arity, bool& result);
 
   inline
-  OpResult testTuple(Self self, VM vm, RichNode label, size_t width,
-                     bool& result);
+  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
 
   inline
-  OpResult testLabel(Self self, VM vm, RichNode label, bool& result);
+  void testLabel(Self self, VM vm, RichNode label, bool& result);
 
 public:
   inline
@@ -517,19 +509,18 @@ public:
   // Dottable interface
 
   inline
-  OpResult lookupFeature(Self self, VM vm, RichNode feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, RichNode feature,
+                     bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult lookupFeature(Self self, VM vm, nativeint feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, nativeint feature,
+                     bool& found, nullable<UnstableNode&> value);
 
 public:
   // ChunkLike interface
 
-  OpResult isChunk(Self self, VM vm, bool& result) {
+  void isChunk(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
 public:

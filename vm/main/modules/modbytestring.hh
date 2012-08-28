@@ -41,29 +41,29 @@ namespace builtins {
 
 class ModByteString : public Module {
 private:
-  static OpResult parseEncoding(VM vm, In encodingNode, In encodingVariantList,
-                                ByteStringEncoding& encoding,
-                                EncodingVariant& variant) {
+  static void parseEncoding(VM vm, In encodingNode, In encodingVariantList,
+                            ByteStringEncoding& encoding,
+                            EncodingVariant& variant) {
     using namespace patternmatching;
-    OpResult matchRes = OpResult::proceed();
-    if (matches(vm, matchRes, encodingNode, MOZART_STR("latin1"))) {
+
+    if (matches(vm, encodingNode, MOZART_STR("latin1"))) {
       encoding = ByteStringEncoding::latin1;
-    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("iso8859_1"))) {
+    } else if (matches(vm, encodingNode, MOZART_STR("iso8859_1"))) {
       encoding = ByteStringEncoding::latin1;
-    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("utf8"))) {
+    } else if (matches(vm, encodingNode, MOZART_STR("utf8"))) {
       encoding = ByteStringEncoding::utf8;
-    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("utf16"))) {
+    } else if (matches(vm, encodingNode, MOZART_STR("utf16"))) {
       encoding = ByteStringEncoding::utf16;
-    } else if (matches(vm, matchRes, encodingNode, MOZART_STR("utf32"))) {
+    } else if (matches(vm, encodingNode, MOZART_STR("utf32"))) {
       encoding = ByteStringEncoding::utf8;
     } else {
-      return matchTypeError(vm, matchRes, encodingNode,
-                            MOZART_STR("latin1, utf8, utf16 or utf32"));
+      return raiseTypeError(vm, MOZART_STR("latin1, utf8, utf16 or utf32"),
+                            encodingNode);
     }
 
     variant = EncodingVariant::none;
     return ozListForEach(vm, encodingVariantList,
-      [&](atom_t atom) -> OpResult {
+      [&](atom_t atom) {
         auto atomLStr = makeLString(atom.contents(), atom.length());
         if (atomLStr == MOZART_STR("bom")) {
           variant |= EncodingVariant::hasBOM;
@@ -76,7 +76,6 @@ private:
             vm, MOZART_STR("list of bom, littleEndian or bigEndian"),
             encodingVariantList);
         }
-        return OpResult::proceed();
       },
       MOZART_STR("List of Atoms"));
   }
@@ -88,11 +87,10 @@ public:
   public:
     Is() : Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(StringLike(value).isByteString(vm, boolResult));
+      StringLike(value).isByteString(vm, boolResult);
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -100,16 +98,14 @@ public:
   public:
     Encode() : Builtin("encode") {}
 
-    OpResult operator()(VM vm, In string, In encodingNode,
-                        In variantNode, Out result) {
+    void operator()(VM vm, In string, In encodingNode,
+                    In variantNode, Out result) {
       ByteStringEncoding encoding = ByteStringEncoding::utf8;
       EncodingVariant variant = EncodingVariant::none;
-      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
-                                          encoding, variant));
+      parseEncoding(vm, encodingNode, variantNode, encoding, variant);
 
       bool isVirtualString = false;
-      MOZART_CHECK_OPRESULT(
-        VirtualString(string).isVirtualString(vm, isVirtualString));
+      VirtualString(string).isVirtualString(vm, isVirtualString);
       if (!isVirtualString)
         return raiseTypeError(vm, MOZART_STR("VirtualString"), string);
 
@@ -127,15 +123,14 @@ public:
   public:
     Decode() : Builtin("decode") {}
 
-    OpResult operator()(VM vm, In value, In encodingNode,
-                        In variantNode, Out result) {
+    void operator()(VM vm, In value, In encodingNode,
+                    In variantNode, Out result) {
       if (!value.is<ByteString>())
         return raiseTypeError(vm, MOZART_STR("ByteString"), value);
 
       ByteStringEncoding encoding = ByteStringEncoding::utf8;
       EncodingVariant variant = EncodingVariant::none;
-      MOZART_CHECK_OPRESULT(parseEncoding(vm, encodingNode, variantNode,
-                                          encoding, variant));
+      parseEncoding(vm, encodingNode, variantNode, encoding, variant);
 
       return value.as<ByteString>().decode(vm, encoding, variant, result);
     }

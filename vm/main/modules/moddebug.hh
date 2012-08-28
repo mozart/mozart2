@@ -45,12 +45,11 @@ public:
   public:
     GetRaiseOnBlock(): Builtin("getRaiseOnBlock") {}
 
-    OpResult operator()(VM vm, In thread, Out result) {
+    void operator()(VM vm, In thread, Out result) {
       Runnable* runnable = nullptr;
-      MOZART_GET_ARG(runnable, thread, MOZART_STR("Thread"));
+      getArgument(vm, runnable, thread, MOZART_STR("Thread"));
 
       result = build(vm, runnable->getRaiseOnBlock());
-      return OpResult::proceed();
     }
   };
 
@@ -58,14 +57,13 @@ public:
   public:
     SetRaiseOnBlock(): Builtin("setRaiseOnBlock") {}
 
-    OpResult operator()(VM vm, In thread, In value) {
+    void operator()(VM vm, In thread, In value) {
       Runnable* runnable = nullptr;
       bool boolValue = false;
-      MOZART_GET_ARG(runnable, thread, MOZART_STR("Thread"));
-      MOZART_GET_ARG(boolValue, value, MOZART_STR("Boolean"));
+      getArgument(vm, runnable, thread, MOZART_STR("Thread"));
+      getArgument(vm, boolValue, value, MOZART_STR("Boolean"));
 
       runnable->setRaiseOnBlock(boolValue);
-      return OpResult::proceed();
     }
   };
 
@@ -73,8 +71,8 @@ public:
   public:
     SetId(): Builtin("setId") {}
 
-    OpResult operator()(VM vm, In thread, In id) {
-      return OpResult::proceed();
+    void operator()(VM vm, In thread, In id) {
+      // TODO
     }
   };
 
@@ -82,8 +80,8 @@ public:
   public:
     Breakpoint(): Builtin("breakpoint") {}
 
-    OpResult operator()(VM vm) {
-      return OpResult::proceed();
+    void operator()(VM vm) {
+      // TODO
     }
   };
 };

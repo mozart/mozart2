@@ -65,6 +65,10 @@ public:
   Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
          GR gr, Self from);
 
+private:
+  inline
+  bool isFreeFlag(VM vm, RichNode value);
+
 public:
   size_t getArraySize() {
     return _attrCount;
@@ -74,71 +78,67 @@ public:
   // Dottable interface
 
   inline
-  OpResult lookupFeature(Self self, VM vm, RichNode feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, RichNode feature,
+                     bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult lookupFeature(Self self, VM vm, nativeint feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, nativeint feature,
+                     bool& found, nullable<UnstableNode&> value);
 
 public:
   // ChunkLike interface
 
-  OpResult isChunk(Self self, VM vm, bool& result) {
+  void isChunk(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
 public:
   // ObjectLike interface
 
-  OpResult isObject(Self self, VM vm, bool& result) {
+  void isObject(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult getClass(Self self, VM vm, UnstableNode& result);
+  void getClass(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult attrGet(Self self, VM vm, RichNode attribute, UnstableNode& result);
+  void attrGet(Self self, VM vm, RichNode attribute, UnstableNode& result);
 
   inline
-  OpResult attrPut(Self self, VM vm, RichNode attribute, RichNode value);
+  void attrPut(Self self, VM vm, RichNode attribute, RichNode value);
 
   inline
-  OpResult attrExchange(Self self, VM vm, RichNode attribute,
-                        RichNode newValue, UnstableNode& oldValue);
+  void attrExchange(Self self, VM vm, RichNode attribute,
+                    RichNode newValue, UnstableNode& oldValue);
 
 private:
   inline
-  OpResult getAttrOffset(Self self, VM vm, RichNode attribute, size_t& offset);
+  void getAttrOffset(Self self, VM vm, RichNode attribute, size_t& offset);
 
 public:
   // Callable interface
 
-  OpResult isCallable(Self self, VM vm, bool& result) {
+  void isCallable(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
-  OpResult isProcedure(Self self, VM vm, bool& result) {
+  void isProcedure(Self self, VM vm, bool& result) {
     result = false;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult procedureArity(Self self, VM vm, size_t& result);
+  void procedureArity(Self self, VM vm, size_t& result);
 
   inline
-  OpResult getCallInfo(Self self, VM vm, size_t& arity,
-                       ProgramCounter& start, size_t& Xcount,
-                       StaticArray<StableNode>& Gs,
-                       StaticArray<StableNode>& Ks);
+  void getCallInfo(Self self, VM vm, size_t& arity,
+                   ProgramCounter& start, size_t& Xcount,
+                   StaticArray<StableNode>& Gs,
+                   StaticArray<StableNode>& Ks);
 
   inline
-  OpResult getDebugInfo(Self self, VM vm,
-                        atom_t& printName, UnstableNode& debugData);
+  void getDebugInfo(Self self, VM vm,
+                    atom_t& printName, UnstableNode& debugData);
 
 public:
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {

@@ -45,12 +45,11 @@ public:
   public:
     FeatureLess(): Builtin("featureLess") {}
 
-    OpResult operator()(VM vm, In lhs, In rhs, Out result) {
-      MOZART_REQUIRE_FEATURE(lhs);
-      MOZART_REQUIRE_FEATURE(rhs);
+    void operator()(VM vm, In lhs, In rhs, Out result) {
+      requireFeature(vm, lhs);
+      requireFeature(vm, rhs);
 
       result = build(vm, compareFeatures(vm, lhs, rhs) < 0);
-      return OpResult::proceed();
     }
   };
 
@@ -58,35 +57,34 @@ public:
   public:
     NewCodeArea(): Builtin("newCodeArea") {}
 
-    OpResult operator()(VM vm, In byteCodeList, In arity, In XCount, In KsList,
-                        In printName, In debugData, Out result) {
+    void operator()(VM vm, In byteCodeList, In arity, In XCount, In KsList,
+                    In printName, In debugData, Out result) {
       // Read byte code
       std::vector<ByteCode> byteCode;
 
-      MOZART_CHECK_OPRESULT(ozListForEach(vm, byteCodeList,
-        [&] (nativeint elem) -> OpResult {
+      ozListForEach(vm, byteCodeList,
+        [&] (nativeint elem) {
           if ((elem < std::numeric_limits<ByteCode>::min()) ||
               (elem > std::numeric_limits<ByteCode>::max())) {
             return raiseTypeError(vm, MOZART_STR("Byte code element"),
                                   build(vm, elem));
           } else {
             byteCode.push_back((ByteCode) elem);
-            return OpResult::proceed();
           }
         },
         MOZART_STR("List of byte code elements")
-      ));
+      );
 
       // Read scalar args
       nativeint intArity = 0, intXCount = 0;
       atom_t atomPrintName;
-      MOZART_GET_ARG(intArity, arity, MOZART_STR("positive integer"));
-      MOZART_GET_ARG(intXCount, XCount, MOZART_STR("positive integer"));
-      MOZART_GET_ARG(atomPrintName, printName, MOZART_STR("Atom"));
+      getArgument(vm, intArity, arity, MOZART_STR("positive integer"));
+      getArgument(vm, intXCount, XCount, MOZART_STR("positive integer"));
+      getArgument(vm, atomPrintName, printName, MOZART_STR("Atom"));
 
       // Read number of K registers
       size_t KCount = 0;
-      MOZART_CHECK_OPRESULT(ozListLength(vm, KsList, KCount));
+      ozListLength(vm, KsList, KCount);
 
       // Create the code area
       result = CodeArea::build(vm, KCount, &byteCode.front(),
@@ -97,11 +95,10 @@ public:
       ArrayInitializer KInitializer = result;
       size_t index = 0;
 
-      return ozListForEach(vm, KsList,
-        [&] (UnstableNode& elem) -> OpResult {
+      ozListForEach(vm, KsList,
+        [&] (UnstableNode& elem) {
           KInitializer.initElement(vm, index, elem);
           index++;
-          return OpResult::proceed();
         },
         MOZART_STR("list")
       );
@@ -112,18 +109,17 @@ public:
   public:
     NewAbstraction(): Builtin("newAbstraction") {}
 
-    OpResult operator()(VM vm, In body, In GsList, Out result) {
+    void operator()(VM vm, In body, In GsList, Out result) {
       // Check the type of the code area
       bool bodyIsCodeArea = false;
-      MOZART_CHECK_OPRESULT(
-        CodeAreaProvider(body).isCodeAreaProvider(vm, bodyIsCodeArea));
+      CodeAreaProvider(body).isCodeAreaProvider(vm, bodyIsCodeArea);
       if (!bodyIsCodeArea) {
         return raiseTypeError(vm, MOZART_STR("Code area"), body);
       }
 
       // Read number of G registers
       size_t GCount = 0;
-      MOZART_CHECK_OPRESULT(ozListLength(vm, GsList, GCount));
+      ozListLength(vm, GsList, GCount);
 
       // Create the abstraction
       result = Abstraction::build(vm, GCount, body);
@@ -132,11 +128,10 @@ public:
       ArrayInitializer GInitializer = result;
       size_t index = 0;
 
-      return ozListForEach(vm, GsList,
-        [&] (UnstableNode& elem) -> OpResult {
+      ozListForEach(vm, GsList,
+        [&] (UnstableNode& elem) {
           GInitializer.initElement(vm, index, elem);
           index++;
-          return OpResult::proceed();
         },
         MOZART_STR("list")
       );
@@ -147,22 +142,21 @@ public:
   public:
     MakeArityDynamic(): Builtin("makeArityDynamic") {}
 
-    OpResult operator()(VM vm, In label, In features, Out result) {
+    void operator()(VM vm, In label, In features, Out result) {
       using namespace patternmatching;
 
-      OpResult res = OpResult::proceed();
       size_t width = 0;
       StaticArray<StableNode> featuresData;
 
-      if (matchesVariadicSharp(vm, res, features, width, featuresData)) {
+      if (matchesVariadicSharp(vm, features, width, featuresData)) {
         auto unstableFeatures = vm->newStaticArray<UnstableNode>(width);
         for (size_t i = 0; i < width; i++)
           unstableFeatures[i].init(vm, featuresData[i]);
 
         bool isTuple = false;
         UnstableNode arity;
-        MOZART_CHECK_OPRESULT(buildArityDynamic(
-          vm, isTuple, arity, label, width, (UnstableNode*) unstableFeatures));
+        buildArityDynamic(vm, isTuple, arity, label, width,
+                          (UnstableNode*) unstableFeatures);
 
         if (isTuple)
           result = build(vm, false);
@@ -170,9 +164,8 @@ public:
           result = std::move(arity);
 
         vm->deleteStaticArray(unstableFeatures, width);
-        return OpResult::proceed();
       } else {
-        return matchTypeError(vm, res, features, MOZART_STR("#-tuple"));
+        return raiseTypeError(vm, MOZART_STR("#-tuple"), features);
       }
     }
   };
@@ -181,9 +174,8 @@ public:
   public:
     NewPatPatWildcard(): Builtin("newPatMatWildcard") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result = PatMatCapture::build(vm, -1);
-      return OpResult::proceed();
     }
   };
 
@@ -191,12 +183,11 @@ public:
   public:
     NewPatPatCapture(): Builtin("newPatMatCapture") {}
 
-    OpResult operator()(VM vm, In index, Out result) {
+    void operator()(VM vm, In index, Out result) {
       nativeint intIndex;
-      MOZART_GET_ARG(intIndex, index, MOZART_STR("Integer"));
+      getArgument(vm, intIndex, index, MOZART_STR("Integer"));
 
       result = PatMatCapture::build(vm, intIndex);
-      return OpResult::proceed();
     }
   };
 
@@ -204,12 +195,11 @@ public:
   public:
     IsBuiltin(): Builtin("isBuiltin") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(BuiltinCallable(value).isBuiltin(vm, boolResult));
+      BuiltinCallable(value).isBuiltin(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -217,9 +207,9 @@ public:
   public:
     GetBuiltinInfo(): Builtin("getBuiltinInfo") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       BaseBuiltin* builtin = nullptr;
-      MOZART_CHECK_OPRESULT(BuiltinCallable(value).getBuiltin(vm, builtin));
+      BuiltinCallable(value).getBuiltin(vm, builtin);
 
       UnstableNode name = build(vm, builtin->getNameAtom(vm));
       UnstableNode arity = build(vm, builtin->getArity());
@@ -249,8 +239,6 @@ public:
                        MOZART_STR("params")),
         std::move(arity), std::move(inlineAs), std::move(name),
         std::move(params));
-
-      return OpResult::proceed();
     }
   };
 
@@ -258,12 +246,11 @@ public:
   public:
     IsUniqueName(): Builtin("isUniqueName") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       if (value.isTransient())
-        return OpResult::waitFor(vm, value);
+        return waitFor(vm, value);
 
       result = build(vm, value.is<UniqueName>());
-      return OpResult::proceed();
     }
   };
 };

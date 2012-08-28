@@ -45,9 +45,9 @@ public:
   public:
     Make(): Builtin("make") {}
 
-    OpResult operator()(VM vm, In label, In width, Out result) {
+    void operator()(VM vm, In label, In width, Out result) {
       nativeint intWidth = 0;
-      MOZART_GET_ARG(intWidth, width, MOZART_STR("integer"));
+      getArgument(vm, intWidth, width, MOZART_STR("integer"));
 
       return makeTuple(vm, result, label, intWidth);
     }
@@ -57,12 +57,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(RecordLike(value).isTuple(vm, boolResult));
+      RecordLike(value).isTuple(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 };

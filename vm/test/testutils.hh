@@ -93,22 +93,13 @@ protected:
     EXPECT_EQ(expected, actualString);
     return expected == actualString;
   }
-
-  /**
-   * Expect that a method returns ``OpResult::proceed()``.
-   */
-  static bool EXPECT_PROCEED(OpResult result) {
-    bool isProceed = result.isProceed();
-    EXPECT_TRUE(isProceed);
-    return isProceed;
-  }
-
-  /**
-   * Expect that a method returns ``OpResult::raise()``, and the label of the
-   * exception record is an atom of the null-terminated Unicode string.
-   */
-  bool EXPECT_RAISE(const BaseLString<nchar>& label, OpResult result) const;
 };
+
+#define EXPECT_PROCEED(operation) \
+  EXPECT_NO_THROW((operation))
+
+#define EXPECT_RAISE(label, operation) \
+  EXPECT_THROW((operation), ::mozart::Raise)
 
 namespace mut {
   template <class C>

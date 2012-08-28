@@ -116,7 +116,7 @@ void ReifiedSpace::create(SpaceRef& self, VM vm, GR gr, Self from) {
   gr->copySpace(self, from.get().home());
 }
 
-OpResult ReifiedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
+void ReifiedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
   using namespace patternmatching;
 
   Space* space = getSpace();
@@ -125,20 +125,15 @@ OpResult ReifiedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
     return raise(vm, vm->coreatoms.spaceAdmissible, self);
 
   RichNode statusVar = *space->getStatusVar();
-  OpResult res = OpResult::proceed();
 
-  if (matchesTuple(vm, res, statusVar, vm->coreatoms.succeeded, wildcard())) {
+  if (matchesTuple(vm, statusVar, vm->coreatoms.succeeded, wildcard())) {
     result = Atom::build(vm, vm->coreatoms.succeeded);
-  } else if (res.isProceed()) {
-    result.copy(vm, statusVar);
   } else {
-    return res;
+    result.copy(vm, statusVar);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult ReifiedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
+void ReifiedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
@@ -146,14 +141,12 @@ OpResult ReifiedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
 
   if (space->isBlocked() && !space->isStable()) {
     result = buildTuple(vm, vm->coreatoms.suspended, *space->getStatusVar());
-    return OpResult::proceed();
+  } else {
+    result.copy(vm, *space->getStatusVar());
   }
-
-  result.copy(vm, *space->getStatusVar());
-  return OpResult::proceed();
 }
 
-OpResult ReifiedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
+void ReifiedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
   Space* currentSpace = vm->getCurrentSpace();
   Space* space = getSpace();
 
@@ -175,16 +168,15 @@ OpResult ReifiedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
   // Extract root var
   result.copy(vm, *space->getRootVar());
 
-  // Actual merge
-  OpResult res = space->merge(vm, currentSpace);
-
   // Become a merged deleted space
   self.become(vm, DeletedSpace::build(vm, dsMerged));
 
-  return res;
+  // Actual merge
+  if (!space->merge(vm, currentSpace))
+    fail(vm);
 }
 
-OpResult ReifiedSpace::commitSpace(Self self, VM vm, RichNode value) {
+void ReifiedSpace::commitSpace(Self self, VM vm, RichNode value) {
   using namespace patternmatching;
 
   Space* space = getSpace();
@@ -195,23 +187,20 @@ OpResult ReifiedSpace::commitSpace(Self self, VM vm, RichNode value) {
   if (!space->hasDistributor())
     return raise(vm, vm->coreatoms.spaceNoChoice, self);
 
-  OpResult res = OpResult::proceed();
   nativeint left = 0, right = 0;
 
-  if (matches(vm, res, value, capture(left))) {
+  if (matches(vm, value, capture(left))) {
     int commitResult = space->commit(vm, left);
     if (commitResult < 0)
       return raise(vm, vm->coreatoms.spaceAltRange, self, left, -commitResult);
-
-    return OpResult::proceed();
-  } else if (matchesSharp(vm, res, value, capture(left), capture(right))) {
+  } else if (matchesSharp(vm, value, capture(left), capture(right))) {
     return raise(vm, MOZART_STR("notImplemented"), MOZART_STR("commitRange"));
   } else {
-    return matchTypeError(vm, res, value, MOZART_STR("int or range"));
+    return raiseTypeError(vm, MOZART_STR("int or range"), value);
   }
 }
 
-OpResult ReifiedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
+void ReifiedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
@@ -219,22 +208,19 @@ OpResult ReifiedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
 
   RichNode statusVar = *space->getStatusVar();
   if (statusVar.isTransient())
-    return OpResult::waitFor(vm, statusVar);
+    return waitFor(vm, statusVar);
 
   Space* copy = space->clone(vm);
   result = ReifiedSpace::build(vm, copy);
-
-  return OpResult::proceed();
 }
 
-OpResult ReifiedSpace::killSpace(Self self, VM vm) {
+void ReifiedSpace::killSpace(Self self, VM vm) {
   Space* space = getSpace();
 
   if (!space->isAdmissible(vm))
     return raise(vm, vm->coreatoms.spaceAdmissible);
 
   space->kill(vm);
-  return OpResult::proceed();
 }
 
 //////////////////
@@ -247,48 +233,42 @@ void DeletedSpace::create(DeletedSpaceKind& self, VM vm, GR gr, Self from) {
   self = from.get().kind();
 }
 
-OpResult DeletedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
+void DeletedSpace::askSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       result = Atom::build(vm, vm->coreatoms.failed);
-      return OpResult::proceed();
     }
 
     case dsMerged: {
       result = Atom::build(vm, vm->coreatoms.merged);
-      return OpResult::proceed();
     }
 
     default: {
       assert(false);
-      return OpResult::fail();
     }
   }
 }
 
-OpResult DeletedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
+void DeletedSpace::askVerboseSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       result = Atom::build(vm, vm->coreatoms.failed);
-      return OpResult::proceed();
     }
 
     case dsMerged: {
       result = Atom::build(vm, vm->coreatoms.merged);
-      return OpResult::proceed();
     }
 
     default: {
       assert(false);
-      return OpResult::fail();
     }
   }
 }
 
-OpResult DeletedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
+void DeletedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
-      return OpResult::fail();
+      return fail(vm);
     }
 
     case dsMerged: {
@@ -297,15 +277,14 @@ OpResult DeletedSpace::mergeSpace(Self self, VM vm, UnstableNode& result) {
 
     default: {
       assert(false);
-      return OpResult::fail();
     }
   }
 }
 
-OpResult DeletedSpace::commitSpace(Self self, VM vm, RichNode value) {
+void DeletedSpace::commitSpace(Self self, VM vm, RichNode value) {
   switch (kind()) {
     case dsFailed: {
-      return OpResult::proceed();
+      // nothing to do
     }
 
     case dsMerged: {
@@ -314,16 +293,14 @@ OpResult DeletedSpace::commitSpace(Self self, VM vm, RichNode value) {
 
     default: {
       assert(false);
-      return OpResult::fail();
     }
   }
 }
 
-OpResult DeletedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
+void DeletedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
   switch (kind()) {
     case dsFailed: {
       result = DeletedSpace::build(vm, dsFailed);
-      return OpResult::proceed();
     }
 
     case dsMerged: {
@@ -332,13 +309,11 @@ OpResult DeletedSpace::cloneSpace(Self self, VM vm, UnstableNode& result) {
 
     default: {
       assert(false);
-      return OpResult::fail();
     }
   }
 }
 
-OpResult DeletedSpace::killSpace(Self self, VM vm) {
-  return OpResult::proceed();
+void DeletedSpace::killSpace(Self self, VM vm) {
 }
 
 }

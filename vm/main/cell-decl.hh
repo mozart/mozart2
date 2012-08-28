@@ -57,20 +57,19 @@ public:
 public:
   // CellLike interface
 
-  OpResult isCell(Self self, VM vm, bool& result) {
+  void isCell(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult exchange(RichNode self, VM vm, RichNode newValue,
-                    UnstableNode& oldValue);
+  void exchange(RichNode self, VM vm, RichNode newValue,
+                UnstableNode& oldValue);
 
   inline
-  OpResult access(RichNode self, VM vm, UnstableNode& result);
+  void access(RichNode self, VM vm, UnstableNode& result);
 
   inline
-  OpResult assign(RichNode self, VM vm, RichNode newValue);
+  void assign(RichNode self, VM vm, RichNode newValue);
 
 public:
   // Miscellaneous

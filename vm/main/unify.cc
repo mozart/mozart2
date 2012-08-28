@@ -46,15 +46,18 @@ public:
 public:
   StructuralDualWalk(VM vm, Kind kind,
                      StaticArray<UnstableNode> captures = nullptr):
-    vm(vm), kind(kind), captures(captures) {}
+    kind(kind), captures(captures) {}
 
-  OpResult run(RichNode left, RichNode right);
+  bool run(VM vm, RichNode left, RichNode right);
 private:
   inline
-  OpResult processPair(VM vm, RichNode left, RichNode right);
+  bool processPair(VM vm, RichNode left, RichNode right);
 
   inline
   void rebind(VM vm, RichNode left, RichNode right);
+
+  inline
+  void cleanupOnFailure(VM vm);
 
   inline
   void undoBindings(VM vm);
@@ -66,9 +69,8 @@ private:
   void doConjunction(VM vm, RichNode value, RichNode conjunction);
 
   inline
-  OpResult doOpenRecord(VM vm, RichNode value, RichNode pattern);
+  bool doOpenRecord(VM vm, RichNode value, RichNode pattern);
 
-  VM vm;
   Kind kind;
 
   WalkStack stack;
@@ -82,72 +84,76 @@ private:
 // Entry point //
 /////////////////
 
-OpResult fullUnify(VM vm, RichNode left, RichNode right) {
+void fullUnify(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkUnify);
-  return walk.run(left, right);
+  if (!walk.run(vm, left, right))
+    return fail(vm);
 }
 
-OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result) {
+void fullEquals(VM vm, RichNode left, RichNode right, bool& result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkEquals);
-  return walk.run(left, right).mapProceedFailToTrueFalse(result);
+  result = walk.run(vm, left, right);
 }
 
-OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
-                          StaticArray<UnstableNode> captures, bool& result) {
+void fullPatternMatch(VM vm, RichNode value, RichNode pattern,
+                      StaticArray<UnstableNode> captures, bool& result) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkPatternMatch, captures);
-  return walk.run(value, pattern).mapProceedFailToTrueFalse(result);
+  result = walk.run(vm, value, pattern);
 }
 
 ////////////////////
 // The real thing //
 ////////////////////
 
-OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
-  VM vm = this->vm;
-
-  while (true) {
-    // Process the pair
-    OpResult pairResult = processPair(vm, left, right);
-
-    switch (pairResult.kind()) {
-      case OpResult::orFail:
-      case OpResult::orRaise: {
-        stack.clear(vm);
-        suspendTrail.clear(vm);
-        undoBindings(vm);
-        return pairResult;
+bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
+  try {
+    /* We put the while inside the try-catch
+     * Avoids to install and deinstall the handler on every pair
+     */
+    while (true) {
+      // Process the pair
+      if (!processPair(vm, left, right)) {
+        cleanupOnFailure(vm);
+        return false;
       }
 
-      case OpResult::orWaitBefore:
-      case OpResult::orWaitQuietBefore: {
-        if (!RichNode(*pairResult.getWaiteeNode()).is<FailedValue>()) {
-          // TODO Do we need to actually support the *quiet* here?
-          suspendTrail.push_back_new(vm, left.getStableRef(vm),
-                                     right.getStableRef(vm));
-          break;
-        } else {
-          stack.clear(vm);
-          suspendTrail.clear(vm);
-          undoBindings(vm);
-          return pairResult;
-        }
-      }
+      // Finished?
+      if (stack.empty())
+        break;
 
-      case OpResult::orProceed: {
-        // nothing to do
-      }
+      // Pop next pair
+      left = *stack.front().left;
+      right = *stack.front().right;
+
+      // Go to next item
+      stack.remove_front(vm);
     }
+  } catch (const WaitBefore& exception) {
+    // TODO Do we need to actually support the *quiet* here?
+    if (!RichNode(*exception.getWaiteeNode()).is<FailedValue>()) {
+      suspendTrail.push_back_new(vm, left.getStableRef(vm),
+                                 right.getStableRef(vm));
 
-    // Finished?
-    if (stack.empty())
-      break;
+      // We must process the next pair nevertheless -> tail call
 
-    // Pop next pair
-    left = *stack.front().left;
-    right = *stack.front().right;
+      // Finished?
+      if (!stack.empty()) {
+        // Pop next pair
+        left = *stack.front().left;
+        right = *stack.front().right;
 
-    // Go to next item
-    stack.remove_front(vm);
+        // Go to next item
+        stack.remove_front(vm);
+
+        return run(vm, left, right);
+      }
+    } else {
+      cleanupOnFailure(vm);
+      throw;
+    }
+  } catch (const Exception& exception) {
+    cleanupOnFailure(vm);
+    throw;
   }
 
   // Do we need to suspend on something?
@@ -214,7 +220,8 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
 
     // TODO Replace initial operands by unstableLeft and unstableRight
 
-    return OpResult::waitFor(vm, controlVar);
+    waitFor(vm, controlVar);
+    return false; // not reachable
   }
 
   /* No need to undo temporary bindings here, even if we are in wkEquals mode.
@@ -230,14 +237,13 @@ OpResult StructuralDualWalk::run(RichNode left, RichNode right) {
   if (!vm->isOnTopLevel())
     undoBindings(vm);
 
-  return OpResult::proceed();
+  return true;
 }
 
-OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
-                                         RichNode right) {
+bool StructuralDualWalk::processPair(VM vm, RichNode left, RichNode right) {
   // Identical nodes
   if (left.isSameNode(right))
-    return OpResult::proceed();
+    return true;
 
   auto leftType = left.type();
   auto rightType = right.type();
@@ -249,10 +255,10 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
   if (kind == wkPatternMatch) {
     if (rightType == PatMatCapture::type()) {
       doCapture(vm, left, right);
-      return OpResult::proceed();
+      return true;
     } else if (rightType == PatMatConjunction::type()) {
       doConjunction(vm, left, right);
-      return OpResult::proceed();
+      return true;
     } else if (rightType == PatMatOpenRecord::type()) {
       return doOpenRecord(vm, left, right);
     }
@@ -263,15 +269,20 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
     case wkUnify: {
       if (leftBehavior == sbVariable) {
         if (rightBehavior == sbVariable) {
-          if (leftType.getBindingPriority() > rightType.getBindingPriority())
-            return DataflowVariable(left).bind(vm, right);
-          else
-            return DataflowVariable(right).bind(vm, left);
+          if (leftType.getBindingPriority() > rightType.getBindingPriority()) {
+            DataflowVariable(left).bind(vm, right);
+            return true;
+          } else {
+            DataflowVariable(right).bind(vm, left);
+            return true;
+          }
         } else {
-          return DataflowVariable(left).bind(vm, right);
+          DataflowVariable(left).bind(vm, right);
+          return true;
         }
       } else if (rightBehavior == sbVariable) {
-        return DataflowVariable(right).bind(vm, left);
+        DataflowVariable(right).bind(vm, left);
+        return true;
       }
 
       break;
@@ -281,10 +292,12 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
     case wkPatternMatch: {
       if (leftBehavior == sbVariable) {
         assert(leftType.isTransient());
-        return OpResult::waitFor(vm, left);
+        waitFor(vm, left);
+        return false; // not reachable
       } else if (rightBehavior == sbVariable) {
         assert(rightType.isTransient());
-        return OpResult::waitFor(vm, right);
+        waitFor(vm, right);
+        return false; // not reachable
       }
 
       break;
@@ -293,12 +306,11 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
 
   // If we reach this, both left and right are non-var
   if (leftType != rightType)
-    return OpResult::fail();
+    return false;
 
   switch (leftBehavior) {
     case sbValue: {
-      bool success = ValueEquatable(left).equals(vm, right);
-      return success ? OpResult::proceed() : OpResult::fail();
+      return ValueEquatable(left).equals(vm, right);
     }
 
     case sbStructural: {
@@ -306,31 +318,33 @@ OpResult StructuralDualWalk::processPair(VM vm, RichNode left,
       if (success) {
         if (kind != wkPatternMatch)
           rebind(vm, left, right);
-        return OpResult::proceed();
+        return true;
       } else {
-        return OpResult::fail();
+        return false;
       }
     }
 
     case sbTokenEq: {
       assert(!left.isSameNode(right)); // this was tested earlier
-      return OpResult::fail();
+      return false;
     }
 
-    case sbVariable: {
+    default: { // including sbVariable
       assert(false);
-      return OpResult::fail();
+      return false;
     }
   }
-
-  // We should not reach this point
-  assert(false);
-  return OpResult::proceed();
 }
 
 void StructuralDualWalk::rebind(VM vm, RichNode left, RichNode right) {
   rebindTrail.push_back(vm, left.makeBackup());
   left.reinit(vm, right);
+}
+
+void StructuralDualWalk::cleanupOnFailure(VM vm) {
+  stack.clear(vm);
+  suspendTrail.clear(vm);
+  undoBindings(vm);
 }
 
 void StructuralDualWalk::undoBindings(VM vm) {
@@ -356,44 +370,44 @@ void StructuralDualWalk::doConjunction(VM vm, RichNode value,
     stack.push(vm, stableValue, conj.getElement(i-1));
 }
 
-OpResult StructuralDualWalk::doOpenRecord(VM vm, RichNode value,
-                                          RichNode pattern) {
+bool StructuralDualWalk::doOpenRecord(VM vm, RichNode value,
+                                      RichNode pattern) {
   bool boolResult = false;
   auto pat = pattern.as<PatMatOpenRecord>();
   auto arity = RichNode(*pat.getArity()).as<Arity>();
 
   // Check that the value is a record
 
-  MOZART_CHECK_OPRESULT(RecordLike(value).isRecord(vm, boolResult));
+  RecordLike(value).isRecord(vm, boolResult);
   if (!boolResult)
-    return OpResult::fail();
+    return false;
 
   // Check that the labels match
 
   UnstableNode recordLabel;
-  MOZART_CHECK_OPRESULT(RecordLike(value).label(vm, recordLabel));
+  RecordLike(value).label(vm, recordLabel);
 
-  MOZART_CHECK_OPRESULT(equals(vm, *arity.getLabel(), recordLabel, boolResult));
+  equals(vm, *arity.getLabel(), recordLabel, boolResult);
   if (!boolResult)
-    return OpResult::fail();
+    return false;
 
   // Now iterate over the features of the pattern
 
   for (size_t i = 0; i < arity.getArraySize(); i++) {
     RichNode feature = *arity.getElement(i);
 
-    MOZART_CHECK_OPRESULT(Dottable(value).hasFeature(vm, feature, boolResult));
+    Dottable(value).hasFeature(vm, feature, boolResult);
     if (!boolResult)
-      return OpResult::fail();
+      return false;
 
     UnstableNode lhsValue;
-    MOZART_CHECK_OPRESULT(Dottable(value).dot(vm, feature, lhsValue));
+    Dottable(value).dot(vm, feature, lhsValue);
     StableNode* rhsValue = pat.getElement(i);
 
     stack.push(vm, RichNode(lhsValue).getStableRef(vm), rhsValue);
   }
 
-  return OpResult::proceed();
+  return true;
 }
 
 }

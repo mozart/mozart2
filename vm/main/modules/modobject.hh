@@ -47,20 +47,19 @@ public:
   public:
     New(): Builtin("new") {}
 
-    OpResult operator()(VM vm, In clazz, Out result) {
+    void operator()(VM vm, In clazz, Out result) {
       UnstableNode attrModel, featModel;
 
       UnstableNode ooAttr = build(vm, vm->coreatoms.ooAttr);
-      MOZART_CHECK_OPRESULT(Dottable(clazz).dot(vm, ooAttr, attrModel));
+      Dottable(clazz).dot(vm, ooAttr, attrModel);
 
       UnstableNode ooFeat = build(vm, vm->coreatoms.ooFeat);
-      MOZART_CHECK_OPRESULT(Dottable(clazz).dot(vm, ooFeat, featModel));
+      Dottable(clazz).dot(vm, ooFeat, featModel);
 
       size_t attrCount = 0;
-      MOZART_CHECK_OPRESULT(RecordLike(attrModel).width(vm, attrCount));
+      RecordLike(attrModel).width(vm, attrCount);
 
       result = Object::build(vm, attrCount, clazz, attrModel, featModel);
-      return OpResult::proceed();
     }
   };
 
@@ -68,12 +67,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(ObjectLike(value).isObject(vm, boolResult));
+      ObjectLike(value).isObject(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -81,7 +79,7 @@ public:
   public:
     GetClass(): Builtin("getClass") {}
 
-    OpResult operator()(VM vm, In object, Out result) {
+    void operator()(VM vm, In object, Out result) {
       return ObjectLike(object).getClass(vm, result);
     }
   };
@@ -90,7 +88,7 @@ public:
   public:
     AttrGet(): Builtin("attrGet") {}
 
-    OpResult operator()(VM vm, In object, In attribute, Out result) {
+    void operator()(VM vm, In object, In attribute, Out result) {
       return ObjectLike(object).attrGet(vm, attribute, result);
     }
   };
@@ -99,7 +97,7 @@ public:
   public:
     AttrPut(): Builtin("attrPut") {}
 
-    OpResult operator()(VM vm, In object, In attribute, In newValue) {
+    void operator()(VM vm, In object, In attribute, In newValue) {
       return ObjectLike(object).attrPut(vm, attribute, newValue);
     }
   };
@@ -108,8 +106,8 @@ public:
   public:
     AttrExchangeFun(): Builtin("attrExchangeFun") {}
 
-    OpResult operator()(VM vm, In object, In attribute,
-                        In newValue, Out oldValue) {
+    void operator()(VM vm, In object, In attribute,
+                    In newValue, Out oldValue) {
       return ObjectLike(object).attrExchange(vm, attribute,
                                              newValue, oldValue);
     }
@@ -119,9 +117,9 @@ public:
   public:
     CellOrAttrGet(): Builtin("cellOrAttrGet") {}
 
-    OpResult operator()(VM vm, In object, In cellOrAttr, Out result) {
+    void operator()(VM vm, In object, In cellOrAttr, Out result) {
       bool isCell = false;
-      MOZART_CHECK_OPRESULT(CellLike(cellOrAttr).isCell(vm, isCell));
+      CellLike(cellOrAttr).isCell(vm, isCell);
 
       if (isCell)
         return CellLike(cellOrAttr).access(vm, result);
@@ -134,9 +132,9 @@ public:
   public:
     CellOrAttrPut(): Builtin("cellOrAttrPut") {}
 
-    OpResult operator()(VM vm, In object, In cellOrAttr, In newValue) {
+    void operator()(VM vm, In object, In cellOrAttr, In newValue) {
       bool isCell = false;
-      MOZART_CHECK_OPRESULT(CellLike(cellOrAttr).isCell(vm, isCell));
+      CellLike(cellOrAttr).isCell(vm, isCell);
 
       if (isCell)
         return CellLike(cellOrAttr).assign(vm, newValue);
@@ -149,10 +147,10 @@ public:
   public:
     CellOrAttrExchangeFun(): Builtin("cellOrAttrExchangeFun") {}
 
-    OpResult operator()(VM vm, In object, In cellOrAttr,
-                        In newValue, Out oldValue) {
+    void operator()(VM vm, In object, In cellOrAttr,
+                    In newValue, Out oldValue) {
       bool isCell = false;
-      MOZART_CHECK_OPRESULT(CellLike(cellOrAttr).isCell(vm, isCell));
+      CellLike(cellOrAttr).isCell(vm, isCell);
 
       if (isCell)
         return CellLike(cellOrAttr).exchange(vm, newValue, oldValue);

@@ -45,12 +45,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(Numeric(value).isFloat(vm, boolResult));
+      Numeric(value).isFloat(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -58,7 +57,7 @@ public:
   public:
     Divide(): Builtin("/") {}
 
-    OpResult operator()(VM vm, In left, In right, Out result) {
+    void operator()(VM vm, In left, In right, Out result) {
       return Numeric(left).divide(vm, right, result);
     }
   };

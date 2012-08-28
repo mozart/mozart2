@@ -41,9 +41,8 @@ void OptName::create(SpaceRef& self, VM vm, GR gr, Self from) {
   gr->copySpace(self, from.get().home());
 }
 
-OpResult OptName::makeFeature(Self self, VM vm) {
+void OptName::makeFeature(Self self, VM vm) {
   self.become(vm, GlobalName::build(vm));
-  return OpResult::proceed();
 }
 
 ////////////////

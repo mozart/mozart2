@@ -31,31 +31,34 @@ namespace mozart {
 
 template <class LT, class... Args>
 inline
-OpResult raise(VM vm, LT&& label, Args&&... args);
+void MOZART_NORETURN raise(VM vm, LT&& label, Args&&... args);
 
 template <class LT, class... Args>
 inline
-OpResult raiseError(VM vm, LT&& label, Args&&... args);
+void MOZART_NORETURN raiseError(VM vm, LT&& label, Args&&... args);
 
 template <class... Args>
 inline
-OpResult raiseKernelError(VM vm, Args&&... args);
+void MOZART_NORETURN raiseKernelError(VM vm, Args&&... args);
 
 template <class Actual>
 inline
-OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual);
+void MOZART_NORETURN raiseTypeError(VM vm, const nchar* expected,
+                                    Actual&& actual);
 
 inline
-OpResult raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
-                           RichNode actualArgs[]);
-
-template <class... Args>
-inline
-OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args);
+void MOZART_NORETURN raiseIllegalArity(VM vm, RichNode target,
+                                       size_t actualArgCount,
+                                       RichNode actualArgs[]);
 
 template <class... Args>
 inline
-OpResult raiseIndexOutOfBounds(VM vm, Args&&... args);
+void MOZART_NORETURN raiseUnicodeError(VM vm, UnicodeErrorReason reason,
+                                       Args&&... args);
+
+template <class... Args>
+inline
+void MOZART_NORETURN raiseIndexOutOfBounds(VM vm, Args&&... args);
 
 }
 

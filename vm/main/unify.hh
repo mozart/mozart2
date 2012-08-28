@@ -65,16 +65,16 @@ void WalkStack::clear(VM vm) {
 // Global routines //
 /////////////////////
 
-OpResult fullUnify(VM vm, RichNode left, RichNode right);
+void fullUnify(VM vm, RichNode left, RichNode right);
 
-OpResult fullEquals(VM vm, RichNode left, RichNode right, bool& result);
+void fullEquals(VM vm, RichNode left, RichNode right, bool& result);
 
-OpResult fullPatternMatch(VM vm, RichNode value, RichNode pattern,
-                          StaticArray<UnstableNode> captures, bool& result);
+void fullPatternMatch(VM vm, RichNode value, RichNode pattern,
+                      StaticArray<UnstableNode> captures, bool& result);
 
 #ifndef MOZART_GENERATOR
 
-OpResult unify(VM vm, RichNode left, RichNode right) {
+void unify(VM vm, RichNode left, RichNode right) {
   auto leftType = left.type();
   auto rightType = right.type();
 
@@ -98,10 +98,10 @@ OpResult unify(VM vm, RichNode left, RichNode right) {
   return fullUnify(vm, left, right);
 }
 
-OpResult equals(VM vm, RichNode left, RichNode right, bool& result) {
+void equals(VM vm, RichNode left, RichNode right, bool& result) {
   if (left.isSameNode(right)) {
     result = true;
-    return OpResult::proceed();
+    return;
   }
 
   auto leftType = left.type();
@@ -113,17 +113,17 @@ OpResult equals(VM vm, RichNode left, RichNode right, bool& result) {
   if (leftBehavior != sbVariable && rightBehavior != sbVariable) {
     if (leftType != rightType) {
       result = false;
-      return OpResult::proceed();
+      return;
     }
 
     switch (leftBehavior) {
       case sbValue:
         result = ValueEquatable(left).equals(vm, right);
-        return OpResult::proceed();
+        return;
 
       case sbTokenEq:
         result = false;
-        return OpResult::proceed();
+        return;
 
       default: ; // fall through
     }
@@ -132,17 +132,13 @@ OpResult equals(VM vm, RichNode left, RichNode right, bool& result) {
   return fullEquals(vm, left, right, result);
 }
 
-OpResult notEquals(VM vm, RichNode left, RichNode right, bool& result) {
-  OpResult res = equals(vm, left, right, result);
-
-  if (res.isProceed())
-    result = !result;
-
-  return res;
+void notEquals(VM vm, RichNode left, RichNode right, bool& result) {
+  equals(vm, left, right, result);
+  result = !result;
 }
 
-OpResult patternMatch(VM vm, RichNode value, RichNode pattern,
-                      StaticArray<UnstableNode> captures, bool& result) {
+void patternMatch(VM vm, RichNode value, RichNode pattern,
+                  StaticArray<UnstableNode> captures, bool& result) {
   return fullPatternMatch(vm, value, pattern, captures, result);
 }
 

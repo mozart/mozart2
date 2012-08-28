@@ -92,43 +92,41 @@ protected:
 public:
   // DotAssignable interface
 
-  OpResult dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
+  void dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
     return arrayPut(self, vm, feature, newValue);
   }
 
-  OpResult dotExchange(Self self, VM vm, RichNode feature,
-                       RichNode newValue, UnstableNode& oldValue) {
+  void dotExchange(Self self, VM vm, RichNode feature,
+                   RichNode newValue, UnstableNode& oldValue) {
     return arrayExchange(self, vm, feature, newValue, oldValue);
   }
 
 public:
   // ArrayLike interface
 
-  OpResult isArray(Self self, VM vm, bool& result) {
+  void isArray(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult arrayLow(Self self, VM vm, UnstableNode& result);
+  void arrayLow(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult arrayHigh(Self self, VM vm, UnstableNode& result);
+  void arrayHigh(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult arrayGet(Self self, VM vm, RichNode index,
-                    UnstableNode& result);
+  void arrayGet(Self self, VM vm, RichNode index, UnstableNode& result);
 
   inline
-  OpResult arrayPut(Self self, VM vm, RichNode index, RichNode value);
+  void arrayPut(Self self, VM vm, RichNode index, RichNode value);
 
   inline
-  OpResult arrayExchange(Self self, VM vm, RichNode index,
-                         RichNode newValue, UnstableNode& oldValue);
+  void arrayExchange(Self self, VM vm, RichNode index,
+                     RichNode newValue, UnstableNode& oldValue);
 
 private:
   inline
-  OpResult getOffset(Self self, VM vm, RichNode index, size_t& offset);
+  void getOffset(Self self, VM vm, RichNode index, size_t& offset);
 
   bool isIndexInRange(nativeint index) {
     return (index >= getLow()) && (index <= getHigh());

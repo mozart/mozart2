@@ -45,9 +45,8 @@ public:
   public:
     New(): Builtin("new") {}
 
-    OpResult operator()(VM vm, In initial, Out result) {
+    void operator()(VM vm, In initial, Out result) {
       result = Cell::build(vm, initial);
-      return OpResult::proceed();
     }
   };
 
@@ -55,12 +54,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(CellLike(value).isCell(vm, boolResult));
+      CellLike(value).isCell(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -68,7 +66,7 @@ public:
   public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
-    OpResult operator()(VM vm, In cell, In newValue, Out oldValue) {
+    void operator()(VM vm, In cell, In newValue, Out oldValue) {
       return CellLike(cell).exchange(vm, newValue, oldValue);
     }
   };
@@ -77,7 +75,7 @@ public:
   public:
     Access(): Builtin("access") {}
 
-    OpResult operator()(VM vm, In cell, Out result) {
+    void operator()(VM vm, In cell, Out result) {
       return CellLike(cell).access(vm, result);
     }
   };
@@ -86,7 +84,7 @@ public:
   public:
     Assign(): Builtin("assign") {}
 
-    OpResult operator()(VM vm, In cell, In newValue) {
+    void operator()(VM vm, In cell, In newValue) {
       return CellLike(cell).assign(vm, newValue);
     }
   };

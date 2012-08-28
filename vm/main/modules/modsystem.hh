@@ -47,17 +47,15 @@ public:
   public:
     PrintRepr(): Builtin("printRepr") {}
 
-    OpResult operator()(VM vm, In value, In toStdErr, In newLine) {
+    void operator()(VM vm, In value, In toStdErr, In newLine) {
       bool boolToStdErr = false, boolNewLine = false;
-      MOZART_GET_ARG(boolToStdErr, toStdErr, MOZART_STR("Boolean"));
-      MOZART_GET_ARG(boolNewLine, newLine, MOZART_STR("Boolean"));
+      getArgument(vm, boolToStdErr, toStdErr, MOZART_STR("Boolean"));
+      getArgument(vm, boolNewLine, newLine, MOZART_STR("Boolean"));
 
       auto& stream = boolToStdErr ? std::cerr : std::cout;
       stream << repr(vm, value);
       if (boolNewLine)
         stream << std::endl;
-
-      return OpResult::proceed();
     }
   };
 
@@ -65,7 +63,7 @@ public:
   public:
     GetRepr(): Builtin("getRepr") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       std::basic_stringstream<char> buffer;
       buffer << repr(vm, value);
       auto bufferStr = buffer.str();
@@ -74,7 +72,6 @@ public:
       auto str = toUTF<nchar>(utf8str);
 
       result = Atom::build(vm, str.length, str.string);
-      return OpResult::proceed();
     }
   };
 
@@ -82,21 +79,19 @@ public:
   public:
     PrintVS(): Builtin("printVS") {}
 
-    OpResult operator()(VM vm, In value, In toStdErr, In newLine) {
+    void operator()(VM vm, In value, In toStdErr, In newLine) {
       bool boolToStdErr = false, boolNewLine = false;
-      MOZART_GET_ARG(boolToStdErr, toStdErr, MOZART_STR("Boolean"));
-      MOZART_GET_ARG(boolNewLine, newLine, MOZART_STR("Boolean"));
+      getArgument(vm, boolToStdErr, toStdErr, MOZART_STR("Boolean"));
+      getArgument(vm, boolNewLine, newLine, MOZART_STR("Boolean"));
 
       std::basic_stringstream<nchar> buffer;
-      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, buffer));
+      VirtualString(value).toString(vm, buffer);
       auto bufferStr = buffer.str();
 
       auto& stream = boolToStdErr ? std::cerr : std::cout;
       stream << toUTF<char>(makeLString(bufferStr.c_str(), bufferStr.size()));
       if (boolNewLine)
         stream << std::endl;
-
-      return OpResult::proceed();
     }
   };
 
@@ -104,9 +99,8 @@ public:
   public:
     GCDo(): Builtin("gcDo") {}
 
-    OpResult operator()(VM vm) {
+    void operator()(VM vm) {
       // TODO
-      return OpResult::proceed();
     }
   };
 
@@ -114,9 +108,8 @@ public:
   public:
     Eq(): Builtin("eq") {}
 
-    OpResult operator()(VM vm, In lhs, In rhs, Out result) {
+    void operator()(VM vm, In lhs, In rhs, Out result) {
       result = build(vm, lhs.isSameNode(rhs));
-      return OpResult::proceed();
     }
   };
 
@@ -124,9 +117,8 @@ public:
   public:
     OnTopLevel(): Builtin("onTopLevel") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result = build(vm, vm->isOnTopLevel());
-      return OpResult::proceed();
     }
   };
 
@@ -134,12 +126,11 @@ public:
   public:
     Exit(): Builtin("exit") {}
 
-    OpResult operator()(VM vm, In exitCode) {
+    void operator()(VM vm, In exitCode) {
       nativeint intExitCode = 0;
-      MOZART_GET_ARG(intExitCode, exitCode, MOZART_STR("Integer"));
+      getArgument(vm, intExitCode, exitCode, MOZART_STR("Integer"));
 
       std::exit(intExitCode);
-      return OpResult::proceed();
     }
   };
 };

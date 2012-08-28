@@ -45,11 +45,10 @@ public:
   public:
     Is() : Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(StringLike(value).isString(vm, boolResult));
+      StringLike(value).isString(vm, boolResult);
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -57,11 +56,10 @@ public:
   public:
     ToAtom() : Builtin("toAtom") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       LString<nchar>* content = nullptr;
-      MOZART_CHECK_OPRESULT(StringLike(value).stringGet(vm, content));
+      StringLike(value).stringGet(vm, content);
       result = Atom::build(vm, content->length, content->string);
-      return OpResult::proceed();
     }
   };
 
@@ -69,12 +67,10 @@ public:
   public:
     CharAt() : Builtin("charAt") {}
 
-    OpResult operator()(VM vm, In value, In index, Out result) {
+    void operator()(VM vm, In value, In index, Out result) {
       nativeint charResult = 0;
-      MOZART_CHECK_OPRESULT(
-        StringLike(value).stringCharAt(vm, index, charResult));
+      StringLike(value).stringCharAt(vm, index, charResult);
       result = SmallInt::build(vm, charResult);
-      return OpResult::proceed();
     }
   };
 
@@ -82,7 +78,7 @@ public:
   public:
     Append() : Builtin("append") {}
 
-    OpResult operator()(VM vm, In left, In right, Out result) {
+    void operator()(VM vm, In left, In right, Out result) {
       return StringLike(left).stringAppend(vm, right, result);
     }
   };
@@ -91,7 +87,7 @@ public:
   public:
     Slice() : Builtin("slice") {}
 
-    OpResult operator()(VM vm, In value, In from, In to, Out result) {
+    void operator()(VM vm, In value, In from, In to, Out result) {
       return StringLike(value).stringSlice(vm, from, to, result);
     }
   };
@@ -100,7 +96,7 @@ public:
   public:
     Search() : Builtin("search") {}
 
-    OpResult operator()(VM vm, In value, In from, In needle, Out begin, Out end) {
+    void operator()(VM vm, In value, In from, In needle, Out begin, Out end) {
       return StringLike(value).stringSearch(vm, from, needle, begin, end);
     }
   };
@@ -109,12 +105,10 @@ public:
   public:
     HasPrefix() : Builtin("hasPrefix") {}
 
-    OpResult operator()(VM vm, In string, In prefix, Out result) {
+    void operator()(VM vm, In string, In prefix, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(
-        StringLike(string).stringHasPrefix(vm, prefix, boolResult));
+      StringLike(string).stringHasPrefix(vm, prefix, boolResult);
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -122,12 +116,10 @@ public:
   public:
     HasSuffix() : Builtin("hasSuffix") {}
 
-    OpResult operator()(VM vm, In string, In suffix, Out result) {
+    void operator()(VM vm, In string, In suffix, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(
-        StringLike(string).stringHasSuffix(vm, suffix, boolResult));
+      StringLike(string).stringHasSuffix(vm, suffix, boolResult);
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 };

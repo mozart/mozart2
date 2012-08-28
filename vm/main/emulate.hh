@@ -270,13 +270,29 @@ private:
                     StaticArray<StableNode>& kregs,
                     bool& preempted);
 
-  void applyOpResult(VM vm, OpResult result, bool& preempted,
-                     StableNode*& abstraction,
-                     ProgramCounter& PC, size_t& yregCount,
-                     XRegArray* xregs,
-                     StaticArray<UnstableNode>& yregs,
-                     StaticArray<StableNode>& gregs,
-                     StaticArray<StableNode>& kregs);
+  void applyFail(VM vm, const Fail& exception,
+                 StableNode*& abstraction,
+                 ProgramCounter& PC, size_t& yregCount,
+                 XRegArray* xregs,
+                 StaticArray<UnstableNode>& yregs,
+                 StaticArray<StableNode>& gregs,
+                 StaticArray<StableNode>& kregs);
+
+  void applyWaitBefore(VM vm, const WaitBeforeBase& exception,
+                       StableNode*& abstraction,
+                       ProgramCounter& PC, size_t& yregCount,
+                       XRegArray* xregs,
+                       StaticArray<UnstableNode>& yregs,
+                       StaticArray<StableNode>& gregs,
+                       StaticArray<StableNode>& kregs);
+
+  void applyRaise(VM vm, const Raise& exception,
+                  StableNode*& abstraction,
+                  ProgramCounter& PC, size_t& yregCount,
+                  XRegArray* xregs,
+                  StaticArray<UnstableNode>& yregs,
+                  StaticArray<StableNode>& gregs,
+                  StaticArray<StableNode>& kregs);
 
   UnstableNode preprocessException(VM vm, RichNode exception,
                                    StableNode* abstraction,

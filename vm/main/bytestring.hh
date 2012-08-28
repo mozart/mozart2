@@ -70,69 +70,63 @@ namespace internal {
   }
 }
 
-OpResult ByteString::compare(Self self, VM vm, RichNode right, int& result) {
+void ByteString::compare(Self self, VM vm, RichNode right, int& result) {
   LString<unsigned char>* rightBytes = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightBytes));
+  StringLike(right).stringGet(vm, rightBytes);
   result = internal::compareByteStrings(_bytes, *rightBytes);
-  return OpResult::proceed();
 }
 
 // StringLike ------------------------------------------------------------------
 
-OpResult ByteString::stringGet(Self self, VM vm,
-                               LString<unsigned char>*& result) {
+void ByteString::stringGet(Self self, VM vm, LString<unsigned char>*& result) {
   result = &_bytes;
-  return OpResult::proceed();
 }
 
-OpResult ByteString::stringGet(Self self, VM vm, LString<nchar>*& result) {
+void ByteString::stringGet(Self self, VM vm, LString<nchar>*& result) {
   return raiseTypeError(vm, MOZART_STR("String"), self);
 }
 
-OpResult ByteString::stringCharAt(Self self, VM vm, RichNode offsetNode,
-                                  nativeint& character) {
+void ByteString::stringCharAt(Self self, VM vm, RichNode offsetNode,
+                              nativeint& character) {
   nativeint offset = 0;
-  MOZART_GET_ARG(offset, offsetNode, MOZART_STR("integer"));
+  getArgument(vm, offset, offsetNode, MOZART_STR("integer"));
 
   if (offset < 0 || offset >= _bytes.length)
     return raiseIndexOutOfBounds(vm, offsetNode, self);
 
   character = _bytes[offset];
-  return OpResult::proceed();
 }
 
-OpResult ByteString::stringAppend(Self self, VM vm, RichNode right,
-                                  UnstableNode& result) {
+void ByteString::stringAppend(Self self, VM vm, RichNode right,
+                              UnstableNode& result) {
   LString<unsigned char>* rightBytes = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightBytes));
+  StringLike(right).stringGet(vm, rightBytes);
   LString<unsigned char> resultBytes = concatLString(vm, _bytes, *rightBytes);
   if (resultBytes.isError())
     return raiseUnicodeError(vm, resultBytes.error, self, right);
   result = ByteString::build(vm, resultBytes);
-  return OpResult::proceed();
 }
 
-OpResult ByteString::stringSlice(Self self, VM vm, RichNode from, RichNode to,
-                                 UnstableNode& result) {
+void ByteString::stringSlice(Self self, VM vm, RichNode from, RichNode to,
+                             UnstableNode& result) {
   nativeint fromOffset = 0, toOffset = 0;
-  MOZART_GET_ARG(fromOffset, from, MOZART_STR("integer"));
-  MOZART_GET_ARG(toOffset, to, MOZART_STR("integer"));
+  getArgument(vm, fromOffset, from, MOZART_STR("integer"));
+  getArgument(vm, toOffset, to, MOZART_STR("integer"));
 
   if (fromOffset < 0 || fromOffset > toOffset || toOffset > _bytes.length)
     return raiseIndexOutOfBounds(vm, fromOffset, toOffset);
 
   result = ByteString::build(vm, _bytes.slice(fromOffset, toOffset));
-  return OpResult::proceed();
 }
 
-OpResult ByteString::stringSearch(
+void ByteString::stringSearch(
   Self self, VM vm, RichNode from, RichNode needleNode,
   UnstableNode& begin, UnstableNode& end) {
 
   using namespace patternmatching;
 
   nativeint fromOffset = 0;
-  MOZART_GET_ARG(fromOffset, from, MOZART_STR("integer"));
+  getArgument(vm, fromOffset, from, MOZART_STR("integer"));
 
   if (fromOffset < 0 || fromOffset > _bytes.length)
     return raiseIndexOutOfBounds(vm, fromOffset);
@@ -140,9 +134,8 @@ OpResult ByteString::stringSearch(
   LString<unsigned char> haystack = _bytes.slice(fromOffset);
 
   nativeint character = 0;
-  OpResult matchRes = OpResult::proceed();
 
-  if (matches(vm, matchRes, needleNode, capture(character))) {
+  if (matches(vm, needleNode, capture(character))) {
 
     if (character < 0 || character >= 0x100)
       return raiseTypeError(vm, MOZART_STR("Integer between 0 and 255"),
@@ -161,10 +154,10 @@ OpResult ByteString::stringSearch(
       end = SmallInt::build(vm, foundOffset + 1);
     }
 
-  } else if (matchRes.isProceed()) {
+  } else {
 
     LString<unsigned char>* needle = nullptr;
-    MOZART_CHECK_OPRESULT(StringLike(needleNode).stringGet(vm, needle));
+    StringLike(needleNode).stringGet(vm, needle);
     auto foundIter = std::search(haystack.begin(), haystack.end(),
                                  needle->begin(), needle->end());
     if (foundIter == haystack.end()) {
@@ -176,53 +169,45 @@ OpResult ByteString::stringSearch(
       end = SmallInt::build(vm, foundOffset + needle->length);
     }
 
-  } else {
-    return matchRes;
   }
-
-  return OpResult::proceed();
 }
 
-OpResult ByteString::stringHasPrefix(Self self, VM vm, RichNode prefixNode,
-                                     bool& result) {
+void ByteString::stringHasPrefix(Self self, VM vm, RichNode prefixNode,
+                                 bool& result) {
   LString<unsigned char>* prefix = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(prefixNode).stringGet(vm, prefix));
+  StringLike(prefixNode).stringGet(vm, prefix);
   if (_bytes.length < prefix->length)
     result = false;
   else
     result = (memcmp(_bytes.string, prefix->string, prefix->bytesCount()) == 0);
-  return OpResult::proceed();
 }
 
-OpResult ByteString::stringHasSuffix(Self self, VM vm, RichNode suffixNode,
-                                     bool& result) {
+void ByteString::stringHasSuffix(Self self, VM vm, RichNode suffixNode,
+                                 bool& result) {
   LString<unsigned char>* suffix = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(suffixNode).stringGet(vm, suffix));
+  StringLike(suffixNode).stringGet(vm, suffix);
   if (_bytes.length < suffix->length)
     result = false;
   else
     result = (memcmp(_bytes.end() - suffix->length, suffix->string,
                      suffix->bytesCount()) == 0);
-  return OpResult::proceed();
 }
 
 // VirtualString ---------------------------------------------------------------
 
-OpResult ByteString::toString(Self self, VM vm,
-                              std::basic_ostream<nchar>& sink) {
+void ByteString::toString(Self self, VM vm,
+                          std::basic_ostream<nchar>& sink) {
   sink << decodeLatin1(_bytes, EncodingVariant::none);
-  return OpResult::proceed();
 }
 
-OpResult ByteString::vsLength(Self self, VM vm, nativeint& result) {
+void ByteString::vsLength(Self self, VM vm, nativeint& result) {
   result = _bytes.length;
-  return OpResult::proceed();
 }
 
 // Encode & decode -------------------------------------------------------------
 
-OpResult ByteString::decode(Self self, VM vm, ByteStringEncoding encoding,
-                            EncodingVariant variant, UnstableNode& result) {
+void ByteString::decode(Self self, VM vm, ByteStringEncoding encoding,
+                        EncodingVariant variant, UnstableNode& result) {
   DecoderFun decoder;
   switch (encoding) {
     case ByteStringEncoding::latin1: decoder = &decodeLatin1; break;
@@ -230,20 +215,19 @@ OpResult ByteString::decode(Self self, VM vm, ByteStringEncoding encoding,
     case ByteStringEncoding::utf16:  decoder = &decodeUTF16;  break;
     case ByteStringEncoding::utf32:  decoder = &decodeUTF32;  break;
     default:
-      return OpResult::fail();
+      assert(false);
+      return;
   }
 
   auto res = newLString(vm, decoder(_bytes, variant));
   if (res.isError())
     return raiseUnicodeError(vm, res.error);
   result = String::build(vm, res);
-  return OpResult::proceed();
 }
 
-OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
-                            ByteStringEncoding encoding,
-                            EncodingVariant variant,
-                            UnstableNode& result) {
+void encodeToBytestring(VM vm, const BaseLString<nchar>& input,
+                        ByteStringEncoding encoding, EncodingVariant variant,
+                        UnstableNode& result) {
   EncoderFun encoder;
   switch (encoding) {
     case ByteStringEncoding::latin1: encoder = &encodeLatin1; break;
@@ -251,14 +235,14 @@ OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
     case ByteStringEncoding::utf16:  encoder = &encodeUTF16;  break;
     case ByteStringEncoding::utf32:  encoder = &encodeUTF32;  break;
     default:
-      return OpResult::fail();
+      assert(false);
+      return;
   }
 
   auto res = newLString(vm, encoder(input, variant));
   if (res.isError())
     return raiseUnicodeError(vm, res.error);
   result = ByteString::build(vm, res);
-  return OpResult::proceed();
 }
 
 // Miscellaneous ---------------------------------------------------------------

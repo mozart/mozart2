@@ -49,28 +49,26 @@ bool String::equals(VM vm, Self right) {
 
 // Comparable ------------------------------------------------------------------
 
-OpResult String::compare(Self self, VM vm, RichNode right, int& result) {
+void String::compare(Self self, VM vm, RichNode right, int& result) {
   LString<nchar>* rightString = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightString));
+  StringLike(right).stringGet(vm, rightString);
   result = compareByCodePoint(_string, *rightString);
-  return OpResult::proceed();
 }
 
 // StringLike ------------------------------------------------------------------
 
-OpResult String::stringGet(Self self, VM vm, LString<nchar>*& result) {
+void String::stringGet(Self self, VM vm, LString<nchar>*& result) {
   result = &_string;
-  return OpResult::proceed();
 }
 
-OpResult String::stringGet(Self self, VM vm, LString<unsigned char>*& result) {
+void String::stringGet(Self self, VM vm, LString<unsigned char>*& result) {
   return raiseTypeError(vm, MOZART_STR("ByteString"), self);
 }
 
-OpResult String::stringCharAt(Self self, VM vm, RichNode indexNode,
-                              nativeint& character) {
+void String::stringCharAt(Self self, VM vm, RichNode indexNode,
+                          nativeint& character) {
   nativeint index = 0;
-  MOZART_GET_ARG(index, indexNode, MOZART_STR("integer"));
+  getArgument(vm, index, indexNode, MOZART_STR("integer"));
 
   LString<nchar> slice = sliceByCodePointsFromTo(_string, index, index+1);
   if (slice.isError()) {
@@ -87,25 +85,23 @@ OpResult String::stringCharAt(Self self, VM vm, RichNode indexNode,
     return raiseUnicodeError(vm, (UnicodeErrorReason) length, self, indexNode);
 
   character = codePoint;
-  return OpResult::proceed();
 }
 
-OpResult String::stringAppend(Self self, VM vm, RichNode right,
-                              UnstableNode& result) {
+void String::stringAppend(Self self, VM vm, RichNode right,
+                          UnstableNode& result) {
   LString<nchar>* rightString = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(right).stringGet(vm, rightString));
+  StringLike(right).stringGet(vm, rightString);
   LString<nchar> resultString = concatLString(vm, _string, *rightString);
   if (resultString.isError())
     return raiseUnicodeError(vm, resultString.error, self, right);
   result = String::build(vm, resultString);
-  return OpResult::proceed();
 }
 
-OpResult String::stringSlice(Self self, VM vm, RichNode from, RichNode to,
-                             UnstableNode& result) {
+void String::stringSlice(Self self, VM vm, RichNode from, RichNode to,
+                         UnstableNode& result) {
   nativeint fromIndex = 0, toIndex = 0;
-  MOZART_GET_ARG(fromIndex, from, MOZART_STR("integer"));
-  MOZART_GET_ARG(toIndex, to, MOZART_STR("integer"));
+  getArgument(vm, fromIndex, from, MOZART_STR("integer"));
+  getArgument(vm, toIndex, to, MOZART_STR("integer"));
 
   LString<nchar> resultString =
     sliceByCodePointsFromTo(_string, fromIndex, toIndex);
@@ -118,14 +114,12 @@ OpResult String::stringSlice(Self self, VM vm, RichNode from, RichNode to,
   }
 
   result = String::build(vm, resultString);
-  return OpResult::proceed();
 }
 
-OpResult String::stringSearch(Self self, VM vm, RichNode from,
-                              RichNode needleNode,
-                              UnstableNode& begin, UnstableNode& end) {
+void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
+                          UnstableNode& begin, UnstableNode& end) {
   nativeint fromIndex = 0;
-  MOZART_GET_ARG(fromIndex, from, MOZART_STR("integer"));
+  getArgument(vm, fromIndex, from, MOZART_STR("integer"));
 
   nchar utf[4];
   mut::BaseLString<nchar> needleStorage;
@@ -134,9 +128,8 @@ OpResult String::stringSearch(Self self, VM vm, RichNode from,
   // Extract the needle. Could be a code point, or a string.
   {
     using namespace patternmatching;
-    OpResult matchRes = OpResult::proceed();
     nativeint codePointInteger = 0;
-    if (matches(vm, matchRes, needleNode, capture(codePointInteger))) {
+    if (matches(vm, needleNode, capture(codePointInteger))) {
 
       char32_t codePoint = (char32_t) codePointInteger;
       nativeint length = toUTF(codePoint, utf);
@@ -154,15 +147,11 @@ OpResult String::stringSearch(Self self, VM vm, RichNode from,
       //   Note: libstdc++ before 4.8 still calls it 'std::has_trivial_destructor'.
 #endif
 
-    } else if (matchRes.isProceed()) {
-
-      LString<nchar>* stringNeedle = nullptr;
-      MOZART_CHECK_OPRESULT(StringLike(needleNode).stringGet(vm, stringNeedle));
-      needle = stringNeedle;
-
     } else {
 
-      return matchRes;
+      LString<nchar>* stringNeedle = nullptr;
+      StringLike(needleNode).stringGet(vm, stringNeedle);
+      needle = stringNeedle;
 
     }
   }
@@ -192,60 +181,54 @@ OpResult String::stringSearch(Self self, VM vm, RichNode from,
     begin = SmallInt::build(vm, foundIndex);
     end = SmallInt::build(vm, foundIndex + codePointCount(*needle));
   }
-
-  return OpResult::proceed();
 }
 
-OpResult String::stringHasPrefix(Self self, VM vm, RichNode prefixNode,
-                                 bool& result) {
+void String::stringHasPrefix(Self self, VM vm, RichNode prefixNode,
+                             bool& result) {
   LString<nchar>* prefix = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(prefixNode).stringGet(vm, prefix));
+  StringLike(prefixNode).stringGet(vm, prefix);
   if (_string.length < prefix->length)
     result = false;
   else
     result = (memcmp(_string.string, prefix->string,
                      prefix->bytesCount()) == 0);
-  return OpResult::proceed();
 }
 
-OpResult String::stringHasSuffix(Self self, VM vm, RichNode suffixNode,
-                                 bool& result) {
+void String::stringHasSuffix(Self self, VM vm, RichNode suffixNode,
+                             bool& result) {
   LString<nchar>* suffix = nullptr;
-  MOZART_CHECK_OPRESULT(StringLike(suffixNode).stringGet(vm, suffix));
+  StringLike(suffixNode).stringGet(vm, suffix);
   if (_string.length < suffix->length)
     result = false;
   else
     result = (memcmp(_string.end() - suffix->length, suffix->string,
                      suffix->bytesCount()) == 0);
-  return OpResult::proceed();
 }
 
 // Dottable --------------------------------------------------------------------
 
-OpResult String::lookupFeature(Self self, VM vm, RichNode feature,
-                               bool& found, nullable<UnstableNode&> value) {
+void String::lookupFeature(Self self, VM vm, RichNode feature,
+                           bool& found, nullable<UnstableNode&> value) {
   using namespace patternmatching;
 
-  OpResult res = OpResult::proceed();
   nativeint featureIntValue = 0;
 
   // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
+  if (matches(vm, feature, capture(featureIntValue))) {
     return lookupFeature(self, vm, featureIntValue, found, value);
   } else {
-    MOZART_REQUIRE_FEATURE(feature);
+    requireFeature(vm, feature);
     found = false;
-    return OpResult::proceed();
   }
 }
 
-OpResult String::lookupFeature(Self self, VM vm, nativeint feature,
-                               bool& found, nullable<UnstableNode&> value) {
+void String::lookupFeature(Self self, VM vm, nativeint feature,
+                           bool& found, nullable<UnstableNode&> value) {
   LString<nchar> slice = sliceByCodePointsFromTo(_string, feature, feature+1);
   if (slice.isError()) {
     if (slice.error == UnicodeErrorReason::indexOutOfBounds) {
       found = false;
-      return OpResult::proceed();
+      return;
     } else {
       return raiseUnicodeError(vm, slice.error, self);
     }
@@ -260,19 +243,16 @@ OpResult String::lookupFeature(Self self, VM vm, nativeint feature,
   found = true;
   if (value.isDefined())
     value.get() = mozart::build(vm, (nativeint) codePoint);
-  return OpResult::proceed();
 }
 
 // VirtualString ---------------------------------------------------------------
 
-OpResult String::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void String::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << _string;
-  return OpResult::proceed();
 }
 
-OpResult String::vsLength(Self self, VM vm, nativeint& result) {
+void String::vsLength(Self self, VM vm, nativeint& result) {
   result = codePointCount(_string);
-  return OpResult::proceed();
 }
 
 // Miscellaneous ---------------------------------------------------------------

@@ -88,15 +88,13 @@ bool PatMatConjunction::equals(Self self, VM vm, Self right, WalkStack& stack) {
   return true;
 }
 
-OpResult PatMatConjunction::initElement(Self self, VM vm, size_t index,
-                                        RichNode value) {
+void PatMatConjunction::initElement(Self self, VM vm, size_t index,
+                                    RichNode value) {
   self[index].init(vm, value);
-  return OpResult::proceed();
 }
 
 void PatMatConjunction::printReprToStream(Self self, VM vm, std::ostream& out,
                                           int depth) {
-
   out << "<PatMatConjunction>(";
 
   if (depth <= 1) {
@@ -146,10 +144,9 @@ StableNode* PatMatOpenRecord::getElement(Self self, size_t index) {
   return &self[index];
 }
 
-OpResult PatMatOpenRecord::initElement(Self self, VM vm, size_t index,
-                                       RichNode value) {
+void PatMatOpenRecord::initElement(Self self, VM vm, size_t index,
+                                   RichNode value) {
   self[index].init(vm, value);
-  return OpResult::proceed();
 }
 
 void PatMatOpenRecord::printReprToStream(Self self, VM vm, std::ostream& out,

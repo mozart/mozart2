@@ -36,82 +36,72 @@ namespace mozart {
 ///////////////////
 
 template <class T>
-OpResult LiteralHelper<T>::isLiteral(Self self, VM vm, bool& result) {
+void LiteralHelper<T>::isLiteral(Self self, VM vm, bool& result) {
   result = true;
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::lookupFeature(
+void LiteralHelper<T>::lookupFeature(
   Self self, VM vm, RichNode feature, bool& found,
   nullable<UnstableNode&> value) {
 
-  MOZART_REQUIRE_FEATURE(feature);
+  requireFeature(vm, feature);
   found = false;
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::lookupFeature(
+void LiteralHelper<T>::lookupFeature(
   Self self, VM vm, nativeint feature, bool& found,
   nullable<UnstableNode&> value) {
 
   found = false;
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::label(Self self, VM vm, UnstableNode& result) {
+void LiteralHelper<T>::label(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, self);
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::width(Self self, VM vm, size_t& result) {
+void LiteralHelper<T>::width(Self self, VM vm, size_t& result) {
   result = 0;
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::arityList(Self self, VM vm, UnstableNode& result) {
+void LiteralHelper<T>::arityList(Self self, VM vm, UnstableNode& result) {
   result = build(vm, vm->coreatoms.nil);
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::clone(Self self, VM vm, UnstableNode& result) {
+void LiteralHelper<T>::clone(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, self);
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::waitOr(Self self, VM vm, UnstableNode& result) {
+void LiteralHelper<T>::waitOr(Self self, VM vm, UnstableNode& result) {
   // Wait forever
   UnstableNode dummyVar = Variable::build(vm);
-  return OpResult::waitFor(vm, dummyVar);
+  waitFor(vm, dummyVar);
 }
 
 template <class T>
-OpResult LiteralHelper<T>::testRecord(Self self, VM vm, RichNode arity,
-                                      bool& result) {
+void LiteralHelper<T>::testRecord(Self self, VM vm, RichNode arity,
+                                  bool& result) {
   result = false;
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult LiteralHelper<T>::testTuple(Self self, VM vm, RichNode label,
-                                     size_t width, bool& result) {
-  if (width == 0) {
-    return equals(vm, self, label, result);
-  } else {
+void LiteralHelper<T>::testTuple(Self self, VM vm, RichNode label, size_t width,
+                                 bool& result) {
+  if (width == 0)
+    equals(vm, self, label, result);
+  else
     result = false;
-    return OpResult::proceed();
-  }
 }
 
 template <class T>
-OpResult LiteralHelper<T>::testLabel(Self self, VM vm, RichNode label,
-                                     bool& result) {
+void LiteralHelper<T>::testLabel(Self self, VM vm, RichNode label,
+                                 bool& result) {
   return equals(vm, self, label, result);
 }
 
@@ -120,34 +110,31 @@ OpResult LiteralHelper<T>::testLabel(Self self, VM vm, RichNode label,
 ///////////////////////////
 
 template <class T>
-OpResult IntegerDottableHelper<T>::lookupFeature(
+void IntegerDottableHelper<T>::lookupFeature(
   Self self, VM vm, RichNode feature, bool& found,
   nullable<UnstableNode&> value) {
 
   using namespace patternmatching;
 
-  OpResult res = OpResult::proceed();
   nativeint featureIntValue = 0;
 
   // Fast-path for the integer case
-  if (matches(vm, res, feature, capture(featureIntValue))) {
+  if (matches(vm, feature, capture(featureIntValue))) {
     return lookupFeature(self, vm, featureIntValue, found, value);
   } else {
-    MOZART_REQUIRE_FEATURE(feature);
+    requireFeature(vm, feature);
     found = false;
-    return OpResult::proceed();
   }
 }
 
 template <class T>
-OpResult IntegerDottableHelper<T>::lookupFeature(
+void IntegerDottableHelper<T>::lookupFeature(
   Self self, VM vm, nativeint feature, bool& found,
   nullable<UnstableNode&> value) {
 
   found = internalIsValidFeature(self, vm, feature);
   if (found && value.isDefined())
     internalGetValueAt(self, vm, feature, value.get());
-  return OpResult::proceed();
 }
 
 }

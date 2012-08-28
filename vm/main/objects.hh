@@ -61,11 +61,11 @@ Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
 
     for (size_t i = 0; i < attrCount; i++) {
       UnstableNode& attr = _attributes[i];
-      attr.init(vm, *attrModelRec.getElement(i));
 
-      OpResult res = OpResult::proceed();
-      if (matches(vm, res, attr, vm->coreatoms.ooFreeFlag))
-        attr = OptVar::build(vm);
+      if (isFreeFlag(vm, *attrModelRec.getElement(i)))
+        attr.init(vm, OptVar::build(vm));
+      else
+        attr.init(vm, *attrModelRec.getElement(i));
     }
   }
 
@@ -81,11 +81,11 @@ Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
 
     for (size_t i = 0; i < featCount; i++) {
       StableNode& feat = *_featuresRec.getElement(i);
-      feat.init(vm, *featModelRec.getElement(i));
 
-      OpResult res = OpResult::proceed();
-      if (matches(vm, res, feat, vm->coreatoms.ooFreeFlag))
+      if (isFreeFlag(vm, *featModelRec.getElement(i)))
         feat.init(vm, OptVar::build(vm));
+      else
+        feat.init(vm, *featModelRec.getElement(i));
     }
   }
 
@@ -110,78 +110,75 @@ Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
   _GsInitialized = false;
 }
 
-OpResult Object::lookupFeature(
+bool Object::isFreeFlag(VM vm, RichNode value) {
+  return value.is<UniqueName>() &&
+    (value.as<UniqueName>().value() == vm->coreatoms.ooFreeFlag);
+}
+
+void Object::lookupFeature(
   Self self, VM vm, RichNode feature, bool& found,
   nullable<UnstableNode&> value) {
 
   return Dottable(_features).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Object::lookupFeature(
+void Object::lookupFeature(
   Self self, VM vm, nativeint feature, bool& found,
   nullable<UnstableNode&> value) {
 
   return Dottable(_features).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Object::getClass(Self self, VM vm, UnstableNode& result) {
+void Object::getClass(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, _clazz);
-  return OpResult::proceed();
 }
 
-OpResult Object::attrGet(Self self, VM vm, RichNode attribute,
-                         UnstableNode& result) {
+void Object::attrGet(Self self, VM vm, RichNode attribute,
+                     UnstableNode& result) {
   size_t offset = 0;
-  MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
+  getAttrOffset(self, vm, attribute, offset);
 
   result.copy(vm, self[offset]);
-  return OpResult::proceed();
 }
 
-OpResult Object::attrPut(Self self, VM vm, RichNode attribute,
-                         RichNode value) {
+void Object::attrPut(Self self, VM vm, RichNode attribute, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
   size_t offset = 0;
-  MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
+  getAttrOffset(self, vm, attribute, offset);
 
   self[offset].copy(vm, value);
-  return OpResult::proceed();
 }
 
-OpResult Object::attrExchange(Self self, VM vm, RichNode attribute,
-                              RichNode newValue, UnstableNode& oldValue) {
+void Object::attrExchange(Self self, VM vm, RichNode attribute,
+                          RichNode newValue, UnstableNode& oldValue) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
   size_t offset = 0;
-  MOZART_CHECK_OPRESULT(getAttrOffset(self, vm, attribute, offset));
+  getAttrOffset(self, vm, attribute, offset);
 
   oldValue.copy(vm, self[offset]);
   self[offset].copy(vm, newValue);
-  return OpResult::proceed();
 }
 
-OpResult Object::getAttrOffset(Self self, VM vm, RichNode attribute,
-                               size_t& offset) {
+void Object::getAttrOffset(Self self, VM vm, RichNode attribute,
+                           size_t& offset) {
   bool found = false;
-  MOZART_CHECK_OPRESULT(
-    RichNode(_attrArity).as<Arity>().lookupFeature(
-      vm, attribute, found, offset));
+  RichNode(_attrArity).as<Arity>().lookupFeature(vm, attribute, found, offset);
 
-  if (found)
-    return OpResult::proceed();
-  else
+  if (!found) {
     return raiseError(vm, MOZART_STR("object"),
                       MOZART_STR("@"), self, attribute);
+  }
 }
 
-OpResult Object::procedureArity(Self self, VM vm, size_t& result) {
+void Object::procedureArity(Self self, VM vm, size_t& result) {
   return Interface<Callable>().procedureArity(self, vm, result);
 }
 
-OpResult Object::getCallInfo(
+void Object::getCallInfo(
   Self self, VM vm, size_t& arity,
   ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
@@ -190,10 +187,10 @@ OpResult Object::getCallInfo(
     UnstableNode fallback, fallbackApply;
 
     UnstableNode ooFallback = mozart::build(vm, vm->coreatoms.ooFallback);
-    MOZART_CHECK_OPRESULT(Dottable(_clazz).dot(vm, ooFallback, fallback));
+    Dottable(_clazz).dot(vm, ooFallback, fallback);
 
     UnstableNode apply = mozart::build(vm, MOZART_STR("apply"));
-    MOZART_CHECK_OPRESULT(Dottable(fallback).dot(vm, apply, fallbackApply));
+    Dottable(fallback).dot(vm, apply, fallbackApply);
 
     _Gs[0].init(vm, RichNode(self));
     _Gs[1].init(vm, fallbackApply);
@@ -206,17 +203,13 @@ OpResult Object::getCallInfo(
   Xcount = 3;
   Gs = StaticArray<StableNode>(_Gs, 2);
   Ks = nullptr;
-
-  return OpResult::proceed();
 }
 
-OpResult Object::getDebugInfo(
+void Object::getDebugInfo(
   Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
 
   printName = vm->getAtom(MOZART_STR("<Object>"));
   debugData = mozart::build(vm, unit);
-
-  return OpResult::proceed();
 }
 
 }

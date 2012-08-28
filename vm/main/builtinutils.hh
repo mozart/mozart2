@@ -33,20 +33,17 @@ namespace mozart {
 
 namespace builtins {
 
-OpResult expectCallable(VM vm, RichNode target, size_t expectedArity) {
+void expectCallable(VM vm, RichNode target, size_t expectedArity) {
   size_t arity = 0;
   ProgramCounter start;
   size_t Xcount;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  MOZART_CHECK_OPRESULT(Callable(target).getCallInfo(
-    vm, arity, start, Xcount, Gs, Ks));
+  Callable(target).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
   if (arity != expectedArity)
     return raise(vm, MOZART_STR("illegalArity"), expectedArity, arity);
-
-  return OpResult::proceed();
 }
 
 }

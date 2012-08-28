@@ -45,9 +45,8 @@ public:
   public:
     GetBootMM(): Builtin("getBootMM") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result.copy(vm, *vm->getBootMM());
-      return OpResult::proceed();
     }
   };
 };

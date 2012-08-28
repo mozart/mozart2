@@ -5,6 +5,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${header}.gen
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+    -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/${header}.ast
     -DMOZART_GENERATOR
     ${CMAKE_CURRENT_SOURCE_DIR}/${header}
@@ -25,6 +26,7 @@ add_custom_target(gensources
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${header}.genbi
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+    -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/${header}.astbi
     -I ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/${header}

@@ -52,30 +52,26 @@ int Atom::compareFeatures(VM vm, Self right) {
   return lhs.compare(rhs);
 }
 
-OpResult Atom::compare(Self self, VM vm, RichNode right, int& result) {
+void Atom::compare(Self self, VM vm, RichNode right, int& result) {
   atom_t rightAtomValue;
-  MOZART_GET_ARG(rightAtomValue, right, MOZART_STR("atom"));
+  getArgument(vm, rightAtomValue, right, MOZART_STR("atom"));
 
   result = value().compare(rightAtomValue);
-
-  return OpResult::proceed();
 }
 
-OpResult Atom::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void Atom::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   atom_t a = value();
   if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
     sink.write(a.contents(), a.length());
   }
-  return OpResult::proceed();
 }
 
-OpResult Atom::vsLength(Self self, VM vm, nativeint& result) {
+void Atom::vsLength(Self self, VM vm, nativeint& result) {
   atom_t a = value();
   if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
     result = 0;
   else
     result = codePointCount(makeLString(a.contents(), a.length()));
-  return OpResult::proceed();
 }
 
 void Atom::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {

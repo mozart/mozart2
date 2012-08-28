@@ -48,12 +48,10 @@ public:
   public:
     Is() : Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(
-        VirtualString(value).isVirtualString(vm, boolResult));
+      VirtualString(value).isVirtualString(vm, boolResult);
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -61,11 +59,10 @@ public:
   public:
     ToString() : Builtin("toString") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       std::basic_ostringstream<nchar> stringStream;
-      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, stringStream));
+      VirtualString(value).toString(vm, stringStream);
       result = String::build(vm, newLString(vm, stringStream.str()));
-      return OpResult::proceed();
     }
   };
 
@@ -73,11 +70,10 @@ public:
   public:
     Length() : Builtin("length") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       nativeint length = 0;
-      MOZART_CHECK_OPRESULT(VirtualString(value).vsLength(vm, length));
+      VirtualString(value).vsLength(vm, length);
       result = SmallInt::build(vm, length);
-      return OpResult::proceed();
     }
   };
 
@@ -85,9 +81,9 @@ public:
   public:
     ToFloat() : Builtin("toFloat") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       std::basic_ostringstream<nchar> stringStream;
-      MOZART_CHECK_OPRESULT(VirtualString(value).toString(vm, stringStream));
+      VirtualString(value).toString(vm, stringStream);
 
       auto bufferStr = stringStream.str();
       auto nstr = makeLString(bufferStr.c_str(), bufferStr.size());
@@ -109,7 +105,6 @@ public:
         return raiseKernelError(vm, MOZART_STR("stringNoFloat"), value);
 
       result = build(vm, doubleResult);
-      return OpResult::proceed();
     }
   };
 };

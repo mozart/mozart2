@@ -116,16 +116,15 @@ std::FILE* BoostBasedVM::getFile(nativeint fd) {
     return nullptr;
 }
 
-OpResult BoostBasedVM::getFile(nativeint fd, std::FILE*& result) {
+void BoostBasedVM::getFile(nativeint fd, std::FILE*& result) {
   result = getFile(fd);
   if (result == nullptr)
     return raise(vm, MOZART_STR("system"), MOZART_STR("invalidfd"), fd);
-  return OpResult::proceed();
 }
 
-OpResult BoostBasedVM::getFile(RichNode fd, std::FILE*& result) {
+void BoostBasedVM::getFile(RichNode fd, std::FILE*& result) {
   nativeint intfd = 0;
-  MOZART_GET_ARG(intfd, fd, MOZART_STR("filedesc"));
+  getArgument(vm, intfd, fd, MOZART_STR("filedesc"));
 
   return getFile(intfd, result);
 }
@@ -137,68 +136,61 @@ OpResult BoostBasedVM::getFile(RichNode fd, std::FILE*& result) {
 namespace internal {
   template <class T>
   inline
-  OpResult ozListForEach(VM vm, RichNode list, size_t index,
-                         const nchar* expectedType,
-                         std::function<OpResult (VM, size_t, T)> f) {
+  void ozListForEach(VM vm, RichNode list, size_t index,
+                     const nchar* expectedType,
+                     std::function<void (VM, size_t, T)> f) {
     using namespace patternmatching;
 
-    OpResult res = OpResult::proceed();
     T head;
     UnstableNode tail;
 
-    if (matchesCons(vm, res, list, capture(head), capture(tail))) {
-      MOZART_CHECK_OPRESULT(f(vm, index, head));
-      return ozListForEach(vm, tail, index+1, expectedType, f);
-    } else if (matches(vm, res, list, vm->coreatoms.nil)) {
-      return OpResult::proceed();
+    if (matchesCons(vm, list, capture(head), capture(tail))) {
+      f(vm, index, head);
+      ozListForEach(vm, tail, index+1, expectedType, f);
+    } else if (matches(vm, list, vm->coreatoms.nil)) {
+      // end
     } else {
-      return matchTypeError(vm, res, list, expectedType);
+      raiseTypeError(vm, expectedType, list);
     }
   }
 }
 
-OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
-  MOZART_CHECK_OPRESULT(internal::ozListForEach<char>(
+void ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
+  internal::ozListForEach<char>(
     vm, value, 0, MOZART_STR("string"),
-    [size, buffer] (VM vm, size_t i, char c) -> OpResult {
+    [size, buffer] (VM vm, size_t i, char c) {
       assert(i < size);
       buffer[i] = c;
-      return OpResult::proceed();
-    }));
-
-  return OpResult::proceed();
-}
-
-OpResult ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
-  size_t size;
-  MOZART_CHECK_OPRESULT(ozListLength(vm, value, size));
-
-  buffer.resize(size);
-
-  return internal::ozListForEach<char>(
-    vm, value, 0, MOZART_STR("string"),
-    [size, &buffer] (VM vm, size_t i, char c) -> OpResult {
-      assert(i < size);
-      buffer[i] = c;
-      return OpResult::proceed();
     });
 }
 
-OpResult ozStringToStdString(VM vm, RichNode value, std::string& result) {
-  std::stringbuf buffer;
+void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
+  size_t size;
+  ozListLength(vm, value, size);
 
-  MOZART_CHECK_OPRESULT(internal::ozListForEach<char>(
+  buffer.resize(size);
+
+  internal::ozListForEach<char>(
     vm, value, 0, MOZART_STR("string"),
-    [&buffer] (VM vm, size_t i, char c) -> OpResult {
-      buffer.sputc(c);
-      return OpResult::proceed();
-    }));
-
-  result = buffer.str();
-  return OpResult::proceed();
+    [size, &buffer] (VM vm, size_t i, char c) {
+      assert(i < size);
+      buffer[i] = c;
+    });
 }
 
-OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
+void ozStringToStdString(VM vm, RichNode value, std::string& result) {
+  std::stringbuf buffer;
+
+  internal::ozListForEach<char>(
+    vm, value, 0, MOZART_STR("string"),
+    [&buffer] (VM vm, size_t i, char c) {
+      buffer.sputc(c);
+    });
+
+  result = buffer.str();
+}
+
+void stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
   UnstableNode res = build(vm, vm->coreatoms.nil);
 
   for (auto iter = value.rbegin(); iter != value.rend(); ++iter) {
@@ -206,7 +198,6 @@ OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
   }
 
   result = std::move(res);
-  return OpResult::proceed();
 }
 
 std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str) {
@@ -229,18 +220,18 @@ std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str) {
   return ustr;
 }
 
-OpResult raiseOSError(VM vm, int errnum) {
+void raiseOSError(VM vm, int errnum) {
   auto message = systemStrToMozartStr(std::strerror(errnum));
-  return raise(vm, MOZART_STR("system"), errnum, message.get());
+  raise(vm, MOZART_STR("system"), errnum, message.get());
 }
 
-OpResult raiseLastOSError(VM vm) {
-  return raiseOSError(vm, errno);
+void raiseLastOSError(VM vm) {
+  raiseOSError(vm, errno);
 }
 
-OpResult raiseSystemError(VM vm, const boost::system::system_error& error) {
+void raiseSystemError(VM vm, const boost::system::system_error& error) {
   auto message = systemStrToMozartStr(error.what());
-  return raise(vm, MOZART_STR("system"), error.code().value(), message.get());
+  raise(vm, MOZART_STR("system"), error.code().value(), message.get());
 }
 
 } }

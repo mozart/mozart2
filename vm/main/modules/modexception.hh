@@ -47,8 +47,8 @@ public:
   public:
     Raise(): Builtin("raise") {}
 
-    OpResult operator()(VM vm, In value) {
-      return OpResult::raise(vm, value);
+    void operator()(VM vm, In value) {
+      return raise(vm, value);
     }
   };
 
@@ -56,7 +56,7 @@ public:
   public:
     RaiseError(): Builtin("raiseError") {}
 
-    OpResult operator()(VM vm, In value) {
+    void operator()(VM vm, In value) {
       return raise(vm, buildRecord(
         vm, buildArity(vm, MOZART_STR("error"), 1, MOZART_STR("debug")),
         value, unit));
@@ -67,8 +67,8 @@ public:
   public:
     Fail(): Builtin("fail") {}
 
-    OpResult operator()(VM vm) {
-      return OpResult::fail();
+    void operator()(VM vm) {
+      return fail(vm);
     }
   };
 };

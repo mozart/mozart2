@@ -19,6 +19,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+    -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
     -I ${CMAKE_CURRENT_BINARY_DIR}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
@@ -44,6 +45,7 @@ add_custom_target(genboostsources
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boostenv.genbi
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+    -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.astbi
     -I ${CMAKE_CURRENT_BINARY_DIR}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main

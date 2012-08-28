@@ -45,9 +45,8 @@ public:
   public:
     New(): Builtin("new") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result = Dictionary::build(vm);
-      return OpResult::proceed();
     }
   };
 
@@ -55,12 +54,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(DictionaryLike(value).isDictionary(vm, boolResult));
+      DictionaryLike(value).isDictionary(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -68,12 +66,11 @@ public:
   public:
     IsEmpty(): Builtin("isEmpty") {}
 
-    OpResult operator()(VM vm, In dict, Out result) {
+    void operator()(VM vm, In dict, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(DictionaryLike(dict).dictIsEmpty(vm, boolResult));
+      DictionaryLike(dict).dictIsEmpty(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -81,13 +78,11 @@ public:
   public:
     Member(): Builtin("member") {}
 
-    OpResult operator()(VM vm, In dict, In feature, Out result) {
+    void operator()(VM vm, In dict, In feature, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(DictionaryLike(dict).dictMember(
-        vm, feature, boolResult));
+      DictionaryLike(dict).dictMember(vm, feature, boolResult);
 
       result = build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -95,7 +90,7 @@ public:
   public:
     Get(): Builtin("get") {}
 
-    OpResult operator()(VM vm, In dict, In feature, Out result) {
+    void operator()(VM vm, In dict, In feature, Out result) {
       return DictionaryLike(dict).dictGet(vm, feature, result);
     }
   };
@@ -104,8 +99,7 @@ public:
   public:
     CondGet(): Builtin("condGet") {}
 
-    OpResult operator()(VM vm, In dict, In feature, In defaultValue,
-                        Out result) {
+    void operator()(VM vm, In dict, In feature, In defaultValue, Out result) {
       return DictionaryLike(dict).dictCondGet(vm, feature, defaultValue,
                                               result);
     }
@@ -115,7 +109,7 @@ public:
   public:
     Put(): Builtin("put") {}
 
-    OpResult operator()(VM vm, In dict, In feature, In newValue) {
+    void operator()(VM vm, In dict, In feature, In newValue) {
       return DictionaryLike(dict).dictPut(vm, feature, newValue);
     }
   };
@@ -124,7 +118,7 @@ public:
   public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
-    OpResult operator()(VM vm, In dict, In feature, In newValue, Out oldValue) {
+    void operator()(VM vm, In dict, In feature, In newValue, Out oldValue) {
       return DictionaryLike(dict).dictExchange(vm, feature, newValue, oldValue);
     }
   };
@@ -133,8 +127,8 @@ public:
   public:
     CondExchangeFun(): Builtin("condExchangeFun") {}
 
-    OpResult operator()(VM vm, In dict, In feature, In defaultValue,
-                        In newValue, Out oldValue) {
+    void operator()(VM vm, In dict, In feature, In defaultValue,
+                    In newValue, Out oldValue) {
       return DictionaryLike(dict).dictCondExchange(vm, feature, defaultValue,
                                                    newValue, oldValue);
     }
@@ -144,7 +138,7 @@ public:
   public:
     Remove(): Builtin("remove") {}
 
-    OpResult operator()(VM vm, In dict, In feature) {
+    void operator()(VM vm, In dict, In feature) {
       return DictionaryLike(dict).dictRemove(vm, feature);
     }
   };
@@ -153,7 +147,7 @@ public:
   public:
     RemoveAll(): Builtin("removeAll") {}
 
-    OpResult operator()(VM vm, In dict) {
+    void operator()(VM vm, In dict) {
       return DictionaryLike(dict).dictRemoveAll(vm);
     }
   };
@@ -162,7 +156,7 @@ public:
   public:
     Keys(): Builtin("keys") {}
 
-    OpResult operator()(VM vm, In dict, Out result) {
+    void operator()(VM vm, In dict, Out result) {
       return DictionaryLike(dict).dictKeys(vm, result);
     }
   };
@@ -171,7 +165,7 @@ public:
   public:
     Entries(): Builtin("entries") {}
 
-    OpResult operator()(VM vm, In dict, Out result) {
+    void operator()(VM vm, In dict, Out result) {
       return DictionaryLike(dict).dictEntries(vm, result);
     }
   };
@@ -180,7 +174,7 @@ public:
   public:
     Items(): Builtin("items") {}
 
-    OpResult operator()(VM vm, In dict, Out result) {
+    void operator()(VM vm, In dict, Out result) {
       return DictionaryLike(dict).dictItems(vm, result);
     }
   };
@@ -189,7 +183,7 @@ public:
   public:
     Clone(): Builtin("clone") {}
 
-    OpResult operator()(VM vm, In dict, Out result) {
+    void operator()(VM vm, In dict, Out result) {
       return DictionaryLike(dict).dictClone(vm, result);
     }
   };

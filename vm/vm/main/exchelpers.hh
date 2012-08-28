@@ -32,14 +32,14 @@
 namespace mozart {
 
 template <class LT, class... Args>
-OpResult raise(VM vm, LT&& label, Args&&... args) {
+void raise(VM vm, LT&& label, Args&&... args) {
   UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
                                       std::forward<Args>(args)...);
-  return OpResult::raise(vm, exception);
+  raise(vm, RichNode(exception));
 }
 
 template <class LT, class... Args>
-OpResult raiseError(VM vm, LT&& label, Args&&... args) {
+void raiseError(VM vm, LT&& label, Args&&... args) {
   UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
                                       std::forward<Args>(args)...);
 
@@ -47,30 +47,30 @@ OpResult raiseError(VM vm, LT&& label, Args&&... args) {
     vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
     std::move(exception), unit);
 
-  return OpResult::raise(vm, error);
+  raise(vm, RichNode(error));
 }
 
 template <class... Args>
-OpResult raiseKernelError(VM vm, Args&&... args) {
-  return raiseError(vm, vm->coreatoms.kernel, std::forward<Args>(args)...);
+void raiseKernelError(VM vm, Args&&... args) {
+  raiseError(vm, vm->coreatoms.kernel, std::forward<Args>(args)...);
 }
 
 template <class Actual>
-OpResult raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
-  return raiseKernelError(vm, MOZART_STR("type"),
-                          unit, buildList(vm, actual), expected, 1,
-                          vm->coreatoms.nil);
+void raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
+  raiseKernelError(vm, MOZART_STR("type"),
+                   unit, buildList(vm, actual), expected, 1,
+                   vm->coreatoms.nil);
 }
 
-OpResult raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
-                           RichNode actualArgs[]) {
-  return raiseKernelError(vm, MOZART_STR("arity"),
-                          target,
-                          buildListDynamic(vm, actualArgCount, actualArgs));
+void raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
+                       RichNode actualArgs[]) {
+  raiseKernelError(vm, MOZART_STR("arity"),
+                   target,
+                   buildListDynamic(vm, actualArgCount, actualArgs));
 }
 
 template <class... Args>
-OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
+void raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
   atom_t reasonAtom;
   switch (reason) {
     case UnicodeErrorReason::outOfRange:
@@ -90,15 +90,16 @@ OpResult raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
       break;
     default:    // shouldn't reach here.
       assert(false);
-      return OpResult::fail();
+      reasonAtom = vm->coreatoms.nil;
   }
-  return raise(vm, vm->coreatoms.unicodeError,
-               reasonAtom, std::forward<Args>(args)...);
+
+  raise(vm, vm->coreatoms.unicodeError,
+        reasonAtom, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-OpResult raiseIndexOutOfBounds(VM vm, Args&&... args) {
-  return raise(vm, vm->coreatoms.indexOutOfBounds, std::forward<Args>(args)...);
+void raiseIndexOutOfBounds(VM vm, Args&&... args) {
+  raise(vm, vm->coreatoms.indexOutOfBounds, std::forward<Args>(args)...);
 }
 
 }

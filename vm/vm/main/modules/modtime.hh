@@ -45,9 +45,9 @@ public:
   public:
     Alarm(): Builtin("alarm") {}
 
-    OpResult operator()(VM vm, In delay, Out result) {
+    void operator()(VM vm, In delay, Out result) {
       nativeint intDelay = 0;
-      MOZART_GET_ARG(intDelay, delay, MOZART_STR("integer"));
+      getArgument(vm, intDelay, delay, MOZART_STR("integer"));
 
       if (intDelay <= 0) {
         result = build(vm, unit);
@@ -55,8 +55,6 @@ public:
         result = Variable::build(vm, vm->getTopLevelSpace());
         vm->setAlarm(intDelay, RichNode(result).getStableRef(vm));
       }
-
-      return OpResult::proceed();
     }
   };
 
@@ -64,9 +62,8 @@ public:
   public:
     GetReferenceTime(): Builtin("getReferenceTime") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result = build(vm, vm->getReferenceTime());
-      return OpResult::proceed();
     }
   };
 };

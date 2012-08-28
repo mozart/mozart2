@@ -37,13 +37,11 @@ namespace mozart {
 // Tuples //
 ////////////
 
-OpResult requireLiteral(VM vm, RichNode label) {
+void requireLiteral(VM vm, RichNode label) {
   bool isLiteral = false;
-  MOZART_CHECK_OPRESULT(Literal(label).isLiteral(vm, isLiteral));
+  Literal(label).isLiteral(vm, isLiteral);
 
-  if (isLiteral)
-    return OpResult::proceed();
-  else
+  if (!isLiteral)
     return raiseTypeError(vm, MOZART_STR("literal"), label);
 }
 
@@ -52,71 +50,52 @@ namespace internal {
   bool isPipeAtom(VM vm, RichNode label) {
     using namespace patternmatching;
 
-    OpResult res = OpResult::proceed();
-    return matches(vm, res, label, vm->coreatoms.pipe);
+    return matches(vm, label, vm->coreatoms.pipe);
   }
 }
 
 inline
-OpResult makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
-  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+void makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
+  requireLiteral(vm, label);
 
   if (width == 0) {
     result.copy(vm, label);
-    return OpResult::proceed();
+  } else if ((width == 2) && internal::isPipeAtom(vm, label)) {
+    result = buildCons(vm, OptVar::build(vm), OptVar::build(vm));
+  } else {
+    result = Tuple::build(vm, width, label);
+    auto tuple = RichNode(result).as<Tuple>();
+
+    for (size_t i = 0; i < width; i++)
+      tuple.getElement(i)->init(vm, OptVar::build(vm));
   }
-
-  if ((width == 2) && internal::isPipeAtom(vm, label)) {
-    UnstableNode head = OptVar::build(vm);
-    UnstableNode tail = OptVar::build(vm);
-    result = Cons::build(vm, head, tail);
-
-    return OpResult::proceed();
-  }
-
-  result = Tuple::build(vm, width, label);
-  auto tuple = RichNode(result).as<Tuple>();
-
-  for (size_t i = 0; i < width; i++)
-    tuple.getElement(i)->init(vm, OptVar::build(vm));
-
-  return OpResult::proceed();
 }
 
 template <class T>
 inline
-OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
-                           size_t width, T elements[]) {
+void buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
+                       size_t width, T elements[]) {
   return buildTupleDynamic(vm, result, label, width, elements, identity<T&>);
 }
 
 template <class T, class ElemToValue>
 inline
-OpResult buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
-                           size_t width, T elements[],
-                           ElemToValue elemToValue) {
-  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+void buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
+                       size_t width, T elements[],
+                       ElemToValue elemToValue) {
+  requireLiteral(vm, label);
 
   if (width == 0) {
     result.copy(vm, label);
-    return OpResult::proceed();
+  } else if ((width == 2) && internal::isPipeAtom(vm, label)) {
+    result = buildCons(vm, elemToValue(elements[0]), elemToValue(elements[1]));
+  } else {
+    result = Tuple::build(vm, width, label);
+    auto tuple = RichNode(result).as<Tuple>();
+
+    for (size_t i = 0; i < width; i++)
+      tuple.getElement(i)->init(vm, elemToValue(elements[i]));
   }
-
-  if ((width == 2) && internal::isPipeAtom(vm, label)) {
-    UnstableNode head(vm, elemToValue(elements[0]));
-    UnstableNode tail(vm, elemToValue(elements[1]));
-    result = Cons::build(vm, head, tail);
-
-    return OpResult::proceed();
-  }
-
-  result = Tuple::build(vm, width, label);
-  auto tuple = RichNode(result).as<Tuple>();
-
-  for (size_t i = 0; i < width; i++)
-    tuple.getElement(i)->init(vm, elemToValue(elements[i]));
-
-  return OpResult::proceed();
 }
 
 ///////////
@@ -164,10 +143,8 @@ namespace internal {
   bool isTupleFeatureArray(VM vm, size_t width, T elements[]) {
     using namespace patternmatching;
 
-    OpResult res = OpResult::proceed();
-
     for (size_t i = 0; i < width; i++) {
-      if (!matches(vm, res, featureOf(elements[i]), i+1))
+      if (!matches(vm, featureOf(elements[i]), i+1))
         return false;
     }
 
@@ -187,16 +164,16 @@ void sortFeatures(VM vm, size_t width, T features[]) {
 }
 
 template <class T>
-OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
-                           RichNode label, size_t width, T elements[]) {
+void buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
+                       RichNode label, size_t width, T elements[]) {
   using internal::featureOf;
 
   // Check that the label is a literal
-  MOZART_CHECK_OPRESULT(requireLiteral(vm, label));
+  requireLiteral(vm, label);
 
   // Check that all features are features
   for (size_t i = 0; i < width; i++)
-    MOZART_REQUIRE_FEATURE(featureOf(elements[i]));
+    requireFeature(vm, featureOf(elements[i]));
 
   // Sort the features
   sortFeatures(vm, width, elements);
@@ -204,7 +181,7 @@ OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
   // Check if the corresponding record should be a Tuple instead
   isTuple = internal::isTupleFeatureArray(vm, width, elements);
   if (isTuple)
-    return OpResult::proceed();
+    return;
 
   // Make the arity
   result = Arity::build(vm, width, label);
@@ -212,18 +189,15 @@ OpResult buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
 
   for (size_t i = 0; i < width; i++)
     arity.getElement(i)->init(vm, featureOf(elements[i]));
-
-  return OpResult::proceed();
 }
 
-OpResult buildRecordDynamic(VM vm, UnstableNode& result,
-                            RichNode label, size_t width,
-                            UnstableField elements[]) {
+void buildRecordDynamic(VM vm, UnstableNode& result,
+                        RichNode label, size_t width,
+                        UnstableField elements[]) {
   // Make the arity - this sorts elements along the way
   bool isTuple = false;
   UnstableNode arity;
-  MOZART_CHECK_OPRESULT(buildArityDynamic(
-    vm, isTuple, arity, label, width, elements));
+  buildArityDynamic(vm, isTuple, arity, label, width, elements);
 
   // Optimized representation for tuples
   if (isTuple) {
@@ -238,8 +212,6 @@ OpResult buildRecordDynamic(VM vm, UnstableNode& result,
   // Fill the elements
   for (size_t i = 0; i < width; i++)
     record.getElement(i)->init(vm, elements[i].value);
-
-  return OpResult::proceed();
 }
 
 }

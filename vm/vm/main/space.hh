@@ -249,7 +249,7 @@ void Space::fail(VM vm) {
   bindStatusVar(vm, build(vm, vm->coreatoms.failed));
 }
 
-OpResult Space::merge(VM vm, Space* dest) {
+bool Space::merge(VM vm, Space* dest) {
   Space* src = this;
 
   assert(vm->getCurrentSpace() == dest);
@@ -266,9 +266,7 @@ OpResult Space::merge(VM vm, Space* dest) {
   }
 
   // Merge constraints
-  bool res = src->installThis(/* isMerge = */ true);
-
-  return res ? OpResult::proceed() : OpResult::fail();
+  return src->installThis(/* isMerge = */ true);
 }
 
 nativeint Space::commit(VM vm, nativeint value) {
@@ -573,15 +571,13 @@ void Space::deinstallThisFailed() {
 bool Space::installThis(bool isMerge) {
   bool result = true;
 
-  for (auto iter = script.begin(); iter != script.end(); ++iter) {
-    OpResult res = unify(vm, iter->left, iter->right);
-
-    if (!res.isProceed()) {
-      assert(res.kind() == OpResult::orFail);
-      fail(vm);
-      result = false;
-      break;
+  try {
+    for (auto iter = script.begin(); iter != script.end(); ++iter) {
+      unify(vm, iter->left, iter->right);
     }
+  } catch (const Fail& exception) {
+    fail(vm);
+    result = false;
   }
 
   script.clear(vm);

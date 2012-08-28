@@ -138,10 +138,10 @@ public:
   std::FILE* getFile(nativeint fd);
 
   inline
-  OpResult getFile(nativeint fd, std::FILE*& result);
+  void getFile(nativeint fd, std::FILE*& result);
 
   inline
-  OpResult getFile(RichNode fd, std::FILE*& result);
+  void getFile(RichNode fd, std::FILE*& result);
 
 // Reference to the virtual machine
 private:
@@ -192,16 +192,16 @@ public:
 ///////////////
 
 inline
-OpResult ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer);
+void ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer);
 
 inline
-OpResult ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer);
+void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer);
 
 inline
-OpResult ozStringToStdString(VM vm, RichNode value, std::string& result);
+void ozStringToStdString(VM vm, RichNode value, std::string& result);
 
 inline
-OpResult stdStringToOzString(VM vm, std::string& value, UnstableNode& result);
+void stdStringToOzString(VM vm, std::string& value, UnstableNode& result);
 
 inline
 std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str);
@@ -210,13 +210,14 @@ inline
 std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str);
 
 inline
-OpResult raiseOSError(VM vm, int errnum);
+void MOZART_NORETURN raiseOSError(VM vm, int errnum);
 
 inline
-OpResult raiseLastOSError(VM vm);
+void MOZART_NORETURN raiseLastOSError(VM vm);
 
 inline
-OpResult raiseSystemError(VM vm, const boost::system::system_error& error);
+void MOZART_NORETURN raiseSystemError(VM vm,
+                                      const boost::system::system_error& error);
 
 } }
 

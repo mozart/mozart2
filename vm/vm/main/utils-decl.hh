@@ -29,6 +29,14 @@
 
 namespace mozart {
 
+template <class T>
+inline
+void getArgument(VM vm, T& argVar, RichNode argValue,
+                 const nchar* expectedType);
+
+inline
+void requireFeature(VM vm, RichNode feature);
+
 /**
  * Apply a function on a list.
  *
@@ -46,19 +54,19 @@ namespace mozart {
  */
 template <class F, class G>
 inline
-OpResult ozListForEach(VM vm, RichNode list, const F& onHead, const G& onTail);
+void ozListForEach(VM vm, RichNode list, const F& onHead, const G& onTail);
 
 template <class F>
 inline
-OpResult ozListForEach(VM vm, RichNode list, const F& onHead,
-                       const nchar* expectedType);
+void ozListForEach(VM vm, RichNode list, const F& onHead,
+                   const nchar* expectedType);
 
 inline
-OpResult ozListLength(VM vm, RichNode list, size_t& result);
+void ozListLength(VM vm, RichNode list, size_t& result);
 
 template <class C>
 inline
-OpResult vsToString(VM vm, RichNode vs, std::basic_string<C>& result);
+void vsToString(VM vm, RichNode vs, std::basic_string<C>& result);
 
 }
 

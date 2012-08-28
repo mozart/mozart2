@@ -59,27 +59,23 @@ int SmallInt::compareFeatures(VM vm, Self right) {
 
 // Comparable ------------------------------------------------------------------
 
-OpResult SmallInt::compare(Self self, VM vm, RichNode right, int& result) {
+void SmallInt::compare(Self self, VM vm, RichNode right, int& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
+  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
 
   result = (value() == rightIntValue) ? 0 :
     (value() < rightIntValue) ? -1 : 1;
-
-  return OpResult::proceed();
 }
 
 // IntegerValue ----------------------------------------------------------------
 
-OpResult SmallInt::equalsInteger(Self self, VM vm, nativeint right,
-                                 bool& result) {
+void SmallInt::equalsInteger(Self self, VM vm, nativeint right, bool& result) {
   result = value() == right;
-  return OpResult::proceed();
 }
 
 // Numeric ---------------------------------------------------------------------
 
-OpResult SmallInt::opposite(Self self, VM vm, UnstableNode& result) {
+void SmallInt::opposite(Self self, VM vm, UnstableNode& result) {
   // Detecting overflow - platform dependent (2's complement)
   if (value() != std::numeric_limits<nativeint>::min()) {
     // No overflow
@@ -88,20 +84,16 @@ OpResult SmallInt::opposite(Self self, VM vm, UnstableNode& result) {
     // Overflow - TODO: create a BigInt
     result = SmallInt::build(vm, 0);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult SmallInt::add(Self self, VM vm, RichNode right,
-                       UnstableNode& result) {
+void SmallInt::add(Self self, VM vm, RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
+  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
 
   return addValue(self, vm, rightIntValue, result);
 }
 
-OpResult SmallInt::addValue(Self self, VM vm, nativeint b,
-                            UnstableNode& result) {
+void SmallInt::addValue(Self self, VM vm, nativeint b, UnstableNode& result) {
   nativeint a = value();
   nativeint c = a + b;
 
@@ -113,20 +105,18 @@ OpResult SmallInt::addValue(Self self, VM vm, nativeint b,
     // Overflow - TODO: create a BigInt
     result = SmallInt::build(vm, 0);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult SmallInt::subtract(Self self, VM vm, RichNode right,
-                            UnstableNode& result) {
+void SmallInt::subtract(Self self, VM vm, RichNode right,
+                        UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
+  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
 
   return subtractValue(self, vm, rightIntValue, result);
 }
 
-OpResult SmallInt::subtractValue(Self self, VM vm, nativeint b,
-                                 UnstableNode& result) {
+void SmallInt::subtractValue(Self self, VM vm, nativeint b,
+                             UnstableNode& result) {
   nativeint a = value();
   nativeint c = a - b;
 
@@ -138,14 +128,12 @@ OpResult SmallInt::subtractValue(Self self, VM vm, nativeint b,
     // Overflow - TODO: create a BigInt
     result = SmallInt::build(vm, 0);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult SmallInt::multiply(Self self, VM vm, RichNode right,
-                            UnstableNode& result) {
+void SmallInt::multiply(Self self, VM vm, RichNode right,
+                        UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
+  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
 
   return multiplyValue(self, vm, rightIntValue, result);
 }
@@ -166,8 +154,8 @@ bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
   return (b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb);
 }
 
-OpResult SmallInt::multiplyValue(Self self, VM vm, nativeint b,
-                                 UnstableNode& result) {
+void SmallInt::multiplyValue(Self self, VM vm, nativeint b,
+                             UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -178,25 +166,21 @@ OpResult SmallInt::multiplyValue(Self self, VM vm, nativeint b,
     // Overflow - TODO: create a BigInt
     result = SmallInt::build(vm, 0);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult SmallInt::divide(Self self, VM vm, RichNode right,
-                          UnstableNode& result) {
+void SmallInt::divide(Self self, VM vm, RichNode right,
+                      UnstableNode& result) {
   return raiseTypeError(vm, MOZART_STR("Float"), self);
 }
 
-OpResult SmallInt::div(Self self, VM vm, RichNode right,
-                       UnstableNode& result) {
+void SmallInt::div(Self self, VM vm, RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
+  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
 
   return divValue(self, vm, rightIntValue, result);
 }
 
-OpResult SmallInt::divValue(Self self, VM vm, nativeint b,
-                            UnstableNode& result) {
+void SmallInt::divValue(Self self, VM vm, nativeint b, UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -207,20 +191,16 @@ OpResult SmallInt::divValue(Self self, VM vm, nativeint b,
     // Overflow - TODO: create a BigInt
     result = SmallInt::build(vm, 0);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult SmallInt::mod(Self self, VM vm, RichNode right,
-                       UnstableNode& result) {
+void SmallInt::mod(Self self, VM vm, RichNode right, UnstableNode& result) {
   nativeint rightIntValue = 0;
-  MOZART_GET_ARG(rightIntValue, right, MOZART_STR("integer"));
+  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
 
   return modValue(self, vm, rightIntValue, result);
 }
 
-OpResult SmallInt::modValue(Self self, VM vm, nativeint b,
-                            UnstableNode& result) {
+void SmallInt::modValue(Self self, VM vm, nativeint b, UnstableNode& result) {
   nativeint a = value();
 
   // Detecting overflow
@@ -231,25 +211,21 @@ OpResult SmallInt::modValue(Self self, VM vm, nativeint b,
     // Overflow - TODO: create a BigInt
     result = SmallInt::build(vm, 0);
   }
-
-  return OpResult::proceed();
 }
 
 // VirtualString ---------------------------------------------------------------
 
-OpResult SmallInt::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void SmallInt::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
 //sink << value();  // doesn't seem to work, don't know why.
   auto str = std::to_string(value());
   size_t length = str.length();
   std::unique_ptr<nchar[]> nStr (new nchar[length]);
   std::copy(str.begin(), str.end(), nStr.get());
   sink.write(nStr.get(), length);
-  return OpResult::proceed();
 }
 
-OpResult SmallInt::vsLength(Self self, VM vm, nativeint& result) {
+void SmallInt::vsLength(Self self, VM vm, nativeint& result) {
   result = (nativeint) std::to_string(value()).length();
-  return OpResult::proceed();
 }
 
 }

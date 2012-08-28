@@ -221,22 +221,22 @@ public:
   // Dottable interface
 
   inline
-  OpResult lookupFeature(Self self, VM vm, RichNode feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, RichNode feature,
+                     bool& found, nullable<UnstableNode&> value);
 
   inline
-  OpResult lookupFeature(Self self, VM vm, nativeint feature,
-                         bool& found, nullable<UnstableNode&> value);
+  void lookupFeature(Self self, VM vm, nativeint feature,
+                     bool& found, nullable<UnstableNode&> value);
 
 public:
   // DotAssignable interface
 
-  OpResult dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
+  void dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
     return dictPut(self, vm, feature, newValue);
   }
 
-  OpResult dotExchange(Self self, VM vm, RichNode feature,
-                       RichNode newValue, UnstableNode& oldValue) {
+  void dotExchange(Self self, VM vm, RichNode feature,
+                   RichNode newValue, UnstableNode& oldValue) {
     return dictExchange(self, vm, feature, newValue, oldValue);
   }
 
@@ -244,50 +244,50 @@ public:
   // DictionaryLike interface
 
   inline
-  OpResult isDictionary(Self self, VM vm, bool& result);
+  void isDictionary(Self self, VM vm, bool& result);
 
   inline
-  OpResult dictIsEmpty(Self self, VM vm, bool& result);
+  void dictIsEmpty(Self self, VM vm, bool& result);
 
   inline
-  OpResult dictMember(Self self, VM vm, RichNode feature, bool& result);
+  void dictMember(Self self, VM vm, RichNode feature, bool& result);
 
   inline
-  OpResult dictGet(Self self, VM vm, RichNode feature, UnstableNode& result);
+  void dictGet(Self self, VM vm, RichNode feature, UnstableNode& result);
 
   inline
-  OpResult dictCondGet(Self self, VM vm, RichNode feature,
-                       RichNode defaultValue, UnstableNode& result);
+  void dictCondGet(Self self, VM vm, RichNode feature,
+                   RichNode defaultValue, UnstableNode& result);
 
   inline
-  OpResult dictPut(Self self, VM vm, RichNode feature, RichNode newValue);
+  void dictPut(Self self, VM vm, RichNode feature, RichNode newValue);
 
   inline
-  OpResult dictExchange(Self self, VM vm, RichNode feature,
+  void dictExchange(Self self, VM vm, RichNode feature,
+                    RichNode newValue, UnstableNode& oldValue);
+
+  inline
+  void dictCondExchange(Self self, VM vm, RichNode feature,
+                        RichNode defaultValue,
                         RichNode newValue, UnstableNode& oldValue);
 
   inline
-  OpResult dictCondExchange(Self self, VM vm, RichNode feature,
-                            RichNode defaultValue,
-                            RichNode newValue, UnstableNode& oldValue);
+  void dictRemove(Self self, VM vm, RichNode feature);
 
   inline
-  OpResult dictRemove(Self self, VM vm, RichNode feature);
+  void dictRemoveAll(Self self, VM vm);
 
   inline
-  OpResult dictRemoveAll(Self self, VM vm);
+  void dictKeys(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult dictKeys(Self self, VM vm, UnstableNode& result);
+  void dictEntries(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult dictEntries(Self self, VM vm, UnstableNode& result);
+  void dictItems(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult dictItems(Self self, VM vm, UnstableNode& result);
-
-  inline
-  OpResult dictClone(Self self, VM vm, UnstableNode& result);
+  void dictClone(Self self, VM vm, UnstableNode& result);
 
 public:
   inline

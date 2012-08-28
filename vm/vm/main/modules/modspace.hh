@@ -45,8 +45,8 @@ public:
   public:
     New(): Builtin("new") {}
 
-    OpResult operator()(VM vm, In target, Out result) {
-      MOZART_CHECK_OPRESULT(expectCallable(vm, target, 1));
+    void operator()(VM vm, In target, Out result) {
+      expectCallable(vm, target, 1);
 
       Space* currentSpace = vm->getCurrentSpace();
 
@@ -61,8 +61,6 @@ public:
 
       // Create the reification of the space
       result = ReifiedSpace::build(vm, space);
-
-      return OpResult::proceed();
     }
   };
 
@@ -70,12 +68,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(SpaceLike(value).isSpace(vm, boolResult));
+      SpaceLike(value).isSpace(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -83,7 +80,7 @@ public:
   public:
     Ask(): Builtin("ask") {}
 
-    OpResult operator()(VM vm, In space, Out result) {
+    void operator()(VM vm, In space, Out result) {
       return SpaceLike(space).askSpace(vm, result);
     }
   };
@@ -92,7 +89,7 @@ public:
   public:
     AskVerbose(): Builtin("askVerbose") {}
 
-    OpResult operator()(VM vm, In space, Out result) {
+    void operator()(VM vm, In space, Out result) {
       return SpaceLike(space).askVerboseSpace(vm, result);
     }
   };
@@ -101,7 +98,7 @@ public:
   public:
     Merge(): Builtin("merge") {}
 
-    OpResult operator()(VM vm, In space, Out result) {
+    void operator()(VM vm, In space, Out result) {
       return SpaceLike(space).mergeSpace(vm, result);
     }
   };
@@ -110,7 +107,7 @@ public:
   public:
     Clone(): Builtin("clone") {}
 
-    OpResult operator()(VM vm, In space, Out result) {
+    void operator()(VM vm, In space, Out result) {
       return SpaceLike(space).cloneSpace(vm, result);
     }
   };
@@ -119,7 +116,7 @@ public:
   public:
     Commit(): Builtin("commit") {}
 
-    OpResult operator()(VM vm, In space, In value) {
+    void operator()(VM vm, In space, In value) {
       return SpaceLike(space).commitSpace(vm, value);
     }
   };
@@ -128,7 +125,7 @@ public:
   public:
     Kill(): Builtin("kill") {}
 
-    OpResult operator()(VM vm, In space) {
+    void operator()(VM vm, In space) {
       return SpaceLike(space).killSpace(vm);
     }
   };
@@ -137,9 +134,9 @@ public:
   public:
     Choose(): Builtin("choose") {}
 
-    OpResult operator()(VM vm, In alts, Out result) {
+    void operator()(VM vm, In alts, Out result) {
       nativeint alternatives = 0;
-      MOZART_GET_ARG(alternatives, alts, MOZART_STR("integer"));
+      getArgument(vm, alternatives, alts, MOZART_STR("integer"));
 
       Space* space = vm->getCurrentSpace();
 
@@ -154,8 +151,6 @@ public:
         space->setDistributor(distributor);
         result.copy(vm, *distributor->getVar());
       }
-
-      return OpResult::proceed();
     }
   };
 };

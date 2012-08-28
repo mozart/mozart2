@@ -129,8 +129,7 @@ namespace {
     UnstableNode defaultNode = build(vm, std::forward<Def>(def));
 
     UnstableNode result;
-    MOZART_ASSERT_PROCEED(builtins::ModValue::CondSelect::builtin()(
-      vm, record, featureNode, defaultNode, result));
+    Dottable(record).condSelect(vm, featureNode, defaultNode, result);
     return result;
   }
 
@@ -139,8 +138,7 @@ namespace {
                                    ProgramCounter PC) {
     atom_t printName;
     UnstableNode debugData;
-    MOZART_ASSERT_PROCEED(
-      Callable(*abstraction).getDebugInfo(vm, printName, debugData));
+    Callable(*abstraction).getDebugInfo(vm, printName, debugData);
 
     UnstableNode kind = build(vm, MOZART_STR("call"));
     UnstableNode data = build(vm, *abstraction);
@@ -214,10 +212,9 @@ void Thread::constructor(VM vm, RichNode abstraction,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  MOZART_ASSERT_PROCEED(Callable(abstraction).getCallInfo(
-    vm, arity, start, Xcount, Gs, Ks));
+  Callable(abstraction).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
-  assert(arity >= 0 && arity == argc);
+  assert(arity == argc);
 
   // Set up
 
@@ -259,16 +256,6 @@ Thread::Thread(GR gr, Thread& from): Runnable(gr, from) {
     gr->copyStableRef(injectedException, from.injectedException);
 }
 
-#define CHECK_OPRESULT_BREAK(operation) \
-  { \
-    ::mozart::OpResult macroTempOpResult = (operation); \
-    if (!macroTempOpResult.isProceed()) { \
-      applyOpResult(vm, macroTempOpResult, preempted, \
-                    abstraction, PC, yregCount, xregs, yregs, gregs, kregs); \
-      break; \
-    } \
-  }
-
 void Thread::run() {
   // Local variable cache of fields
 
@@ -301,12 +288,20 @@ void Thread::run() {
 
   bool preempted = false;
 
+  // Backup of the PC for some complex opcodes
+
+  bool hasBackupPC = false;
+  ProgramCounter backupPC = NullPC;
+
+  // The big try-catch that catches all bad things in the world
+  try {
+
   // Now's the right time to inject an exception that was thrown at us
 
   if (injectedException != nullptr) {
-    applyOpResult(vm, OpResult::raise(vm, *injectedException), preempted,
-                  abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+    auto temp = injectedException;
     injectedException = nullptr;
+    raise(vm, *temp);
   }
 
   // The big loop
@@ -446,48 +441,38 @@ void Thread::run() {
       // Control
 
       case OpCallBuiltin0: {
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(vm));
-
+        BuiltinCallable(KPC(1)).callBuiltin(vm);
         advancePC(1);
         break;
       }
 
       case OpCallBuiltin1: {
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
-          vm, XPC(2)));
-
+        BuiltinCallable(KPC(1)).callBuiltin(vm, XPC(2));
         advancePC(2);
         break;
       }
 
       case OpCallBuiltin2: {
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
-          vm, XPC(2), XPC(3)));
-
+        BuiltinCallable(KPC(1)).callBuiltin(vm, XPC(2), XPC(3));
         advancePC(3);
         break;
       }
 
       case OpCallBuiltin3: {
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
-          vm, XPC(2), XPC(3), XPC(4)));
-
+        BuiltinCallable(KPC(1)).callBuiltin(vm, XPC(2), XPC(3), XPC(4));
         advancePC(4);
         break;
       }
 
       case OpCallBuiltin4: {
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
-          vm, XPC(2), XPC(3), XPC(4), XPC(5)));
-
+        BuiltinCallable(KPC(1)).callBuiltin(vm, XPC(2), XPC(3), XPC(4), XPC(5));
         advancePC(5);
         break;
       }
 
       case OpCallBuiltin5: {
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
-          vm, XPC(2), XPC(3), XPC(4), XPC(5), XPC(6)));
-
+        BuiltinCallable(KPC(1)).callBuiltin(vm, XPC(2), XPC(3), XPC(4), XPC(5),
+                                            XPC(6));
         advancePC(6);
         break;
       }
@@ -499,8 +484,7 @@ void Thread::run() {
         for (size_t i = 0; i < argc; i++)
           args[i] = &XPC(3 + i);
 
-        CHECK_OPRESULT_BREAK(BuiltinCallable(KPC(1)).callBuiltin(
-          vm, argc, args));
+        BuiltinCallable(KPC(1)).callBuiltin(vm, argc, args);
 
         advancePC(2 + argc);
         break;
@@ -644,9 +628,7 @@ void Thread::run() {
 
       case OpCondBranch: {
         BoolOrNotBool testValue = bNotBool;
-
-        CHECK_OPRESULT_BREAK(
-          BooleanValue(XPC(1)).valueOrNotBool(vm, testValue));
+        BooleanValue(XPC(1)).valueOrNotBool(vm, testValue);
 
         int distance;
 
@@ -684,71 +666,61 @@ void Thread::run() {
       // Unification
 
       case OpUnifyXX: {
-        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), XPC(2)));
-
+        unify(vm, XPC(1), XPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyXY: {
-        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), YPC(2)));
-
+        unify(vm, XPC(1), YPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyXK: {
-        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), KPC(2)));
-
+        unify(vm, XPC(1), KPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyXG: {
-        CHECK_OPRESULT_BREAK(unify(vm, XPC(1), GPC(2)));
-
+        unify(vm, XPC(1), GPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyYY: {
-        CHECK_OPRESULT_BREAK(unify(vm, YPC(1), YPC(2)));
-
+        unify(vm, YPC(1), YPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyYG: {
-        CHECK_OPRESULT_BREAK(unify(vm, YPC(1), GPC(2)));
-
+        unify(vm, YPC(1), GPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyYK: {
-        CHECK_OPRESULT_BREAK(unify(vm, YPC(1), KPC(2)));
-
+        unify(vm, YPC(1), KPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyGG: {
-        CHECK_OPRESULT_BREAK(unify(vm, GPC(1), GPC(2)));
-
+        unify(vm, GPC(1), GPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyGK: {
-        CHECK_OPRESULT_BREAK(unify(vm, GPC(1), KPC(2)));
-
+        unify(vm, GPC(1), KPC(2));
         advancePC(2);
         break;
       }
 
       case OpUnifyKK: {
-        CHECK_OPRESULT_BREAK(unify(vm, KPC(1), KPC(2)));
-
+        unify(vm, KPC(1), KPC(2));
         advancePC(2);
         break;
       }
@@ -785,8 +757,8 @@ void Thread::run() {
         auto where = op & OpCreateStructWhereMask;
 
         bool isStoreMode;
-        UnstableNode* writeDest;
-        RichNode readDest;
+        UnstableNode* writeDest = nullptr;
+        RichNode readDest = nullptr;
 
         switch (where) {
           case OpCreateStructStoreX: {
@@ -876,12 +848,10 @@ void Thread::run() {
             *writeDest = std::move(createdStruct);
           } else if (readDest.is<OptVar>()) {
             // Make sure to give an r-value ref, to avoid stabilizing the node
-            MOZART_ASSERT_PROCEED(
-              readDest.as<OptVar>().bind(vm, std::move(createdStruct)));
+            readDest.as<OptVar>().bind(vm, std::move(createdStruct));
             isStoreMode = true;
           } else if (readDest.is<Variable>()) {
-            MOZART_ASSERT_PROCEED(
-              readDest.as<Variable>().bind(vm, createdStruct));
+            readDest.as<Variable>().bind(vm, createdStruct);
             isStoreMode = true;
           } else {
             /* In other cases, the bind() method might look at the contents
@@ -893,8 +863,7 @@ void Thread::run() {
             for (size_t i = 0; i < length; i++)
               array[i].init(vm, OptVar::build(vm));
 
-            CHECK_OPRESULT_BREAK(
-              DataflowVariable(readDest).bind(vm, createdStruct));
+            DataflowVariable(readDest).bind(vm, createdStruct);
           }
         } else { // isStoreMode || readDest.isTransient()
           /* Here, we are in unify mode and the destination is not
@@ -907,12 +876,10 @@ void Thread::run() {
            * structural equality tests of Cons, Tuple and Record.
            */
 
-          OpResult shallowStructResult = OpResult::proceed();
-
           switch (what) {
             case OpCreateStructAbstraction: {
               // Abstractions have token equality, so it's always a failure
-              shallowStructResult = OpResult::fail();
+              fail(vm);
               break;
             }
 
@@ -920,7 +887,7 @@ void Thread::run() {
               if (readDest.is<Cons>()) {
                 array = readDest.as<Cons>().getElementsArray();
               } else {
-                shallowStructResult = OpResult::fail();
+                fail(vm);
               }
               break;
             }
@@ -929,18 +896,16 @@ void Thread::run() {
               if (readDest.is<Tuple>() &&
                   (readDest.as<Tuple>().getWidth() == length)) {
                 bool sameLabel = false;
-                shallowStructResult = equals(
-                  vm, *readDest.as<Tuple>().getLabel(), KPC(1), sameLabel);
+                equals(vm, *readDest.as<Tuple>().getLabel(), KPC(1),
+                       sameLabel);
 
-                if (shallowStructResult.isProceed()) {
-                  if (sameLabel) {
-                    array = readDest.as<Tuple>().getElementsArray();
-                  } else {
-                    shallowStructResult = OpResult::fail();
-                  }
+                if (sameLabel) {
+                  array = readDest.as<Tuple>().getElementsArray();
+                } else {
+                  fail(vm);
                 }
               } else {
-                shallowStructResult = OpResult::fail();
+                fail(vm);
               }
               break;
             }
@@ -949,18 +914,16 @@ void Thread::run() {
               // Don't test the width. It's not needed and usually it succeeds.
               if (readDest.is<Record>()) {
                 bool sameArity = false;
-                shallowStructResult = equals(
-                  vm, *readDest.as<Record>().getArity(), KPC(1), sameArity);
+                equals(vm, *readDest.as<Record>().getArity(), KPC(1),
+                       sameArity);
 
-                if (shallowStructResult.isProceed()) {
-                  if (sameArity) {
-                    array = readDest.as<Record>().getElementsArray();
-                  } else {
-                    shallowStructResult = OpResult::fail();
-                  }
+                if (sameArity) {
+                  array = readDest.as<Record>().getElementsArray();
+                } else {
+                  fail(vm);
                 }
               } else {
-                shallowStructResult = OpResult::fail();
+                fail(vm);
               }
               break;
             }
@@ -970,8 +933,6 @@ void Thread::run() {
               return;
             }
           }
-
-          CHECK_OPRESULT_BREAK(shallowStructResult);
         } // isStoreMode || readDest.isTransient()
 
         /* Now, `length`, `array` and `isStoreMode` are set appropriately,
@@ -1046,31 +1007,32 @@ void Thread::run() {
            * waken up.
            */
 
-          auto savedPC = PC;
-          advancePC(3);
-          OpResult result = OpResult::proceed();
+          backupPC = PC;
+          hasBackupPC = true;
 
-          for (size_t index = 0; result.isProceed() && (index < length); index++) {
+          advancePC(3);
+
+          for (size_t index = 0; index < length; index++) {
             auto subOpCode = *PC;
 
             switch (subOpCode) {
               case SubOpArrayFillX: {
-                result = unify(vm, array[index], XPC(1));
+                unify(vm, array[index], XPC(1));
                 advancePC(1);
                 break;
               }
               case SubOpArrayFillY: {
-                result = unify(vm, array[index], YPC(1));
+                unify(vm, array[index], YPC(1));
                 advancePC(1);
                 break;
               }
               case SubOpArrayFillG: {
-                result = unify(vm, array[index], GPC(1));
+                unify(vm, array[index], GPC(1));
                 advancePC(1);
                 break;
               }
               case SubOpArrayFillK: {
-                result = unify(vm, array[index], KPC(1));
+                unify(vm, array[index], KPC(1));
                 advancePC(1);
                 break;
               }
@@ -1099,11 +1061,7 @@ void Thread::run() {
             }
           }
 
-          if (!result.isProceed()) {
-            PC = savedPC;
-            applyOpResult(vm, result, preempted, abstraction, PC,
-                          yregCount, xregs, yregs, gregs, kregs);
-          }
+          hasBackupPC = false;
         } // isStoreMode
 
         break;
@@ -1113,9 +1071,7 @@ void Thread::run() {
 
       case OpInlineEqualsInteger: {
         bool resultValue = false;
-
-        CHECK_OPRESULT_BREAK(IntegerValue(XPC(1)).equalsInteger(
-          vm, IntPC(2), resultValue));
+        IntegerValue(XPC(1)).equalsInteger(vm, IntPC(2), resultValue);
 
         if (resultValue)
           advancePC(3);
@@ -1135,6 +1091,25 @@ void Thread::run() {
       }
     } // Big switch testing the opcode
   } // Big loop iterating over opcodes
+
+  // The big catches clauses that catch all bad things in the world
+
+  } catch (const Fail& exception) {
+    if (hasBackupPC)
+      PC = backupPC;
+    applyFail(vm, exception,
+              abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+  } catch (const WaitBeforeBase& exception) {
+    if (hasBackupPC)
+      PC = backupPC;
+    applyWaitBefore(vm, exception,
+                    abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+  } catch (const Raise& exception) {
+    if (hasBackupPC)
+      PC = backupPC;
+    applyRaise(vm, exception,
+               abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+  }
 
 #undef IntPC
 #undef XPC
@@ -1173,16 +1148,6 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
   stack.remove_front(vm);
 }
 
-#define CHECK_OPRESULT_RETURN(operation) \
-  do { \
-    ::mozart::OpResult macroTempOpResult = (operation); \
-    if (!macroTempOpResult.isProceed()) { \
-      applyOpResult(vm, macroTempOpResult, preempted, \
-                    abstraction, PC, yregCount, xregs, yregs, gregs, kregs); \
-      return; \
-    } \
-  } while (false)
-
 void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
                   VM vm, StableNode*& abstraction,
                   ProgramCounter& PC, size_t& yregCount,
@@ -1198,18 +1163,20 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  CHECK_OPRESULT_RETURN(Callable(target).getCallInfo(
-    vm, formalArity, start, Xcount, Gs, Ks));
+  Callable(target).getCallInfo(vm, formalArity, start, Xcount, Gs, Ks);
 
   if (actualArity != formalArity) {
     auto actualArgs = vm->newStaticArray<RichNode>(actualArity);
     for (size_t i = 0; i < actualArity; i++)
       actualArgs[i] = (*xregs)[i];
 
-    auto raiseResult = raiseIllegalArity(vm, target, actualArity, actualArgs);
+    auto argumentsList = buildListDynamic(vm, actualArity,
+                                          (RichNode*) actualArgs);
 
     vm->deleteStaticArray<RichNode>(actualArgs, actualArity);
-    CHECK_OPRESULT_RETURN(raiseResult);
+
+    return raiseKernelError(vm, MOZART_STR("arity"),
+                            target, std::move(argumentsList));
   }
 
   advancePC(opcodeArgCount);
@@ -1246,9 +1213,8 @@ void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
                      bool& preempted) {
   // "Just make it work" implementation that always delegates to call()
 
-  if (target.isTransient()) {
-    CHECK_OPRESULT_RETURN(OpResult::waitFor(vm, target));
-  }
+  if (target.isTransient())
+    waitFor(vm, target);
 
   using namespace patternmatching;
 
@@ -1301,19 +1267,16 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
     UnstableNode pattern;
     nativeint jumpOffset = 0;
 
-    OpResult res = OpResult::proceed();
-    if (!matchesSharp(vm, res, patternList[index],
+    if (!matchesSharp(vm, patternList[index],
                       capture(pattern), capture(jumpOffset))) {
       assert(false);
-      CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patternList[index],
-                                           MOZART_STR("pattern")));
+      raiseTypeError(vm, MOZART_STR("pattern"), patternList[index]);
     }
 
     assert(jumpOffset >= 0);
 
     bool matchResult = false;
-    CHECK_OPRESULT_RETURN(mozart::patternMatch(
-      vm, value, pattern, xregs->getArray(), matchResult));
+    mozart::patternMatch(vm, value, pattern, xregs->getArray(), matchResult);
 
     if (matchResult) {
       advancePC(2 + jumpOffset);
@@ -1324,80 +1287,79 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
   advancePC(2);
 }
 
-void Thread::applyOpResult(VM vm, OpResult result, bool& preempted,
-                           StableNode*& abstraction,
-                           ProgramCounter& PC, size_t& yregCount,
-                           XRegArray* xregs,
-                           StaticArray<UnstableNode>& yregs,
-                           StaticArray<StableNode>& gregs,
-                           StaticArray<StableNode>& kregs) {
-  switch (result.kind()) {
-    case OpResult::orProceed: {
-      // Do nothing
-      break;
+void Thread::applyFail(VM vm, const Fail& exception,
+                       StableNode*& abstraction,
+                       ProgramCounter& PC, size_t& yregCount,
+                       XRegArray* xregs,
+                       StaticArray<UnstableNode>& yregs,
+                       StaticArray<StableNode>& gregs,
+                       StaticArray<StableNode>& kregs) {
+  if (!vm->isOnTopLevel()) {
+    vm->getCurrentSpace()->fail(vm);
+  } else {
+    UnstableNode error = buildRecord(
+      vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
+      vm->coreatoms.failure, unit);
+
+    applyRaise(vm, Raise(vm, error),
+               abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+  }
+}
+
+void Thread::applyWaitBefore(VM vm, const WaitBeforeBase& exception,
+                             StableNode*& abstraction,
+                             ProgramCounter& PC, size_t& yregCount,
+                             XRegArray* xregs,
+                             StaticArray<UnstableNode>& yregs,
+                             StaticArray<StableNode>& gregs,
+                             StaticArray<StableNode>& kregs) {
+  RichNode waitee = *exception.getWaiteeNode();
+
+  if (getRaiseOnBlock() && (waitee.is<OptVar>() || waitee.is<Variable>())) {
+    UnstableNode error = buildRecord(
+      vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
+      buildTuple(vm, vm->coreatoms.kernel, MOZART_STR("block"), waitee), unit);
+
+    applyRaise(vm, Raise(vm, error),
+               abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+    return;
+  }
+
+  if (!exception.isQuiet()) {
+    if (waitee.is<FailedValue>()) {
+      applyRaise(vm, Raise(vm, *waitee.as<FailedValue>().getUnderlying()),
+                 abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+      return;
+    } else {
+      DataflowVariable(waitee).markNeeded(vm);
     }
+  }
 
-    case OpResult::orWaitBefore:
-    case OpResult::orWaitQuietBefore: {
-      RichNode waitee = *result.getWaiteeNode();
+  suspendOnVar(vm, waitee);
+}
 
-      if (getRaiseOnBlock() && (waitee.is<OptVar>() || waitee.is<Variable>())) {
-        OpResult blockError = raiseKernelError(vm, MOZART_STR("block"), waitee);
-        return applyOpResult(vm, blockError, preempted,
-                             abstraction, PC, yregCount,
-                             xregs, yregs, gregs, kregs);
-      }
+void Thread::applyRaise(VM vm, const Raise& exception,
+                        StableNode*& abstraction,
+                        ProgramCounter& PC, size_t& yregCount,
+                        XRegArray* xregs,
+                        StaticArray<UnstableNode>& yregs,
+                        StaticArray<StableNode>& gregs,
+                        StaticArray<StableNode>& kregs) {
+  UnstableNode preprocessedException = preprocessException(
+    vm, *exception.getException(), abstraction, PC);
 
-      if (result.kind() != OpResult::orWaitQuietBefore) {
-        if (waitee.is<FailedValue>()) {
-          return applyOpResult(vm, waitee.as<FailedValue>().raiseUnderlying(vm),
-                               preempted, abstraction, PC, yregCount,
-                               xregs, yregs, gregs, kregs);
-        } else {
-          DataflowVariable(waitee).markNeeded(vm);
-        }
-      }
+  bool handlerFound = stack.findExceptionHandler(
+    vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
-      suspendOnVar(vm, waitee);
+  if (handlerFound) {
+    // Store the exception value in X(0)
+    (*xregs)[0].copy(vm, std::move(preprocessedException));
+  } else {
+    // Uncaught exception
+    std::cout << "Uncaught exception" << std::endl;
+    std::cout << repr(vm, preprocessedException, 100) << std::endl;
 
-      if (!isRunnable())
-        preempted = true;
-
-      break;
-    }
-
-    case OpResult::orFail: {
-      if (!vm->isOnTopLevel()) {
-        vm->getCurrentSpace()->fail(vm);
-        preempted = true;
-        return;
-      }
-
-      result = raiseError(vm, vm->coreatoms.failure);
-      // fall through
-    }
-
-    case OpResult::orRaise: {
-      UnstableNode preprocessedException = preprocessException(
-        vm, *result.getExceptionNode(), abstraction, PC);
-
-      bool handlerFound = stack.findExceptionHandler(
-        vm, abstraction, PC, yregCount, yregs, gregs, kregs);
-
-      if (handlerFound) {
-        // Store the exception value in X(0)
-        (*xregs)[0].copy(vm, std::move(preprocessedException));
-      } else {
-        // Uncaught exception
-        std::cout << "Uncaught exception" << std::endl;
-        std::cout << repr(vm, preprocessedException, 100) << std::endl;
-
-        terminate();
-        preempted = true;
-      }
-
-      break;
-    }
+    terminate();
   }
 }
 
@@ -1414,8 +1376,7 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
   bool hasFeatureDebug = false;
   size_t debugFeatureIndex = 0;
 
-  MOZART_ASSERT_PROCEED(arity.lookupFeature(
-    vm, debugAtom, hasFeatureDebug, debugFeatureIndex));
+  arity.lookupFeature(vm, debugAtom, hasFeatureDebug, debugFeatureIndex);
 
   if (!hasFeatureDebug)
     return build(vm, exception);

@@ -45,12 +45,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(Callable(value).isProcedure(vm, boolResult));
+      Callable(value).isProcedure(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -58,12 +57,11 @@ public:
   public:
     Arity(): Builtin("arity") {}
 
-    OpResult operator()(VM vm, In procedure, Out result) {
+    void operator()(VM vm, In procedure, Out result) {
       size_t intResult = 0;
-      MOZART_CHECK_OPRESULT(Callable(procedure).procedureArity(vm, intResult));
+      Callable(procedure).procedureArity(vm, intResult);
 
       result = SmallInt::build(vm, intResult);
-      return OpResult::proceed();
     }
   };
 };

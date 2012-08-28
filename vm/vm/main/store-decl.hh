@@ -142,6 +142,9 @@ public:
   RichNode(UnstableNode& origin);
 
   __attribute__((always_inline))
+  RichNode(std::nullptr_t): _node(nullptr), _isStable(false) {}
+
+  __attribute__((always_inline))
   Type type() {
     return node()->type();
   }

@@ -267,14 +267,13 @@ void BuiltinDef::makeEmulateInlinesOutput(llvm::raw_fd_ostream& to) {
 
   to << "\n";
   to << "case " << inlineOpCode << ": {\n";
-  to << "  CHECK_OPRESULT_BREAK(\n";
-  to << "    ::" << fullCppName << "::builtin()(\n";
-  to << "      vm";
+  to << "  ::" << fullCppName << "::builtin()(\n";
+  to << "    vm";
 
   for (size_t i = 1; i <= params.size(); i++)
     to << ", XPC(" << i << ")";
 
-  to << "));\n";
+  to << ");\n";
   to << "  advancePC(" << params.size() << ");\n";
   to << "  break;\n";
   to << "}\n";

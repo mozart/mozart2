@@ -41,15 +41,13 @@ StableNode* BaseRecord<T>::getElement(Self self, size_t index) {
 }
 
 template <class T>
-OpResult BaseRecord<T>::width(Self self, VM vm, size_t& result) {
+void BaseRecord<T>::width(Self self, VM vm, size_t& result) {
   result = getWidth();
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult BaseRecord<T>::arityList(Self self, VM vm,
-                                  UnstableNode& result) {
-  UnstableNode res = build(vm, vm->coreatoms.nil);
+void BaseRecord<T>::arityList(Self self, VM vm, UnstableNode& result) {
+  UnstableNode res = buildNil(vm);
 
   for (size_t i = getWidth(); i > 0; i--) {
     UnstableNode feature;
@@ -60,27 +58,24 @@ OpResult BaseRecord<T>::arityList(Self self, VM vm,
   }
 
   result = std::move(res);
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult BaseRecord<T>::initElement(Self self, VM vm,
-                                    size_t index, RichNode value) {
+void BaseRecord<T>::initElement(Self self, VM vm, size_t index,
+                                RichNode value) {
   self[index].init(vm, value);
-  return OpResult::proceed();
 }
 
 template <class T>
-OpResult BaseRecord<T>::waitOr(Self self, VM vm,
-                               UnstableNode& result) {
+void BaseRecord<T>::waitOr(Self self, VM vm, UnstableNode& result) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < getArraySize(); i++) {
     RichNode element = self[i];
     if (!element.isTransient()) {
       static_cast<T*>(this)->getFeatureAt(self, vm, i, result);
-      return OpResult::proceed();
+      return;
     } else if (element.is<FailedValue>()) {
-      return OpResult::waitFor(vm, element);
+      return waitFor(vm, element);
     }
   }
 
@@ -95,7 +90,7 @@ OpResult BaseRecord<T>::waitOr(Self self, VM vm,
   }
 
   // Wait for the control variable
-  return OpResult::waitFor(vm, controlVar);
+  return waitFor(vm, controlVar);
 }
 
 ///////////
@@ -148,37 +143,32 @@ void Tuple::getFeatureAt(Self self, VM vm, size_t index,
   result = SmallInt::build(vm, index+1);
 }
 
-OpResult Tuple::label(Self self, VM vm, UnstableNode& result) {
+void Tuple::label(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, _label);
-  return OpResult::proceed();
 }
 
-OpResult Tuple::clone(Self self, VM vm, UnstableNode& result) {
+void Tuple::clone(Self self, VM vm, UnstableNode& result) {
   result = Tuple::build(vm, _width, _label);
 
   auto tuple = RichNode(result).as<Tuple>();
   for (size_t i = 0; i < _width; i++)
     tuple.getElement(i)->init(vm, OptVar::build(vm));
-
-  return OpResult::proceed();
 }
 
-OpResult Tuple::testRecord(Self self, VM vm, RichNode arity, bool& result) {
+void Tuple::testRecord(Self self, VM vm, RichNode arity, bool& result) {
   result = false;
-  return OpResult::proceed();
 }
 
-OpResult Tuple::testTuple(Self self, VM vm, RichNode label, size_t width,
-                          bool& result) {
+void Tuple::testTuple(Self self, VM vm, RichNode label, size_t width,
+                      bool& result) {
   if (width == _width) {
     return mozart::equals(vm, _label, label, result);
   } else {
     result = false;
-    return OpResult::proceed();
   }
 }
 
-OpResult Tuple::testLabel(Self self, VM vm, RichNode label, bool& result) {
+void Tuple::testLabel(Self self, VM vm, RichNode label, bool& result) {
   return mozart::equals(vm, _label, label, result);
 }
 
@@ -192,6 +182,12 @@ void Tuple::printReprToStream(Self self, VM vm, std::ostream& out,
     for (size_t i = 0; i < _width; i++) {
       if (i > 0)
         out << " ";
+
+      if (i >= 10) {
+        out << "...";
+        break;
+      }
+
       out << repr(vm, self[i], depth);
     }
   }
@@ -199,43 +195,37 @@ void Tuple::printReprToStream(Self self, VM vm, std::ostream& out,
   out << ")";
 }
 
-OpResult Tuple::isVirtualString(Self self, VM vm, bool& result) {
+void Tuple::isVirtualString(Self self, VM vm, bool& result) {
   result = false;
   if (hasSharpLabel(vm)) {
     for (size_t i = 0; i < _width; ++ i) {
-      MOZART_CHECK_OPRESULT(VirtualString(self[i]).isVirtualString(vm, result));
+      VirtualString(self[i]).isVirtualString(vm, result);
       if (!result)
-        return OpResult::proceed();
+        return;
     }
     result = true;
   }
-  return OpResult::proceed();
 }
 
-OpResult Tuple::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void Tuple::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   if (!hasSharpLabel(vm))
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
   for (size_t i = 0; i < _width; ++ i) {
-    MOZART_CHECK_OPRESULT(VirtualString(self[i]).toString(vm, sink));
+    VirtualString(self[i]).toString(vm, sink);
   }
-
-  return OpResult::proceed();
 }
 
-OpResult Tuple::vsLength(Self self, VM vm, nativeint& result) {
+void Tuple::vsLength(Self self, VM vm, nativeint& result) {
   if (!hasSharpLabel(vm))
     return raiseTypeError(vm, MOZART_STR("VirtualString"), self);
 
   result = 0;
   for (size_t i = 0; i < _width; ++ i) {
     nativeint thisLength = 0;
-    UnstableNode tempNode (vm, self[i]);
-    MOZART_CHECK_OPRESULT(VirtualString(tempNode).vsLength(vm, thisLength));
+    VirtualString(self[i]).vsLength(vm, thisLength);
     result += thisLength;
   }
-
-  return OpResult::proceed();
 }
 
 bool Tuple::hasSharpLabel(VM vm) {
@@ -276,44 +266,40 @@ void Cons::getValueAt(Self self, VM vm, nativeint feature,
   result.copy(vm, _elements[feature-1]);
 }
 
-OpResult Cons::label(Self self, VM vm, UnstableNode& result) {
+void Cons::label(Self self, VM vm, UnstableNode& result) {
   result = Atom::build(vm, vm->coreatoms.pipe);
-  return OpResult::proceed();
 }
 
-OpResult Cons::width(Self self, VM vm, size_t& result) {
+void Cons::width(Self self, VM vm, size_t& result) {
   result = 2;
-  return OpResult::proceed();
 }
 
-OpResult Cons::arityList(Self self, VM vm, UnstableNode& result) {
+void Cons::arityList(Self self, VM vm, UnstableNode& result) {
   result = buildList(vm, 1, 2);
-  return OpResult::proceed();
 }
 
-OpResult Cons::clone(Self self, VM vm, UnstableNode& result) {
+void Cons::clone(Self self, VM vm, UnstableNode& result) {
   result = buildCons(vm, OptVar::build(vm), OptVar::build(vm));
-  return OpResult::proceed();
 }
 
-OpResult Cons::waitOr(Self self, VM vm, UnstableNode& result) {
+void Cons::waitOr(Self self, VM vm, UnstableNode& result) {
   RichNode head = _elements[0];
   RichNode tail = _elements[1];
 
   // If there is a field which is bound, then return its feature
   if (!head.isTransient()) {
     result = SmallInt::build(vm, 1);
-    return OpResult::proceed();
+    return;
   } else if (!tail.isTransient()) {
     result = SmallInt::build(vm, 2);
-    return OpResult::proceed();
+    return;
   }
 
   // If there is a feature which is a failed value, wait for it
   if (head.is<FailedValue>())
-    return OpResult::waitFor(vm, head);
+    return waitFor(vm, head);
   else if (tail.is<FailedValue>())
-    return OpResult::waitFor(vm, tail);
+    return waitFor(vm, tail);
 
   // Create the control variable
   UnstableNode unstableControlVar = Variable::build(vm);
@@ -325,39 +311,35 @@ OpResult Cons::waitOr(Self self, VM vm, UnstableNode& result) {
   DataflowVariable(tail).addToSuspendList(vm, controlVar);
 
   // Wait for the control variable
-  return OpResult::waitFor(vm, controlVar);
+  return waitFor(vm, controlVar);
 }
 
-OpResult Cons::testRecord(Self self, VM vm, RichNode arity, bool& result) {
+void Cons::testRecord(Self self, VM vm, RichNode arity, bool& result) {
   result = false;
-  return OpResult::proceed();
 }
 
-OpResult Cons::testTuple(Self self, VM vm, RichNode label, size_t width,
-                         bool& result) {
+void Cons::testTuple(Self self, VM vm, RichNode label, size_t width,
+                     bool& result) {
   result = (width == 2) && label.is<Atom>() &&
     (label.as<Atom>().value() == vm->coreatoms.pipe);
-  return OpResult::proceed();
 }
 
-OpResult Cons::testLabel(Self self, VM vm, RichNode label, bool& result) {
+void Cons::testLabel(Self self, VM vm, RichNode label, bool& result) {
   result = label.is<Atom>() && (label.as<Atom>().value() == vm->coreatoms.pipe);
-  return OpResult::proceed();
 }
 
 namespace internal {
 
 template <class F>
 inline
-OpResult withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
+void withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
   return ozListForEach(vm, cons,
-    [&, vm](nativeint c) -> OpResult {
+    [&, vm](nativeint c) {
       if (c < 0 || c >= 256) {
         UnstableNode errNode = SmallInt::build(vm, c);
         return raiseTypeError(vm, MOZART_STR("char"), errNode);
       }
       onChar((char32_t) c);
-      return OpResult::proceed();
     },
     MOZART_STR("VirtualString")
   );
@@ -365,40 +347,34 @@ OpResult withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
 
 }
 
-OpResult Cons::isVirtualString(Self self, VM vm, bool& result) {
-  OpResult res = internal::withConsAsVirtualString(vm, self, [](char32_t){});
-  if (res.isProceed()) {
+void Cons::isVirtualString(Self self, VM vm, bool& result) {
+  // TODO Refactor this, we do not want to catch exceptions
+  try {
+    internal::withConsAsVirtualString(vm, self, [](char32_t){});
     result = true;
-    return res;
-  } else if (res.kind() == OpResult::orRaise) {
+  } catch (const Raise& raise) {
     result = false;
-    return OpResult::proceed();
-  } else {
-    return res;
   }
 }
 
-OpResult Cons::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
-  MOZART_CHECK_OPRESULT(internal::withConsAsVirtualString(vm, self,
+void Cons::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+  internal::withConsAsVirtualString(vm, self,
     [&](char32_t c) {
       nchar buffer[4];
       nativeint length = toUTF(c, buffer);
       sink.write(buffer, length);
     }
-  ));
-
-  return OpResult::proceed();
+  );
 }
 
-OpResult Cons::vsLength(Self self, VM vm, nativeint& result) {
+void Cons::vsLength(Self self, VM vm, nativeint& result) {
   nativeint length = 0;
 
-  MOZART_CHECK_OPRESULT(internal::withConsAsVirtualString(vm, self,
+  internal::withConsAsVirtualString(vm, self,
     [&](char32_t) { ++ length; }
-  ));
+  );
 
   result = length;
-  return OpResult::proceed();
 }
 
 void Cons::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
@@ -445,14 +421,13 @@ bool Arity::equals(Self self, VM vm, Self right, WalkStack& stack) {
   return true;
 }
 
-OpResult Arity::initElement(Self self, VM vm, size_t index, RichNode value) {
+void Arity::initElement(Self self, VM vm, size_t index, RichNode value) {
   self[index].init(vm, value);
-  return OpResult::proceed();
 }
 
-OpResult Arity::lookupFeature(Self self, VM vm, RichNode feature,
-                              bool& found, size_t& index) {
-  MOZART_REQUIRE_FEATURE(feature);
+void Arity::lookupFeature(Self self, VM vm, RichNode feature,
+                          bool& found, size_t& index) {
+  requireFeature(vm, feature);
 
   // Dichotomic search
   size_t lo = 0;
@@ -465,7 +440,7 @@ OpResult Arity::lookupFeature(Self self, VM vm, RichNode feature,
     if (comparison == 0) {
       found = true;
       index = mid;
-      return OpResult::proceed();
+      return;
     } else if (comparison < 0) {
       hi = mid;
     } else {
@@ -474,7 +449,6 @@ OpResult Arity::lookupFeature(Self self, VM vm, RichNode feature,
   }
 
   found = false;
-  return OpResult::proceed();
 }
 
 void Arity::printReprToStream(Self self, VM vm, std::ostream& out,
@@ -541,60 +515,50 @@ void Record::getFeatureAt(Self self, VM vm, size_t index,
   result.copy(vm, *RichNode(_arity).as<Arity>().getElement(index));
 }
 
-OpResult Record::lookupFeature(Self self, VM vm, RichNode feature,
-                               bool& found, nullable<UnstableNode&> value) {
+void Record::lookupFeature(Self self, VM vm, RichNode feature,
+                           bool& found, nullable<UnstableNode&> value) {
   size_t index = 0;
-  MOZART_CHECK_OPRESULT(
-    RichNode(_arity).as<Arity>().lookupFeature(vm, feature, found, index));
+  RichNode(_arity).as<Arity>().lookupFeature(vm, feature, found, index);
 
   if (found && value.isDefined())
     value.get().copy(vm, self[index]);
-
-  return OpResult::proceed();
 }
 
-OpResult Record::lookupFeature(Self self, VM vm, nativeint feature,
-                               bool& found, nullable<UnstableNode&> value) {
+void Record::lookupFeature(Self self, VM vm, nativeint feature,
+                           bool& found, nullable<UnstableNode&> value) {
   UnstableNode featureNode = mozart::build(vm, feature);
   return lookupFeature(self, vm, featureNode, found, value);
 }
 
-OpResult Record::label(Self self, VM vm, UnstableNode& result) {
+void Record::label(Self self, VM vm, UnstableNode& result) {
   result.copy(vm, *RichNode(_arity).as<Arity>().getLabel());
-  return OpResult::proceed();
 }
 
-OpResult Record::clone(Self self, VM vm, UnstableNode& result) {
+void Record::clone(Self self, VM vm, UnstableNode& result) {
   result = Record::build(vm, _width, _arity);
 
   auto record = RichNode(result).as<Record>();
   for (size_t i = 0; i < _width; i++)
     record.getElement(i)->init(vm, OptVar::build(vm));
-
-  return OpResult::proceed();
 }
 
-OpResult Record::testRecord(Self self, VM vm, RichNode arity, bool& result) {
+void Record::testRecord(Self self, VM vm, RichNode arity, bool& result) {
   return mozart::equals(vm, _arity, arity, result);
 }
 
-OpResult Record::testTuple(Self self, VM vm, RichNode label, size_t width,
+void Record::testTuple(Self self, VM vm, RichNode label, size_t width,
                            bool& result) {
   result = false;
-  return OpResult::proceed();
 }
 
-OpResult Record::testLabel(Self self, VM vm, RichNode label, bool& result) {
+void Record::testLabel(Self self, VM vm, RichNode label, bool& result) {
   return mozart::equals(
     vm, *RichNode(_arity).as<Arity>().getLabel(), label, result);
 }
 
 void Record::printReprToStream(Self self, VM vm, std::ostream& out,
                                int depth) {
-  UnstableNode label;
-  MOZART_ASSERT_PROCEED(this->label(self, vm, label));
-
-  out << repr(vm, label, depth) << "(";
+  out << repr(vm, *RichNode(_arity).as<Arity>().getLabel(), depth) << "(";
 
   if (depth <= 1) {
     out << "...";
@@ -602,6 +566,11 @@ void Record::printReprToStream(Self self, VM vm, std::ostream& out,
     for (size_t i = 0; i < _width; i++) {
       if (i > 0)
         out << " ";
+
+      if (i >= 10) {
+        out << "...";
+        break;
+      }
 
       UnstableNode feature;
       getFeatureAt(self, vm, i, feature);
@@ -623,13 +592,13 @@ void Chunk::create(StableNode*& self, VM vm, GR gr, Self from) {
   gr->copyStableRef(self, from.get().getUnderlying());
 }
 
-OpResult Chunk::lookupFeature(Self self, VM vm, RichNode feature,
-                              bool& found, nullable<UnstableNode&> value) {
+void Chunk::lookupFeature(Self self, VM vm, RichNode feature,
+                          bool& found, nullable<UnstableNode&> value) {
   return Dottable(*_underlying).lookupFeature(vm, feature, found, value);
 }
 
-OpResult Chunk::lookupFeature(Self self, VM vm, nativeint feature,
-                              bool& found, nullable<UnstableNode&> value) {
+void Chunk::lookupFeature(Self self, VM vm, nativeint feature,
+                          bool& found, nullable<UnstableNode&> value) {
   return Dottable(*_underlying).lookupFeature(vm, feature, found, value);
 }
 

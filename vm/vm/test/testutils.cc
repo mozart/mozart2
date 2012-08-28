@@ -49,20 +49,6 @@ std::unique_ptr<mozart::VirtualMachineEnvironment> makeTestEnvironment() {
   return std::unique_ptr<TestEnvironment>(new TestEnvironment());
 }
 
-bool mozart::MozartTest::EXPECT_RAISE(const BaseLString<nchar>& label,
-                                      OpResult result) const {
-  EXPECT_EQ(OpResult::orRaise, result.kind());
-  if (OpResult::orRaise != result.kind())
-    return false;
-
-  RichNode excNode = *result.getExceptionNode();
-  UnstableNode labelNode;
-  if (!EXPECT_PROCEED(RecordLike(excNode).label(vm, labelNode)))
-    return false;
-
-  return EXPECT_EQ_ATOM(label, labelNode);
-}
-
 namespace mozart { namespace mut {
 
 template <class C>

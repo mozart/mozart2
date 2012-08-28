@@ -45,29 +45,25 @@ bool ReifiedThread::equals(VM vm, Self right) {
   return _runnable == right.get()._runnable;
 }
 
-OpResult ReifiedThread::wakeUp(VM vm) {
+void ReifiedThread::wakeUp(VM vm) {
   if (!_runnable->isRunnable())
     _runnable->resume();
-  return OpResult::proceed();
 }
 
 bool ReifiedThread::shouldWakeUpUnderSpace(VM vm, Space* space) {
   return _runnable->getSpace()->isAncestor(space);
 }
 
-OpResult ReifiedThread::getThreadPriority(VM vm, ThreadPriority& result) {
+void ReifiedThread::getThreadPriority(VM vm, ThreadPriority& result) {
   result = _runnable->getPriority();
-  return OpResult::proceed();
 }
 
-OpResult ReifiedThread::setThreadPriority(VM vm, ThreadPriority priority) {
+void ReifiedThread::setThreadPriority(VM vm, ThreadPriority priority) {
   _runnable->setPriority(priority);
-  return OpResult::proceed();
 }
 
-OpResult ReifiedThread::injectException(VM vm, RichNode exception) {
+void ReifiedThread::injectException(VM vm, RichNode exception) {
   _runnable->injectException(exception.getStableRef(vm));
-  return OpResult::proceed();
 }
 
 }

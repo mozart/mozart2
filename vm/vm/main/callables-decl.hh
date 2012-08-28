@@ -80,9 +80,8 @@ public:
 public:
   // BuiltinCallable interface
 
-  OpResult isBuiltin(VM vm, bool& result) {
+  void isBuiltin(VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   /**
@@ -92,42 +91,39 @@ public:
    * @param args   Actual parameters
    */
   inline
-  OpResult callBuiltin(Self self, VM vm, size_t argc, UnstableNode* args[]);
+  void callBuiltin(Self self, VM vm, size_t argc, UnstableNode* args[]);
 
   template <class... Args>
   inline
-  OpResult callBuiltin(Self self, VM vm, Args&&... args);
+  void callBuiltin(Self self, VM vm, Args&&... args);
 
-  OpResult getBuiltin(RichNode self, VM vm, builtins::BaseBuiltin*& result) {
+  void getBuiltin(RichNode self, VM vm, builtins::BaseBuiltin*& result) {
     result = _builtin;
-    return OpResult::proceed();
   }
 
 public:
   // Callable interface
 
-  OpResult isCallable(Self self, VM vm, bool& result) {
+  void isCallable(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
-  OpResult isProcedure(Self self, VM vm, bool& result) {
+  void isProcedure(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult procedureArity(Self self, VM vm, size_t& result);
+  void procedureArity(Self self, VM vm, size_t& result);
 
   inline
-  OpResult getCallInfo(Self self, VM vm, size_t& arity,
-                       ProgramCounter& start, size_t& Xcount,
-                       StaticArray<StableNode>& Gs,
-                       StaticArray<StableNode>& Ks);
+  void getCallInfo(Self self, VM vm, size_t& arity,
+                   ProgramCounter& start, size_t& Xcount,
+                   StaticArray<StableNode>& Gs,
+                   StaticArray<StableNode>& Ks);
 
   inline
-  OpResult getDebugInfo(Self self, VM vm,
-                        atom_t& printName, UnstableNode& debugData);
+  void getDebugInfo(Self self, VM vm,
+                    atom_t& printName, UnstableNode& debugData);
 public:
   // Miscellaneous
 
@@ -184,23 +180,21 @@ public:
   // ArrayInitializer interface
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+  void initElement(Self self, VM vm, size_t index, RichNode value);
 
 public:
   // Callable interface
 
-  OpResult isCallable(Self self, VM vm, bool& result) {
+  void isCallable(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
-  OpResult isProcedure(Self self, VM vm, bool& result) {
+  void isProcedure(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult procedureArity(Self self, VM vm, size_t& result);
+  void procedureArity(Self self, VM vm, size_t& result);
 
   /**
    * Get the information needed to call this abstraction
@@ -212,14 +206,14 @@ public:
    * @param Ks       Output: K registers
    */
   inline
-  OpResult getCallInfo(Self self, VM vm, size_t& arity,
-                       ProgramCounter& start, size_t& Xcount,
-                       StaticArray<StableNode>& Gs,
-                       StaticArray<StableNode>& Ks);
+  void getCallInfo(Self self, VM vm, size_t& arity,
+                   ProgramCounter& start, size_t& Xcount,
+                   StaticArray<StableNode>& Gs,
+                   StaticArray<StableNode>& Ks);
 
   inline
-  OpResult getDebugInfo(Self self, VM vm,
-                        atom_t& printName, UnstableNode& debugData);
+  void getDebugInfo(Self self, VM vm,
+                    atom_t& printName, UnstableNode& debugData);
 
 public:
   // Miscellaneous
@@ -229,11 +223,11 @@ public:
 
 private:
   inline
-  OpResult ensureCodeAreaCacheValid(VM vm);
+  void ensureCodeAreaCacheValid(VM vm);
 
   __attribute__((noinline))
   inline
-  OpResult fillCodeAreaCache(VM vm);
+  void fillCodeAreaCache(VM vm);
 
 private:
   StableNode _body;

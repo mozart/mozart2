@@ -22,42 +22,81 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODATOM_H
-#define __MODATOM_H
+#ifndef __EXCEPTIONS_DECL_H
+#define __EXCEPTIONS_DECL_H
 
-#include "../mozartcore.hh"
-
-#ifndef MOZART_GENERATOR
+#include "core-forward-decl.hh"
+#include "store-decl.hh"
 
 namespace mozart {
 
-namespace builtins {
-
-/////////////////
-// Atom module //
-/////////////////
-
-class ModAtom: public Module {
-public:
-  ModAtom(): Module("Atom") {}
-
-  class Is: public Builtin<Is> {
-  public:
-    Is(): Builtin("is") {}
-
-    void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      AtomLike(value).isAtom(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
-    }
-  };
+/** Base class for Mozart exceptions */
+class Exception {
 };
 
+class Fail: public Exception {
+public:
+  Fail(VM vm) {}
+};
+
+class WaitBeforeBase: public Exception {
+public:
+  WaitBeforeBase(VM vm, RichNode waitee, bool quiet):
+    _waitee(waitee.getStableRef(vm)), _quiet(quiet) {}
+
+  StableNode* getWaiteeNode() const {
+    return _waitee;
+  }
+
+  bool isQuiet() const {
+    return _quiet;
+  }
+private:
+  StableNode* _waitee;
+  bool _quiet;
+};
+
+class WaitBefore: public WaitBeforeBase {
+public:
+  WaitBefore(VM vm, RichNode waitee): WaitBeforeBase(vm, waitee, false) {}
+};
+
+class WaitQuietBefore: public WaitBeforeBase {
+public:
+  WaitQuietBefore(VM vm, RichNode waitee): WaitBeforeBase(vm, waitee, true) {}
+};
+
+class Raise: public Exception {
+public:
+  Raise(VM vm, RichNode exception): _exception(exception.getStableRef(vm)) {}
+
+  StableNode* getException() const {
+    return _exception;
+  }
+private:
+  StableNode* _exception;
+};
+
+inline
+void MOZART_NORETURN fail(VM vm) {
+  throw Fail(vm);
+}
+
+inline
+void MOZART_NORETURN waitFor(VM vm, RichNode waitee) {
+  throw WaitBefore(vm, waitee);
+}
+
+inline
+void MOZART_NORETURN waitQuietFor(VM vm, RichNode waitee) {
+  throw WaitQuietBefore(vm, waitee);
+}
+
+inline
+void MOZART_NORETURN raise(VM vm, RichNode exception) {
+  throw Raise(vm, exception);
 }
 
 }
 
-#endif // MOZART_GENERATOR
-
-#endif // __MODATOM_H
+#endif // __EXCEPTIONS_DECL_H

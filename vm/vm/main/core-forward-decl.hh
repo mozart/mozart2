@@ -36,6 +36,8 @@
 #include <cstdint>
 #include <ostream>
 
+#define MOZART_NORETURN __attribute__((noreturn))
+
 namespace mozart {
 
 typedef intptr_t nativeint;

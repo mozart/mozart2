@@ -45,17 +45,16 @@ public:
   public:
     New(): Builtin("new") {}
 
-    OpResult operator()(VM vm, In low, In high, In initValue, Out result) {
+    void operator()(VM vm, In low, In high, In initValue, Out result) {
       nativeint intLow = 0, intHigh = 0;
-      MOZART_GET_ARG(intLow, low, MOZART_STR("integer"));
-      MOZART_GET_ARG(intHigh, high, MOZART_STR("integer"));
+      getArgument(vm, intLow, low, MOZART_STR("integer"));
+      getArgument(vm, intHigh, high, MOZART_STR("integer"));
 
       nativeint width = intHigh - intLow + 1;
       if (width < 0)
         return raise(vm, MOZART_STR("negativeArraySize"));
 
       result = Array::build(vm, (size_t) width, intLow, initValue);
-      return OpResult::proceed();
     }
   };
 
@@ -63,12 +62,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(ArrayLike(value).isArray(vm, boolResult));
+      ArrayLike(value).isArray(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -76,7 +74,7 @@ public:
   public:
     Low(): Builtin("low") {}
 
-    OpResult operator()(VM vm, In array, Out result) {
+    void operator()(VM vm, In array, Out result) {
       return ArrayLike(array).arrayLow(vm, result);
     }
   };
@@ -85,7 +83,7 @@ public:
   public:
     High(): Builtin("high") {}
 
-    OpResult operator()(VM vm, In array, Out result) {
+    void operator()(VM vm, In array, Out result) {
       return ArrayLike(array).arrayHigh(vm, result);
     }
   };
@@ -94,7 +92,7 @@ public:
   public:
     Get(): Builtin("get") {}
 
-    OpResult operator()(VM vm, In array, In index, Out result) {
+    void operator()(VM vm, In array, In index, Out result) {
       return ArrayLike(array).arrayGet(vm, index, result);
     }
   };
@@ -103,7 +101,7 @@ public:
   public:
     Put(): Builtin("put") {}
 
-    OpResult operator()(VM vm, In array, In index, In newValue) {
+    void operator()(VM vm, In array, In index, In newValue) {
       return ArrayLike(array).arrayPut(vm, index, newValue);
     }
   };
@@ -112,7 +110,7 @@ public:
   public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
-    OpResult operator()(VM vm, In array, In index, In newValue, Out oldValue) {
+    void operator()(VM vm, In array, In index, In newValue, Out oldValue) {
       return ArrayLike(array).arrayExchange(vm, index, newValue, oldValue);
     }
   };

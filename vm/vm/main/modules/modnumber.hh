@@ -45,12 +45,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(Numeric(value).isNumber(vm, boolResult));
+      Numeric(value).isNumber(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -58,7 +57,7 @@ public:
   public:
     Opposite(): Builtin("~") {}
 
-    OpResult operator()(VM vm, In operand, Out result) {
+    void operator()(VM vm, In operand, Out result) {
       return Numeric(operand).opposite(vm, result);
     }
   };
@@ -67,7 +66,7 @@ public:
   public:
     Add(): Builtin("+") {}
 
-    OpResult operator()(VM vm, In left, In right, Out result) {
+    void operator()(VM vm, In left, In right, Out result) {
       return Numeric(left).add(vm, right, result);
     }
   };
@@ -76,7 +75,7 @@ public:
   public:
     Subtract(): Builtin("-") {}
 
-    OpResult operator()(VM vm, In left, In right, Out result) {
+    void operator()(VM vm, In left, In right, Out result) {
       return Numeric(left).subtract(vm, right, result);
     }
   };
@@ -85,7 +84,7 @@ public:
   public:
     Multiply(): Builtin("*") {}
 
-    OpResult operator()(VM vm, In left, In right, Out result) {
+    void operator()(VM vm, In left, In right, Out result) {
       return Numeric(left).multiply(vm, right, result);
     }
   };

@@ -45,12 +45,10 @@ public:
   public:
     Create(): Builtin("create") {}
 
-    OpResult operator()(VM vm, In target) {
-      MOZART_CHECK_OPRESULT(expectCallable(vm, target, 0));
+    void operator()(VM vm, In target) {
+      expectCallable(vm, target, 0);
 
       new (vm) Thread(vm, vm->getCurrentSpace(), target);
-
-      return OpResult::proceed();
     }
   };
 
@@ -58,12 +56,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(ThreadLike(value).isThread(vm, boolResult));
+      ThreadLike(value).isThread(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 
@@ -71,9 +68,8 @@ public:
   public:
     This(): Builtin("this") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result = ReifiedThread::build(vm, vm->getCurrentThread());
-      return OpResult::proceed();
     }
   };
 
@@ -81,9 +77,9 @@ public:
   public:
     GetPriority(): Builtin("getPriority") {}
 
-    OpResult operator()(VM vm, In thread, Out result) {
+    void operator()(VM vm, In thread, Out result) {
       ThreadPriority prio = tpMiddle;
-      MOZART_CHECK_OPRESULT(ThreadLike(thread).getThreadPriority(vm, prio));
+      ThreadLike(thread).getThreadPriority(vm, prio);
 
       switch (prio) {
         case tpLow: result = build(vm, MOZART_STR("low")); break;
@@ -92,8 +88,6 @@ public:
 
         default: assert(false);
       }
-
-      return OpResult::proceed();
     }
   };
 
@@ -101,21 +95,19 @@ public:
   public:
     SetPriority(): Builtin("setPriority") {}
 
-    OpResult operator()(VM vm, In thread, In priority) {
+    void operator()(VM vm, In thread, In priority) {
       using namespace patternmatching;
 
       ThreadPriority prio = tpMiddle;
-      OpResult res = OpResult::proceed();
 
-      if (matches(vm, res, priority, MOZART_STR("low"))) {
+      if (matches(vm, priority, MOZART_STR("low"))) {
         prio = tpLow;
-      } else if (matches(vm, res, priority, MOZART_STR("medium"))) {
+      } else if (matches(vm, priority, MOZART_STR("medium"))) {
         prio = tpMiddle;
-      } else if (matches(vm, res, priority, MOZART_STR("high"))) {
+      } else if (matches(vm, priority, MOZART_STR("high"))) {
         prio = tpHi;
       } else {
-        return matchTypeError(vm, res, priority,
-                              MOZART_STR("low, medium or high"));
+        return raiseTypeError(vm, MOZART_STR("low, medium or high"), priority);
       }
 
       return ThreadLike(thread).setThreadPriority(vm, prio);
@@ -126,7 +118,7 @@ public:
   public:
     InjectException(): Builtin("injectException") {}
 
-    OpResult operator()(VM vm, In thread, In exception) {
+    void operator()(VM vm, In thread, In exception) {
       return ThreadLike(thread).injectException(vm, exception);
     }
   };

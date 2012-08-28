@@ -65,21 +65,20 @@ public:
   }
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+  void initElement(Self self, VM vm, size_t index, RichNode value);
 
-  OpResult isCodeAreaProvider(VM vm, bool& result) {
+  void isCodeAreaProvider(VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult getCodeAreaInfo(Self self, VM vm, size_t& arity,
-                           ProgramCounter& start, size_t& Xcount,
-                           StaticArray<StableNode>& Ks);
+  void getCodeAreaInfo(Self self, VM vm, size_t& arity,
+                       ProgramCounter& start, size_t& Xcount,
+                       StaticArray<StableNode>& Ks);
 
   inline
-  OpResult getCodeAreaDebugInfo(Self self, VM vm,
-                                atom_t& printName, UnstableNode& debugData);
+  void getCodeAreaDebugInfo(Self self, VM vm,
+                            atom_t& printName, UnstableNode& debugData);
 private:
   void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {
     _codeBlock = new (vm) ByteCode[size / sizeof(ByteCode)];

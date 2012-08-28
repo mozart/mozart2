@@ -75,54 +75,46 @@ struct Dottable: public BaseDottable {
   template <class T>
   Dottable(BaseSelf<T> self): BaseDottable(self) {}
 
-  OpResult dot(VM vm, RichNode feature, UnstableNode& result) {
+  void dot(VM vm, RichNode feature, UnstableNode& result) {
     bool found = false;
-    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+    lookupFeature(vm, feature, found, result);
 
-    if (lookupResult.isProceed() && !found)
+    if (!found)
       return raise(vm, vm->coreatoms.illegalFieldSelection, _self, feature);
-    else
-      return lookupResult;
   }
 
-  OpResult dot(VM vm, nativeint feature, UnstableNode& result) {
+  void dot(VM vm, nativeint feature, UnstableNode& result) {
     bool found = false;
-    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+    lookupFeature(vm, feature, found, result);
 
-    if (lookupResult.isProceed() && !found)
+    if (!found)
       return raise(vm, vm->coreatoms.illegalFieldSelection, _self, feature);
-    else
-      return lookupResult;
   }
 
-  OpResult hasFeature(VM vm, RichNode feature, bool& result) {
-    return lookupFeature(vm, feature, result, nullptr);
+  void hasFeature(VM vm, RichNode feature, bool& result) {
+    lookupFeature(vm, feature, result, nullptr);
   }
 
-  OpResult hasFeature(VM vm, nativeint feature, bool& result) {
-    return lookupFeature(vm, feature, result, nullptr);
+  void hasFeature(VM vm, nativeint feature, bool& result) {
+    lookupFeature(vm, feature, result, nullptr);
   }
 
-  OpResult condSelect(VM vm, RichNode feature, RichNode defaultResult,
-                      UnstableNode& result) {
+  void condSelect(VM vm, RichNode feature, RichNode defaultResult,
+                  UnstableNode& result) {
     bool found = false;
-    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+    lookupFeature(vm, feature, found, result);
 
-    if (lookupResult.isProceed() && !found)
+    if (!found)
       result.copy(vm, defaultResult);
-
-    return lookupResult;
   }
 
-  OpResult condSelect(VM vm, nativeint feature, RichNode defaultResult,
-                      UnstableNode& result) {
+  void condSelect(VM vm, nativeint feature, RichNode defaultResult,
+                  UnstableNode& result) {
     bool found = false;
-    OpResult lookupResult = lookupFeature(vm, feature, found, result);
+    lookupFeature(vm, feature, found, result);
 
-    if (lookupResult.isProceed() && !found)
+    if (!found)
       result.copy(vm, defaultResult);
-
-    return lookupResult;
   }
 };
 

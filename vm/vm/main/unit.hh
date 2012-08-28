@@ -48,14 +48,12 @@ int Unit::compareFeatures(VM vm, Self right) {
   return 0;
 }
 
-OpResult Unit::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void Unit::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << MOZART_STR("unit");
-  return OpResult::proceed();
 }
 
-OpResult Unit::vsLength(Self self, VM vm, nativeint& result) {
+void Unit::vsLength(Self self, VM vm, nativeint& result) {
   result = 4;
-  return OpResult::proceed();
 }
 
 }

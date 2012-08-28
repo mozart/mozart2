@@ -45,9 +45,8 @@ public:
   public:
     New(): Builtin("new") {}
 
-    OpResult operator()(VM vm, Out result) {
+    void operator()(VM vm, Out result) {
       result = OptName::build(vm);
-      return OpResult::proceed();
     }
   };
 
@@ -55,13 +54,12 @@ public:
   public:
     NewUnique(): Builtin("newUnique") {}
 
-    OpResult operator()(VM vm, In atom, Out result) {
+    void operator()(VM vm, In atom, Out result) {
       bool isAtom = false;
-      MOZART_CHECK_OPRESULT(RecordLike(atom).isRecord(vm, isAtom));
+      RecordLike(atom).isRecord(vm, isAtom);
 
       if (isAtom) {
         result = UniqueName::build(vm, unique_name_t(atom.as<Atom>().value()));
-        return OpResult::proceed();
       } else {
         return raiseTypeError(vm, MOZART_STR("Atom"), atom);
       }
@@ -72,13 +70,12 @@ public:
   public:
     NewNamed(): Builtin("newNamed") {}
 
-    OpResult operator()(VM vm, In atom, Out result) {
+    void operator()(VM vm, In atom, Out result) {
       bool isAtom = false;
-      MOZART_CHECK_OPRESULT(RecordLike(atom).isRecord(vm, isAtom));
+      RecordLike(atom).isRecord(vm, isAtom);
 
       if (isAtom) {
         result = NamedName::build(vm, atom);
-        return OpResult::proceed();
       } else {
         return raiseTypeError(vm, MOZART_STR("Atom"), atom);
       }
@@ -89,12 +86,11 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    OpResult operator()(VM vm, In value, Out result) {
+    void operator()(VM vm, In value, Out result) {
       bool boolResult = false;
-      MOZART_CHECK_OPRESULT(NameLike(value).isName(vm, boolResult));
+      NameLike(value).isName(vm, boolResult);
 
       result = Boolean::build(vm, boolResult);
-      return OpResult::proceed();
     }
   };
 };

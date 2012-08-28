@@ -63,14 +63,13 @@ public:
   // PotentialFeature interface
 
   inline
-  OpResult makeFeature(Self self, VM vm);
+  void makeFeature(Self self, VM vm);
 
 public:
   // NameLike interface
 
-  OpResult isName(Self self, VM vm, bool& result) {
+  void isName(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
 public:
@@ -124,9 +123,8 @@ public:
 public:
   // NameLike interface
 
-  OpResult isName(Self self, VM vm, bool& result) {
+  void isName(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
 public:
@@ -189,9 +187,8 @@ public:
 public:
   // NameLike interface
 
-  OpResult isName(Self self, VM vm, bool& result) {
+  void isName(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
 public:
@@ -254,9 +251,8 @@ public:
 public:
   // NameLike interface
 
-  OpResult isName(Self self, VM vm, bool& result) {
+  void isName(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
 public:

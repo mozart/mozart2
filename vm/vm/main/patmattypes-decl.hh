@@ -118,7 +118,7 @@ public:
   // ArrayInitializer interface
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+  void initElement(Self self, VM vm, size_t index, RichNode value);
 
 public:
   inline
@@ -176,7 +176,7 @@ public:
   // ArrayInitializer interface
 
   inline
-  OpResult initElement(Self self, VM vm, size_t index, RichNode value);
+  void initElement(Self self, VM vm, size_t index, RichNode value);
 
 public:
   inline

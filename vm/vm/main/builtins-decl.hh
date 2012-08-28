@@ -59,12 +59,12 @@ public:
   SpecializedBuiltinEntryPoint(): _pointer(nullptr) {}
 
   template <class... Args>
-  SpecializedBuiltinEntryPoint(OpResult (*pointer)(VM, Args...)):
+  SpecializedBuiltinEntryPoint(void (*pointer)(VM, Args...)):
     _pointer((void (*)()) pointer) {}
 
   template <class... Args>
-  OpResult operator()(VM vm, Args&&... args) {
-    typedef OpResult (*type)(VM, Args...);
+  void operator()(VM vm, Args&&... args) {
+    typedef void (*type)(VM, Args...);
     type pointer = (type) _pointer;
     return pointer(vm, std::forward<Args>(args)...);
   }
@@ -72,7 +72,7 @@ private:
   void (*_pointer)();
 };
 
-typedef OpResult (*GenericBuiltinEntryPoint)(VM vm, UnstableNode* args[]);
+typedef void (*GenericBuiltinEntryPoint)(VM vm, UnstableNode* args[]);
 
 namespace internal {
 
@@ -84,7 +84,7 @@ template <class T, size_t arity, size_t i = 0, class... Args>
 struct BuiltinEntryPointGeneric {
   static_assert(i == sizeof...(Args), "i != sizeof...(Args)");
 
-  static OpResult call(VM vm, UnstableNode* args[], Args&&... argsDone) {
+  static void call(VM vm, UnstableNode* args[], Args&&... argsDone) {
     return BuiltinEntryPointGeneric<T, arity, i+1, Args..., UnstableNode&>::call(
       vm, args, std::forward<Args>(argsDone)..., *args[i]);
   }
@@ -92,7 +92,7 @@ struct BuiltinEntryPointGeneric {
 
 template <class T, size_t arity, class... Args>
 struct BuiltinEntryPointGeneric<T, arity, arity, Args...> {
-  static OpResult call(VM vm, UnstableNode* args[], Args&&... argsDone) {
+  static void call(VM vm, UnstableNode* args[], Args&&... argsDone) {
     return T::builtin()(vm, std::forward<Args>(argsDone)...);
   }
 };
@@ -114,11 +114,11 @@ public:
 template <class T, size_t arity, class... Args>
 struct BuiltinEntryPoint<T, arity, arity, Args...> {
 private:
-  static OpResult entryPoint(VM vm, Args... args) {
+  static void entryPoint(VM vm, Args... args) {
     return T::builtin()(vm, args...);
   }
 
-  static OpResult genericEntryPoint(VM vm, UnstableNode* args[]) {
+  static void genericEntryPoint(VM vm, UnstableNode* args[]) {
     return BuiltinEntryPointGeneric<T, arity>::call(vm, args);
   }
 public:
@@ -237,21 +237,21 @@ public:
     return _inlineAsOpCode;
   }
 
-  OpResult call(VM vm, UnstableNode* args[]) {
+  void call(VM vm, UnstableNode* args[]) {
     return _genericEntryPoint(vm, args);
   }
 
   template <class... Args>
-  OpResult call(VM vm, Args&&... args) {
+  void call(VM vm, Args&&... args) {
     assert(sizeof...(args) == _arity);
     return _entryPoint(vm, std::forward<Args>(args)...);
   }
 
   inline
-  OpResult getCallInfo(RichNode self, VM vm, size_t& arity,
-                       ProgramCounter& start, size_t& Xcount,
-                       StaticArray<StableNode>& Gs,
-                       StaticArray<StableNode>& Ks);
+  void getCallInfo(RichNode self, VM vm, size_t& arity,
+                   ProgramCounter& start, size_t& Xcount,
+                   StaticArray<StableNode>& Gs,
+                   StaticArray<StableNode>& Ks);
 
 private:
   inline
@@ -306,7 +306,7 @@ private:
   struct ExtractArity {};
 
   template <class Class, class... Args>
-  struct ExtractArity<OpResult (Class::*)(VM vm, Args...)> {
+  struct ExtractArity<void (Class::*)(VM vm, Args...)> {
     static const size_t arity = sizeof...(Args);
 
     static void initParams(StaticArray<ParamInfo> params) {

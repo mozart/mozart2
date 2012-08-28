@@ -62,28 +62,27 @@ public:
     return _space;
   }
 public:
-  OpResult isSpace(Self self, VM vm, bool& result) {
+  void isSpace(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult askSpace(Self self, VM vm, UnstableNode& result);
+  void askSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult askVerboseSpace(Self self, VM vm, UnstableNode& result);
+  void askVerboseSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult mergeSpace(Self self, VM vm, UnstableNode& result);
+  void mergeSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult commitSpace(Self self, VM vm, RichNode value);
+  void commitSpace(Self self, VM vm, RichNode value);
 
   inline
-  OpResult cloneSpace(Self self, VM vm, UnstableNode& result);
+  void cloneSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult killSpace(Self self, VM vm);
+  void killSpace(Self self, VM vm);
 private:
   SpaceRef _space;
 };
@@ -127,28 +126,27 @@ public:
     return _kind;
   }
 public:
-  OpResult isSpace(Self self, VM vm, bool& result) {
+  void isSpace(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult askSpace(Self self, VM vm, UnstableNode& result);
+  void askSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult askVerboseSpace(Self self, VM vm, UnstableNode& result);
+  void askVerboseSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult mergeSpace(Self self, VM vm, UnstableNode& result);
+  void mergeSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult commitSpace(Self self, VM vm, RichNode value);
+  void commitSpace(Self self, VM vm, RichNode value);
 
   inline
-  OpResult cloneSpace(Self self, VM vm, UnstableNode& result);
+  void cloneSpace(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult killSpace(Self self, VM vm);
+  void killSpace(Self self, VM vm);
 private:
   DeletedSpaceKind _kind;
 };

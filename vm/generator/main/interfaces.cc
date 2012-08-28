@@ -107,7 +107,7 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
 
     // Declaration of the procedure
     to << "\n  " << resultType << " " << funName
-       << "(" << formals << ") {\n"    ;
+       << "(" << formals << ") {\n    ";
 
     // For every implementation that implements this interface (ImplementedBy)
     for (int i = 0; i < (int) implems->getNumArgs(); ++i) {
@@ -121,10 +121,10 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
     }
 
     // Auto-wait handling
-    if (autoWait &&
-        (typeToString(function->getResultType()) == "struct mozart::OpResult")) {
+    if (autoWait) {
       to << "if (_self.isTransient()) {\n";
-      to << "      return OpResult::waitFor(vm, _self);\n";
+      to << "      waitFor(vm, _self);\n";
+      to << "      throw std::exception(); // not reachable\n";
       to << "    } else ";
     }
 

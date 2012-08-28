@@ -55,7 +55,7 @@ public:
   // Wakeable interface
 
   inline
-  OpResult wakeUp(Self self, VM vm);
+  void wakeUp(Self self, VM vm);
 
   inline
   bool shouldWakeUpUnderSpace(VM vm, Space* space);
@@ -74,7 +74,7 @@ public:
   void markNeeded(Self self, VM vm);
 
   inline
-  OpResult bind(Self self, VM vm, RichNode src);
+  void bind(Self self, VM vm, RichNode src);
 
 public:
   // Transfer pendings
@@ -94,7 +94,7 @@ public:
 private:
   // TODO Might a good candidate for noinline
   inline
-  OpResult bindSubSpace(Self self, VM vm, RichNode src);
+  void bindSubSpace(Self self, VM vm, RichNode src);
 
   inline
   void wakeUpPendings(VM vm);
@@ -155,10 +155,10 @@ public:
   void markNeeded(Self self, VM vm);
 
   inline
-  OpResult bind(Self self, VM vm, UnstableNode&& src);
+  void bind(Self self, VM vm, UnstableNode&& src);
 
   inline
-  OpResult bind(Self self, VM vm, RichNode src);
+  void bind(Self self, VM vm, RichNode src);
 
 private:
   inline
@@ -209,7 +209,7 @@ public:
   // Wakeable interface
 
   inline
-  OpResult wakeUp(Self self, VM vm);
+  void wakeUp(Self self, VM vm);
 
   inline
   bool shouldWakeUpUnderSpace(VM vm, Space* space);
@@ -227,7 +227,7 @@ public:
   void markNeeded(Self self, VM vm);
 
   inline
-  OpResult bind(Self self, VM vm, RichNode src);
+  void bind(Self self, VM vm, RichNode src);
 
 public:
   // Miscellaneous
@@ -274,7 +274,7 @@ public:
   }
 
   inline
-  OpResult raiseUnderlying(VM vm);
+  void raiseUnderlying(VM vm);
 
 public:
   // DataflowVariable interface
@@ -289,7 +289,7 @@ public:
   void markNeeded(Self self, VM vm);
 
   inline
-  OpResult bind(Self self, VM vm, RichNode src);
+  void bind(Self self, VM vm, RichNode src);
 
 public:
   // Miscellaneous

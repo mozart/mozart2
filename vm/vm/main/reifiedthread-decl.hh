@@ -70,7 +70,7 @@ public:
   // Wakeable interface
 
   inline
-  OpResult wakeUp(VM vm);
+  void wakeUp(VM vm);
 
   inline
   bool shouldWakeUpUnderSpace(VM vm, Space* space);
@@ -78,19 +78,18 @@ public:
 public:
   // ThreadLike interface
 
-  OpResult isThread(Self self, VM vm, bool& result) {
+  void isThread(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult getThreadPriority(VM vm, ThreadPriority& result);
+  void getThreadPriority(VM vm, ThreadPriority& result);
 
   inline
-  OpResult setThreadPriority(VM vm, ThreadPriority priority);
+  void setThreadPriority(VM vm, ThreadPriority priority);
 
   inline
-  OpResult injectException(VM vm, RichNode exception);
+  void injectException(VM vm, RichNode exception);
 
 private:
   Runnable* _runnable;

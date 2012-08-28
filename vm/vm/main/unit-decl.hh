@@ -66,16 +66,15 @@ public:
 public:
   // VirtualString inteface
 
-  OpResult isVirtualString(Self self, VM vm, bool& result) {
+  void isVirtualString(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  OpResult vsLength(Self self, VM vm, nativeint& result);
+  void vsLength(Self self, VM vm, nativeint& result);
 
 public:
   // Miscellaneous

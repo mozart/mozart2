@@ -86,68 +86,65 @@ public:
   // Comparable interface
 
   inline
-  OpResult compare(Self self, VM vm, RichNode right, int& result);
+  void compare(Self self, VM vm, RichNode right, int& result);
 
 public:
   // StringLike interface
 
-  OpResult isString(Self self, VM vm, bool& result) {
+  void isString(Self self, VM vm, bool& result) {
     result = false;
-    return OpResult::proceed();
   }
 
-  OpResult isByteString(Self self, VM vm, bool& result) {
+  void isByteString(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult stringGet(Self self, VM vm, LString<nchar>*& result);
+  void stringGet(Self self, VM vm, LString<nchar>*& result);
 
   inline
-  OpResult stringGet(Self self, VM vm, LString<unsigned char>*& result);
+  void stringGet(Self self, VM vm, LString<unsigned char>*& result);
 
   inline
-  OpResult stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
+  void stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
 
   inline
-  OpResult stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
+  void stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult stringSlice(Self self, VM vm,
-                       RichNode from, RichNode to, UnstableNode& result);
+  void stringSlice(Self self, VM vm,
+                   RichNode from, RichNode to, UnstableNode& result);
 
   inline
-  OpResult stringSearch(Self self, VM vm, RichNode from, RichNode needle,
-                        UnstableNode& begin, UnstableNode& end);
+  void stringSearch(Self self, VM vm, RichNode from, RichNode needle,
+                    UnstableNode& begin, UnstableNode& end);
 
   inline
-  OpResult stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
+  void stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
 
   inline
-  OpResult stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
+  void stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
 
 public:
   // VirtualString interface
 
-  OpResult isVirtualString(Self self, VM vm, bool& result) {
+  void isVirtualString(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  OpResult vsLength(Self self, VM vm, nativeint& result);
+  void vsLength(Self self, VM vm, nativeint& result);
 
 public:
   // Miscellaneous
 
   inline
-  OpResult decode(Self self, VM vm,
-                  ByteStringEncoding encoding, EncodingVariant variant,
-                  UnstableNode& result);
+  void decode(Self self, VM vm,
+              ByteStringEncoding encoding, EncodingVariant variant,
+              UnstableNode& result);
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
@@ -157,10 +154,9 @@ private:
 };
 
 inline
-OpResult encodeToBytestring(VM vm, const BaseLString<nchar>& input,
-                            ByteStringEncoding encoding,
-                            EncodingVariant variant,
-                            UnstableNode& result);
+void encodeToBytestring(VM vm, const BaseLString<nchar>& input,
+                        ByteStringEncoding encoding, EncodingVariant variant,
+                        UnstableNode& result);
 
 #ifndef MOZART_GENERATOR
 #include "ByteString-implem-decl-after.hh"

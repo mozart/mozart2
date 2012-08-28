@@ -62,83 +62,78 @@ public:
   // Comparable interface
 
   inline
-  OpResult compare(Self self, VM vm, RichNode right, int& result);
+  void compare(Self self, VM vm, RichNode right, int& result);
 
 public:
   // FloatValue inteface
 
-  OpResult floatValue(Self self, VM vm, double& result) {
+  void floatValue(Self self, VM vm, double& result) {
     result = value();
-    return OpResult::proceed();
   }
 
   inline
-  OpResult equalsFloat(Self self, VM vm, double right, bool& result);
+  void equalsFloat(Self self, VM vm, double right, bool& result);
 
 public:
   // Numeric inteface
 
-  OpResult isNumber(Self self, VM vm, bool& result) {
+  void isNumber(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
-  OpResult isInt(Self self, VM vm, bool& result) {
+  void isInt(Self self, VM vm, bool& result) {
     result = false;
-    return OpResult::proceed();
   }
 
-  OpResult isFloat(Self self, VM vm, bool& result) {
+  void isFloat(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult opposite(Self self, VM vm, UnstableNode& result);
+  void opposite(Self self, VM vm, UnstableNode& result);
 
   inline
-  OpResult add(Self self, VM vm, RichNode right, UnstableNode& result);
+  void add(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult addValue(Self self, VM vm, double b, UnstableNode& result);
+  void addValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult subtract(Self self, VM vm, RichNode right, UnstableNode& result);
+  void subtract(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult subtractValue(Self self, VM vm, double b, UnstableNode& result);
+  void subtractValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult multiply(Self self, VM vm, RichNode right, UnstableNode& result);
+  void multiply(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult multiplyValue(Self self, VM vm, double b, UnstableNode& result);
+  void multiplyValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult divide(Self self, VM vm, RichNode right, UnstableNode& result);
+  void divide(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult divideValue(Self self, VM vm, double b, UnstableNode& result);
+  void divideValue(Self self, VM vm, double b, UnstableNode& result);
 
   inline
-  OpResult div(Self self, VM vm, RichNode right, UnstableNode& result);
+  void div(Self self, VM vm, RichNode right, UnstableNode& result);
 
   inline
-  OpResult mod(Self self, VM vm, RichNode right, UnstableNode& result);
+  void mod(Self self, VM vm, RichNode right, UnstableNode& result);
 
 public:
   // VirtualString inteface
 
-  OpResult isVirtualString(Self self, VM vm, bool& result) {
+  void isVirtualString(Self self, VM vm, bool& result) {
     result = true;
-    return OpResult::proceed();
   }
 
   inline
-  OpResult toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  OpResult vsLength(Self self, VM vm, nativeint& result);
+  void vsLength(Self self, VM vm, nativeint& result);
 
 public:
   // Miscellaneous

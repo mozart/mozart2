@@ -31,7 +31,7 @@
 #include "type-decl.hh"
 #include "memword.hh"
 #include "store-decl.hh"
-#include "opresult-decl.hh"
+#include "exceptions-decl.hh"
 #include "uuid-decl.hh"
 #include "typeinfo-decl.hh"
 #include "datatype-decl.hh"

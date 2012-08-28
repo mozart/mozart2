@@ -71,12 +71,11 @@ CodeArea::CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
     gr->copyStableNode(_Ks[i], from[i]);
 }
 
-OpResult CodeArea::initElement(Self self, VM vm, size_t index, RichNode value) {
+void CodeArea::initElement(Self self, VM vm, size_t index, RichNode value) {
   self[index].init(vm, value);
-  return OpResult::proceed();
 }
 
-OpResult CodeArea::getCodeAreaInfo(
+void CodeArea::getCodeAreaInfo(
   Self self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Ks) {
 
@@ -84,17 +83,13 @@ OpResult CodeArea::getCodeAreaInfo(
   start = _codeBlock;
   Xcount = _Xcount;
   Ks = self.getArray();
-
-  return OpResult::proceed();
 }
 
-OpResult CodeArea::getCodeAreaDebugInfo(
+void CodeArea::getCodeAreaDebugInfo(
   Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
 
   printName = _printName;
   debugData.copy(vm, _debugData);
-
-  return OpResult::proceed();
 }
 
 }

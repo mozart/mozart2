@@ -51,33 +51,26 @@
  *
  * In C++:
  *
- *   OpResult doSomething(VM vm, RichNode value) {
+ *   void doSomething(VM vm, RichNode value) {
  *     using namespace mozart::patternmatching;
  *
- *     OpResult result = OpResult::proceed(); // important!
  *     UnstableNode X, Y;
  *
- *     if (matchesTuple(vm, result, value, vm->coreatoms.sharp,
+ *     if (matchesTuple(vm, value, vm->coreatoms.sharp,
  *                      capture(X), 42, capture(Y))) {
  *       show(X);
  *       show(Y);
- *     } else if (matches(vm, result, value, wildcard<SmallInt>())) {
+ *     } else if (matches(vm, value, wildcard<SmallInt>())) {
  *       show(value);
- *     } else if (result.isProceed()) {
+ *     } else {
  *       // value does not match any of the patterns, usually it's a type error
  *       return raiseTypeError(vm, MOZART_STR("int or 42-pair"), value);
- *     } else {
- *       // the match blocks on a transient, or failed, etc.
- *       // the `result` contains the outcome of the operation
- *       return result;
  *     }
- *
- *     return OpResult::proceed();
  *   }
  *
  * The first match can be rewritten with matchesSharp():
  *
- *     if (matchesSharp(vm, result, value, capture(X), 42, capture(Y))) {
+ *     if (matchesSharp(vm, value, capture(X), 42, capture(Y))) {
  *
  * It's not that much shorter, but that function could someday be optimized
  * more seriously than the generic matchesTuple().
@@ -88,7 +81,7 @@
  *     // [...]
  *     nativeint intValue;
  *     // [...]
- *     } else if (matches(vm, result, value, capture(intValue))) {
+ *     } else if (matches(vm, value, capture(intValue))) {
  *       cout << intValue << endl;
  *     } else [...]
  *
@@ -96,34 +89,22 @@
  * assimilated to a nativeint. Besides, it is more efficient, because the
  * nativeint value is captured when the type test has already been done.
  *
- * Finally, it is so common that the two last clauses read as above, i.e., that
- * a no-match means a type error, and a non-proceed result must be passed
- * through, that there is a convenience matchTypeError() function for this.
- * Hence the two clauses can be rewritten as:
- *
- *     } else {
- *       return matchTypeError(vm, result, value, MOZART_STR("int or 42-pair"));
- *     }
- *
  * The whole example thus looks like this:
  *
- *   OpResult doSomething(VM vm, RichNode value) {
+ *   void doSomething(VM vm, RichNode value) {
  *     using namespace mozart::patternmatching;
  *
- *     OpResult result = OpResult::proceed(); // important!
  *     UnstableNode X, Y;
  *     nativeint intValue;
  *
- *     if (matchesSharp(vm, result, value, capture(X), 42, capture(Y))) {
+ *     if (matchesSharp(vm, value, capture(X), 42, capture(Y))) {
  *       show(X);
  *       show(Y);
- *     } else if (matches(vm, result, value, capture(intValue))) {
+ *     } else if (matches(vm, value, capture(intValue))) {
  *       cout << intValue << endl;
  *     } else {
- *       return matchTypeError(vm, result, value, MOZART_STR("int or 42-pair"));
+ *       return raiseTypeError(vm, MOZART_STR("int or 42-pair"), value);
  *     }
- *
- *     return OpResult::proceed();
  *   }
  *
  *
@@ -131,25 +112,24 @@
  *
  * The two basic possible entry points are:
  *
- *   bool matches(vm, result, value, pattern)
+ *   bool matches(vm, value, pattern)
  *     which matches the given pattern
  *
- *   bool matchesTuple(vm, result, value, labelPattern, fieldsPatterns...)
+ *   bool matchesTuple(vm, value, labelPattern, fieldsPatterns...)
  *     which matches a tuple whose label and fields match the given patterns
  *
  * The following method conveniently match on #-tuples:
  *
- *   bool matchesSharp(vm, result, value, fieldsPatterns...)
- *     ::= matchesTuple(vm, result, value, vm->coreatoms.sharp,
- *                      fieldsPatterns...)
+ *   bool matchesSharp(vm, value, fieldsPatterns...)
+ *     ::= matchesTuple(vm, value, vm->coreatoms.sharp, fieldsPatterns...)
  *
  * To match a |-pair (H|T), use the following method instead:
  *
- *   bool matchesCons(vm, result, value, headPattern, tailPattern)
+ *   bool matchesCons(vm, value, headPattern, tailPattern)
  *
  * All the patterns can be one of the following:
  *
- * * Simple C++ values, such as int, const char*, bool.
+ * * Simple C++ values, such as nativeint, const char*, bool.
  *   The value matches if it is equal to the given value.
  * * A RichNode `node`.
  *   The value matches if it is equal to `node` (tested with mozart::equals()).
@@ -166,16 +146,11 @@
  * * capture(x) where x is a declared bool.
  *   Matches any Boolean-like, plus its actual value is stored into x.
  *
- * Upon a successful match, `result` is untouched, and true is returned.
- * Upon a failed match, `result` is untouched, and false is returned.
+ * Upon a successful match, true is returned. Upon a failed match,
+ * false is returned.
  *
- * Upon an undecidable match (e.g., because of an unbound value), `result` is
- * set to the appropriate OpResult (e.g., a waitFor()), and false is
- * returned.
- *
- * Moreover, if, on entry, result.isProceed() is false, then the match
- * functions do nothing and return false. This allows to chain several matches
- * easily.
+ * Upon an undecidable match (e.g., because of an unbound value), the
+ * appropriate exception is thrown.
  */
 
 #ifndef MOZART_GENERATOR
@@ -289,19 +264,18 @@ struct PrimitiveCapturePattern {
  * Wait for a value if it is a transient
  */
 inline
-void waitForIfTransient(VM vm, OpResult& result, RichNode value) {
+void waitForIfTransient(VM vm, RichNode value) {
   if (value.isTransient())
-    result = OpResult::waitFor(vm, value);
+    waitFor(vm, value);
 }
 
 /**
  * Internal equivalent of matches().
- * Assumes that result.isProceed() is true on entry.
  * This function is meant to be specialized on types of pattern.
  */
 template <class T>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, T pattern) {
+bool matchesSimple(VM vm, RichNode value, T pattern) {
   static_assert(internal::LateStaticAssert<T>::value,
                 "Invalid type of pattern");
   return false;
@@ -310,9 +284,8 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value, T pattern) {
 /** Base case of the below */
 template <size_t i, class T>
 inline
-bool matchesElementsAgainstPatternList(VM vm, OpResult& result,
-                                       TypedRichNode<T> aggregate) {
-  return result.isProceed();
+bool matchesElementsAgainstPatternList(VM vm, TypedRichNode<T> aggregate) {
+  return true;
 }
 
 /**
@@ -324,64 +297,63 @@ bool matchesElementsAgainstPatternList(VM vm, OpResult& result,
 template <size_t i, class T, class U, class... Rest>
 inline
 bool matchesElementsAgainstPatternList(
-  VM vm, OpResult& result, TypedRichNode<T> aggregate,
+  VM vm, TypedRichNode<T> aggregate,
   U ithPattern, Rest... restPatterns) {
 
-  if (!matchesSimple(vm, result, *aggregate.getElement(i), ithPattern))
+  if (!matchesSimple(vm, *aggregate.getElement(i), ithPattern))
     return false;
 
   return matchesElementsAgainstPatternList<i+1, T>(
-    vm, result, aggregate, restPatterns...);
+    vm, aggregate, restPatterns...);
 }
 
 // Here we begin the various specializations of matchesSimple<T>()
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, nativeint pattern) {
+bool matchesSimple(VM vm, RichNode value, nativeint pattern) {
   bool res = false;
-  result = IntegerValue(value).equalsInteger(vm, pattern, res);
-  return result.isProceed() && res;
+  IntegerValue(value).equalsInteger(vm, pattern, res);
+  return res;
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, size_t pattern) {
-  return matchesSimple(vm, result, value, (nativeint) pattern);
+bool matchesSimple(VM vm, RichNode value, size_t pattern) {
+  return matchesSimple(vm, value, (nativeint) pattern);
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
+bool matchesSimple(VM vm, RichNode value,
                    ::mozart::internal::intIfDifferentFromNativeInt pattern) {
-  return matchesSimple(vm, result, value, (nativeint) pattern);
+  return matchesSimple(vm, value, (nativeint) pattern);
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, bool pattern) {
+bool matchesSimple(VM vm, RichNode value, bool pattern) {
   BoolOrNotBool boolValue = bNotBool;
-  result = BooleanValue(value).valueOrNotBool(vm, boolValue);
-  return result.isProceed() && (boolValue == (pattern ? bTrue : bFalse));
+  BooleanValue(value).valueOrNotBool(vm, boolValue);
+  return boolValue == (pattern ? bTrue : bFalse);
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, unit_t pattern) {
+bool matchesSimple(VM vm, RichNode value, unit_t pattern) {
   if (value.is<Unit>()) {
     return true;
   } else {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   const nchar* pattern) {
+bool matchesSimple(VM vm, RichNode value, const nchar* pattern) {
   if (!value.is<Atom>()) {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 
@@ -394,9 +366,9 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, atom_t pattern) {
+bool matchesSimple(VM vm, RichNode value, atom_t pattern) {
   if (!value.is<Atom>()) {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 
@@ -405,10 +377,9 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value, atom_t pattern) {
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   unique_name_t pattern) {
+bool matchesSimple(VM vm, RichNode value, unique_name_t pattern) {
   if (!value.is<UniqueName>()) {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 
@@ -417,67 +388,62 @@ bool matchesSimple(VM vm, OpResult& result, RichNode value,
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value, RichNode pattern) {
+bool matchesSimple(VM vm, RichNode value, RichNode pattern) {
   bool res = false;
-  result = equals(vm, value, pattern, res);
-  return result.isProceed() && res;
+  equals(vm, value, pattern, res);
+  return res;
 }
 
 template <class T>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   WildcardPattern<T> pattern) {
+bool matchesSimple(VM vm, RichNode value, WildcardPattern<T> pattern) {
   if (value.is<T>()) {
     return true;
   } else {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   WildcardPattern<AnyType> pattern) {
+bool matchesSimple(VM vm, RichNode value, WildcardPattern<AnyType> pattern) {
   return true;
 }
 
 template <class T>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   CapturePattern<T> pattern) {
+bool matchesSimple(VM vm, RichNode value, CapturePattern<T> pattern) {
   if (value.is<T>()) {
     pattern.node.copy(vm, value);
     return true;
   } else {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   CapturePattern<AnyType> pattern) {
+bool matchesSimple(VM vm, RichNode value, CapturePattern<AnyType> pattern) {
   pattern.node.copy(vm, value);
   return true;
 }
 
 template <class T>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
-                   PrimitiveCapturePattern<T> pattern) {
+bool matchesSimple(VM vm, RichNode value, PrimitiveCapturePattern<T> pattern) {
   if (ozValueToPrimitiveValue<T>(vm, value, pattern.value)) {
     return true;
   } else {
-    waitForIfTransient(vm, result, value);
+    waitForIfTransient(vm, value);
     return false;
   }
 }
 
 template <>
 inline
-bool matchesSimple(VM vm, OpResult& result, RichNode value,
+bool matchesSimple(VM vm, RichNode value,
                    PrimitiveCapturePattern<UnstableNode> pattern) {
   pattern.value.copy(vm, value);
   return true;
@@ -528,9 +494,8 @@ internal::PrimitiveCapturePattern<T> capture(T& value) {
  */
 template <class T>
 inline
-bool matches(VM vm, OpResult& result, RichNode value, T pattern) {
-  return result.isProceed() &&
-    internal::matchesSimple(vm, result, value, pattern);
+bool matches(VM vm, RichNode value, T pattern) {
+  return internal::matchesSimple(vm, value, pattern);
 }
 
 /**
@@ -539,13 +504,9 @@ bool matches(VM vm, OpResult& result, RichNode value, T pattern) {
  */
 template <class LT, class... Args>
 inline
-bool matchesTuple(VM vm, OpResult& result, RichNode value,
-                  LT labelPat, Args... fieldsPats) {
-  if (!result.isProceed())
-    return false;
-
+bool matchesTuple(VM vm, RichNode value, LT labelPat, Args... fieldsPats) {
   if (value.type() != Tuple::type()) {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 
@@ -554,11 +515,11 @@ bool matchesTuple(VM vm, OpResult& result, RichNode value,
   if (tuple.getWidth() != sizeof...(Args))
     return false;
 
-  if (!internal::matchesSimple(vm, result, *tuple.getLabel(), labelPat))
+  if (!internal::matchesSimple(vm, *tuple.getLabel(), labelPat))
     return false;
 
   return internal::matchesElementsAgainstPatternList<0>(
-    vm, result, tuple, fieldsPats...);
+    vm, tuple, fieldsPats...);
 }
 
 /**
@@ -567,20 +528,16 @@ bool matchesTuple(VM vm, OpResult& result, RichNode value,
  */
 template <class HT, class TT>
 inline
-bool matchesCons(VM vm, OpResult& result, RichNode value,
-                 HT head, TT tail) {
-  if (!result.isProceed())
-    return false;
-
+bool matchesCons(VM vm, RichNode value, HT head, TT tail) {
   if (value.type() != Cons::type()) {
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 
   auto cons = value.as<Cons>();
 
-  return internal::matchesSimple(vm, result, *cons.getHead(), head) &&
-    internal::matchesSimple(vm, result, *cons.getTail(), tail);
+  return internal::matchesSimple(vm, *cons.getHead(), head) &&
+    internal::matchesSimple(vm, *cons.getTail(), tail);
 }
 
 /**
@@ -589,9 +546,8 @@ bool matchesCons(VM vm, OpResult& result, RichNode value,
  */
 template <class... Args>
 inline
-bool matchesSharp(VM vm, OpResult& result, RichNode value,
-                  Args... fieldsPats) {
-  return matchesTuple(vm, result, value, vm->coreatoms.sharp, fieldsPats...);
+bool matchesSharp(VM vm, RichNode value, Args... fieldsPats) {
+  return matchesTuple(vm, value, vm->coreatoms.sharp, fieldsPats...);
 }
 
 /**
@@ -600,25 +556,22 @@ bool matchesSharp(VM vm, OpResult& result, RichNode value,
  */
 template <class LT, class... Args>
 inline
-bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
+bool matchesVariadicTuple(VM vm, RichNode value,
                           size_t& argc, StaticArray<StableNode>& args,
                           LT labelPat, Args... fieldsPats) {
-  if (!result.isProceed())
-    return false;
-
   constexpr size_t fixedArgc = sizeof...(Args);
 
   if (value.type() != Tuple::type()) {
     if (fixedArgc == 0) {
       // If we expect 0 fixed arguments, then an atom is a valid input
-      if (internal::matchesSimple(vm, result, value, labelPat)) {
+      if (internal::matchesSimple(vm, value, labelPat)) {
         argc = 0;
         args = nullptr;
         return true;
       }
     }
 
-    internal::waitForIfTransient(vm, result, value);
+    internal::waitForIfTransient(vm, value);
     return false;
   }
 
@@ -628,11 +581,11 @@ bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
   if (tuple.getWidth() < fixedArgc)
     return false;
 
-  if (!internal::matchesSimple(vm, result, *tuple.getLabel(), labelPat))
+  if (!internal::matchesSimple(vm, *tuple.getLabel(), labelPat))
     return false;
 
   if (!internal::matchesElementsAgainstPatternList<0>(
-      vm, result, tuple, fieldsPats...))
+      vm, tuple, fieldsPats...))
     return false;
 
   // Fill the captured variadic arguments
@@ -648,24 +601,11 @@ bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
  */
 template <class... Args>
 inline
-bool matchesVariadicSharp(VM vm, OpResult& result, RichNode value,
+bool matchesVariadicSharp(VM vm, RichNode value,
                           size_t& argc, StaticArray<StableNode>& args,
                           Args... fieldsPats) {
-  return matchesVariadicTuple(vm, result, value,
+  return matchesVariadicTuple(vm, value,
                               argc, args, vm->coreatoms.sharp, fieldsPats...);
-}
-
-/**
- * Convenience "else clause" when no match means a type error
- * See comments at the beginning of the file for usage.
- */
-inline
-OpResult matchTypeError(VM vm, OpResult& result, RichNode value,
-                        const nchar* expected) {
-  if (result.isProceed())
-    return raiseTypeError(vm, expected, value);
-  else
-    return result;
 }
 
 } // namespace patternmatching

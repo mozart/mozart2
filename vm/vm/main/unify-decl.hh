@@ -36,14 +36,11 @@ inline
 void unify(VM vm, RichNode left, RichNode right);
 
 inline
-void equals(VM vm, RichNode left, RichNode right, bool& result);
+bool equals(VM vm, RichNode left, RichNode right);
 
 inline
-void notEquals(VM vm, RichNode left, RichNode right, bool& result);
-
-inline
-void patternMatch(VM vm, RichNode value, RichNode pattern,
-                  StaticArray<UnstableNode> captures, bool& result);
+bool patternMatch(VM vm, RichNode value, RichNode pattern,
+                  StaticArray<UnstableNode> captures);
 
 /////////////////////
 // Data structures //

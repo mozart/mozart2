@@ -31,8 +31,7 @@ namespace mozart {
 
 template <class T>
 inline
-void getArgument(VM vm, T& argVar, RichNode argValue,
-                 const nchar* expectedType);
+T getArgument(VM vm, RichNode argValue, const nchar* expectedType);
 
 inline
 void requireFeature(VM vm, RichNode feature);
@@ -62,11 +61,11 @@ void ozListForEach(VM vm, RichNode list, const F& onHead,
                    const nchar* expectedType);
 
 inline
-void ozListLength(VM vm, RichNode list, size_t& result);
+size_t ozListLength(VM vm, RichNode list);
 
 template <class C>
 inline
-void vsToString(VM vm, RichNode vs, std::basic_string<C>& result);
+std::basic_string<C> vsToString(VM vm, RichNode vs);
 
 }
 

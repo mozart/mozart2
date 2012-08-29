@@ -48,9 +48,8 @@ public:
     PrintRepr(): Builtin("printRepr") {}
 
     void operator()(VM vm, In value, In toStdErr, In newLine) {
-      bool boolToStdErr = false, boolNewLine = false;
-      getArgument(vm, boolToStdErr, toStdErr, MOZART_STR("Boolean"));
-      getArgument(vm, boolNewLine, newLine, MOZART_STR("Boolean"));
+      auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
+      auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
 
       auto& stream = boolToStdErr ? std::cerr : std::cout;
       stream << repr(vm, value);
@@ -80,9 +79,8 @@ public:
     PrintVS(): Builtin("printVS") {}
 
     void operator()(VM vm, In value, In toStdErr, In newLine) {
-      bool boolToStdErr = false, boolNewLine = false;
-      getArgument(vm, boolToStdErr, toStdErr, MOZART_STR("Boolean"));
-      getArgument(vm, boolNewLine, newLine, MOZART_STR("Boolean"));
+      auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
+      auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
 
       std::basic_stringstream<nchar> buffer;
       VirtualString(value).toString(vm, buffer);
@@ -127,10 +125,7 @@ public:
     Exit(): Builtin("exit") {}
 
     void operator()(VM vm, In exitCode) {
-      nativeint intExitCode = 0;
-      getArgument(vm, intExitCode, exitCode, MOZART_STR("Integer"));
-
-      std::exit(intExitCode);
+      std::exit(getArgument<nativeint>(vm, exitCode, MOZART_STR("Integer")));
     }
   };
 };

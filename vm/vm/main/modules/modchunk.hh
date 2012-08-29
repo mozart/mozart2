@@ -46,13 +46,10 @@ public:
     New(): Builtin("new") {}
 
     void operator()(VM vm, In underlying, Out result) {
-      bool isRecord = false;
-      RecordLike(underlying).isRecord(vm, isRecord);
-
-      if (isRecord) {
+      if (RecordLike(underlying).isRecord(vm)) {
         result = Chunk::build(vm, underlying);
       } else {
-        return raiseTypeError(vm, MOZART_STR("Record"), underlying);
+        raiseTypeError(vm, MOZART_STR("Record"), underlying);
       }
     }
   };
@@ -62,10 +59,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      ChunkLike(value).isChunk(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, ChunkLike(value).isChunk(vm));
     }
   };
 };

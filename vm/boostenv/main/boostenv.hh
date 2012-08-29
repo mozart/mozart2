@@ -113,20 +113,11 @@ std::FILE* BoostBasedVM::getFile(nativeint fd) {
   if (iter != openedFiles.end())
     return iter->second;
   else
-    return nullptr;
+    raise(vm, MOZART_STR("system"), MOZART_STR("invalidfd"), fd);
 }
 
-void BoostBasedVM::getFile(nativeint fd, std::FILE*& result) {
-  result = getFile(fd);
-  if (result == nullptr)
-    return raise(vm, MOZART_STR("system"), MOZART_STR("invalidfd"), fd);
-}
-
-void BoostBasedVM::getFile(RichNode fd, std::FILE*& result) {
-  nativeint intfd = 0;
-  getArgument(vm, intfd, fd, MOZART_STR("filedesc"));
-
-  return getFile(intfd, result);
+std::FILE* BoostBasedVM::getFile(RichNode fd) {
+  return getFile(getArgument<nativeint>(vm, fd, MOZART_STR("filedesc")));
 }
 
 ///////////////
@@ -165,9 +156,7 @@ void ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
 }
 
 void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
-  size_t size;
-  ozListLength(vm, value, size);
-
+  size_t size = ozListLength(vm, value);
   buffer.resize(size);
 
   internal::ozListForEach<char>(
@@ -178,7 +167,7 @@ void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
     });
 }
 
-void ozStringToStdString(VM vm, RichNode value, std::string& result) {
+std::string ozStringToStdString(VM vm, RichNode value) {
   std::stringbuf buffer;
 
   internal::ozListForEach<char>(
@@ -187,17 +176,17 @@ void ozStringToStdString(VM vm, RichNode value, std::string& result) {
       buffer.sputc(c);
     });
 
-  result = buffer.str();
+  return buffer.str();
 }
 
-void stdStringToOzString(VM vm, std::string& value, UnstableNode& result) {
+UnstableNode stdStringToOzString(VM vm, const std::string& value) {
   UnstableNode res = build(vm, vm->coreatoms.nil);
 
   for (auto iter = value.rbegin(); iter != value.rend(); ++iter) {
     res = buildCons(vm, *iter, std::move(res));
   }
 
-  result = std::move(res);
+  return std::move(res);
 }
 
 std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str) {

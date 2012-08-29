@@ -59,83 +59,71 @@ int SmallInt::compareFeatures(VM vm, Self right) {
 
 // Comparable ------------------------------------------------------------------
 
-void SmallInt::compare(Self self, VM vm, RichNode right, int& result) {
-  nativeint rightIntValue = 0;
-  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
-
-  result = (value() == rightIntValue) ? 0 :
-    (value() < rightIntValue) ? -1 : 1;
+int SmallInt::compare(Self self, VM vm, RichNode right) {
+  auto rightIntValue = getArgument<nativeint>(vm, right, MOZART_STR("integer"));
+  return (value() == rightIntValue) ? 0 : (value() < rightIntValue) ? -1 : 1;
 }
 
 // IntegerValue ----------------------------------------------------------------
 
-void SmallInt::equalsInteger(Self self, VM vm, nativeint right, bool& result) {
-  result = value() == right;
+bool SmallInt::equalsInteger(Self self, VM vm, nativeint right) {
+  return value() == right;
 }
 
 // Numeric ---------------------------------------------------------------------
 
-void SmallInt::opposite(Self self, VM vm, UnstableNode& result) {
+UnstableNode SmallInt::opposite(Self self, VM vm) {
   // Detecting overflow - platform dependent (2's complement)
   if (value() != std::numeric_limits<nativeint>::min()) {
     // No overflow
-    result = SmallInt::build(vm, -value());
+    return SmallInt::build(vm, -value());
   } else {
     // Overflow - TODO: create a BigInt
-    result = SmallInt::build(vm, 0);
+    return SmallInt::build(vm, 0);
   }
 }
 
-void SmallInt::add(Self self, VM vm, RichNode right, UnstableNode& result) {
-  nativeint rightIntValue = 0;
-  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
-
-  return addValue(self, vm, rightIntValue, result);
+UnstableNode SmallInt::add(Self self, VM vm, RichNode right) {
+  return addValue(self, vm,
+                  getArgument<nativeint>(vm, right, MOZART_STR("integer")));
 }
 
-void SmallInt::addValue(Self self, VM vm, nativeint b, UnstableNode& result) {
+UnstableNode SmallInt::addValue(Self self, VM vm, nativeint b) {
   nativeint a = value();
   nativeint c = a + b;
 
   // Detecting overflow - platform dependent (2's complement)
   if ((((a ^ c) & (b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
-    result = SmallInt::build(vm, c);
+    return SmallInt::build(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    result = SmallInt::build(vm, 0);
+    return SmallInt::build(vm, 0);
   }
 }
 
-void SmallInt::subtract(Self self, VM vm, RichNode right,
-                        UnstableNode& result) {
-  nativeint rightIntValue = 0;
-  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
-
-  return subtractValue(self, vm, rightIntValue, result);
+UnstableNode SmallInt::subtract(Self self, VM vm, RichNode right) {
+  return subtractValue(self, vm,
+                       getArgument<nativeint>(vm, right, MOZART_STR("integer")));
 }
 
-void SmallInt::subtractValue(Self self, VM vm, nativeint b,
-                             UnstableNode& result) {
+UnstableNode SmallInt::subtractValue(Self self, VM vm, nativeint b) {
   nativeint a = value();
   nativeint c = a - b;
 
   // Detecting overflow - platform dependent (2's complement)
   if ((((a ^ c) & (-b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
-    result = SmallInt::build(vm, c);
+    return SmallInt::build(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    result = SmallInt::build(vm, 0);
+    return SmallInt::build(vm, 0);
   }
 }
 
-void SmallInt::multiply(Self self, VM vm, RichNode right,
-                        UnstableNode& result) {
-  nativeint rightIntValue = 0;
-  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
-
-  return multiplyValue(self, vm, rightIntValue, result);
+UnstableNode SmallInt::multiply(Self self, VM vm, RichNode right) {
+  return multiplyValue(self, vm,
+                       getArgument<nativeint>(vm, right, MOZART_STR("integer")));
 }
 
 bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
@@ -154,62 +142,56 @@ bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
   return (b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb);
 }
 
-void SmallInt::multiplyValue(Self self, VM vm, nativeint b,
-                             UnstableNode& result) {
+UnstableNode SmallInt::multiplyValue(Self self, VM vm, nativeint b) {
   nativeint a = value();
 
   // Detecting overflow
   if (!testMultiplyOverflow(a, b)) {
     // No overflow
-    result = SmallInt::build(vm, a * b);
+    return SmallInt::build(vm, a * b);
   } else {
     // Overflow - TODO: create a BigInt
-    result = SmallInt::build(vm, 0);
+    return SmallInt::build(vm, 0);
   }
 }
 
-void SmallInt::divide(Self self, VM vm, RichNode right,
-                      UnstableNode& result) {
-  return raiseTypeError(vm, MOZART_STR("Float"), self);
+UnstableNode SmallInt::divide(Self self, VM vm, RichNode right) {
+  raiseTypeError(vm, MOZART_STR("Float"), self);
 }
 
-void SmallInt::div(Self self, VM vm, RichNode right, UnstableNode& result) {
-  nativeint rightIntValue = 0;
-  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
-
-  return divValue(self, vm, rightIntValue, result);
+UnstableNode SmallInt::div(Self self, VM vm, RichNode right) {
+  return divValue(self, vm,
+                  getArgument<nativeint>(vm, right, MOZART_STR("integer")));
 }
 
-void SmallInt::divValue(Self self, VM vm, nativeint b, UnstableNode& result) {
+UnstableNode SmallInt::divValue(Self self, VM vm, nativeint b) {
   nativeint a = value();
 
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
     // No overflow
-    result = SmallInt::build(vm, a / b);
+    return SmallInt::build(vm, a / b);
   } else {
     // Overflow - TODO: create a BigInt
-    result = SmallInt::build(vm, 0);
+    return SmallInt::build(vm, 0);
   }
 }
 
-void SmallInt::mod(Self self, VM vm, RichNode right, UnstableNode& result) {
-  nativeint rightIntValue = 0;
-  getArgument(vm, rightIntValue, right, MOZART_STR("integer"));
-
-  return modValue(self, vm, rightIntValue, result);
+UnstableNode SmallInt::mod(Self self, VM vm, RichNode right) {
+  return modValue(self, vm,
+                  getArgument<nativeint>(vm, right, MOZART_STR("integer")));
 }
 
-void SmallInt::modValue(Self self, VM vm, nativeint b, UnstableNode& result) {
+UnstableNode SmallInt::modValue(Self self, VM vm, nativeint b) {
   nativeint a = value();
 
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
     // No overflow
-    result = SmallInt::build(vm, a % b);
+    return SmallInt::build(vm, a % b);
   } else {
     // Overflow - TODO: create a BigInt
-    result = SmallInt::build(vm, 0);
+    return SmallInt::build(vm, 0);
   }
 }
 
@@ -224,8 +206,8 @@ void SmallInt::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink.write(nStr.get(), length);
 }
 
-void SmallInt::vsLength(Self self, VM vm, nativeint& result) {
-  result = (nativeint) std::to_string(value()).length();
+nativeint SmallInt::vsLength(Self self, VM vm) {
+  return (nativeint) std::to_string(value()).length();
 }
 
 }

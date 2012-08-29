@@ -46,10 +46,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      Numeric(value).isFloat(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, Numeric(value).isFloat(vm));
     }
   };
 
@@ -58,7 +55,7 @@ public:
     Divide(): Builtin("/") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).divide(vm, right, result);
+      result = Numeric(left).divide(vm, right);
     }
   };
 };

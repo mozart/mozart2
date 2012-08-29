@@ -52,8 +52,8 @@ void Unit::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << MOZART_STR("unit");
 }
 
-void Unit::vsLength(Self self, VM vm, nativeint& result) {
-  result = 4;
+nativeint Unit::vsLength(Self self, VM vm) {
+  return 4;
 }
 
 }

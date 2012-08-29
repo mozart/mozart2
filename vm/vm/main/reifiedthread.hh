@@ -54,8 +54,8 @@ bool ReifiedThread::shouldWakeUpUnderSpace(VM vm, Space* space) {
   return _runnable->getSpace()->isAncestor(space);
 }
 
-void ReifiedThread::getThreadPriority(VM vm, ThreadPriority& result) {
-  result = _runnable->getPriority();
+ThreadPriority ReifiedThread::getThreadPriority(VM vm) {
+  return _runnable->getPriority();
 }
 
 void ReifiedThread::setThreadPriority(VM vm, ThreadPriority priority) {

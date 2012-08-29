@@ -49,77 +49,71 @@ bool String::equals(VM vm, Self right) {
 
 // Comparable ------------------------------------------------------------------
 
-void String::compare(Self self, VM vm, RichNode right, int& result) {
-  LString<nchar>* rightString = nullptr;
-  StringLike(right).stringGet(vm, rightString);
-  result = compareByCodePoint(_string, *rightString);
+int String::compare(Self self, VM vm, RichNode right) {
+  auto rightString = StringLike(right).stringGet(vm);
+  return compareByCodePoint(_string, *rightString);
 }
 
 // StringLike ------------------------------------------------------------------
 
-void String::stringGet(Self self, VM vm, LString<nchar>*& result) {
-  result = &_string;
+LString<nchar>* String::stringGet(Self self, VM vm) {
+  return &_string;
 }
 
-void String::stringGet(Self self, VM vm, LString<unsigned char>*& result) {
-  return raiseTypeError(vm, MOZART_STR("ByteString"), self);
+LString<unsigned char>* String::byteStringGet(Self self, VM vm) {
+  raiseTypeError(vm, MOZART_STR("ByteString"), self);
 }
 
-void String::stringCharAt(Self self, VM vm, RichNode indexNode,
-                          nativeint& character) {
-  nativeint index = 0;
-  getArgument(vm, index, indexNode, MOZART_STR("integer"));
+nativeint String::stringCharAt(Self self, VM vm, RichNode indexNode) {
+  auto index = getArgument<nativeint>(vm, indexNode, MOZART_STR("integer"));
 
   LString<nchar> slice = sliceByCodePointsFromTo(_string, index, index+1);
   if (slice.isError()) {
     if (slice.error == UnicodeErrorReason::indexOutOfBounds)
-      return raiseIndexOutOfBounds(vm, indexNode, self);
+      raiseIndexOutOfBounds(vm, indexNode, self);
     else
-      return raiseUnicodeError(vm, slice.error, self);
+      raiseUnicodeError(vm, slice.error, self);
   }
 
   char32_t codePoint;
   nativeint length;
   std::tie(codePoint, length) = fromUTF(slice.string, slice.length);
   if (length <= 0)
-    return raiseUnicodeError(vm, (UnicodeErrorReason) length, self, indexNode);
+    raiseUnicodeError(vm, (UnicodeErrorReason) length, self, indexNode);
 
-  character = codePoint;
+  return codePoint;
 }
 
-void String::stringAppend(Self self, VM vm, RichNode right,
-                          UnstableNode& result) {
-  LString<nchar>* rightString = nullptr;
-  StringLike(right).stringGet(vm, rightString);
-  LString<nchar> resultString = concatLString(vm, _string, *rightString);
+UnstableNode String::stringAppend(Self self, VM vm, RichNode right) {
+  auto rightString = StringLike(right).stringGet(vm);
+  auto resultString = concatLString(vm, _string, *rightString);
+
   if (resultString.isError())
-    return raiseUnicodeError(vm, resultString.error, self, right);
-  result = String::build(vm, resultString);
+    raiseUnicodeError(vm, resultString.error, self, right);
+
+  return String::build(vm, resultString);
 }
 
-void String::stringSlice(Self self, VM vm, RichNode from, RichNode to,
-                         UnstableNode& result) {
-  nativeint fromIndex = 0, toIndex = 0;
-  getArgument(vm, fromIndex, from, MOZART_STR("integer"));
-  getArgument(vm, toIndex, to, MOZART_STR("integer"));
+UnstableNode String::stringSlice(Self self, VM vm, RichNode from, RichNode to) {
+  auto fromIndex = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
+  auto toIndex = getArgument<nativeint>(vm, to, MOZART_STR("integer"));
 
   LString<nchar> resultString =
     sliceByCodePointsFromTo(_string, fromIndex, toIndex);
 
   if (resultString.isError()) {
     if (resultString.error == UnicodeErrorReason::indexOutOfBounds)
-      return raiseIndexOutOfBounds(vm, self, from, to);
+      raiseIndexOutOfBounds(vm, self, from, to);
     else
-      return raiseUnicodeError(vm, resultString.error, self);
+      raiseUnicodeError(vm, resultString.error, self);
   }
 
-  result = String::build(vm, resultString);
+  return String::build(vm, resultString);
 }
 
 void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
                           UnstableNode& begin, UnstableNode& end) {
-  nativeint fromIndex = 0;
-  getArgument(vm, fromIndex, from, MOZART_STR("integer"));
+  auto fromIndex = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
 
   nchar utf[4];
   mut::BaseLString<nchar> needleStorage;
@@ -134,8 +128,9 @@ void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
       char32_t codePoint = (char32_t) codePointInteger;
       nativeint length = toUTF(codePoint, utf);
       if (length <= 0)
-        return raiseUnicodeError(vm, (UnicodeErrorReason) length, needleNode);
-      needle = new (&needleStorage) BaseLString<nchar> (utf, length);
+        raiseUnicodeError(vm, (UnicodeErrorReason) length, needleNode);
+
+      needle = new (&needleStorage) BaseLString<nchar>(utf, length);
 
 #ifdef _LIBCPP_TYPE_TRAITS
       static_assert(std::is_trivially_destructible<BaseLString<nchar>>::value,
@@ -148,11 +143,7 @@ void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
 #endif
 
     } else {
-
-      LString<nchar>* stringNeedle = nullptr;
-      StringLike(needleNode).stringGet(vm, stringNeedle);
-      needle = stringNeedle;
-
+      needle = StringLike(needleNode).stringGet(vm);
     }
   }
 
@@ -161,9 +152,9 @@ void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
 
   if (haystack.isError()) {
     if (haystack.error == UnicodeErrorReason::indexOutOfBounds)
-      return raiseIndexOutOfBounds(vm, self, from);
+      raiseIndexOutOfBounds(vm, self, from);
     else
-      return raiseUnicodeError(vm, haystack.error, self);
+      raiseUnicodeError(vm, haystack.error, self);
   }
 
   const nchar* foundIter = std::search(haystack.begin(), haystack.end(),
@@ -183,54 +174,48 @@ void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
   }
 }
 
-void String::stringHasPrefix(Self self, VM vm, RichNode prefixNode,
-                             bool& result) {
-  LString<nchar>* prefix = nullptr;
-  StringLike(prefixNode).stringGet(vm, prefix);
+bool String::stringHasPrefix(Self self, VM vm, RichNode prefixNode) {
+  auto prefix = StringLike(prefixNode).stringGet(vm);
   if (_string.length < prefix->length)
-    result = false;
+    return false;
   else
-    result = (memcmp(_string.string, prefix->string,
-                     prefix->bytesCount()) == 0);
+    return memcmp(_string.string, prefix->string, prefix->bytesCount()) == 0;
 }
 
-void String::stringHasSuffix(Self self, VM vm, RichNode suffixNode,
-                             bool& result) {
-  LString<nchar>* suffix = nullptr;
-  StringLike(suffixNode).stringGet(vm, suffix);
+bool String::stringHasSuffix(Self self, VM vm, RichNode suffixNode) {
+  auto suffix = StringLike(suffixNode).stringGet(vm);
   if (_string.length < suffix->length)
-    result = false;
+    return false;
   else
-    result = (memcmp(_string.end() - suffix->length, suffix->string,
-                     suffix->bytesCount()) == 0);
+    return memcmp(_string.end() - suffix->length, suffix->string,
+                  suffix->bytesCount()) == 0;
 }
 
 // Dottable --------------------------------------------------------------------
 
-void String::lookupFeature(Self self, VM vm, RichNode feature,
-                           bool& found, nullable<UnstableNode&> value) {
+bool String::lookupFeature(Self self, VM vm, RichNode feature,
+                           nullable<UnstableNode&> value) {
   using namespace patternmatching;
 
   nativeint featureIntValue = 0;
 
   // Fast-path for the integer case
   if (matches(vm, feature, capture(featureIntValue))) {
-    return lookupFeature(self, vm, featureIntValue, found, value);
+    return lookupFeature(self, vm, featureIntValue, value);
   } else {
     requireFeature(vm, feature);
-    found = false;
+    return false;
   }
 }
 
-void String::lookupFeature(Self self, VM vm, nativeint feature,
-                           bool& found, nullable<UnstableNode&> value) {
+bool String::lookupFeature(Self self, VM vm, nativeint feature,
+                           nullable<UnstableNode&> value) {
   LString<nchar> slice = sliceByCodePointsFromTo(_string, feature, feature+1);
   if (slice.isError()) {
     if (slice.error == UnicodeErrorReason::indexOutOfBounds) {
-      found = false;
-      return;
+      return false;
     } else {
-      return raiseUnicodeError(vm, slice.error, self);
+      raiseUnicodeError(vm, slice.error, self);
     }
   }
 
@@ -238,11 +223,11 @@ void String::lookupFeature(Self self, VM vm, nativeint feature,
   nativeint length;
   std::tie(codePoint, length) = fromUTF(slice.string, slice.length);
   if (length <= 0)
-    return raiseUnicodeError(vm, (UnicodeErrorReason) length, self, feature);
+    raiseUnicodeError(vm, (UnicodeErrorReason) length, self, feature);
 
-  found = true;
   if (value.isDefined())
     value.get() = mozart::build(vm, (nativeint) codePoint);
+  return true;
 }
 
 // VirtualString ---------------------------------------------------------------
@@ -251,8 +236,8 @@ void String::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << _string;
 }
 
-void String::vsLength(Self self, VM vm, nativeint& result) {
-  result = codePointCount(_string);
+nativeint String::vsLength(Self self, VM vm) {
+  return codePointCount(_string);
 }
 
 // Miscellaneous ---------------------------------------------------------------

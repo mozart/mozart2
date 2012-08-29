@@ -80,8 +80,8 @@ public:
 public:
   // BuiltinCallable interface
 
-  void isBuiltin(VM vm, bool& result) {
-    result = true;
+  bool isBuiltin(VM vm) {
+    return true;
   }
 
   /**
@@ -97,23 +97,23 @@ public:
   inline
   void callBuiltin(Self self, VM vm, Args&&... args);
 
-  void getBuiltin(RichNode self, VM vm, builtins::BaseBuiltin*& result) {
-    result = _builtin;
+  builtins::BaseBuiltin* getBuiltin(RichNode self, VM vm) {
+    return _builtin;
   }
 
 public:
   // Callable interface
 
-  void isCallable(Self self, VM vm, bool& result) {
-    result = true;
+  bool isCallable(Self self, VM vm) {
+    return true;
   }
 
-  void isProcedure(Self self, VM vm, bool& result) {
-    result = true;
+  bool isProcedure(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void procedureArity(Self self, VM vm, size_t& result);
+  size_t procedureArity(Self self, VM vm);
 
   inline
   void getCallInfo(Self self, VM vm, size_t& arity,
@@ -185,16 +185,16 @@ public:
 public:
   // Callable interface
 
-  void isCallable(Self self, VM vm, bool& result) {
-    result = true;
+  bool isCallable(Self self, VM vm) {
+    return true;
   }
 
-  void isProcedure(Self self, VM vm, bool& result) {
-    result = true;
+  bool isProcedure(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void procedureArity(Self self, VM vm, size_t& result);
+  size_t procedureArity(Self self, VM vm);
 
   /**
    * Get the information needed to call this abstraction

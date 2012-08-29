@@ -46,10 +46,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      AtomLike(value).isAtom(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, AtomLike(value).isAtom(vm));
     }
   };
 };

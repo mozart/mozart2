@@ -46,10 +46,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      Callable(value).isProcedure(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, Callable(value).isProcedure(vm));
     }
   };
 
@@ -58,10 +55,7 @@ public:
     Arity(): Builtin("arity") {}
 
     void operator()(VM vm, In procedure, Out result) {
-      size_t intResult = 0;
-      Callable(procedure).procedureArity(vm, intResult);
-
-      result = SmallInt::build(vm, intResult);
+      result = build(vm, Callable(procedure).procedureArity(vm));
     }
   };
 };

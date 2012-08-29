@@ -46,10 +46,8 @@ public:
     Make(): Builtin("make") {}
 
     void operator()(VM vm, In label, In width, Out result) {
-      nativeint intWidth = 0;
-      getArgument(vm, intWidth, width, MOZART_STR("integer"));
-
-      return makeTuple(vm, result, label, intWidth);
+      auto intWidth = getArgument<nativeint>(vm, width, MOZART_STR("Integer"));
+      result = makeTuple(vm, label, intWidth);
     }
   };
 
@@ -58,10 +56,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      RecordLike(value).isTuple(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, RecordLike(value).isTuple(vm));
     }
   };
 };

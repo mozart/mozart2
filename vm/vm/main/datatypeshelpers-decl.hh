@@ -43,53 +43,55 @@ public:
   // Literal interface
 
   inline
-  void isLiteral(Self self, VM vm, bool& result);
+  bool isLiteral(Self self, VM vm) {
+    return true;
+  }
 
 public:
   // Dottable interface
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 public:
   // RecordLike interface
 
-  void isRecord(Self self, VM vm, bool& result) {
-    result = true;
+  bool isRecord(Self self, VM vm) {
+    return true;
   }
 
-  void isTuple(Self self, VM vm, bool& result) {
-    result = true;
+  bool isTuple(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void label(Self self, VM vm, UnstableNode& result);
+  UnstableNode label(Self self, VM vm);
 
   inline
-  void width(Self self, VM vm, size_t& result);
+  size_t width(Self self, VM vm);
 
   inline
-  void arityList(Self self, VM vm, UnstableNode& result);
+  UnstableNode arityList(Self self, VM vm);
 
   inline
-  void clone(Self self, VM vm, UnstableNode& result);
+  UnstableNode clone(Self self, VM vm);
 
   inline
-  void waitOr(Self self, VM vm, UnstableNode& result);
+  UnstableNode waitOr(Self self, VM vm);
 
   inline
-  void testRecord(Self self, VM vm, RichNode arity, bool& result);
+  bool testRecord(Self self, VM vm, RichNode arity);
 
   inline
-  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
+  bool testTuple(Self self, VM vm, RichNode label, size_t width);
 
   inline
-  void testLabel(Self self, VM vm, RichNode label, bool& result);
+  bool testLabel(Self self, VM vm, RichNode label);
 };
 
 ///////////////////////////
@@ -106,21 +108,20 @@ public:
   // Dottable interface
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 private:
   bool internalIsValidFeature(Self self, VM vm, nativeint feature) {
     return static_cast<This>(this)->isValidFeature(self, vm, feature);
   }
 
-  void internalGetValueAt(Self self, VM vm, nativeint feature,
-                          UnstableNode& result) {
-    static_cast<This>(this)->getValueAt(self, vm, feature, result);
+  UnstableNode internalGetValueAt(Self self, VM vm, nativeint feature) {
+    return static_cast<This>(this)->getValueAt(self, vm, feature);
   }
 
 protected:
@@ -129,7 +130,7 @@ protected:
   bool isValidFeature(Self self, VM vm, nativeint feature);
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
   */
 };
 

@@ -69,10 +69,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      SpaceLike(value).isSpace(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, SpaceLike(value).isSpace(vm));
     }
   };
 
@@ -81,7 +78,7 @@ public:
     Ask(): Builtin("ask") {}
 
     void operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).askSpace(vm, result);
+      result = SpaceLike(space).askSpace(vm);
     }
   };
 
@@ -90,7 +87,7 @@ public:
     AskVerbose(): Builtin("askVerbose") {}
 
     void operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).askVerboseSpace(vm, result);
+      result = SpaceLike(space).askVerboseSpace(vm);
     }
   };
 
@@ -99,7 +96,7 @@ public:
     Merge(): Builtin("merge") {}
 
     void operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).mergeSpace(vm, result);
+      result = SpaceLike(space).mergeSpace(vm);
     }
   };
 
@@ -108,7 +105,7 @@ public:
     Clone(): Builtin("clone") {}
 
     void operator()(VM vm, In space, Out result) {
-      return SpaceLike(space).cloneSpace(vm, result);
+      result = SpaceLike(space).cloneSpace(vm);
     }
   };
 
@@ -135,15 +132,15 @@ public:
     Choose(): Builtin("choose") {}
 
     void operator()(VM vm, In alts, Out result) {
-      nativeint alternatives = 0;
-      getArgument(vm, alternatives, alts, MOZART_STR("integer"));
+      auto alternatives = getArgument<nativeint>(vm, alts,
+                                                 MOZART_STR("integer"));
 
       Space* space = vm->getCurrentSpace();
 
       if (space->isTopLevel()) {
         result = OptVar::build(vm);
       } else if (space->hasDistributor()) {
-        return raise(vm, MOZART_STR("spaceDistributor"));
+        raise(vm, MOZART_STR("spaceDistributor"));
       } else {
         ChooseDistributor* distributor =
           new (vm) ChooseDistributor(vm, space, alternatives);

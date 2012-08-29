@@ -46,10 +46,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      Numeric(value).isNumber(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, Numeric(value).isNumber(vm));
     }
   };
 
@@ -58,7 +55,7 @@ public:
     Opposite(): Builtin("~") {}
 
     void operator()(VM vm, In operand, Out result) {
-      return Numeric(operand).opposite(vm, result);
+      result = Numeric(operand).opposite(vm);
     }
   };
 
@@ -67,7 +64,7 @@ public:
     Add(): Builtin("+") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).add(vm, right, result);
+      result = Numeric(left).add(vm, right);
     }
   };
 
@@ -76,7 +73,7 @@ public:
     Subtract(): Builtin("-") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).subtract(vm, right, result);
+      result = Numeric(left).subtract(vm, right);
     }
   };
 
@@ -85,7 +82,7 @@ public:
     Multiply(): Builtin("*") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      return Numeric(left).multiply(vm, right, result);
+      result = Numeric(left).multiply(vm, right);
     }
   };
 };

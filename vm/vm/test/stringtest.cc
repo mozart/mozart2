@@ -23,23 +23,17 @@ TEST_F(StringTest, Build) {
 
 TEST_F(StringTest, IsString) {
   UnstableNode node1 = String::build(vm, MOZART_STR("foo"));
-  bool isString = false;
-  EXPECT_PROCEED(StringLike(node1).isString(vm, isString));
-  EXPECT_TRUE(isString);
+  EXPECT_TRUE(StringLike(node1).isString(vm));
 
   UnstableNode node2 = Atom::build(vm, MOZART_STR("foo"));
-  EXPECT_PROCEED(StringLike(node2).isString(vm, isString));
-  EXPECT_FALSE(isString);
+  EXPECT_FALSE(StringLike(node2).isString(vm));
 }
 
 TEST_F(StringTest, NotIsRecord) {
   for (const nchar* s : stringTestVector) {
     UnstableNode node = String::build(vm, newLString(vm, s));
-    bool res = true;
-    EXPECT_PROCEED(RecordLike(node).isRecord(vm, res));
-    EXPECT_FALSE(res);
-    EXPECT_PROCEED(RecordLike(node).isTuple(vm, res));
-    EXPECT_FALSE(res);
+    EXPECT_FALSE(RecordLike(node).isRecord(vm));
+    EXPECT_FALSE(RecordLike(node).isTuple(vm));
   }
 }
 
@@ -48,7 +42,6 @@ TEST_F(StringTest, Equals) {
     UnstableNode sNode = String::build(vm, newLString(vm, s));
     for (const nchar* t : stringTestVector) {
       UnstableNode tNode = String::build(vm, newLString(vm, t));
-
       UnstableNode tNodeCopy = String::build(vm, newLString(vm, t));
 
       bool stEquals = (s == t);
@@ -71,17 +64,14 @@ TEST_F(StringTest, CharAt) {
   UnstableNode one = SmallInt::build(vm, 1);
   UnstableNode two = SmallInt::build(vm, 2);
 
-  nativeint result = 0;
-  EXPECT_PROCEED(StringLike(b).stringCharAt(vm, zero, result));
-  EXPECT_EQ(0x12345, result);
+  EXPECT_EQ(0x12345, StringLike(b).stringCharAt(vm, zero));
 
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringCharAt(vm, two, result));
+               StringLike(b).stringCharAt(vm, two));
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringCharAt(vm, minusOne, result));
+               StringLike(b).stringCharAt(vm, minusOne));
 
-  EXPECT_PROCEED(StringLike(b).stringCharAt(vm, one, result));
-  EXPECT_EQ(0x6789, result);
+  EXPECT_EQ(0x6789, StringLike(b).stringCharAt(vm, one));
 }
 
 TEST_F(StringTest, Append) {
@@ -89,20 +79,16 @@ TEST_F(StringTest, Append) {
   UnstableNode b2 = String::build(vm, MOZART_STR("\U000def01"));
   UnstableNode b0 = String::build(vm, MOZART_STR(""));
 
-  UnstableNode b12i;
-  EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b2, b12i));
+  UnstableNode b12i = StringLike(b1).stringAppend(vm, b2);
   EXPECT_EQ_STRING(MOZART_STR("abc\U000def01"), b12i);
 
-  UnstableNode b11i;
-  EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b1, b11i));
+  UnstableNode b11i = StringLike(b1).stringAppend(vm, b1);
   EXPECT_EQ_STRING(MOZART_STR("abcabc"), b11i);
 
-  UnstableNode b00i;
-  EXPECT_PROCEED(StringLike(b0).stringAppend(vm, b0, b00i));
+  UnstableNode b00i = StringLike(b0).stringAppend(vm, b0);
   EXPECT_EQ_STRING(MOZART_STR(""), b00i);
 
-  UnstableNode b10i;
-  EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b0, b10i));
+  UnstableNode b10i = StringLike(b1).stringAppend(vm, b0);
   EXPECT_EQ_STRING(MOZART_STR("abc"), b10i);
 }
 
@@ -121,17 +107,17 @@ TEST_F(StringTest, SliceByCharCode) {
   UnstableNode result;
 
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringSlice(vm, minusOne, zero, result));
+               StringLike(b).stringSlice(vm, minusOne, zero));
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringSlice(vm, five, six, result));
+               StringLike(b).stringSlice(vm, five, six));
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringSlice(vm, three, two, result));
+               StringLike(b).stringSlice(vm, three, two));
 
-  EXPECT_PROCEED(StringLike(b).stringSlice(vm, two, four, result));
-  EXPECT_EQ_STRING(MOZART_STR("b\u6789"), result);
+  EXPECT_EQ_STRING(MOZART_STR("b\u6789"),
+                   StringLike(b).stringSlice(vm, two, four));
 
-  EXPECT_PROCEED(StringLike(b).stringSlice(vm, zero, three, result));
-  EXPECT_EQ_STRING(MOZART_STR("a\U00012345b"), result);
+  EXPECT_EQ_STRING(MOZART_STR("a\U00012345b"),
+                   StringLike(b).stringSlice(vm, zero, three));
 }
 
 TEST_F(StringTest, Compare) {
@@ -146,8 +132,7 @@ TEST_F(StringTest, Compare) {
 
   for (int i = 0; i < 3; ++ i) {
     for (int j = 0; j < 3; ++ j) {
-      int res = 0;
-      EXPECT_PROCEED(Comparable(nodes[i]).compare(vm, nodes[j], res));
+      int res = Comparable(nodes[i]).compare(vm, nodes[j]);
       EXPECT_EQ(results[i][j]<0, res<0);
       EXPECT_EQ(results[i][j]==0, res==0);
       EXPECT_EQ(results[i][j]>0, res>0);
@@ -168,29 +153,28 @@ TEST_F(StringTest, StrChr) {
   UnstableNode charInvalid = SmallInt::build(vm, 0xd800);
 
   UnstableNode begin, end;
+
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
                StringLike(b).stringSearch(vm, minusOne, char2, begin, end));
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
                StringLike(b).stringSearch(vm, six, char2, begin, end));
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, begin, end));
+  StringLike(b).stringSearch(vm, zero, char2, begin, end);
   EXPECT_EQ_INT(1, begin);
   EXPECT_EQ_INT(2, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, begin, end));
+  StringLike(b).stringSearch(vm, one, char2, begin, end);
   EXPECT_EQ_INT(1, begin);
   EXPECT_EQ_INT(2, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, begin, end));
+  StringLike(b).stringSearch(vm, two, char2, begin, end);
   EXPECT_EQ_INT(3, begin);
   EXPECT_EQ_INT(4, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, begin, end));
+  StringLike(b).stringSearch(vm, four, char2, begin, end);
   for (auto node : {&begin, &end}) {
     if (EXPECT_IS<Boolean>(*node)) {
-      bool value = false;
-      EXPECT_PROCEED(BooleanValue(*node).boolValue(vm, value));
-      EXPECT_FALSE(value);
+      EXPECT_FALSE(BooleanValue(*node).boolValue(vm));
     }
   }
 
@@ -213,23 +197,24 @@ TEST_F(StringTest, Search) {
   UnstableNode eight = SmallInt::build(vm, 8);
 
   UnstableNode begin, end;
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, begin, end));
+
+  StringLike(b).stringSearch(vm, zero, needle, begin, end);
   EXPECT_EQ_INT(3, begin);
   EXPECT_EQ_INT(6, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, begin, end));
+  StringLike(b).stringSearch(vm, three, needle, begin, end);
   EXPECT_EQ_INT(3, begin);
   EXPECT_EQ_INT(6, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, begin, end));
+  StringLike(b).stringSearch(vm, four, needle, begin, end);
   EXPECT_EQ_INT(5, begin);
   EXPECT_EQ_INT(8, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, begin, end));
+  StringLike(b).stringSearch(vm, six, needle, begin, end);
   EXPECT_EQ_INT(7, begin);
   EXPECT_EQ_INT(10, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, begin, end));
+  StringLike(b).stringSearch(vm, eight, needle, begin, end);
   if (EXPECT_IS<Boolean>(begin)) {
     EXPECT_FALSE(RichNode(begin).as<Boolean>().value());
   }

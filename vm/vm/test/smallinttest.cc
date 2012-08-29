@@ -22,9 +22,7 @@ TEST_F(SmallIntTest, Add) {
     for (nativeint right = -5; right <= 5; right++) {
       UnstableNode rightNode = SmallInt::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).add(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).add(vm, rightNode);
       EXPECT_EQ_INT(left + right, resultNode);
     }
   }
@@ -37,9 +35,7 @@ TEST_F(SmallIntTest, Subtract) {
     for (nativeint right = -5; right <= 5; right++) {
       UnstableNode rightNode = SmallInt::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).subtract(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).subtract(vm, rightNode);
       EXPECT_EQ_INT(left - right, resultNode);
     }
   }
@@ -52,9 +48,7 @@ TEST_F(SmallIntTest, Multiply) {
     for (nativeint right = -5; right <= 5; right++) {
       UnstableNode rightNode = SmallInt::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).multiply(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).multiply(vm, rightNode);
       EXPECT_EQ_INT(left * right, resultNode);
     }
   }
@@ -70,9 +64,7 @@ TEST_F(SmallIntTest, Div) {
 
       UnstableNode rightNode = SmallInt::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).div(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).div(vm, rightNode);
       EXPECT_EQ_INT(left / right, resultNode);
     }
   }
@@ -88,9 +80,7 @@ TEST_F(SmallIntTest, Mod) {
 
       UnstableNode rightNode = SmallInt::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).mod(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).mod(vm, rightNode);
       EXPECT_EQ_INT(left % right, resultNode);
     }
   }

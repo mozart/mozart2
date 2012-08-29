@@ -57,12 +57,13 @@ private:
     } else if (matches(vm, encodingNode, MOZART_STR("utf32"))) {
       encoding = ByteStringEncoding::utf8;
     } else {
-      return raiseTypeError(vm, MOZART_STR("latin1, utf8, utf16 or utf32"),
-                            encodingNode);
+      raiseTypeError(vm, MOZART_STR("latin1, utf8, utf16 or utf32"),
+                     encodingNode);
     }
 
     variant = EncodingVariant::none;
-    return ozListForEach(vm, encodingVariantList,
+
+    ozListForEach(vm, encodingVariantList,
       [&](atom_t atom) {
         auto atomLStr = makeLString(atom.contents(), atom.length());
         if (atomLStr == MOZART_STR("bom")) {
@@ -72,7 +73,7 @@ private:
         } else if (atomLStr == MOZART_STR("bigEndian")) {
           variant &= ~EncodingVariant::littleEndian;
         } else {
-          return raiseTypeError(
+          raiseTypeError(
             vm, MOZART_STR("list of bom, littleEndian or bigEndian"),
             encodingVariantList);
         }
@@ -88,9 +89,7 @@ public:
     Is() : Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      StringLike(value).isByteString(vm, boolResult);
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, StringLike(value).isByteString(vm));
     }
   };
 
@@ -104,10 +103,8 @@ public:
       EncodingVariant variant = EncodingVariant::none;
       parseEncoding(vm, encodingNode, variantNode, encoding, variant);
 
-      bool isVirtualString = false;
-      VirtualString(string).isVirtualString(vm, isVirtualString);
-      if (!isVirtualString)
-        return raiseTypeError(vm, MOZART_STR("VirtualString"), string);
+      if (!VirtualString(string).isVirtualString(vm))
+        raiseTypeError(vm, MOZART_STR("VirtualString"), string);
 
       std::basic_ostringstream<nchar> combinedStringStream;
       VirtualString(string).toString(vm, combinedStringStream);
@@ -115,7 +112,7 @@ public:
       auto rawString = makeLString(combinedString.data(),
                                    combinedString.size());
 
-      return encodeToBytestring(vm, rawString, encoding, variant, result);
+      result = encodeToBytestring(vm, rawString, encoding, variant);
     }
   };
 
@@ -125,14 +122,19 @@ public:
 
     void operator()(VM vm, In value, In encodingNode,
                     In variantNode, Out result) {
-      if (!value.is<ByteString>())
-        return raiseTypeError(vm, MOZART_STR("ByteString"), value);
+      // TODO Fix this test
+      if (!value.is<ByteString>()) {
+        if (value.isTransient())
+          waitFor(vm, value);
+        else
+          raiseTypeError(vm, MOZART_STR("ByteString"), value);
+      }
 
       ByteStringEncoding encoding = ByteStringEncoding::utf8;
       EncodingVariant variant = EncodingVariant::none;
       parseEncoding(vm, encodingNode, variantNode, encoding, variant);
 
-      return value.as<ByteString>().decode(vm, encoding, variant, result);
+      result = value.as<ByteString>().decode(vm, encoding, variant);
     }
   };
 };

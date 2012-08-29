@@ -66,15 +66,15 @@ public:
 public:
   // VirtualString inteface
 
-  void isVirtualString(Self self, VM vm, bool& result) {
-    result = true;
+  bool isVirtualString(Self self, VM vm) {
+    return true;
   }
 
   inline
   void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  void vsLength(Self self, VM vm, nativeint& result);
+  nativeint vsLength(Self self, VM vm);
 
 public:
   // Miscellaneous

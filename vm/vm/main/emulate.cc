@@ -128,9 +128,7 @@ namespace {
     UnstableNode featureNode = build(vm, std::forward<Feat>(feature));
     UnstableNode defaultNode = build(vm, std::forward<Def>(def));
 
-    UnstableNode result;
-    Dottable(record).condSelect(vm, featureNode, defaultNode, result);
-    return result;
+    return Dottable(record).condSelect(vm, featureNode, defaultNode);
   }
 
   inline
@@ -628,12 +626,9 @@ void Thread::run() {
         }
 
         case OpCondBranch: {
-          BoolOrNotBool testValue = bNotBool;
-          BooleanValue(XPC(1)).valueOrNotBool(vm, testValue);
-
           int distance;
 
-          switch (testValue) {
+          switch (BooleanValue(XPC(1)).valueOrNotBool(vm)) {
             case bFalse: distance = IntPC(2); break;
             case bTrue:  distance = IntPC(3); break;
             default:     distance = IntPC(4);
@@ -881,57 +876,41 @@ void Thread::run() {
               case OpCreateStructAbstraction: {
                 // Abstractions have token equality, so it's always a failure
                 fail(vm);
-                break;
               }
 
               case OpCreateStructCons: {
                 if (readDest.is<Cons>()) {
                   array = readDest.as<Cons>().getElementsArray();
+                  break;
                 } else {
                   fail(vm);
                 }
-                break;
               }
 
               case OpCreateStructTuple: {
                 if (readDest.is<Tuple>() &&
-                    (readDest.as<Tuple>().getWidth() == length)) {
-                  bool sameLabel = false;
-                  equals(vm, *readDest.as<Tuple>().getLabel(), KPC(1),
-                         sameLabel);
-
-                  if (sameLabel) {
-                    array = readDest.as<Tuple>().getElementsArray();
-                  } else {
-                    fail(vm);
-                  }
+                    (readDest.as<Tuple>().getWidth() == length) &&
+                    equals(vm, *readDest.as<Tuple>().getLabel(), KPC(1))) {
+                  array = readDest.as<Tuple>().getElementsArray();
+                  break;
                 } else {
                   fail(vm);
                 }
-                break;
               }
 
               case OpCreateStructRecord: {
                 // Don't test the width. It's not needed and usually it succeeds.
-                if (readDest.is<Record>()) {
-                  bool sameArity = false;
-                  equals(vm, *readDest.as<Record>().getArity(), KPC(1),
-                         sameArity);
-
-                  if (sameArity) {
-                    array = readDest.as<Record>().getElementsArray();
-                  } else {
-                    fail(vm);
-                  }
+                if (readDest.is<Record>() &&
+                    equals(vm, *readDest.as<Record>().getArity(), KPC(1))) {
+                  array = readDest.as<Record>().getElementsArray();
+                  break;
                 } else {
                   fail(vm);
                 }
-                break;
               }
 
               default: {
                 assert(false);
-                return;
               }
             }
           } // isStoreMode || readDest.isTransient()
@@ -1071,10 +1050,7 @@ void Thread::run() {
         // Inlines for some builtins
 
         case OpInlineEqualsInteger: {
-          bool resultValue = false;
-          IntegerValue(XPC(1)).equalsInteger(vm, IntPC(2), resultValue);
-
-          if (resultValue)
+          if (IntegerValue(XPC(1)).equalsInteger(vm, IntPC(2)))
             advancePC(3);
           else
             advancePC(3 + IntPC(3));
@@ -1276,10 +1252,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
 
     assert(jumpOffset >= 0);
 
-    bool matchResult = false;
-    mozart::patternMatch(vm, value, pattern, xregs->getArray(), matchResult);
-
-    if (matchResult) {
+    if (mozart::patternMatch(vm, value, pattern, xregs->getArray())) {
       advancePC(2 + jumpOffset);
       return;
     }
@@ -1374,12 +1347,9 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
   auto arity = RichNode(*srcRecord.getArity()).as<Arity>();
 
   UnstableNode debugAtom = build(vm, vm->coreatoms.debug);
-  bool hasFeatureDebug = false;
   size_t debugFeatureIndex = 0;
 
-  arity.lookupFeature(vm, debugAtom, hasFeatureDebug, debugFeatureIndex);
-
-  if (!hasFeatureDebug)
+  if (!arity.lookupFeature(vm, debugAtom, debugFeatureIndex))
     return build(vm, exception);
 
   if (!RichNode(*srcRecord.getElement(debugFeatureIndex)).is<Unit>())

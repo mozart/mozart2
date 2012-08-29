@@ -312,9 +312,7 @@ bool matchesElementsAgainstPatternList(
 template <>
 inline
 bool matchesSimple(VM vm, RichNode value, nativeint pattern) {
-  bool res = false;
-  IntegerValue(value).equalsInteger(vm, pattern, res);
-  return res;
+  return IntegerValue(value).equalsInteger(vm, pattern);
 }
 
 template <>
@@ -333,9 +331,7 @@ bool matchesSimple(VM vm, RichNode value,
 template <>
 inline
 bool matchesSimple(VM vm, RichNode value, bool pattern) {
-  BoolOrNotBool boolValue = bNotBool;
-  BooleanValue(value).valueOrNotBool(vm, boolValue);
-  return boolValue == (pattern ? bTrue : bFalse);
+  return BooleanValue(value).valueOrNotBool(vm) == (pattern ? bTrue : bFalse);
 }
 
 template <>
@@ -389,9 +385,7 @@ bool matchesSimple(VM vm, RichNode value, unique_name_t pattern) {
 template <>
 inline
 bool matchesSimple(VM vm, RichNode value, RichNode pattern) {
-  bool res = false;
-  equals(vm, value, pattern, res);
-  return res;
+  return equals(vm, value, pattern);
 }
 
 template <class T>

@@ -67,10 +67,10 @@ void WalkStack::clear(VM vm) {
 
 void fullUnify(VM vm, RichNode left, RichNode right);
 
-void fullEquals(VM vm, RichNode left, RichNode right, bool& result);
+bool fullEquals(VM vm, RichNode left, RichNode right);
 
-void fullPatternMatch(VM vm, RichNode value, RichNode pattern,
-                      StaticArray<UnstableNode> captures, bool& result);
+bool fullPatternMatch(VM vm, RichNode value, RichNode pattern,
+                      StaticArray<UnstableNode> captures);
 
 #ifndef MOZART_GENERATOR
 
@@ -85,24 +85,22 @@ void unify(VM vm, RichNode left, RichNode right) {
   if (leftBehavior == sbVariable) {
     if (rightBehavior == sbVariable) {
       if (leftType.getBindingPriority() > rightType.getBindingPriority())
-        return DataflowVariable(left).bind(vm, right);
+        DataflowVariable(left).bind(vm, right);
       else
-        return DataflowVariable(right).bind(vm, left);
+        DataflowVariable(right).bind(vm, left);
     } else {
-      return DataflowVariable(left).bind(vm, right);
+      DataflowVariable(left).bind(vm, right);
     }
   } else if (rightBehavior == sbVariable) {
-    return DataflowVariable(right).bind(vm, left);
+    DataflowVariable(right).bind(vm, left);
+  } else {
+    fullUnify(vm, left, right);
   }
-
-  return fullUnify(vm, left, right);
 }
 
-void equals(VM vm, RichNode left, RichNode right, bool& result) {
-  if (left.isSameNode(right)) {
-    result = true;
-    return;
-  }
+bool equals(VM vm, RichNode left, RichNode right) {
+  if (left.isSameNode(right))
+    return true;
 
   auto leftType = left.type();
   auto rightType = right.type();
@@ -111,35 +109,26 @@ void equals(VM vm, RichNode left, RichNode right, bool& result) {
   StructuralBehavior rightBehavior = rightType.getStructuralBehavior();
 
   if (leftBehavior != sbVariable && rightBehavior != sbVariable) {
-    if (leftType != rightType) {
-      result = false;
-      return;
-    }
+    if (leftType != rightType)
+      return false;
 
     switch (leftBehavior) {
       case sbValue:
-        result = ValueEquatable(left).equals(vm, right);
-        return;
+        return ValueEquatable(left).equals(vm, right);
 
       case sbTokenEq:
-        result = false;
-        return;
+        return false;
 
       default: ; // fall through
     }
   }
 
-  return fullEquals(vm, left, right, result);
+  return fullEquals(vm, left, right);
 }
 
-void notEquals(VM vm, RichNode left, RichNode right, bool& result) {
-  equals(vm, left, right, result);
-  result = !result;
-}
-
-void patternMatch(VM vm, RichNode value, RichNode pattern,
-                  StaticArray<UnstableNode> captures, bool& result) {
-  return fullPatternMatch(vm, value, pattern, captures, result);
+bool patternMatch(VM vm, RichNode value, RichNode pattern,
+                  StaticArray<UnstableNode> captures) {
+  return fullPatternMatch(vm, value, pattern, captures);
 }
 
 #endif // MOZART_GENERATOR

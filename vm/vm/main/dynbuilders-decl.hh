@@ -43,18 +43,17 @@ inline
 void requireLiteral(VM vm, RichNode label);
 
 inline
-void makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width);
+UnstableNode makeTuple(VM vm, RichNode label, size_t width);
 
 template <class T>
 inline
-void buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
-                       size_t width, T elements[]);
+UnstableNode buildTupleDynamic(VM vm, RichNode label, size_t width,
+                               T elements[]);
 
 template <class T, class ElemToValue>
 inline
-void buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
-                       size_t width, T elements[],
-                       ElemToValue elemToValue);
+UnstableNode buildTupleDynamic(VM vm, RichNode label, size_t width,
+                               T elements[], ElemToValue elemToValue);
 
 ///////////
 // Lists //
@@ -84,13 +83,12 @@ void sortFeatures(VM vm, size_t width, T features[]);
 
 template <class T>
 inline
-void buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
-                       RichNode label, size_t width, T elements[]);
+UnstableNode buildArityDynamic(VM vm, RichNode label, size_t width,
+                               T elements[]);
 
 inline
-void buildRecordDynamic(VM vm, UnstableNode& result,
-                        RichNode label, size_t width,
-                        UnstableField elements[]);
+UnstableNode buildRecordDynamic(VM vm, RichNode label, size_t width,
+                                UnstableField elements[]);
 
 }
 

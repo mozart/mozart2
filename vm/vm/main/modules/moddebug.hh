@@ -46,8 +46,7 @@ public:
     GetRaiseOnBlock(): Builtin("getRaiseOnBlock") {}
 
     void operator()(VM vm, In thread, Out result) {
-      Runnable* runnable = nullptr;
-      getArgument(vm, runnable, thread, MOZART_STR("Thread"));
+      auto runnable = getArgument<Runnable*>(vm, thread, MOZART_STR("Thread"));
 
       result = build(vm, runnable->getRaiseOnBlock());
     }
@@ -58,10 +57,8 @@ public:
     SetRaiseOnBlock(): Builtin("setRaiseOnBlock") {}
 
     void operator()(VM vm, In thread, In value) {
-      Runnable* runnable = nullptr;
-      bool boolValue = false;
-      getArgument(vm, runnable, thread, MOZART_STR("Thread"));
-      getArgument(vm, boolValue, value, MOZART_STR("Boolean"));
+      auto runnable = getArgument<Runnable*>(vm, thread, MOZART_STR("Thread"));
+      auto boolValue = getArgument<bool>(vm, value, MOZART_STR("Boolean"));
 
       runnable->setRaiseOnBlock(boolValue);
     }

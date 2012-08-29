@@ -66,34 +66,33 @@ public:
   // Comparable interface
 
   inline
-  void compare(Self self, VM vm, RichNode right, int& result);
+  int compare(Self self, VM vm, RichNode right);
 
 public:
   // StringLike interface
 
-  void isString(Self self, VM vm, bool& result) {
-    result = true;
+  bool isString(Self self, VM vm) {
+    return true;
   }
 
-  void isByteString(Self self, VM vm, bool& result) {
-    result = false;
+  bool isByteString(Self self, VM vm) {
+    return false;
   }
 
   inline
-  void stringGet(Self self, VM vm, LString<nchar>*& result);
+  LString<nchar>* stringGet(Self self, VM vm);
 
   inline
-  void stringGet(Self self, VM vm, LString<unsigned char>*& result);
+  LString<unsigned char>* byteStringGet(Self self, VM vm);
 
   inline
-  void stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
+  nativeint stringCharAt(Self self, VM vm, RichNode offset);
 
   inline
-  void stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
+  UnstableNode stringAppend(Self self, VM vm, RichNode right);
 
   inline
-  void stringSlice(Self self, VM vm, RichNode from, RichNode to,
-                   UnstableNode& result);
+  UnstableNode stringSlice(Self self, VM vm, RichNode from, RichNode to);
 
   // Search for a string or a character.
   inline
@@ -101,10 +100,10 @@ public:
                     UnstableNode& begin, UnstableNode& end);
 
   inline
-  void stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
+  bool stringHasPrefix(Self self, VM vm, RichNode prefix);
 
   inline
-  void stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
+  bool stringHasSuffix(Self self, VM vm, RichNode suffix);
 
 public:
   // Dottable interface
@@ -113,25 +112,25 @@ public:
   // is not trivial)
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 public:
   // VirtualString inteface
 
-  void isVirtualString(Self self, VM vm, bool& result) {
-    result = true;
+  bool isVirtualString(Self self, VM vm) {
+    return true;
   }
 
   inline
   void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  void vsLength(Self self, VM vm, nativeint& result);
+  nativeint vsLength(Self self, VM vm);
 
 public:
   // Miscellaneous

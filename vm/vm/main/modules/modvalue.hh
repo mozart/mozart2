@@ -46,7 +46,7 @@ public:
     Dot(): Builtin(".") {}
 
     void operator()(VM vm, In value, In feature, Out result) {
-      return Dottable(value).dot(vm, feature, result);
+      result = Dottable(value).dot(vm, feature);
     }
   };
 
@@ -55,7 +55,7 @@ public:
     DotAssign(): Builtin("dotAssign") {}
 
     void operator()(VM vm, In value, In feature, In newValue) {
-      return DotAssignable(value).dotAssign(vm, feature, newValue);
+      DotAssignable(value).dotAssign(vm, feature, newValue);
     }
   };
 
@@ -64,7 +64,7 @@ public:
     DotExchange(): Builtin("dotExchange") {}
 
     void operator()(VM vm, In value, In feature, In newValue, Out oldValue) {
-      return DotAssignable(value).dotExchange(vm, feature, newValue, oldValue);
+      oldValue = DotAssignable(value).dotExchange(vm, feature, newValue);
     }
   };
 
@@ -73,12 +73,12 @@ public:
     CatAccess(): Builtin("catAccess") {}
 
     void operator()(VM vm, In reference, Out result) {
-      return catHelper(vm, reference,
+      catHelper(vm, reference,
         [&result] (VM vm, Dottable dottable, RichNode feature) {
-          dottable.dot(vm, feature, result);
+          result = dottable.dot(vm, feature);
         },
         [&result] (VM vm, CellLike cellLike) {
-          cellLike.access(vm, result);
+          result = cellLike.access(vm);
         }
       );
     }
@@ -89,7 +89,7 @@ public:
     CatAssign(): Builtin("catAssign") {}
 
     void operator()(VM vm, In reference, In newValue) {
-      return catHelper(vm, reference,
+      catHelper(vm, reference,
         [newValue] (VM vm, DotAssignable dotAssignable, RichNode feature) {
           dotAssignable.dotAssign(vm, feature, newValue);
         },
@@ -105,13 +105,13 @@ public:
     CatExchange(): Builtin("catExchange") {}
 
     void operator()(VM vm, In reference, In newValue, Out oldValue) {
-      return catHelper(vm, reference,
+      catHelper(vm, reference,
         [newValue, &oldValue] (VM vm, DotAssignable dotAssignable,
                                RichNode feature) {
-          dotAssignable.dotExchange(vm, feature, newValue, oldValue);
+          oldValue = dotAssignable.dotExchange(vm, feature, newValue);
         },
         [newValue, &oldValue] (VM vm, CellLike cellLike) {
-          cellLike.exchange(vm, newValue, oldValue);
+          oldValue = cellLike.exchange(vm, newValue);
         }
       );
     }
@@ -122,15 +122,15 @@ public:
     CatAccessOO(): Builtin("catAccessOO") {}
 
     void operator()(VM vm, In self, In reference, Out result) {
-      return catOOHelper(vm, self, reference,
-        [&result] (VM vm, Dottable dotAssignable, RichNode feature) {
-          dotAssignable.dot(vm, feature, result);
+      catOOHelper(vm, self, reference,
+        [&result] (VM vm, Dottable dottable, RichNode feature) {
+          result = dottable.dot(vm, feature);
         },
         [&result] (VM vm, CellLike cellLike) {
-          cellLike.access(vm, result);
+          result = cellLike.access(vm);
         },
         [&result] (VM vm, ObjectLike self, RichNode attr) {
-          self.attrGet(vm, attr, result);
+          result = self.attrGet(vm, attr);
         }
       );
     }
@@ -141,7 +141,7 @@ public:
     CatAssignOO(): Builtin("catAssignOO") {}
 
     void operator()(VM vm, In self, In reference, In newValue) {
-      return catOOHelper(vm, self, reference,
+      catOOHelper(vm, self, reference,
         [newValue] (VM vm, DotAssignable dotAssignable, RichNode feature) {
           dotAssignable.dotAssign(vm, feature, newValue);
         },
@@ -159,18 +159,17 @@ public:
   public:
     CatExchangeOO(): Builtin("catExchangeOO") {}
 
-    void operator()(VM vm, In self, In reference,
-                        In newValue, Out oldValue) {
-      return catOOHelper(vm, self, reference,
+    void operator()(VM vm, In self, In reference, In newValue, Out oldValue) {
+      catOOHelper(vm, self, reference,
         [newValue, &oldValue] (VM vm, DotAssignable dotAssignable,
                                RichNode feature) {
-          dotAssignable.dotExchange(vm, feature, newValue, oldValue);
+          oldValue = dotAssignable.dotExchange(vm, feature, newValue);
         },
         [newValue, &oldValue] (VM vm, CellLike cellLike) {
-          cellLike.exchange(vm, newValue, oldValue);
+          oldValue = cellLike.exchange(vm, newValue);
         },
         [newValue, &oldValue] (VM vm, ObjectLike self, RichNode attr) {
-          self.attrExchange(vm, attr, newValue, oldValue);
+          oldValue = self.attrExchange(vm, attr, newValue);
         }
       );
     }
@@ -181,10 +180,7 @@ public:
     EqEq(): Builtin("==") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      bool res = false;
-      equals(vm, left, right, res);
-
-      result = Boolean::build(vm, res);
+      result = build(vm, equals(vm, left, right));
     }
   };
 
@@ -193,10 +189,7 @@ public:
     NotEqEq(): Builtin("\\=") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      bool res = false;
-      notEquals(vm, left, right, res);
-
-      result = Boolean::build(vm, res);
+      result = build(vm, !equals(vm, left, right));
     }
   };
 
@@ -244,10 +237,8 @@ public:
     IsFree(): Builtin("isFree") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool res = value.isTransient() &&
-        !value.is<ReadOnly>() && !value.is<FailedValue>();
-
-      result = Boolean::build(vm, res);
+      result = build(vm, value.isTransient() &&
+        !value.is<ReadOnly>() && !value.is<FailedValue>());
     }
   };
 
@@ -257,7 +248,7 @@ public:
 
     void operator()(VM vm, In value, Out result) {
       // TODO Update this when we actually have kinded values
-      result = Boolean::build(vm, false);
+      result = build(vm, false);
     }
   };
 
@@ -266,7 +257,7 @@ public:
     IsFuture(): Builtin("isFuture") {}
 
     void operator()(VM vm, In value, Out result) {
-      result = Boolean::build(vm, value.is<ReadOnly>());
+      result = build(vm, value.is<ReadOnly>());
     }
   };
 
@@ -275,7 +266,7 @@ public:
     IsFailed(): Builtin("isFailed") {}
 
     void operator()(VM vm, In value, Out result) {
-      result = Boolean::build(vm, value.is<FailedValue>());
+      result = build(vm, value.is<FailedValue>());
     }
   };
 
@@ -284,7 +275,7 @@ public:
     IsDet(): Builtin("isDet") {}
 
     void operator()(VM vm, In value, Out result) {
-      result = Boolean::build(vm, !value.isTransient());
+      result = build(vm, !value.isTransient());
     }
   };
 
@@ -312,7 +303,7 @@ public:
 
     void operator()(VM vm, In value, Out result) {
       if (value.isTransient())
-        return waitFor(vm, value);
+        waitFor(vm, value);
 
       result = build(vm, value.type()->getTypeAtom(vm));
     }
@@ -323,8 +314,7 @@ public:
     IsNeeded(): Builtin("isNeeded") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = DataflowVariable(value).isNeeded(vm);
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, DataflowVariable(value).isNeeded(vm));
     }
   };
 
@@ -333,10 +323,7 @@ public:
     LowerEqual(): Builtin("=<") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      int res = 0;
-      Comparable(left).compare(vm, right, res);
-
-      result = Boolean::build(vm, res <= 0);
+      result = build(vm, Comparable(left).compare(vm, right) <= 0);
     }
   };
 
@@ -345,10 +332,7 @@ public:
     LowerThan(): Builtin("<") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      int res = 0;
-      Comparable(left).compare(vm, right, res);
-
-      result = Boolean::build(vm, res < 0);
+      result = build(vm, Comparable(left).compare(vm, right) < 0);
     }
   };
 
@@ -357,10 +341,7 @@ public:
     GreaterEqual(): Builtin(">=") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      int res = 0;
-      Comparable(left).compare(vm, right, res);
-
-      result = Boolean::build(vm, res >= 0);
+      result = build(vm, Comparable(left).compare(vm, right) >= 0);
     }
   };
 
@@ -369,10 +350,7 @@ public:
     GreaterThan(): Builtin(">") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      int res = 0;
-      Comparable(left).compare(vm, right, res);
-
-      result = Boolean::build(vm, res > 0);
+      result = build(vm, Comparable(left).compare(vm, right) > 0);
     }
   };
 
@@ -381,10 +359,7 @@ public:
     HasFeature(): Builtin("hasFeature") {}
 
     void operator()(VM vm, In record, In feature, Out result) {
-      bool boolResult = false;
-      Dottable(record).hasFeature(vm, feature, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, Dottable(record).hasFeature(vm, feature));
     }
   };
 
@@ -393,7 +368,7 @@ public:
     CondSelect(): Builtin("condSelect") {}
 
     void operator()(VM vm, In record, In feature, In def, Out result) {
-      return Dottable(record).condSelect(vm, feature, def, result);
+      result = Dottable(record).condSelect(vm, feature, def);
     }
   };
 
@@ -434,17 +409,12 @@ private:
 
     UnstableNode dotAssignable, feature;
 
-    if (matchesSharp(vm, value, capture(dotAssignable), capture(feature))) {
+    if (matchesSharp(vm, value, capture(dotAssignable), capture(feature)))
       fDotAssignable(vm, dotAssignable, feature);
-    } else {
-      bool isCell;
-      CellLike(value).isCell(vm, isCell);
-
-      if (isCell)
-        fCellLike(vm, value);
-      else
-        fOther(vm, value);
-    }
+    else if (CellLike(value).isCell(vm))
+      fCellLike(vm, value);
+    else
+      fOther(vm, value);
   }
 
   template <class FDotAssignable, class FCellLike>

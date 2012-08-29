@@ -57,10 +57,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      ThreadLike(value).isThread(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, ThreadLike(value).isThread(vm));
     }
   };
 
@@ -78,8 +75,7 @@ public:
     GetPriority(): Builtin("getPriority") {}
 
     void operator()(VM vm, In thread, Out result) {
-      ThreadPriority prio = tpMiddle;
-      ThreadLike(thread).getThreadPriority(vm, prio);
+      ThreadPriority prio = ThreadLike(thread).getThreadPriority(vm);
 
       switch (prio) {
         case tpLow: result = build(vm, MOZART_STR("low")); break;
@@ -107,10 +103,10 @@ public:
       } else if (matches(vm, priority, MOZART_STR("high"))) {
         prio = tpHi;
       } else {
-        return raiseTypeError(vm, MOZART_STR("low, medium or high"), priority);
+        raiseTypeError(vm, MOZART_STR("low, medium or high"), priority);
       }
 
-      return ThreadLike(thread).setThreadPriority(vm, prio);
+      ThreadLike(thread).setThreadPriority(vm, prio);
     }
   };
 
@@ -119,7 +115,7 @@ public:
     InjectException(): Builtin("injectException") {}
 
     void operator()(VM vm, In thread, In exception) {
-      return ThreadLike(thread).injectException(vm, exception);
+      ThreadLike(thread).injectException(vm, exception);
     }
   };
 };

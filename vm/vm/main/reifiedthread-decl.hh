@@ -78,12 +78,12 @@ public:
 public:
   // ThreadLike interface
 
-  void isThread(Self self, VM vm, bool& result) {
-    result = true;
+  bool isThread(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void getThreadPriority(VM vm, ThreadPriority& result);
+  ThreadPriority getThreadPriority(VM vm);
 
   inline
   void setThreadPriority(VM vm, ThreadPriority priority);

@@ -55,10 +55,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      DictionaryLike(value).isDictionary(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, DictionaryLike(value).isDictionary(vm));
     }
   };
 
@@ -67,10 +64,7 @@ public:
     IsEmpty(): Builtin("isEmpty") {}
 
     void operator()(VM vm, In dict, Out result) {
-      bool boolResult = false;
-      DictionaryLike(dict).dictIsEmpty(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, DictionaryLike(dict).dictIsEmpty(vm));
     }
   };
 
@@ -79,10 +73,7 @@ public:
     Member(): Builtin("member") {}
 
     void operator()(VM vm, In dict, In feature, Out result) {
-      bool boolResult = false;
-      DictionaryLike(dict).dictMember(vm, feature, boolResult);
-
-      result = build(vm, boolResult);
+      result = build(vm, DictionaryLike(dict).dictMember(vm, feature));
     }
   };
 
@@ -91,7 +82,7 @@ public:
     Get(): Builtin("get") {}
 
     void operator()(VM vm, In dict, In feature, Out result) {
-      return DictionaryLike(dict).dictGet(vm, feature, result);
+      result = DictionaryLike(dict).dictGet(vm, feature);
     }
   };
 
@@ -100,8 +91,7 @@ public:
     CondGet(): Builtin("condGet") {}
 
     void operator()(VM vm, In dict, In feature, In defaultValue, Out result) {
-      return DictionaryLike(dict).dictCondGet(vm, feature, defaultValue,
-                                              result);
+      result = DictionaryLike(dict).dictCondGet(vm, feature, defaultValue);
     }
   };
 
@@ -110,7 +100,7 @@ public:
     Put(): Builtin("put") {}
 
     void operator()(VM vm, In dict, In feature, In newValue) {
-      return DictionaryLike(dict).dictPut(vm, feature, newValue);
+      DictionaryLike(dict).dictPut(vm, feature, newValue);
     }
   };
 
@@ -119,7 +109,7 @@ public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
     void operator()(VM vm, In dict, In feature, In newValue, Out oldValue) {
-      return DictionaryLike(dict).dictExchange(vm, feature, newValue, oldValue);
+      oldValue = DictionaryLike(dict).dictExchange(vm, feature, newValue);
     }
   };
 
@@ -129,8 +119,8 @@ public:
 
     void operator()(VM vm, In dict, In feature, In defaultValue,
                     In newValue, Out oldValue) {
-      return DictionaryLike(dict).dictCondExchange(vm, feature, defaultValue,
-                                                   newValue, oldValue);
+      oldValue = DictionaryLike(dict).dictCondExchange(
+        vm, feature, defaultValue, newValue);
     }
   };
 
@@ -139,7 +129,7 @@ public:
     Remove(): Builtin("remove") {}
 
     void operator()(VM vm, In dict, In feature) {
-      return DictionaryLike(dict).dictRemove(vm, feature);
+      DictionaryLike(dict).dictRemove(vm, feature);
     }
   };
 
@@ -148,7 +138,7 @@ public:
     RemoveAll(): Builtin("removeAll") {}
 
     void operator()(VM vm, In dict) {
-      return DictionaryLike(dict).dictRemoveAll(vm);
+      DictionaryLike(dict).dictRemoveAll(vm);
     }
   };
 
@@ -157,7 +147,7 @@ public:
     Keys(): Builtin("keys") {}
 
     void operator()(VM vm, In dict, Out result) {
-      return DictionaryLike(dict).dictKeys(vm, result);
+      result = DictionaryLike(dict).dictKeys(vm);
     }
   };
 
@@ -166,7 +156,7 @@ public:
     Entries(): Builtin("entries") {}
 
     void operator()(VM vm, In dict, Out result) {
-      return DictionaryLike(dict).dictEntries(vm, result);
+      result = DictionaryLike(dict).dictEntries(vm);
     }
   };
 
@@ -175,7 +165,7 @@ public:
     Items(): Builtin("items") {}
 
     void operator()(VM vm, In dict, Out result) {
-      return DictionaryLike(dict).dictItems(vm, result);
+      result = DictionaryLike(dict).dictItems(vm);
     }
   };
 
@@ -184,7 +174,7 @@ public:
     Clone(): Builtin("clone") {}
 
     void operator()(VM vm, In dict, Out result) {
-      return DictionaryLike(dict).dictClone(vm, result);
+      result = DictionaryLike(dict).dictClone(vm);
     }
   };
 };

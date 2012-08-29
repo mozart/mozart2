@@ -67,8 +67,8 @@ public:
   inline
   void initElement(Self self, VM vm, size_t index, RichNode value);
 
-  void isCodeAreaProvider(VM vm, bool& result) {
-    result = true;
+  bool isCodeAreaProvider(VM vm) {
+    return true;
   }
 
   inline

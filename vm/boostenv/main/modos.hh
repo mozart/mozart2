@@ -60,7 +60,7 @@ public:
     Rand(): Builtin("rand") {}
 
     void operator()(VM vm, Out result) {
-      result = SmallInt::build(vm, BoostBasedVM::forVM(vm).random_generator());
+      result = build(vm, (nativeint) BoostBasedVM::forVM(vm).random_generator());
     }
   };
 
@@ -69,8 +69,7 @@ public:
     Srand(): Builtin("srand") {}
 
     void operator()(VM vm, In seed) {
-      nativeint intSeed;
-      getArgument(vm, intSeed, seed, MOZART_STR("integer"));
+      auto intSeed = getArgument<nativeint>(vm, seed, MOZART_STR("integer"));
 
       BoostBasedVM::forVM(vm).random_generator.seed(
         (BoostBasedVM::random_generator_t::result_type) intSeed);
@@ -82,8 +81,8 @@ public:
     RandLimits(): Builtin("randLimits") {}
 
     void operator()(VM vm, Out min, Out max) {
-      min = SmallInt::build(vm, BoostBasedVM::random_generator_t::min());
-      max = SmallInt::build(vm, BoostBasedVM::random_generator_t::max());
+      min = build(vm, (nativeint) BoostBasedVM::random_generator_t::min());
+      max = build(vm, (nativeint) BoostBasedVM::random_generator_t::max());
     }
   };
 
@@ -94,9 +93,7 @@ public:
     GetEnv(): Builtin("getEnv") {}
 
     void operator()(VM vm, In var, Out result) {
-      std::string strVar;
-      vsToString(vm, var, strVar);
-
+      auto strVar = vsToString<char>(vm, var);
       auto value = std::getenv(strVar.c_str());
 
       if (value == nullptr)
@@ -140,13 +137,12 @@ public:
     Fopen(): Builtin("fopen") {}
 
     void operator()(VM vm, In fileName, In mode, Out result) {
-      std::string strFileName, strMode;
-      ozStringToStdString(vm, fileName, strFileName);
-      ozStringToStdString(vm, mode, strMode);
+      auto strFileName = ozStringToStdString(vm, fileName);
+      auto strMode = ozStringToStdString(vm, mode);
 
       std::FILE* file = std::fopen(strFileName.c_str(), strMode.c_str());
       if (file == nullptr)
-        return raiseLastOSError(vm);
+        raiseLastOSError(vm);
 
       result = build(vm, BoostBasedVM::forVM(vm).registerFile(file));
     }
@@ -158,11 +154,8 @@ public:
 
     void operator()(VM vm, In fd, In count, In end,
                     Out actualCount, Out result) {
-      std::FILE* file = nullptr;
-      BoostBasedVM::forVM(vm).getFile(fd, file);
-
-      nativeint intCount;
-      getArgument(vm, intCount, count, MOZART_STR("integer"));
+      auto file = BoostBasedVM::forVM(vm).getFile(fd);
+      auto intCount = getArgument<nativeint>(vm, count, MOZART_STR("integer"));
 
       if (intCount <= 0) {
         actualCount = build(vm, 0);
@@ -178,7 +171,7 @@ public:
       if ((readCount < bufferSize) && std::ferror(file)) {
         // error
         vm->free(buffer, bufferSize);
-        return raise(vm, MOZART_STR("system"), MOZART_STR("fread"));
+        raise(vm, MOZART_STR("system"), MOZART_STR("fread"));
       }
 
       char* charBuffer = static_cast<char*>(buffer);
@@ -199,11 +192,8 @@ public:
     Fwrite(): Builtin("fwrite") {}
 
     void operator()(VM vm, In fd, In data, Out writtenCount) {
-      std::FILE* file = nullptr;
-      BoostBasedVM::forVM(vm).getFile(fd, file);
-
-      size_t size = 0;
-      ozListLength(vm, data, size);
+      auto file = BoostBasedVM::forVM(vm).getFile(fd);
+      size_t size = ozListLength(vm, data);
 
       if (size == 0)
         return;
@@ -212,7 +202,7 @@ public:
       ozStringToBuffer(vm, data, size, static_cast<char*>(buffer));
 
       if (std::fwrite(buffer, 1, size, file) != size)
-        return raiseLastOSError(vm);
+        raiseLastOSError(vm);
 
       writtenCount = build(vm, size);
     }
@@ -225,11 +215,8 @@ public:
     void operator()(VM vm, In fd, In offset, In whence, Out where) {
       using namespace patternmatching;
 
-      std::FILE* file = nullptr;
-      BoostBasedVM::forVM(vm).getFile(fd, file);
-
-      nativeint intOffset;
-      getArgument(vm, intOffset, offset, MOZART_STR("integer"));
+      auto file = BoostBasedVM::forVM(vm).getFile(fd);
+      auto intOffset = getArgument<nativeint>(vm, offset, MOZART_STR("integer"));
 
       int intWhence;
       if (matches(vm, whence, MOZART_STR("SEEK_SET"))) {
@@ -239,16 +226,16 @@ public:
       } else if (matches(vm, whence, MOZART_STR("SEEK_END"))) {
         intWhence = SEEK_END;
       } else {
-        return raiseTypeError(
+        raiseTypeError(
           vm, MOZART_STR("'SEEK_SET', 'SEEK_CUR' or 'SEEK_END'"), whence);
       }
 
-      auto seekResult = std::fseek(file, (long) intOffset, intWhence);
+      nativeint seekResult = std::fseek(file, (long) intOffset, intWhence);
 
       if (seekResult < 0)
-        return raiseLastOSError(vm);
+        raiseLastOSError(vm);
 
-      where = SmallInt::build(vm, seekResult);
+      where = build(vm, seekResult);
     }
   };
 
@@ -259,19 +246,17 @@ public:
     void operator()(VM vm, In fd) {
       BoostBasedVM& env = BoostBasedVM::forVM(vm);
 
-      nativeint intfd = 0;
-      getArgument(vm, intfd, fd, MOZART_STR("filedesc"));
+      auto intfd = getArgument<nativeint>(vm, fd, MOZART_STR("filedesc"));
 
       // Never actually close standard I/O
       if ((intfd == env.fdStdin) || (intfd == env.fdStdout) ||
           (intfd == env.fdStderr))
         return;
 
-      std::FILE* file = nullptr;
-      env.getFile(intfd, file);
+      auto file = env.getFile(intfd);
 
       if (std::fclose(file) != 0)
-        return raiseLastOSError(vm);
+        raiseLastOSError(vm);
 
       env.unregisterFile(intfd);
     }
@@ -282,7 +267,7 @@ public:
     Stdin(): Builtin("stdin") {}
 
     void operator()(VM vm, Out result) {
-      result = SmallInt::build(vm, BoostBasedVM::forVM(vm).fdStdin);
+      result = build(vm, BoostBasedVM::forVM(vm).fdStdin);
     }
   };
 
@@ -291,7 +276,7 @@ public:
     Stdout(): Builtin("stdout") {}
 
     void operator()(VM vm, Out result) {
-      result = SmallInt::build(vm, BoostBasedVM::forVM(vm).fdStdout);
+      result = build(vm, BoostBasedVM::forVM(vm).fdStdout);
     }
   };
 
@@ -300,7 +285,7 @@ public:
     Stderr(): Builtin("stderr") {}
 
     void operator()(VM vm, Out result) {
-      result = SmallInt::build(vm, BoostBasedVM::forVM(vm).fdStderr);
+      result = build(vm, BoostBasedVM::forVM(vm).fdStderr);
     }
   };
 
@@ -313,16 +298,16 @@ public:
     void operator()(VM vm, In ipVersion, In port, Out result) {
       using boost::asio::ip::tcp;
 
-      nativeint intIPVersion, intPort;
-
-      getArgument(vm, intIPVersion, ipVersion, MOZART_STR("4 or 6"));
+      auto intIPVersion = getArgument<nativeint>(vm, ipVersion,
+                                                 MOZART_STR("4 or 6"));
       if ((intIPVersion != 4) && (intIPVersion != 6))
-        return raiseTypeError(vm, MOZART_STR("4 or 6"), ipVersion);
+        raiseTypeError(vm, MOZART_STR("4 or 6"), ipVersion);
 
-      getArgument(vm, intPort, port, MOZART_STR("valid port number"));
+      auto intPort = getArgument<nativeint>(vm, port,
+                                            MOZART_STR("valid port number"));
       if ((intPort <= 0) ||
           (intPort > std::numeric_limits<unsigned short>::max()))
-        return raiseTypeError(vm, MOZART_STR("valid port number"), port);
+        raiseTypeError(vm, MOZART_STR("valid port number"), port);
 
       tcp::endpoint endpoint;
       if (intIPVersion == 4)
@@ -344,8 +329,8 @@ public:
     TCPAccept(): Builtin("tcpAccept") {}
 
     void operator()(VM vm, In acceptor, Out result) {
-      std::shared_ptr<TCPAcceptor> tcpAcceptor;
-      getArgument(vm, tcpAcceptor, acceptor, MOZART_STR("TCP acceptor"));
+      auto tcpAcceptor = getArgument<std::shared_ptr<TCPAcceptor> >(
+        vm, acceptor, MOZART_STR("TCP acceptor"));
 
       StableNode** connectionNode;
       BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(connectionNode, result);
@@ -359,13 +344,12 @@ public:
     TCPCancelAccept(): Builtin("tcpCancelAccept") {}
 
     void operator()(VM vm, In acceptor) {
-      std::shared_ptr<TCPAcceptor> tcpAcceptor;
-      getArgument(vm, tcpAcceptor, acceptor, MOZART_STR("TCP acceptor"));
+      auto tcpAcceptor = getArgument<std::shared_ptr<TCPAcceptor> >(
+        vm, acceptor, MOZART_STR("TCP acceptor"));
 
       auto error = tcpAcceptor->cancel();
       if (!error)
-        return raise(vm, MOZART_STR("system"),
-                     MOZART_STR("cancel"), error.value());
+        raise(vm, MOZART_STR("system"), MOZART_STR("cancel"), error.value());
     }
   };
 
@@ -374,13 +358,12 @@ public:
     TCPAcceptorClose(): Builtin("tcpAcceptorClose") {}
 
     void operator()(VM vm, In acceptor) {
-      std::shared_ptr<TCPAcceptor> tcpAcceptor;
-      getArgument(vm, tcpAcceptor, acceptor, MOZART_STR("TCP acceptor"));
+      auto tcpAcceptor = getArgument<std::shared_ptr<TCPAcceptor> >(
+        vm, acceptor, MOZART_STR("TCP acceptor"));
 
       auto error = tcpAcceptor->close();
       if (error)
-        return raise(vm, MOZART_STR("system"),
-                     MOZART_STR("close"), error.value());
+        raise(vm, MOZART_STR("system"), MOZART_STR("close"), error.value());
     }
   };
 
@@ -389,9 +372,8 @@ public:
     TCPConnect(): Builtin("tcpConnect") {}
 
     void operator()(VM vm, In host, In service, Out status) {
-      std::string strHost, strService;
-      ozStringToStdString(vm, host, strHost);
-      ozStringToStdString(vm, service, strService);
+      auto strHost = ozStringToStdString(vm, host);
+      auto strService = ozStringToStdString(vm, service);
 
       auto tcpConnection = TCPConnection::create(BoostBasedVM::forVM(vm));
 
@@ -408,12 +390,11 @@ public:
 
     void operator()(VM vm, In connection, In count, In tail, Out status) {
       // Fetch the TCP connection
-      std::shared_ptr<TCPConnection> tcpConnection;
-      getArgument(vm, tcpConnection, connection, MOZART_STR("TCP connection"));
+      auto tcpConnection = getArgument<std::shared_ptr<TCPConnection> >(
+        vm, connection, MOZART_STR("TCP connection"));
 
       // Fetch the count
-      nativeint intCount;
-      getArgument(vm, intCount, count, MOZART_STR("integer"));
+      auto intCount = getArgument<nativeint>(vm, count, MOZART_STR("integer"));
 
       // 0 size
       if (intCount <= 0) {
@@ -441,8 +422,8 @@ public:
 
     void operator()(VM vm, In connection, In data, Out status) {
       // Fetch the TCP connection
-      std::shared_ptr<TCPConnection> tcpConnection;
-      getArgument(vm, tcpConnection, connection, MOZART_STR("TCP connection"));
+      auto tcpConnection = getArgument<std::shared_ptr<TCPConnection> >(
+        vm, connection, MOZART_STR("TCP connection"));
 
       // Fetch the data to write
       ozStringToBuffer(vm, data, tcpConnection->getWriteData());
@@ -469,8 +450,8 @@ public:
       using boost::asio::ip::tcp;
 
       // Fetch the TCP connection
-      std::shared_ptr<TCPConnection> tcpConnection;
-      getArgument(vm, tcpConnection, connection, MOZART_STR("TCP connection"));
+      auto tcpConnection = getArgument<std::shared_ptr<TCPConnection> >(
+        vm, connection, MOZART_STR("TCP connection"));
 
       // Fetch what channels must be shut down
       tcp::socket::shutdown_type whatValue;
@@ -481,8 +462,7 @@ public:
       } else if (matches(vm, what, MOZART_STR("both"))) {
         whatValue = tcp::socket::shutdown_both;
       } else {
-        return raiseTypeError(
-          vm, MOZART_STR("'receive', 'send' or 'both'"), what);
+        raiseTypeError(vm, MOZART_STR("'receive', 'send' or 'both'"), what);
       }
 
       try {
@@ -501,8 +481,8 @@ public:
       using boost::asio::ip::tcp;
 
       // Fetch the TCP connection
-      std::shared_ptr<TCPConnection> tcpConnection;
-      getArgument(vm, tcpConnection, connection, MOZART_STR("TCP connection"));
+      auto tcpConnection = getArgument<std::shared_ptr<TCPConnection> >(
+        vm, connection, MOZART_STR("TCP connection"));
 
       try {
         tcpConnection->socket().shutdown(tcp::socket::shutdown_both);

@@ -46,9 +46,7 @@ public:
     Is() : Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      StringLike(value).isString(vm, boolResult);
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, StringLike(value).isString(vm));
     }
   };
 
@@ -57,8 +55,7 @@ public:
     ToAtom() : Builtin("toAtom") {}
 
     void operator()(VM vm, In value, Out result) {
-      LString<nchar>* content = nullptr;
-      StringLike(value).stringGet(vm, content);
+      auto content = StringLike(value).stringGet(vm);
       result = Atom::build(vm, content->length, content->string);
     }
   };
@@ -68,9 +65,7 @@ public:
     CharAt() : Builtin("charAt") {}
 
     void operator()(VM vm, In value, In index, Out result) {
-      nativeint charResult = 0;
-      StringLike(value).stringCharAt(vm, index, charResult);
-      result = SmallInt::build(vm, charResult);
+      result = build(vm, StringLike(value).stringCharAt(vm, index));
     }
   };
 
@@ -79,7 +74,7 @@ public:
     Append() : Builtin("append") {}
 
     void operator()(VM vm, In left, In right, Out result) {
-      return StringLike(left).stringAppend(vm, right, result);
+      result = StringLike(left).stringAppend(vm, right);
     }
   };
 
@@ -88,7 +83,7 @@ public:
     Slice() : Builtin("slice") {}
 
     void operator()(VM vm, In value, In from, In to, Out result) {
-      return StringLike(value).stringSlice(vm, from, to, result);
+      result = StringLike(value).stringSlice(vm, from, to);
     }
   };
 
@@ -106,9 +101,7 @@ public:
     HasPrefix() : Builtin("hasPrefix") {}
 
     void operator()(VM vm, In string, In prefix, Out result) {
-      bool boolResult = false;
-      StringLike(string).stringHasPrefix(vm, prefix, boolResult);
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, StringLike(string).stringHasPrefix(vm, prefix));
     }
   };
 
@@ -117,9 +110,7 @@ public:
     HasSuffix() : Builtin("hasSuffix") {}
 
     void operator()(VM vm, In string, In suffix, Out result) {
-      bool boolResult = false;
-      StringLike(string).stringHasSuffix(vm, suffix, boolResult);
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, StringLike(string).stringHasSuffix(vm, suffix));
     }
   };
 };

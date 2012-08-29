@@ -1004,10 +1004,12 @@ define
             end | {Loop Rest}
 
          % testBool(R L1 L2) becomes condBranch(R L1 L3 L2) | lbl(L3)
-         [] testBool(R L1 L2) | Rest then
+         [] testBool(R=x(_) L1 L2) | Rest then
             L3 = {NewName}
          in
             condBranch(R L1 L3 L2) | lbl(L3) | {Loop Rest}
+         [] testBool(R L1 L2) | Rest then
+            {Loop move(R x(UserXCount)) | testBool(x(UserXCount) L1 L2) | Rest}
 
          % match and other testX become a deep pattern matching
          [] match(R HashTable) | Rest then

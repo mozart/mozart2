@@ -55,10 +55,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      CellLike(value).isCell(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, CellLike(value).isCell(vm));
     }
   };
 
@@ -67,7 +64,7 @@ public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
     void operator()(VM vm, In cell, In newValue, Out oldValue) {
-      return CellLike(cell).exchange(vm, newValue, oldValue);
+      oldValue = CellLike(cell).exchange(vm, newValue);
     }
   };
 
@@ -76,7 +73,7 @@ public:
     Access(): Builtin("access") {}
 
     void operator()(VM vm, In cell, Out result) {
-      return CellLike(cell).access(vm, result);
+      result = CellLike(cell).access(vm);
     }
   };
 
@@ -85,7 +82,7 @@ public:
     Assign(): Builtin("assign") {}
 
     void operator()(VM vm, In cell, In newValue) {
-      return CellLike(cell).assign(vm, newValue);
+      CellLike(cell).assign(vm, newValue);
     }
   };
 };

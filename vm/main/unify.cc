@@ -87,18 +87,18 @@ private:
 void fullUnify(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkUnify);
   if (!walk.run(vm, left, right))
-    return fail(vm);
+    fail(vm);
 }
 
-void fullEquals(VM vm, RichNode left, RichNode right, bool& result) {
+bool fullEquals(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkEquals);
-  result = walk.run(vm, left, right);
+  return walk.run(vm, left, right);
 }
 
-void fullPatternMatch(VM vm, RichNode value, RichNode pattern,
-                      StaticArray<UnstableNode> captures, bool& result) {
+bool fullPatternMatch(VM vm, RichNode value, RichNode pattern,
+                      StaticArray<UnstableNode> captures) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkPatternMatch, captures);
-  result = walk.run(vm, value, pattern);
+  return walk.run(vm, value, pattern);
 }
 
 ////////////////////
@@ -221,7 +221,6 @@ bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
     // TODO Replace initial operands by unstableLeft and unstableRight
 
     waitFor(vm, controlVar);
-    return false; // not reachable
   }
 
   /* No need to undo temporary bindings here, even if we are in wkEquals mode.
@@ -293,11 +292,9 @@ bool StructuralDualWalk::processPair(VM vm, RichNode left, RichNode right) {
       if (leftBehavior == sbVariable) {
         assert(leftType.isTransient());
         waitFor(vm, left);
-        return false; // not reachable
       } else if (rightBehavior == sbVariable) {
         assert(rightType.isTransient());
         waitFor(vm, right);
-        return false; // not reachable
       }
 
       break;
@@ -372,23 +369,18 @@ void StructuralDualWalk::doConjunction(VM vm, RichNode value,
 
 bool StructuralDualWalk::doOpenRecord(VM vm, RichNode value,
                                       RichNode pattern) {
-  bool boolResult = false;
   auto pat = pattern.as<PatMatOpenRecord>();
   auto arity = RichNode(*pat.getArity()).as<Arity>();
 
   // Check that the value is a record
 
-  RecordLike(value).isRecord(vm, boolResult);
-  if (!boolResult)
+  if (!RecordLike(value).isRecord(vm))
     return false;
 
   // Check that the labels match
 
-  UnstableNode recordLabel;
-  RecordLike(value).label(vm, recordLabel);
-
-  equals(vm, *arity.getLabel(), recordLabel, boolResult);
-  if (!boolResult)
+  auto label = RecordLike(value).label(vm);
+  if (!equals(vm, *arity.getLabel(), label))
     return false;
 
   // Now iterate over the features of the pattern
@@ -396,12 +388,10 @@ bool StructuralDualWalk::doOpenRecord(VM vm, RichNode value,
   for (size_t i = 0; i < arity.getArraySize(); i++) {
     RichNode feature = *arity.getElement(i);
 
-    Dottable(value).hasFeature(vm, feature, boolResult);
-    if (!boolResult)
+    if (!Dottable(value).hasFeature(vm, feature))
       return false;
 
-    UnstableNode lhsValue;
-    Dottable(value).dot(vm, feature, lhsValue);
+    auto lhsValue = Dottable(value).dot(vm, feature);
     StableNode* rhsValue = pat.getElement(i);
 
     stack.push(vm, RichNode(lhsValue).getStableRef(vm), rhsValue);

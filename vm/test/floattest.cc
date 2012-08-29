@@ -22,9 +22,7 @@ TEST_F(FloatTest, Add) {
     for (double right = -5; right <= 5; right++) {
       UnstableNode rightNode = Float::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).add(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).add(vm, rightNode);
       EXPECT_EQ_FLOAT(left + right, resultNode);
     }
   }
@@ -37,9 +35,7 @@ TEST_F(FloatTest, Subtract) {
     for (double right = -5; right <= 5; right++) {
       UnstableNode rightNode = Float::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).subtract(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).subtract(vm, rightNode);
       EXPECT_EQ_FLOAT(left - right, resultNode);
     }
   }
@@ -52,9 +48,7 @@ TEST_F(FloatTest, Multiply) {
     for (double right = -5; right <= 5; right++) {
       UnstableNode rightNode = Float::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).multiply(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).multiply(vm, rightNode);
       EXPECT_EQ_FLOAT(left * right, resultNode);
     }
   }
@@ -70,9 +64,7 @@ TEST_F(FloatTest, Divide) {
 
       UnstableNode rightNode = Float::build(vm, right);
 
-      UnstableNode resultNode;
-      Numeric(leftNode).divide(vm, rightNode, resultNode);
-
+      UnstableNode resultNode = Numeric(leftNode).divide(vm, rightNode);
       EXPECT_EQ_FLOAT(left / right, resultNode);
     }
   }

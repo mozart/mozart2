@@ -80,71 +80,69 @@ protected:
   }
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
 
 public:
   // Comparable interface
 
   inline
-  void compare(Self self, VM vm, RichNode right, int& result);
+  int compare(Self self, VM vm, RichNode right);
 
 public:
   // StringLike interface
 
-  void isString(Self self, VM vm, bool& result) {
-    result = false;
+  bool isString(Self self, VM vm) {
+    return false;
   }
 
-  void isByteString(Self self, VM vm, bool& result) {
-    result = true;
+  bool isByteString(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void stringGet(Self self, VM vm, LString<nchar>*& result);
+  LString<nchar>* stringGet(Self self, VM vm);
 
   inline
-  void stringGet(Self self, VM vm, LString<unsigned char>*& result);
+  LString<unsigned char>* byteStringGet(Self self, VM vm);
 
   inline
-  void stringCharAt(Self self, VM vm, RichNode offset, nativeint& character);
+  nativeint stringCharAt(Self self, VM vm, RichNode offset);
 
   inline
-  void stringAppend(Self self, VM vm, RichNode right, UnstableNode& result);
+  UnstableNode stringAppend(Self self, VM vm, RichNode right);
 
   inline
-  void stringSlice(Self self, VM vm,
-                   RichNode from, RichNode to, UnstableNode& result);
+  UnstableNode stringSlice(Self self, VM vm, RichNode from, RichNode to);
 
   inline
   void stringSearch(Self self, VM vm, RichNode from, RichNode needle,
                     UnstableNode& begin, UnstableNode& end);
 
   inline
-  void stringHasPrefix(Self self, VM vm, RichNode prefix, bool& result);
+  bool stringHasPrefix(Self self, VM vm, RichNode prefix);
 
   inline
-  void stringHasSuffix(Self self, VM vm, RichNode suffix, bool& result);
+  bool stringHasSuffix(Self self, VM vm, RichNode suffix);
 
 public:
   // VirtualString interface
 
-  void isVirtualString(Self self, VM vm, bool& result) {
-    result = true;
+  bool isVirtualString(Self self, VM vm) {
+    return true;
   }
 
   inline
   void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  void vsLength(Self self, VM vm, nativeint& result);
+  nativeint vsLength(Self self, VM vm);
 
 public:
   // Miscellaneous
 
   inline
-  void decode(Self self, VM vm,
-              ByteStringEncoding encoding, EncodingVariant variant,
-              UnstableNode& result);
+  UnstableNode decode(Self self, VM vm,
+                      ByteStringEncoding encoding, EncodingVariant variant);
 
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
@@ -154,9 +152,9 @@ private:
 };
 
 inline
-void encodeToBytestring(VM vm, const BaseLString<nchar>& input,
-                        ByteStringEncoding encoding, EncodingVariant variant,
-                        UnstableNode& result);
+UnstableNode encodeToBytestring(VM vm, const BaseLString<nchar>& input,
+                                ByteStringEncoding encoding,
+                                EncodingVariant variant);
 
 #ifndef MOZART_GENERATOR
 #include "ByteString-implem-decl-after.hh"

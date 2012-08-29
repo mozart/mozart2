@@ -66,8 +66,7 @@ public:
         [&] (nativeint elem) {
           if ((elem < std::numeric_limits<ByteCode>::min()) ||
               (elem > std::numeric_limits<ByteCode>::max())) {
-            return raiseTypeError(vm, MOZART_STR("Byte code element"),
-                                  build(vm, elem));
+            raiseTypeError(vm, MOZART_STR("Byte code element"), elem);
           } else {
             byteCode.push_back((ByteCode) elem);
           }
@@ -76,15 +75,15 @@ public:
       );
 
       // Read scalar args
-      nativeint intArity = 0, intXCount = 0;
-      atom_t atomPrintName;
-      getArgument(vm, intArity, arity, MOZART_STR("positive integer"));
-      getArgument(vm, intXCount, XCount, MOZART_STR("positive integer"));
-      getArgument(vm, atomPrintName, printName, MOZART_STR("Atom"));
+      auto intArity = getArgument<nativeint>(vm, arity,
+                                             MOZART_STR("positive integer"));
+      auto intXCount = getArgument<nativeint>(vm, XCount,
+                                              MOZART_STR("positive integer"));
+      auto atomPrintName = getArgument<atom_t>(vm, printName,
+                                               MOZART_STR("Atom"));
 
       // Read number of K registers
-      size_t KCount = 0;
-      ozListLength(vm, KsList, KCount);
+      size_t KCount = ozListLength(vm, KsList);
 
       // Create the code area
       result = CodeArea::build(vm, KCount, &byteCode.front(),
@@ -111,15 +110,11 @@ public:
 
     void operator()(VM vm, In body, In GsList, Out result) {
       // Check the type of the code area
-      bool bodyIsCodeArea = false;
-      CodeAreaProvider(body).isCodeAreaProvider(vm, bodyIsCodeArea);
-      if (!bodyIsCodeArea) {
-        return raiseTypeError(vm, MOZART_STR("Code area"), body);
-      }
+      if (!CodeAreaProvider(body).isCodeAreaProvider(vm))
+        raiseTypeError(vm, MOZART_STR("Code area"), body);
 
       // Read number of G registers
-      size_t GCount = 0;
-      ozListLength(vm, GsList, GCount);
+      size_t GCount = ozListLength(vm, GsList);
 
       // Create the abstraction
       result = Abstraction::build(vm, GCount, body);
@@ -153,19 +148,17 @@ public:
         for (size_t i = 0; i < width; i++)
           unstableFeatures[i].init(vm, featuresData[i]);
 
-        bool isTuple = false;
-        UnstableNode arity;
-        buildArityDynamic(vm, isTuple, arity, label, width,
-                          (UnstableNode*) unstableFeatures);
+        auto arity = buildArityDynamic(vm, label, width,
+                                       (UnstableNode*) unstableFeatures);
 
-        if (isTuple)
+        if (RichNode(arity).is<Unit>())
           result = build(vm, false);
         else
           result = std::move(arity);
 
         vm->deleteStaticArray(unstableFeatures, width);
       } else {
-        return raiseTypeError(vm, MOZART_STR("#-tuple"), features);
+        raiseTypeError(vm, MOZART_STR("#-tuple"), features);
       }
     }
   };
@@ -184,9 +177,7 @@ public:
     NewPatPatCapture(): Builtin("newPatMatCapture") {}
 
     void operator()(VM vm, In index, Out result) {
-      nativeint intIndex;
-      getArgument(vm, intIndex, index, MOZART_STR("Integer"));
-
+      auto intIndex = getArgument<nativeint>(vm, index, MOZART_STR("Integer"));
       result = PatMatCapture::build(vm, intIndex);
     }
   };
@@ -196,10 +187,7 @@ public:
     IsBuiltin(): Builtin("isBuiltin") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      BuiltinCallable(value).isBuiltin(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, BuiltinCallable(value).isBuiltin(vm));
     }
   };
 
@@ -208,8 +196,7 @@ public:
     GetBuiltinInfo(): Builtin("getBuiltinInfo") {}
 
     void operator()(VM vm, In value, Out result) {
-      BaseBuiltin* builtin = nullptr;
-      BuiltinCallable(value).getBuiltin(vm, builtin);
+      BaseBuiltin* builtin = BuiltinCallable(value).getBuiltin(vm);
 
       UnstableNode name = build(vm, builtin->getNameAtom(vm));
       UnstableNode arity = build(vm, builtin->getArity());
@@ -248,7 +235,7 @@ public:
 
     void operator()(VM vm, In value, Out result) {
       if (value.isTransient())
-        return waitFor(vm, value);
+        waitFor(vm, value);
 
       result = build(vm, value.is<UniqueName>());
     }

@@ -51,25 +51,25 @@ public:
   inline
   StableNode* getElement(Self self, size_t index);
 public:
-  void isRecord(Self self, VM vm, bool& result) {
-    result = true;
+  bool isRecord(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void width(Self self, VM vm, size_t& result);
+  size_t width(Self self, VM vm);
 
   inline
-  void arityList(Self self, VM vm, UnstableNode& result);
+  UnstableNode arityList(Self self, VM vm);
 
   inline
   void initElement(Self self, VM vm, size_t index, RichNode value);
 
   inline
-  void waitOr(Self self, VM vm, UnstableNode& result);
+  UnstableNode waitOr(Self self, VM vm);
 protected:
   /* To be implemented in subclasses
   inline
-  void getFeatureAt(Self self, size_t index, UnstableNode& result);
+  UnstableNode getFeatureAt(Self self, size_t index);
   */
 };
 
@@ -123,44 +123,44 @@ protected:
   }
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
 
   inline
-  void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
+  UnstableNode getFeatureAt(Self self, VM vm, size_t index);
 
 public:
   // RecordLike interface
 
-  void isTuple(Self self, VM vm, bool& result) {
-    result = true;
+  bool isTuple(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void label(Self self, VM vm, UnstableNode& result);
+  UnstableNode label(Self self, VM vm);
 
   inline
-  void clone(Self self, VM vm, UnstableNode& result);
+  UnstableNode clone(Self self, VM vm);
 
   inline
-  void testRecord(Self self, VM vm, RichNode arity, bool& result);
+  bool testRecord(Self self, VM vm, RichNode arity);
 
   inline
-  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
+  bool testTuple(Self self, VM vm, RichNode label, size_t width);
 
   inline
-  void testLabel(Self self, VM vm, RichNode label, bool& result);
+  bool testLabel(Self self, VM vm, RichNode label);
 
 public:
   // VirtualString inteface
 
   inline
-  void isVirtualString(Self self, VM vm, bool& result);
+  bool isVirtualString(Self self, VM vm);
 
   inline
   void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  void vsLength(Self self, VM vm, nativeint& result);
+  nativeint vsLength(Self self, VM vm);
 
 private:
   inline bool hasSharpLabel(VM vm);
@@ -235,54 +235,54 @@ protected:
   }
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
 
 public:
   // RecordLike interface
 
-  void isRecord(Self self, VM vm, bool& result) {
-    result = true;
+  bool isRecord(Self self, VM vm) {
+    return true;
   }
 
-  void isTuple(Self self, VM vm, bool& result) {
-    result = true;
+  bool isTuple(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void label(Self self, VM vm, UnstableNode& result);
+  UnstableNode label(Self self, VM vm);
 
   inline
-  void width(Self self, VM vm, size_t& result);
+  size_t width(Self self, VM vm);
 
   inline
-  void arityList(Self self, VM vm, UnstableNode& result);
+  UnstableNode arityList(Self self, VM vm);
 
   inline
-  void clone(Self self, VM vm, UnstableNode& result);
+  UnstableNode clone(Self self, VM vm);
 
   inline
-  void waitOr(Self self, VM vm, UnstableNode& result);
+  UnstableNode waitOr(Self self, VM vm);
 
   inline
-  void testRecord(Self self, VM vm, RichNode arity, bool& result);
+  bool testRecord(Self self, VM vm, RichNode arity);
 
   inline
-  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
+  bool testTuple(Self self, VM vm, RichNode label, size_t width);
 
   inline
-  void testLabel(Self self, VM vm, RichNode label, bool& result);
+  bool testLabel(Self self, VM vm, RichNode label);
 
 public:
   // VirtualString inteface
 
   inline
-  void isVirtualString(Self self, VM vm, bool& result);
+  bool isVirtualString(Self self, VM vm);
 
   inline
   void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  void vsLength(Self self, VM vm, nativeint& result);
+  nativeint vsLength(Self self, VM vm);
 
 public:
   inline
@@ -358,8 +358,7 @@ public:
   // Arity methods
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, size_t& result);
+  bool lookupFeature(Self self, VM vm, RichNode feature, size_t& offset);
 
 public:
   // Miscellaneous
@@ -419,40 +418,40 @@ public:
 
 protected:
   inline
-  void getFeatureAt(Self self, VM vm, size_t index, UnstableNode& result);
+  UnstableNode getFeatureAt(Self self, VM vm, size_t index);
 
 public:
   // Dottable interface
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 public:
   // RecordLike interface
 
-  void isTuple(Self self, VM vm, bool& result) {
-    result = false;
+  bool isTuple(Self self, VM vm) {
+    return false;
   }
 
   inline
-  void label(Self self, VM vm, UnstableNode& result);
+  UnstableNode label(Self self, VM vm);
 
   inline
-  void clone(Self self, VM vm, UnstableNode& result);
+  UnstableNode clone(Self self, VM vm);
 
   inline
-  void testRecord(Self self, VM vm, RichNode arity, bool& result);
+  bool testRecord(Self self, VM vm, RichNode arity);
 
   inline
-  void testTuple(Self self, VM vm, RichNode label, size_t width, bool& result);
+  bool testTuple(Self self, VM vm, RichNode label, size_t width);
 
   inline
-  void testLabel(Self self, VM vm, RichNode label, bool& result);
+  bool testLabel(Self self, VM vm, RichNode label);
 
 public:
   inline
@@ -509,18 +508,18 @@ public:
   // Dottable interface
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 public:
   // ChunkLike interface
 
-  void isChunk(Self self, VM vm, bool& result) {
-    result = true;
+  bool isChunk(Self self, VM vm) {
+    return true;
   }
 
 public:

@@ -68,8 +68,8 @@ public:
 public:
   // NameLike interface
 
-  void isName(Self self, VM vm, bool& result) {
-    result = true;
+  bool isName(Self self, VM vm) {
+    return true;
   }
 
 public:
@@ -123,8 +123,8 @@ public:
 public:
   // NameLike interface
 
-  void isName(Self self, VM vm, bool& result) {
-    result = true;
+  bool isName(Self self, VM vm) {
+    return true;
   }
 
 public:
@@ -187,8 +187,8 @@ public:
 public:
   // NameLike interface
 
-  void isName(Self self, VM vm, bool& result) {
-    result = true;
+  bool isName(Self self, VM vm) {
+    return true;
   }
 
 public:
@@ -251,8 +251,8 @@ public:
 public:
   // NameLike interface
 
-  void isName(Self self, VM vm, bool& result) {
-    result = true;
+  bool isName(Self self, VM vm) {
+    return true;
   }
 
 public:

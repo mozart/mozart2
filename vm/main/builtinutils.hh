@@ -43,7 +43,7 @@ void expectCallable(VM vm, RichNode target, size_t expectedArity) {
   Callable(target).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
   if (arity != expectedArity)
-    return raise(vm, MOZART_STR("illegalArity"), expectedArity, arity);
+    raise(vm, MOZART_STR("illegalArity"), expectedArity, arity);
 }
 
 }

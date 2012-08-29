@@ -48,16 +48,13 @@ public:
     New(): Builtin("new") {}
 
     void operator()(VM vm, In clazz, Out result) {
-      UnstableNode attrModel, featModel;
+      auto ooAttr = build(vm, vm->coreatoms.ooAttr);
+      auto attrModel = Dottable(clazz).dot(vm, ooAttr);
 
-      UnstableNode ooAttr = build(vm, vm->coreatoms.ooAttr);
-      Dottable(clazz).dot(vm, ooAttr, attrModel);
+      auto ooFeat = build(vm, vm->coreatoms.ooFeat);
+      auto featModel = Dottable(clazz).dot(vm, ooFeat);
 
-      UnstableNode ooFeat = build(vm, vm->coreatoms.ooFeat);
-      Dottable(clazz).dot(vm, ooFeat, featModel);
-
-      size_t attrCount = 0;
-      RecordLike(attrModel).width(vm, attrCount);
+      size_t attrCount = RecordLike(attrModel).width(vm);
 
       result = Object::build(vm, attrCount, clazz, attrModel, featModel);
     }
@@ -68,10 +65,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      ObjectLike(value).isObject(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, ObjectLike(value).isObject(vm));
     }
   };
 
@@ -80,7 +74,7 @@ public:
     GetClass(): Builtin("getClass") {}
 
     void operator()(VM vm, In object, Out result) {
-      return ObjectLike(object).getClass(vm, result);
+      result = ObjectLike(object).getClass(vm);
     }
   };
 
@@ -89,7 +83,7 @@ public:
     AttrGet(): Builtin("attrGet") {}
 
     void operator()(VM vm, In object, In attribute, Out result) {
-      return ObjectLike(object).attrGet(vm, attribute, result);
+      result = ObjectLike(object).attrGet(vm, attribute);
     }
   };
 
@@ -98,7 +92,7 @@ public:
     AttrPut(): Builtin("attrPut") {}
 
     void operator()(VM vm, In object, In attribute, In newValue) {
-      return ObjectLike(object).attrPut(vm, attribute, newValue);
+      ObjectLike(object).attrPut(vm, attribute, newValue);
     }
   };
 
@@ -108,8 +102,7 @@ public:
 
     void operator()(VM vm, In object, In attribute,
                     In newValue, Out oldValue) {
-      return ObjectLike(object).attrExchange(vm, attribute,
-                                             newValue, oldValue);
+      oldValue = ObjectLike(object).attrExchange(vm, attribute, newValue);
     }
   };
 
@@ -118,13 +111,10 @@ public:
     CellOrAttrGet(): Builtin("cellOrAttrGet") {}
 
     void operator()(VM vm, In object, In cellOrAttr, Out result) {
-      bool isCell = false;
-      CellLike(cellOrAttr).isCell(vm, isCell);
-
-      if (isCell)
-        return CellLike(cellOrAttr).access(vm, result);
+      if (CellLike(cellOrAttr).isCell(vm))
+        result = CellLike(cellOrAttr).access(vm);
       else
-        return ObjectLike(object).attrGet(vm, cellOrAttr, result);
+        result = ObjectLike(object).attrGet(vm, cellOrAttr);
     }
   };
 
@@ -133,13 +123,10 @@ public:
     CellOrAttrPut(): Builtin("cellOrAttrPut") {}
 
     void operator()(VM vm, In object, In cellOrAttr, In newValue) {
-      bool isCell = false;
-      CellLike(cellOrAttr).isCell(vm, isCell);
-
-      if (isCell)
-        return CellLike(cellOrAttr).assign(vm, newValue);
+      if (CellLike(cellOrAttr).isCell(vm))
+        CellLike(cellOrAttr).assign(vm, newValue);
       else
-        return ObjectLike(object).attrPut(vm, cellOrAttr, newValue);
+        ObjectLike(object).attrPut(vm, cellOrAttr, newValue);
     }
   };
 
@@ -149,14 +136,10 @@ public:
 
     void operator()(VM vm, In object, In cellOrAttr,
                     In newValue, Out oldValue) {
-      bool isCell = false;
-      CellLike(cellOrAttr).isCell(vm, isCell);
-
-      if (isCell)
-        return CellLike(cellOrAttr).exchange(vm, newValue, oldValue);
+      if (CellLike(cellOrAttr).isCell(vm))
+        oldValue = CellLike(cellOrAttr).exchange(vm, newValue);
       else
-        return ObjectLike(object).attrExchange(vm, cellOrAttr,
-                                               newValue, oldValue);
+        oldValue = ObjectLike(object).attrExchange(vm, cellOrAttr, newValue);
     }
   };
 };

@@ -30,8 +30,8 @@ TEST_F(AtomTest, EqualsAndCompare) {
 
       int compareResult = compareByCodePoint(p, q);
       int pqCompareResult, qpCompareResult;
-      EXPECT_PROCEED(Comparable(pNode).compare(vm, qNode, pqCompareResult));
-      EXPECT_PROCEED(Comparable(qNode).compare(vm, pNode, qpCompareResult));
+      pqCompareResult = Comparable(pNode).compare(vm, qNode);
+      qpCompareResult = Comparable(qNode).compare(vm, pNode);
 
       EXPECT_EQ(compareResult > 0, pqCompareResult > 0);
       EXPECT_EQ(compareResult == 0, pqCompareResult == 0);

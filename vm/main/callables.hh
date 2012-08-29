@@ -60,8 +60,8 @@ void BuiltinProcedure::callBuiltin(
   return _builtin->call(vm, std::forward<Args>(args)...);
 }
 
-void BuiltinProcedure::procedureArity(Self self, VM vm, size_t& result) {
-  result = getArity();
+size_t BuiltinProcedure::procedureArity(Self self, VM vm) {
+  return getArity();
 }
 
 void BuiltinProcedure::getCallInfo(
@@ -117,10 +117,9 @@ void Abstraction::initElement(Self self, VM vm, size_t index, RichNode value) {
   self[index].init(vm, value);
 }
 
-void Abstraction::procedureArity(Self self, VM vm, size_t& result) {
+size_t Abstraction::procedureArity(Self self, VM vm) {
   ensureCodeAreaCacheValid(vm);
-
-  result = _arity;
+  return _arity;
 }
 
 void Abstraction::getCallInfo(

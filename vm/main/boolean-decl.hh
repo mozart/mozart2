@@ -73,26 +73,26 @@ public:
 public:
   // BooleanValue interface
 
-  void boolValue(Self self, VM vm, bool& result) {
-    result = value();
+  bool boolValue(Self self, VM vm) {
+    return value();
   }
 
-  void valueOrNotBool(Self self, VM vm, BoolOrNotBool& result) {
-    result = value() ? bTrue : bFalse;
+  BoolOrNotBool valueOrNotBool(Self self, VM vm) {
+    return value() ? bTrue : bFalse;
   }
 
 public:
   // VirtualString inteface
 
-  void isVirtualString(Self self, VM vm, bool& result) {
-    result = true;
+  bool isVirtualString(Self self, VM vm) {
+    return true;
   }
 
   inline
   void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  void vsLength(Self self, VM vm, nativeint& result);
+  nativeint vsLength(Self self, VM vm);
 
 public:
   // Miscellaneous

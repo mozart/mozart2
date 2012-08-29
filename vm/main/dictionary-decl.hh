@@ -221,12 +221,12 @@ public:
   // Dottable interface
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 public:
   // DotAssignable interface
@@ -235,41 +235,40 @@ public:
     return dictPut(self, vm, feature, newValue);
   }
 
-  void dotExchange(Self self, VM vm, RichNode feature,
-                   RichNode newValue, UnstableNode& oldValue) {
-    return dictExchange(self, vm, feature, newValue, oldValue);
+  UnstableNode dotExchange(Self self, VM vm, RichNode feature,
+                           RichNode newValue) {
+    return dictExchange(self, vm, feature, newValue);
   }
 
 public:
   // DictionaryLike interface
 
   inline
-  void isDictionary(Self self, VM vm, bool& result);
+  bool isDictionary(Self self, VM vm);
 
   inline
-  void dictIsEmpty(Self self, VM vm, bool& result);
+  bool dictIsEmpty(Self self, VM vm);
 
   inline
-  void dictMember(Self self, VM vm, RichNode feature, bool& result);
+  bool dictMember(Self self, VM vm, RichNode feature);
 
   inline
-  void dictGet(Self self, VM vm, RichNode feature, UnstableNode& result);
+  UnstableNode dictGet(Self self, VM vm, RichNode feature);
 
   inline
-  void dictCondGet(Self self, VM vm, RichNode feature,
-                   RichNode defaultValue, UnstableNode& result);
+  UnstableNode dictCondGet(Self self, VM vm, RichNode feature,
+                           RichNode defaultValue);
 
   inline
   void dictPut(Self self, VM vm, RichNode feature, RichNode newValue);
 
   inline
-  void dictExchange(Self self, VM vm, RichNode feature,
-                    RichNode newValue, UnstableNode& oldValue);
+  UnstableNode dictExchange(Self self, VM vm, RichNode feature,
+                            RichNode newValue);
 
   inline
-  void dictCondExchange(Self self, VM vm, RichNode feature,
-                        RichNode defaultValue,
-                        RichNode newValue, UnstableNode& oldValue);
+  UnstableNode dictCondExchange(Self self, VM vm, RichNode feature,
+                                RichNode defaultValue, RichNode newValue);
 
   inline
   void dictRemove(Self self, VM vm, RichNode feature);
@@ -278,16 +277,16 @@ public:
   void dictRemoveAll(Self self, VM vm);
 
   inline
-  void dictKeys(Self self, VM vm, UnstableNode& result);
+  UnstableNode dictKeys(Self self, VM vm);
 
   inline
-  void dictEntries(Self self, VM vm, UnstableNode& result);
+  UnstableNode dictEntries(Self self, VM vm);
 
   inline
-  void dictItems(Self self, VM vm, UnstableNode& result);
+  UnstableNode dictItems(Self self, VM vm);
 
   inline
-  void dictClone(Self self, VM vm, UnstableNode& result);
+  UnstableNode dictClone(Self self, VM vm);
 
 public:
   inline

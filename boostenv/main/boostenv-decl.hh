@@ -138,10 +138,7 @@ public:
   std::FILE* getFile(nativeint fd);
 
   inline
-  void getFile(nativeint fd, std::FILE*& result);
-
-  inline
-  void getFile(RichNode fd, std::FILE*& result);
+  std::FILE* getFile(RichNode fd);
 
 // Reference to the virtual machine
 private:
@@ -198,10 +195,10 @@ inline
 void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer);
 
 inline
-void ozStringToStdString(VM vm, RichNode value, std::string& result);
+std::string ozStringToStdString(VM vm, RichNode value);
 
 inline
-void stdStringToOzString(VM vm, std::string& value, UnstableNode& result);
+UnstableNode stdStringToOzString(VM vm, const std::string& value);
 
 inline
 std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str);

@@ -72,9 +72,7 @@ protected:
 
 TEST_F(VirtualStringTest, IsVirtualString) {
   for (auto&& node : testNodes) {
-    bool res = false;
-    EXPECT_PROCEED(VirtualString(node).isVirtualString(vm, res));
-    EXPECT_TRUE(res);
+    EXPECT_TRUE(VirtualString(node).isVirtualString(vm));
   }
 }
 
@@ -98,7 +96,7 @@ TEST_F(VirtualStringTest, ToString) {
   size_t i = 0;
   for (auto&& node : testNodes) {
     std::basic_ostringstream<nchar> stringStream;
-    EXPECT_PROCEED(VirtualString(node).toString(vm, stringStream));
+    VirtualString(node).toString(vm, stringStream);
     EXPECT_EQ(results[i], stringStream.str());
     ++ i;
   }
@@ -120,9 +118,7 @@ TEST_F(VirtualStringTest, Length) {
 
   size_t i = 0;
   for (auto&& node : testNodes) {
-    nativeint length;
-    EXPECT_PROCEED(VirtualString(node).vsLength(vm, length));
-    EXPECT_EQ(results[i], length);
+    EXPECT_EQ(results[i], VirtualString(node).vsLength(vm));
     ++ i;
   }
 }
@@ -141,8 +137,6 @@ TEST_F(VirtualStringTest, IsNotVirtualString) {
   };
 
   for (auto& node : nodes) {
-    bool res = true;
-    EXPECT_PROCEED(VirtualString(node).isVirtualString(vm, res));
-    EXPECT_FALSE(res);
+    EXPECT_FALSE(VirtualString(node).isVirtualString(vm));
   }
 }

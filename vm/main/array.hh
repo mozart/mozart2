@@ -59,57 +59,48 @@ Array::Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
     gr->copyUnstableNode(_elements[i], from[i]);
 }
 
-void Array::getValueAt(Self self, VM vm, nativeint feature,
-                       UnstableNode& result) {
-  result.copy(vm, self[indexToOffset(feature)]);
+UnstableNode Array::getValueAt(Self self, VM vm, nativeint feature) {
+  return { vm, self[indexToOffset(feature)] };
 }
 
-void Array::arrayLow(Self self, VM vm, UnstableNode& result) {
-  result = SmallInt::build(vm, getLow());
+UnstableNode Array::arrayLow(Self self, VM vm) {
+  return mozart::build(vm, getLow());
 }
 
-void Array::arrayHigh(Self self, VM vm, UnstableNode& result) {
-  result = SmallInt::build(vm, getHigh());
+UnstableNode Array::arrayHigh(Self self, VM vm) {
+  return mozart::build(vm, getHigh());
 }
 
-void Array::arrayGet(Self self, VM vm, RichNode index,
-                     UnstableNode& result) {
-  size_t offset = 0;
-  getOffset(self, vm, index, offset);
-
-  result.copy(vm, self[offset]);
+UnstableNode Array::arrayGet(Self self, VM vm, RichNode index) {
+  return { vm, self[getOffset(self, vm, index)] };
 }
 
 void Array::arrayPut(Self self, VM vm, RichNode index, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "array");
+    raise(vm, MOZART_STR("globalState"), "array");
 
-  size_t offset = 0;
-  getOffset(self, vm, index, offset);
-
-  self[offset].copy(vm, value);
+  self[getOffset(self, vm, index)].copy(vm, value);
 }
 
-void Array::arrayExchange(Self self, VM vm, RichNode index,
-                          RichNode newValue, UnstableNode& oldValue) {
+UnstableNode Array::arrayExchange(Self self, VM vm, RichNode index,
+                                  RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "array");
+    raise(vm, MOZART_STR("globalState"), "array");
 
-  size_t offset = 0;
-  getOffset(self, vm, index, offset);
+  size_t offset = getOffset(self, vm, index);
 
-  oldValue.copy(vm, self[offset]);
+  auto oldValue = std::move(self[offset]);
   self[offset].copy(vm, newValue);
+  return oldValue;
 }
 
-void Array::getOffset(Self self, VM vm, RichNode index, size_t& offset) {
-  nativeint indexIntValue = 0;
-  getArgument(vm, indexIntValue, index, MOZART_STR("integer"));
+size_t Array::getOffset(Self self, VM vm, RichNode index) {
+  auto indexIntValue = getArgument<nativeint>(vm, index, MOZART_STR("integer"));
 
   if (!isIndexInRange(indexIntValue))
-    return raise(vm, MOZART_STR("arrayIndexOutOfBounds"), self, index);
+    raise(vm, MOZART_STR("arrayIndexOutOfBounds"), self, index);
 
-  offset = indexToOffset(indexIntValue);
+  return indexToOffset(indexIntValue);
 }
 
 void Array::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {

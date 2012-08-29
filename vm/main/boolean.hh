@@ -58,8 +58,8 @@ void Boolean::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
   sink << (value() ? MOZART_STR("true") : MOZART_STR("false"));
 }
 
-void Boolean::vsLength(Self self, VM vm, nativeint& result) {
-  result = value() ? 4 : 5;
+nativeint Boolean::vsLength(Self self, VM vm) {
+  return value() ? 4 : 5;
 }
 
 }

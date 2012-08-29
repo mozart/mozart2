@@ -57,16 +57,15 @@ public:
 public:
   // CellLike interface
 
-  void isCell(Self self, VM vm, bool& result) {
-    result = true;
+  bool isCell(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void exchange(RichNode self, VM vm, RichNode newValue,
-                UnstableNode& oldValue);
+  UnstableNode exchange(RichNode self, VM vm, RichNode newValue);
 
   inline
-  void access(RichNode self, VM vm, UnstableNode& result);
+  UnstableNode access(RichNode self, VM vm);
 
   inline
   void assign(RichNode self, VM vm, RichNode newValue);

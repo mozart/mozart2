@@ -115,67 +115,54 @@ bool Object::isFreeFlag(VM vm, RichNode value) {
     (value.as<UniqueName>().value() == vm->coreatoms.ooFreeFlag);
 }
 
-void Object::lookupFeature(
-  Self self, VM vm, RichNode feature, bool& found,
-  nullable<UnstableNode&> value) {
-
-  return Dottable(_features).lookupFeature(vm, feature, found, value);
+bool Object::lookupFeature(Self self, VM vm, RichNode feature,
+                           nullable<UnstableNode&> value) {
+  return Dottable(_features).lookupFeature(vm, feature, value);
 }
 
-void Object::lookupFeature(
-  Self self, VM vm, nativeint feature, bool& found,
-  nullable<UnstableNode&> value) {
-
-  return Dottable(_features).lookupFeature(vm, feature, found, value);
+bool Object::lookupFeature(Self self, VM vm, nativeint feature,
+                           nullable<UnstableNode&> value) {
+  return Dottable(_features).lookupFeature(vm, feature, value);
 }
 
-void Object::getClass(Self self, VM vm, UnstableNode& result) {
-  result.copy(vm, _clazz);
+UnstableNode Object::getClass(Self self, VM vm) {
+  return { vm, _clazz };
 }
 
-void Object::attrGet(Self self, VM vm, RichNode attribute,
-                     UnstableNode& result) {
-  size_t offset = 0;
-  getAttrOffset(self, vm, attribute, offset);
-
-  result.copy(vm, self[offset]);
+UnstableNode Object::attrGet(Self self, VM vm, RichNode attribute) {
+  return { vm, self[getAttrOffset(self, vm, attribute)] };
 }
 
 void Object::attrPut(Self self, VM vm, RichNode attribute, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
     return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
-  size_t offset = 0;
-  getAttrOffset(self, vm, attribute, offset);
-
-  self[offset].copy(vm, value);
+  self[getAttrOffset(self, vm, attribute)].copy(vm, value);
 }
 
-void Object::attrExchange(Self self, VM vm, RichNode attribute,
-                          RichNode newValue, UnstableNode& oldValue) {
+UnstableNode Object::attrExchange(Self self, VM vm, RichNode attribute,
+                                  RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
 
-  size_t offset = 0;
-  getAttrOffset(self, vm, attribute, offset);
+  size_t offset = getAttrOffset(self, vm, attribute);
 
-  oldValue.copy(vm, self[offset]);
+  UnstableNode oldValue = std::move(self[offset]);
   self[offset].copy(vm, newValue);
+  return oldValue;
 }
 
-void Object::getAttrOffset(Self self, VM vm, RichNode attribute,
-                           size_t& offset) {
-  bool found = false;
-  RichNode(_attrArity).as<Arity>().lookupFeature(vm, attribute, found, offset);
-
-  if (!found) {
-    return raiseError(vm, MOZART_STR("object"),
-                      MOZART_STR("@"), self, attribute);
+size_t Object::getAttrOffset(Self self, VM vm, RichNode attribute) {
+  size_t result;
+  if (RichNode(_attrArity).as<Arity>().lookupFeature(vm, attribute, result)) {
+    return result;
+  } else {
+    raiseError(vm, MOZART_STR("object"), MOZART_STR("@"), self, attribute);
   }
 }
 
-void Object::procedureArity(Self self, VM vm, size_t& result) {
-  return Interface<Callable>().procedureArity(self, vm, result);
+size_t Object::procedureArity(Self self, VM vm) {
+  return Interface<Callable>().procedureArity(self, vm);
 }
 
 void Object::getCallInfo(
@@ -184,13 +171,11 @@ void Object::getCallInfo(
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   if (!_GsInitialized) {
-    UnstableNode fallback, fallbackApply;
+    auto ooFallback = mozart::build(vm, vm->coreatoms.ooFallback);
+    auto fallback = Dottable(_clazz).dot(vm, ooFallback);
 
-    UnstableNode ooFallback = mozart::build(vm, vm->coreatoms.ooFallback);
-    Dottable(_clazz).dot(vm, ooFallback, fallback);
-
-    UnstableNode apply = mozart::build(vm, MOZART_STR("apply"));
-    Dottable(fallback).dot(vm, apply, fallbackApply);
+    auto apply = mozart::build(vm, MOZART_STR("apply"));
+    auto fallbackApply = Dottable(fallback).dot(vm, apply);
 
     _Gs[0].init(vm, RichNode(self));
     _Gs[1].init(vm, fallbackApply);
@@ -205,9 +190,8 @@ void Object::getCallInfo(
   Ks = nullptr;
 }
 
-void Object::getDebugInfo(
-  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
-
+void Object::getDebugInfo(Self self, VM vm,
+                          atom_t& printName, UnstableNode& debugData) {
   printName = vm->getAtom(MOZART_STR("<Object>"));
   debugData = mozart::build(vm, unit);
 }

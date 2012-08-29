@@ -419,58 +419,60 @@ Dictionary::Dictionary(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()), dict(gr, from->dict) {
 }
 
-void Dictionary::lookupFeature(Self self, VM vm, RichNode feature,
-                               bool& found, nullable<UnstableNode&> value) {
+bool Dictionary::lookupFeature(Self self, VM vm, RichNode feature,
+                               nullable<UnstableNode&> value) {
   requireFeature(vm, feature);
 
   UnstableNode* valueNode = nullptr;
-  found = dict.lookup(vm, feature, valueNode);
-
-  if (found && value.isDefined())
-    value.get().copy(vm, *valueNode);
-}
-
-void Dictionary::lookupFeature(Self self, VM vm, nativeint feature,
-                               bool& found, nullable<UnstableNode&> value) {
-  UnstableNode featureNode = mozart::build(vm, feature);
-  return lookupFeature(self, vm, featureNode, found, value);
-}
-
-void Dictionary::isDictionary(Self self, VM vm, bool& result) {
-  result = true;
-}
-
-void Dictionary::dictIsEmpty(Self self, VM vm, bool& result) {
-  result = dict.empty();
-}
-
-void Dictionary::dictMember(Self self, VM vm, RichNode feature, bool& result) {
-  requireFeature(vm, feature);
-
-  result = dict.contains(vm, feature);
-}
-
-void Dictionary::dictGet(Self self, VM vm, RichNode feature,
-                         UnstableNode& result) {
-  requireFeature(vm, feature);
-
-  UnstableNode* value = nullptr;
-  if (dict.lookup(vm, feature, value)) {
-    result.copy(vm, *value);
+  if (dict.lookup(vm, feature, valueNode)) {
+    if (value.isDefined())
+      value.get().copy(vm, *valueNode);
+    return true;
   } else {
-    return raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
+    return false;
   }
 }
 
-void Dictionary::dictCondGet(Self self, VM vm, RichNode feature,
-                             RichNode defaultValue, UnstableNode& result) {
+bool Dictionary::lookupFeature(Self self, VM vm, nativeint feature,
+                               nullable<UnstableNode&> value) {
+  UnstableNode featureNode = mozart::build(vm, feature);
+  return lookupFeature(self, vm, featureNode, value);
+}
+
+bool Dictionary::isDictionary(Self self, VM vm) {
+  return true;
+}
+
+bool Dictionary::dictIsEmpty(Self self, VM vm) {
+  return dict.empty();
+}
+
+bool Dictionary::dictMember(Self self, VM vm, RichNode feature) {
+  requireFeature(vm, feature);
+
+  return dict.contains(vm, feature);
+}
+
+UnstableNode Dictionary::dictGet(Self self, VM vm, RichNode feature) {
   requireFeature(vm, feature);
 
   UnstableNode* value = nullptr;
   if (dict.lookup(vm, feature, value)) {
-    result.copy(vm, *value);
+    return { vm, *value };
   } else {
-    result.copy(vm, defaultValue);
+    raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
+  }
+}
+
+UnstableNode Dictionary::dictCondGet(Self self, VM vm, RichNode feature,
+                                     RichNode defaultValue) {
+  requireFeature(vm, feature);
+
+  UnstableNode* value = nullptr;
+  if (dict.lookup(vm, feature, value)) {
+    return { vm, *value };
+  } else {
+    return { vm, defaultValue };
   }
 }
 
@@ -487,39 +489,40 @@ void Dictionary::dictPut(Self self, VM vm, RichNode feature,
   value->copy(vm, newValue);
 }
 
-void Dictionary::dictExchange(Self self, VM vm, RichNode feature,
-                              RichNode newValue, UnstableNode& oldValue) {
+UnstableNode Dictionary::dictExchange(Self self, VM vm, RichNode feature,
+                                      RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "dictionary");
+    raise(vm, MOZART_STR("globalState"), "dictionary");
 
   requireFeature(vm, feature);
 
   UnstableNode* value = nullptr;
   if (dict.lookup(vm, feature, value)) {
-    oldValue.copy(vm, *value);
+    auto oldValue = std::move(*value);
     value->copy(vm, newValue);
+    return oldValue;
   } else {
-    return raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
+    raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
   }
 }
 
-void Dictionary::dictCondExchange(
-  Self self, VM vm, RichNode feature, RichNode defaultValue,
-  RichNode newValue, UnstableNode& oldValue) {
-
+UnstableNode Dictionary::dictCondExchange(Self self, VM vm, RichNode feature,
+                                          RichNode defaultValue,
+                                          RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "dictionary");
+    raise(vm, MOZART_STR("globalState"), "dictionary");
 
   requireFeature(vm, feature);
 
   UnstableNode* value = nullptr;
   if (dict.lookupOrCreate(vm, feature, value)) {
-    oldValue.copy(vm, *value);
+    auto oldValue = std::move(*value);
+    value->copy(vm, newValue);
+    return oldValue;
   } else {
-    oldValue.copy(vm, defaultValue);
+    value->copy(vm, newValue);
+    return { vm, defaultValue };
   }
-
-  value->copy(vm, newValue);
 }
 
 void Dictionary::dictRemove(Self self, VM vm, RichNode feature) {
@@ -538,16 +541,16 @@ void Dictionary::dictRemoveAll(Self self, VM vm) {
   dict.removeAll(vm);
 }
 
-void Dictionary::dictKeys(Self self, VM vm, UnstableNode& result) {
-  result = dict.foldRight<UnstableNode>(buildNil(vm),
+UnstableNode Dictionary::dictKeys(Self self, VM vm) {
+  return dict.foldRight<UnstableNode>(buildNil(vm),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm, key, std::move(previous));
     }
   );
 }
 
-void Dictionary::dictEntries(Self self, VM vm, UnstableNode& result) {
-  result = dict.foldRight<UnstableNode>(buildNil(vm),
+UnstableNode Dictionary::dictEntries(Self self, VM vm) {
+  return dict.foldRight<UnstableNode>(buildNil(vm),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm,
                        buildTuple(vm, vm->coreatoms.sharp, key, value),
@@ -556,16 +559,16 @@ void Dictionary::dictEntries(Self self, VM vm, UnstableNode& result) {
   );
 }
 
-void Dictionary::dictItems(Self self, VM vm, UnstableNode& result) {
-  result = dict.foldRight<UnstableNode>(buildNil(vm),
+UnstableNode Dictionary::dictItems(Self self, VM vm) {
+  return dict.foldRight<UnstableNode>(buildNil(vm),
     [vm] (UnstableNode& key, UnstableNode& value, UnstableNode previous) {
       return buildCons(vm, value, std::move(previous));
     }
   );
 }
 
-void Dictionary::dictClone(Self self, VM vm, UnstableNode& result) {
-  result = Dictionary::build(vm, dict);
+UnstableNode Dictionary::dictClone(Self self, VM vm) {
+  return Dictionary::build(vm, dict);
 }
 
 void Dictionary::printReprToStream(Self self, VM vm, std::ostream& out,

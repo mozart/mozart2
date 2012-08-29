@@ -93,10 +93,16 @@ protected:
     EXPECT_EQ(expected, actualString);
     return expected == actualString;
   }
-};
 
-#define EXPECT_PROCEED(operation) \
-  EXPECT_NO_THROW((operation))
+  /**
+   * Expect that a node is a string and the content is the given
+   * null-terminated string.
+   */
+  static bool EXPECT_EQ_STRING(const BaseLString<nchar>& expected,
+                               UnstableNode&& actual) {
+    return EXPECT_EQ_STRING(expected, RichNode(actual));
+  }
+};
 
 #define EXPECT_RAISE(label, operation) \
   EXPECT_THROW((operation), ::mozart::Raise)

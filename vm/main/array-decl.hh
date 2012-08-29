@@ -87,7 +87,7 @@ protected:
   }
 
   inline
-  void getValueAt(Self self, VM vm, nativeint feature, UnstableNode& result);
+  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
 
 public:
   // DotAssignable interface
@@ -96,37 +96,37 @@ public:
     return arrayPut(self, vm, feature, newValue);
   }
 
-  void dotExchange(Self self, VM vm, RichNode feature,
-                   RichNode newValue, UnstableNode& oldValue) {
-    return arrayExchange(self, vm, feature, newValue, oldValue);
+  UnstableNode dotExchange(Self self, VM vm, RichNode feature,
+                           RichNode newValue) {
+    return arrayExchange(self, vm, feature, newValue);
   }
 
 public:
   // ArrayLike interface
 
-  void isArray(Self self, VM vm, bool& result) {
-    result = true;
+  bool isArray(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void arrayLow(Self self, VM vm, UnstableNode& result);
+  UnstableNode arrayLow(Self self, VM vm);
 
   inline
-  void arrayHigh(Self self, VM vm, UnstableNode& result);
+  UnstableNode arrayHigh(Self self, VM vm);
 
   inline
-  void arrayGet(Self self, VM vm, RichNode index, UnstableNode& result);
+  UnstableNode arrayGet(Self self, VM vm, RichNode index);
 
   inline
   void arrayPut(Self self, VM vm, RichNode index, RichNode value);
 
   inline
-  void arrayExchange(Self self, VM vm, RichNode index,
-                     RichNode newValue, UnstableNode& oldValue);
+  UnstableNode arrayExchange(Self self, VM vm, RichNode index,
+                             RichNode newValue);
 
 private:
   inline
-  void getOffset(Self self, VM vm, RichNode index, size_t& offset);
+  size_t getOffset(Self self, VM vm, RichNode index);
 
   bool isIndexInRange(nativeint index) {
     return (index >= getLow()) && (index <= getHigh());

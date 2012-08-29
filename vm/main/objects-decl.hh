@@ -78,57 +78,57 @@ public:
   // Dottable interface
 
   inline
-  void lookupFeature(Self self, VM vm, RichNode feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, RichNode feature,
+                     nullable<UnstableNode&> value);
 
   inline
-  void lookupFeature(Self self, VM vm, nativeint feature,
-                     bool& found, nullable<UnstableNode&> value);
+  bool lookupFeature(Self self, VM vm, nativeint feature,
+                     nullable<UnstableNode&> value);
 
 public:
   // ChunkLike interface
 
-  void isChunk(Self self, VM vm, bool& result) {
-    result = true;
+  bool isChunk(Self self, VM vm) {
+    return true;
   }
 
 public:
   // ObjectLike interface
 
-  void isObject(Self self, VM vm, bool& result) {
-    result = true;
+  bool isObject(Self self, VM vm) {
+    return true;
   }
 
   inline
-  void getClass(Self self, VM vm, UnstableNode& result);
+  UnstableNode getClass(Self self, VM vm);
 
   inline
-  void attrGet(Self self, VM vm, RichNode attribute, UnstableNode& result);
+  UnstableNode attrGet(Self self, VM vm, RichNode attribute);
 
   inline
   void attrPut(Self self, VM vm, RichNode attribute, RichNode value);
 
   inline
-  void attrExchange(Self self, VM vm, RichNode attribute,
-                    RichNode newValue, UnstableNode& oldValue);
+  UnstableNode attrExchange(Self self, VM vm, RichNode attribute,
+                            RichNode newValue);
 
 private:
   inline
-  void getAttrOffset(Self self, VM vm, RichNode attribute, size_t& offset);
+  size_t getAttrOffset(Self self, VM vm, RichNode attribute);
 
 public:
   // Callable interface
 
-  void isCallable(Self self, VM vm, bool& result) {
-    result = true;
+  bool isCallable(Self self, VM vm) {
+    return true;
   }
 
-  void isProcedure(Self self, VM vm, bool& result) {
-    result = false;
+  bool isProcedure(Self self, VM vm) {
+    return false;
   }
 
   inline
-  void procedureArity(Self self, VM vm, size_t& result);
+  size_t procedureArity(Self self, VM vm);
 
   inline
   void getCallInfo(Self self, VM vm, size_t& arity,

@@ -36,12 +36,15 @@ namespace mozart {
 // getArgument -----------------------------------------------------------------
 
 template <class T>
-void getArgument(VM vm, T& argVar, RichNode argValue,
-                 const nchar* expectedType) {
+T getArgument(VM vm, RichNode argValue, const nchar* expectedType) {
   using namespace patternmatching;
 
-  if (!matches(vm, argValue, capture(argVar)))
-    return raiseTypeError(vm, expectedType, argValue);
+  T result;
+
+  if (!matches(vm, argValue, capture(result)))
+    raiseTypeError(vm, expectedType, argValue);
+
+  return result;
 }
 
 // requireFeature --------------------------------------------------------------
@@ -81,8 +84,8 @@ void ozListForEach(VM vm, RichNode cons, const F& onHead,
   });
 }
 
-void ozListLength(VM vm, RichNode list, size_t& result) {
-  result = 0;
+size_t ozListLength(VM vm, RichNode list) {
+  size_t result = 0;
 
   UnstableNode nextList;
 
@@ -96,9 +99,9 @@ void ozListLength(VM vm, RichNode list, size_t& result) {
       nextList = std::move(tail);
       list = nextList;
     } else if (matches(vm, list, vm->coreatoms.nil)) {
-      return;
+      return result;
     } else {
-      return raiseTypeError(vm, MOZART_STR("list"), list);
+      raiseTypeError(vm, MOZART_STR("list"), list);
     }
   }
 }
@@ -107,33 +110,29 @@ namespace internal {
   template <class C>
   struct VSToStringHelper {
     inline
-    static void call(VM vm, RichNode vs, std::basic_string<C>& result);
+    static std::basic_string<C> call(VM vm, RichNode vs);
   };
 
   template <>
   struct VSToStringHelper<nchar> {
-    static void call(VM vm, RichNode vs, std::basic_string<nchar>& result) {
+    static std::basic_string<nchar> call(VM vm, RichNode vs) {
       std::basic_stringstream<nchar> buffer;
       VirtualString(vs).toString(vm, buffer);
-
-      result = buffer.str();
+      return buffer.str();
     }
   };
 
   template <class C>
-  void VSToStringHelper<C>::call(VM vm, RichNode vs,
-                                 std::basic_string<C>& result) {
-    std::basic_string<nchar> nresult;
-    VSToStringHelper<nchar>::call(vm, vs, nresult);
-
+  std::basic_string<C> VSToStringHelper<C>::call(VM vm, RichNode vs) {
+    auto nresult = VSToStringHelper<nchar>::call(vm, vs);
     auto str = toUTF<C>(makeLString(nresult.c_str(), nresult.size()));
-    result = std::basic_string<C>(str.string, str.length);
+    return std::basic_string<C>(str.string, str.length);
   }
 }
 
 template <class C>
-void vsToString(VM vm, RichNode vs, std::basic_string<C>& result) {
-  return internal::VSToStringHelper<C>::call(vm, vs, result);
+std::basic_string<C> vsToString(VM vm, RichNode vs) {
+  return internal::VSToStringHelper<C>::call(vm, vs);
 }
 
 }

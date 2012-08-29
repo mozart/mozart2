@@ -48,10 +48,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      RecordLike(value).isRecord(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, RecordLike(value).isRecord(vm));
     }
   };
 
@@ -60,7 +57,7 @@ public:
     Label(): Builtin("label") {}
 
     void operator()(VM vm, In record, Out result) {
-      return RecordLike(record).label(vm, result);
+      result = RecordLike(record).label(vm);
     }
   };
 
@@ -69,10 +66,7 @@ public:
     Width(): Builtin("width") {}
 
     void operator()(VM vm, In record, Out result) {
-      size_t intResult = 0;
-      RecordLike(record).width(vm, intResult);
-
-      result = build(vm, intResult);
+      result = build(vm, RecordLike(record).width(vm));
     }
   };
 
@@ -81,7 +75,7 @@ public:
     Arity(): Builtin("arity") {}
 
     void operator()(VM vm, In record, Out result) {
-      return RecordLike(record).arityList(vm, result);
+      result = RecordLike(record).arityList(vm);
     }
   };
 
@@ -90,7 +84,7 @@ public:
     Clone(): Builtin("clone") {}
 
     void operator()(VM vm, In record, Out result) {
-      return RecordLike(record).clone(vm, result);
+      result = RecordLike(record).clone(vm);
     }
   };
 
@@ -99,7 +93,7 @@ public:
     WaitOr(): Builtin("waitOr") {}
 
     void operator()(VM vm, In record, Out result) {
-      return RecordLike(record).waitOr(vm, result);
+      result = RecordLike(record).waitOr(vm);
     }
   };
 
@@ -123,12 +117,11 @@ public:
           elements[i].value.init(vm, contentsData[i*2+1]);
         }
 
-        buildRecordDynamic(vm, result, label, width, elements);
+        result = buildRecordDynamic(vm, label, width, elements);
 
         vm->deleteStaticArray(elements, width);
       } else {
-        return raiseTypeError(vm, MOZART_STR("#-tuple with even arity"),
-                              contents);
+        raiseTypeError(vm, MOZART_STR("#-tuple with even arity"), contents);
       }
     }
   };
@@ -147,21 +140,14 @@ public:
         vm, patLabel, patFeatures, patArityUnstable);
       RichNode patArity = patArityUnstable;
 
-      bool boolResult = false;
-
       if (patArity.is<Boolean>()) {
         assert(patArity.as<Boolean>().value() == false);
-        size_t patWidth = 0;
-        RecordLike(patFeatures).width(vm, patWidth);
-
-        RecordLike(value).testTuple(vm, patLabel, patWidth, boolResult);
+        size_t patWidth = RecordLike(patFeatures).width(vm);
+        result = build(vm, RecordLike(value).testTuple(vm, patLabel, patWidth));
       } else {
         assert(patArity.is<mozart::Arity>());
-
-        RecordLike(value).testRecord(vm, patArity, boolResult);
+        result = build(vm, RecordLike(value).testRecord(vm, patArity));
       }
-
-      result = build(vm, boolResult);
     }
   };
 
@@ -170,10 +156,7 @@ public:
     TestLabel(): Builtin("testLabel") {}
 
     void operator()(VM vm, In value, In patLabel, Out result) {
-      bool boolResult = false;
-      RecordLike(value).testLabel(vm, patLabel, boolResult);
-
-      result = build(vm, boolResult);
+      result = build(vm, RecordLike(value).testLabel(vm, patLabel));
     }
   };
 
@@ -182,12 +165,12 @@ public:
     TestFeature(): Builtin("testFeature") {}
 
     void operator()(VM vm, In value, In patFeature, Out found, Out fieldValue) {
-      bool boolFound = false;
-      Dottable(value).lookupFeature(vm, patFeature, boolFound, fieldValue);
-
-      found = build(vm, boolFound);
-      if (!boolFound)
+      if (Dottable(value).lookupFeature(vm, patFeature, fieldValue)) {
+        found = build(vm, true);
+      } else {
+        found = build(vm, false);
         fieldValue = build(vm, unit);
+      }
     }
   };
 };

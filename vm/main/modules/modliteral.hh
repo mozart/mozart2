@@ -46,10 +46,7 @@ public:
     Is(): Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      Literal(value).isLiteral(vm, boolResult);
-
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, Literal(value).isLiteral(vm));
     }
   };
 };

@@ -46,8 +46,7 @@ public:
     Alarm(): Builtin("alarm") {}
 
     void operator()(VM vm, In delay, Out result) {
-      nativeint intDelay = 0;
-      getArgument(vm, intDelay, delay, MOZART_STR("integer"));
+      auto intDelay = getArgument<nativeint>(vm, delay, MOZART_STR("integer"));
 
       if (intDelay <= 0) {
         result = build(vm, unit);

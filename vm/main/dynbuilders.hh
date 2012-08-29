@@ -38,11 +38,8 @@ namespace mozart {
 ////////////
 
 void requireLiteral(VM vm, RichNode label) {
-  bool isLiteral = false;
-  Literal(label).isLiteral(vm, isLiteral);
-
-  if (!isLiteral)
-    return raiseTypeError(vm, MOZART_STR("literal"), label);
+  if (!Literal(label).isLiteral(vm))
+    raiseTypeError(vm, MOZART_STR("literal"), label);
 }
 
 namespace internal {
@@ -55,46 +52,49 @@ namespace internal {
 }
 
 inline
-void makeTuple(VM vm, UnstableNode& result, RichNode label, size_t width) {
+UnstableNode makeTuple(VM vm, RichNode label, size_t width) {
   requireLiteral(vm, label);
 
   if (width == 0) {
-    result.copy(vm, label);
+    return { vm, label };
   } else if ((width == 2) && internal::isPipeAtom(vm, label)) {
-    result = buildCons(vm, OptVar::build(vm), OptVar::build(vm));
+    return buildCons(vm, OptVar::build(vm), OptVar::build(vm));
   } else {
-    result = Tuple::build(vm, width, label);
+    auto result = Tuple::build(vm, width, label);
     auto tuple = RichNode(result).as<Tuple>();
 
     for (size_t i = 0; i < width; i++)
       tuple.getElement(i)->init(vm, OptVar::build(vm));
+
+    return result;
   }
 }
 
 template <class T>
 inline
-void buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
-                       size_t width, T elements[]) {
-  return buildTupleDynamic(vm, result, label, width, elements, identity<T&>);
+UnstableNode buildTupleDynamic(VM vm, RichNode label, size_t width,
+                               T elements[]) {
+  return buildTupleDynamic(vm, label, width, elements, identity<T&>);
 }
 
 template <class T, class ElemToValue>
 inline
-void buildTupleDynamic(VM vm, UnstableNode& result, RichNode label,
-                       size_t width, T elements[],
-                       ElemToValue elemToValue) {
+UnstableNode buildTupleDynamic(VM vm, RichNode label, size_t width,
+                               T elements[], ElemToValue elemToValue) {
   requireLiteral(vm, label);
 
   if (width == 0) {
-    result.copy(vm, label);
+    return { vm, label };
   } else if ((width == 2) && internal::isPipeAtom(vm, label)) {
-    result = buildCons(vm, elemToValue(elements[0]), elemToValue(elements[1]));
+    return buildCons(vm, elemToValue(elements[0]), elemToValue(elements[1]));
   } else {
-    result = Tuple::build(vm, width, label);
+    auto result = Tuple::build(vm, width, label);
     auto tuple = RichNode(result).as<Tuple>();
 
     for (size_t i = 0; i < width; i++)
       tuple.getElement(i)->init(vm, elemToValue(elements[i]));
+
+    return result;
   }
 }
 
@@ -164,8 +164,8 @@ void sortFeatures(VM vm, size_t width, T features[]) {
 }
 
 template <class T>
-void buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
-                       RichNode label, size_t width, T elements[]) {
+UnstableNode buildArityDynamic(VM vm, RichNode label, size_t width,
+                               T elements[]) {
   using internal::featureOf;
 
   // Check that the label is a literal
@@ -179,39 +179,39 @@ void buildArityDynamic(VM vm, bool& isTuple, UnstableNode& result,
   sortFeatures(vm, width, elements);
 
   // Check if the corresponding record should be a Tuple instead
-  isTuple = internal::isTupleFeatureArray(vm, width, elements);
-  if (isTuple)
-    return;
+  if (internal::isTupleFeatureArray(vm, width, elements))
+    return build(vm, unit);
 
   // Make the arity
-  result = Arity::build(vm, width, label);
+  auto result = Arity::build(vm, width, label);
   auto arity = RichNode(result).as<Arity>();
 
   for (size_t i = 0; i < width; i++)
     arity.getElement(i)->init(vm, featureOf(elements[i]));
+
+  return result;
 }
 
-void buildRecordDynamic(VM vm, UnstableNode& result,
-                        RichNode label, size_t width,
-                        UnstableField elements[]) {
+UnstableNode buildRecordDynamic(VM vm, RichNode label, size_t width,
+                                UnstableField elements[]) {
   // Make the arity - this sorts elements along the way
-  bool isTuple = false;
-  UnstableNode arity;
-  buildArityDynamic(vm, isTuple, arity, label, width, elements);
+  auto arity = buildArityDynamic(vm, label, width, elements);
 
   // Optimized representation for tuples
-  if (isTuple) {
-    return buildTupleDynamic(vm, result, label, width, elements,
+  if (RichNode(arity).is<Unit>()) {
+    return buildTupleDynamic(vm, label, width, elements,
       [] (UnstableField& element) -> UnstableNode& { return element.value; });
   }
 
   // Allocate the record
-  result = Record::build(vm, width, arity);
+  auto result = Record::build(vm, width, arity);
   auto record = RichNode(result).as<Record>();
 
   // Fill the elements
   for (size_t i = 0; i < width; i++)
     record.getElement(i)->init(vm, elements[i].value);
+
+  return result;
 }
 
 }

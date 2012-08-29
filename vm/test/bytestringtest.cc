@@ -15,17 +15,14 @@ TEST_F(ByteStringTest, Get) {
   UnstableNode one = SmallInt::build(vm, 1);
   UnstableNode two = SmallInt::build(vm, 2);
 
-  nativeint result;
-  EXPECT_PROCEED(StringLike(b).stringCharAt(vm, zero, result));
-  EXPECT_EQ(1, result);
+  EXPECT_EQ(1, StringLike(b).stringCharAt(vm, zero));
 
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringCharAt(vm, two, result));
+               StringLike(b).stringCharAt(vm, two));
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringCharAt(vm, minusOne, result));
+               StringLike(b).stringCharAt(vm, minusOne));
 
-  EXPECT_PROCEED(StringLike(b).stringCharAt(vm, one, result));
-  EXPECT_EQ(0xf3, result);
+  EXPECT_EQ(0xf3, StringLike(b).stringCharAt(vm, one));
 }
 
 TEST_F(ByteStringTest, Append) {
@@ -35,29 +32,25 @@ TEST_F(ByteStringTest, Append) {
   UnstableNode b2 = ByteString::build(vm, a2);
   UnstableNode b0 = ByteString::build(vm, a0);
 
-  UnstableNode b12i;
-  EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b2, b12i));
+  UnstableNode b12i = StringLike(b1).stringAppend(vm, b2);
   RichNode b12 = b12i;
   if (EXPECT_IS<ByteString>(b12)) {
     EXPECT_EQ(a12, b12.as<ByteString>().value());
   }
 
-  UnstableNode b11i;
-  EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b1, b11i));
+  UnstableNode b11i = StringLike(b1).stringAppend(vm, b1);
   RichNode b11 = b11i;
   if (EXPECT_IS<ByteString>(b11)) {
     EXPECT_EQ(a11, b11.as<ByteString>().value());
   }
 
-  UnstableNode b00i;
-  EXPECT_PROCEED(StringLike(b0).stringAppend(vm, b0, b00i));
+  UnstableNode b00i = StringLike(b0).stringAppend(vm, b0);
   RichNode b00 = b00i;
   if (EXPECT_IS<ByteString>(b00)) {
     EXPECT_EQ(a0, b00.as<ByteString>().value());
   }
 
-  UnstableNode b10i;
-  EXPECT_PROCEED(StringLike(b1).stringAppend(vm, b0, b10i));
+  UnstableNode b10i = StringLike(b1).stringAppend(vm, b0);
   RichNode b10 = b10i;
   if (EXPECT_IS<ByteString>(b10)) {
     EXPECT_EQ(a1, b10.as<ByteString>().value());
@@ -72,27 +65,28 @@ TEST_F(ByteStringTest, Decode) {
   // decode(vm, encoding, isLittleEndian, hasBOM, result)
 
   UnstableNode res;
-  EXPECT_PROCEED(b.decode(vm, ByteStringEncoding::latin1, EncodingVariant::none, res));
+
+  res = b.decode(vm, ByteStringEncoding::latin1, EncodingVariant::none);
   EXPECT_EQ_STRING(makeLString(
     MOZART_STR("\u00c3\u0080\u0001\0\u00c4\u00bf\u0010\0"),
     std::is_same<nchar, char>::value ? 12 : 8), res);
 
-  EXPECT_PROCEED(b.decode(vm, ByteStringEncoding::utf8, EncodingVariant::none, res));
+  res = b.decode(vm, ByteStringEncoding::utf8, EncodingVariant::none);
   EXPECT_EQ_STRING(makeLString(
     MOZART_STR("\u00c0\u0001\0\u013f\u0010\0"),
     std::is_same<nchar, char>::value ? 8 : 6), res);
 
-  EXPECT_PROCEED(b.decode(vm, ByteStringEncoding::utf16, EncodingVariant::none, res));
+  res = b.decode(vm, ByteStringEncoding::utf16, EncodingVariant::none);
   EXPECT_EQ_STRING(MOZART_STR("\uc380\u0100\uc4bf\u1000"), res);
 
-  EXPECT_PROCEED(b.decode(vm, ByteStringEncoding::utf16, EncodingVariant::littleEndian, res));
+  res = b.decode(vm, ByteStringEncoding::utf16, EncodingVariant::littleEndian);
   EXPECT_EQ_STRING(MOZART_STR("\u80c3\u0001\ubfc4\u0010"), res);
 
-  EXPECT_PROCEED(b.decode(vm, ByteStringEncoding::utf32, EncodingVariant::littleEndian, res));
+  res = b.decode(vm, ByteStringEncoding::utf32, EncodingVariant::littleEndian);
   EXPECT_EQ_STRING(MOZART_STR("\U000180c3\U0010bfc4"), res);
 
   EXPECT_RAISE(MOZART_STR("unicodeError"),
-               b.decode(vm, ByteStringEncoding::utf32, EncodingVariant::none, res));
+               b.decode(vm, ByteStringEncoding::utf32, EncodingVariant::none));
 }
 
 TEST_F(ByteStringTest, Slice) {
@@ -108,14 +102,15 @@ TEST_F(ByteStringTest, Slice) {
   UnstableNode six = SmallInt::build(vm, 6);
 
   UnstableNode result;
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringSlice(vm, minusOne, zero, result));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringSlice(vm, five, six, result));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
-               StringLike(b).stringSlice(vm, three, two, result));
 
-  EXPECT_PROCEED(StringLike(b).stringSlice(vm, two, four, result));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSlice(vm, minusOne, zero));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSlice(vm, five, six));
+  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+               StringLike(b).stringSlice(vm, three, two));
+
+  result = StringLike(b).stringSlice(vm, two, four);
   if (EXPECT_IS<ByteString>(result)) {
     static const unsigned char res[] = "34";
     EXPECT_EQ(makeLString(res), RichNode(result).as<ByteString>().value());
@@ -136,29 +131,28 @@ TEST_F(ByteStringTest, StrChr) {
   UnstableNode char256 = SmallInt::build(vm, 256);
 
   UnstableNode begin, end;
+
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
                StringLike(b).stringSearch(vm, minusOne, char2, begin, end));
   EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
                StringLike(b).stringSearch(vm, six, char2, begin, end));
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, char2, begin, end));
+  StringLike(b).stringSearch(vm, zero, char2, begin, end);
   EXPECT_EQ_INT(1, begin);
   EXPECT_EQ_INT(2, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, one, char2, begin, end));
+  StringLike(b).stringSearch(vm, one, char2, begin, end);
   EXPECT_EQ_INT(1, begin);
   EXPECT_EQ_INT(2, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, two, char2, begin, end));
+  StringLike(b).stringSearch(vm, two, char2, begin, end);
   EXPECT_EQ_INT(3, begin);
   EXPECT_EQ_INT(4, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, char2, begin, end));
+  StringLike(b).stringSearch(vm, four, char2, begin, end);
   for (auto node : {&begin, &end}) {
     if (EXPECT_IS<Boolean>(*node)) {
-      bool value = false;
-      EXPECT_PROCEED(BooleanValue(*node).boolValue(vm, value));
-      EXPECT_FALSE(value);
+      EXPECT_FALSE(BooleanValue(*node).boolValue(vm));
     }
   }
 
@@ -184,8 +178,7 @@ TEST_F(ByteStringTest, Compare) {
 
   for (int i = 0; i < 3; ++ i) {
     for (int j = 0; j < 3; ++ j) {
-      int res = 0;
-      EXPECT_PROCEED(Comparable(nodes[i]).compare(vm, nodes[j], res));
+      int res = Comparable(nodes[i]).compare(vm, nodes[j]);
       EXPECT_EQ(results[i][j]<0, res<0);
       EXPECT_EQ(results[i][j]==0, res==0);
       EXPECT_EQ(results[i][j]>0, res>0);
@@ -208,23 +201,24 @@ TEST_F(ByteStringTest, Search) {
   UnstableNode eight = SmallInt::build(vm, 8);
 
   UnstableNode begin, end;
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, zero, needle, begin, end));
+
+  StringLike(b).stringSearch(vm, zero, needle, begin, end);
   EXPECT_EQ_INT(3, begin);
   EXPECT_EQ_INT(6, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, three, needle, begin, end));
+  StringLike(b).stringSearch(vm, three, needle, begin, end);
   EXPECT_EQ_INT(3, begin);
   EXPECT_EQ_INT(6, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, four, needle, begin, end));
+  StringLike(b).stringSearch(vm, four, needle, begin, end);
   EXPECT_EQ_INT(5, begin);
   EXPECT_EQ_INT(8, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, six, needle, begin, end));
+  StringLike(b).stringSearch(vm, six, needle, begin, end);
   EXPECT_EQ_INT(7, begin);
   EXPECT_EQ_INT(10, end);
 
-  EXPECT_PROCEED(StringLike(b).stringSearch(vm, eight, needle, begin, end));
+  StringLike(b).stringSearch(vm, eight, needle, begin, end);
   if (EXPECT_IS<Boolean>(begin)) {
     EXPECT_FALSE(RichNode(begin).as<Boolean>().value());
   }
@@ -237,25 +231,30 @@ TEST_F(ByteStringTest, Encode) {
   auto test = MOZART_STR("a\U000180c3b");
 
   UnstableNode res;
-  EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::latin1, EncodingVariant::none, res));
+
+  res = encodeToBytestring(vm, test, ByteStringEncoding::latin1,
+                           EncodingVariant::none);
   if (EXPECT_IS<ByteString>(res)) {
     const unsigned char expected[] = "a?b";
     EXPECT_EQ(makeLString(expected, 3), RichNode(res).as<ByteString>().value());
   }
 
-  EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::utf8, EncodingVariant::none, res));
+  res = encodeToBytestring(vm, test, ByteStringEncoding::utf8,
+                           EncodingVariant::none);
   if (EXPECT_IS<ByteString>(res)) {
     const unsigned char expected[] = "a\xf0\x98\x83\x83" "b";
     EXPECT_EQ(makeLString(expected, 6), RichNode(res).as<ByteString>().value());
   }
 
-  EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::utf16, EncodingVariant::none, res));
+  res = encodeToBytestring(vm, test, ByteStringEncoding::utf16,
+                           EncodingVariant::none);
   if (EXPECT_IS<ByteString>(res)) {
     const unsigned char expected[] = "\0a\xd8\x20\xdc\xc3\0b";
     EXPECT_EQ(makeLString(expected, 8), RichNode(res).as<ByteString>().value());
   }
 
-  EXPECT_PROCEED(encodeToBytestring(vm, test, ByteStringEncoding::utf32, EncodingVariant::none, res));
+  res = encodeToBytestring(vm, test, ByteStringEncoding::utf32,
+                           EncodingVariant::none);
   if (EXPECT_IS<ByteString>(res)) {
     const unsigned char expected[] = "\0\0\0a\0\1\x80\xc3\0\0\0b";
     EXPECT_EQ(makeLString(expected, 12), RichNode(res).as<ByteString>().value());

@@ -49,9 +49,7 @@ public:
     Is() : Builtin("is") {}
 
     void operator()(VM vm, In value, Out result) {
-      bool boolResult = false;
-      VirtualString(value).isVirtualString(vm, boolResult);
-      result = Boolean::build(vm, boolResult);
+      result = build(vm, VirtualString(value).isVirtualString(vm));
     }
   };
 
@@ -71,9 +69,7 @@ public:
     Length() : Builtin("length") {}
 
     void operator()(VM vm, In value, Out result) {
-      nativeint length = 0;
-      VirtualString(value).vsLength(vm, length);
-      result = SmallInt::build(vm, length);
+      result = build(vm, VirtualString(value).vsLength(vm));
     }
   };
 
@@ -102,7 +98,7 @@ public:
       doubleResult = std::strtod(str.c_str(), &end);
 
       if (*end != '\0')
-        return raiseKernelError(vm, MOZART_STR("stringNoFloat"), value);
+        raiseKernelError(vm, MOZART_STR("stringNoFloat"), value);
 
       result = build(vm, doubleResult);
     }

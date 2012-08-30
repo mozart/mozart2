@@ -105,7 +105,12 @@ protected:
 };
 
 #define EXPECT_RAISE(label, operation) \
-  EXPECT_THROW((operation), ::mozart::Raise)
+  MOZART_TRY(vm) { \
+    operation; \
+    ADD_FAILURE(); \
+  } MOZART_CATCH(vm, kind, node) { \
+    EXPECT_EQ(ExceptionKind::ekRaise, kind); \
+  } MOZART_ENDTRY(vm)
 
 namespace mut {
   template <class C>

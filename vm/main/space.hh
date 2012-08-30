@@ -570,15 +570,17 @@ void Space::deinstallThisFailed() {
 
 bool Space::installThis(bool isMerge) {
   bool result = true;
+  VM vm = this->vm;
 
-  try {
+  MOZART_TRY(vm) {
     for (auto iter = script.begin(); iter != script.end(); ++iter) {
       unify(vm, iter->left, iter->right);
     }
-  } catch (const Fail& exception) {
+  } MOZART_CATCH(vm, kind, node) {
+    assert(kind == ExceptionKind::ekFail);
     fail(vm);
     result = false;
-  }
+  } MOZART_ENDTRY(vm);
 
   script.clear(vm);
 

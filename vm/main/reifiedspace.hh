@@ -54,11 +54,11 @@ private:
     }
 
     void run() {
-      try {
+      MOZART_TRY(vm) {
         unify(vm, _var, _value);
-      } catch (const Exception& exc) {
+      } MOZART_CATCH(vm, kind, node) {
         assert(false); // TODO Or should we actually handle this case?
-      }
+      } MOZART_ENDTRY(vm);
       terminate();
     }
 

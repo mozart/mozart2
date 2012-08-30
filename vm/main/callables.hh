@@ -144,7 +144,7 @@ void Abstraction::getDebugInfo(
 void Abstraction::printReprToStream(
   Self self, VM vm, std::ostream& out, int depth) {
 
-  try {
+  MOZART_TRY(vm) {
     ensureCodeAreaCacheValid(vm);
 
     atom_t printName;
@@ -155,9 +155,9 @@ void Abstraction::printReprToStream(
     if (printName != vm->coreatoms.empty)
       out << " " << printName;
     out << ">";
-  } catch (const Exception& ignore) {
+  } MOZART_CATCH(vm, kind, node) {
     out << "<P/?>";
-  }
+  } MOZART_ENDTRY(vm);
 }
 
 void Abstraction::ensureCodeAreaCacheValid(VM vm) {

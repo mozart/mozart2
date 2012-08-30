@@ -34,6 +34,7 @@
 #include "coreatoms.hh"
 #include "datatype.hh"
 #include "dynbuilders.hh"
+#include "exceptions.hh"
 #include "exchelpers.hh"
 #include "gcollect.hh"
 #include "graphreplicator.hh"

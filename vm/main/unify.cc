@@ -106,7 +106,7 @@ bool fullPatternMatch(VM vm, RichNode value, RichNode pattern,
 ////////////////////
 
 bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
-  try {
+  MOZART_TRY(vm) {
     /* We put the while inside the try-catch
      * Avoids to install and deinstall the handler on every pair
      */
@@ -114,7 +114,7 @@ bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
       // Process the pair
       if (!processPair(vm, left, right)) {
         cleanupOnFailure(vm);
-        return false;
+        MOZART_RETURN_IN_TRY(vm, false);
       }
 
       // Finished?
@@ -128,33 +128,41 @@ bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
       // Go to next item
       stack.remove_front(vm);
     }
-  } catch (const WaitBefore& exception) {
-    // TODO Do we need to actually support the *quiet* here?
-    if (!RichNode(*exception.getWaiteeNode()).is<FailedValue>()) {
-      suspendTrail.push_back_new(vm, left.getStableRef(vm),
-                                 right.getStableRef(vm));
+  } MOZART_CATCH(vm, kind, node) {
+    switch (kind) {
+      case ExceptionKind::ekWaitBefore: {
+        // TODO Do we need to actually support the *quiet* here?
+        if (!RichNode(*node).is<FailedValue>()) {
+          suspendTrail.push_back_new(vm, left.getStableRef(vm),
+                                     right.getStableRef(vm));
 
-      // We must process the next pair nevertheless -> tail call
+          // We must process the next pair nevertheless -> tail call
 
-      // Finished?
-      if (!stack.empty()) {
-        // Pop next pair
-        left = *stack.front().left;
-        right = *stack.front().right;
+          // Finished?
+          if (!stack.empty()) {
+            // Pop next pair
+            left = *stack.front().left;
+            right = *stack.front().right;
 
-        // Go to next item
-        stack.remove_front(vm);
+            // Go to next item
+            stack.remove_front(vm);
 
-        return run(vm, left, right);
+            return run(vm, left, right);
+          }
+        } else {
+          cleanupOnFailure(vm);
+          MOZART_RETHROW(vm);
+        }
+
+        break;
       }
-    } else {
-      cleanupOnFailure(vm);
-      throw;
+
+      default: {
+        cleanupOnFailure(vm);
+        MOZART_RETHROW(vm);
+      }
     }
-  } catch (const Exception& exception) {
-    cleanupOnFailure(vm);
-    throw;
-  }
+  } MOZART_ENDTRY(vm);
 
   // Do we need to suspend on something?
   if (!suspendTrail.empty()) {

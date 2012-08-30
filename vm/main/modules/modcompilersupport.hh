@@ -152,20 +152,24 @@ public:
 
       OpResult res = OpResult::proceed();
       size_t width = 0;
-      std::unique_ptr<UnstableNode[]> featuresData;
+      StaticArray<StableNode> featuresData;
 
-      if (matchesVariadicSharp(vm, res, features, width,
-                               featuresData)) {
+      if (matchesVariadicSharp(vm, res, features, width, featuresData)) {
+        auto unstableFeatures = vm->newStaticArray<UnstableNode>(width);
+        for (size_t i = 0; i < width; i++)
+          unstableFeatures[i].init(vm, featuresData[i]);
+
         bool isTuple = false;
         UnstableNode arity;
         MOZART_CHECK_OPRESULT(buildArityDynamic(
-          vm, isTuple, arity, label, width, featuresData.get()));
+          vm, isTuple, arity, label, width, (UnstableNode*) unstableFeatures));
 
         if (isTuple)
           result = build(vm, false);
         else
           result = std::move(arity);
 
+        vm->deleteStaticArray(unstableFeatures, width);
         return OpResult::proceed();
       } else {
         return matchTypeError(vm, res, features, MOZART_STR("#-tuple"));

@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <cassert>
 
+#include "core-forward-decl.hh"
+
 namespace mozart {
 
 /**
@@ -43,12 +45,12 @@ private:
   T* _array;
 
 #ifdef MOZART_STATICARRAY_WITH_SIZE
-  int _size;
+  size_t _size;
 #endif
 
 public:
   /** Create an array with s elements */
-  StaticArray(T* array, int s) : _array(array) {
+  StaticArray(T* array, size_t s) : _array(array) {
 #ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = s;
 #endif
@@ -70,9 +72,9 @@ public:
 
   /** Zero-based access to elements (read-write) */
   inline
-  T& operator[](int i) {
+  T& operator[](size_t i) {
 #ifdef MOZART_STATICARRAY_WITH_SIZE
-    assert(0 <= i && i < _size);
+    assert(i < _size);
 #endif
     return _array[i];
   }
@@ -89,6 +91,17 @@ public:
     _array = nullptr;
 #ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = 0;
+#endif
+  }
+
+  /** Take a slice of the array, dropping n elements at the beginning */
+  inline
+  StaticArray<T> drop(size_t n) {
+#ifdef MOZART_STATICARRAY_WITH_SIZE
+    assert(n <= _size);
+    return { _array+n, _size-n };
+#else
+    return { _array+n, 0 };
 #endif
   }
 };

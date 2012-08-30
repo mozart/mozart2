@@ -1292,20 +1292,19 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
                           bool& preempted) {
   using namespace patternmatching;
 
-  OpResult res = OpResult::proceed();
-  size_t patternCount = 0;
-  std::unique_ptr<UnstableNode[]> patternList;
-
-  if (!matchesVariadicSharp(vm, res, patterns, patternCount, patternList))
-    CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patterns,
-                                         MOZART_STR("patterns")));
+  assert(patterns.is<Tuple>());
+  auto patternsTuple = patterns.as<Tuple>();
+  size_t patternCount = patternsTuple.getWidth();
+  auto patternList = patternsTuple.getElementsArray();
 
   for (size_t index = 0; index < patternCount; index++) {
     UnstableNode pattern;
     nativeint jumpOffset = 0;
 
+    OpResult res = OpResult::proceed();
     if (!matchesSharp(vm, res, patternList[index],
                       capture(pattern), capture(jumpOffset))) {
+      assert(false);
       CHECK_OPRESULT_RETURN(matchTypeError(vm, res, patternList[index],
                                            MOZART_STR("pattern")));
     }

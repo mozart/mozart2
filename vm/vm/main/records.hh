@@ -338,12 +338,15 @@ void withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
 
 bool Cons::isVirtualString(Self self, VM vm) {
   // TODO Refactor this, we do not want to catch exceptions
-  try {
+  MOZART_TRY(vm) {
     internal::withConsAsVirtualString(vm, self, [](char32_t){});
-    return true;
-  } catch (const Raise& raise) {
-    return false;
-  }
+    MOZART_RETURN_IN_TRY(vm, true);
+  } MOZART_CATCH(vm, kind, node) {
+    if (kind == ExceptionKind::ekRaise)
+      return false;
+    else
+      MOZART_RETHROW(vm);
+  } MOZART_ENDTRY(vm);
 }
 
 void Cons::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {

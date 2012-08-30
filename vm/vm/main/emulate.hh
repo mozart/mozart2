@@ -270,7 +270,7 @@ private:
                     StaticArray<StableNode>& kregs,
                     bool& preempted);
 
-  void applyFail(VM vm, const Fail& exception,
+  void applyFail(VM vm,
                  StableNode*& abstraction,
                  ProgramCounter& PC, size_t& yregCount,
                  XRegArray* xregs,
@@ -278,7 +278,7 @@ private:
                  StaticArray<StableNode>& gregs,
                  StaticArray<StableNode>& kregs);
 
-  void applyWaitBefore(VM vm, const WaitBeforeBase& exception,
+  void applyWaitBefore(VM vm, RichNode waitee, bool isQuiet,
                        StableNode*& abstraction,
                        ProgramCounter& PC, size_t& yregCount,
                        XRegArray* xregs,
@@ -286,7 +286,7 @@ private:
                        StaticArray<StableNode>& gregs,
                        StaticArray<StableNode>& kregs);
 
-  void applyRaise(VM vm, const Raise& exception,
+  void applyRaise(VM vm, RichNode exception,
                   StableNode*& abstraction,
                   ProgramCounter& PC, size_t& yregCount,
                   XRegArray* xregs,

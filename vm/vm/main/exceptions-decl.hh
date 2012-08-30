@@ -25,78 +25,122 @@
 #ifndef __EXCEPTIONS_DECL_H
 #define __EXCEPTIONS_DECL_H
 
+#include <setjmp.h>
+
 #include "core-forward-decl.hh"
 #include "store-decl.hh"
 
 namespace mozart {
 
-/** Base class for Mozart exceptions */
-class Exception {
+enum class ExceptionKind {
+  ekFail, ekWaitBefore, ekWaitQuietBefore, ekRaise
 };
 
-class Fail: public Exception {
-public:
-  Fail(VM vm) {}
+struct ExceptionHandler {
+  jmp_buf jumpBuffer;
+  ExceptionHandler* nextHandler;
 };
 
-class WaitBeforeBase: public Exception {
+class GlobalExceptionMechanism {
 public:
-  WaitBeforeBase(VM vm, RichNode waitee, bool quiet):
-    _waitee(waitee.getStableRef(vm)), _quiet(quiet) {}
+  GlobalExceptionMechanism(): _topHandler(nullptr),
+    _exceptionKind(ExceptionKind::ekFail), _dataNode(nullptr) {}
 
-  StableNode* getWaiteeNode() const {
-    return _waitee;
+  void pushHandler(ExceptionHandler& handler) {
+    handler.nextHandler = _topHandler;
+    _topHandler = &handler;
   }
 
-  bool isQuiet() const {
-    return _quiet;
+  void popHandler(ExceptionHandler& handler) {
+    assert(_topHandler == &handler);
+    popHandler();
   }
+
+  void popHandler() {
+    _topHandler = _topHandler->nextHandler;
+  }
+
+  void MOZART_NORETURN throwException(ExceptionKind kind,
+                                      StableNode* dataNode = nullptr) {
+    _exceptionKind = kind;
+    _dataNode = dataNode;
+    rethrow();
+  }
+
+  void MOZART_NORETURN rethrow() {
+    ExceptionHandler* handler = _topHandler;
+    assert(handler != nullptr);
+    _topHandler = handler->nextHandler;
+    longjmp(handler->jumpBuffer, 1);
+  }
+
+  ExceptionKind getExceptionKind() {
+    return _exceptionKind;
+  }
+
+  StableNode* getDataNode() {
+    return _dataNode;
+  }
+
+  StableNode* getWaiteeNode() {
+    assert(_exceptionKind == ExceptionKind::ekWaitBefore ||
+      _exceptionKind == ExceptionKind::ekWaitQuietBefore);
+    return _dataNode;
+  }
+
+  StableNode* getExceptionNode() {
+    assert(_exceptionKind == ExceptionKind::ekRaise);
+    return _dataNode;
+  }
+
 private:
-  StableNode* _waitee;
-  bool _quiet;
-};
-
-class WaitBefore: public WaitBeforeBase {
-public:
-  WaitBefore(VM vm, RichNode waitee): WaitBeforeBase(vm, waitee, false) {}
-};
-
-class WaitQuietBefore: public WaitBeforeBase {
-public:
-  WaitQuietBefore(VM vm, RichNode waitee): WaitBeforeBase(vm, waitee, true) {}
-};
-
-class Raise: public Exception {
-public:
-  Raise(VM vm, RichNode exception): _exception(exception.getStableRef(vm)) {}
-
-  StableNode* getException() const {
-    return _exception;
-  }
-private:
-  StableNode* _exception;
+  ExceptionHandler* _topHandler;
+  ExceptionKind _exceptionKind;
+  StableNode* _dataNode;
 };
 
 inline
-void MOZART_NORETURN fail(VM vm) {
-  throw Fail(vm);
-}
+void MOZART_NORETURN fail(VM vm);
 
 inline
-void MOZART_NORETURN waitFor(VM vm, RichNode waitee) {
-  throw WaitBefore(vm, waitee);
-}
+void MOZART_NORETURN waitFor(VM vm, RichNode waitee);
 
 inline
-void MOZART_NORETURN waitQuietFor(VM vm, RichNode waitee) {
-  throw WaitQuietBefore(vm, waitee);
-}
+void MOZART_NORETURN waitQuietFor(VM vm, RichNode waitee);
 
 inline
-void MOZART_NORETURN raise(VM vm, RichNode exception) {
-  throw Raise(vm, exception);
-}
+void MOZART_NORETURN raise(VM vm, RichNode exception);
 
 }
+
+#define MOZART_TRY(vm) \
+  do { \
+    ::mozart::ExceptionHandler __Mozart_exc_handler; \
+    if (::setjmp(__Mozart_exc_handler.jumpBuffer) == 0) { \
+      (vm)->getGlobalExceptionMechanism().pushHandler(__Mozart_exc_handler);
+
+#define MOZART_CATCH(vm, kind, node) \
+      (vm)->getGlobalExceptionMechanism().popHandler(__Mozart_exc_handler); \
+    } else { \
+      auto __attribute__((unused)) kind = \
+        (vm)->getGlobalExceptionMechanism().getExceptionKind(); \
+      auto __attribute__((unused)) node = \
+        (vm)->getGlobalExceptionMechanism().getDataNode(); \
+
+#define MOZART_ENDTRY(vm) \
+    } \
+  } while (false)
+
+#define MOZART_RETHROW(vm) \
+  do { \
+    (vm)->getGlobalExceptionMechanism().rethrow(); \
+  } while (false)
+
+#define MOZART_RETURN_IN_TRY(vm, value) \
+  do { \
+    auto __Mozart_exc_value = (value); \
+    (vm)->getGlobalExceptionMechanism().popHandler(); \
+    return __Mozart_exc_value; \
+  } while (false)
 
 #endif // __EXCEPTIONS_DECL_H

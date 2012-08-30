@@ -292,7 +292,7 @@ void Thread::run() {
   ProgramCounter backupPC = NullPC;
 
   // The big try-catch that catches all bad things in the world
-  try {
+  MOZART_TRY(vm) {
 
     // Now's the right time to inject an exception that was thrown at us
 
@@ -604,7 +604,8 @@ void Thread::run() {
         case OpReturn: {
           if (stack.empty()) {
             terminate();
-            return;
+            preempted = true;
+            break;
           }
 
           popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
@@ -1071,28 +1072,45 @@ void Thread::run() {
 
   // The big catches clauses that catch all bad things in the world
 
-  } catch (const Fail& exception) {
+  } MOZART_CATCH(vm, kind, node) {
     if (hasBackupPC)
       PC = backupPC;
-    applyFail(vm, exception,
-              abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
-  } catch (const WaitBeforeBase& exception) {
-    if (hasBackupPC)
-      PC = backupPC;
-    applyWaitBefore(vm, exception,
-                    abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
-  } catch (const Raise& exception) {
-    if (hasBackupPC)
-      PC = backupPC;
-    applyRaise(vm, exception,
-               abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
-  }
+
+    switch (kind) {
+      case ExceptionKind::ekFail: {
+        applyFail(vm,
+                  abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+        break;
+      }
+
+      case ExceptionKind::ekWaitBefore: {
+        applyWaitBefore(vm, *node, false,
+                        abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+        break;
+      }
+
+      case ExceptionKind::ekWaitQuietBefore: {
+        applyWaitBefore(vm, *node, true,
+                        abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+        break;
+      }
+
+      case ExceptionKind::ekRaise: {
+        applyRaise(vm, *node,
+                   abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+        break;
+      }
+    }
+  } MOZART_ENDTRY(vm);
 
 #undef IntPC
 #undef XPC
 #undef YPC
 #undef GPC
 #undef KPC
+
+  if (isTerminated())
+    return;
 
   // Store the current state in the stack frame, for next invocation of run()
   pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
@@ -1261,7 +1279,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
   advancePC(2);
 }
 
-void Thread::applyFail(VM vm, const Fail& exception,
+void Thread::applyFail(VM vm,
                        StableNode*& abstraction,
                        ProgramCounter& PC, size_t& yregCount,
                        XRegArray* xregs,
@@ -1275,33 +1293,31 @@ void Thread::applyFail(VM vm, const Fail& exception,
       vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
       vm->coreatoms.failure, unit);
 
-    applyRaise(vm, Raise(vm, error),
+    applyRaise(vm, error,
                abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
   }
 }
 
-void Thread::applyWaitBefore(VM vm, const WaitBeforeBase& exception,
+void Thread::applyWaitBefore(VM vm, RichNode waitee, bool isQuiet,
                              StableNode*& abstraction,
                              ProgramCounter& PC, size_t& yregCount,
                              XRegArray* xregs,
                              StaticArray<UnstableNode>& yregs,
                              StaticArray<StableNode>& gregs,
                              StaticArray<StableNode>& kregs) {
-  RichNode waitee = *exception.getWaiteeNode();
-
   if (getRaiseOnBlock() && (waitee.is<OptVar>() || waitee.is<Variable>())) {
     UnstableNode error = buildRecord(
       vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
       buildTuple(vm, vm->coreatoms.kernel, MOZART_STR("block"), waitee), unit);
 
-    applyRaise(vm, Raise(vm, error),
+    applyRaise(vm, error,
                abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
     return;
   }
 
-  if (!exception.isQuiet()) {
+  if (!isQuiet) {
     if (waitee.is<FailedValue>()) {
-      applyRaise(vm, Raise(vm, *waitee.as<FailedValue>().getUnderlying()),
+      applyRaise(vm, *waitee.as<FailedValue>().getUnderlying(),
                  abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
       return;
     } else {
@@ -1312,7 +1328,7 @@ void Thread::applyWaitBefore(VM vm, const WaitBeforeBase& exception,
   suspendOnVar(vm, waitee);
 }
 
-void Thread::applyRaise(VM vm, const Raise& exception,
+void Thread::applyRaise(VM vm, RichNode exception,
                         StableNode*& abstraction,
                         ProgramCounter& PC, size_t& yregCount,
                         XRegArray* xregs,
@@ -1320,7 +1336,7 @@ void Thread::applyRaise(VM vm, const Raise& exception,
                         StaticArray<StableNode>& gregs,
                         StaticArray<StableNode>& kregs) {
   UnstableNode preprocessedException = preprocessException(
-    vm, *exception.getException(), abstraction, PC);
+    vm, exception, abstraction, PC);
 
   bool handlerFound = stack.findExceptionHandler(
     vm, abstraction, PC, yregCount, yregs, gregs, kregs);

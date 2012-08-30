@@ -133,6 +133,10 @@ public:
     return secondMemoryManager;
   }
 
+  GlobalExceptionMechanism& getGlobalExceptionMechanism() {
+    return exceptionMechanism;
+  }
+
   Space* getTopLevelSpace() {
     return _topLevelSpace;
   }
@@ -235,6 +239,8 @@ private:
 
   MemoryManager memoryManager;
   MemoryManager secondMemoryManager;
+
+  GlobalExceptionMechanism exceptionMechanism;
 
   Space* _topLevelSpace;
   Space* _currentSpace;

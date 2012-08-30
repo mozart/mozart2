@@ -601,7 +601,7 @@ bool matchesSharp(VM vm, OpResult& result, RichNode value,
 template <class LT, class... Args>
 inline
 bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
-                          size_t& argc, std::unique_ptr<UnstableNode[]>& args,
+                          size_t& argc, StaticArray<StableNode>& args,
                           LT labelPat, Args... fieldsPats) {
   if (!result.isProceed())
     return false;
@@ -637,10 +637,7 @@ bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
 
   // Fill the captured variadic arguments
   argc = tuple.getWidth() - fixedArgc;
-  args = std::unique_ptr<UnstableNode[]>(new UnstableNode[argc]);
-
-  for (size_t i = 0; i < argc; i++)
-    args[i].copy(vm, *tuple.getElement(i+fixedArgc));
+  args = tuple.getElementsArray().drop(fixedArgc);
 
   return true;
 }
@@ -652,7 +649,7 @@ bool matchesVariadicTuple(VM vm, OpResult& result, RichNode value,
 template <class... Args>
 inline
 bool matchesVariadicSharp(VM vm, OpResult& result, RichNode value,
-                          size_t& argc, std::unique_ptr<UnstableNode[]>& args,
+                          size_t& argc, StaticArray<StableNode>& args,
                           Args... fieldsPats) {
   return matchesVariadicTuple(vm, result, value,
                               argc, args, vm->coreatoms.sharp, fieldsPats...);

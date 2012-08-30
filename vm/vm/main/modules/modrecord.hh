@@ -114,20 +114,23 @@ public:
 
       OpResult res = OpResult::proceed();
       size_t contentsWidth = 0;
-      std::unique_ptr<UnstableNode[]> contentsData;
+      StaticArray<StableNode> contentsData;
 
       if (matchesVariadicSharp(vm, res, contents, contentsWidth,
                                contentsData) && (contentsWidth % 2 == 0)) {
         size_t width = contentsWidth / 2;
-        std::unique_ptr<UnstableField[]> elements(new UnstableField[width]);
+        auto elements = vm->newStaticArray<UnstableField>(width);
 
         for (size_t i = 0; i < width; i++) {
-          // Moves are OK because we do not use contentsData afterwards
-          elements[i].feature = std::move(contentsData[i*2]);
-          elements[i].value = std::move(contentsData[i*2+1]);
+          elements[i].feature.init(vm, contentsData[i*2]);
+          elements[i].value.init(vm, contentsData[i*2+1]);
         }
 
-        return buildRecordDynamic(vm, result, label, width, elements.get());
+        res = buildRecordDynamic(vm, result, label, width, elements);
+
+        vm->deleteStaticArray(elements, width);
+
+        return res;
       } else {
         return matchTypeError(vm, res, contents,
                               MOZART_STR("#-tuple with even arity"));

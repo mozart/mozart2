@@ -451,31 +451,30 @@ void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
 
   if (!toStableNode && requiresStableNodeInGR()) {
     to << "  StableNode* stable = new (gc->vm) StableNode;\n";
-    to << "  to.init(gc->vm, Reference::build(gc->vm, stable));\n";
+    to << "  to.make<Reference>(gc->vm, stable);\n";
     toPrefix = "stable->";
   }
 
-  to << "  " << toPrefix << "init(gc->vm, " << name << "::build(gc->vm, ";
+  to << "  " << toPrefix << "make<" << name << ">(gc->vm, ";
   if (storageKind == skWithArray)
     to << "fromAsSelf.getArraySize(), ";
-  to << "gc, fromAsSelf));\n";
+  to << "gc, fromAsSelf);\n";
 }
 
 void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
                                                  bool toStableNode) {
   to << "  assert(from.type() == type());\n";
 
-  std::string cloneStatement =
-    std::string("init(sc->vm, ") + name + "::build(sc->vm, ";
+  std::string cloneStatement = std::string("make<") + name + ">(sc->vm, ";
   if (storageKind == skWithArray)
     cloneStatement += "fromAsSelf.getArraySize(), ";
-  cloneStatement += "sc, fromAsSelf));";
+  cloneStatement += "sc, fromAsSelf);";
 
   if (!toStableNode && requiresStableNodeInGR()) {
     cloneStatement = std::string("stable->") + cloneStatement;
     cloneStatement = std::string(
       "StableNode* stable = new (sc->vm) StableNode;\n"
-      "to.init(sc->vm, Reference::build(sc->vm, stable));\n") + cloneStatement;
+      "to.make<Reference>(sc->vm, stable);\n") + cloneStatement;
   } else {
     cloneStatement = std::string("to.") + cloneStatement;
   }

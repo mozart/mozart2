@@ -60,6 +60,9 @@ private:
   template <class T>
   friend class WritableSelfType;
 
+  template <class T>
+  friend class TypeInfoOf;
+
   Node() {}
 
   template<class T, class... Args>

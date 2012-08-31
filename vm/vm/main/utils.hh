@@ -58,13 +58,14 @@ void requireFeature(VM vm, RichNode feature) {
 
 template <class F, class G>
 void ozListForEach(VM vm, RichNode cons, const F& onHead, const G& onTail) {
+  using namespace patternmatching;
+
+  typename std::remove_reference<
+    typename function_traits<F>::template arg<0>::type>::type head;
+
+  UnstableNode tail;
+
   while (true) {
-    using namespace patternmatching;
-
-    typename std::remove_reference<
-      typename function_traits<F>::template arg<0>::type>::type head;
-    UnstableNode tail;
-
     if (matchesCons(vm, cons, capture(head), capture(tail))) {
       onHead(head);
       cons = tail;

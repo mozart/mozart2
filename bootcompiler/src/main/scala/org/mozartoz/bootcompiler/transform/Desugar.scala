@@ -66,9 +66,21 @@ object Desugar extends Transformer with TreeDSL {
     case fun @ FunExpression(name, args, body, flags) =>
       val result = Variable.newSynthetic("<Result>", formal = true)
 
+      val isLazy = flags contains "lazy"
+      val newFlags =
+        if (isLazy) flags filterNot "lazy".==
+        else flags
+
       val proc = atPos(fun) {
-        PROC(name, args :+ result, flags) {
-          result === body
+        PROC(name, args :+ result, newFlags) {
+          if (isLazy) {
+            THREAD {
+              (builtins.waitNeeded call (result)) ~
+              (result === body)
+            }
+          } else {
+            result === body
+          }
         }
       }
 

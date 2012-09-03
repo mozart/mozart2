@@ -55,6 +55,8 @@ class Builtins {
 
   lazy val getBootMM = builtinByName("Boot", "getBootMM")
 
+  lazy val waitNeeded = builtinByName("Value", "waitNeeded")
+
   lazy val dotAssign = builtinByName("Value", "dotAssign")
   lazy val dotExchange = builtinByName("Value", "dotExchange")
 

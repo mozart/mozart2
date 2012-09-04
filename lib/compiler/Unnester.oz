@@ -596,16 +596,17 @@ define
                Unnester, UnnestConstraint(FS GV ?GFront ?GBack)
             end
             GFront|GBack
-         [] fAssign(FE1 FE2 C) then
+         [] fAssign(FE1 FE2 C) then FSelf in
             if @Stateful then
-               StateUsed <- true
+               FSelf = fVar('self' C)
             else
                {@reporter
                 error(coord: C kind: ExpansionError
                       msg: 'attribute assignment used outside of method')}
+               FSelf = fAtom('self' C) % dummy replacement
             end
             Unnester, UnnestStatement(fOpApplyStatement('Object.\'<-\''
-                                                        [FE1 FE2] C) $)
+                                                        [FSelf FE1 FE2] C) $)
          [] fOpApplyStatement(Op FEs C) then
             GVO GFrontEqs1 GFrontEqs2 GTs GS
          in
@@ -641,9 +642,8 @@ define
                            [FE2 FE1] C)
             end
             Unnester, UnnestStatement(FS $)
-         [] fObjApply(FE1 FE2 C) then
+         [] fObjApply(FE1 FE2 C) then FSelf in
             if @Stateful then
-               StateUsed <- true
                case FE1 of fSelf(C) then
                   {@reporter
                    error(coord: C kind: ExpansionError
@@ -653,13 +653,15 @@ define
                                           'or use "{self message}"'))])}
                else skip
                end
+               FSelf = fVar('self' C)
             else
                {@reporter
                 error(coord: C kind: ExpansionError
                       msg: 'object application used outside of method')}
+               FSelf = fAtom('self' C) % dummy replacement
             end
             Unnester, UnnestStatement(fOpApplyStatement('Object.\',\''
-                                                        [FE1 FE2] C) $)
+                                                        [FSelf FE1 FE2] C) $)
          [] fDollar(C) then
             {@reporter error(coord: C kind: ExpansionError
                              msg: 'illegal use of nesting marker')}
@@ -1054,15 +1056,16 @@ define
                                                         CND)]
                                                  CND) 'lock' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fLock(FS C) then CND FE NewFS in
+         [] fLock(FS C) then FSelf CND FE NewFS in
+            CND = {CoordNoDebug C}
             if @Stateful then
-               StateUsed <- true
+               FSelf = fVar('self' CND)
             else
                {@reporter error(coord: C kind: ExpansionError
                                 msg: 'object lock used outside of method')}
+               FSelf = fAtom('self' CND) % dummy replacement
             end
-            CND = {CoordNoDebug C}
-            FE = fOpApply('ooGetLock' [fSelf(CND)] CND)
+            FE = fOpApply('ooGetLock' [FSelf] CND)
             NewFS = fLockThen(FE FS C)
             Unnester, UnnestStatement(NewFS $)
          [] fThread(FS C) then CND NewFS in
@@ -1195,14 +1198,17 @@ define
                Unnester, UnnestExpression(Right GV _)
                {New Core.skipNode init(C)}
             end
-         [] fColonEquals(Left Right C) then   %% ColonEquals is a _ := _
+         [] fColonEquals(Left Right C) then NewFS in   %% ColonEquals is a _ := _
                % Left could be cell,  could be attribute, could be a
                % table entry (D#I pair).
-            if @Stateful then
-               % We pessimistically assume its an attribute and set the StateUsed flag.
+            if @Stateful then FSelf in
+               % We pessimistically assume its an attribute.
                % An optimisation would be to delay setting the flag until after
                % Static Analysis,  when we may know better if lhs is an attribute.
-               StateUsed <- true
+               FSelf = fVar('self' C)
+               NewFS = fOpApplyStatement('catAssignOO' [FSelf Left Right] C)
+            else
+               NewFS = fOpApplyStatement('catAssign' [Left Right] C)
             end
             % Here,  we set the operation to 'catAssign' a builtin
             % which checks the type of lhs and calls Value.Assign,
@@ -1211,8 +1217,7 @@ define
             % We then optimise this call statically during byte code generation.
             % (not yet implemented)
             %
-            Unnester, UnnestStatement(fOpApplyStatement(if @Stateful then 'catAssignOO' else 'catAssign' end
-                                                        [Left Right] C) $)
+            Unnester, UnnestStatement(NewFS $)
          else C = {CoordinatesOf FS} GV in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'expression at statement position')}
@@ -1237,16 +1242,17 @@ define
          [] fEq(_ _ _) then GFront GBack in
             Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
             GFront|GBack
-         [] fAssign(FE1 FE2 C) then FApply in
+         [] fAssign(FE1 FE2 C) then FSelf FApply in
             if @Stateful then
-               StateUsed <- true
+               FSelf = fVar('self' C)
             else
                {@reporter
                 error(coord: C kind: ExpansionError
                       msg: 'attribute exchange used outside of method')}
+               FSelf = fAtom('self' C) % dummy replacement
             end
             FApply = fOpApplyStatement('Object.exchange'
-                                       [FE1 FE2 fOcc(ToGV)] C)
+                                       [FSelf FE1 FE2 fOcc(ToGV)] C)
             Unnester, UnnestStatement(FApply $)
          [] fOrElse(FE1 FE2 C) then FV FS in
             FV = fOcc(ToGV)
@@ -1332,9 +1338,8 @@ define
                            [FE2 FE1 fOcc(ToGV)] C)
             end
             Unnester, UnnestStatement(FS $)
-         [] fObjApply(FE1 FE2 C) then NewFE2 in
+         [] fObjApply(FE1 FE2 C) then FSelf NewFE2 in
             if @Stateful then
-               StateUsed <- true
                if {DollarsInScope FE2 0} == 1 then
                   case FE1 of fSelf(C) then
                      {@reporter
@@ -1351,21 +1356,24 @@ define
                          msg: ('message of nested object application '#
                                'must contain exactly one nesting marker'))}
                end
+               FSelf = fVar('self' C)
             else
                {@reporter
                 error(coord: C kind: ExpansionError
                       msg: 'object application used outside of method')}
+               FSelf = fAtom('self' C) % dummy replacement
             end
             NewFE2 = {ReplaceDollar FE2 fOcc(ToGV)}
             Unnester, UnnestStatement(fOpApplyStatement('Object.\',\''
-                                                        [FE1 NewFE2] C) $)
+                                                        [FSelf FE1 NewFE2] C) $)
          [] fAt(FE C) then FS in
             % FE may be either a cell, attribute, or table entry
             if @Stateful then
-               % We always set StateUsed see comment on UnnestStatement(fDotAssign(...))
-               StateUsed <- true
+               FS = fOpApplyStatement('catAccessOO'
+                                      [fVar('self' C) FE fOcc(ToGV)] C)
+            else
+               FS = fOpApplyStatement('catAccess' [FE fOcc(ToGV)] C)
             end
-            FS = fOpApplyStatement(if @Stateful then 'catAccessOO' else 'catAccess' end [FE fOcc(ToGV)] C)
             Unnester, UnnestStatement(FS $)
          [] fAtom(_ _) then GFront GBack in
             Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
@@ -1383,15 +1391,15 @@ define
             {New Core.skipNode init(C)}
          [] fEscape(FV2 _) then
             Unnester, UnnestExpression(FV2 ToGV $)
-         [] fSelf(C) then GVO in
+         [] fSelf(C) then FSelf in
             if @Stateful then
-               StateUsed <- true
+               FSelf = fVar('self' C)
             else
                {@reporter error(coord: C kind: ExpansionError
                                 msg: 'self used outside of method')}
+               FSelf = fAtom('self' C) % dummy replacement
             end
-            {ToGV occ(C ?GVO)}
-            {New Core.getSelf init(?GVO C)}
+            Unnester, UnnestExpression(FSelf ToGV $)
          [] fDollar(C) then
             {@reporter error(coord: C kind: ExpansionError
                              msg: 'illegal use of nesting marker')}
@@ -1546,7 +1554,7 @@ define
             Unnester, UnnestStatement(fLockThen(FE1 fEq(fOcc(ToGV) FE2 C) C) $)
          [] fLock(FE C) then
             if @Stateful then
-               StateUsed <- true
+               skip
             else
                {@reporter error(coord: C kind: ExpansionError
                                 msg: 'object lock used outside of method')}
@@ -1636,11 +1644,13 @@ define
             end
          [] fColonEquals(Left Right C) then FApply in
             % Left is cell, attribute, or table entry
-            if @Stateful then
+            if @Stateful then FSelf in
                % See comments on UnnestStatement(fDotAssign(...))
-               StateUsed <- true
+               FSelf = fVar('self' C)
+               FApply = fOpApplyStatement('catExchangeOO' [FSelf Left Right fOcc(ToGV)] C)
+            else
+               FApply = fOpApplyStatement('catExchange' [Left Right fOcc(ToGV)] C)
             end
-            FApply = fOpApplyStatement(if @Stateful then 'catExchangeOO' else 'catExchange' end [Left Right fOcc(ToGV)] C)
             Unnester, UnnestStatement(FApply $)
          else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError
@@ -2092,7 +2102,7 @@ define
          end
       end
       meth UnnestMeth(FHead FP C ?GFrontEq ?GMeth)
-         RealFHead GVMsg GLabel FFormals IsOpen N GFormals GBody
+         RealFHead GVMsg GLabel FFormals IsOpen N GSelf GFormals GBody
       in
          {@BA openScope()}
          case FHead of fEq(FHead2 fVar(PrintName C) _) then
@@ -2102,6 +2112,7 @@ define
             RealFHead = FHead
          end
          Unnester, UnnestMethHead(RealFHead ?GLabel ?FFormals ?IsOpen)
+         {@BA bind('self' C ?GSelf)}
          Unnester, BindMethFormals(FFormals)
          N = {DollarsInScope FFormals 0}
          ArgCounter <- 1
@@ -2133,7 +2144,7 @@ define
          if {IsFree GVMsg} then
             GVMsg = unit
          end
-         GMeth = {New Core.method init(GLabel GFormals IsOpen GVMsg GBody C)}
+         GMeth = {New Core.method init(GSelf GLabel GFormals IsOpen GVMsg GBody C)}
          if {@state getSwitch(staticvarnames $)} then
             {GMeth setAllVariables({@BA getAllVariables($)})}
          end

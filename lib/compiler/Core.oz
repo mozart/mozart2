@@ -814,9 +814,11 @@ define
       from Annotate.method StaticAnalysis.method CodeGen.method
       prop final
       attr
+         'self': unit
          label: unit formalArgs: unit isOpen: unit messageDesignator: unit
          statements: unit coord: unit allVariables: nil procedureRef: unit
-      meth init(Label FormalArgs IsOpen MessageDesignator Statements Coord)
+      meth init(Self Label FormalArgs IsOpen MessageDesignator Statements Coord)
+         'self' <- Self
          label <- Label
          formalArgs <- FormalArgs
          isOpen <- IsOpen
@@ -925,6 +927,7 @@ define
       prop final
       attr destination: unit
       meth init(Destination Coord)
+         true = false
          destination <- Destination
          coord <- Coord
       end

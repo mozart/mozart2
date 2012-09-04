@@ -1307,7 +1307,7 @@ define
    end
 
    class CodeGenMethod
-      feat MessagePatternVO MessageVO
+      feat SelfVO MessagePatternVO MessageVO
       meth isOptimizable($)
          {Not @isOpen} andthen @messageDesignator == unit andthen
          {All @formalArgs
@@ -1359,24 +1359,27 @@ define
       end
       meth MakeSlowMeth(PrintName FileName Line Col HasDefaults IsToplevel CS
                         VHd VTl FastMeth ?SlowMeth)
-         PredId NLiveRegs Cont1 MessageReg BodyVInstr
+         PredId NLiveRegs Cont1 SelfReg MessageReg BodyVInstr
          AllRegs GRegs Code VInter
       in
          PredId = pid({VirtualString.toAtom
                        case PrintName of unit then '_' else PrintName end#
                        ','#{GetMethPrintName @label}}
-                      1 pos(FileName Line Col) nil NLiveRegs)
+                      2 pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
          {System.show PredId}
 \endif
          CodeGenMethod, MakeArityCheckInit(HasDefaults CS VHd Cont1)
          {CS startDefinition()}
+         {@'self' setReg(CS)}
+         {@'self' reg(?SelfReg)}
          case @messageDesignator of unit then
             {CS newReg(?MessageReg)}
          elseof V then
             {V setReg(CS)}
             {V reg(?MessageReg)}
          end
+         self.SelfVO = {New PseudoVariableOccurrence init(SelfReg)}
          self.MessageVO = {New PseudoVariableOccurrence init(MessageReg)}
          CodeGenMethod, MakePattern(CS BodyVInstr VInter)
          case FastMeth of unit then
@@ -1388,13 +1391,13 @@ define
                           end}
             Coord = {CoordNoDebug @coord}
             case @procedureRef of unit then
-               VInter = vCall(_ FastMeth FormalRegs Coord nil)
+               VInter = vCall(_ FastMeth SelfReg|FormalRegs Coord nil)
             elseof ID andthen {ForeignPointer.is ID} then
-               VInter = vCallProcedureRef(_ ID FormalRegs Coord nil)
+               VInter = vCallProcedureRef(_ ID SelfReg|FormalRegs Coord nil)
             end
             AllRegs = nil
          end
-         {CS endDefinition(BodyVInstr [MessageReg] AllRegs
+         {CS endDefinition(BodyVInstr [SelfReg MessageReg] AllRegs
                            ?GRegs ?Code ?NLiveRegs)}
          {CS newReg(?SlowMeth)}
          Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VTl)
@@ -1473,22 +1476,30 @@ define
                         FastMeth)
          case FastMeth of unit then
             VHd = VTl
-         else PredId NLiveRegs FormalRegs AllRegs BodyVInstr GRegs Code in
+         else
+            ProcArity PredId NLiveRegs SelfReg FormalRegs AllRegs BodyVInstr
+            GRegs Code
+         in
+            ProcArity = if {IsInt RecordArity} then RecordArity
+                        else {Length RecordArity}
+                        end + 1
             PredId = pid({VirtualString.toAtom
                           case PrintName of unit then '_' else PrintName end#
                           ','#{GetMethPrintName @label}#'/fast'}
-                         RecordArity pos(FileName Line Col) nil NLiveRegs)
+                         ProcArity pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
             {System.show PredId}
 \endif
             {CS startDefinition()}
+            {@'self' setFreshReg(CS)}
+            {@'self' reg(?SelfReg)}
             FormalRegs = {Map @formalArgs
                           fun {$ Formal} V = {Formal getVariable($)} in
                              {V setFreshReg(CS)}
                              {V reg($)}
                           end}
             CodeGenMethod, MakeBody(?AllRegs CS BodyVInstr nil)
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs
+            {CS endDefinition(BodyVInstr SelfReg|FormalRegs AllRegs
                               ?GRegs ?Code ?NLiveRegs)}
             VHd = vDefinition(_ FastMeth PredId @procedureRef GRegs Code VTl)
          end
@@ -1514,7 +1525,7 @@ define
             RecordArity = {Length @formalArgs}
          end
       end
-      meth MakeBody(?AllRegs CS VHd VTl) Vs in
+      meth MakeBody(?AllRegs CS VHd VTl) Vs Cont1 Cont2 in
          AllRegs = case @allVariables of nil then nil
                    elseof Vs then {GetRegs Vs}
                    end
@@ -1522,19 +1533,8 @@ define
                case @messageDesignator of unit then nil
                elseof V then [V]
                end}
-         if {CS.state getSwitch(staticvarnames $)} then
-            StateReg Cont1 Cont2 Cont3
-         in
-            {CS newSelfReg(?StateReg)}
-            {MakePermanent {New PseudoVariableOccurrence init(StateReg)}|Vs
-             VHd Cont1 Cont3 VTl CS}
-            %--** would it not be better to get self before making permanent?
-            Cont1 = vGetSelf(_ StateReg Cont2)
-            {CodeGenList @statements CS Cont2 Cont3}
-         else Cont1 Cont2 in
-            {MakePermanent Vs VHd Cont1 Cont2 VTl CS}
-            {CodeGenList @statements CS Cont1 Cont2}
-         end
+         {MakePermanent @'self'|Vs VHd Cont1 Cont2 VTl CS}
+         {CodeGenList @statements CS Cont1 Cont2}
          statements <- unit   % hand them to the garbage collector
       end
       meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS)
@@ -1547,11 +1547,9 @@ define
          VInter = vTestBool(_ {ResultVO reg($)} ThenVInstr ElseVInstr
                             ErrVInstr unit VTl)
       end
-      meth codeGenPattern(Mapping VHd VTl CS) SelfVO VInter in
-         SelfVO = {NewPseudoVariableOccurrence CS}
-         VHd = vGetSelf(_ {SelfVO reg($)} VInter)
-         {MakeException object arityMismatch @coord [self.MessageVO SelfVO]
-          CS VInter VTl}
+      meth codeGenPattern(Mapping VHd VTl CS)
+         {MakeException object arityMismatch @coord [self.MessageVO self.SelfVO]
+          CS VHd VTl}
       end
    end
 

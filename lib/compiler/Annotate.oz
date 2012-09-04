@@ -561,6 +561,7 @@ prepare
       meth annotateGlobalVars(Ls VsHd VsTl)
          Vs VsInter1 VsInter2 NewLs0 NewLs Vs1
       in
+         {@'self' setUse(multiple)}
          {@label annotateGlobalVars(Ls Vs VsInter1)}
          {FoldL @formalArgs
           proc {$ VsHd Arg VsTl}

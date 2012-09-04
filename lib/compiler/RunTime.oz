@@ -80,6 +80,14 @@ prepare
       end
    end
 
+   local
+      `ooFallback` = {NewUniqueName ooFallback}
+   in
+      proc {`Object.','` Obj Class Message}
+         {Class.`ooFallback`.apply Message Obj Class}
+      end
+   end
+
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
                      dotAssign: BootValue.dotAssign
@@ -137,6 +145,7 @@ prepare
                      'Object.\'<-\'': BootObject.attrPut
                      'Object.exchange': BootObject.attrExchangeFun
                      'Object.\'class\'': OoExtensions.'class'
+                     'Object.\',\'': `Object.','`
 
                      %% Thread
 

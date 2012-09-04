@@ -115,6 +115,18 @@ UnstableNode build(VM vm, builtins::BaseBuiltin& builtin) {
   return BuiltinProcedure::build(vm, builtin);
 }
 
+inline
+UnstableNode build(VM vm, const UUID& uuid) {
+  unsigned char bytes[UUID::byte_count];
+  uuid.toBytes(bytes);
+  return ByteString::build(vm, newLString(vm, bytes, UUID::byte_count));
+}
+
+inline
+UnstableNode build(VM vm, GlobalNode* gnode) {
+  return ReifiedGNode::build(vm, gnode);
+}
+
 template <class T>
 inline
 UnstableNode build(VM vm, const std::shared_ptr<T>& value) {

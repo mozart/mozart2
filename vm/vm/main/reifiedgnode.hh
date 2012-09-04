@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,38 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __REIFIEDGNODE_H
+#define __REIFIEDGNODE_H
 
 #include "mozartcore.hh"
 
-#include "datatypeshelpers.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+namespace mozart {
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "foreignpointer.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reflectivetypes.hh"
-#include "reifiedgnode.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+//////////////////
+// ReifiedGNode //
+//////////////////
 
-#endif // __COREDATATYPES_H
+#include "ReifiedGNode-implem.hh"
+
+void ReifiedGNode::create(GlobalNode*& self, VM vm, GR gr, ReifiedGNode from) {
+  gr->copyGNode(self, from.value());
+}
+
+bool ReifiedGNode::equals(VM vm, RichNode right) {
+  return value() == right.as<ReifiedGNode>().value();
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __REIFIEDGNODE_H

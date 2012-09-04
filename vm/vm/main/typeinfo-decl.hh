@@ -94,6 +94,9 @@ public:
   virtual void sClone(SC sc, RichNode from, StableNode& to) const = 0;
   virtual void sClone(SC sc, RichNode from, UnstableNode& to) const = 0;
 
+  inline
+  virtual GlobalNode* globalize(VM vm, RichNode from) const;
+
   virtual int compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {
     assert(lhs.type().info() == this);
     assert(rhs.type().info() == this);

@@ -75,12 +75,9 @@ public:
       );
 
       // Read scalar args
-      auto intArity = getArgument<nativeint>(vm, arity,
-                                             MOZART_STR("positive integer"));
-      auto intXCount = getArgument<nativeint>(vm, XCount,
-                                              MOZART_STR("positive integer"));
-      auto atomPrintName = getArgument<atom_t>(vm, printName,
-                                               MOZART_STR("Atom"));
+      auto intArity = getArgument<nativeint>(vm, arity);
+      auto intXCount = getArgument<nativeint>(vm, XCount);
+      auto atomPrintName = getArgument<atom_t>(vm, printName);
 
       // Read number of K registers
       size_t KCount = ozListLength(vm, KsList);
@@ -124,6 +121,25 @@ public:
         },
         MOZART_STR("list")
       );
+    }
+  };
+
+  class SetUUID: public Builtin<SetUUID> {
+  public:
+    SetUUID(): Builtin("setUUID") {}
+
+    static void call(VM vm, In value, In uuid) {
+      auto uuidValue = getArgument<UUID>(vm, uuid);
+
+      if (value.is<CodeArea>()) {
+        value.as<CodeArea>().setUUID(vm, uuidValue);
+      } else if (value.is<Abstraction>()) {
+        value.as<Abstraction>().setUUID(vm, uuidValue);
+      } else if (value.isTransient()) {
+        waitFor(vm, value);
+      } else {
+        raiseTypeError(vm, MOZART_STR("Codea area or abstraction"), value);
+      }
     }
   };
 

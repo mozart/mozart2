@@ -50,6 +50,7 @@ void registerCoreModules(VM vm) {
   registerBuiltinModInt(vm);
   registerBuiltinModFloat(vm);
   registerBuiltinModForeignPointer(vm);
+  registerBuiltinModGNode(vm);
   registerBuiltinModLiteral(vm);
   registerBuiltinModName(vm);
   registerBuiltinModNumber(vm);

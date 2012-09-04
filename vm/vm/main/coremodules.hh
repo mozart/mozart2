@@ -41,6 +41,7 @@
 #include "modules/modint.hh"
 #include "modules/modfloat.hh"
 #include "modules/modforeignpointer.hh"
+#include "modules/modgnode.hh"
 #include "modules/modliteral.hh"
 #include "modules/modname.hh"
 #include "modules/modnumber.hh"

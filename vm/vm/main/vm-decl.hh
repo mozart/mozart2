@@ -289,6 +289,7 @@ private:
   friend class GarbageCollector;
   friend class SpaceCloner;
   friend class Runnable;
+  friend class GlobalNode;
 
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);
@@ -327,6 +328,7 @@ private:
 
   ThreadPool threadPool;
   AtomTable atomTable;
+  GlobalNode* rootGlobalNode;
 
   VirtualMachineEnvironment& environment;
 

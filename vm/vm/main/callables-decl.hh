@@ -207,6 +207,13 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
+
+public:
+  inline
+  void setUUID(RichNode self, VM vm, const UUID& uuid);
+
 private:
   inline
   void ensureCodeAreaCacheValid(VM vm);
@@ -216,6 +223,8 @@ private:
   void fillCodeAreaCache(VM vm);
 
 private:
+  GlobalNode* _gnode;
+
   StableNode _body;
   size_t _Gc;
 

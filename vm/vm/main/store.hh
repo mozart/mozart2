@@ -264,6 +264,46 @@ StableNode* RichNode::destOf(Node* node) {
   return node->access<Reference>().dest();
 }
 
+////////////////
+// GlobalNode //
+////////////////
+
+GlobalNode::GlobalNode(UUID uuid): uuid(uuid), left(nullptr), right(nullptr) {
+}
+
+template <class Self, class Proto>
+GlobalNode* GlobalNode::make(VM vm, const UUID& uuid,
+                             Self&& self, Proto&& proto) {
+  GlobalNode* result;
+  GlobalNode::get(vm, uuid, result);
+  result->self.init(vm, std::forward<Self>(self));
+  result->protocol.init(vm, std::forward<Proto>(proto));
+  return result;
+}
+
+template <class Self, class Proto>
+GlobalNode* GlobalNode::make(VM vm, Self&& self, Proto&& proto) {
+  return make(vm, vm->genUUID(), std::forward<Self>(self),
+              std::forward<Proto>(proto));
+}
+
+bool GlobalNode::get(VM vm, UUID uuid, GlobalNode*& to) {
+  GlobalNode** cur = &(vm->rootGlobalNode);
+  while (true) {
+    if (!*cur) {
+      to = *cur = new (vm) GlobalNode(uuid);
+      return false;
+    } else if ((*cur)->uuid < uuid) {
+      cur = &((*cur)->right);
+    } else if ((*cur)->uuid > uuid) {
+      cur = &((*cur)->left);
+    } else {
+      to = *cur;
+      return true;
+    }
+  }
+}
+
 }
 
 #endif // MOZART_GENERATOR

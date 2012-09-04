@@ -74,6 +74,27 @@ private:
     return (hexWordAt(str, i) << 48) + (hexWordAt(str, j) << 32) +
       (hexWordAt(str, k) << 16) + hexWordAt(str, l);
   }
+
+  static std::uint64_t makeUInt64FromBytes(const unsigned char* bytes) {
+    return
+      ((std::uint64_t) bytes[0] << 56) + ((std::uint64_t) bytes[1] << 48) +
+      ((std::uint64_t) bytes[2] << 40) + ((std::uint64_t) bytes[3] << 32) +
+      ((std::uint64_t) bytes[4] << 24) + ((std::uint64_t) bytes[5] << 16) +
+      ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7]);
+  }
+
+  static void storeUInt64ToBytes(std::uint64_t value, unsigned char* bytes) {
+    bytes[0] = value >> 56;
+    bytes[1] = value >> 48;
+    bytes[2] = value >> 40;
+    bytes[3] = value >> 32;
+    bytes[4] = value >> 24;
+    bytes[5] = value >> 16;
+    bytes[6] = value >> 8;
+    bytes[7] = value;
+  }
+public:
+  constexpr static const size_t byte_count = 16;
 public:
   constexpr UUID(): data0(0), data1(0) {}
 
@@ -83,9 +104,18 @@ public:
 
   constexpr UUID(std::uint64_t data0, std::uint64_t data1):
     data0(data0), data1(data1) {}
+
+  UUID(const unsigned char* bytes):
+    data0(makeUInt64FromBytes(bytes)),
+    data1(makeUInt64FromBytes(bytes + 8)) {}
 public:
   constexpr bool is_nil() const {
     return (data0 == 0) && (data1 == 0);
+  }
+public:
+  void toBytes(unsigned char* bytes) const {
+    storeUInt64ToBytes(data0, bytes);
+    storeUInt64ToBytes(data1, bytes + 8);
   }
 public:
   void print(std::ostream& out) const {

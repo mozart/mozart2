@@ -82,7 +82,8 @@ void BuiltinProcedure::getDebugInfo(
 #include "Abstraction-implem.hh"
 
 Abstraction::Abstraction(VM vm, size_t Gc, RichNode body)
-  : WithHome(vm), _Gc(Gc) {
+  : WithHome(vm), _gnode(nullptr), _Gc(Gc) {
+
   _body.init(vm, body);
   _codeAreaCacheValid = false;
 
@@ -95,6 +96,7 @@ Abstraction::Abstraction(VM vm, size_t Gc, RichNode body)
 Abstraction::Abstraction(VM vm, size_t Gc, GR gr, Abstraction& from):
   WithHome(vm, gr, from) {
 
+  gr->copyGNode(_gnode, from._gnode);
   gr->copyStableNode(_body, from._body);
   _Gc = Gc;
 
@@ -141,6 +143,18 @@ void Abstraction::printReprToStream(VM vm, std::ostream& out, int depth) {
   } MOZART_CATCH(vm, kind, node) {
     out << "<P/?>";
   } MOZART_ENDTRY(vm);
+}
+
+GlobalNode* Abstraction::globalize(RichNode self, VM vm) {
+  if (_gnode == nullptr) {
+    _gnode = GlobalNode::make(vm, self, MOZART_STR("immval"));
+  }
+  return _gnode;
+}
+
+void Abstraction::setUUID(RichNode self, VM vm, const UUID& uuid) {
+  assert(_gnode == nullptr);
+  _gnode = GlobalNode::make(vm, uuid, self, MOZART_STR("immval"));
 }
 
 void Abstraction::ensureCodeAreaCacheValid(VM vm) {

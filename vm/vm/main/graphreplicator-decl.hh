@@ -78,6 +78,9 @@ public:
                          size_t count);
 
   inline
+  void copyGNode(GlobalNode*& to, GlobalNode* from);
+
+  inline
   atom_t copyAtom(atom_t from);
 protected:
   template <class Self>

@@ -31,6 +31,7 @@
 
 #include "coredatatypes-decl.hh"
 #include "coreinterfaces.hh"
+#include "utils-decl.hh"
 
 /**
  * DSL for writing pattern matching on Oz values in C++ code
@@ -210,6 +211,11 @@ struct PrimitiveTypeToOzType<Runnable*> {
   typedef ReifiedThread result;
 };
 
+template <>
+struct PrimitiveTypeToOzType<GlobalNode*> {
+  typedef ReifiedGNode result;
+};
+
 template <typename T, typename Enable = void>
 struct OzValueToPrimitiveValue {
   static_assert(mozart::internal::LateStaticAssert<T>::value,
@@ -327,6 +333,29 @@ struct OzValueToPrimitiveValue<char32_t> {
       } else {
         return false;
       }
+    } else {
+      return false;
+    }
+  }
+};
+
+template <>
+struct OzValueToPrimitiveValue<UUID> {
+  static bool call(VM vm, RichNode value, UUID& primitive) {
+    if (value.is<ByteString>()) {
+      // Fast path for a raw ByteString
+      auto& bytes = value.as<ByteString>().value();
+      if (bytes.length == (nativeint) UUID::byte_count) {
+        primitive = UUID(bytes.string);
+        return true;
+      } else {
+        return false;
+      }
+    } if (ozVBSLengthForBufferNoRaise(vm, value) == (nativeint) UUID::byte_count) {
+      std::vector<unsigned char> bytes;
+      ozVBSGet(vm, value, UUID::byte_count, bytes);
+      primitive = UUID(bytes.data());
+      return true;
     } else {
       return false;
     }

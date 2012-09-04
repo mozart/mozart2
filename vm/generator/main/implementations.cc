@@ -100,6 +100,7 @@ struct ImplementationDef {
     hasUUID = false;
     hasGetTypeAtom = false;
     hasPrintReprToStream = false;
+    hasGlobalize = false;
     autoGCollect = true;
     autoSClone = true;
   }
@@ -131,6 +132,7 @@ struct ImplementationDef {
   bool hasUUID;
   bool hasGetTypeAtom;
   bool hasPrintReprToStream;
+  bool hasGlobalize;
   bool autoGCollect;
   bool autoSClone;
   std::vector<ImplemMethodDef> methods;
@@ -196,6 +198,8 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
 
       if (function->getNameAsString() == "printReprToStream")
         definition.hasPrintReprToStream = true;
+      else if (function->getNameAsString() == "globalize")
+        definition.hasGlobalize = true;
       else if (function->getNameAsString() == "compareFeatures")
         definition.feature = true;
 
@@ -337,6 +341,12 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
     to << "                         int depth) const;\n";
   }
 
+  if (hasGlobalize) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  GlobalNode* globalize(VM vm, RichNode from) const;\n";
+  }
+
   if (autoGCollect) {
     to << "\n";
     to << "  inline\n";
@@ -412,6 +422,15 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "                    int depth) const {\n";
     to << "  assert(self.is<" << name << ">());\n";
     to << "  self.as<" << name << ">().printReprToStream(vm, out, depth);\n";
+    to << "}\n";
+  }
+
+  if (hasGlobalize) {
+    to << "\n";
+    to << "GlobalNode* " << className
+       << "::globalize(VM vm, RichNode from) const {\n";
+    to << "  assert(from.is<" << name << ">());\n";
+    to << "  return from.as<" << name << ">().globalize(vm);\n";
     to << "}\n";
   }
 

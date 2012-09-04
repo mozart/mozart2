@@ -48,6 +48,7 @@
 #include "port-decl.hh"
 #include "records-decl.hh"
 #include "reflectivetypes-decl.hh"
+#include "reifiedgnode-decl.hh"
 #include "reifiedspace-decl.hh"
 #include "reifiedthread-decl.hh"
 #include "smallint-decl.hh"

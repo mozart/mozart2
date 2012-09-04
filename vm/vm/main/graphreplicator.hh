@@ -83,6 +83,18 @@ void GraphReplicator::copyUnstableNodes(StaticArray<UnstableNode> to,
     copyUnstableNode(to[i], from[i]);
 }
 
+void GraphReplicator::copyGNode(GlobalNode*& to, GlobalNode* from) {
+  if (from == nullptr) {
+    to = nullptr;
+  } else {
+    bool exist = GlobalNode::get(vm, from->uuid, to);
+    if (!exist) {
+      copyStableNode(to->self, from->self);
+      copyStableNode(to->protocol, from->protocol);
+    }
+  }
+}
+
 atom_t GraphReplicator::copyAtom(atom_t from) {
   if (kind() == grkGarbageCollection)
     return vm->getAtom(from.length(), from.contents());

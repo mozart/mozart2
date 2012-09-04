@@ -71,6 +71,9 @@ public:
 public:
   // Miscellaneous
 
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
+
   void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<OptName>";
   }
@@ -121,6 +124,9 @@ public:
 
 public:
   // Miscellaneous
+
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
 
   void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Name>";
@@ -181,6 +187,9 @@ public:
 
 public:
   // Miscellaneous
+
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
 
   void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Name/" << repr(vm, _printName) << ">";

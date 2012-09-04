@@ -51,6 +51,12 @@ struct PrimitiveTypeToExpectedAtom<size_t> {
   static atom_t result(VM vm);
 };
 
+template <>
+struct PrimitiveTypeToExpectedAtom<UUID> {
+  inline
+  static atom_t result(VM vm);
+};
+
 template <class T>
 inline
 T getArgument(VM vm, RichNode argValue, const nchar* expectedType);
@@ -145,6 +151,23 @@ size_t ozListLength(VM vm, RichNode list);
 //////////////////////////////////////
 // Virtual strings and byte strings //
 //////////////////////////////////////
+
+// A priori internal, but could be used outside
+
+inline
+nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs);
+
+inline
+bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<nchar>& output);
+
+inline
+nativeint ozVBSLengthForBufferNoRaise(VM vm, RichNode vbs);
+
+template <typename C>
+inline
+bool ozVBSGetNoRaise(VM vm, RichNode vbs, std::vector<C>& output);
+
+// Regular public API
 
 inline
 bool ozIsVirtualString(VM vm, RichNode vs);

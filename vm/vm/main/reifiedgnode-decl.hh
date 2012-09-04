@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,38 +22,53 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __REIFIEDGNODE_DECL_H
+#define __REIFIEDGNODE_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#include "datatypeshelpers.hh"
+namespace mozart {
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+//////////////////
+// ReifiedGNode //
+//////////////////
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "foreignpointer.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reflectivetypes.hh"
-#include "reifiedgnode.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+#ifndef MOZART_GENERATOR
+#include "ReifiedGNode-implem-decl.hh"
+#endif
 
-#endif // __COREDATATYPES_H
+class ReifiedGNode: public DataType<ReifiedGNode>,
+  StoredAs<GlobalNode*>, WithValueBehavior {
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("gNode"));
+  }
+
+  explicit ReifiedGNode(GlobalNode* value): _value(value) {}
+
+  static void create(GlobalNode*& self, VM vm, GlobalNode* value) {
+    self = value;
+  }
+
+  inline
+  static void create(GlobalNode*& self, VM vm, GR gr, ReifiedGNode from);
+
+public:
+  GlobalNode* value() const {
+    return _value;
+  }
+
+  inline
+  bool equals(VM vm, RichNode right);
+
+private:
+  GlobalNode* _value;
+};
+
+#ifndef MOZART_GENERATOR
+#include "ReifiedGNode-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __REIFIEDGNODE_DECL_H

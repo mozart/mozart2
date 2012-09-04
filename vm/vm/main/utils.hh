@@ -54,6 +54,10 @@ atom_t PrimitiveTypeToExpectedAtom<size_t>::result(VM vm) {
   return vm->getAtom(MOZART_STR("positive integer"));
 }
 
+atom_t PrimitiveTypeToExpectedAtom<UUID>::result(VM vm) {
+  return vm->getAtom(MOZART_STR("UUID aka VBS of length 16"));
+}
+
 template <class T>
 T getArgument(VM vm, RichNode argValue, const nchar* expectedType) {
   using namespace patternmatching;
@@ -345,8 +349,11 @@ size_t floatToStrBuffer(FloatToStrBuffer buffer, double value) {
   return length;
 }
 
+} // namespace internal
+
 inline
 nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs) {
+  using namespace internal;
   using namespace patternmatching;
 
   size_t partCount;
@@ -394,6 +401,7 @@ nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs) {
 
 inline
 bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<nchar>& output) {
+  using namespace internal;
   using namespace patternmatching;
 
   static_assert(
@@ -449,6 +457,7 @@ bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<nchar>& output) {
 
 inline
 nativeint ozVBSLengthForBufferNoRaise(VM vm, RichNode vbs) {
+  using namespace internal;
   using namespace patternmatching;
 
   size_t partCount;
@@ -486,6 +495,7 @@ nativeint ozVBSLengthForBufferNoRaise(VM vm, RichNode vbs) {
 template <typename C>
 inline
 bool ozVBSGetNoRaise(VM vm, RichNode vbs, std::vector<C>& output) {
+  using namespace internal;
   using namespace patternmatching;
 
   static_assert(
@@ -519,20 +529,18 @@ bool ozVBSGetNoRaise(VM vm, RichNode vbs, std::vector<C>& output) {
   }
 }
 
-} // namespace internal
-
 /**
  * Test whether an Oz value is a VirtualString
  */
 bool ozIsVirtualString(VM vm, RichNode vs) {
-  return internal::ozVSLengthForBufferNoRaise(vm, vs) >= 0;
+  return ozVSLengthForBufferNoRaise(vm, vs) >= 0;
 }
 
 /**
  * Compute the size of a buffer at least big enough for ozVSGet()
  */
 size_t ozVSLengthForBuffer(VM vm, RichNode vs) {
-  auto result = internal::ozVSLengthForBufferNoRaise(vm, vs);
+  auto result = ozVSLengthForBufferNoRaise(vm, vs);
   if (result >= 0)
     return (size_t) result;
   else
@@ -545,7 +553,7 @@ size_t ozVSLengthForBuffer(VM vm, RichNode vs) {
  * function is guaranteed not to throw any Mozart exception.
  */
 void ozVSGet(VM vm, RichNode vs, std::vector<nchar>& output) {
-  if (!internal::ozVSGetNoRaise(vm, vs, output))
+  if (!ozVSGetNoRaise(vm, vs, output))
     raiseTypeError(vm, MOZART_STR("VirtualString"), vs);
 }
 
@@ -654,14 +662,14 @@ size_t ozVSLength(VM vm, RichNode vs) {
  * Test whether an Oz value is a VirtualByteString
  */
 bool ozIsVirtualByteString(VM vm, RichNode vs) {
-  return internal::ozVBSLengthForBufferNoRaise(vm, vs) >= 0;
+  return ozVBSLengthForBufferNoRaise(vm, vs) >= 0;
 }
 
 /**
  * Compute the size of a buffer at least big enough for ozVBSGet()
  */
 size_t ozVBSLengthForBuffer(VM vm, RichNode vbs) {
-  auto result = internal::ozVBSLengthForBufferNoRaise(vm, vbs);
+  auto result = ozVBSLengthForBufferNoRaise(vm, vbs);
   if (result >= 0)
     return (size_t) result;
   else
@@ -675,7 +683,7 @@ size_t ozVBSLengthForBuffer(VM vm, RichNode vbs) {
  */
 template <typename C, typename>
 void ozVBSGet(VM vm, RichNode vbs, std::vector<C>& output) {
-  if (!internal::ozVBSGetNoRaise(vm, vbs, output))
+  if (!ozVBSGetNoRaise(vm, vbs, output))
     raiseTypeError(vm, MOZART_STR("VirtualByteString"), vbs);
 }
 

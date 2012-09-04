@@ -84,6 +84,18 @@ void CodeArea::getCodeAreaDebugInfo(VM vm, atom_t& printName,
   debugData.copy(vm, _debugData);
 }
 
+GlobalNode* CodeArea::globalize(RichNode self, VM vm) {
+  if (_gnode == nullptr) {
+    _gnode = GlobalNode::make(vm, self, MOZART_STR("immval"));
+  }
+  return _gnode;
+}
+
+void CodeArea::setUUID(RichNode self, VM vm, const UUID& uuid) {
+  assert(_gnode == nullptr);
+  _gnode = GlobalNode::make(vm, uuid, self, MOZART_STR("immval"));
+}
+
 }
 
 #endif // MOZART_GENERATOR

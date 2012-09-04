@@ -51,7 +51,7 @@ void BuiltinModule::initModule(VM vm, T&& module) {
 void registerCoreModules(VM vm);
 
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
-  environment(environment), gc(this), sc(this) {
+  rootGlobalNode(nullptr), environment(environment), gc(this), sc(this) {
 
   memoryManager.init();
 
@@ -196,6 +196,7 @@ void VirtualMachine::startGC(GC gc) {
   atomTable = AtomTable();
   aliveThreads = RunnableList();
   _alarms = VMAllocatedList<AlarmRecord>();
+  rootGlobalNode = nullptr;
 
   // Reinitialize the VM
   initialize();

@@ -75,11 +75,23 @@ public:
   inline
   void getCodeAreaDebugInfo(VM vm, atom_t& printName, UnstableNode& debugData);
 
+public:
+  // Miscellaneous
+
+  inline
+  GlobalNode* globalize(RichNode self, VM vm);
+
+public:
+  inline
+  void setUUID(RichNode self, VM vm, const UUID& uuid);
+
 private:
   void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {
     _codeBlock = new (vm) ByteCode[size / sizeof(ByteCode)];
     std::memcpy(_codeBlock, codeBlock, size);
   }
+
+  GlobalNode* _gnode;
 
   ByteCode* _codeBlock; // actual byte-code in this code area
   size_t _size;         // size of the codeBlock

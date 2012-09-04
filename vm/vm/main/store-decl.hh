@@ -29,6 +29,7 @@
 #include "type-decl.hh"
 #include "memword.hh"
 #include "storage-decl.hh"
+#include "uuid-decl.hh"
 
 #include <string>
 
@@ -364,6 +365,36 @@ public:
   // But make it movable
   UnstableNode(UnstableNode&& from) = default;
   UnstableNode& operator=(UnstableNode&& from) = default;
+};
+
+/**
+ * Global node, which can be present in others VMs, pickles, etc.
+ */
+class GlobalNode {
+private:
+  inline
+  GlobalNode(UUID uuid);
+
+public:
+  template <typename Self, typename Proto>
+  inline
+  static GlobalNode* make(VM vm, const UUID& uuid, Self&& self, Proto&& proto);
+
+  template <typename Self, typename Proto>
+  inline
+  static GlobalNode* make(VM vm, Self&& self, Proto&& proto);
+
+  inline
+  static bool get(VM vm, UUID uuid, GlobalNode*& to);
+
+public:
+  UUID uuid;
+  StableNode self;
+  StableNode protocol;
+
+private:
+  GlobalNode* left;
+  GlobalNode* right;
 };
 
 /**

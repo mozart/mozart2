@@ -37,6 +37,10 @@ atom_t TypeInfo::getTypeAtom(VM vm) const {
   return vm->getAtom(MOZART_STR("value"));
 }
 
+GlobalNode* TypeInfo::globalize(VM vm, RichNode from) const {
+  return GlobalNode::make(vm, from, MOZART_STR("default"));
+}
+
 }
 
 #endif // __TYPEINFO_H

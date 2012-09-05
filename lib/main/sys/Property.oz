@@ -29,46 +29,125 @@
 
 functor
 
+require
+   Boot_Property at 'x-oz://boot/Property'
+
 export
+   Register
+   RegisterAggregate
    Get
    CondGet
    Put
 
 define
 
-   Properties = {NewDictionary}
+   UserProperties = {NewDictionary}
+
+   proc {Register Prop Getter Setter}
+      if {Dictionary.member UserProperties Prop} then
+         raise error(system(registerProperty Prop) debug:unit) end
+      else
+         {Dictionary.put UserProperties Prop accessors(Getter Setter)}
+      end
+   end
+
+   proc {RegisterAggregate Prop Desc}
+      fun {Getter}
+         {Record.map Desc Get}
+      end
+      proc {Setter V}
+         {Record.forAllInd V
+          proc {$ Feat Value}
+             {Put Desc.Feat Value}
+          end}
+      end
+   in
+      {Register Prop Getter Setter}
+   end
+
+   fun {Lookup Prop ?Value}
+      SysValue
+   in
+      if {Boot_Property.get Prop ?SysValue} then
+         Value = SysValue
+         true
+      elsecase {Dictionary.condGet UserProperties Prop undefined}
+      of value(V) then
+         Value = V
+         true
+      [] accessors(Getter _) then
+         if Getter == unit then
+            raise error(system(condGetProperty Prop) debug:unit) end
+         else
+            Value = {Getter}
+            true
+         end
+      else
+         false
+      end
+   end
 
    fun {Get Prop}
-      {Dictionary.get Properties Prop}
+      Value
+   in
+      if {Lookup Prop ?Value} then
+         Value
+      else
+         raise system(system(getProperty Prop) debug:unit) end
+      end
    end
 
    fun {CondGet Prop Default}
-      {Dictionary.condGet Properties Prop Default}
+      Value
+   in
+      if {Lookup Prop ?Value} then
+         Value
+      else
+         Default
+      end
    end
 
    proc {Put Prop Value}
-      {Dictionary.put Properties Prop Value}
+      if {Boot_Property.put Prop Value} then
+         skip
+      elsecase {Dictionary.condGet UserProperties Prop undefined}
+      of accessors(_ Setter) then
+         if Setter == unit then
+            raise error(system(putProperty Prop) debug:unit) end
+         else
+            {Setter Value}
+         end
+      else
+         {Dictionary.put UserProperties Prop value(Value)}
+      end
    end
 
-   % Initial properties
+   % Some aggregate properties
 
-   % Why these? Because they are used in the compiler and module manager
+   {RegisterAggregate 'print'
+    print(width:'print.width'
+          depth:'print.depth')}
 
-   {Put 'oz.version' '2.0.0'}
-   {Put 'oz.date' '20120721124706'}
+   {RegisterAggregate 'errors'
+    errors(handler:'errors.handler'
+           debug:'errors.debug'
+           'thread':'errors.thread'
+           width:'errors.width'
+           depth:'errors.depth')}
 
-   {Put 'oz.configure.home' '.'}
+   {RegisterAggregate 'limits'
+    limits('int.min':'limits.int.min'
+           'int.max':'limits.int.max'
+           'bytecode.xregisters':'limits.bytecode.xregisters')}
 
-   {Put 'platform.name' 'unknown'}
-   {Put 'platform.os' 'linux'}
+   {RegisterAggregate 'application'
+    application('args':'application.args'
+                'url':'application.url'
+                'gui':'application.gui')}
 
-   {Put 'print' print(width:20 depth:10)}
-   {Put 'errors' errors(width:20 depth:10)}
-   {Put 'errors.thread' 40}
-
-   {Put 'limits.bytecode.xregisters' 65535}
-
-   {Put 'application.args' nil}
-   {Put 'application.gui' false}
+   {RegisterAggregate 'platform'
+    platform('name':'platform.name'
+             'os':'platform.os'
+             'arch':'platform.arch')}
 
 end

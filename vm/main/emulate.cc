@@ -1341,15 +1341,27 @@ void Thread::applyRaise(VM vm, RichNode exception,
   bool handlerFound = stack.findExceptionHandler(
     vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
-  if (handlerFound) {
-    // Store the exception value in X(0)
-    (*xregs)[0].copy(vm, std::move(preprocessedException));
-  } else {
-    // Uncaught exception
-    std::cout << "Uncaught exception" << std::endl;
-    std::cout << repr(vm, preprocessedException, 100) << std::endl;
+  // Store the exception value in X(0)
+  (*xregs)[0].copy(vm, std::move(preprocessedException));
 
-    terminate();
+  if (handlerFound) {
+    // Nothing to do
+  } else {
+    RichNode handler = *vm->getPropertyRegistry().getDefaultExceptionHandler();
+
+    if (!handler.isTransient() && Callable(handler).isProcedure(vm) &&
+        (Callable(handler).procedureArity(vm) == 1)) {
+      bool dummyPreempted = false;
+      call(handler, 1, true,
+           vm, abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+           dummyPreempted, -1);
+    } else {
+      // Uncaught exception
+      std::cout << "Uncaught exception" << std::endl;
+      std::cout << repr(vm, (*xregs)[0], 100) << std::endl;
+
+      terminate();
+    }
   }
 }
 

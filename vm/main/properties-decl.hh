@@ -134,6 +134,11 @@ private:
   inline
   void registerPredefined(VM vm);
 
+public:
+  StableNode* getDefaultExceptionHandler() {
+    return config.defaultExceptionHandler;
+  }
+
 private:
   NodeDictionary* _registry;
 

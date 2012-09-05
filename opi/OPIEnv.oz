@@ -67,7 +67,7 @@ prepare
    end
 define
    CompilerObject = {New Compiler.engine init()}
-   BaseEnv = {Record.subtract {CompilerObject enqueue(getEnv($))} '$BootMM'}
+   BaseEnv = {CompilerObject enqueue(getEnv($))}
 
    ModMan = {New Module.manager init()}
 

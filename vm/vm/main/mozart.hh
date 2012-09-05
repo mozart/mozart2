@@ -39,6 +39,7 @@
 #include "gcollect.hh"
 #include "graphreplicator.hh"
 #include "lstring.hh"
+#include "properties.hh"
 #include "runnable.hh"
 #include "sclone.hh"
 #include "space.hh"
@@ -80,5 +81,6 @@
 #include "modules/modbytestring.hh"
 #include "modules/modcompilersupport.hh"
 #include "modules/moddebug.hh"
+#include "modules/modproperty.hh"
 
 #endif // __MOZART_H

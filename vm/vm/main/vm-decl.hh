@@ -41,6 +41,7 @@
 
 #include "atomtable.hh"
 #include "coreatoms-decl.hh"
+#include "properties-decl.hh"
 
 namespace mozart {
 
@@ -163,6 +164,10 @@ public:
     return environment;
   }
 
+  PropertyRegistry& getPropertyRegistry() {
+    return _propertyRegistry;
+  }
+
   StableNode* getBootMM() {
     return _bootMM;
   }
@@ -246,6 +251,8 @@ private:
   Space* _currentSpace;
   Runnable* _currentThread;
   bool _isOnTopLevel;
+
+  PropertyRegistry _propertyRegistry;
 
   StableNode* _bootMM;
 

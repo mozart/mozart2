@@ -81,6 +81,11 @@ public:
     return empty(tpMiddle) && empty(tpHi) && empty(tpLow);
   }
 
+  size_t getRunnableCount() {
+    return queues[tpLow].size() + queues[tpMiddle].size() +
+      queues[tpHi].size() + 1; // 1 for the currently running thread
+  }
+
   void schedule(Runnable* thread) {
     assert(thread->isRunnable());
     assert(!isScheduled(thread));

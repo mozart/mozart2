@@ -36,6 +36,12 @@ namespace mozart {
 // getArgument -----------------------------------------------------------------
 
 template <class T>
+atom_t PrimitiveTypeToExpectedAtom<T>::result(VM vm) {
+  typedef typename patternmatching::PrimitiveTypeToOzType<T>::result OzType;
+  return OzType::type()->getTypeAtom(vm);
+}
+
+template <class T>
 T getArgument(VM vm, RichNode argValue, const nchar* expectedType) {
   using namespace patternmatching;
 
@@ -43,6 +49,20 @@ T getArgument(VM vm, RichNode argValue, const nchar* expectedType) {
 
   if (!matches(vm, argValue, capture(result)))
     raiseTypeError(vm, expectedType, argValue);
+
+  return result;
+}
+
+template <class T>
+T getArgument(VM vm, RichNode argValue) {
+  using namespace patternmatching;
+
+  T result;
+
+  if (!matches(vm, argValue, capture(result))) {
+    atom_t expected = PrimitiveTypeToExpectedAtom<T>::result(vm);
+    raiseTypeError(vm, expected, argValue);
+  }
 
   return result;
 }

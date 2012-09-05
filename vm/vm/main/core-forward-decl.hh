@@ -123,6 +123,8 @@ typedef GarbageCollector* GC;
 class SpaceCloner;
 typedef SpaceCloner* SC;
 
+class NodeDictionary;
+
 class Space;
 
 /**

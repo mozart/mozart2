@@ -47,9 +47,6 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
 
   _propertyRegistry.create(this);
 
-  _bootMM = new (this) StableNode;
-  _bootMM->init(this, OptVar::build(this, _topLevelSpace));
-
   _envUseDynamicPreemption = environment.useDynamicPreemption();
   _preemptRequested = false;
   _exitRunRequested = false;
@@ -139,9 +136,6 @@ void VirtualMachine::startGC(GC gc) {
 
   // Property registry
   _propertyRegistry.gCollect(gc);
-
-  // Boot MM
-  gc->copyStableRef(_bootMM, _bootMM);
 
   // Runnable threads
   getThreadPool().gCollect(gc);

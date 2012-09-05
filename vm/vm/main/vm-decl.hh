@@ -168,10 +168,6 @@ public:
     return _propertyRegistry;
   }
 
-  StableNode* getBootMM() {
-    return _bootMM;
-  }
-
   inline
   UUID genUUID();
 
@@ -253,8 +249,6 @@ private:
   bool _isOnTopLevel;
 
   PropertyRegistry _propertyRegistry;
-
-  StableNode* _bootMM;
 
   RunnableList aliveThreads;
 

@@ -83,14 +83,8 @@ define
                    fun {$ Env SC}
                       Module = {ModMan link(name:{Label SC} $)}
                       ExtraEnv = {Record.map SC
-                                  /*fun lazy {$ Fs}
+                                  fun lazy {$ Fs}
                                      {Dots Module Fs}
-                                  end}*/
-                                  proc {$ Fs ?R}
-                                     thread
-                                        {WaitNeeded R}
-                                        {Dots Module Fs ?R}
-                                     end
                                   end}
                    in
                       {Adjoin Env ExtraEnv}

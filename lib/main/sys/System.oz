@@ -44,7 +44,7 @@ export
    % Postmortem
    Eq
    % NbSusps
-   OnTopLevel
+   OnToplevel
 
 define
 
@@ -80,6 +80,6 @@ define
 
    Eq = Boot_System.eq
 
-   OnTopLevel = Boot_System.onTopLevel
+   OnToplevel = Boot_System.onToplevel
 
 end

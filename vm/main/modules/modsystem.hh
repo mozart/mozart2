@@ -113,7 +113,7 @@ public:
 
   class OnTopLevel: public Builtin<OnTopLevel> {
   public:
-    OnTopLevel(): Builtin("onTopLevel") {}
+    OnTopLevel(): Builtin("onToplevel") {}
 
     void operator()(VM vm, Out result) {
       result = build(vm, vm->isOnTopLevel());

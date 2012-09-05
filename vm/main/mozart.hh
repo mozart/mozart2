@@ -55,7 +55,6 @@
 
 #include "emulate.hh"
 
-#include "modules/modboot.hh"
 #include "modules/modatom.hh"
 #include "modules/modvalue.hh"
 #include "modules/modnumber.hh"

@@ -53,8 +53,6 @@ class Builtins {
       ":=" -> builtinByName("Value", "catExchange")
   )
 
-  lazy val getBootMM = builtinByName("Boot", "getBootMM")
-
   lazy val waitNeeded = builtinByName("Value", "waitNeeded")
 
   lazy val dotAssign = builtinByName("Value", "dotAssign")
@@ -87,4 +85,6 @@ class Builtins {
   lazy val raise = builtinByName("Exception", "raise")
   lazy val raiseError = builtinByName("Exception", "raiseError")
   lazy val fail = builtinByName("Exception", "fail")
+
+  lazy val getProperty = builtinByName("Property", "get")
 }

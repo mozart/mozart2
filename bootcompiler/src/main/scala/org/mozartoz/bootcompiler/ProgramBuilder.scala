@@ -113,11 +113,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       (prog.baseEnvSymbol dot OzAtom("Base")) === prog.baseEnvSymbol
     }
 
-    // Fetch the boot MM
-    val fetchBootMMStat = {
-      prog.bootMMSymbol === (prog.baseEnvSymbol dot OzAtom("$BootMM"))
-    }
-
     // Register the boot modules
     val registerBootModulesStat = CompoundStatement {
       val registerProc = getBootMMProc(prog, "registerModule")
@@ -130,7 +125,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     val wholeProgram = {
       applyBaseFunctorStat ~
       bindBaseBaseStat ~
-      fetchBootMMStat ~
       registerBootModulesStat
     }
 

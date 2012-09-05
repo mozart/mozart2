@@ -171,6 +171,9 @@ object Main {
        |  UnstableNode baseEnv = OptVar::build(vm);
        |  UnstableNode bootMM = OptVar::build(vm);
        |
+       |  vm->getPropertyRegistry().registerConstantProp(
+       |    vm, MOZART_STR("internal.bootmm"), bootMM);
+       |
        |  createBaseEnv(vm, baseEnv, bootMM);
        |""".stripMargin
 

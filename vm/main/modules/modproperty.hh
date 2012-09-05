@@ -22,48 +22,53 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EXCHELPERS_DECL_H
-#define __EXCHELPERS_DECL_H
+#ifndef __MODPROPERTY_H
+#define __MODPROPERTY_H
 
-#include "mozartcore-decl.hh"
+#include "../mozartcore.hh"
+
+#ifndef MOZART_GENERATOR
 
 namespace mozart {
 
-template <class LT, class... Args>
-inline
-void MOZART_NORETURN raise(VM vm, LT&& label, Args&&... args);
+namespace builtins {
 
-template <class LT, class... Args>
-inline
-void MOZART_NORETURN raiseError(VM vm, LT&& label, Args&&... args);
+//////////////////////
+// Property module //
+//////////////////////
 
-template <class LT, class... Args>
-inline
-void MOZART_NORETURN raiseSystem(VM vm, LT&& label, Args&&... args);
+class ModProperty: public Module {
+public:
+  ModProperty(): Module("Property") {}
 
-template <class... Args>
-inline
-void MOZART_NORETURN raiseKernelError(VM vm, Args&&... args);
+  class Get: public Builtin<Get> {
+  public:
+    Get(): Builtin("get") {}
 
-template <class Expected, class Actual>
-inline
-void MOZART_NORETURN raiseTypeError(VM vm, Expected&& expected,
-                                    Actual&& actual);
+    void operator()(VM vm, In property, Out result, Out found) {
+      if (vm->getPropertyRegistry().get(vm, property, result)) {
+        found = build(vm, true);
+      } else {
+        result = build(vm, unit);
+        found = build(vm, false);
+      }
+    }
+  };
 
-inline
-void MOZART_NORETURN raiseIllegalArity(VM vm, RichNode target,
-                                       size_t actualArgCount,
-                                       RichNode actualArgs[]);
+  class Put: public Builtin<Put> {
+  public:
+    Put(): Builtin("put") {}
 
-template <class... Args>
-inline
-void MOZART_NORETURN raiseUnicodeError(VM vm, UnicodeErrorReason reason,
-                                       Args&&... args);
-
-template <class... Args>
-inline
-void MOZART_NORETURN raiseIndexOutOfBounds(VM vm, Args&&... args);
+    void operator()(VM vm, In property, In value, Out found) {
+      found = build(vm, vm->getPropertyRegistry().put(vm, property, value));
+    }
+  };
+};
 
 }
 
-#endif // __EXCHELPERS_DECL_H
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODPROPERTY_H

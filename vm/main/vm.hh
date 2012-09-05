@@ -45,6 +45,8 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _currentThread = nullptr;
   _isOnTopLevel = true;
 
+  _propertyRegistry.create(this);
+
   _bootMM = new (this) StableNode;
   _bootMM->init(this, OptVar::build(this, _topLevelSpace));
 
@@ -54,6 +56,8 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _referenceTime = 0;
 
   initialize();
+
+  _propertyRegistry.initialize(this);
 }
 
 bool VirtualMachine::testPreemption() {
@@ -132,6 +136,9 @@ void VirtualMachine::startGC(GC gc) {
 
   // Top-level space
   gc->copySpace(_topLevelSpaceRef, _topLevelSpaceRef);
+
+  // Property registry
+  _propertyRegistry.gCollect(gc);
 
   // Boot MM
   gc->copyStableRef(_bootMM, _bootMM);

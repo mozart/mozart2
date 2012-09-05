@@ -50,15 +50,30 @@ void raiseError(VM vm, LT&& label, Args&&... args) {
   raise(vm, RichNode(error));
 }
 
+template <class LT, class... Args>
+void raiseSystem(VM vm, LT&& label, Args&&... args) {
+  UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
+                                      std::forward<Args>(args)...);
+
+  UnstableNode error = buildRecord(
+    vm, buildArity(vm, vm->coreatoms.system, 1, vm->coreatoms.debug),
+    std::move(exception), unit);
+
+  raise(vm, RichNode(error));
+}
+
 template <class... Args>
 void raiseKernelError(VM vm, Args&&... args) {
   raiseError(vm, vm->coreatoms.kernel, std::forward<Args>(args)...);
 }
 
-template <class Actual>
-void raiseTypeError(VM vm, const nchar* expected, Actual&& actual) {
+template <class Expected, class Actual>
+void raiseTypeError(VM vm, Expected&& expected, Actual&& actual) {
   raiseKernelError(vm, MOZART_STR("type"),
-                   unit, buildList(vm, actual), expected, 1,
+                   unit,
+                   buildList(vm, std::forward<Actual>(actual)),
+                   std::forward<Expected>(expected),
+                   1,
                    vm->coreatoms.nil);
 }
 

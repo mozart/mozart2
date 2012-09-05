@@ -30,8 +30,18 @@
 namespace mozart {
 
 template <class T>
+struct PrimitiveTypeToExpectedAtom {
+  inline
+  static atom_t result(VM vm);
+};
+
+template <class T>
 inline
 T getArgument(VM vm, RichNode argValue, const nchar* expectedType);
+
+template <class T>
+inline
+T getArgument(VM vm, RichNode argValue);
 
 inline
 void requireFeature(VM vm, RichNode feature);

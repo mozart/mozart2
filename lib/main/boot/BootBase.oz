@@ -1,7 +1,7 @@
 functor
 
 require
-   Boot_Boot at 'x-oz://boot/Boot'
+   Boot_Property at 'x-oz://boot/Property'
 
 prepare
 
@@ -180,7 +180,11 @@ prepare
                            registerFunctor:RegisterFunctor
                            run:Run)
 
-export
-   '$BootMM': ExportedBootMM
+   local
+      BootMMProp
+   in
+      true = {Boot_Property.get 'internal.bootmm' ?BootMMProp}
+      BootMMProp = ExportedBootMM
+   end
 
 end

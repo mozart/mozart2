@@ -51,6 +51,7 @@
 #include "modules/modproperty.hh"
 #include "modules/modrecord.hh"
 #include "modules/modreflection.hh"
+#include "modules/modserializer.hh"
 #include "modules/modspace.hh"
 #include "modules/modsystem.hh"
 #include "modules/modthread.hh"

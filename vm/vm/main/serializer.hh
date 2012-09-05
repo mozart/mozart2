@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,39 +22,48 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __SERIALIZER_H
+#define __SERIALIZER_H
 
-#include "mozartcore-decl.hh"
+#include "mozartcore.hh"
 
-#include "datatypeshelpers-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedgnode-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "serializer-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
+///////////////////////////
+// SerializationCallback //
+///////////////////////////
 
-#endif // __COREDATATYPES_DECL_H
+SerializationCallback::SerializationCallback(VM vm):
+  secondMM(vm->getSecondMemoryManager()) {}
+
+void SerializationCallback::copy(RichNode to, RichNode from) {
+  todoFrom.push_back(secondMM, from);
+  todoTo.push_back(secondMM, to);
+}
+
+////////////////
+// Serialized //
+////////////////
+
+#include "Serialized-implem.hh"
+
+////////////////
+// Serializer //
+////////////////
+
+#include "Serializer-implem.hh"
+
+Serializer::Serializer(VM vm):
+  done(buildNil(vm)) {}
+
+Serializer::Serializer(VM vm, GR gr, Serializer& from) {
+  gr->copyUnstableNode(done, from.done);
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __SERIALIZER_DECL_H

@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,39 +22,55 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __MODSERIALIZER_H
+#define __MODSERIALIZER_H
 
-#include "mozartcore-decl.hh"
+#include "../mozartcore.hh"
 
-#include "datatypeshelpers-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedgnode-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "serializer-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
+namespace builtins {
 
-#endif // __COREDATATYPES_DECL_H
+///////////////////////
+// Serializer module //
+///////////////////////
+
+class ModSerializer: public Module {
+public:
+  ModSerializer(): Module("Serializer") {}
+
+  class New: public Builtin<New> {
+  public:
+    New(): Builtin("new") {}
+
+    static void call(VM vm, Out result) {
+      result = Serializer::build(vm);
+    }
+  };
+
+  class Serialize: public Builtin<Serialize> {
+  public:
+    Serialize(): Builtin("serialize") {}
+
+    static void call(VM vm, In serializer, In todo, Out result) {
+      if (serializer.is<Serializer>()) {
+        auto s=serializer.as<Serializer>();
+        result = s.doSerialize(vm, todo);
+      } else if (serializer.isTransient()) {
+        waitFor(vm, serializer);
+      } else {
+        raiseError(vm, MOZART_STR("serializer"), serializer);
+      }
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODSERIALIZER_H

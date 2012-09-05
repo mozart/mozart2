@@ -256,6 +256,7 @@ private:
   friend class GarbageCollector;
   friend class SpaceCloner;
   friend struct StructuralDualWalk;
+  friend class Serializer;
 
   inline void reinit(VM vm, StableNode& from);
   inline void reinit(VM vm, UnstableNode& from);

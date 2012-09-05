@@ -58,5 +58,5 @@ add_custom_target(gensources
 
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
   unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc properties.cc
-  coremodules.cc bootunpickler.cc)
+  coremodules.cc bootunpickler.cc serializer.cc)
 add_dependencies(mozartvm gensources)

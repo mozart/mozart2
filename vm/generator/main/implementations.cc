@@ -100,6 +100,7 @@ struct ImplementationDef {
     hasUUID = false;
     hasGetTypeAtom = false;
     hasPrintReprToStream = false;
+    hasSerialize = false;
     hasGlobalize = false;
     autoGCollect = true;
     autoSClone = true;
@@ -132,6 +133,7 @@ struct ImplementationDef {
   bool hasUUID;
   bool hasGetTypeAtom;
   bool hasPrintReprToStream;
+  bool hasSerialize;
   bool hasGlobalize;
   bool autoGCollect;
   bool autoSClone;
@@ -198,6 +200,8 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
 
       if (function->getNameAsString() == "printReprToStream")
         definition.hasPrintReprToStream = true;
+      else if (function->getNameAsString() == "serialize")
+        definition.hasSerialize = true;
       else if (function->getNameAsString() == "globalize")
         definition.hasGlobalize = true;
       else if (function->getNameAsString() == "compareFeatures")
@@ -341,6 +345,12 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
     to << "                         int depth) const;\n";
   }
 
+  if (hasSerialize) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  UnstableNode serialize(VM vm, SE s, RichNode from) const;\n";
+  }
+
   if (hasGlobalize) {
     to << "\n";
     to << "  inline\n";
@@ -422,6 +432,15 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "                    int depth) const {\n";
     to << "  assert(self.is<" << name << ">());\n";
     to << "  self.as<" << name << ">().printReprToStream(vm, out, depth);\n";
+    to << "}\n";
+  }
+
+  if (hasSerialize) {
+    to << "\n";
+    to << "UnstableNode " << className
+       << "::serialize(VM vm, SE s, RichNode from) const {\n";
+    to << "  assert(from.is<" << name << ">());\n";
+    to << "  return from.as<" << name << ">().serialize(vm, s);\n";
     to << "}\n";
   }
 

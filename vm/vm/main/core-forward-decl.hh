@@ -136,6 +136,9 @@ typedef GarbageCollector* GC;
 class SpaceCloner;
 typedef SpaceCloner* SC;
 
+class SerializationCallback;
+typedef SerializationCallback* SE;
+
 template <typename T>
 class TypeInfoOf;
 

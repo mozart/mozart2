@@ -60,6 +60,7 @@ void registerCoreModules(VM vm) {
   registerBuiltinModProperty(vm);
   registerBuiltinModRecord(vm);
   registerBuiltinModReflection(vm);
+  registerBuiltinModSerializer(vm);
   registerBuiltinModSpace(vm);
   registerBuiltinModSystem(vm);
   registerBuiltinModThread(vm);

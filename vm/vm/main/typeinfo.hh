@@ -27,6 +27,8 @@
 
 #include "mozartcore.hh"
 
+#ifndef MOZART_GENERATOR
+
 namespace mozart {
 
 //////////////
@@ -37,10 +39,16 @@ atom_t TypeInfo::getTypeAtom(VM vm) const {
   return vm->getAtom(MOZART_STR("value"));
 }
 
+UnstableNode TypeInfo::serialize(VM vm, SE s, RichNode from) const {
+  return mozart::build(vm, from.type()->getTypeAtom(vm));
+}
+
 GlobalNode* TypeInfo::globalize(VM vm, RichNode from) const {
   return GlobalNode::make(vm, from, MOZART_STR("default"));
 }
 
 }
+
+#endif // MOZART_GENERATOR
 
 #endif // __TYPEINFO_H

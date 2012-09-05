@@ -95,6 +95,9 @@ public:
   virtual void sClone(SC sc, RichNode from, UnstableNode& to) const = 0;
 
   inline
+  virtual UnstableNode serialize(VM vm, SE s, RichNode from) const;
+
+  inline
   virtual GlobalNode* globalize(VM vm, RichNode from) const;
 
   virtual int compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {

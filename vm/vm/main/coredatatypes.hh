@@ -51,6 +51,7 @@
 #include "reifiedgnode.hh"
 #include "reifiedspace.hh"
 #include "reifiedthread.hh"
+#include "serializer.hh"
 #include "smallint.hh"
 #include "string.hh"
 #include "unit.hh"

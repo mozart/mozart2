@@ -55,11 +55,11 @@ prepare
       Debug(setRaiseOnBlock) at 'x-oz://boot/Debug'
       Property(put condGet)
       System(onToplevel showError show)
-      Application(exit) at 'x-oz://boot/Application'
+      BootSystem(exit) at 'x-oz://boot/System'
       Error(printException)
    define
       proc {ExitError}
-         {Application.exit 1}
+         {BootSystem.exit 1}
       end
 
       proc {ErrorHandler Exc}
@@ -75,7 +75,7 @@ prepare
                {System.showError
                 '*** error while reporting error ***\noriginal exception:'}
                {System.show Exc}
-               {Application.exit 1}
+               {BootSystem.exit 1}
             end
             %% terminate local computation
             if {System.onToplevel} then

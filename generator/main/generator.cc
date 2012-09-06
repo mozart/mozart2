@@ -41,6 +41,8 @@ bool baseIsNotModule(const CXXRecordDecl* base, void* data) {
 }
 
 void processDeclContext(const std::string outputDir, const DeclContext* ds,
+                        llvm::raw_fd_ostream* builtinHeaderFile,
+                        llvm::raw_fd_ostream* builtinCodeFile,
                         llvm::raw_fd_ostream* emulateInlineTo) {
   for (auto iter = ds->decls_begin(), e = ds->decls_end(); iter != e; ++iter) {
     Decl* decl = *iter;
@@ -60,12 +62,16 @@ void processDeclContext(const std::string outputDir, const DeclContext* ds,
         }
       } else if (mode == gmBuiltins) {
         if (isModuleClass(CD)) {
-          handleBuiltinModule(outputDir, CD, *emulateInlineTo);
+          handleBuiltinModule(outputDir, CD,
+                              *builtinHeaderFile, *builtinCodeFile,
+                              emulateInlineTo);
         }
       }
     } else if (const NamespaceDecl* nsDecl = dyn_cast<NamespaceDecl>(decl)) {
       /* It's a namespace, recurse in it. */
-      processDeclContext(outputDir, nsDecl, emulateInlineTo);
+      processDeclContext(outputDir, nsDecl,
+                         builtinHeaderFile, builtinCodeFile,
+                         emulateInlineTo);
     }
   }
 }
@@ -77,7 +83,10 @@ int main(int argc, char* argv[]) {
   std::string modeStr = argv[1];
   std::string astFile = argv[2];
   std::string outputDir = argv[3];
+  std::string builtinFileName;
 
+  std::unique_ptr<ostream> builtinHeaderFile = nullptr;
+  std::unique_ptr<ostream> builtinCodeFile = nullptr;
   std::unique_ptr<ostream> emulateInlineTo = nullptr;
 
   // Parse mode
@@ -85,7 +94,11 @@ int main(int argc, char* argv[]) {
     mode = gmIntfImpl;
   } else if (modeStr == "builtins") {
     mode = gmBuiltins;
-    emulateInlineTo = openFileOutputStream(outputDir + "emulate-inline.cc");
+    builtinFileName = argv[4];
+    builtinHeaderFile = openFileOutputStream(outputDir + builtinFileName + ".hh");
+    builtinCodeFile = openFileOutputStream(outputDir + builtinFileName + ".cc");
+    if (builtinFileName == "mozartbuiltins")
+      emulateInlineTo = openFileOutputStream(outputDir + "emulate-inline.cc");
   } else {
     std::cerr << "Unknown generator mode: " << modeStr << std::endl;
     return 1;
@@ -105,5 +118,6 @@ int main(int argc, char* argv[]) {
 
   // Process
   processDeclContext(outputDir, context->getTranslationUnitDecl(),
+                     builtinHeaderFile.get(), builtinCodeFile.get(),
                      emulateInlineTo.get());
 }

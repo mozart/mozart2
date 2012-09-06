@@ -118,6 +118,8 @@ void handleInterface(const std::string& outputDir, const SpecDecl* ND);
 
 bool isModuleClass(const ClassDecl* cls);
 void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
-                         llvm::raw_fd_ostream& emulateInlinesTo);
+                         llvm::raw_fd_ostream& builtinHeaderFile,
+                         llvm::raw_fd_ostream& builtinCodeFile,
+                         llvm::raw_fd_ostream* emulateInlinesTo);
 
 extern clang::ASTContext* context;

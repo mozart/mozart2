@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "mozart.hh"
+#include "coremodules.hh"
 
 #include <iostream>
 #include <cassert>

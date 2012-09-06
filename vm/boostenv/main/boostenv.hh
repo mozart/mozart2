@@ -29,7 +29,6 @@
 
 #include "boostenvtcp.hh"
 #include "boostenvdatatypes.hh"
-#include "modos.hh"
 
 #ifndef MOZART_GENERATOR
 
@@ -225,6 +224,12 @@ void raiseSystemError(VM vm, const boost::system::system_error& error) {
 
 } }
 
+#endif
+
+#if !defined(MOZART_GENERATOR) && !defined(MOZART_BUILTIN_GENERATOR)
+namespace mozart { namespace boostenv { namespace builtins {
+#include "boostenvbuiltins.hh"
+} } }
 #endif
 
 #endif // __BOOSTENV_H

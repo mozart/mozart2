@@ -22,43 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#include "mozart.hh"
+#include "coremodules.hh"
 
-#include "mozartcore.hh"
-
-#include "coredatatypes.hh"
-
-#include "builtins.hh"
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "datatype.hh"
-#include "dynbuilders.hh"
-#include "exceptions.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "lstring.hh"
-#include "properties.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "typeinfo.hh"
-#include "unify.hh"
-#include "utf.hh"
-#include "utils.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
-
-#include "emulate.hh"
-
-#if !defined(MOZART_GENERATOR) && !defined(MOZART_BUILTIN_GENERATOR)
 namespace mozart { namespace builtins {
-#include "mozartbuiltins.hh"
-} }
-#endif
 
-#endif // __MOZART_H
+#include "mozartbuiltins.cc"
+
+} }

@@ -22,43 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __COREMODULES_H
+#define __COREMODULES_H
 
-#include "mozartcore.hh"
+#include "mozart.hh"
 
-#include "coredatatypes.hh"
+#include "modules/modatom.hh"
+#include "modules/modvalue.hh"
+#include "modules/modnumber.hh"
+#include "modules/modint.hh"
+#include "modules/modfloat.hh"
+#include "modules/modliteral.hh"
+#include "modules/modrecord.hh"
+#include "modules/modchunk.hh"
+#include "modules/modtuple.hh"
+#include "modules/modsystem.hh"
+#include "modules/modthread.hh"
+#include "modules/modspace.hh"
+#include "modules/modcell.hh"
+#include "modules/modname.hh"
+#include "modules/modarray.hh"
+#include "modules/moddictionary.hh"
+#include "modules/modexception.hh"
+#include "modules/modobject.hh"
+#include "modules/modprocedure.hh"
+#include "modules/modtime.hh"
+#include "modules/modstring.hh"
+#include "modules/modvirtualstring.hh"
+#include "modules/modbytestring.hh"
+#include "modules/modcompilersupport.hh"
+#include "modules/moddebug.hh"
+#include "modules/modproperty.hh"
 
-#include "builtins.hh"
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "datatype.hh"
-#include "dynbuilders.hh"
-#include "exceptions.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "lstring.hh"
-#include "properties.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "typeinfo.hh"
-#include "unify.hh"
-#include "utf.hh"
-#include "utils.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
-
-#include "emulate.hh"
-
-#if !defined(MOZART_GENERATOR) && !defined(MOZART_BUILTIN_GENERATOR)
-namespace mozart { namespace builtins {
-#include "mozartbuiltins.hh"
-} }
-#endif
-
-#endif // __MOZART_H
+#endif // __COREMODULES_H

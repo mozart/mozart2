@@ -26,12 +26,6 @@
 
 namespace mozart { namespace boostenv {
 
-// Some definitions
-
-namespace builtins {
-  const size_t ModOS::MaxBufferSize;
-}
-
 //////////////////
 // BoostBasedVM //
 //////////////////

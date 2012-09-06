@@ -39,19 +39,35 @@ struct BuiltinParam {
   std::string name;
 };
 
+struct ModuleDef;
+
 struct BuiltinDef {
-  BuiltinDef(const ClassDecl* classDecl): classDecl(classDecl) {
+  BuiltinDef(ModuleDef& module, const ClassDecl* classDecl):
+    module(module), classDecl(classDecl) {
+
+    cppName = classDecl->getNameAsString();
     fullCppName = classDecl->getQualifiedNameAsString();
     nameExpr = nullptr;
     inlineable = false;
     inlineOpCode = 0;
+
+    initFullCppGetter();
   }
+
+  inline
+  void initFullCppGetter();
 
   void makeOutput(llvm::raw_fd_ostream& to);
   void makeEmulateInlinesOutput(llvm::raw_fd_ostream& to);
+  void makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
+                             llvm::raw_fd_ostream& code);
+
+  ModuleDef& module;
 
   const ClassDecl* classDecl;
+  std::string cppName;
   std::string fullCppName;
+  std::string fullCppGetter;
   const Expr* nameExpr;
 
   std::vector<BuiltinParam> params;
@@ -62,19 +78,29 @@ struct BuiltinDef {
 
 struct ModuleDef {
   ModuleDef(const ClassDecl* classDecl): classDecl(classDecl) {
+    cppName = classDecl->getNameAsString();
     fullCppName = classDecl->getQualifiedNameAsString();
     nameExpr = nullptr;
   }
 
   void makeOutput(llvm::raw_fd_ostream& to);
   void makeEmulateInlinesOutput(llvm::raw_fd_ostream& to);
+  void makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
+                             llvm::raw_fd_ostream& code);
 
   const ClassDecl* classDecl;
+  std::string cppName;
   std::string fullCppName;
   const Expr* nameExpr;
 
   std::vector<BuiltinDef> builtins;
 };
+
+void BuiltinDef::initFullCppGetter() {
+  fullCppGetter =
+    module.fullCppName.substr(0, module.fullCppName.rfind(':')+1) +
+    "biref::" + module.cppName + "::" + cppName + "::get";
+}
 
 bool isTheModuleClass(const ClassDecl* cls) {
   return isTheClass(cls, "mozart::builtins::Module");
@@ -168,7 +194,9 @@ void handleBuiltin(BuiltinDef& definition, const ClassDecl* CD) {
 }
 
 void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
-                         llvm::raw_fd_ostream& emulateInlinesTo) {
+                         llvm::raw_fd_ostream& builtinHeaderFile,
+                         llvm::raw_fd_ostream& builtinCodeFile,
+                         llvm::raw_fd_ostream* emulateInlinesTo) {
   std::string name = CD->getNameAsString();
 
   ModuleDef definition(CD);
@@ -187,7 +215,7 @@ void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
     } else if (const ClassDecl* innerClass = dyn_cast<ClassDecl>(decl)) {
       // Inner class, maybe it's a builtin
       if (isBuiltinClass(innerClass)) {
-        BuiltinDef builtinDef(innerClass);
+        BuiltinDef builtinDef(definition, innerClass);
         handleBuiltin(builtinDef, innerClass);
         definition.builtins.push_back(builtinDef);
       }
@@ -201,7 +229,10 @@ void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
     definition.makeOutput(to);
   }
 
-  definition.makeEmulateInlinesOutput(emulateInlinesTo);
+  definition.makeBuiltinDefsOutput(builtinHeaderFile, builtinCodeFile);
+
+  if (emulateInlinesTo != nullptr)
+    definition.makeEmulateInlinesOutput(*emulateInlinesTo);
 }
 
 void BuiltinParam::makeOutput(llvm::raw_fd_ostream& to) {
@@ -221,6 +252,7 @@ void BuiltinParam::makeOutput(llvm::raw_fd_ostream& to) {
 void BuiltinDef::makeOutput(llvm::raw_fd_ostream& to) {
   to << "    {\n";
   to << "      \"fullCppName\": \"" << fullCppName << "\",\n";
+  to << "      \"fullCppGetter\": \"" << fullCppGetter << "\",\n";
 
   to << "      \"name\": ";
   nameExpr->printPretty(to, nullptr, context->getPrintingPolicy());
@@ -282,4 +314,35 @@ void BuiltinDef::makeEmulateInlinesOutput(llvm::raw_fd_ostream& to) {
 void ModuleDef::makeEmulateInlinesOutput(llvm::raw_fd_ostream& to) {
   for (auto iter = builtins.begin(); iter != builtins.end(); ++iter)
     iter->makeEmulateInlinesOutput(to);
+}
+
+void BuiltinDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
+                                       llvm::raw_fd_ostream& code) {
+  header << "  struct " << cppName << " {\n";
+  header << "    static ::mozart::builtins::BaseBuiltin& get(VM vm);\n";
+  header << "  };\n";
+
+  code << "\n";
+  code << "::mozart::builtins::BaseBuiltin& " << module.cppName << "::"
+       << cppName << "::get(VM vm) {\n";
+  code << "  return " << fullCppName << "::builtin();\n";
+  code << "}\n";
+}
+
+void ModuleDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
+                                      llvm::raw_fd_ostream& code) {
+  header << "\nnamespace biref {\n";
+  code << "\nnamespace biref {\n";
+
+  header << "\nstruct " << cppName << " {";
+
+  for (auto iter = builtins.begin(); iter != builtins.end(); ++iter) {
+    header << "\n";
+    iter->makeBuiltinDefsOutput(header, code);
+  }
+
+  header << "};\n";
+
+  header << "\n}\n";
+  code << "\n}\n";
 }

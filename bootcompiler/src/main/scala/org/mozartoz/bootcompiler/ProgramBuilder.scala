@@ -164,12 +164,12 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *
    *  The statement that is built is straightforward:
    *  {{{
-   *  {<BootMM>.run '<mainURL>'}
+   *  {<BootMM>.run}
    *  }}}
    */
-  def buildLinkerProgram(prog: Program, urls: List[String], mainURL: String) {
+  def buildLinkerProgram(prog: Program, urls: List[String]) {
     val runProc = getBootMMProc(prog, "run")
-    prog.rawCode = runProc.call(OzAtom(mainURL))
+    prog.rawCode = runProc.call()
   }
 
   private def getBootMMProc(prog: Program, proc: String): Expression = {

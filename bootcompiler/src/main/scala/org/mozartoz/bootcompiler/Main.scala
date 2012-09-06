@@ -147,7 +147,7 @@ object Main {
 
     val urls = fileNames map fileNameToURL
 
-    ProgramBuilder.buildLinkerProgram(program, urls, urls.head)
+    ProgramBuilder.buildLinkerProgram(program, urls)
     compile(program, "the linker")
 
     val out = new Output(outputStream())
@@ -168,6 +168,14 @@ object Main {
        |  boostenv::BoostBasedVM boostBasedVM;
        |  VM vm = boostBasedVM.vm;
        |
+       |  if (argc >= 2) {
+       |    boostBasedVM.setApplicationURL(argv[1]);
+       |    boostBasedVM.setApplicationArgs(argc-2, argv+2);
+       |  } else {
+       |    boostBasedVM.setApplicationURL(u8"%s");
+       |    boostBasedVM.setApplicationArgs(0, nullptr);
+       |  }
+       |
        |  UnstableNode baseEnv = OptVar::build(vm);
        |  UnstableNode bootMM = OptVar::build(vm);
        |
@@ -175,7 +183,7 @@ object Main {
        |    vm, MOZART_STR("internal.bootmm"), bootMM);
        |
        |  createBaseEnv(vm, baseEnv, bootMM);
-       |""".stripMargin
+       |""".stripMargin % (urls.head)
 
     for (url <- urls)
       out << "  %s(vm, baseEnv, bootMM);\n" % urlToProcName(url)

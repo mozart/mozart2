@@ -65,6 +65,7 @@ add_custom_command(
     --baseenv
     -o "${CMAKE_CURRENT_BINARY_DIR}/Base.cc"
     -h "boostenv.hh"
+    -m "${MOZART_BUILD_DIR}/vm/main/"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
     ${BOOTCOMPILER_DEFINES}
@@ -118,6 +119,7 @@ foreach(functor ${ALL_FUNCTORS})
     COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
       -o "${CMAKE_CURRENT_BINARY_DIR}/${ccfile}"
       -h "boostenv.hh"
+      -m "${MOZART_BUILD_DIR}/vm/main/"
       -m "${MOZART_BUILD_DIR}/boostenv/main/"
       -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
       ${BOOTCOMPILER_DEFINES}
@@ -133,6 +135,7 @@ add_custom_command(
     --linker
     -o "${CMAKE_CURRENT_BINARY_DIR}/LinkerMain.cc"
     -h "boostenv.hh"
+    -m "${MOZART_BUILD_DIR}/vm/main/"
     -m "${MOZART_BUILD_DIR}/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
     ${BOOTCOMPILER_DEFINES}

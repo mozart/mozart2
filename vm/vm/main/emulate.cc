@@ -166,8 +166,9 @@ namespace {
 
 UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
                                           ProgramCounter PC) {
-  UnstableNode result = buildCons(vm, buildStackTraceItem(vm, abstraction, PC),
-                                  vm->coreatoms.nil);
+  OzListBuilder result(vm);
+
+  result.push_back(vm, buildStackTraceItem(vm, abstraction, PC));
 
   for (auto iter = begin(); iter != end(); ++iter) {
     StackEntry& entry = *iter;
@@ -176,12 +177,11 @@ UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
       abstraction = entry.abstraction;
       PC = entry.PC;
 
-      result = buildCons(vm, buildStackTraceItem(vm, abstraction, PC),
-                         std::move(result));
+      result.push_back(vm, buildStackTraceItem(vm, abstraction, PC));
     }
   }
 
-  return result;
+  return result.get(vm);
 }
 
 ////////////

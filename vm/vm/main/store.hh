@@ -131,6 +131,26 @@ void UnstableNode::copy(VM vm, RichNode from) {
 }
 
 //////////////
+// NodeHole //
+//////////////
+
+NodeHole::NodeHole(StableNode* node): _node(node), _isStable(true) {}
+
+NodeHole::NodeHole(UnstableNode* node): _node(node), _isStable(false) {}
+
+void NodeHole::fill(VM vm, UnstableNode&& value) {
+  _node->set(value);
+}
+
+bool NodeHole::operator==(StableNode* rhs) {
+  return _node == rhs;
+}
+
+bool NodeHole::operator==(UnstableNode* rhs) {
+  return _node == rhs;
+}
+
+//////////////
 // RichNode //
 //////////////
 
@@ -150,6 +170,16 @@ RichNode::RichNode(UnstableNode& origin) {
     _isStable = false;
   } else {
     _node = dereference(&origin);
+    _isStable = true;
+  }
+}
+
+RichNode::RichNode(NodeHole origin) {
+  if (origin.node()->type() != Reference::type()) {
+    _node = origin.node();
+    _isStable = origin.isStable();
+  } else {
+    _node = dereference(origin.node());
     _isStable = true;
   }
 }

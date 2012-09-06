@@ -74,6 +74,34 @@ void requireFeature(VM vm, RichNode feature) {
     PotentialFeature(feature).makeFeature(vm);
 }
 
+// OzListBuilder ---------------------------------------------------------------
+
+OzListBuilder::OzListBuilder(VM vm) {
+  _head.init(vm);
+  _tail = &_head;
+}
+
+template <class T>
+void OzListBuilder::push_front(VM vm, T&& value) {
+  _head = buildCons(vm, std::forward<T>(value), std::move(_head));
+  if (_tail == &_head) {
+    _tail = RichNode(_head).as<Cons>().getTail();
+  }
+}
+
+template <class T>
+void OzListBuilder::push_back(VM vm, T&& value) {
+  auto cons = buildCons(vm, std::forward<T>(value), unit);
+  auto newTail = RichNode(cons).as<Cons>().getTail();
+  _tail.fill(vm, std::move(cons));
+  _tail = newTail;
+}
+
+UnstableNode OzListBuilder::get(VM vm) {
+  _tail.fill(vm, buildNil(vm));
+  return std::move(_head);
+}
+
 // ozListForEach ---------------------------------------------------------------
 
 template <class F, class G>

@@ -190,7 +190,7 @@ class CodeArea(val abstraction: Abstraction) {
 
     constant match {
       case OzBuiltin(builtin) =>
-        out << "::%s::builtin()" % builtin.ccFullName
+        out << "::%s(vm)" % builtin.ccFullGetter
 
       case OzCodeArea(codeArea) =>
         out << "%s" % codeArea.ccCodeArea

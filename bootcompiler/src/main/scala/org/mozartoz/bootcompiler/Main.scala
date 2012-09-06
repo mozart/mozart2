@@ -365,7 +365,7 @@ object Main {
 
       for {
         M(bi) <- builtins
-        S(biFullCppName) = bi("fullCppName")
+        S(biFullCppGetter) = bi("fullCppGetter")
         S(biName) = bi("name")
         B(inlineable) = bi("inlineable")
         L(params) = bi("params")
@@ -382,7 +382,7 @@ object Main {
         }
 
         val builtin = new Builtin(
-            modName, biName, biFullCppName, paramKinds, inlineAs)
+            modName, biName, biFullCppGetter, paramKinds, inlineAs)
 
         prog.builtins.register(builtin)
 

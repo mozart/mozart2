@@ -47,6 +47,31 @@ inline
 void requireFeature(VM vm, RichNode feature);
 
 /**
+ * Helper to build an Oz list in C++.
+ * Use push_front and/or push_back to build the list. Then call get() ONCE.
+ * After calling get(), any interaction with the builder is undefined behavior.
+ */
+class OzListBuilder {
+public:
+  inline
+  OzListBuilder(VM vm);
+
+  template <class T>
+  inline
+  void push_front(VM vm, T&& value);
+
+  template <class T>
+  inline
+  void push_back(VM vm, T&& value);
+
+  inline
+  UnstableNode get(VM vm);
+private:
+  UnstableNode _head;
+  NodeHole _tail;
+};
+
+/**
  * Apply a function on a list.
  *
  * For example, if the list is `a|b|c|d|rest`, then this function is equivalent

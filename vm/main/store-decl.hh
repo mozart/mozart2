@@ -48,6 +48,7 @@ namespace mozart {
 class Node {
 private:
   friend struct NodeBackup;
+  friend struct NodeHole;
   friend class StableNode;
   friend class UnstableNode;
   friend class RichNode;
@@ -125,6 +126,39 @@ private:
   Node saved;
 };
 
+struct NodeHole {
+public:
+  NodeHole() {}
+
+  inline
+  NodeHole(StableNode* node);
+
+  inline
+  NodeHole(UnstableNode* node);
+public:
+  inline
+  void fill(VM vm, UnstableNode&& value);
+public:
+  inline
+  bool operator==(StableNode* rhs);
+
+  inline
+  bool operator==(UnstableNode* rhs);
+private:
+  friend class RichNode;
+
+  Node* node() {
+    return _node;
+  }
+
+  bool isStable() {
+    return _isStable;
+  }
+private:
+  Node* _node;
+  bool _isStable;
+};
+
 template <class T>
 class TypedRichNode {
 };
@@ -143,6 +177,10 @@ public:
   __attribute__((always_inline))
   inline
   RichNode(UnstableNode& origin);
+
+  __attribute__((always_inline))
+  inline
+  RichNode(NodeHole origin);
 
   __attribute__((always_inline))
   RichNode(std::nullptr_t): _node(nullptr), _isStable(false) {}

@@ -71,10 +71,8 @@ prepare
    /** The magic Run routine
     *  Sets up all the necessary things to be able to launch Init.ozf out of
     *  nowhere.
-    *  @param MainURL
-    *          URL of the application functor (the main functor)
     */
-   proc {Run MainURL}
+   proc {Run}
       % First checkout the critical modules from the boot module manager
       OS         = {BootMM link('x-oz://system/OS.ozf' $)}
       Property   = {BootMM link('x-oz://system/Property.ozf' $)}
@@ -165,11 +163,8 @@ prepare
          )
       end
 
-      % Sets up 'application.url' - Init.ozf will use this
-      {Property.put 'application.url' MainURL}
-
       % And finally load the Init.ozf functor and apply it
-      InitFunctor = {URLLoad 'Init.ozf'}
+      InitFunctor = {URLLoad 'x-oz://system/Init.ozf'}
    in
       {InitFunctor.apply 'import'('URL':        URL
                                   'DefaultURL': DefaultURL

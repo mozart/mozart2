@@ -45,6 +45,32 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   fdStderr = registerFile(stderr);
 }
 
+void BoostBasedVM::setApplicationURL(char const* url) {
+  VM vm = this->vm;
+
+  auto property = build(vm, MOZART_STR("application.url"));
+
+  auto decodedURL = toUTF<nchar>(makeLString(url));
+  auto ozURL = build(vm, vm->getAtom(decodedURL.length, decodedURL.string));
+
+  vm->getPropertyRegistry().put(vm, property, ozURL);
+}
+
+void BoostBasedVM::setApplicationArgs(int argc, char const* const* argv) {
+  VM vm = this->vm;
+  OzListBuilder args(vm);
+
+  for (int i = 0; i < argc; i++) {
+    auto decodedArg = toUTF<nchar>(makeLString(argv[i]));
+    args.push_back(vm, vm->getAtom(decodedArg.length, decodedArg.string));
+  }
+
+  auto property = build(vm, MOZART_STR("application.args"));
+  auto ozArgs = args.get(vm);
+
+  vm->getPropertyRegistry().put(vm, property, ozArgs);
+}
+
 void BoostBasedVM::run() {
   constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
   constexpr auto recInvokeAgainNow   = VirtualMachine::recInvokeAgainNow;

@@ -57,6 +57,13 @@ public:
     return static_cast<BoostBasedVM&>(vm->getEnvironment());
   }
 
+// Configuration
+
+public:
+  void setApplicationURL(char const* url);
+
+  void setApplicationArgs(int argc, char const* const* argv);
+
 // Run and preemption
 
 public:

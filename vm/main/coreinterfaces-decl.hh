@@ -36,7 +36,8 @@ namespace mozart {
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>:
-  ImplementedBy<OptVar, Variable, ReadOnly, FailedValue>, NoAutoWait {
+  ImplementedBy<OptVar, Variable, ReadOnly, ReadOnlyVariable, FailedValue>,
+  NoAutoWait {
 
   void addToSuspendList(RichNode self, VM vm, RichNode variable) {
     // TODO Should we immediately wake up the variable, here?
@@ -59,6 +60,16 @@ struct Interface<DataflowVariable>:
     assert(self.type()->getStructuralBehavior() == sbVariable);
     assert(false);
     return raiseTypeError(vm, MOZART_STR("Variable"), self);
+  }
+};
+
+class BindableReadOnly;
+template<>
+struct Interface<BindableReadOnly>:
+  ImplementedBy<ReadOnlyVariable>, NoAutoWait {
+
+  void bindReadOnly(RichNode self, VM vm, RichNode src) {
+    raiseTypeError(vm, MOZART_STR("ReadOnlyVariable"), self);
   }
 };
 

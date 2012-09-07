@@ -386,16 +386,25 @@ public:
     MakeReadOnly(): Builtin("readOnly") {}
 
     void operator()(VM vm, In variable, Out result) {
-      // TODO Test on something more generic than Variable and OptVar
-      if (variable.is<Variable>() || variable.is<OptVar>()) {
-        StableNode* readOnly = new (vm) StableNode;
-        readOnly->init(vm, ReadOnly::build(vm, variable.getStableRef(vm)));
+      result = ReadOnly::newReadOnly(vm, variable);
+    }
+  };
 
-        result.copy(vm, *readOnly);
-        DataflowVariable(variable).addToSuspendList(vm, result);
-      } else {
-        result.copy(vm, variable);
-      }
+  class NewReadOnly: public Builtin<NewReadOnly> {
+  public:
+    NewReadOnly(): Builtin("newReadOnly") {}
+
+    void operator()(VM vm, Out result) {
+      result = ReadOnlyVariable::build(vm);
+    }
+  };
+
+  class BindReadOnly: public Builtin<BindReadOnly> {
+  public:
+    BindReadOnly(): Builtin("bindReadOnly") {}
+
+    void operator()(VM vm, In readOnly, In value) {
+      BindableReadOnly(readOnly).bindReadOnly(vm, value);
     }
   };
 

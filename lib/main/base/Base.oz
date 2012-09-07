@@ -70,13 +70,24 @@ prepare
    CondSelect   = Boot_Value.condSelect
    HasFeature   = Boot_Value.hasFeature
    FailedValue  = Boot_Value.failedValue
+   NewReadOnly  = Boot_Value.newReadOnly
+   BindReadOnly = Boot_Value.bindReadOnly
    ByNeed       = proc {$ P X} thread {WaitNeeded X} {P X} end end
-   ByNeedFuture = fun {$ P}
-                     !!{ByNeed fun {$}
-                                  try {P}
-                                  catch E then {FailedValue E}
-                                  end
-                               end}
+   ByNeedFuture = proc {$ P X}
+                     R = {NewReadOnly}
+                  in
+                     thread
+                        {WaitNeeded R}
+                        try Y in
+                           {MakeNeeded Y}
+                           {P Y}
+                           {WaitQuiet Y}
+                           {BindReadOnly R Y}
+                        catch E then
+                           {BindReadOnly R {FailedValue E}}
+                        end
+                     end
+                     X = R
                   end
    ByNeedDot    = fun {$ X F}
                      if {IsDet X} andthen {IsDet F}

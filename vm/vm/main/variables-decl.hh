@@ -29,6 +29,62 @@
 
 namespace mozart {
 
+//////////////////
+// VariableBase //
+//////////////////
+
+template <class This>
+class VariableBase: public WithHome {
+public:
+  typedef typename SelfType<This>::Self Self;
+public:
+  VariableBase(VM vm): WithHome(vm) {}
+
+  VariableBase(VM vm, Space* home): WithHome(home) {}
+
+  inline
+  VariableBase(VM vm, GR gr, Self from);
+
+public:
+  // DataflowVariable interface
+
+  inline
+  void addToSuspendList(Self self, VM vm, RichNode variable);
+
+  bool isNeeded(VM vm) {
+    return _needed;
+  }
+
+  inline
+  void markNeeded(Self self, VM vm);
+
+  /* To be implemented in subclasses
+  inline
+  void bind(Self self, VM vm, RichNode src);
+  */
+
+protected:
+  inline
+  void doBind(Self self, VM vm, RichNode src);
+
+private:
+  // TODO Might be a good candidate for noinline
+  inline
+  void bindSubSpace(Self self, VM vm, RichNode src);
+
+  inline
+  void wakeUpPendings(VM vm);
+
+  inline
+  void wakeUpPendingsSubSpace(VM vm, Space* currentSpace);
+
+  VMAllocatedList<StableNode*> pendings;
+
+  /* TODO maybe we can squeeze this bit of information into pendings
+   * Idea: a leading `nullptr` element in pendings? */
+  bool _needed;
+};
+
 //////////////
 // Variable //
 //////////////
@@ -39,14 +95,14 @@ class Variable;
 #include "Variable-implem-decl.hh"
 #endif
 
-class Variable: public DataType<Variable>, public WithHome, Transient,
-  WithVariableBehavior<90> {
+class Variable: public DataType<Variable>, public VariableBase<Variable>,
+  Transient, WithVariableBehavior<90> {
 public:
   typedef SelfType<Variable>::Self Self;
 public:
-  Variable(VM vm): WithHome(vm) {}
+  Variable(VM vm): VariableBase(vm) {}
 
-  Variable(VM vm, Space* home): WithHome(home) {}
+  Variable(VM vm, Space* home): VariableBase(vm, home) {}
 
   inline
   Variable(VM vm, GR gr, Self from);
@@ -64,53 +120,65 @@ public:
   // DataflowVariable interface
 
   inline
-  void addToSuspendList(Self self, VM vm, RichNode variable);
-
-  bool isNeeded(VM vm) {
-    return _needed;
-  }
-
-  inline
-  void markNeeded(Self self, VM vm);
-
-  inline
   void bind(Self self, VM vm, RichNode src);
 
-public:
-  // Transfer pendings
-
-  inline
-  void transferPendings(VM vm, VMAllocatedList<StableNode*>& src);
-
-  inline
-  void transferPendingsSubSpace(VM vm, Space* currentSpace,
-                                VMAllocatedList<StableNode*>& src);
 public:
   // Miscellaneous
 
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
     out << "_";
   }
-private:
-  // TODO Might a good candidate for noinline
-  inline
-  void bindSubSpace(Self self, VM vm, RichNode src);
-
-  inline
-  void wakeUpPendings(VM vm);
-
-  inline
-  void wakeUpPendingsSubSpace(VM vm, Space* currentSpace);
-
-  VMAllocatedList<StableNode*> pendings;
-
-  /* TODO maybe we can squeeze this bit of information into pendings
-   * Idea: a leading `nullptr` element in pendings? */
-  bool _needed;
 };
 
 #ifndef MOZART_GENERATOR
 #include "Variable-implem-decl-after.hh"
+#endif
+
+//////////////////////
+// ReadOnlyVariable //
+//////////////////////
+
+class ReadOnlyVariable;
+
+#ifndef MOZART_GENERATOR
+#include "ReadOnlyVariable-implem-decl.hh"
+#endif
+
+class ReadOnlyVariable: public DataType<ReadOnlyVariable>,
+  public VariableBase<ReadOnlyVariable>,
+  Transient, WithVariableBehavior<80> {
+public:
+  typedef SelfType<ReadOnlyVariable>::Self Self;
+public:
+  ReadOnlyVariable(VM vm): VariableBase(vm) {}
+
+  ReadOnlyVariable(VM vm, Space* home): VariableBase(vm, home) {}
+
+  inline
+  ReadOnlyVariable(VM vm, GR gr, Self from);
+
+public:
+  // DataflowVariable interface
+
+  inline
+  void bind(Self self, VM vm, RichNode src);
+
+public:
+  // BindableReadOnly interface
+
+  inline
+  void bindReadOnly(Self self, VM vm, RichNode src);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "!!_";
+  }
+};
+
+#ifndef MOZART_GENERATOR
+#include "ReadOnlyVariable-implem-decl-after.hh"
 #endif
 
 ////////////
@@ -199,6 +267,17 @@ public:
 
   inline
   static void create(StableNode*& self, VM vm, GR gr, Self from);
+
+public:
+  inline
+  static void newReadOnly(StableNode& dest, VM vm, RichNode underlying);
+
+  inline
+  static UnstableNode newReadOnly(VM vm, RichNode underlying);
+
+private:
+  inline
+  static bool needsProtection(VM vm, RichNode underlying);
 
 public:
   StableNode* getUnderlying() {

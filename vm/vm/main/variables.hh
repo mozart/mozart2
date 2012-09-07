@@ -31,13 +31,12 @@
 
 namespace mozart {
 
-//////////////
-// Variable //
-//////////////
+//////////////////
+// VariableBase //
+//////////////////
 
-#include "Variable-implem.hh"
-
-Variable::Variable(VM vm, GR gr, Self from):
+template <class This>
+VariableBase<This>::VariableBase(VM vm, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   for (auto iter = from->pendings.begin();
@@ -48,6 +47,101 @@ Variable::Variable(VM vm, GR gr, Self from):
   }
 }
 
+template <class This>
+void VariableBase<This>::addToSuspendList(Self self, VM vm, RichNode variable) {
+  pendings.push_back(vm, variable.getStableRef(vm));
+}
+
+template <class This>
+void VariableBase<This>::markNeeded(Self self, VM vm) {
+  /* TODO What's supposed to happen if we're in a subspace?
+   * The behavior of Mozart 1.4.0 was to send the needed flag up through
+   * space boundaries, effectively making the original variable needed.
+   * Since, generally, the computation waiting for the variable to become
+   * needed is located in the home space of the variable, this may seem
+   * appealing.
+   * But it is semantically wrong, somehow, as this allows a subspace to
+   * act on a parent space!
+   */
+  if (!_needed) {
+    _needed = true;
+    wakeUpPendings(vm);
+  }
+}
+
+template <class This>
+void VariableBase<This>::doBind(Self self, VM vm, RichNode src) {
+  if (vm->isOnTopLevel()) {
+    // The simple, fast binding when on top-level
+    if (_needed) {
+      DataflowVariable(src).markNeeded(vm);
+      src.update();
+    }
+    self.become(vm, src);
+    wakeUpPendings(vm);
+  } else {
+    // The complicated, slow binding when in a subspace
+    bindSubSpace(self, vm, src);
+  }
+}
+
+template <class This>
+void VariableBase<This>::bindSubSpace(Self self, VM vm, RichNode src) {
+  Space* currentSpace = vm->getCurrentSpace();
+
+  // Is it a speculative binding?
+  if (home() != currentSpace) {
+    currentSpace->makeBackupForSpeculativeBinding(
+      RichNode(self).getStableRef(vm));
+  }
+
+  // Actual binding
+  if (_needed) {
+    DataflowVariable(src).markNeeded(vm);
+    src.update();
+  }
+  self.become(vm, src);
+  wakeUpPendingsSubSpace(vm, currentSpace);
+}
+
+template <class This>
+void VariableBase<This>::wakeUpPendings(VM vm) {
+  VMAllocatedList<StableNode*> pendings;
+  std::swap(pendings, this->pendings);
+
+  for (auto iter = pendings.begin(); iter != pendings.end(); iter++) {
+    Wakeable(**iter).wakeUp(vm);
+  }
+
+  pendings.clear(vm);
+}
+
+template <class This>
+void VariableBase<This>::wakeUpPendingsSubSpace(VM vm, Space* currentSpace) {
+  /* The general idea here is to wake up things whose home space is the current
+   * space or any of its children, but not the others.
+   */
+
+  VMAllocatedList<StableNode*> pendings;
+  std::swap(pendings, this->pendings);
+
+  for (auto iter = pendings.begin(); iter != pendings.end(); iter++) {
+    Wakeable pending = **iter;
+    if (pending.shouldWakeUpUnderSpace(vm, currentSpace))
+      pending.wakeUp(vm);
+  }
+
+  pendings.clear(vm);
+}
+
+//////////////
+// Variable //
+//////////////
+
+#include "Variable-implem.hh"
+
+Variable::Variable(VM vm, GR gr, Self from): VariableBase(vm, gr, from) {}
+
 void Variable::wakeUp(Self self, VM vm) {
   UnstableNode temp = Unit::build(vm);
   return bind(self, vm, temp);
@@ -57,106 +151,25 @@ bool Variable::shouldWakeUpUnderSpace(VM vm, Space* space) {
   return home()->isAncestor(space);
 }
 
-void Variable::addToSuspendList(Self self, VM vm, RichNode variable) {
-  pendings.push_back(vm, variable.getStableRef(vm));
-}
-
-void Variable::markNeeded(Self self, VM vm) {
-  // TODO What's supposed to happen if we're in a subspace?
-  if (!_needed) {
-    _needed = true;
-    wakeUpPendings(vm);
-  }
-}
-
 void Variable::bind(Self self, VM vm, RichNode src) {
-  if (vm->isOnTopLevel()) {
-    // The simple, fast binding when on top-level
-    self.become(vm, src);
-
-    /* If the value we were bound to is a Variable too, we have to transfer the
-     * variables waiting for this so that they wait for the other Variable.
-     * Otherwise, we wake up the variables.
-     */
-    src.update();
-    if (src.is<Variable>()) {
-      src.as<Variable>().transferPendings(vm, pendings);
-    } else {
-      wakeUpPendings(vm);
-    }
-  } else {
-    // The complicated, slow binding when in a subspace
-    bindSubSpace(self, vm, src);
-  }
+  doBind(self, vm, src);
 }
 
-void Variable::bindSubSpace(Self self, VM vm, RichNode src) {
-  Space* currentSpace = vm->getCurrentSpace();
+//////////////////////
+// ReadOnlyVariable //
+//////////////////////
 
-  // Is it a speculative binding?
-  if (!vm->isOnTopLevel() && (home() != currentSpace)) {
-    currentSpace->makeBackupForSpeculativeBinding(
-      RichNode(self).getStableRef(vm));
-  }
+#include "ReadOnlyVariable-implem.hh"
 
-  // Actual binding
-  self.become(vm, src);
+ReadOnlyVariable::ReadOnlyVariable(VM vm, GR gr, Self from):
+  VariableBase(vm, gr, from) {}
 
-  /* If the value we were bound to is a Variable too, we have to transfer the
-   * variables waiting for this so that they wait for the other Variable.
-   * Otherwise, we wake up the variables.
-   */
-  src.update();
-  if (src.is<Variable>()) {
-    src.as<Variable>().transferPendingsSubSpace(vm, currentSpace, pendings);
-  } else {
-    wakeUpPendingsSubSpace(vm, currentSpace);
-  }
+void ReadOnlyVariable::bind(Self self, VM vm, RichNode src) {
+  waitFor(vm, self);
 }
 
-void Variable::transferPendings(VM vm, VMAllocatedList<StableNode*>& src) {
-  pendings.splice(vm, src);
-}
-
-void Variable::transferPendingsSubSpace(VM vm, Space* currentSpace,
-                                        VMAllocatedList<StableNode*>& src) {
-  for (auto iter = src.removable_begin();
-       iter != src.removable_end(); ) {
-    if (Wakeable(**iter).shouldWakeUpUnderSpace(vm, currentSpace))
-      pendings.splice(vm, src, iter);
-    else
-      ++iter;
-  }
-}
-
-void Variable::wakeUpPendings(VM vm) {
-  VMAllocatedList<StableNode*> pendings;
-  std::swap(pendings, this->pendings);
-
-  for (auto iter = pendings.begin();
-       iter != pendings.end(); iter++) {
-    Wakeable(**iter).wakeUp(vm);
-  }
-
-  pendings.clear(vm);
-}
-
-void Variable::wakeUpPendingsSubSpace(VM vm, Space* currentSpace) {
-  /* The general idea here is to wake up things whose home space is the current
-   * space or any of its children, but not the others.
-   */
-
-  VMAllocatedList<StableNode*> pendings;
-  std::swap(pendings, this->pendings);
-
-  for (auto iter = pendings.begin();
-       iter != pendings.end(); iter++) {
-    Wakeable pending = **iter;
-    if (pending.shouldWakeUpUnderSpace(vm, currentSpace))
-      pending.wakeUp(vm);
-  }
-
-  pendings.clear(vm);
+void ReadOnlyVariable::bindReadOnly(Self self, VM vm, RichNode src) {
+  doBind(self, vm, src);
 }
 
 ////////////
@@ -211,11 +224,36 @@ void ReadOnly::create(StableNode*& self, VM vm, GR gr, Self from) {
   gr->copyStableRef(self, from.get().getUnderlying());
 }
 
+void ReadOnly::newReadOnly(StableNode& dest, VM vm, RichNode underlying) {
+  if (needsProtection(vm, underlying)) {
+    dest.init(vm, ReadOnly::build(vm, underlying.getStableRef(vm)));
+    DataflowVariable(underlying).addToSuspendList(vm, dest);
+  } else {
+    dest.init(vm, underlying);
+  }
+}
+
+UnstableNode ReadOnly::newReadOnly(VM vm, RichNode underlying) {
+  if (needsProtection(vm, underlying)) {
+    StableNode* dest = new (vm) StableNode;
+    dest->init(vm, ReadOnly::build(vm, underlying.getStableRef(vm)));
+    DataflowVariable(underlying).addToSuspendList(vm, *dest);
+    return Reference::build(vm, dest);
+  } else {
+    return { vm, underlying };
+  }
+}
+
+bool ReadOnly::needsProtection(VM vm, RichNode underlying) {
+  // TODO This is hardly nice. There should be a general predicate here.
+  return underlying.is<Variable>() || underlying.is<OptVar>() ||
+    underlying.is<ReadOnlyVariable>();
+}
+
 void ReadOnly::wakeUp(Self self, VM vm) {
   RichNode underlying = *_underlying;
 
-  // TODO Test on something more generic than Variable and OptVar
-  if (underlying.is<Variable>() || underlying.is<OptVar>()) {
+  if (needsProtection(vm, underlying)) {
     // Aaah, no. I was waken up for nothing
     DataflowVariable(underlying).addToSuspendList(vm, self);
   } else {

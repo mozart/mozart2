@@ -35,6 +35,7 @@ namespace mozart {
 #ifndef MOZART_GENERATOR
 
 #include "DataflowVariable-interf.hh"
+#include "BindableReadOnly-interf.hh"
 #include "ValueEquatable-interf.hh"
 #include "StructuralEquatable-interf.hh"
 #include "Comparable-interf.hh"

@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,35 +22,66 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __MODPORT_H
+#define __MODPORT_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "datatypeshelpers.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+namespace mozart {
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+namespace builtins {
 
-#endif // __COREDATATYPES_H
+/////////////////
+// Port module //
+/////////////////
+
+class ModPort: public Module {
+public:
+  ModPort(): Module("Port") {}
+
+  class New: public Builtin<New> {
+  public:
+    New(): Builtin("new") {}
+
+    void operator()(VM vm, Out stream, Out result) {
+      result = Port::build(vm, stream);
+    }
+  };
+
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    void operator()(VM vm, In value, Out result) {
+      result = build(vm, PortLike(value).isPort(vm));
+    }
+  };
+
+  class Send: public Builtin<Send> {
+  public:
+    Send(): Builtin("send") {}
+
+    void operator()(VM vm, In port, In value) {
+      PortLike(port).send(vm, value);
+    }
+  };
+
+  class SendReceive: public Builtin<SendReceive> {
+  public:
+    SendReceive(): Builtin("sendReceive") {}
+
+    void operator()(VM vm, In port, In value, Out reply) {
+      reply = PortLike(port).sendReceive(vm, value);
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODPORT_H

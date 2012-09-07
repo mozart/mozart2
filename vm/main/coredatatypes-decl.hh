@@ -44,6 +44,7 @@
 #include "float-decl.hh"
 #include "names-decl.hh"
 #include "objects-decl.hh"
+#include "port-decl.hh"
 #include "records-decl.hh"
 #include "reifiedspace-decl.hh"
 #include "reifiedthread-decl.hh"

@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,35 +22,55 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __PORT_H
+#define __PORT_H
 
 #include "mozartcore.hh"
 
-#include "datatypeshelpers.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+namespace mozart {
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+//////////
+// Port //
+//////////
 
-#endif // __COREDATATYPES_H
+#include "Port-implem.hh"
+
+Port::Port(VM vm, UnstableNode& stream): WithHome(vm) {
+  _stream = ReadOnlyVariable::build(vm);
+  stream.copy(vm, _stream);
+}
+
+Port::Port(VM vm, GR gr, Self from): WithHome(vm, gr, from->home()) {
+  gr->copyUnstableNode(_stream, from->_stream);
+}
+
+void Port::send(RichNode self, VM vm, RichNode value) {
+  // TODO Send to a parent space (no, the following test is not right)
+  if (!isHomedInCurrentSpace(vm))
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
+
+  auto newStream = ReadOnlyVariable::build(vm);
+  auto cons = buildCons(vm, value, newStream);
+  UnstableNode oldStream = std::move(_stream);
+  _stream = std::move(newStream);
+  BindableReadOnly(oldStream).bindReadOnly(vm, cons);
+}
+
+UnstableNode Port::sendReceive(RichNode self, VM vm, RichNode value) {
+  // TODO Send to a parent space (no, the following test is not right)
+  if (!isHomedInCurrentSpace(vm))
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
+
+  auto result = OptVar::build(vm);
+  auto pair = buildTuple(vm, vm->coreatoms.sharp, value, result);
+  send(self, vm, pair);
+  return result;
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __PORT_H

@@ -40,6 +40,7 @@
 #include "modules/modthread.hh"
 #include "modules/modspace.hh"
 #include "modules/modcell.hh"
+#include "modules/modport.hh"
 #include "modules/modname.hh"
 #include "modules/modarray.hh"
 #include "modules/moddictionary.hh"

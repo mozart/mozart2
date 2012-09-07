@@ -407,6 +407,22 @@ struct Interface<RecordLike>:
   }
 };
 
+class PortLike;
+template<>
+struct Interface<PortLike>: ImplementedBy<Port> {
+  bool isPort(RichNode self, VM vm) {
+    return false;
+  }
+
+  void send(RichNode self, VM vm, RichNode value) {
+    raiseTypeError(vm, MOZART_STR("Port"), self);
+  }
+
+  UnstableNode sendReceive(RichNode self, VM vm, RichNode value) {
+    raiseTypeError(vm, MOZART_STR("Port"), self);
+  }
+};
+
 class ArrayLike;
 template <>
 struct Interface<ArrayLike>: ImplementedBy<Array> {

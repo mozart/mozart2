@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,35 +22,65 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __PORT_DECL_H
+#define __PORT_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#include "datatypeshelpers.hh"
+namespace mozart {
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+//////////
+// Port //
+//////////
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+class Port;
 
-#endif // __COREDATATYPES_H
+#ifndef MOZART_GENERATOR
+#include "Port-implem-decl.hh"
+#endif
+
+class Port: public DataType<Port>, public WithHome {
+public:
+  typedef SelfType<Port>::Self Self;
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("port"));
+  }
+
+  inline
+  Port(VM vm, UnstableNode& stream);
+
+  inline
+  Port(VM vm, GR gr, Self from);
+
+public:
+  // PortLike interface
+
+  bool isPort(Self self, VM vm) {
+    return true;
+  }
+
+  inline
+  void send(RichNode self, VM vm, RichNode value);
+
+  inline
+  UnstableNode sendReceive(RichNode self, VM vm, RichNode value);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<Port>";
+  }
+
+private:
+  UnstableNode _stream;
+};
+
+#ifndef MOZART_GENERATOR
+#include "Port-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __PORT_DECL_H

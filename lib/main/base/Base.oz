@@ -29,6 +29,7 @@ require
    Boot_Value           at 'x-oz://boot/Value'
    Boot_Literal         at 'x-oz://boot/Literal'
    Boot_Cell            at 'x-oz://boot/Cell'
+   Boot_Port            at 'x-oz://boot/Port'
    Boot_Atom            at 'x-oz://boot/Atom'
    Boot_Name            at 'x-oz://boot/Name'
    Boot_String          at 'x-oz://boot/String'
@@ -125,10 +126,10 @@ prepare
    %%
    %% Port
    %%
-   IsPort   % Defined in Port.oz
-   NewPort  % Defined in Port.oz
-   Send     % Defined in Port.oz
-   SendRecv % Defined in Port.oz
+   IsPort   = Boot_Port.is
+   NewPort  = Boot_Port.new
+   Send     = Boot_Port.send
+   SendRecv = Boot_Port.sendReceive
 
    %%
    %% Atom

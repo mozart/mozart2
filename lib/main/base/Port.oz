@@ -22,39 +22,6 @@
 %%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %%% POSSIBILITY OF SUCH DAMAGE.
 
-local
-   PortID = {NewUniqueName portID}
-in
-   fun {IsPort X}
-      {IsChunk X} andthen {HasFeature X PortID}
-   end
-
-   fun {NewPort ?S}
-      Head
-      Tail = {NewCell Head}
-      proc {Send X}
-         NewTail
-      in
-         {Exchange Tail X|!!NewTail NewTail}
-      end
-   in
-      S = !!Head
-      {NewChunk port(PortID:Send)}
-   end
-
-   proc {Send P X}
-      if {IsPort P} then
-         {P.PortID X}
-      else
-         raise typeError('port' P) end
-      end
-   end
-
-   proc {SendRecv P X Y}
-      {Send P X#Y}
-   end
-end
-
 Port = port(is:       IsPort
             new:      NewPort
             send:     Send

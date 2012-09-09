@@ -77,7 +77,7 @@ UnstableNode Array::arrayGet(Self self, VM vm, RichNode index) {
 
 void Array::arrayPut(Self self, VM vm, RichNode index, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), "array");
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("array"));
 
   self[getOffset(self, vm, index)].copy(vm, value);
 }
@@ -85,7 +85,7 @@ void Array::arrayPut(Self self, VM vm, RichNode index, RichNode value) {
 UnstableNode Array::arrayExchange(Self self, VM vm, RichNode index,
                                   RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), "array");
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("array"));
 
   size_t offset = getOffset(self, vm, index);
 

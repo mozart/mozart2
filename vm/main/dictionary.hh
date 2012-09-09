@@ -479,7 +479,7 @@ UnstableNode Dictionary::dictCondGet(Self self, VM vm, RichNode feature,
 void Dictionary::dictPut(Self self, VM vm, RichNode feature,
                          RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "dictionary");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
 
   requireFeature(vm, feature);
 
@@ -492,7 +492,7 @@ void Dictionary::dictPut(Self self, VM vm, RichNode feature,
 UnstableNode Dictionary::dictExchange(Self self, VM vm, RichNode feature,
                                       RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), "dictionary");
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
 
   requireFeature(vm, feature);
 
@@ -510,7 +510,7 @@ UnstableNode Dictionary::dictCondExchange(Self self, VM vm, RichNode feature,
                                           RichNode defaultValue,
                                           RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), "dictionary");
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
 
   requireFeature(vm, feature);
 
@@ -527,7 +527,7 @@ UnstableNode Dictionary::dictCondExchange(Self self, VM vm, RichNode feature,
 
 void Dictionary::dictRemove(Self self, VM vm, RichNode feature) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "dictionary");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
 
   requireFeature(vm, feature);
 
@@ -536,7 +536,7 @@ void Dictionary::dictRemove(Self self, VM vm, RichNode feature) {
 
 void Dictionary::dictRemoveAll(Self self, VM vm) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), "dictionary");
+    return raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
 
   dict.removeAll(vm);
 }

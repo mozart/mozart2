@@ -84,8 +84,10 @@ UnstableNode build(VM vm, internal::int64IfDifferentFromNativeInt value) {
   return SmallInt::build(vm, (nativeint) value);
 }
 
+template <typename T>
 inline
-UnstableNode build(VM vm, bool value) {
+auto build(VM vm, T value)
+    -> typename std::enable_if<std::is_same<T, bool>::value, UnstableNode>::type {
   return Boolean::build(vm, value);
 }
 
@@ -102,6 +104,18 @@ UnstableNode build(VM vm, double value) {
 inline
 UnstableNode build(VM vm, const nchar* value) {
   return Atom::build(vm, value);
+}
+
+// build an atom from a 'const char*' (as UTF string).
+// Only exists when 'nchar != char'.
+template <typename T>
+inline
+auto build(VM vm, T value)
+    -> typename std::enable_if<std::is_convertible<T, const char*>::value &&
+                               !std::is_same<nchar, char>::value, UnstableNode>::type {
+  auto src = makeLString(value);
+  auto dest = toUTF<nchar>(src);
+  return Atom::build(vm, dest.length, dest.string);
 }
 
 inline

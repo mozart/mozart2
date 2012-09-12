@@ -603,7 +603,6 @@ in
                    toDictionary:
                       proc {$ R ?D}
                          D = {Dictionary.new}
-                      in
                          {ForAllInd {Arity R} R
                           proc {$ F X}
                              {Dictionary.put D F X}

@@ -42,6 +42,7 @@
 #include "atomtable.hh"
 #include "coreatoms-decl.hh"
 #include "properties-decl.hh"
+#include "protect-decl.hh"
 
 namespace mozart {
 
@@ -222,6 +223,10 @@ private:
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);
 
+  template <typename T>
+  friend ProtectedNode ozProtect(VM vm, T&& node);
+  friend void ozUnprotect(VM vm, ProtectedNode pp_node);
+
   void* getMemory(size_t size) {
     return memoryManager.getMemory(size);
   }
@@ -261,6 +266,7 @@ private:
   SpaceCloner sc;
 
   VMAllocatedList<AlarmRecord> _alarms;
+  ProtectedNodesContainer _protectedNodes;
 
   // Flags set externally for preemption etc.
   // TODO Use atomic data types

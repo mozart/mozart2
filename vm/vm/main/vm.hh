@@ -141,6 +141,9 @@ void VirtualMachine::startGC(GC gc) {
   // Runnable threads
   getThreadPool().gCollect(gc);
 
+  // Protected nodes
+  _protectedNodes.gCollect(gc);
+
   // Pending alarms
   for (auto iter = alarms.begin(); iter != alarms.end(); ++iter) {
     _alarms.push_back_new(this, iter->expiration, iter->wakeable);

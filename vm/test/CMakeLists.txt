@@ -18,5 +18,5 @@ include_directories("${GTEST_SRC_DIR}" "${GTEST_SRC_DIR}/include")
 
 add_executable(vmtest testutils.cc sanitytest.cc coderstest.cc utftest.cc
   smallinttest.cc floattest.cc atomtest.cc stringtest.cc virtualstringtest.cc
-  bytestringtest.cc)
+  bytestringtest.cc gctest.cc)
 target_link_libraries(vmtest mozartvm pthread custom_gtest custom_gtest_main)

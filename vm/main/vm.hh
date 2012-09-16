@@ -50,6 +50,7 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _envUseDynamicPreemption = environment.useDynamicPreemption();
   _preemptRequested = false;
   _exitRunRequested = false;
+  _gcRequested = false;
   _referenceTime = 0;
 
   initialize();

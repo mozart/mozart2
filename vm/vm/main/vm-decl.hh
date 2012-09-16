@@ -206,6 +206,11 @@ public:
     _preemptRequested = true;
   }
 
+  void requestGC() {
+    _gcRequested = true;
+    _preemptRequested = true;
+  }
+
   void setReferenceTime(std::int64_t value) {
     _referenceTime = value;
   }
@@ -262,6 +267,7 @@ private:
   bool _envUseDynamicPreemption;
   volatile bool _preemptRequested;
   volatile bool _exitRunRequested;
+  volatile bool _gcRequested;
   volatile std::int64_t _referenceTime;
 
   // During GC, we need a SpaceRef version of the top-level space

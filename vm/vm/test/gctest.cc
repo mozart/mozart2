@@ -103,6 +103,7 @@ TEST_F(GCTest, ProtectTwice) {
         CHECK("sanity");
         EXPECT_EQ_INT(402, *protected_1);
         EXPECT_EQ_INT(402, *protected_2);
+        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
     vm->requestGC();
@@ -112,6 +113,7 @@ TEST_F(GCTest, ProtectTwice) {
         CHECK("pre 2nd-gc");
         EXPECT_EQ_INT(402, *protected_1);
         EXPECT_EQ_INT(402, *protected_2);
+        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
     vm->requestGC();
@@ -121,6 +123,7 @@ TEST_F(GCTest, ProtectTwice) {
         CHECK("pre unprotect");
         EXPECT_EQ_INT(402, *protected_1);
         EXPECT_EQ_INT(402, *protected_2);
+        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
     ozUnprotect(vm, protected_1);
@@ -140,8 +143,57 @@ TEST_F(GCTest, ProtectTwice) {
         EXPECT_EQ_INT(402, *protected_2);
     }
 
+    ozUnprotect(vm, protected_2);
+}
+
+TEST_F(GCTest, ProtectTwiceUncopyable) {
+    // This is to check protecting the same uncopyable stable node twice is safe.
+
+    StableNode node;
+    node.init(vm, buildList(vm, 123, 456, 789));
+
+    auto protected_1 = ozProtect(vm, node);
+    auto protected_2 = ozProtect(vm, node);
+
+    {
+        CHECK("sanity");
+        auto expected = buildList(vm, 123, 456, 789);
+        EXPECT_TRUE(equals(vm, expected, *protected_1));
+        EXPECT_TRUE(equals(vm, expected, *protected_2));
+        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
+    }
+
+    vm->requestGC();
+    vm->run();
+
+    {
+        CHECK("pre unprotect");
+        auto expected = buildList(vm, 123, 456, 789);
+        EXPECT_TRUE(equals(vm, expected, *protected_1));
+        EXPECT_TRUE(equals(vm, expected, *protected_2));
+        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
+    }
+
+    ozUnprotect(vm, protected_1);
+
+    {
+        CHECK("post unprotect");
+        auto expected = buildList(vm, 123, 456, 789);
+        EXPECT_TRUE(equals(vm, expected, *protected_2));
+    }
+
+    vm->requestGC();
+    vm->run();
+
+    {
+        CHECK("post 2nd-gc");
+        auto expected = buildList(vm, 123, 456, 789);
+        EXPECT_TRUE(equals(vm, expected, *protected_2));
+    }
+
     #undef CHECK
 
     ozUnprotect(vm, protected_2);
 }
+
 

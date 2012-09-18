@@ -98,7 +98,7 @@ public:
     GCDo(): Builtin("gcDo") {}
 
     void operator()(VM vm) {
-      // TODO
+      vm->requestGC();
     }
   };
 

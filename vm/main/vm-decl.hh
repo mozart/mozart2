@@ -42,6 +42,7 @@
 #include "atomtable.hh"
 #include "coreatoms-decl.hh"
 #include "properties-decl.hh"
+#include "protect-decl.hh"
 
 namespace mozart {
 
@@ -206,6 +207,11 @@ public:
     _preemptRequested = true;
   }
 
+  void requestGC() {
+    _gcRequested = true;
+    _preemptRequested = true;
+  }
+
   void setReferenceTime(std::int64_t value) {
     _referenceTime = value;
   }
@@ -216,6 +222,10 @@ private:
 
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);
+
+  template <typename T>
+  friend ProtectedNode ozProtect(VM vm, T&& node);
+  friend void ozUnprotect(VM vm, ProtectedNode pp_node);
 
   void* getMemory(size_t size) {
     return memoryManager.getMemory(size);
@@ -256,12 +266,14 @@ private:
   SpaceCloner sc;
 
   VMAllocatedList<AlarmRecord> _alarms;
+  ProtectedNodesContainer _protectedNodes;
 
   // Flags set externally for preemption etc.
   // TODO Use atomic data types
   bool _envUseDynamicPreemption;
   volatile bool _preemptRequested;
   volatile bool _exitRunRequested;
+  volatile bool _gcRequested;
   volatile std::int64_t _referenceTime;
 
   // During GC, we need a SpaceRef version of the top-level space

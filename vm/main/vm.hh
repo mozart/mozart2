@@ -50,6 +50,7 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _envUseDynamicPreemption = environment.useDynamicPreemption();
   _preemptRequested = false;
   _exitRunRequested = false;
+  _gcRequested = false;
   _referenceTime = 0;
 
   initialize();
@@ -139,6 +140,9 @@ void VirtualMachine::startGC(GC gc) {
 
   // Runnable threads
   getThreadPool().gCollect(gc);
+
+  // Protected nodes
+  _protectedNodes.gCollect(gc);
 
   // Pending alarms
   for (auto iter = alarms.begin(); iter != alarms.end(); ++iter) {

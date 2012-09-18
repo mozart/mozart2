@@ -52,6 +52,7 @@
 #include "utils.hh"
 #include "vm.hh"
 #include "vmallocatedlist.hh"
+#include "protect.hh"
 
 #include "emulate.hh"
 

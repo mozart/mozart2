@@ -332,8 +332,8 @@ public:
       auto tcpAcceptor = getArgument<std::shared_ptr<TCPAcceptor> >(
         vm, acceptor, MOZART_STR("TCP acceptor"));
 
-      StableNode** connectionNode;
-      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(connectionNode, result);
+      auto connectionNode =
+        BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(result);
 
       tcpAcceptor->startAsyncAccept(connectionNode);
     }
@@ -377,8 +377,8 @@ public:
 
       auto tcpConnection = TCPConnection::create(BoostBasedVM::forVM(vm));
 
-      StableNode** statusNode;
-      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(statusNode, status);
+      auto statusNode =
+        BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(status);
 
       tcpConnection->startAsyncConnect(strHost, strService, statusNode);
     }
@@ -408,9 +408,8 @@ public:
 
       auto& env = BoostBasedVM::forVM(vm);
 
-      StableNode** tailNode = env.allocAsyncIONode(tail.getStableRef(vm));
-      StableNode** statusNode;
-      env.createAsyncIOFeedbackNode(statusNode, status);
+      auto tailNode = env.allocAsyncIONode(tail.getStableRef(vm));
+      auto statusNode = env.createAsyncIOFeedbackNode(status);
 
       tcpConnection->startAsyncReadSome(tailNode, statusNode);
     }
@@ -434,8 +433,8 @@ public:
         return;
       }
 
-      StableNode** statusNode;
-      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(statusNode, status);
+      auto statusNode =
+        BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(status);
 
       tcpConnection->startAsyncWrite(statusNode);
     }

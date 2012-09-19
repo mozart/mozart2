@@ -31,6 +31,7 @@ namespace mozart { namespace boostenv {
 //////////////////
 
 BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
+  _asyncIONodeCount(0),
   random_generator(std::time(nullptr)), uuidGenerator(random_generator),
   preemptionTimer(io_service), alarmTimer(io_service) {
 
@@ -102,7 +103,7 @@ void BoostBasedVM::run() {
 
       // Is there anything left to do?
       if ((nextInvoke == recNeverInvokeAgain) &&
-          _asyncIONodes.empty() && _vmEventsCallbacks.empty()) {
+          (_asyncIONodeCount == 0) && _vmEventsCallbacks.empty()) {
         // Totally finished, nothing can ever wake me again
         break;
       }
@@ -159,13 +160,6 @@ void BoostBasedVM::onPreemptionTimerExpire(
     preemptionTimer.async_wait(boost::bind(
       &BoostBasedVM::onPreemptionTimerExpire,
       this, boost::asio::placeholders::error));
-  }
-}
-
-void BoostBasedVM::gCollect(GC gc) {
-  for (auto iter = _asyncIONodes.begin(); iter != _asyncIONodes.end(); ++iter) {
-    StableNode** item = *iter;
-    gc->copyStableRef(*item, *item);
   }
 }
 

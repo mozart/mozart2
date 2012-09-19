@@ -67,16 +67,18 @@ public:
 
   inline
   void startAsyncConnect(std::string host, std::string service,
-                         StableNode** statusNode);
+                         const ProtectedNode& statusNode);
 
   inline
-  void startAsyncRead(StableNode** tailNode, StableNode** statusNode);
+  void startAsyncRead(const ProtectedNode& tailNode,
+                      const ProtectedNode& statusNode);
 
   inline
-  void startAsyncReadSome(StableNode** tailNode, StableNode** statusNode);
+  void startAsyncReadSome(const ProtectedNode& tailNode,
+                          const ProtectedNode& statusNode);
 
   inline
-  void startAsyncWrite(StableNode** statusNode);
+  void startAsyncWrite(const ProtectedNode& statusNode);
 
 private:
   inline
@@ -86,7 +88,8 @@ private:
   inline
   void readHandler(const boost::system::error_code& error,
                    size_t bytes_transferred,
-                   StableNode** tailNode, StableNode** statusNode);
+                   const ProtectedNode& tailNode,
+                   const ProtectedNode& statusNode);
 
 private:
   BoostBasedVM& _environment;
@@ -119,7 +122,7 @@ public:
   }
 
   inline
-  void startAsyncAccept(StableNode** connectionNode);
+  void startAsyncAccept(const ProtectedNode& connectionNode);
 
   inline
   boost::system::error_code cancel();

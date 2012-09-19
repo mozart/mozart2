@@ -38,44 +38,40 @@ namespace mozart { namespace boostenv {
 // BoostBasedVM //
 //////////////////
 
-StableNode** BoostBasedVM::allocAsyncIONode(StableNode* node) {
-  StableNode** result = new StableNode*(node);
-  _asyncIONodes.push_front(result);
-  return result;
+ProtectedNode BoostBasedVM::allocAsyncIONode(StableNode* node) {
+  _asyncIONodeCount++;
+  return ozProtect(vm, *node);
 }
 
-void BoostBasedVM::releaseAsyncIONode(StableNode** node) {
-  _asyncIONodes.remove(node);
-  delete node;
+void BoostBasedVM::releaseAsyncIONode(const ProtectedNode& node) {
+  assert(_asyncIONodeCount > 0);
+
+  ozUnprotect(vm, node);
+  _asyncIONodeCount--;
 }
 
-void BoostBasedVM::createAsyncIOFeedbackNode(StableNode**& ref,
-                                             UnstableNode& readOnly) {
+ProtectedNode BoostBasedVM::createAsyncIOFeedbackNode(UnstableNode& readOnly) {
   StableNode* stable = new (vm) StableNode;
   stable->init(vm, Variable::build(vm));
 
-  StableNode* stableReadyOnly = new (vm) StableNode;
-  stableReadyOnly->init(vm, ReadOnly::build(vm, stable));
+  readOnly = ReadOnly::newReadOnly(vm, *stable);
 
-  readOnly.init(vm, *stableReadyOnly);
-  DataflowVariable(*stable).addToSuspendList(vm, readOnly);
-
-  ref = allocAsyncIONode(stable);
+  return allocAsyncIONode(stable);
 }
 
 template <class LT, class... Args>
 void BoostBasedVM::bindAndReleaseAsyncIOFeedbackNode(
-  StableNode** ref, LT&& label, Args&&... args) {
+  const ProtectedNode& ref, LT&& label, Args&&... args) {
 
   UnstableNode rhs = buildTuple(vm, std::forward<LT>(label),
                                 std::forward<Args>(args)...);
-  DataflowVariable(**ref).bind(vm, rhs);
+  DataflowVariable(*ref).bind(vm, rhs);
   releaseAsyncIONode(ref);
 }
 
 template <class LT, class... Args>
 void BoostBasedVM::raiseAndReleaseAsyncIOFeedbackNode(
-  StableNode** ref, LT&& label, Args&&... args) {
+  const ProtectedNode& ref, LT&& label, Args&&... args) {
 
   UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
                                       std::forward<Args>(args)...);

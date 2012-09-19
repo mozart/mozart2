@@ -44,7 +44,7 @@ TCPConnection::TCPConnection(BoostBasedVM& environment):
 }
 
 void TCPConnection::startAsyncConnect(std::string host, std::string service,
-                                      StableNode** statusNode) {
+                                      const ProtectedNode& statusNode) {
   pointer self = shared_from_this();
 
   auto resolveHandler = [=] (const boost::system::error_code& error,
@@ -78,8 +78,8 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
   _resolver.async_resolve(query, resolveHandler);
 }
 
-void TCPConnection::startAsyncRead(StableNode** tailNode,
-                                   StableNode** statusNode) {
+void TCPConnection::startAsyncRead(const ProtectedNode& tailNode,
+                                   const ProtectedNode& statusNode) {
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
     readHandler(error, bytes_transferred, tailNode, statusNode);
@@ -88,8 +88,8 @@ void TCPConnection::startAsyncRead(StableNode** tailNode,
   boost::asio::async_read(_socket, boost::asio::buffer(_readData), handler);
 }
 
-void TCPConnection::startAsyncReadSome(StableNode** tailNode,
-                                       StableNode** statusNode) {
+void TCPConnection::startAsyncReadSome(const ProtectedNode& tailNode,
+                                       const ProtectedNode& statusNode) {
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
     readHandler(error, bytes_transferred, tailNode, statusNode);
@@ -98,7 +98,7 @@ void TCPConnection::startAsyncReadSome(StableNode** tailNode,
   _socket.async_read_some(boost::asio::buffer(_readData), handler);
 }
 
-void TCPConnection::startAsyncWrite(StableNode** statusNode) {
+void TCPConnection::startAsyncWrite(const ProtectedNode& statusNode) {
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
     _environment.postVMEvent([=] () {
@@ -117,13 +117,13 @@ void TCPConnection::startAsyncWrite(StableNode** statusNode) {
 
 void TCPConnection::readHandler(const boost::system::error_code& error,
                                 size_t bytes_transferred,
-                                StableNode** tailNode,
-                                StableNode** statusNode) {
+                                const ProtectedNode& tailNode,
+                                const ProtectedNode& statusNode) {
   _environment.postVMEvent([=] () {
     if (!error) {
       VM vm = _environment.vm;
 
-      UnstableNode head(vm, **tailNode);
+      UnstableNode head(vm, *tailNode);
       for (size_t i = bytes_transferred; i > 0; i--)
         head = buildCons(vm, _readData[i-1], std::move(head));
 
@@ -147,7 +147,7 @@ TCPAcceptor::TCPAcceptor(BoostBasedVM& environment,
   _environment(environment), _acceptor(environment.io_service, endpoint) {
 }
 
-void TCPAcceptor::startAsyncAccept(StableNode** connectionNode) {
+void TCPAcceptor::startAsyncAccept(const ProtectedNode& connectionNode) {
   TCPConnection::pointer connection = TCPConnection::create(_environment);
 
   auto handler = [=] (const boost::system::error_code& error) {

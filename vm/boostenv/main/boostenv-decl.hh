@@ -91,11 +91,6 @@ private:
     return boost::posix_time::ptime(date(1970, Jan, 1));
   }
 
-// Garbage collection hook
-
-public:
-  void gCollect(GC gc);
-
 // UUID generation
 
 public:
@@ -108,22 +103,22 @@ private:
 
 public:
   inline
-  StableNode** allocAsyncIONode(StableNode* node);
+  ProtectedNode allocAsyncIONode(StableNode* node);
 
   inline
-  void releaseAsyncIONode(StableNode** node);
+  void releaseAsyncIONode(const ProtectedNode& node);
 
   inline
-  void createAsyncIOFeedbackNode(StableNode**& ref, UnstableNode& readOnly);
+  ProtectedNode createAsyncIOFeedbackNode(UnstableNode& readOnly);
 
   template <class LT, class... Args>
   inline
-  void bindAndReleaseAsyncIOFeedbackNode(StableNode** ref,
+  void bindAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
                                          LT&& label, Args&&... args);
 
   template <class LT, class... Args>
   inline
-  void raiseAndReleaseAsyncIOFeedbackNode(StableNode** ref,
+  void raiseAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
                                           LT&& label, Args&&... args);
 
 // Notification from asynchronous work
@@ -153,9 +148,9 @@ private:
 public:
   const VM vm;
 
-// References to nodes used by asynchronous operations
+// Number of asynchronous IO nodes - used for termination detection
 private:
-  std::forward_list<StableNode**> _asyncIONodes;
+  size_t _asyncIONodeCount;
 
 // Random number generation
 public:

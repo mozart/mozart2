@@ -71,7 +71,7 @@ public:
 private:
   inline ProtectedNode protect(VM vm, StableNode* node_ptr);
 
-  std::unordered_set<std::unique_ptr<StableNode*>> _nodes;
+  std::unordered_set<StableNode**> _nodes;
 };
 
 /**
@@ -100,4 +100,3 @@ inline void ozUnprotect(VM vm, ProtectedNode pp_node);
 }
 
 #endif
-

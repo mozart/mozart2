@@ -31,10 +31,9 @@
 namespace mozart {
 
 inline ProtectedNode ProtectedNodesContainer::protect(VM vm, StableNode* node_ptr) {
-  std::unique_ptr<StableNode*> ptr (new StableNode*(node_ptr));
-  ProtectedNode protected_node (ptr.get());
-  _nodes.insert(std::move(ptr));
-  return protected_node;
+  StableNode** ptr = new StableNode*(node_ptr);
+  _nodes.insert(ptr);
+  return ProtectedNode(ptr);
 }
 
 inline ProtectedNode ProtectedNodesContainer::protect(VM vm, RichNode node) {
@@ -58,13 +57,13 @@ inline ProtectedNode ProtectedNodesContainer::protect(VM vm, UnstableNode&& node
 }
 
 inline void ProtectedNodesContainer::unprotect(ProtectedNode pp_node) {
-  std::unique_ptr<StableNode*> dummy (pp_node._node);
-  _nodes.erase(dummy);
-  dummy.release();
+  if (_nodes.erase(pp_node._node)) {
+    delete pp_node._node;
+  }
 }
 
 inline void ProtectedNodesContainer::gCollect(GC gc) {
-  for (auto& node : _nodes) {
+  for (auto node : _nodes) {
     gc->copyStableRef(*node, *node);
   }
 }
@@ -83,4 +82,3 @@ void ozUnprotect(VM vm, ProtectedNode pp_node)
 }
 
 #endif
-

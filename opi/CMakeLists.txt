@@ -8,13 +8,8 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2"
 set(MOZART_BUILD_DIR "${MOZART_DIR}/build"
     CACHE PATH "Path to Mozart2 build directory")
 
-set(MOZART_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2-library"
-    CACHE PATH "Path to Mozart2 library directory")
-set(MOZART_COMPILER_DIR "${MOZART_LIB_DIR}/../mozart2-compiler"
-    CACHE PATH "Path to Mozart2 compiler directory")
-
-set(BOOTCOMPILER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2-bootcompiler"
-    CACHE PATH "Path to Mozart2 boot compiler directory")
+set(MOZART_LIB_DIR "${MOZART_DIR}/lib/main")
+set(MOZART_COMPILER_DIR "${MOZART_DIR}/lib/compiler")
 
 set(JAVA "/usr/bin/java"
     CACHE PATH "Java executable")
@@ -35,24 +30,24 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(mozartvm STATIC IMPORTED)
 set_property(TARGET mozartvm PROPERTY
-             IMPORTED_LOCATION "${MOZART_DIR}/build/vm/main/libmozartvm.a")
+             IMPORTED_LOCATION "${MOZART_BUILD_DIR}/vm/vm/main/libmozartvm.a")
 
-include_directories("${MOZART_DIR}/vm/main" "${MOZART_BUILD_DIR}/vm/main")
+include_directories("${MOZART_DIR}/vm/vm/main" "${MOZART_BUILD_DIR}/vm/vm/main")
 
 # Mozart VM Boost library
 
 add_library(mozartvmboost STATIC IMPORTED)
 set_property(TARGET mozartvmboost PROPERTY
              IMPORTED_LOCATION
-             "${MOZART_DIR}/build/boostenv/main/libmozartvmboost.a")
+             "${MOZART_BUILD_DIR}/vm/boostenv/main/libmozartvmboost.a")
 
-include_directories("${MOZART_DIR}/boostenv/main"
-    "${MOZART_BUILD_DIR}/boostenv/main")
+include_directories("${MOZART_DIR}/vm/boostenv/main"
+    "${MOZART_BUILD_DIR}/vm/boostenv/main")
 
 
 # Generate the .cc files using the boot compiler
 
-set(BOOTCOMPILER_JAR "${BOOTCOMPILER_DIR}/target/scala-2.9.1/bootcompiler_2.9.1-2.0-SNAPSHOT-one-jar.jar")
+set(BOOTCOMPILER_JAR "${MOZART_BUILD_DIR}/bootcompiler/bootcompiler.jar")
 set(BOOTCOMPILER_DEFINES -D NO_GUMP)
 
 set(BASE_FUNCTORS
@@ -65,8 +60,8 @@ add_custom_command(
     --baseenv
     -o "${CMAKE_CURRENT_BINARY_DIR}/Base.cc"
     -h "boostenv.hh"
-    -m "${MOZART_BUILD_DIR}/vm/main/"
-    -m "${MOZART_BUILD_DIR}/boostenv/main/"
+    -m "${MOZART_BUILD_DIR}/vm/vm/main/"
+    -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
     ${BOOTCOMPILER_DEFINES}
     ${BASE_FUNCTORS}
@@ -85,7 +80,7 @@ file(GLOB SYS_FUNCTORS
     "${MOZART_LIB_DIR}/cp/RecordC.oz"
     "${MOZART_LIB_DIR}/dp/URL.oz"
     "${MOZART_LIB_DIR}/ap/Application.oz"
-    "${MOZART_DIR}/boostenv/lib/*.oz")
+    "${MOZART_DIR}/vm/boostenv/lib/*.oz")
 
 set(COMPILER_FUNCTORS
     "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
@@ -119,8 +114,8 @@ foreach(functor ${ALL_FUNCTORS})
     COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
       -o "${CMAKE_CURRENT_BINARY_DIR}/${ccfile}"
       -h "boostenv.hh"
-      -m "${MOZART_BUILD_DIR}/vm/main/"
-      -m "${MOZART_BUILD_DIR}/boostenv/main/"
+      -m "${MOZART_BUILD_DIR}/vm/vm/main/"
+      -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
       -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
       ${BOOTCOMPILER_DEFINES}
       "${functor}"
@@ -135,8 +130,8 @@ add_custom_command(
     --linker
     -o "${CMAKE_CURRENT_BINARY_DIR}/LinkerMain.cc"
     -h "boostenv.hh"
-    -m "${MOZART_BUILD_DIR}/vm/main/"
-    -m "${MOZART_BUILD_DIR}/boostenv/main/"
+    -m "${MOZART_BUILD_DIR}/vm/vm/main/"
+    -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
     ${BOOTCOMPILER_DEFINES}
     ${ALL_FUNCTORS}

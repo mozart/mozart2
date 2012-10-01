@@ -5,16 +5,16 @@ This is the bootstrap compiler for [Mozart-Oz v2](https://github.com/mozart/moza
 
 For this reason, a design goal of this bootstrap compiler is to stay minimal. In particular, we will not attempt to perform any optimization of the resulting code.
 
-## Dependencies
+## Getting the sources
 
-*   [Scala](http://www.scala-lang.org/)
-*   [SBT](https://github.com/harrah/xsbt/wiki/Getting-Started-Setup) for the build process
+You will need a [Git](http://git-scm.com/) client to fetch the sources.
+
+    projects$ git clone git://github.com/mozart/mozart2-bootcompiler.git
 
 ## Build instructions
 
-    projects$ git clone git://github.com/mozart/mozart2-bootcompiler.git bootcompiler
-    projects$ cd bootcompiler
-    bootcompiler$ sbt one-jar
+    projects$ cd mozart2-bootcompiler
+    mozart2-bootcompiler$ ./sbt one-jar
 
 ## Usage
 

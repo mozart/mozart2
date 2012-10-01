@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(MOZART)
+project(MOZARTVM)
 
 include(ExternalProject)
 set(ep_base "${CMAKE_BINARY_DIR}/externals")

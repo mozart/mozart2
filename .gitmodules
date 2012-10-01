@@ -1,0 +1,12 @@
+[submodule "vm"]
+	path = vm
+	url = git://github.com/mozart/mozart2-vm.git
+[submodule "bootcompiler"]
+	path = bootcompiler
+	url = git://github.com/mozart/mozart2-bootcompiler.git
+[submodule "lib/main"]
+	path = lib/main
+	url = git://github.com/mozart/mozart2-library.git
+[submodule "lib/compiler"]
+	path = lib/compiler
+	url = git://github.com/mozart/mozart2-compiler.git

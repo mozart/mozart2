@@ -175,6 +175,37 @@ std::pair<char32_t, nativeint> fromUTF(const char32_t* utf, nativeint) {
   return std::make_pair(c, length);
 }
 
+namespace internal {
+  template <size_t i>
+  struct FromUTFWCharT {
+    static std::pair<char32_t, nativeint> call(const wchar_t* utf,
+                                               nativeint length) {
+      static_assert(i != i, "Calling fromUTF(wchar_t) with an unknown wchar_t");
+      return std::make_pair(0, 0);
+    }
+  };
+
+  template <>
+  struct FromUTFWCharT<sizeof(char16_t)> {
+    static std::pair<char32_t, nativeint> call(const wchar_t* utf,
+                                               nativeint length) {
+      return fromUTF(reinterpret_cast<const char16_t*>(utf), length);
+    }
+  };
+
+  template <>
+  struct FromUTFWCharT<sizeof(char32_t)> {
+    static std::pair<char32_t, nativeint> call(const wchar_t* utf,
+                                               nativeint length) {
+      return fromUTF(reinterpret_cast<const char32_t*>(utf), length);
+    }
+  };
+}
+
+std::pair<char32_t, nativeint> fromUTF(const wchar_t* utf, nativeint length) {
+  return internal::FromUTFWCharT<sizeof(wchar_t)>::call(utf, length);
+}
+
 template <class C, class F, class G>
 static void forEachCodePoint(const BaseLString<C>& string,
                              const F& onChar, const G& onError) {

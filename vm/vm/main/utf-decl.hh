@@ -70,6 +70,9 @@ inline std::pair<char32_t, nativeint> fromUTF(const char16_t* utf,
 inline std::pair<char32_t, nativeint> fromUTF(const char32_t* utf,
                                               nativeint length = 1);
 
+inline std::pair<char32_t, nativeint> fromUTF(const wchar_t* utf,
+                                              nativeint length = sizeof(wchar_t));
+
 /**
  * Perform some action for each code point of the string. The function "f"
  * should have the signature

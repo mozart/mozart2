@@ -199,7 +199,9 @@ UnstableNode SmallInt::modValue(Self self, VM vm, nativeint b) {
 
 void SmallInt::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
 //sink << value();  // doesn't seem to work, don't know why.
-  auto str = std::to_string(value());
+  std::stringstream ss;
+  ss << value();
+  auto str = ss.str();
   size_t length = str.length();
   std::unique_ptr<nchar[]> nStr (new nchar[length]);
   std::copy(str.begin(), str.end(), nStr.get());
@@ -207,7 +209,10 @@ void SmallInt::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
 }
 
 nativeint SmallInt::vsLength(Self self, VM vm) {
-  return (nativeint) std::to_string(value()).length();
+  std::stringstream ss;
+  ss << value();
+  auto str = ss.str();
+  return (nativeint) str.length();
 }
 
 }

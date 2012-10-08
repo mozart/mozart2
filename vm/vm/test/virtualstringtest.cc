@@ -7,6 +7,12 @@ using namespace mozart;
 
 static const unsigned char byteStringContent[] = "\x70\x80\x90";
 
+std::string intToString(nativeint value) {
+  std::stringstream stream;
+  stream << value;
+  return stream.str();
+}
+
 class VirtualStringTest : public MozartTest {
 protected:
   UnstableNode testNodes[30];
@@ -62,7 +68,7 @@ protected:
     testNodes[28] = SmallInt::build(vm, std::numeric_limits<nativeint>::min());
     testNodes[29] = ByteString::build(vm, byteStringContent);
 
-    auto s = std::to_string(std::numeric_limits<nativeint>::min());
+    auto s = intToString(std::numeric_limits<nativeint>::min());
     std::copy(s.cbegin(), s.cend(), std::back_inserter(minStr));
   }
 

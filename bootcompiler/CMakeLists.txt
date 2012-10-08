@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(MOZARTBOOTCOMPILER NONE)
 
 set(JAVA "/usr/bin/java"
-    CACHE PATH "Java executable")
+    CACHE FILEPATH "Java executable")
     
 set(SBT_JAVA_OPTS
     -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M

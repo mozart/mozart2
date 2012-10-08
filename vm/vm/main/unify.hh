@@ -39,7 +39,7 @@ void WalkStack::push(VM vm, StableNode* left, StableNode* right) {
 
 void WalkStack::pushArray(VM vm, StaticArray<StableNode> left,
                           StaticArray<StableNode> right, size_t count) {
-  push_front_new(vm, &left[0], &right[0], count);
+  push_front_new(vm, &left[(size_t) 0], &right[(size_t) 0], count);
 }
 
 bool WalkStack::empty() {

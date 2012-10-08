@@ -79,6 +79,15 @@ public:
     return _array[i];
   }
 
+  /** Zero-based access to elements (read-write) */
+  inline
+  T& operator[](int i) {
+#ifdef MOZART_STATICARRAY_WITH_SIZE
+    assert((i >= 0) && ((size_t i) < _size));
+#endif
+    return _array[i];
+  }
+
   /** Convert to a raw array */
   inline
   operator T*() {

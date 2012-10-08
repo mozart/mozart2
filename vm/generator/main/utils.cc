@@ -151,7 +151,7 @@ void printTemplateParameters(llvm::raw_fd_ostream& Out,
         Args->get(i).print(Policy, Out);
       } else if (NTTP->hasDefaultArgument()) {
         Out << " = ";
-        NTTP->getDefaultArgument()->printPretty(Out, Context, 0, Policy,
+        NTTP->getDefaultArgument()->printPretty(Out, 0, Policy,
                                                 Indentation);
       }
     } else if (const TemplateTemplateParmDecl *TTPD =

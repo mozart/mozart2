@@ -12,19 +12,24 @@ set(MOZART_LIB_DIR "${MOZART_DIR}/lib/main")
 set(MOZART_COMPILER_DIR "${MOZART_DIR}/lib/compiler")
 
 set(JAVA "/usr/bin/java"
-    CACHE PATH "Java executable")
+    CACHE FILEPATH "Java executable")
 
 
 # Configure compiler
-set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG ${CMAKE_CXX_FLAGS}")
 
 
 # Boost library
 
-find_package(Boost 1.49 COMPONENTS system thread filesystem REQUIRED)
+find_package(Boost COMPONENTS system thread filesystem chrono REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
+
+if(MINGW)
+  # Work around a bug in MinGW
+  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endif()
 
 # Mozart VM library
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(MOZARTVM)
 
 include(ExternalProject)
@@ -19,7 +19,7 @@ set(MOZART_GENERATOR_FLAGS "" CACHE STRING
 
 add_subdirectory(generator)
 
-set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
 
 add_subdirectory(vm)
 add_subdirectory(boostenv)

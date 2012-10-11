@@ -3,7 +3,7 @@ set(CLANG_BUILD_DIR "${LLVM_BUILD_DIR}/tools/clang")
 
 add_definitions(-D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wno-enum-compare -std=gnu++0x")
+set(CMAKE_CXX_FLAGS "-Wall -Wno-enum-compare -Wno-strict-aliasing -std=gnu++0x ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   "${LLVM_SRC_DIR}/include"

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(testmozart)
 
 
@@ -16,10 +16,17 @@ set(JAVA "/usr/bin/java"
 
 
 # Configure compiler
-set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -O3 -DNDEBUG ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
 
 
 # Boost library
+
+set(MOZART_BOOST_USE_STATIC_LIBS OFF
+    CACHE BOOL "Use the static libraries of Boost")
+
+if(${MOZART_BOOST_USE_STATIC_LIBS})
+  set(Boost_USE_STATIC_LIBS ON)
+endif()
 
 find_package(Boost COMPONENTS system thread filesystem chrono REQUIRED)
 
@@ -148,3 +155,7 @@ add_custom_command(
 
 add_executable(testmozart ${ALL_CCFILES})
 target_link_libraries(testmozart mozartvmboost mozartvm ${Boost_LIBRARIES})
+
+if(NOT MINGW)
+  target_link_libraries(testmozart pthread)
+endif()

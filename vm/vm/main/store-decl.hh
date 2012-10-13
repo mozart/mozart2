@@ -28,7 +28,7 @@
 #include "core-forward-decl.hh"
 #include "type-decl.hh"
 #include "memword.hh"
-#include "storage.hh"
+#include "storage-decl.hh"
 
 #include <string>
 

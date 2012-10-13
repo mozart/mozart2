@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __STORAGE_H
-#define __STORAGE_H
+#ifndef __STORAGE_DECL_H
+#define __STORAGE_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -133,4 +133,4 @@ public:
 
 }
 
-#endif // __STORAGE_H
+#endif // __STORAGE_DECL_H

@@ -47,6 +47,8 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
 
   _propertyRegistry.create(this);
 
+  _cleanupList = nullptr;
+
   _envUseDynamicPreemption = environment.useDynamicPreemption();
   _preemptRequested = false;
   _exitRunRequested = false;
@@ -56,6 +58,10 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   initialize();
 
   _propertyRegistry.initialize(this);
+}
+
+VirtualMachine::~VirtualMachine() {
+  doCleanup();
 }
 
 bool VirtualMachine::testPreemption() {
@@ -89,6 +95,12 @@ void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
 
 void VirtualMachine::initialize() {
   coreatoms.initialize(this, atomTable);
+}
+
+void VirtualMachine::doGC() {
+  auto cleanupList = acquireCleanupList();
+  gc.doGC();
+  doCleanup(cleanupList);
 }
 
 void VirtualMachine::beforeGR(GR gr) {
@@ -152,6 +164,19 @@ void VirtualMachine::startGC(GC gc) {
 
   // Environmental roots
   environment.gCollect(gc);
+}
+
+VMCleanupListNode* VirtualMachine::acquireCleanupList() {
+  auto result = _cleanupList;
+  _cleanupList = nullptr;
+  return result;
+}
+
+void VirtualMachine::doCleanup(VMCleanupListNode* cleanupList) {
+  while (cleanupList != nullptr) {
+    cleanupList->handler(this);
+    cleanupList = cleanupList->next;
+  }
 }
 
 }

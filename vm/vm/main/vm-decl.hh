@@ -100,6 +100,9 @@ public:
 
   VirtualMachine(const VirtualMachine& src) = delete;
 
+  inline
+  ~VirtualMachine();
+
   void* malloc(size_t size) {
     return memoryManager.malloc(size);
   }
@@ -118,6 +121,16 @@ public:
   void deleteStaticArray(StaticArray<T> array, size_t size) {
     void* memory = static_cast<void*>((T*) array);
     free(memory, size * sizeof(T));
+  }
+
+  void onCleanup(const VMCleanupProc& handler) {
+    onCleanup(new (this) VMCleanupListNode, handler);
+  }
+
+  void onCleanup(VMCleanupListNode* node, const VMCleanupProc& handler) {
+    node->handler = handler;
+    node->next = _cleanupList;
+    _cleanupList = node;
   }
 
   run_return_type run();
@@ -235,6 +248,9 @@ private:
   void initialize();
 
   inline
+  void doGC();
+
+  inline
   void beforeGR(GR gr);
 
   inline
@@ -242,6 +258,16 @@ private:
 
   inline
   void startGC(GC gc);
+
+  inline
+  VMCleanupListNode* acquireCleanupList();
+
+  inline
+  void doCleanup(VMCleanupListNode* cleanupList);
+
+  void doCleanup() {
+    doCleanup(acquireCleanupList());
+  }
 
   ThreadPool threadPool;
   AtomTable atomTable;
@@ -261,6 +287,7 @@ private:
   PropertyRegistry _propertyRegistry;
 
   RunnableList aliveThreads;
+  VMCleanupListNode* _cleanupList;
 
   GarbageCollector gc;
   SpaceCloner sc;

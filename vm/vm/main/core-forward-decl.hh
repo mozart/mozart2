@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <cstdint>
 #include <ostream>
+#include <functional>
 
 #define MOZART_NORETURN __attribute__((noreturn))
 
@@ -149,6 +150,16 @@ public:
   }
 private:
   Space* space;
+};
+
+typedef std::function<void(VM)> VMCleanupProc;
+
+/** Node of a linked list of things to do on cleanup
+ *  Cleanup is done after every GC and on VM termination
+ */
+struct VMCleanupListNode {
+  VMCleanupProc handler;
+  VMCleanupListNode* next;
 };
 
 }

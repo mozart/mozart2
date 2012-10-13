@@ -36,7 +36,7 @@ VirtualMachine::run_return_type VirtualMachine::run() {
 
     if (_gcRequested || gc.isGCRequired()) {
       getTopLevelSpace()->install();
-      gc.doGC();
+      doGC();
       _gcRequested = false;
     }
 

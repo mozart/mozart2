@@ -22,45 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __STORAGE_H
+#define __STORAGE_H
 
 #include "mozartcore.hh"
 
-#include "coredatatypes.hh"
+#ifndef MOZART_GENERATOR
 
-#include "builtins.hh"
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "datatype.hh"
-#include "dynbuilders.hh"
-#include "exceptions.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "lstring.hh"
-#include "properties.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "storage.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "typeinfo.hh"
-#include "unify.hh"
-#include "utf.hh"
-#include "utils.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
-#include "protect.hh"
+#include <iostream>
 
-#include "emulate.hh"
+namespace mozart {
 
-#if !defined(MOZART_GENERATOR) && !defined(MOZART_BUILTIN_GENERATOR)
-namespace mozart { namespace builtins {
-#include "mozartbuiltins.hh"
-} }
-#endif
+////////////////////////////
+// ImplAndCleanupListNode //
+////////////////////////////
 
-#endif // __MOZART_H
+template<class T>
+template<class... Args>
+ImplAndCleanupListNode<T>::ImplAndCleanupListNode(VM vm, Args&&... args):
+  impl(vm, std::forward<Args>(args)...) {
+
+  vm->onCleanup(&this->cleanupListNode, [this] (VM) { impl.~T(); });
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __STORAGE_H

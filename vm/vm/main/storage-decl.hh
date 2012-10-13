@@ -31,7 +31,67 @@
 #include "memword.hh"
 #include "arrays.hh"
 
+#include <type_traits>
+
+// Hacky helper (see below) - officially UB
+namespace std {
+  template<typename> struct has_trivial_destructor;
+  template<typename> struct is_trivially_destructible;
+}
+
 namespace mozart {
+
+/* First a hackish helper to support compilers and std libs which still use
+ * has_trivial_destructor instead of is_trivially_destructible. */
+
+template<typename T>
+class have_cxx11_trait_helper {
+private:
+  template<typename T2, bool = std::is_trivially_destructible<T2>::type::value>
+  static std::true_type test(int);
+
+  template<typename T2, bool = std::has_trivial_destructor<T2>::type::value>
+  static std::false_type test(...);
+
+public:
+  typedef decltype(test<T>(0)) type;
+};
+
+template<typename T>
+struct have_cxx11_trait : have_cxx11_trait_helper<T>::type {
+};
+
+template<typename T>
+using is_trivially_destructible =
+  typename std::conditional<have_cxx11_trait<T>::value,
+                            std::is_trivially_destructible<T>,
+                            std::has_trivial_destructor<T>>::type;
+
+// Now our stuff
+
+template<typename T>
+struct ImplAndCleanupListNode {
+  template<class... Args>
+  inline
+  ImplAndCleanupListNode(VM vm, Args&&... args);
+
+  T impl;
+  VMCleanupListNode cleanupListNode;
+};
+
+template<typename T>
+struct DerefPotentialImplAndCleanup {
+  static T& deref(T& impl) {
+    return impl;
+  }
+};
+
+template<typename T>
+struct DerefPotentialImplAndCleanup<ImplAndCleanupListNode<T>> {
+  static T& deref(ImplAndCleanupListNode<T>& implAndCleanupListNode) {
+    return implAndCleanupListNode.impl;
+  }
+};
 
 template<class I, class E>
 class ImplWithArray {
@@ -75,6 +135,10 @@ public:
 template<class T, class U>
 class AccessorHelper {
 public:
+  // StoredAs types must be trivially destructible
+  static_assert(is_trivially_destructible<U>::value,
+                "The type U in StoredAs<U> must be trivially destructible.");
+
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
@@ -89,22 +153,32 @@ public:
 
 template<class T>
 class AccessorHelper<T, DefaultStorage<T>> {
+private:
+  typedef typename std::conditional<
+    is_trivially_destructible<T>::value,
+    T, ImplAndCleanupListNode<T>>::type ActualT;
 public:
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
     type = T::type();
-    T* val = new (vm) T(vm, std::forward<Args>(args)...);
-    value.init<T*>(vm, val);
+    ActualT* val = new (vm) ActualT(vm, std::forward<Args>(args)...);
+    value.init<ActualT*>(vm, val);
   }
 
   static T& get(MemWord value) {
-    return *(value.get<T*>());
+    return DerefPotentialImplAndCleanup<ActualT>::deref(
+      *(value.get<ActualT*>()));
   }
 };
 
 template<class T, class E>
 class AccessorHelper<T, ImplWithArray<T, E>> {
 public:
+  // Limitation of the current implementation
+  static_assert(
+    is_trivially_destructible<T>::value && is_trivially_destructible<E>::value,
+    "The types T and E in T: StoredWithArrayOfAs<U> must be trivially destructible.");
+
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm,
                    size_t elemCount, Args&&... args) {

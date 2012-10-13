@@ -68,8 +68,7 @@ private:
 
   template<class T, class... Args>
   void make(VM vm, Args&&... args) {
-    typedef Accessor<T, typename Storage<T>::Type> Access;
-    Access::init(data.type, data.value, vm, std::forward<Args>(args)...);
+    Accessor<T>::init(data.type, data.value, vm, std::forward<Args>(args)...);
   }
 
   Type type() {
@@ -360,9 +359,6 @@ public:
  */
 template <class T>
 class BaseSelf {
-protected:
-  typedef typename Storage<T>::Type StorageType;
-  typedef Accessor<T, StorageType> Access;
 public:
   BaseSelf(RichNode node) : _node(node) {}
 
@@ -375,8 +371,8 @@ public:
     return _node;
   }
 protected:
-  auto getBase() -> decltype(Access::get(std::declval<MemWord>())) {
-    return Access::get(_node.value());
+  auto getBase() -> decltype(Accessor<T>::get(std::declval<MemWord>())) {
+    return Accessor<T>::get(_node.value());
   }
 private:
   RichNode _node;
@@ -431,7 +427,7 @@ struct ExtractImplWithArray<ImplWithArray<I, E>> {
 template <class T>
 class ImplWithArraySelf: public BaseSelf<T> {
 private:
-  typedef typename BaseSelf<T>::StorageType StorageType;
+  typedef typename Storage<T>::Type StorageType;
   typedef typename ExtractImplWithArray<StorageType>::Elem Elem;
 public:
   ImplWithArraySelf(RichNode node) : BaseSelf<T>(node) {}

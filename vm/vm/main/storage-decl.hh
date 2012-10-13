@@ -51,8 +51,8 @@ public:
     return StaticArray<E>(getRawArray(), size);
   }
 private:
-  template <class T, class U>
-  friend class Accessor;
+  template <typename T, typename U>
+  friend class AccessorHelper;
 
   E* getRawArray() {
     return static_cast<E*>(static_cast<void*>(
@@ -73,7 +73,7 @@ public:
 };
 
 template<class T, class U>
-class Accessor {
+class AccessorHelper {
 public:
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
@@ -88,7 +88,7 @@ public:
 };
 
 template<class T>
-class Accessor<T, DefaultStorage<T>> {
+class AccessorHelper<T, DefaultStorage<T>> {
 public:
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm, Args&&... args) {
@@ -103,7 +103,7 @@ public:
 };
 
 template<class T, class E>
-class Accessor<T, ImplWithArray<T, E>> {
+class AccessorHelper<T, ImplWithArray<T, E>> {
 public:
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm,
@@ -130,6 +130,9 @@ public:
     return *(value.get<T*>());
   }
 };
+
+template <typename T>
+using Accessor = AccessorHelper<T, typename Storage<T>::Type>;
 
 }
 

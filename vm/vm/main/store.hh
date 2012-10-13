@@ -267,11 +267,7 @@ StableNode* RichNode::dereferenceLoop(StableNode* node) {
 }
 
 StableNode* RichNode::destOf(Node* node) {
-  // TODO Can we get away without this ugly thing?
-  typedef typename Storage<Reference>::Type StorageType;
-  typedef Accessor<Reference, StorageType> Access;
-
-  return Access::get(node->value()).dest();
+  return Accessor<Reference>::get(node->value()).dest();
 }
 
 }

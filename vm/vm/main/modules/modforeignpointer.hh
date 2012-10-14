@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,58 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __MODFOREIGNPOINTER_H
+#define __MODFOREIGNPOINTER_H
 
-#include "mozartcore.hh"
+#include "../mozartcore.hh"
 
-#include "datatypeshelpers.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+namespace mozart {
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "foreignpointer.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+namespace builtins {
 
-#endif // __COREDATATYPES_H
+///////////////////////////
+// ForeignPointer module //
+///////////////////////////
+
+class ModForeignPointer: public Module {
+public:
+  ModForeignPointer(): Module("ForeignPointer") {}
+
+  class Is: public Builtin<Is> {
+  public:
+    Is(): Builtin("is") {}
+
+    void operator()(VM vm, In value, Out result) {
+      if (value.isTransient())
+        waitFor(vm, value);
+
+      result = build(vm, value.is<ForeignPointer>());
+    }
+  };
+
+  class ToInt: public Builtin<ToInt> {
+  public:
+    ToInt(): Builtin("toInt") {}
+
+    void operator()(VM vm, In value, Out result) {
+      if (value.is<ForeignPointer>()) {
+        auto pointer = value.as<ForeignPointer>().getVoidPointer();
+        result = build(vm, reinterpret_cast<nativeint>(pointer.get()));
+      } else if (value.isTransient()) {
+        waitFor(vm, value);
+      } else {
+        raiseTypeError(vm, MOZART_STR("ForeignPointer"), value);
+      }
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODFOREIGNPOINTER_H

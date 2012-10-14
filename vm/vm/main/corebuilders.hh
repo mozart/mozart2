@@ -133,6 +133,12 @@ UnstableNode build(VM vm, builtins::BaseBuiltin& builtin) {
   return BuiltinProcedure::build(vm, builtin);
 }
 
+template <class T>
+inline
+UnstableNode build(VM vm, const std::shared_ptr<T>& value) {
+  return ForeignPointer::build(vm, value);
+}
+
 inline
 UnstableNode build(VM vm, UnstableNode&& node) {
   return std::move(node);

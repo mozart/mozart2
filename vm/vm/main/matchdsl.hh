@@ -164,6 +164,8 @@ namespace patternmatching {
  */
 template <class T>
 struct PrimitiveTypeToOzType {
+  /// Defined only for the default thing - can be used in SFINAE
+  typedef int no_result;
 };
 
 template <>
@@ -197,34 +199,75 @@ struct PrimitiveTypeToOzType<Runnable*> {
 };
 
 template <class T>
-inline
-bool ozValueToPrimitiveValue(VM vm, RichNode value, T& primitive) {
-  typedef typename PrimitiveTypeToOzType<T>::result OzType;
+struct OzValueToPrimitiveValue {
+  static bool call(VM vm, RichNode value, T& primitive) {
+    typedef typename PrimitiveTypeToOzType<T>::result OzType;
 
-  if (value.is<OzType>()) {
-    primitive = value.as<OzType>().value();
-    return true;
-  } else {
-    return false;
-  }
-}
-
-template <>
-inline
-bool ozValueToPrimitiveValue(VM vm, RichNode value, char& primitive) {
-  if (value.is<SmallInt>()) {
-    nativeint intValue = value.as<SmallInt>().value();
-
-    if ((intValue >= 0) && (intValue < 256)) {
-      primitive = (char) intValue;
+    if (value.is<OzType>()) {
+      primitive = value.as<OzType>().value();
       return true;
     } else {
       return false;
     }
-  } else {
-    return false;
   }
+};
+
+template <class T>
+inline
+bool ozValueToPrimitiveValue(VM vm, RichNode value, T& primitive) {
+  return OzValueToPrimitiveValue<T>::call(vm, value, primitive);
 }
+
+template <>
+struct OzValueToPrimitiveValue<char> {
+  static bool call(VM vm, RichNode value, char& primitive) {
+    if (value.is<SmallInt>()) {
+      nativeint intValue = value.as<SmallInt>().value();
+
+      if ((intValue >= 0) && (intValue < 256)) {
+        primitive = (char) intValue;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+};
+
+template <class U>
+struct OzValueToPrimitiveValue<std::shared_ptr<U> > {
+private:
+  typedef std::shared_ptr<U> T;
+
+public:
+  template <typename W = T,
+            typename = typename PrimitiveTypeToOzType<W>::result>
+  static bool call(VM vm, RichNode value, T& primitive, int dummy = 0) {
+    // Duplicate of the original OzValueToPrimitiveValue<T>
+    typedef typename PrimitiveTypeToOzType<T>::result OzType;
+
+    if (value.is<OzType>()) {
+      primitive = value.as<OzType>().value();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  template <typename W = T,
+            typename = typename PrimitiveTypeToOzType<W>::no_result>
+  static bool call(VM vm, RichNode value, T& primitive, bool dummy = false) {
+    if (value.is<ForeignPointer>() &&
+        value.as<ForeignPointer>().isPointer<U>()) {
+      primitive = value.as<ForeignPointer>().value<U>();
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
 
 namespace internal {
 

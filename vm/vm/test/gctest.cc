@@ -196,4 +196,123 @@ TEST_F(GCTest, ProtectTwiceUncopyable) {
     ozUnprotect(vm, protected_2);
 }
 
+class InstanceCounter {
+public:
+  InstanceCounter(int& instanceCount): _instanceCount(&instanceCount) {
+    ++*_instanceCount;
+  }
 
+  ~InstanceCounter() {
+    --*_instanceCount;
+  }
+private:
+  int* _instanceCount;
+};
+
+TEST_F(GCTest, InstanceCounterSanityTest) {
+  // Sanity test for InstanceCounter
+
+  int instanceCount = 0;
+
+  auto firstInstance = std::make_shared<InstanceCounter>(instanceCount);
+  EXPECT_EQ(1, instanceCount);
+
+  auto secondInstance = std::make_shared<InstanceCounter>(instanceCount);
+  EXPECT_EQ(2, instanceCount);
+
+  firstInstance.reset();
+  EXPECT_EQ(1, instanceCount);
+
+  secondInstance.reset();
+  EXPECT_EQ(0, instanceCount);
+}
+
+TEST_F(GCTest, DestroyForeignPointerWhenNotReferenced) {
+  int instanceCount = 0;
+
+  auto sharedInstance = std::make_shared<InstanceCounter>(instanceCount);
+  auto weakInstance = std::weak_ptr<InstanceCounter>(sharedInstance);
+
+  UnstableNode foreign = build(vm, sharedInstance);
+  EXPECT_EQ(ForeignPointer::type(), RichNode(foreign).type());
+
+  // 1 reference in sharedInstance, and 1 in the ForeignPointer
+  EXPECT_EQ(2, weakInstance.use_count());
+
+  sharedInstance.reset();
+
+  // 1 reference in ForeignPointer
+  EXPECT_EQ(1, weakInstance.use_count());
+  EXPECT_EQ(1, instanceCount);
+
+  vm->requestGC();
+  vm->run();
+
+  /* Since there were no reference to `foreign`, the instance should have
+   * been destroyed. */
+
+  EXPECT_EQ(0, weakInstance.use_count());
+  EXPECT_EQ(0, instanceCount);
+}
+
+TEST_F(GCTest, KeepForeignPointerWhenReferenced) {
+  int instanceCount = 0;
+
+  auto sharedInstance = std::make_shared<InstanceCounter>(instanceCount);
+  auto weakInstance = std::weak_ptr<InstanceCounter>(sharedInstance);
+
+  UnstableNode foreign = build(vm, sharedInstance);
+  EXPECT_EQ(ForeignPointer::type(), RichNode(foreign).type());
+
+  // 1 reference in sharedInstance, and 1 in the ForeignPointer
+  EXPECT_EQ(2, weakInstance.use_count());
+
+  sharedInstance.reset();
+
+  // 1 reference in ForeignPointer
+  EXPECT_EQ(1, weakInstance.use_count());
+  EXPECT_EQ(1, instanceCount);
+
+  // We protect `foreign` to ensure it is kept by GC
+  auto protectedForeign = ozProtect(vm, foreign);
+
+  vm->requestGC();
+  vm->run();
+
+  // There must still be 1 reference in the ForeignPointer
+  EXPECT_EQ(1, weakInstance.use_count());
+  EXPECT_EQ(1, instanceCount);
+
+  // Now we release it
+  ozUnprotect(vm, protectedForeign);
+
+  vm->requestGC();
+  vm->run();
+
+  /* Since there were no reference to `foreign`, the instance should have
+   * been destroyed. */
+
+  EXPECT_EQ(0, weakInstance.use_count());
+  EXPECT_EQ(0, instanceCount);
+}
+
+TEST_F(GCTest, ForeignPointerMatchesGoodType) {
+  using namespace ::mozart::patternmatching;
+
+  UnstableNode foreign0 = build(vm, std::make_shared<int>(5));
+  RichNode foreign = foreign0;
+
+  EXPECT_EQ(ForeignPointer::type(), foreign.type());
+  EXPECT_TRUE(foreign.as<ForeignPointer>().isPointer<int>());
+  EXPECT_FALSE(foreign.as<ForeignPointer>().isPointer<bool>());
+
+  std::shared_ptr<int> sharedInt;
+  if (matches(vm, foreign, capture(sharedInt))) {
+    EXPECT_EQ(5, *sharedInt);
+  } else {
+    ADD_FAILURE();
+  }
+
+  std::shared_ptr<double> sharedDouble;
+  EXPECT_FALSE(matches(vm, foreign, capture(sharedDouble)));
+}

@@ -54,5 +54,6 @@
 #include "modules/modcompilersupport.hh"
 #include "modules/moddebug.hh"
 #include "modules/modproperty.hh"
+#include "modules/modforeignpointer.hh"
 
 #endif // __COREMODULES_H

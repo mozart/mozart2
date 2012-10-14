@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef __FOREIGNPOINTER_H
+#define __FOREIGNPOINTER_H
 
 #include "mozartcore.hh"
 
-#include "datatypeshelpers.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference.hh"
-#include "grtypes.hh"
-#include "patmattypes.hh"
+namespace mozart {
 
-#include "array.hh"
-#include "atom.hh"
-#include "boolean.hh"
-#include "bytestring.hh"
-#include "callables.hh"
-#include "cell.hh"
-#include "codearea.hh"
-#include "dictionary.hh"
-#include "float.hh"
-#include "foreignpointer.hh"
-#include "names.hh"
-#include "objects.hh"
-#include "port.hh"
-#include "records.hh"
-#include "reifiedspace.hh"
-#include "reifiedthread.hh"
-#include "smallint.hh"
-#include "string.hh"
-#include "unit.hh"
-#include "variables.hh"
+////////////////////
+// ForeignPointer //
+////////////////////
 
-#endif // __COREDATATYPES_H
+#include "ForeignPointer-implem.hh"
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __FOREIGNPOINTER_H

@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,66 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __FOREIGNPOINTER_DECL_H
+#define __FOREIGNPOINTER_DECL_H
 
 #include "mozartcore-decl.hh"
 
-#include "datatypeshelpers-decl.hh"
+#include <typeinfo>
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
+////////////////////
+// ForeignPointer //
+////////////////////
 
-#endif // __COREDATATYPES_DECL_H
+class ForeignPointer;
+
+#ifndef MOZART_GENERATOR
+#include "ForeignPointer-implem-decl.hh"
+#endif
+
+/**
+ * Shared pointer to some external memory
+ */
+class ForeignPointer: public DataType<ForeignPointer> {
+public:
+  typedef SelfType<ForeignPointer>::Self Self;
+public:
+  template <class T>
+  ForeignPointer(VM vm, const std::shared_ptr<T>& p):
+    _pointer(std::static_pointer_cast<void>(p)), _pointerType(typeid(T)) {}
+
+  ForeignPointer(VM vm, GR gr, Self from):
+    _pointer(std::move(from->_pointer)), _pointerType(from->_pointerType) {}
+public:
+  template <class T>
+  std::shared_ptr<T> value() {
+    assert(typeid(T) == _pointerType);
+    return std::static_pointer_cast<T>(_pointer);
+  }
+
+  std::shared_ptr<void> getVoidPointer() {
+    return _pointer;
+  }
+
+  const std::type_info& pointerType() {
+    return _pointerType;
+  }
+
+  template <class T>
+  bool isPointer() {
+    return typeid(T) == _pointerType;
+  }
+private:
+  std::shared_ptr<void> _pointer;
+  const std::type_info& _pointerType;
+};
+
+#ifndef MOZART_GENERATOR
+#include "ForeignPointer-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __FOREIGNPOINTER_DECL_H

@@ -426,7 +426,10 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     if (!method->function->getResultType().getTypePtr()->isVoidType())
       to << "return ";
 
-    to << _selfArrow << method->name << "(";
+    to << _selfArrow << method->name;
+    if (method->funTemplate != nullptr)
+      printActualTemplateParameters(to, method->funTemplate->getTemplateParameters());
+    to << "(";
 
     if (method->hasSelfParam) {
       to << "_self";

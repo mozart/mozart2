@@ -83,6 +83,10 @@ void printTemplateParameters(llvm::raw_fd_ostream& Out,
   const clang::TemplateParameterList *Params,
   const clang::TemplateArgumentList *Args = 0);
 
+void printActualTemplateParameters(llvm::raw_fd_ostream& Out,
+  const clang::TemplateParameterList *Params,
+  const clang::TemplateArgumentList *Args = 0);
+
 void parseFunction(const clang::FunctionDecl* function,
                    std::string& name, std::string& resultType,
                    std::string& formalParams, std::string& actualParams,

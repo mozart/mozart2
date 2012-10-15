@@ -29,7 +29,6 @@
 
 #include "boostenv-decl.hh"
 #include "boostenvtcp-decl.hh"
-#include "boostenvdatatypes-decl.hh"
 
 #include <iostream>
 
@@ -317,7 +316,7 @@ public:
 
       try {
         auto acceptor = TCPAcceptor::create(BoostBasedVM::forVM(vm), endpoint);
-        result = OzTCPAcceptor::build(vm, acceptor);
+        result = build(vm, acceptor);
       } catch (const boost::system::system_error& error) {
         raiseSystemError(vm, error);
       }

@@ -28,7 +28,6 @@
 #include "boostenv-decl.hh"
 
 #include "boostenvtcp.hh"
-#include "boostenvdatatypes.hh"
 
 #ifndef MOZART_GENERATOR
 

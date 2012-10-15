@@ -28,7 +28,6 @@
 #include "boostenvtcp-decl.hh"
 
 #include "boostenv-decl.hh"
-#include "boostenvdatatypes-decl.hh"
 
 #ifndef MOZART_GENERATOR
 
@@ -55,7 +54,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
         if (!error) {
           _environment.postVMEvent([=] () {
             _environment.bindAndReleaseAsyncIOFeedbackNode(
-              statusNode, OzTCPConnection::build(_environment.vm, self));
+              statusNode, build(_environment.vm, self));
           });
         } else {
           _environment.postVMEvent([=] () {
@@ -154,7 +153,7 @@ void TCPAcceptor::startAsyncAccept(const ProtectedNode& connectionNode) {
     if (!error) {
       _environment.postVMEvent([=] () {
         _environment.bindAndReleaseAsyncIOFeedbackNode(
-          connectionNode, OzTCPConnection::build(_environment.vm, connection));
+          connectionNode, build(_environment.vm, connection));
       });
     } else if (error == boost::asio::error::operation_aborted) {
       _environment.postVMEvent([=] () {

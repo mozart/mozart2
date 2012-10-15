@@ -47,6 +47,7 @@ require
    Boot_Thread          at 'x-oz://boot/Thread'
    Boot_Exception       at 'x-oz://boot/Exception'
    Boot_Time            at 'x-oz://boot/Time'
+   Boot_ForeignPointer  at 'x-oz://boot/ForeignPointer'
    Boot_ByteString      at 'x-oz://boot/ByteString'
    Boot_System          at 'x-oz://boot/System'
 
@@ -300,7 +301,7 @@ prepare
    %%
    %% ForeignPointer
    %%
-   IsForeignPointer = fun {$ X} false end
+   IsForeignPointer = Boot_ForeignPointer.is
 
    %%
    %% Thread

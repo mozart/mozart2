@@ -88,32 +88,6 @@ void BoostBasedVM::postVMEvent(std::function<void()> callback) {
   _conditionWorkToDoInVM.notify_all();
 }
 
-nativeint BoostBasedVM::registerFile(std::FILE* file) {
-  nativeint result = 0;
-  while (openedFiles.count(result) != 0)
-    result++;
-
-  openedFiles[result] = file;
-  return result;
-}
-
-void BoostBasedVM::unregisterFile(nativeint fd) {
-  openedFiles.erase(fd);
-}
-
-std::FILE* BoostBasedVM::getFile(nativeint fd) {
-  auto iter = openedFiles.find(fd);
-
-  if (iter != openedFiles.end())
-    return iter->second;
-  else
-    raise(vm, MOZART_STR("system"), MOZART_STR("invalidfd"), fd);
-}
-
-std::FILE* BoostBasedVM::getFile(RichNode fd) {
-  return getFile(getArgument<nativeint>(vm, fd, MOZART_STR("filedesc")));
-}
-
 ///////////////
 // Utilities //
 ///////////////

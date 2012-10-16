@@ -104,6 +104,52 @@ public:
 
   // File I/O
 
+private:
+  class WrappedFile {
+  public:
+    WrappedFile(std::FILE* file): _file(file), _closed(false) {
+      assert(file != nullptr);
+    }
+
+    ~WrappedFile() {
+      close();
+    }
+
+    std::FILE* file() {
+      return _file;
+    }
+
+    bool isClosed() {
+      return _closed;
+    }
+
+    void close() {
+      if (!_closed) {
+        // Never actually close standard I/O
+        if ((_file != stdin) && (_file != stdout) && (_file != stderr))
+          std::fclose(_file);
+        _file = nullptr;
+        _closed = true;
+      }
+    }
+  private:
+    std::FILE* _file;
+    bool _closed;
+  };
+
+  static WrappedFile* getFileArgument(VM vm, RichNode arg) {
+    auto wrappedFile = getPointerArgument<WrappedFile>(vm, arg,
+                                                       MOZART_STR("file"));
+
+    if (wrappedFile->isClosed()) {
+      raiseSystem(vm, MOZART_STR("os"), MOZART_STR("os"),
+                  MOZART_STR("close"), 9, MOZART_STR("Bad filedescriptor"));
+    }
+
+    return wrappedFile;
+  }
+
+public:
   class GetCWD: public Builtin<GetCWD> {
   public:
     GetCWD(): Builtin("getCWD") {}
@@ -143,7 +189,7 @@ public:
       if (file == nullptr)
         raiseLastOSError(vm);
 
-      result = build(vm, BoostBasedVM::forVM(vm).registerFile(file));
+      result = build(vm, std::make_shared<WrappedFile>(file));
     }
   };
 
@@ -151,9 +197,9 @@ public:
   public:
     Fread(): Builtin("fread") {}
 
-    void operator()(VM vm, In fd, In count, In end,
+    void operator()(VM vm, In fileNode, In count, In end,
                     Out actualCount, Out result) {
-      auto file = BoostBasedVM::forVM(vm).getFile(fd);
+      auto file = getFileArgument(vm, fileNode)->file();
       auto intCount = getArgument<nativeint>(vm, count, MOZART_STR("integer"));
 
       if (intCount <= 0) {
@@ -190,8 +236,8 @@ public:
   public:
     Fwrite(): Builtin("fwrite") {}
 
-    void operator()(VM vm, In fd, In data, Out writtenCount) {
-      auto file = BoostBasedVM::forVM(vm).getFile(fd);
+    void operator()(VM vm, In fileNode, In data, Out writtenCount) {
+      auto file = getFileArgument(vm, fileNode)->file();
       size_t size = ozListLength(vm, data);
 
       if (size == 0)
@@ -211,10 +257,10 @@ public:
   public:
     Fseek(): Builtin("fseek") {}
 
-    void operator()(VM vm, In fd, In offset, In whence, Out where) {
+    void operator()(VM vm, In fileNode, In offset, In whence, Out where) {
       using namespace patternmatching;
 
-      auto file = BoostBasedVM::forVM(vm).getFile(fd);
+      auto file = getFileArgument(vm, fileNode)->file();
       auto intOffset = getArgument<nativeint>(vm, offset, MOZART_STR("integer"));
 
       int intWhence;
@@ -242,22 +288,9 @@ public:
   public:
     Fclose(): Builtin("fclose") {}
 
-    void operator()(VM vm, In fd) {
-      BoostBasedVM& env = BoostBasedVM::forVM(vm);
-
-      auto intfd = getArgument<nativeint>(vm, fd, MOZART_STR("filedesc"));
-
-      // Never actually close standard I/O
-      if ((intfd == env.fdStdin) || (intfd == env.fdStdout) ||
-          (intfd == env.fdStderr))
-        return;
-
-      auto file = env.getFile(intfd);
-
-      if (std::fclose(file) != 0)
-        raiseLastOSError(vm);
-
-      env.unregisterFile(intfd);
+    void operator()(VM vm, In fileNode) {
+      auto wrappedFile = getFileArgument(vm, fileNode);
+      wrappedFile->close();
     }
   };
 
@@ -266,7 +299,7 @@ public:
     Stdin(): Builtin("stdin") {}
 
     void operator()(VM vm, Out result) {
-      result = build(vm, BoostBasedVM::forVM(vm).fdStdin);
+      result = build(vm, std::make_shared<WrappedFile>(stdin));
     }
   };
 
@@ -275,7 +308,7 @@ public:
     Stdout(): Builtin("stdout") {}
 
     void operator()(VM vm, Out result) {
-      result = build(vm, BoostBasedVM::forVM(vm).fdStdout);
+      result = build(vm, std::make_shared<WrappedFile>(stdout));
     }
   };
 
@@ -284,7 +317,7 @@ public:
     Stderr(): Builtin("stderr") {}
 
     void operator()(VM vm, Out result) {
-      result = build(vm, BoostBasedVM::forVM(vm).fdStderr);
+      result = build(vm, std::make_shared<WrappedFile>(stderr));
     }
   };
 

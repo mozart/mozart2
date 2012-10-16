@@ -125,21 +125,6 @@ public:
   inline
   void postVMEvent(std::function<void()> callback);
 
-// Internal file descriptors management
-
-public:
-  inline
-  nativeint registerFile(std::FILE* file);
-
-  inline
-  void unregisterFile(nativeint fd);
-
-  inline
-  std::FILE* getFile(nativeint fd);
-
-  inline
-  std::FILE* getFile(RichNode fd);
-
 // Reference to the virtual machine
 private:
   VirtualMachine virtualMachine;
@@ -174,14 +159,6 @@ private:
 // IO-driven events that must work with the VM store
 private:
   std::queue<std::function<void()> > _vmEventsCallbacks;
-
-// File I/O
-private:
-  std::map<nativeint, std::FILE*> openedFiles;
-public:
-  nativeint fdStdin;
-  nativeint fdStdout;
-  nativeint fdStderr;
 };
 
 ///////////////

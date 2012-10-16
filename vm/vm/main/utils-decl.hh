@@ -43,6 +43,14 @@ template <class T>
 inline
 T getArgument(VM vm, RichNode argValue);
 
+template <class T>
+inline
+T* getPointerArgument(VM vm, RichNode argValue, const nchar* expectedType);
+
+template <class T>
+inline
+T* getPointerArgument(VM vm, RichNode argValue);
+
 inline
 void requireFeature(VM vm, RichNode feature);
 

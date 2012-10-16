@@ -67,6 +67,42 @@ T getArgument(VM vm, RichNode argValue) {
   return result;
 }
 
+/* Important note to anyone thinking that getPointerArgument should return a
+ * shared_ptr.
+ *
+ * It is *intentional* that we break the "safety" of shared_ptr by returning
+ * the raw pointer here.
+ *
+ * The use case for getPointerArgument is, in a VM-called function, to extract
+ * the pointer from a ForeignPointer.
+ *
+ * A first important observation is that code further in the method can throw a
+ * Mozart exception (waiting, raise, etc.) for any kind of reason. Now,
+ * Mozart exceptions are implemented with the setjmp/longjmp, which break
+ * through all C++ try-catches in the stack, including the destructor of the
+ * potential shared_ptr.
+ * This would cause a memory leak!
+ *
+ * The other important observation is that the method will end before any
+ * garbage collection can be performed. And only garbage collection can delete
+ * the shared_ptr inside the ForeignPointer. Hence, its is already guaranteed
+ * that the reference count will not reach 0 before the calling method ends and
+ * stops using the returning pointer.
+ *
+ * Conclusion: we don't need to return a shared_ptr, and doing so would
+ * actually cause *memory leaks* in some (non-rare) cases.
+ */
+
+template <class T>
+T* getPointerArgument(VM vm, RichNode argValue, const nchar* expectedType) {
+  return getArgument<std::shared_ptr<T>>(vm, argValue, expectedType).get();
+}
+
+template <class T>
+T* getPointerArgument(VM vm, RichNode argValue) {
+  return getArgument<std::shared_ptr<T>>(vm, argValue).get();
+}
+
 // requireFeature --------------------------------------------------------------
 
 void requireFeature(VM vm, RichNode feature) {

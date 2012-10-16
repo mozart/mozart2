@@ -34,10 +34,6 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   _asyncIONodeCount(0),
   random_generator(std::time(nullptr)), uuidGenerator(random_generator),
   preemptionTimer(io_service), alarmTimer(io_service) {
-
-  fdStdin = registerFile(stdin);
-  fdStdout = registerFile(stdout);
-  fdStderr = registerFile(stderr);
 }
 
 void BoostBasedVM::setApplicationURL(char const* url) {

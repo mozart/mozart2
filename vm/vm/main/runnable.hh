@@ -39,6 +39,8 @@ Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
 
   _reification.init(vm, ReifiedThread::build(vm, this));
 
+  _intermediateState.init(vm, Unit::build(vm));
+
   _space->notifyThreadCreated();
 
   vm->aliveThreads.insert(this);
@@ -55,7 +57,9 @@ Runnable::Runnable(GR gr, Runnable& from) :
 
   _raiseOnBlock = from._raiseOnBlock;
 
-  _reification.init(vm, ReifiedThread::build(gr->vm, this));
+  _reification.init(vm, ReifiedThread::build(vm, this));
+
+  gr->copyUnstableNode(_intermediateState, from._intermediateState);
 
   if (!_dead)
     vm->aliveThreads.insert(this);

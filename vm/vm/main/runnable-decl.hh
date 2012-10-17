@@ -89,6 +89,10 @@ public:
     _raiseOnBlock = value;
   }
 
+  UnstableNode& getIntermediateState() {
+    return _intermediateState;
+  }
+
   virtual void beforeGR() {}
   virtual void afterGR() {}
 
@@ -125,6 +129,8 @@ private:
   bool _raiseOnBlock;
 
   StableNode _reification;
+
+  UnstableNode _intermediateState;
 
   Runnable* _replicate;
 

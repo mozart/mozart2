@@ -33,6 +33,10 @@
 
 namespace mozart {
 
+///////////////////////////////////////////////////////
+// Extracting arguments from Oz values to C++ values //
+///////////////////////////////////////////////////////
+
 // getArgument -----------------------------------------------------------------
 
 template <class T>
@@ -109,6 +113,10 @@ void requireFeature(VM vm, RichNode feature) {
   if (!feature.isFeature())
     PotentialFeature(feature).makeFeature(vm);
 }
+
+//////////////////////////////////
+// Working with Oz lists in C++ //
+//////////////////////////////////
 
 // OzListBuilder ---------------------------------------------------------------
 
@@ -218,6 +226,61 @@ namespace internal {
 template <class C>
 std::basic_string<C> vsToString(VM vm, RichNode vs) {
   return internal::VSToStringHelper<C>::call(vm, vs);
+}
+
+///////////////////////////////////////
+// Dealing with non-idempotent steps //
+///////////////////////////////////////
+
+namespace internal {
+  template <typename State, typename Result, typename SecondStep>
+  struct PerformSecondStep {
+    __attribute__((always_inline))
+    inline
+    static Result call(VM vm, State& state, const SecondStep& secondStep,
+                       UnstableNode& intermediateState) {
+      Result result = secondStep(state);
+      intermediateState = build(vm, unit);
+      return result;
+    }
+  };
+
+  template <typename State, typename SecondStep>
+  struct PerformSecondStep<State, void, SecondStep> {
+    __attribute__((always_inline))
+    inline
+    static void call(VM vm, State& state, const SecondStep& secondStep,
+                     UnstableNode& intermediateState) {
+      secondStep(state);
+      intermediateState = build(vm, unit);
+    }
+  };
+}
+
+template <typename FirstStep, typename SecondStep>
+auto performNonIdempotentStep(VM vm, const nchar* identity,
+                              const FirstStep& firstStep,
+                              const SecondStep& secondStep)
+    -> typename function_traits<SecondStep>::result_type {
+
+  using namespace patternmatching;
+
+  assert(vm->isIntermediateStateAvailable());
+
+  UnstableNode& intermediateState = vm->getIntermediateState();
+  decltype(firstStep()) state;
+
+  if (!matchesTuple(vm, intermediateState, identity, capture(state))) {
+    // Limitation of the current design
+    assert(RichNode(intermediateState).is<Unit>());
+
+    state = firstStep();
+    intermediateState = buildTuple(vm, identity, state);
+  }
+
+  return ::mozart::internal::PerformSecondStep<
+    decltype(firstStep()), decltype(secondStep(state)), SecondStep>::call(
+      vm, state, secondStep, intermediateState);
 }
 
 }

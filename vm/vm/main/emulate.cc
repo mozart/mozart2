@@ -1336,6 +1336,9 @@ void Thread::applyRaise(VM vm, RichNode exception,
                         StaticArray<UnstableNode>& yregs,
                         StaticArray<StableNode>& gregs,
                         StaticArray<StableNode>& kregs) {
+  // Discard any intermediate state
+  vm->getIntermediateState() = build(vm, unit);
+
   UnstableNode preprocessedException = preprocessException(
     vm, exception, abstraction, PC);
 

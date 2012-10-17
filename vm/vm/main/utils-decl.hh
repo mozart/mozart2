@@ -29,6 +29,10 @@
 
 namespace mozart {
 
+///////////////////////////////////////////////////////
+// Extracting arguments from Oz values to C++ values //
+///////////////////////////////////////////////////////
+
 template <class T>
 struct PrimitiveTypeToExpectedAtom {
   inline
@@ -53,6 +57,10 @@ T* getPointerArgument(VM vm, RichNode argValue);
 
 inline
 void requireFeature(VM vm, RichNode feature);
+
+//////////////////////////////////
+// Working with Oz lists in C++ //
+//////////////////////////////////
 
 /**
  * Helper to build an Oz list in C++.
@@ -109,6 +117,17 @@ size_t ozListLength(VM vm, RichNode list);
 template <class C>
 inline
 std::basic_string<C> vsToString(VM vm, RichNode vs);
+
+///////////////////////////////////////
+// Dealing with non-idempotent steps //
+///////////////////////////////////////
+
+template <typename FirstStep, typename SecondStep>
+inline
+auto performNonIdempotentStep(VM vm, const nchar* identity,
+                              const FirstStep& firstStep,
+                              const SecondStep& secondStep)
+    -> typename function_traits<SecondStep>::result_type;
 
 }
 

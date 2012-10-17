@@ -168,6 +168,14 @@ public:
     return _isOnTopLevel;
   }
 
+  bool isIntermediateStateAvailable() {
+    return _currentThread != nullptr;
+  }
+
+  UnstableNode& getIntermediateState() {
+    return _currentThread->getIntermediateState();
+  }
+
   inline
   void setCurrentSpace(Space* space);
 

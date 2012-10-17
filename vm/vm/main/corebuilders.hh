@@ -221,6 +221,18 @@ UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
 }
 
 /**
+ * Build an Oz #-tuple inside a node, with its fields
+ * The arguments can be in any form supported by build().
+ * @param vm        Contextual VM
+ * @param args...   Fields of the #-tuple
+ */
+template <class... Args>
+inline
+UnstableNode buildSharp(VM vm, Args&&... args) {
+  return buildTuple(vm, vm->coreatoms.sharp, std::forward<Args>(args)...);
+}
+
+/**
  * Build an Oz cons pair, with a head and a tail
  * The head and tail can be in any form supported by build().
  * @param vm     Contextual VM

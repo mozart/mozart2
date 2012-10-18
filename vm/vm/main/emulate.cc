@@ -1260,7 +1260,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
   auto patternList = patternsTuple.getElementsArray();
 
   for (size_t index = 0; index < patternCount; index++) {
-    UnstableNode pattern;
+    RichNode pattern;
     nativeint jumpOffset = 0;
 
     if (!matchesSharp(vm, patternList[index],

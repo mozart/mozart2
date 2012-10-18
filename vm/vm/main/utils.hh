@@ -155,7 +155,7 @@ void ozListForEach(VM vm, RichNode cons, const F& onHead, const G& onTail) {
   typename std::remove_reference<
     typename function_traits<F>::template arg<0>::type>::type head;
 
-  UnstableNode tail;
+  RichNode tail;
 
   while (true) {
     if (matchesCons(vm, cons, capture(head), capture(tail))) {
@@ -185,12 +185,11 @@ size_t ozListLength(VM vm, RichNode list) {
   while (true) {
     using namespace patternmatching;
 
-    UnstableNode tail;
+    RichNode tail;
 
     if (matchesCons(vm, list, wildcard(), capture(tail))) {
       result++;
-      nextList = std::move(tail);
-      list = nextList;
+      list = tail;
     } else if (matches(vm, list, vm->coreatoms.nil)) {
       return result;
     } else {

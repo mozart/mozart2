@@ -416,7 +416,7 @@ private:
                             const FOther& fOther) {
     using namespace patternmatching;
 
-    UnstableNode dotAssignable, feature;
+    RichNode dotAssignable, feature;
 
     if (matchesSharp(vm, value, capture(dotAssignable), capture(feature)))
       fDotAssignable(vm, dotAssignable, feature);

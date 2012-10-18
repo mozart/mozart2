@@ -54,7 +54,7 @@
  *   void doSomething(VM vm, RichNode value) {
  *     using namespace mozart::patternmatching;
  *
- *     UnstableNode X, Y;
+ *     RichNode X, Y;
  *
  *     if (matchesTuple(vm, value, vm->coreatoms.sharp,
  *                      capture(X), 42, capture(Y))) {
@@ -94,7 +94,7 @@
  *   void doSomething(VM vm, RichNode value) {
  *     using namespace mozart::patternmatching;
  *
- *     UnstableNode X, Y;
+ *     RichNode X, Y;
  *     nativeint intValue;
  *
  *     if (matchesSharp(vm, value, capture(X), 42, capture(Y))) {
@@ -141,6 +141,10 @@
  *   Like wildcard(), plus the value is copy()'ed into X.
  * * capture<T>(X) where T is a datatype, and X a declared UnstableNode.
  *   Like wildcard<T>(), plus the value is copy()'ed into X.
+ * * capture(X) or capture<T>(X) where is a declared RichNode.
+ *   Like the two above, but the RichNode is pointed to the value.
+ *   This stabilizes the value (but in a tuple the fields are already
+ *   stabilized).
  * * capture(x) where x is a declared nativeint.
  *   Matches any SmallInt-like, plus its actual value is stored into x.
  * * capture(x) where x is a declared bool.
@@ -296,6 +300,14 @@ struct CapturePattern {
   UnstableNode& node;
 };
 
+/** Pattern that matches any value of type T, and captures the value */
+template <class T>
+struct CaptureInRichNodePattern {
+  CaptureInRichNodePattern(RichNode& node) : node(node) {}
+
+  RichNode& node;
+};
+
 template <class T>
 struct PrimitiveCapturePattern {
   PrimitiveCapturePattern(T& value) : value(value) {}
@@ -325,9 +337,10 @@ bool matchesSimple(VM vm, RichNode value, T pattern) {
 }
 
 /** Base case of the below */
-template <size_t i, class T>
+template <size_t i>
 inline
-bool matchesElementsAgainstPatternList(VM vm, TypedRichNode<T> aggregate) {
+bool matchesElementsAgainstPatternList(VM vm,
+                                       StaticArray<StableNode> elements) {
   return true;
 }
 
@@ -337,17 +350,16 @@ bool matchesElementsAgainstPatternList(VM vm, TypedRichNode<T> aggregate) {
  *   forall j : i <= j < (i + sizeof...(patterns))
  * @param i   Starting index in the aggregate's elements
  */
-template <size_t i, class T, class U, class... Rest>
+template <size_t i, class IthPat, class... Rest>
 inline
 bool matchesElementsAgainstPatternList(
-  VM vm, TypedRichNode<T> aggregate,
-  U ithPattern, Rest... restPatterns) {
+  VM vm, StaticArray<StableNode> elements,
+  IthPat ithPattern, Rest... restPatterns) {
 
-  if (!matchesSimple(vm, *aggregate.getElement(i), ithPattern))
+  if (!matchesSimple(vm, elements[i], ithPattern))
     return false;
 
-  return matchesElementsAgainstPatternList<i+1, T>(
-    vm, aggregate, restPatterns...);
+  return matchesElementsAgainstPatternList<i+1>(vm, elements, restPatterns...);
 }
 
 // Here we begin the various specializations of matchesSimple<T>()
@@ -469,6 +481,28 @@ bool matchesSimple(VM vm, RichNode value, CapturePattern<AnyType> pattern) {
 
 template <class T>
 inline
+bool matchesSimple(VM vm, RichNode value, CaptureInRichNodePattern<T> pattern) {
+  if (value.is<T>()) {
+    value.ensureStable(vm);
+    pattern.node = value;
+    return true;
+  } else {
+    internal::waitForIfTransient(vm, value);
+    return false;
+  }
+}
+
+template <>
+inline
+bool matchesSimple(VM vm, RichNode value,
+                   CaptureInRichNodePattern<AnyType> pattern) {
+  value.ensureStable(vm);
+  pattern.node = value;
+  return true;
+}
+
+template <class T>
+inline
 bool matchesSimple(VM vm, RichNode value, PrimitiveCapturePattern<T> pattern) {
   if (ozValueToPrimitiveValue<T>(vm, value, pattern.value)) {
     return true;
@@ -515,6 +549,17 @@ internal::CapturePattern<T> capture(UnstableNode& node) {
 }
 
 /**
+ * Build a (typed) capture pattern
+ * capture(node) matches any value and captures it in `node`
+ * capture<T>(node) matches any value of type T and captures it in `node`
+ */
+template <class T = internal::AnyType>
+inline
+internal::CaptureInRichNodePattern<T> capture(RichNode& node) {
+  return internal::CaptureInRichNodePattern<T>(node);
+}
+
+/**
  * Build a typed primitive capture pattern
  * capture(value) matches any value of an Oz type corresponding to the C++
  *   type of `value`, and captures its value in `value`
@@ -556,7 +601,7 @@ bool matchesTuple(VM vm, RichNode value, LT labelPat, Args... fieldsPats) {
     return false;
 
   return internal::matchesElementsAgainstPatternList<0>(
-    vm, tuple, fieldsPats...);
+    vm, tuple.getElementsArray(), fieldsPats...);
 }
 
 /**
@@ -622,7 +667,7 @@ bool matchesVariadicTuple(VM vm, RichNode value,
     return false;
 
   if (!internal::matchesElementsAgainstPatternList<0>(
-      vm, tuple, fieldsPats...))
+      vm, tuple.getElementsArray(), fieldsPats...))
     return false;
 
   // Fill the captured variadic arguments

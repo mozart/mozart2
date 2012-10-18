@@ -101,7 +101,7 @@ namespace internal {
     using namespace patternmatching;
 
     T head;
-    UnstableNode tail;
+    RichNode tail;
 
     if (matchesCons(vm, list, capture(head), capture(tail))) {
       f(vm, index, head);

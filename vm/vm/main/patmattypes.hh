@@ -79,6 +79,10 @@ StableNode* PatMatConjunction::getElement(Self self, size_t index) {
   return &self[index];
 }
 
+StaticArray<StableNode> PatMatConjunction::getElementsArray(Self self) {
+  return self.getArray();
+}
+
 bool PatMatConjunction::equals(Self self, VM vm, Self right, WalkStack& stack) {
   if (_count != right->_count)
     return false;
@@ -116,13 +120,14 @@ void PatMatConjunction::printReprToStream(Self self, VM vm, std::ostream& out,
 
 #include "PatMatOpenRecord-implem.hh"
 
+template <typename A>
 PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
                                    StaticArray<StableNode> _elements,
-                                   RichNode arity) {
-  assert(arity.is<Arity>());
-
-  _arity.init(vm, arity);
+                                   A&& arity) {
+  _arity.init(vm, std::forward<A>(arity));
   _width = width;
+
+  assert(RichNode(_arity).is<Arity>());
 
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
@@ -142,6 +147,10 @@ PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
 
 StableNode* PatMatOpenRecord::getElement(Self self, size_t index) {
   return &self[index];
+}
+
+StaticArray<StableNode> PatMatOpenRecord::getElementsArray(Self self) {
+  return self.getArray();
 }
 
 void PatMatOpenRecord::initElement(Self self, VM vm, size_t index,

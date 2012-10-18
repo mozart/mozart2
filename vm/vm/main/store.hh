@@ -77,6 +77,11 @@ void StableNode::init(VM vm) {
   make<Unit>(vm);
 }
 
+template <typename T>
+void StableNode::init(VM vm, T&& from) {
+  set(mozart::build(vm, std::forward<T>(from)));
+}
+
 //////////////////
 // UnstableNode //
 //////////////////
@@ -99,6 +104,11 @@ void UnstableNode::init(VM vm, RichNode from) {
 
 void UnstableNode::init(VM vm) {
   make<Unit>(vm);
+}
+
+template <typename T>
+void UnstableNode::init(VM vm, T&& from) {
+  copy(vm, std::forward<T>(from));
 }
 
 void UnstableNode::copy(VM vm, StableNode& from) {
@@ -128,6 +138,11 @@ void UnstableNode::copy(VM vm, RichNode from) {
     copy(vm, from.asStable());
   else
     copy(vm, from.asUnstable());
+}
+
+template <typename T>
+void UnstableNode::copy(VM vm, T&& from) {
+  set(mozart::build(vm, std::forward<T>(from)));
 }
 
 //////////////

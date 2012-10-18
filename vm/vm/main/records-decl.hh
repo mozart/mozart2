@@ -96,9 +96,9 @@ public:
     return vm->getAtom(MOZART_STR("tuple"));
   }
 
+  template <typename L>
   inline
-  Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
-        RichNode label);
+  Tuple(VM vm, size_t width, StaticArray<StableNode> _elements, L&& label);
 
   inline
   Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
@@ -202,8 +202,11 @@ public:
     return vm->getAtom(MOZART_STR("tuple"));
   }
 
+  template <typename Head, typename Tail,
+            typename = typename std::enable_if<
+              !std::is_convertible<Head, GR>::value, int>::type>
   inline
-  Cons(VM vm, RichNode head, RichNode tail);
+  Cons(VM vm, Head&& head, Tail&& tail);
 
   inline
   Cons(VM vm);
@@ -318,9 +321,9 @@ public:
     return vm->getAtom(MOZART_STR("arity"));
   }
 
+  template <typename L>
   inline
-  Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
-        RichNode label);
+  Arity(VM vm, size_t width, StaticArray<StableNode> _elements, L&& label);
 
   inline
   Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
@@ -341,6 +344,9 @@ public:
 
   inline
   StableNode* getElement(Self self, size_t index);
+
+  inline
+  StaticArray<StableNode> getElementsArray(Self self);
 
 public:
   // StructuralEquatable interface
@@ -397,9 +403,9 @@ public:
     return vm->getAtom(MOZART_STR("record"));
   }
 
+  template <typename A>
   inline
-  Record(VM vm, size_t width, StaticArray<StableNode> _elements,
-         RichNode arity);
+  Record(VM vm, size_t width, StaticArray<StableNode> _elements, A&& arity);
 
   inline
   Record(VM vm, size_t width, StaticArray<StableNode> _elements,

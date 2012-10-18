@@ -112,6 +112,9 @@ public:
   StableNode* getElement(Self self, size_t index);
 
   inline
+  StaticArray<StableNode> getElementsArray(Self self);
+
+  inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
 public:
@@ -151,9 +154,10 @@ class PatMatOpenRecord: public DataType<PatMatOpenRecord>,
 public:
   typedef SelfType<PatMatOpenRecord>::Self Self;
 public:
+  template <typename A>
   inline
   PatMatOpenRecord(VM vm, size_t width, StaticArray<StableNode> _elements,
-                   RichNode arity);
+                   A&& arity);
 
   inline
   PatMatOpenRecord(VM vm, size_t width, StaticArray<StableNode> _elements,
@@ -171,6 +175,9 @@ public:
   StableNode* getArity() {
     return &_arity;
   }
+
+  inline
+  StaticArray<StableNode> getElementsArray(Self self);
 
 public:
   // ArrayInitializer interface

@@ -299,6 +299,9 @@ public:
   inline void init(VM vm, UnstableNode&& from);
   inline void init(VM vm, RichNode from);
   inline void init(VM vm);
+
+  template <typename T>
+  inline void init(VM vm, T&& from);
 public:
   // Make this class non-copyable and non-movable
   StableNode(const StableNode& from) = delete;
@@ -333,10 +336,16 @@ public:
   inline void init(VM vm, RichNode from);
   inline void init(VM vm);
 
+  template <typename T>
+  inline void init(VM vm, T&& from);
+
   inline void copy(VM vm, StableNode& from);
   inline void copy(VM vm, UnstableNode& from);
   inline void copy(VM vm, UnstableNode&& from);
   inline void copy(VM vm, RichNode from);
+
+  template <typename T>
+  inline void copy(VM vm, T&& from);
 
   template<class T, class... Args>
   static UnstableNode build(VM vm, Args&&... args) {

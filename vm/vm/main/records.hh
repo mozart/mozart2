@@ -97,9 +97,10 @@ UnstableNode BaseRecord<T>::waitOr(Self self, VM vm) {
 
 #include "Tuple-implem.hh"
 
+template <typename L>
 Tuple::Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
-             RichNode label) {
-  _label.init(vm, label);
+             L&& label) {
+  _label.init(vm, std::forward<L>(label));
   _width = width;
 
   // Initialize elements with non-random data
@@ -232,9 +233,10 @@ bool Tuple::hasSharpLabel(VM vm) {
 
 #include "Cons-implem.hh"
 
-Cons::Cons(VM vm, RichNode head, RichNode tail) {
-  _elements[0].init(vm, head);
-  _elements[1].init(vm, tail);
+template <typename Head, typename Tail, typename>
+Cons::Cons(VM vm, Head&& head, Tail&& tail) {
+  _elements[0].init(vm, std::forward<Head>(head));
+  _elements[1].init(vm, std::forward<Tail>(tail));
 }
 
 Cons::Cons(VM vm) {
@@ -379,9 +381,10 @@ void Cons::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
 
 #include "Arity-implem.hh"
 
+template <typename L>
 Arity::Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
-             RichNode label) {
-  _label.init(vm, label);
+             L&& label) {
+  _label.init(vm, std::forward<L>(label));
   _width = width;
 
   // Initialize elements with non-random data
@@ -401,6 +404,10 @@ Arity::Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
 
 StableNode* Arity::getElement(Self self, size_t index) {
   return &self[index];
+}
+
+StaticArray<StableNode> Arity::getElementsArray(Self self) {
+  return self.getArray();
 }
 
 bool Arity::equals(Self self, VM vm, Self right, WalkStack& stack) {
@@ -464,12 +471,13 @@ void Arity::printReprToStream(Self self, VM vm, std::ostream& out,
 
 #include "Record-implem.hh"
 
+template <typename A>
 Record::Record(VM vm, size_t width, StaticArray<StableNode> _elements,
-               RichNode arity) {
-  assert(arity.is<Arity>());
-
-  _arity.init(vm, arity);
+               A&& arity) {
+  _arity.init(vm, std::forward<A>(arity));
   _width = width;
+
+  assert(RichNode(_arity).is<Arity>());
 
   // Initialize elements with non-random data
   // TODO An Uninitialized type?

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.6)
 project(testmozart)
 
 
@@ -11,9 +11,9 @@ set(MOZART_BUILD_DIR "${MOZART_DIR}/build"
 set(MOZART_LIB_DIR "${MOZART_DIR}/lib/main")
 set(MOZART_COMPILER_DIR "${MOZART_DIR}/lib/compiler")
 
-set(JAVA "/usr/bin/java"
-    CACHE FILEPATH "Java executable")
+find_package(Java COMPONENTS Runtime REQUIRED)
 
+set(JAVA_OPTIONS "-Xmx1024m" CACHE STRING "Options passed to the java program")
 
 # Configure compiler
 set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
@@ -68,7 +68,7 @@ set(BASE_FUNCTORS
 
 add_custom_command(
   OUTPUT "Base.cc"
-  COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
+  COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
     --baseenv
     -o "${CMAKE_CURRENT_BINARY_DIR}/Base.cc"
     -h "boostenv.hh"
@@ -123,7 +123,7 @@ foreach(functor ${ALL_FUNCTORS})
 
   add_custom_command(
     OUTPUT ${ccfile}
-    COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
+    COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
       -o "${CMAKE_CURRENT_BINARY_DIR}/${ccfile}"
       -h "boostenv.hh"
       -m "${MOZART_BUILD_DIR}/vm/vm/main/"
@@ -138,7 +138,7 @@ endforeach()
 
 add_custom_command(
   OUTPUT LinkerMain.cc
-  COMMAND ${JAVA} -jar "${BOOTCOMPILER_JAR}"
+  COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
     --linker
     -o "${CMAKE_CURRENT_BINARY_DIR}/LinkerMain.cc"
     -h "boostenv.hh"
@@ -152,6 +152,10 @@ add_custom_command(
   VERBATIM)
 
 # Compile the executable
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  include_directories(/usr/lib/c++/v1)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
 
 add_executable(testmozart ${ALL_CCFILES})
 target_link_libraries(testmozart mozartvmboost mozartvm ${Boost_LIBRARIES})

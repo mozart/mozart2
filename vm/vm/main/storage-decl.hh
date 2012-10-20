@@ -33,39 +33,22 @@
 
 #include <type_traits>
 
-// Hacky helper (see below) - officially UB
-namespace std {
-  template<typename> struct has_trivial_destructor;
-  template<typename> struct is_trivially_destructible;
-}
-
 namespace mozart {
 
-/* First a hackish helper to support compilers and std libs which still use
- * has_trivial_destructor instead of is_trivially_destructible. */
-
-template<typename T>
-class have_cxx11_trait_helper {
-private:
-  template<typename T2, bool = std::is_trivially_destructible<T2>::type::value>
-  static std::true_type test(int);
-
-  template<typename T2, bool = std::has_trivial_destructor<T2>::type::value>
-  static std::false_type test(...);
-
-public:
-  typedef decltype(test<T>(0)) type;
-};
-
-template<typename T>
-struct have_cxx11_trait : have_cxx11_trait_helper<T>::type {
-};
-
-template<typename T>
-using is_trivially_destructible =
-  typename std::conditional<have_cxx11_trait<T>::value,
-                            std::is_trivially_destructible<T>,
-                            std::has_trivial_destructor<T>>::type;
+/* In order to know if a type T has a trivial destructor we *should* use the
+ * type trait std::is_tirivally_destructible<T>. However some standard library
+ * provide the trait under the name std::has_trivial_destructor<T>. In the
+ * following lines we alias any of those options depending on the standard
+ * library we are using.
+ * TODO: This is something we should eventually change or remove.
+ */
+#ifdef _LIBCPP_TYPE_TRAITS // using libc++
+  template<typename T>
+  using is_trivially_destructible = std::is_trivially_destructible<T>;
+#else // libstdc++
+  template<typename T>
+  using is_trivially_destructible = std::has_trivial_destructor<T>;
+#endif
 
 // Now our stuff
 

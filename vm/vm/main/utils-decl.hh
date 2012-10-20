@@ -47,6 +47,14 @@ template <class T>
 inline
 T getArgument(VM vm, RichNode argValue);
 
+template <>
+inline
+UnstableNode getArgument(VM vm, RichNode argValue);
+
+template <>
+inline
+RichNode getArgument(VM vm, RichNode argValue);
+
 template <class T>
 inline
 T* getPointerArgument(VM vm, RichNode argValue, const nchar* expectedType);

@@ -46,9 +46,7 @@ public:
     Create(): Builtin("create") {}
 
     void operator()(VM vm, In target) {
-      expectCallable(vm, target, 0);
-
-      new (vm) Thread(vm, vm->getCurrentSpace(), target);
+      ozcalls::asyncOzCall(vm, target);
     }
   };
 

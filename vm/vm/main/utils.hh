@@ -71,6 +71,17 @@ T getArgument(VM vm, RichNode argValue) {
   return result;
 }
 
+template <>
+UnstableNode getArgument(VM vm, RichNode argValue) {
+  return { vm, argValue };
+}
+
+template <>
+RichNode getArgument(VM vm, RichNode argValue) {
+  argValue.ensureStable(vm);
+  return argValue;
+}
+
 /* Important note to anyone thinking that getPointerArgument should return a
  * shared_ptr.
  *

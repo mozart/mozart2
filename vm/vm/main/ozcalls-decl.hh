@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,46 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef __OZCALLS_DECL_H
+#define __OZCALLS_DECL_H
 
-#include "mozartcore.hh"
+#include "mozartcore-decl.hh"
 
-#include "coredatatypes.hh"
+namespace mozart {
 
-#include "builtins.hh"
-#include "builtinutils.hh"
-#include "coreatoms.hh"
-#include "datatype.hh"
-#include "dynbuilders.hh"
-#include "exceptions.hh"
-#include "exchelpers.hh"
-#include "gcollect.hh"
-#include "graphreplicator.hh"
-#include "lstring.hh"
-#include "ozcalls.hh"
-#include "properties.hh"
-#include "runnable.hh"
-#include "sclone.hh"
-#include "space.hh"
-#include "storage.hh"
-#include "store.hh"
-#include "threadpool.hh"
-#include "type.hh"
-#include "typeinfo.hh"
-#include "unify.hh"
-#include "utf.hh"
-#include "utils.hh"
-#include "vm.hh"
-#include "vmallocatedlist.hh"
-#include "protect.hh"
+namespace ozcalls {
 
-#include "emulate.hh"
+//////////////////////////////
+// Calling Oz code from C++ //
+//////////////////////////////
 
-#if !defined(MOZART_GENERATOR) && !defined(MOZART_BUILTIN_GENERATOR)
-namespace mozart { namespace builtins {
-#include "mozartbuiltins.hh"
-} }
-#endif
+namespace internal {
+  template <typename T>
+  struct OutputParam {
+    OutputParam(T& value): value(value) {}
+    T& value;
+  };
+}
 
-#endif // __MOZART_H
+template <typename T>
+inline
+internal::OutputParam<T> out(T& value) {
+  return internal::OutputParam<T>(value);
+}
+
+inline
+void asyncOzCall(VM vm, Space* space, RichNode callable);
+
+template <typename... Args>
+inline
+void asyncOzCall(VM vm, Space* space, RichNode callable, Args&&... args);
+
+template <typename... Args>
+inline
+void asyncOzCall(VM vm, RichNode callable, Args&&... args);
+
+template <typename... Args>
+inline
+void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args);
+
+template <typename... Args>
+inline
+void ozCall(VM vm, RichNode callable, Args&&... args);
+
+} // namespace ozcalls
+
+} // namespace mozart
+
+#endif // __OZCALLS_DECL_H

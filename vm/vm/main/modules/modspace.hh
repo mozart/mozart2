@@ -46,18 +46,11 @@ public:
     New(): Builtin("new") {}
 
     void operator()(VM vm, In target, Out result) {
-      expectCallable(vm, target, 1);
-
-      Space* currentSpace = vm->getCurrentSpace();
-
       // Create the space
-      Space* space = new (vm) Space(vm, currentSpace);
+      Space* space = new (vm) Space(vm, vm->getCurrentSpace());
 
       // Create the thread {Proc Root}
-      UnstableNode rootVar(vm, *space->getRootVar());
-      UnstableNode* threadArgs[] = { &rootVar };
-
-      new (vm) Thread(vm, space, target, 1, threadArgs);
+      ozcalls::asyncOzCall(vm, space, target, *space->getRootVar());
 
       // Create the reification of the space
       result = ReifiedSpace::build(vm, space);

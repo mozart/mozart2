@@ -189,19 +189,21 @@ UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
 // Thread //
 ////////////
 
+constexpr size_t Thread::InitXRegisters;
+
 Thread::Thread(VM vm, Space* space, RichNode abstraction,
                bool createSuspended): Runnable(vm, space) {
   constructor(vm, abstraction, 0, nullptr, createSuspended);
 }
 
 Thread::Thread(VM vm, Space* space, RichNode abstraction,
-               size_t argc, UnstableNode* args[],
+               size_t argc, RichNode args[],
                bool createSuspended): Runnable(vm, space) {
   constructor(vm, abstraction, argc, args, createSuspended);
 }
 
 void Thread::constructor(VM vm, RichNode abstraction,
-                         size_t argc, UnstableNode* args[],
+                         size_t argc, RichNode args[],
                          bool createSuspended) {
   // getCallInfo
 
@@ -213,19 +215,20 @@ void Thread::constructor(VM vm, RichNode abstraction,
 
   Callable(abstraction).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 
-  assert(arity == argc);
+  if (argc != arity)
+    raise(vm, MOZART_STR("illegalArity"), arity, argc);
 
   // Set up
 
-  auto initXRegisters = InitXRegisters; // work around for limitation of clang
-  xregs.init(vm, std::max(Xcount, initXRegisters));
+  xregs.init(vm, std::max(Xcount, InitXRegisters));
 
   for (size_t i = 0; i < argc; i++)
-    xregs[i].copy(vm, *args[i]);
+    xregs[i].copy(vm, args[i]);
 
   pushFrame(vm, abstraction.getStableRef(vm), start, 0, nullptr, Gs, Ks);
 
   injectedException = nullptr;
+  _terminationVar.init(vm, OptVar::build(vm, getSpace()));
 
   // Resume the thread unless createSuspended
   if (!createSuspended)
@@ -253,6 +256,8 @@ Thread::Thread(GR gr, Thread& from): Runnable(gr, from) {
     injectedException = nullptr;
   else
     gr->copyStableRef(injectedException, from.injectedException);
+
+  gr->copyStableNode(_terminationVar, from._terminationVar);
 }
 
 void Thread::run() {
@@ -1429,6 +1434,13 @@ Runnable* Thread::gCollect(GC gc) {
 
 Runnable* Thread::sClone(SC sc) {
   return new (sc->vm) Thread(sc, *this);
+}
+
+void Thread::terminate() {
+  Super::terminate();
+
+  auto unitNode = build(vm, unit);
+  DataflowVariable(_terminationVar).bind(vm, unitNode);
 }
 
 }

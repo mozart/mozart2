@@ -86,29 +86,8 @@ void StableNode::init(VM vm, T&& from) {
 // UnstableNode //
 //////////////////
 
-void UnstableNode::init(VM vm, StableNode& from) {
-  copy(vm, from);
-}
-
-void UnstableNode::init(VM vm, UnstableNode& from) {
-  copy(vm, from);
-}
-
-void UnstableNode::init(VM vm, UnstableNode&& from) {
-  copy(vm, std::move(from));
-}
-
-void UnstableNode::init(VM vm, RichNode from) {
-  copy(vm, from);
-}
-
 void UnstableNode::init(VM vm) {
   make<Unit>(vm);
-}
-
-template <typename T>
-void UnstableNode::init(VM vm, T&& from) {
-  copy(vm, std::forward<T>(from));
 }
 
 void UnstableNode::copy(VM vm, StableNode& from) {

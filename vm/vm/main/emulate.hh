@@ -180,7 +180,7 @@ public:
          bool createSuspended = false);
 
   Thread(VM vm, Space* space, RichNode abstraction,
-         size_t argc, UnstableNode* args[],
+         size_t argc, RichNode args[],
          bool createSuspended = false);
 
   inline
@@ -192,6 +192,11 @@ public:
     Super::kill();
   }
 
+public:
+  StableNode& getTerminationVar() {
+    return _terminationVar;
+  }
+
   void injectException(StableNode* exception) {
     injectedException = exception;
 
@@ -199,15 +204,16 @@ public:
       resume();
   }
 
+public:
   void beforeGR();
   void afterGR();
 
   Runnable* gCollect(GC gc);
   Runnable* sClone(SC sc);
+
 protected:
-  void terminate() {
-    Super::terminate();
-  }
+  inline
+  void terminate();
 
   void dispose() {
     xregs.release(vm);
@@ -224,7 +230,7 @@ protected:
 private:
   inline
   void constructor(VM vm, RichNode abstraction,
-                   size_t argc, UnstableNode* args[],
+                   size_t argc, RichNode args[],
                    bool createSuspended);
 
   inline
@@ -301,6 +307,7 @@ private:
   XRegArray xregs;
   ThreadStack stack;
   StableNode* injectedException;
+  StableNode _terminationVar;
 };
 
 }

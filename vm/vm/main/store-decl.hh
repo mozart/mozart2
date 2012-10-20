@@ -294,6 +294,11 @@ class StableNode: public Node {
 public:
   StableNode() {}
 
+  template <typename T>
+  StableNode(VM vm, T&& from) {
+    init(vm, std::forward<T>(from));
+  }
+
   inline void init(VM vm, StableNode& from);
   inline void init(VM vm, UnstableNode& from);
   inline void init(VM vm, UnstableNode&& from);
@@ -318,26 +323,17 @@ class UnstableNode: public Node {
 public:
   UnstableNode() {}
 
-  UnstableNode(VM vm, StableNode& from) {
-    copy(vm, from);
+  template <typename T>
+  UnstableNode(VM vm, T&& from) {
+    init(vm, std::forward<T>(from));
   }
 
-  UnstableNode(VM vm, UnstableNode& from) {
-    copy(vm, from);
-  }
-
-  UnstableNode(VM vm, RichNode from) {
-    copy(vm, from);
-  }
-
-  inline void init(VM vm, StableNode& from);
-  inline void init(VM vm, UnstableNode& from);
-  inline void init(VM vm, UnstableNode&& from);
-  inline void init(VM vm, RichNode from);
   inline void init(VM vm);
 
   template <typename T>
-  inline void init(VM vm, T&& from);
+  void init(VM vm, T&& from) {
+    copy(vm, std::forward<T>(from));
+  }
 
   inline void copy(VM vm, StableNode& from);
   inline void copy(VM vm, UnstableNode& from);

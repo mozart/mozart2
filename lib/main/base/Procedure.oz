@@ -28,4 +28,4 @@
 %%
 Procedure = procedure(is:    IsProcedure
                       arity: ProcedureArity
-                      /*apply: Boot_Procedure.apply*/)
+                      apply: Boot_Procedure.apply)

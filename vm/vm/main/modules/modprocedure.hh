@@ -26,6 +26,7 @@
 #define __MODPROCEDURE_H
 
 #include "../mozartcore.hh"
+#include "../emulate.hh"
 
 #ifndef MOZART_GENERATOR
 
@@ -56,6 +57,39 @@ public:
 
     void operator()(VM vm, In procedure, Out result) {
       result = build(vm, Callable(procedure).procedureArity(vm));
+    }
+  };
+
+  class Apply: public Builtin<Apply> {
+  public:
+    Apply(): Builtin("apply") {}
+
+    void operator()(VM vm, In procedure, In args) {
+      performNonIdempotentStep(
+        vm, MOZART_STR("::mozart::builtins::ModProcedure::Apply"),
+        [=] () -> UnstableNode {
+          size_t argc = ozListLength(vm, args);
+          auto arguments = vm->newStaticArray<RichNode>(argc);
+          size_t i = 0;
+          ozListForEach(
+            vm, args,
+            [&i, &arguments] (RichNode arg) {
+              arguments[i++] = arg;
+            },
+            MOZART_STR("list"));
+
+          auto thr = new Thread(vm, vm->getCurrentSpace(),
+                                procedure, argc, arguments);
+
+          vm->deleteStaticArray<RichNode>(arguments, argc);
+
+          return { vm, thr->getTerminationVar() };
+        },
+        [=] (RichNode terminationVar) {
+          if (terminationVar.isTransient())
+            waitFor(vm, terminationVar);
+        }
+      );
     }
   };
 };

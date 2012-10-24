@@ -7,10 +7,16 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
   # Work around a bug in MinGW
-  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x "
+         CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   set(CXX_STD_OPT -std=gnu++0x)
 else()
   set(CXX_STD_OPT -std=c++0x)
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  set(MOZART_GENERATOR_FLAGS "-I/usr/lib/c++/v1")
 endif()
 
 # Mozart VM library

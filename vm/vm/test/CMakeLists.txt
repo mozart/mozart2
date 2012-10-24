@@ -1,10 +1,18 @@
 # Mozart VM library
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../main" "${CMAKE_CURRENT_BINARY_DIR}/../main")
+include_directories(
+  "${CMAKE_CURRENT_SOURCE_DIR}/../main"
+  "${CMAKE_CURRENT_BINARY_DIR}/../main")
 
 if(MINGW)
   # GTest seems to use some non-standard things :-s
-  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x "
+         CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  include_directories(/usr/lib/c++/v1)
 endif()
 
 # GTest libraries

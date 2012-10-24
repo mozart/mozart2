@@ -29,9 +29,17 @@ include_directories("${GTEST_SRC_DIR}" "${GTEST_SRC_DIR}/include")
 
 # The testing executable
 
-add_executable(vmtest testutils.cc sanitytest.cc coderstest.cc utftest.cc
-  smallinttest.cc floattest.cc atomtest.cc stringtest.cc virtualstringtest.cc
-  bytestringtest.cc gctest.cc)
+set(VMTEST_SRCS testutils.cc sanitytest.cc smallinttest.cc floattest.cc
+  atomtest.cc gctest.cc)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  message(WARNING "String tests are disabled on this platform")
+else()
+  list(APPEND VMTEST_SRCS coderstest.cc utftest.cc stringtest.cc
+    virtualstringtest.cc bytestringtest.cc)
+endif()
+
+add_executable(vmtest ${VMTEST_SRCS})
 target_link_libraries(vmtest mozartvm custom_gtest custom_gtest_main)
 
 if(NOT MINGW)

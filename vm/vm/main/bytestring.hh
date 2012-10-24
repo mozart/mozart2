@@ -116,6 +116,11 @@ void ByteString::stringSearch(
   Self self, VM vm, RichNode from, RichNode needleNode,
   UnstableNode& begin, UnstableNode& end) {
 
+  // TODO Fix this - it was deactivated because of a build problem on Mac OS
+#ifdef __llvm__ // or is it __clang__?
+  raiseError(vm, MOZART_STR("notImplemented"),
+             MOZART_STR("ByteString::stringSearch"));
+#else
   using namespace patternmatching;
 
   auto fromOffset = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
@@ -160,6 +165,7 @@ void ByteString::stringSearch(
     }
 
   }
+#endif
 }
 
 bool ByteString::stringHasPrefix(Self self, VM vm, RichNode prefixNode) {

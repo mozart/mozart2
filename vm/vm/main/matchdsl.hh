@@ -636,23 +636,50 @@ bool matchesSharp(VM vm, RichNode value, Args... fieldsPats) {
  * Pattern matching for variadic tuples
  * See comments at the beginning of the file for usage.
  */
+template <class LT>
+inline
+bool matchesVariadicTuple(VM vm, RichNode value,
+                          size_t& argc, StaticArray<StableNode>& args,
+                          LT labelPat) {
+  if (value.type() != Tuple::type()) {
+    // A value that matches the label pattern is a tuple with 0 elements
+    if (internal::matchesSimple(vm, value, labelPat)) {
+      argc = 0;
+      args = nullptr;
+      return true;
+    }
+
+    internal::waitForIfTransient(vm, value);
+    return false;
+  }
+
+  // Actual matching
+  auto tuple = value.as<Tuple>();
+
+  if (!internal::matchesSimple(vm, *tuple.getLabel(), labelPat))
+    return false;
+
+  // Fill the captured variadic arguments
+  argc = tuple.getWidth();
+  args = tuple.getElementsArray();
+
+  return true;
+}
+
+/**
+ * Pattern matching for variadic tuples with fixed fields at the beginning
+ * See comments at the beginning of the file for usage.
+ */
 template <class LT, class... Args>
 inline
 bool matchesVariadicTuple(VM vm, RichNode value,
                           size_t& argc, StaticArray<StableNode>& args,
                           LT labelPat, Args... fieldsPats) {
   constexpr size_t fixedArgc = sizeof...(Args);
+  static_assert(fixedArgc > 0,
+                "The overload above should have been selected instead.");
 
   if (value.type() != Tuple::type()) {
-    if (fixedArgc == 0) {
-      // If we expect 0 fixed arguments, then an atom is a valid input
-      if (internal::matchesSimple(vm, value, labelPat)) {
-        argc = 0;
-        args = nullptr;
-        return true;
-      }
-    }
-
     internal::waitForIfTransient(vm, value);
     return false;
   }

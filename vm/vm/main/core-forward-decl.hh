@@ -41,6 +41,17 @@
 
 namespace mozart {
 
+namespace internal {
+  /**
+   * Utility function used to ensure that static_assert() is evaluated upon
+   * template instantiation, not before.
+   */
+  template <class T>
+  struct LateStaticAssert {
+    static const bool value = false;
+  };
+}
+
 typedef intptr_t nativeint;
 typedef char nchar;
 #define MOZART_STR(S) u8##S

@@ -22,37 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __MODREFLECTION_H
+#define __MODREFLECTION_H
 
-#include "mozartcore-decl.hh"
+#include "../mozartcore.hh"
 
-#include "datatypeshelpers-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
+namespace builtins {
 
-#endif // __COREDATATYPES_DECL_H
+///////////////////////
+// Reflection module //
+///////////////////////
+
+class ModReflection: public Module {
+public:
+  ModReflection(): Module("Reflection") {}
+
+  class NewReflectiveEntity: public Builtin<NewReflectiveEntity> {
+  public:
+    NewReflectiveEntity(): Builtin("newReflectiveEntity") {}
+
+    void operator()(VM vm, Out stream, Out result) {
+      result = ReflectiveEntity::build(vm, stream);
+    }
+  };
+
+  class Become: public Builtin<Become> {
+  public:
+    Become(): Builtin("become") {}
+
+    void operator()(VM vm, In entity, In value) {
+      auto behavior = entity.type().getStructuralBehavior();
+
+      if ((behavior == sbTokenEq) || (behavior == sbVariable)) {
+        entity.become(vm, value);
+      } else {
+        raiseTypeError(vm, MOZART_STR("Token or Variable entity"), entity);
+      }
+    }
+  };
+};
+
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __MODREFLECTION_H

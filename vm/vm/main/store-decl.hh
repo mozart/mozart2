@@ -228,6 +228,13 @@ public:
     return node() == right.node();
   }
 
+  template <typename T>
+  void become(VM vm, T&& value) {
+    assert((type().getStructuralBehavior() == sbTokenEq) ||
+           (type().getStructuralBehavior() == sbVariable));
+    reinit(vm, std::forward<T>(value));
+  }
+
   inline
   std::string toDebugString();
 private:

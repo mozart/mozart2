@@ -55,5 +55,6 @@
 #include "modules/moddebug.hh"
 #include "modules/modproperty.hh"
 #include "modules/modforeignpointer.hh"
+#include "modules/modreflection.hh"
 
 #endif // __COREMODULES_H

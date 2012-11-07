@@ -22,37 +22,44 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __REFLECTIVETYPES_H
+#define __REFLECTIVETYPES_H
 
-#include "mozartcore-decl.hh"
+#include "mozartcore.hh"
 
-#include "datatypeshelpers-decl.hh"
+#ifndef MOZART_GENERATOR
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
+//////////////////////
+// ReflectiveEntity //
+//////////////////////
 
-#endif // __COREDATATYPES_DECL_H
+#include "ReflectiveEntity-implem.hh"
+
+ReflectiveEntity::ReflectiveEntity(VM vm, UnstableNode& stream) {
+  _stream = ReadOnlyVariable::build(vm);
+  stream.copy(vm, _stream);
+}
+
+ReflectiveEntity::ReflectiveEntity(VM vm, GR gr, Self from) {
+  gr->copyUnstableNode(_stream, from->_stream);
+}
+
+template <typename Label, typename... Args>
+void ReflectiveEntity::reflectiveCall(
+  Self self, VM vm, const nchar* identity, Label&& label, Args&&... args) {
+
+  if (!vm->isOnTopLevel())
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("reflective"));
+
+  ozcalls::internal::doReflectiveCall(
+    vm, identity, _stream,
+    std::forward<Label>(label), std::forward<Args>(args)...);
+}
+
+}
+
+#endif // MOZART_GENERATOR
+
+#endif // __REFLECTIVETYPES_H

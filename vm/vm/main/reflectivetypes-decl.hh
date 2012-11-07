@@ -22,37 +22,62 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __REFLECTIVETYPES_DECL_H
+#define __REFLECTIVETYPES_DECL_H
 
 #include "mozartcore-decl.hh"
 
 #include "datatypeshelpers-decl.hh"
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
+//////////////////////
+// ReflectiveEntity //
+//////////////////////
 
-#endif // __COREDATATYPES_DECL_H
+class ReflectiveEntity;
+
+#ifndef MOZART_GENERATOR
+#include "ReflectiveEntity-implem-decl.hh"
+#endif
+
+class ReflectiveEntity: public DataType<ReflectiveEntity> {
+public:
+  typedef SelfType<ReflectiveEntity>::Self Self;
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("reflective"));
+  }
+
+  inline
+  ReflectiveEntity(VM vm, UnstableNode& stream);
+
+  inline
+  ReflectiveEntity(VM vm, GR gr, Self from);
+
+public:
+  // Reflective call
+
+  template <typename Label, typename... Args>
+  inline
+  void reflectiveCall(Self self, VM vm, const nchar* identity,
+                      Label&& label, Args&&... args);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "<ReflectiveEntity>";
+  }
+
+private:
+  UnstableNode _stream;
+};
+
+#ifndef MOZART_GENERATOR
+#include "ReflectiveEntity-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __REFLECTIVETYPES_DECL_H

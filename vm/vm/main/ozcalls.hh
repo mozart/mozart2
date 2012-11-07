@@ -201,8 +201,11 @@ void asyncOzCall(VM vm, RichNode callable, Args&&... args) {
               std::forward<Args>(args)...);
 }
 
-template <typename... Args>
-void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
+namespace internal {
+
+template <typename Effect, typename... Args>
+void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
+                     Args&&... args) {
   constexpr size_t argc = sizeof...(args);
 
   typedef internal::OutputProcessing<0, 0, Args...> OutputProcessing;
@@ -227,15 +230,16 @@ void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
     // Limitation of the current design
     assert(RichNode(intermediateState).is<Unit>());
 
-    // Create the thread
+    // Initialize the input arguments
 
     UnstableNode unstableArgs[argc];
-    RichNode arguments[argc];
-    internal::initInputArguments<true>(
-      vm, unstableArgs, arguments, std::forward<Args>(args)...);
+    internal::initNodesFromVariadicArgs<0, /* synchronous = */ true>(
+      vm, unstableArgs, std::forward<Args>(args)...);
 
-    Thread* thr = new (vm) Thread(vm, vm->getCurrentSpace(),
-                                  callable, argc, arguments);
+    // Perform the effect
+
+    UnstableNode terminationVar;
+    effect(vm, unstableArgs, terminationVar);
 
     // Build the output of the first step
 
@@ -245,7 +249,7 @@ void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
       RichNode(outputTuple).as<Tuple>().getElementsArray();
 
     OutputProcessing::initOutputArguments(vm, outputs, unstableArgs);
-    outputs[outArgc].init(vm, thr->getTerminationVar());
+    outputs[outArgc].init(vm, std::move(terminationVar));
 
     // Store the result of the first step in the intermediate state
 
@@ -271,11 +275,72 @@ void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
   intermediateState.copy(vm, unit);
 }
 
+}
+
+template <typename... Args>
+void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
+  internal::syncCallGeneric(
+    vm, identity,
+    [callable] (VM vm, UnstableNode unstableArgs[],
+                UnstableNode& terminationVar) {
+      constexpr size_t argc = sizeof...(Args);
+
+      RichNode arguments[argc];
+      for (size_t i = 0; i < argc; i++)
+        arguments[i] = unstableArgs[i];
+
+      Thread* thr = new (vm) Thread(vm, vm->getCurrentSpace(),
+                                    callable, argc, arguments);
+
+      terminationVar.copy(vm, thr->getTerminationVar());
+    },
+    std::forward<Args>(args)...
+  );
+}
+
 template <typename... Args>
 void ozCall(VM vm, RichNode callable, Args&&... args) {
   ozCall(vm, MOZART_STR("::mozart::ozcalls::ozCall"), callable,
          std::forward<Args>(args)...);
 }
+
+namespace internal {
+
+template <typename Label, typename... Args>
+inline
+void doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
+                      Label&& label, Args&&... args) {
+  internal::syncCallGeneric(
+    vm, identity,
+    [&stream, &label] (VM vm, UnstableNode unstableArgs[],
+                       UnstableNode& terminationVar) {
+      constexpr size_t argc = sizeof...(Args);
+
+      // Create the message
+
+      auto message = Tuple::build(vm, argc, std::forward<Label>(label));
+      auto messageElements = RichNode(message).as<Tuple>().getElementsArray();
+      for (size_t i = 0; i < argc; i++)
+        messageElements[i].init(vm, unstableArgs[i]);
+
+      // Create the termination variable
+
+      terminationVar = Variable::build(vm);
+
+      // Send the message#terminationVar to the stream
+
+      auto newStream = ReadOnlyVariable::build(vm);
+      auto cons = buildCons(vm, buildSharp(vm, message, terminationVar),
+                            newStream);
+      UnstableNode oldStream = std::move(stream);
+      stream = std::move(newStream);
+      BindableReadOnly(oldStream).bindReadOnly(vm, cons);
+    },
+    std::forward<Args>(args)...
+  );
+}
+
+} // namespace internal
 
 } // namespace ozcalls
 

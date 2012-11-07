@@ -47,6 +47,7 @@
 #include "objects.hh"
 #include "port.hh"
 #include "records.hh"
+#include "reflectivetypes.hh"
 #include "reifiedspace.hh"
 #include "reifiedthread.hh"
 #include "smallint.hh"

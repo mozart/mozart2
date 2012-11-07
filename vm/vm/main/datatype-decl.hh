@@ -91,6 +91,7 @@ template<class...>
 struct ImplementedBy{};
 
 struct NoAutoWait{};
+struct NoAutoReflectiveCalls{};
 
 struct Copyable{};
 

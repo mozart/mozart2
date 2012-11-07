@@ -90,6 +90,7 @@ void printActualTemplateParameters(llvm::raw_fd_ostream& Out,
 void parseFunction(const clang::FunctionDecl* function,
                    std::string& name, std::string& resultType,
                    std::string& formalParams, std::string& actualParams,
+                   std::string& reflectActualParams,
                    bool hasSelfParam);
 
 namespace internal {

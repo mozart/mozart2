@@ -63,7 +63,9 @@ struct ImplemMethodDef {
   }
 
   void parseTheFunction() {
-    parseFunction(function, name, resultType, formals, actuals, hasSelfParam);
+    std::string reflectActuals;
+    parseFunction(function, name, resultType, formals, actuals,
+                  reflectActuals, hasSelfParam);
   }
 
   const FunctionDecl* function;

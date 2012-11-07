@@ -209,6 +209,7 @@ void printActualTemplateParameters(llvm::raw_fd_ostream& Out,
 void parseFunction(const clang::FunctionDecl* function,
                    std::string& name, std::string& resultType,
                    std::string& formalParams, std::string& actualParams,
+                   std::string& reflectActualParams,
                    bool hasSelfParam) {
 
   name = function->getNameAsString();
@@ -219,11 +220,14 @@ void parseFunction(const clang::FunctionDecl* function,
 
   std::stringstream formals;
   std::stringstream actuals;
+  std::stringstream reflectActuals;
 
   for (auto iter = param_begin; iter != param_end; ++iter) {
     if (iter != param_begin) {
       formals << ", ";
       actuals << ", ";
+      if (iter != param_begin+1)
+        reflectActuals << ", ";
     }
 
     ParmVarDecl* param = *iter;
@@ -252,15 +256,27 @@ void parseFunction(const clang::FunctionDecl* function,
     }
 
     // Print it
-    if (needForward)
+    if (needForward) {
       actuals << "std::forward<" << forwardArg << ">(" << paramName << ")";
-    else
+      reflectActuals << "std::forward<" << forwardArg << ">(" << paramName << ")";
+    } else {
       actuals << paramName;
 
-    if (isPackExpansion)
+      if (iter != param_begin) {
+        if (paramType->isLValueReferenceType())
+          reflectActuals << "::mozart::ozcalls::out(" << paramName << ")";
+        else
+          reflectActuals << paramName;
+      }
+    }
+
+    if (isPackExpansion) {
       actuals << "...";
+      reflectActuals << "...";
+    }
   }
 
   formalParams = formals.str();
   actualParams = actuals.str();
+  reflectActualParams = reflectActuals.str();
 }

@@ -33,6 +33,7 @@ struct InterfaceDef {
     name = "";
     implems = 0;
     autoWait = true;
+    autoReflectiveCalls = true;
   }
 
   void makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to);
@@ -40,6 +41,7 @@ struct InterfaceDef {
   std::string name;
   const TemplateSpecializationType* implems;
   bool autoWait;
+  bool autoReflectiveCalls;
 };
 
 void handleInterface(const std::string& outputDir, const SpecDecl* ND) {
@@ -58,6 +60,8 @@ void handleInterface(const std::string& outputDir, const SpecDecl* ND) {
         dyn_cast<TemplateSpecializationType>(iter->getType().getTypePtr());
     } else if (markerLabel == "NoAutoWait") {
       definition.autoWait = false;
+    } else if (markerLabel == "NoAutoReflectiveCalls") {
+      definition.autoReflectiveCalls = false;
     } else {}
   }
 
@@ -102,8 +106,9 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
     if (!function->isCXXInstanceMember())
       continue;
 
-    std::string funName, resultType, formals, actuals;
-    parseFunction(function, funName, resultType, formals, actuals, true);
+    std::string funName, resultType, formals, actuals, reflectActuals;
+    parseFunction(function, funName, resultType, formals, actuals,
+                  reflectActuals, true);
 
     // Declaration of the procedure
     to << "\n  " << resultType << " " << funName
@@ -125,6 +130,24 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
       to << "if (_self.isTransient()) {\n";
       to << "      waitFor(vm, _self);\n";
       to << "      throw std::exception(); // not reachable\n";
+      to << "    } else ";
+    }
+
+    // Auto-reflective calls handling
+    if (autoReflectiveCalls) {
+      to << "if (_self.is< ::mozart::ReflectiveEntity>()) {\n";
+      if (resultType != "void")
+        to << "      " << resultType << " _result;\n";
+      to << "      _self.as< ::mozart::ReflectiveEntity>()."
+         << "reflectiveCall(vm, MOZART_STR(\"$intf$::"
+         << name << "::" << funName << "\"), MOZART_STR(\"" << funName << "\")";
+      if (!reflectActuals.empty())
+        to << ", " << reflectActuals;
+      if (resultType != "void")
+        to << ", ::mozart::ozcalls::out(_result)";
+      to << ");\n";
+      if (resultType != "void")
+        to << "      return _result;\n";
       to << "    } else ";
     }
 

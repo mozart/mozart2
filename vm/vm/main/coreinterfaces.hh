@@ -29,6 +29,7 @@
 
 #include "coreinterfaces-decl.hh"
 #include "coredatatypes-decl.hh"
+#include "ozcalls-decl.hh"
 
 namespace mozart {
 

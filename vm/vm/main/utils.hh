@@ -45,6 +45,10 @@ atom_t PrimitiveTypeToExpectedAtom<T>::result(VM vm) {
   return OzType::type()->getTypeAtom(vm);
 }
 
+atom_t PrimitiveTypeToExpectedAtom<internal::intIfDifferentFromNativeInt>::result(VM vm) {
+  return vm->getAtom(MOZART_STR("integer"));
+}
+
 template <class T>
 T getArgument(VM vm, RichNode argValue, const nchar* expectedType) {
   using namespace patternmatching;

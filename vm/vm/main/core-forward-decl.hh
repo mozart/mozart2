@@ -173,6 +173,24 @@ struct VMCleanupListNode {
   VMCleanupListNode* next;
 };
 
+namespace internal {
+  struct AlternativeToInt {
+    operator nativeint() { return 0; }
+  };
+
+  struct AlternativeToInt64 {
+    operator nativeint() { return 0; }
+  };
+
+  typedef typename std::conditional<
+    std::is_same<int, nativeint>::value,
+    AlternativeToInt, int>::type intIfDifferentFromNativeInt;
+
+  typedef typename std::conditional<
+    std::is_same<std::int64_t, nativeint>::value,
+    AlternativeToInt64, std::int64_t>::type int64IfDifferentFromNativeInt;
+}
+
 }
 
 // new operators must be declared outside of any namespace

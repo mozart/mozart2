@@ -39,6 +39,12 @@ struct PrimitiveTypeToExpectedAtom {
   static atom_t result(VM vm);
 };
 
+template <>
+struct PrimitiveTypeToExpectedAtom<internal::intIfDifferentFromNativeInt> {
+  inline
+  static atom_t result(VM vm);
+};
+
 template <class T>
 inline
 T getArgument(VM vm, RichNode argValue, const nchar* expectedType);

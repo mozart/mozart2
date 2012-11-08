@@ -218,18 +218,14 @@ void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
    * some code duplication with this routine.
    */
 
-  namespace patmat = patternmatching;
-
   assert(vm->isIntermediateStateAvailable());
 
-  UnstableNode& intermediateState = vm->getIntermediateState();
+  IntermediateState& intermediateState = vm->getIntermediateState();
+  auto checkPoint = intermediateState.makeCheckPoint(vm);
   RichNode state;
 
-  if (!patmat::matchesTuple(vm, intermediateState, identity,
-                            patmat::capture(state))) {
-    // Limitation of the current design
-    assert(RichNode(intermediateState).is<Unit>());
-
+  if (!intermediateState.fetch(vm, identity,
+                               patternmatching::capture(state))) {
     // Initialize the input arguments
 
     UnstableNode unstableArgs[argc];
@@ -253,7 +249,7 @@ void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
 
     // Store the result of the first step in the intermediate state
 
-    intermediateState = buildTuple(vm, identity, outputTuple);
+    intermediateState.resetAndStore(vm, checkPoint, identity, outputTuple);
     state = outputTuple;
     state.ensureStable(vm);
   }
@@ -271,8 +267,6 @@ void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
     OutputProcessing::processOutputArguments(vm, outputs,
                                              std::forward<Args>(args)...);
   }
-
-  intermediateState.copy(vm, unit);
 }
 
 }

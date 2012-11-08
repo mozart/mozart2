@@ -31,15 +31,77 @@
 
 namespace mozart {
 
+///////////////////////
+// IntermediateState //
+///////////////////////
+
+IntermediateState::IntermediateState(VM vm): _last(_list.begin()) {
+  _list.push_front_new(vm, vm, unit);
+  _last = _list.begin();
+}
+
+IntermediateState::IntermediateState(VM vm, GR gr, IntermediateState& from):
+  _last(_list.begin()) {
+
+  assert(from._last == from._list.begin());
+
+  for (auto iter = from._list.begin(); iter != from._list.end(); ++iter) {
+    _list.push_back_new(vm);
+    gr->copyUnstableNode(_list.back(), *iter);
+  }
+}
+
+void IntermediateState::reset(VM vm, CheckPoint checkPoint) {
+  _last = checkPoint;
+  _list.remove_after(vm, checkPoint, _list.end());
+}
+
+void IntermediateState::reset(VM vm) {
+  reset(vm, _list.begin());
+}
+
+template <typename... Args>
+bool IntermediateState::fetch(VM vm, const nchar* identity, Args... args) {
+  auto iter = _last + 1;
+  if (iter == _list.end()) {
+    return false;
+  } else if (patternmatching::matchesTuple(vm, *iter, identity, args...)) {
+    _last = iter;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+template <typename... Args>
+void IntermediateState::store(VM vm, const nchar* identity, Args&&... args) {
+  _list.push_back_new(vm, vm,
+                      buildTuple(vm, identity, std::forward<Args>(args)...));
+  ++_last;
+}
+
+template <typename... Args>
+void IntermediateState::resetAndStore(VM vm, CheckPoint checkPoint,
+                                      const nchar* identity, Args&&... args) {
+  reset(vm, checkPoint);
+  store(vm, identity, std::forward<Args>(args)...);
+}
+
+void IntermediateState::rewind(VM vm) {
+  _last = _list.begin();
+}
+
+//////////////
+// Runnable //
+//////////////
+
 Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
   vm(vm), _space(space), _priority(priority),
   _runnable(false), _terminated(false), _dead(false),
-  _raiseOnBlock(false),
+  _raiseOnBlock(false), _intermediateState(vm),
   _replicate(nullptr) {
 
   _reification.init(vm, ReifiedThread::build(vm, this));
-
-  _intermediateState.init(vm, Unit::build(vm));
 
   _space->notifyThreadCreated();
 
@@ -47,7 +109,8 @@ Runnable::Runnable(VM vm, Space* space, ThreadPriority priority) :
 }
 
 Runnable::Runnable(GR gr, Runnable& from) :
-  vm(gr->vm), _replicate(nullptr) {
+  vm(gr->vm), _intermediateState(vm, gr, from._intermediateState),
+  _replicate(nullptr) {
 
   gr->copySpace(_space, from._space);
   _priority = from._priority;
@@ -58,8 +121,6 @@ Runnable::Runnable(GR gr, Runnable& from) :
   _raiseOnBlock = from._raiseOnBlock;
 
   _reification.init(vm, ReifiedThread::build(vm, this));
-
-  gr->copyUnstableNode(_intermediateState, from._intermediateState);
 
   if (!_dead)
     vm->aliveThreads.insert(this);

@@ -172,7 +172,8 @@ public:
     return _currentThread != nullptr;
   }
 
-  UnstableNode& getIntermediateState() {
+  IntermediateState& getIntermediateState() {
+    assert(isIntermediateStateAvailable());
     return _currentThread->getIntermediateState();
   }
 

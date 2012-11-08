@@ -246,55 +246,39 @@ std::basic_string<C> vsToString(VM vm, RichNode vs) {
 // Dealing with non-idempotent steps //
 ///////////////////////////////////////
 
-namespace internal {
-  template <typename State, typename Result, typename SecondStep>
-  struct PerformSecondStep {
-    __attribute__((always_inline))
-    inline
-    static Result call(VM vm, State& state, const SecondStep& secondStep,
-                       UnstableNode& intermediateState) {
-      Result result = secondStep(state);
-      intermediateState = build(vm, unit);
-      return result;
-    }
-  };
-
-  template <typename State, typename SecondStep>
-  struct PerformSecondStep<State, void, SecondStep> {
-    __attribute__((always_inline))
-    inline
-    static void call(VM vm, State& state, const SecondStep& secondStep,
-                     UnstableNode& intermediateState) {
-      secondStep(state);
-      intermediateState = build(vm, unit);
-    }
-  };
-}
-
-template <typename FirstStep, typename SecondStep>
-auto performNonIdempotentStep(VM vm, const nchar* identity,
-                              const FirstStep& firstStep,
-                              const SecondStep& secondStep)
-    -> typename function_traits<SecondStep>::result_type {
-
-  using namespace patternmatching;
-
+/** Protect a non-idempotent step from being executing twice */
+template <typename Step>
+auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+    -> typename std::enable_if<!std::is_void<decltype(step())>::value,
+                               decltype(step())>::type {
   assert(vm->isIntermediateStateAvailable());
 
-  UnstableNode& intermediateState = vm->getIntermediateState();
-  decltype(firstStep()) state;
+  IntermediateState& intermediateState = vm->getIntermediateState();
+  decltype(step()) result;
 
-  if (!matchesTuple(vm, intermediateState, identity, capture(state))) {
-    // Limitation of the current design
-    assert(RichNode(intermediateState).is<Unit>());
-
-    state = firstStep();
-    intermediateState = buildTuple(vm, identity, state);
+  auto checkPoint = intermediateState.makeCheckPoint(vm);
+  if (!intermediateState.fetch(vm, identity, patternmatching::capture(result))) {
+    result = step();
+    intermediateState.resetAndStore(vm, checkPoint, identity, result);
   }
 
-  return ::mozart::internal::PerformSecondStep<
-    decltype(firstStep()), decltype(secondStep(state)), SecondStep>::call(
-      vm, state, secondStep, intermediateState);
+  return result;
+}
+
+/** Protect a non-idempotent step from being executing twice */
+template <typename Step>
+auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+    -> typename std::enable_if<std::is_void<decltype(step())>::value,
+                               void>::type {
+  assert(vm->isIntermediateStateAvailable());
+
+  IntermediateState& intermediateState = vm->getIntermediateState();
+
+  auto checkPoint = intermediateState.makeCheckPoint(vm);
+  if (!intermediateState.fetch(vm, identity)) {
+    step();
+    intermediateState.resetAndStore(vm, checkPoint, identity);
+  }
 }
 
 }

@@ -136,12 +136,17 @@ std::basic_string<C> vsToString(VM vm, RichNode vs);
 // Dealing with non-idempotent steps //
 ///////////////////////////////////////
 
-template <typename FirstStep, typename SecondStep>
+template <typename Step>
 inline
-auto performNonIdempotentStep(VM vm, const nchar* identity,
-                              const FirstStep& firstStep,
-                              const SecondStep& secondStep)
-    -> typename function_traits<SecondStep>::result_type;
+auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+    -> typename std::enable_if<!std::is_void<decltype(step())>::value,
+                               decltype(step())>::type;
+
+template <typename Step>
+inline
+auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+    -> typename std::enable_if<std::is_void<decltype(step())>::value,
+                               void>::type;
 
 }
 

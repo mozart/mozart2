@@ -26,6 +26,8 @@
 #define __RUNNABLE_DECL_H
 
 #include "core-forward-decl.hh"
+#include "store-decl.hh"
+#include "vmallocatedlist-decl.hh"
 
 #include <cassert>
 
@@ -38,6 +40,56 @@ enum ThreadPriority {
   tpLow, tpMiddle, tpHi,
   tpCount
 };
+
+///////////////////////
+// IntermediateState //
+///////////////////////
+
+class IntermediateState {
+private:
+  typedef VMAllocatedList<UnstableNode> List;
+public:
+  typedef List::iterator CheckPoint;
+public:
+  inline
+  explicit IntermediateState(VM vm);
+
+  inline
+  IntermediateState(VM vm, GR gr, IntermediateState& from);
+
+  CheckPoint makeCheckPoint(VM vm) {
+    return _last;
+  }
+
+  inline
+  void reset(VM vm, CheckPoint checkPoint);
+
+  inline
+  void reset(VM vm);
+
+  template <typename... Args>
+  inline
+  bool fetch(VM vm, const nchar* identity, Args... args);
+
+  template <typename... Args>
+  inline
+  void store(VM vm, const nchar* identity, Args&&... args);
+
+  template <typename... Args>
+  inline
+  void resetAndStore(VM vm, CheckPoint checkPoint, const nchar* identity,
+                     Args&&... args);
+
+  inline
+  void rewind(VM vm);
+private:
+  List _list;
+  List::iterator _last;
+};
+
+//////////////
+// Runnable //
+//////////////
 
 class Runnable {
 public:
@@ -89,7 +141,7 @@ public:
     _raiseOnBlock = value;
   }
 
-  UnstableNode& getIntermediateState() {
+  IntermediateState& getIntermediateState() {
     return _intermediateState;
   }
 
@@ -130,7 +182,7 @@ private:
 
   StableNode _reification;
 
-  UnstableNode _intermediateState;
+  IntermediateState _intermediateState;
 
   Runnable* _replicate;
 

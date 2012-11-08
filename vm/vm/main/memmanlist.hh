@@ -71,6 +71,15 @@ public:
       return result;
     }
 
+    iterator operator+(size_t count) {
+      iterator result = *this;
+      while (count != 0) {
+        ++result;
+        --count;
+      }
+      return result;
+    }
+
     T& operator*() {
       return node->item;
     }
@@ -79,6 +88,8 @@ public:
       return &node->item;
     }
   private:
+    friend class MemManagedList<T, MM>;
+
     ListNode* node;
   };
 
@@ -205,10 +216,25 @@ public:
     first = last = nullptr;
   }
 
-  void remove(MM mm, removable_iterator& iterator) {
+  removable_iterator remove(MM mm, removable_iterator iterator) {
     ListNode* node = iterator.node;
     internalRemove(iterator);
     freeNode(mm, node);
+    return iterator;
+  }
+
+  void remove(MM mm, removable_iterator first, removable_iterator last) {
+    while (first != last)
+      first = remove(mm, first);
+  }
+
+  void remove_after(MM mm, iterator iter) {
+    remove(removable_iterator(iter.node->next, iter.node));
+  }
+
+  void remove_after(MM mm, iterator first, iterator last) {
+    remove(mm, removable_iterator(first.node->next, first.node),
+           removable_iterator(last.node, nullptr /* unused */));
   }
 
   void splice(MM mm, MemManagedList<T, MM>& source) {
@@ -276,7 +302,7 @@ private:
     ListNode* node = iterator.node;
     ListNode* prev = iterator.prev;
 
-    ++iterator;
+    iterator.node = node->next;
 
     if (node == last)
       last = prev;

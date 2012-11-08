@@ -65,9 +65,9 @@ public:
     Apply(): Builtin("apply") {}
 
     void operator()(VM vm, In procedure, In args) {
-      performNonIdempotentStep(
+      RichNode terminationVar = protectNonIdempotentStep(
         vm, MOZART_STR("::mozart::builtins::ModProcedure::Apply"),
-        [=] () -> UnstableNode {
+        [=] () -> RichNode {
           size_t argc = ozListLength(vm, args);
           auto arguments = vm->newStaticArray<RichNode>(argc);
           size_t i = 0;
@@ -83,13 +83,12 @@ public:
 
           vm->deleteStaticArray<RichNode>(arguments, argc);
 
-          return { vm, thr->getTerminationVar() };
-        },
-        [=] (RichNode terminationVar) {
-          if (terminationVar.isTransient())
-            waitFor(vm, terminationVar);
+          return RichNode(thr->getTerminationVar());
         }
       );
+
+      if (terminationVar.isTransient())
+        waitFor(vm, terminationVar);
     }
   };
 };

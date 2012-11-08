@@ -277,6 +277,8 @@ void Thread::run() {
 
   popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
 
+  getIntermediateState().rewind(vm);
+
   // Some helpers
 
 #define advancePC(argCount) do { PC += (argCount) + 1; } while (0)
@@ -1074,6 +1076,9 @@ void Thread::run() {
           return;
         }
       } // Big switch testing the opcode
+
+      // When an opcode is successful, reset the intermediate state
+      getIntermediateState().reset(vm);
     } // Big loop iterating over opcodes
 
   // The big catches clauses that catch all bad things in the world
@@ -1342,7 +1347,7 @@ void Thread::applyRaise(VM vm, RichNode exception,
                         StaticArray<StableNode>& gregs,
                         StaticArray<StableNode>& kregs) {
   // Discard any intermediate state
-  vm->getIntermediateState() = build(vm, unit);
+  getIntermediateState().reset(vm);
 
   UnstableNode preprocessedException = preprocessException(
     vm, exception, abstraction, PC);

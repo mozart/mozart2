@@ -49,23 +49,18 @@ Port::Port(VM vm, GR gr, Self from): WithHome(vm, gr, from->home()) {
 void Port::send(RichNode self, VM vm, RichNode value) {
   // TODO Send to a parent space (no, the following test is not right)
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("port"));
 
-  auto newStream = ReadOnlyVariable::build(vm);
-  auto cons = buildCons(vm, value, newStream);
-  UnstableNode oldStream = std::move(_stream);
-  _stream = std::move(newStream);
-  BindableReadOnly(oldStream).bindReadOnly(vm, cons);
+  sendToReadOnlyStream(vm, _stream, value);
 }
 
 UnstableNode Port::sendReceive(RichNode self, VM vm, RichNode value) {
   // TODO Send to a parent space (no, the following test is not right)
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
+    raise(vm, MOZART_STR("globalState"), MOZART_STR("port"));
 
   auto result = OptVar::build(vm);
-  auto pair = buildTuple(vm, vm->coreatoms.sharp, value, result);
-  send(self, vm, pair);
+  sendToReadOnlyStream(vm, _stream, buildSharp(vm, value, result));
   return result;
 }
 

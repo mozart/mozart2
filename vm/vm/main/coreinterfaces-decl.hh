@@ -36,7 +36,8 @@ namespace mozart {
 class DataflowVariable;
 template<>
 struct Interface<DataflowVariable>:
-  ImplementedBy<OptVar, Variable, ReadOnly, ReadOnlyVariable, FailedValue>,
+  ImplementedBy<OptVar, Variable, ReadOnly, ReadOnlyVariable, FailedValue,
+                ReflectiveVariable>,
   NoAutoWait, NoAutoReflectiveCalls {
 
   void addToSuspendList(RichNode self, VM vm, RichNode variable) {

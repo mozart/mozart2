@@ -132,6 +132,10 @@ template <class C>
 inline
 std::basic_string<C> vsToString(VM vm, RichNode vs);
 
+template <typename T>
+inline
+void sendToReadOnlyStream(VM vm, UnstableNode& stream, T&& value);
+
 ///////////////////////////////////////
 // Dealing with non-idempotent steps //
 ///////////////////////////////////////

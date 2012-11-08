@@ -242,6 +242,15 @@ std::basic_string<C> vsToString(VM vm, RichNode vs) {
   return internal::VSToStringHelper<C>::call(vm, vs);
 }
 
+template <typename T>
+void sendToReadOnlyStream(VM vm, UnstableNode& stream, T&& value) {
+  auto newStream = ReadOnlyVariable::build(vm);
+  auto cons = buildCons(vm, std::forward<T>(value), newStream);
+  UnstableNode oldStream = std::move(stream);
+  stream = std::move(newStream);
+  BindableReadOnly(oldStream).bindReadOnly(vm, cons);
+}
+
 ///////////////////////////////////////
 // Dealing with non-idempotent steps //
 ///////////////////////////////////////

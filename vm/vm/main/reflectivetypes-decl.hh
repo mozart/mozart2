@@ -28,6 +28,7 @@
 #include "mozartcore-decl.hh"
 
 #include "datatypeshelpers-decl.hh"
+#include "variables-decl.hh"
 
 namespace mozart {
 
@@ -76,6 +77,58 @@ private:
 
 #ifndef MOZART_GENERATOR
 #include "ReflectiveEntity-implem-decl-after.hh"
+#endif
+
+////////////////////////
+// ReflectiveVariable //
+////////////////////////
+
+class ReflectiveVariable;
+
+#ifndef MOZART_GENERATOR
+#include "ReflectiveVariable-implem-decl.hh"
+#endif
+
+class ReflectiveVariable: public DataType<ReflectiveVariable>,
+  public VariableBase<ReflectiveVariable>,
+  Transient, WithVariableBehavior<85> {
+public:
+  typedef SelfType<ReflectiveVariable>::Self Self;
+public:
+  inline
+  ReflectiveVariable(VM vm, UnstableNode& stream);
+
+  inline
+  ReflectiveVariable(VM vm, Space* home, UnstableNode& stream);
+
+  inline
+  ReflectiveVariable(VM vm, GR gr, Self from);
+
+public:
+  // DataflowVariable interface
+
+  inline
+  void markNeeded(Self self, VM vm);
+
+  inline
+  void bind(Self self, VM vm, RichNode src);
+
+  inline
+  void reflectiveBind(Self self, VM vm, RichNode src);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+    out << "_<Reflective>";
+  }
+
+private:
+  UnstableNode _stream;
+};
+
+#ifndef MOZART_GENERATOR
+#include "ReflectiveVariable-implem-decl-after.hh"
 #endif
 
 }

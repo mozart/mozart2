@@ -68,6 +68,13 @@ struct ImplemMethodDef {
                   reflectActuals, hasSelfParam);
   }
 
+  bool isRedefinitionOf(const ImplemMethodDef& other) {
+    return (hasSelfParam == other.hasSelfParam) &&
+      (name == other.name) &&
+      (resultType == other.resultType) &&
+      (formals == other.formals);
+  }
+
   const FunctionDecl* function;
   const FunctionTemplateDecl* funTemplate;
 
@@ -187,7 +194,17 @@ void collectMethods(ImplementationDef& definition, const ClassDecl* CD) {
 
       method.parseTheFunction();
 
-      definition.methods.push_back(method);
+      bool redefinition = false;
+      for (auto iter = definition.methods.begin();
+           iter != definition.methods.end(); ++iter) {
+        if (method.isRedefinitionOf(*iter)) {
+          redefinition = true;
+          break;
+        }
+      }
+
+      if (!redefinition)
+        definition.methods.push_back(method);
     }
   }
 }

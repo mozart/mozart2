@@ -50,6 +50,27 @@ public:
     }
   };
 
+  class NewReflectiveVariable: public Builtin<NewReflectiveVariable> {
+  public:
+    NewReflectiveVariable(): Builtin("newReflectiveVariable") {}
+
+    void operator()(VM vm, Out stream, Out result) {
+      result = ReflectiveVariable::build(vm, stream);
+    }
+  };
+
+  class BindReflectiveVariable: public Builtin<BindReflectiveVariable> {
+  public:
+    BindReflectiveVariable(): Builtin("bindReflectiveVariable") {}
+
+    void operator()(VM vm, In variable, In value) {
+      if (variable.is<ReflectiveVariable>())
+        variable.as<ReflectiveVariable>().reflectiveBind(vm, value);
+      else
+        raiseTypeError(vm, MOZART_STR("ReflectiveVariable"), variable);
+    }
+  };
+
   class Become: public Builtin<Become> {
   public:
     Become(): Builtin("become") {}

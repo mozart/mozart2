@@ -58,6 +58,52 @@ bool ReflectiveEntity::reflectiveCall(
     std::forward<Label>(label), std::forward<Args>(args)...);
 }
 
+////////////////////////
+// ReflectiveVariable //
+////////////////////////
+
+#include "ReflectiveVariable-implem.hh"
+
+ReflectiveVariable::ReflectiveVariable(VM vm, UnstableNode& stream):
+  VariableBase(vm) {
+
+  _stream = ReadOnlyVariable::build(vm);
+  stream.copy(vm, _stream);
+}
+
+ReflectiveVariable::ReflectiveVariable(VM vm, Space* home,
+                                       UnstableNode& stream):
+  VariableBase(vm, home) {
+
+  _stream = ReadOnlyVariable::build(vm);
+  stream.copy(vm, _stream);
+}
+
+ReflectiveVariable::ReflectiveVariable(VM vm, GR gr, Self from):
+  VariableBase(vm, gr, from) {
+
+  gr->copyUnstableNode(_stream, from->_stream);
+}
+
+void ReflectiveVariable::markNeeded(Self self, VM vm) {
+  if (!isNeeded(vm)) {
+    VariableBase::markNeeded(self, vm);
+    sendToReadOnlyStream(vm, _stream, buildSharp(vm, MOZART_STR("markNeeded"),
+                                                 OptVar::build(vm)));
+  }
+}
+
+void ReflectiveVariable::bind(Self self, VM vm, RichNode src) {
+  ozcalls::internal::doReflectiveCall(
+    vm, MOZART_STR("mozart::ReflectiveVariable::bind"), _stream,
+    MOZART_STR("bind"), src
+  );
+}
+
+void ReflectiveVariable::reflectiveBind(Self self, VM vm, RichNode src) {
+  doBind(self, vm, src);
+}
+
 }
 
 #endif // MOZART_GENERATOR

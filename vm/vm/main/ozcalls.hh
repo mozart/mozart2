@@ -328,12 +328,7 @@ bool doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
 
       // Send the message#terminationVar to the stream
 
-      auto newStream = ReadOnlyVariable::build(vm);
-      auto cons = buildCons(vm, buildSharp(vm, message, terminationVar),
-                            newStream);
-      UnstableNode oldStream = std::move(stream);
-      stream = std::move(newStream);
-      BindableReadOnly(oldStream).bindReadOnly(vm, cons);
+      sendToReadOnlyStream(vm, stream, buildSharp(vm, message, terminationVar));
     },
     std::forward<Args>(args)...
   );

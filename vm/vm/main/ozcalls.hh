@@ -203,8 +203,8 @@ void asyncOzCall(VM vm, RichNode callable, Args&&... args) {
 
 namespace internal {
 
-template <typename Effect, typename... Args>
-void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
+template <bool reflective, typename Effect, typename... Args>
+bool syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
                      Args&&... args) {
   constexpr size_t argc = sizeof...(args);
 
@@ -262,10 +262,15 @@ void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
     if (terminationVar.isTransient())
       waitFor(vm, terminationVar);
 
+    if (reflective && !terminationVar.is<Unit>())
+      return false;
+
     // Now the thread is terminated, we can fetch the arguments
 
     OutputProcessing::processOutputArguments(vm, outputs,
                                              std::forward<Args>(args)...);
+
+    return true;
   }
 }
 
@@ -273,7 +278,7 @@ void syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
 
 template <typename... Args>
 void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
-  internal::syncCallGeneric(
+  internal::syncCallGeneric</* reflective = */ false>(
     vm, identity,
     [callable] (VM vm, UnstableNode unstableArgs[],
                 UnstableNode& terminationVar) {
@@ -302,9 +307,9 @@ namespace internal {
 
 template <typename Label, typename... Args>
 inline
-void doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
+bool doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
                       Label&& label, Args&&... args) {
-  internal::syncCallGeneric(
+  return internal::syncCallGeneric</* reflective = */ true>(
     vm, identity,
     [&stream, &label] (VM vm, UnstableNode unstableArgs[],
                        UnstableNode& terminationVar) {

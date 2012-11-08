@@ -60,7 +60,7 @@ public:
 
   template <typename Label, typename... Args>
   inline
-  void reflectiveCall(Self self, VM vm, const nchar* identity,
+  bool reflectiveCall(Self self, VM vm, const nchar* identity,
                       Label&& label, Args&&... args);
 
 public:

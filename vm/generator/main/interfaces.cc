@@ -133,26 +133,29 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
       to << "    } else ";
     }
 
+    to << "{\n";
+
     // Auto-reflective calls handling
     if (autoReflectiveCalls) {
-      to << "if (_self.is< ::mozart::ReflectiveEntity>()) {\n";
+      to << "      if (_self.is< ::mozart::ReflectiveEntity>()) {\n";
       if (resultType != "void")
-        to << "      " << resultType << " _result;\n";
-      to << "      _self.as< ::mozart::ReflectiveEntity>()."
+        to << "        " << resultType << " _result;\n";
+      to << "        if (_self.as< ::mozart::ReflectiveEntity>()."
          << "reflectiveCall(vm, MOZART_STR(\"$intf$::"
          << name << "::" << funName << "\"), MOZART_STR(\"" << funName << "\")";
       if (!reflectActuals.empty())
         to << ", " << reflectActuals;
       if (resultType != "void")
         to << ", ::mozart::ozcalls::out(_result)";
-      to << ");\n";
+      to << "))\n";
       if (resultType != "void")
-        to << "      return _result;\n";
-      to << "    } else ";
+        to << "          return _result;\n";
+      else
+        to << "          return;\n";
+      to << "      }\n";
     }
 
     // Default behavior
-    to << "{\n";
     to << "      return Interface<" << name << ">()." << funName << "(_self";
     if (!actuals.empty())
       to << ", " << actuals;

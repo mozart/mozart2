@@ -47,13 +47,13 @@ ReflectiveEntity::ReflectiveEntity(VM vm, GR gr, Self from) {
 }
 
 template <typename Label, typename... Args>
-void ReflectiveEntity::reflectiveCall(
+bool ReflectiveEntity::reflectiveCall(
   Self self, VM vm, const nchar* identity, Label&& label, Args&&... args) {
 
   if (!vm->isOnTopLevel())
     raise(vm, MOZART_STR("globalState"), MOZART_STR("reflective"));
 
-  ozcalls::internal::doReflectiveCall(
+  return ozcalls::internal::doReflectiveCall(
     vm, identity, _stream,
     std::forward<Label>(label), std::forward<Args>(args)...);
 }

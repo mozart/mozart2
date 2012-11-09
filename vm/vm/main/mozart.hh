@@ -30,7 +30,6 @@
 #include "coredatatypes.hh"
 
 #include "builtins.hh"
-#include "builtinutils.hh"
 #include "coreatoms.hh"
 #include "datatype.hh"
 #include "dynbuilders.hh"

@@ -28,7 +28,6 @@
 #include "mozartcore-decl.hh"
 
 #include "builtins-decl.hh"
-#include "builtinutils-decl.hh"
 #include "corebuilders.hh"
 #include "coredatatypes-decl.hh"
 #include "coreinterfaces.hh"

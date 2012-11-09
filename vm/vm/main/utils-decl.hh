@@ -102,28 +102,32 @@ private:
 };
 
 /**
- * Apply a function on a list.
+ * Apply a function to each element of an Oz list
  *
- * For example, if the list is `a|b|c|d|rest`, then this function is equivalent
- * to::
- *
- *      MOZART_CHECK_OPRESULT(onHead(a));
- *      MOZART_CHECK_OPRESULT(onHead(b));
- *      MOZART_CHECK_OPRESULT(onHead(c));
- *      MOZART_CHECK_OPRESULT(onHead(d));
- *      return onTail(rest);
- *
- * The function onTail will **not** be called if the last element is `nil`. It
- * assumes the list all have the same type "T".
+ * Example: if list == `a|b|c|nil`, ozListForEach performs:
+ *   f(a);
+ *   f(b);
+ *   f(c);
  */
-template <class F, class G>
-inline
-void ozListForEach(VM vm, RichNode list, const F& onHead, const G& onTail);
-
 template <class F>
 inline
-void ozListForEach(VM vm, RichNode list, const F& onHead,
-                   const nchar* expectedType);
+auto ozListForEach(VM vm, RichNode list, const F& f,
+                   const nchar* expectedType)
+    -> typename std::enable_if<function_traits<F>::arity == 1, void>::type;
+
+/**
+ * Apply a function to each element of an Oz list, with index
+ *
+ * Example: if list == `a|b|c|nil`, ozListForEach performs:
+ *   f(a, 0);
+ *   f(b, 1);
+ *   f(c, 2);
+ */
+template <class F>
+inline
+auto ozListForEach(VM vm, RichNode list, const F& f,
+                   const nchar* expectedType)
+    -> typename std::enable_if<function_traits<F>::arity == 2, void>::type;
 
 inline
 size_t ozListLength(VM vm, RichNode list);

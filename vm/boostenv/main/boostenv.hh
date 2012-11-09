@@ -92,57 +92,41 @@ void BoostBasedVM::postVMEvent(std::function<void()> callback) {
 // Utilities //
 ///////////////
 
-namespace internal {
-  template <class T>
-  inline
-  void ozListForEach(VM vm, RichNode list, size_t index,
-                     const nchar* expectedType,
-                     std::function<void (VM, size_t, T)> f) {
-    using namespace patternmatching;
-
-    T head;
-    RichNode tail;
-
-    if (matchesCons(vm, list, capture(head), capture(tail))) {
-      f(vm, index, head);
-      ozListForEach(vm, tail, index+1, expectedType, f);
-    } else if (matches(vm, list, vm->coreatoms.nil)) {
-      // end
-    } else {
-      raiseTypeError(vm, expectedType, list);
-    }
-  }
-}
-
 void ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
-  internal::ozListForEach<char>(
-    vm, value, 0, MOZART_STR("string"),
-    [size, buffer] (VM vm, size_t i, char c) {
+  ozListForEach(
+    vm, value,
+    [size, buffer] (char c, size_t i) {
       assert(i < size);
       buffer[i] = c;
-    });
+    },
+    MOZART_STR("string")
+  );
 }
 
 void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
   size_t size = ozListLength(vm, value);
   buffer.resize(size);
 
-  internal::ozListForEach<char>(
-    vm, value, 0, MOZART_STR("string"),
-    [size, &buffer] (VM vm, size_t i, char c) {
+  ozListForEach(
+    vm, value,
+    [size, &buffer] (char c, size_t i) {
       assert(i < size);
       buffer[i] = c;
-    });
+    },
+    MOZART_STR("string")
+  );
 }
 
 std::string ozStringToStdString(VM vm, RichNode value) {
   std::stringbuf buffer;
 
-  internal::ozListForEach<char>(
-    vm, value, 0, MOZART_STR("string"),
-    [&buffer] (VM vm, size_t i, char c) {
+  ozListForEach(
+    vm, value,
+    [&buffer] (char c) {
       buffer.sputc(c);
-    });
+    },
+    MOZART_STR("string")
+  );
 
   return buffer.str();
 }

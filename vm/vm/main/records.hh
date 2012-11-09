@@ -327,8 +327,7 @@ void withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
   ozListForEach(vm, cons,
     [&, vm](nativeint c) {
       if (c < 0 || c >= 256) {
-        UnstableNode errNode = SmallInt::build(vm, c);
-        raiseTypeError(vm, MOZART_STR("char"), errNode);
+        raiseTypeError(vm, MOZART_STR("char"), c);
       }
       onChar((char32_t) c);
     },

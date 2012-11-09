@@ -92,12 +92,9 @@ public:
 
       // Fill the K registers
       ArrayInitializer KInitializer = result;
-      size_t index = 0;
-
       ozListForEach(vm, KsList,
-        [&] (UnstableNode& elem) {
+        [&] (UnstableNode& elem, size_t index) {
           KInitializer.initElement(vm, index, elem);
-          index++;
         },
         MOZART_STR("list")
       );
@@ -121,12 +118,9 @@ public:
 
       // Fill the G registers
       ArrayInitializer GInitializer = result;
-      size_t index = 0;
-
       ozListForEach(vm, GsList,
-        [&] (UnstableNode& elem) {
+        [&] (UnstableNode& elem, size_t index) {
           GInitializer.initElement(vm, index, elem);
-          index++;
         },
         MOZART_STR("list")
       );

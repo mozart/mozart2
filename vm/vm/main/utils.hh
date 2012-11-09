@@ -163,33 +163,54 @@ UnstableNode OzListBuilder::get(VM vm) {
 
 // ozListForEach ---------------------------------------------------------------
 
-template <class F, class G>
-void ozListForEach(VM vm, RichNode cons, const F& onHead, const G& onTail) {
+template <class F>
+auto ozListForEach(VM vm, RichNode list, const F& f,
+                   const nchar* expectedType)
+    -> typename std::enable_if<function_traits<F>::arity == 1, void>::type {
+
   using namespace patternmatching;
 
   typename std::remove_reference<
     typename function_traits<F>::template arg<0>::type>::type head;
 
-  RichNode tail;
+  RichNode runList = list;
 
   while (true) {
-    if (matchesCons(vm, cons, capture(head), capture(tail))) {
-      onHead(head);
-      cons = tail;
-    } else if (matches(vm, cons, vm->coreatoms.nil)) {
-      return;
+    RichNode tail;
+    if (matchesCons(vm, runList, capture(head), capture(tail))) {
+      f(head);
+      runList = tail;
+    } else if (matches(vm, runList, vm->coreatoms.nil)) {
+      break;
     } else {
-      return onTail(cons);
+      raiseTypeError(vm, expectedType, list);
     }
   }
 }
 
 template <class F>
-void ozListForEach(VM vm, RichNode cons, const F& onHead,
-                   const nchar* expectedType) {
-  return ozListForEach(vm, cons, onHead, [=](RichNode node) {
-    return raiseTypeError(vm, expectedType, node);
-  });
+auto ozListForEach(VM vm, RichNode list, const F& f,
+                   const nchar* expectedType)
+    -> typename std::enable_if<function_traits<F>::arity == 2, void>::type {
+
+  using namespace patternmatching;
+
+  typename std::remove_reference<
+    typename function_traits<F>::template arg<0>::type>::type head;
+
+  RichNode runList = list;
+
+  for (size_t i = 0; ; ++i) {
+    RichNode tail;
+    if (matchesCons(vm, runList, capture(head), capture(tail))) {
+      f(head, i);
+      runList = tail;
+    } else if (matches(vm, runList, vm->coreatoms.nil)) {
+      break;
+    } else {
+      raiseTypeError(vm, expectedType, list);
+    }
+  }
 }
 
 size_t ozListLength(VM vm, RichNode list) {

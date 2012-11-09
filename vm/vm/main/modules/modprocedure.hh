@@ -70,11 +70,10 @@ public:
         [=] () -> RichNode {
           size_t argc = ozListLength(vm, args);
           auto arguments = vm->newStaticArray<RichNode>(argc);
-          size_t i = 0;
           ozListForEach(
             vm, args,
-            [&i, &arguments] (RichNode arg) {
-              arguments[i++] = arg;
+            [&arguments] (RichNode arg, size_t i) {
+              arguments[i] = arg;
             },
             MOZART_STR("list"));
 

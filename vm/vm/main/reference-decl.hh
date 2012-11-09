@@ -39,8 +39,6 @@ namespace mozart {
 
 class Reference: public DataType<Reference>, Copyable, StoredAs<StableNode*> {
 public:
-  typedef SelfType<Reference>::Self Self;
-public:
   Reference(StableNode* dest) : _dest(dest) {}
 
   static void create(StableNode*& self, VM, StableNode* dest) {

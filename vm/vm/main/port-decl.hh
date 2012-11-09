@@ -39,8 +39,6 @@ namespace mozart {
 
 class Port: public DataType<Port>, public WithHome {
 public:
-  typedef SelfType<Port>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("port"));
   }

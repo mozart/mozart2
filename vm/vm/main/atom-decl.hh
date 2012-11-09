@@ -41,8 +41,6 @@ namespace mozart {
 class Atom: public DataType<Atom>, public LiteralHelper<Atom>,
   Copyable, StoredAs<atom_t>, WithValueBehavior {
 public:
-  typedef SelfType<Atom>::Self Self;
-public:
   static constexpr UUID uuid = "{55ed333b-1eaf-4c8a-a151-626d3f96efe8}";
 
   static atom_t getTypeAtom(VM vm) {

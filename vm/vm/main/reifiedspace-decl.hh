@@ -40,8 +40,6 @@ namespace mozart {
 class ReifiedSpace: public DataType<ReifiedSpace>, public WithHome,
   StoredAs<SpaceRef> {
 public:
-  typedef SelfType<ReifiedSpace>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("space"));
   }
@@ -102,8 +100,6 @@ enum DeletedSpaceKind {
 #endif
 
 class DeletedSpace: public DataType<DeletedSpace>, StoredAs<DeletedSpaceKind> {
-public:
-  typedef SelfType<DeletedSpace>::Self Self;
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("space"));

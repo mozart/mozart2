@@ -41,8 +41,6 @@ namespace mozart {
 
 class String: public DataType<String>, WithValueBehavior {
 public:
-  typedef SelfType<String>::Self Self;
-public:
   static constexpr UUID uuid = "{163123b5-feaa-4e1d-8917-f74d81e11236}";
 
   static atom_t getTypeAtom(VM vm) {

@@ -43,8 +43,6 @@ namespace mozart {
 class PatMatCapture: public DataType<PatMatCapture>, StoredAs<nativeint>,
   Copyable, WithValueBehavior {
 public:
-  typedef SelfType<PatMatCapture>::Self Self;
-public:
   PatMatCapture(nativeint index) : _index(index) {}
 
   static void create(nativeint& self, VM, nativeint index) {
@@ -85,8 +83,6 @@ private:
  */
 class PatMatConjunction: public DataType<PatMatConjunction>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
-public:
-  typedef SelfType<PatMatConjunction>::Self Self;
 public:
   inline
   PatMatConjunction(VM vm, size_t width, StaticArray<StableNode> _elements);
@@ -139,8 +135,6 @@ private:
  */
 class PatMatOpenRecord: public DataType<PatMatOpenRecord>,
   StoredWithArrayOf<StableNode> {
-public:
-  typedef SelfType<PatMatOpenRecord>::Self Self;
 public:
   template <typename A>
   inline

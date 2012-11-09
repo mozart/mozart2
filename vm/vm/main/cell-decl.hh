@@ -39,8 +39,6 @@ namespace mozart {
 
 class Cell: public DataType<Cell>, public WithHome {
 public:
-  typedef SelfType<Cell>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("cell"));
   }

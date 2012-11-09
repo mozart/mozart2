@@ -42,8 +42,6 @@ namespace mozart {
 
 class ReflectiveEntity: public DataType<ReflectiveEntity> {
 public:
-  typedef SelfType<ReflectiveEntity>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("reflective"));
   }
@@ -88,8 +86,6 @@ private:
 class ReflectiveVariable: public DataType<ReflectiveVariable>,
   public VariableBase<ReflectiveVariable>,
   Transient, WithVariableBehavior<85> {
-public:
-  typedef SelfType<ReflectiveVariable>::Self Self;
 public:
   inline
   ReflectiveVariable(VM vm, UnstableNode& stream);

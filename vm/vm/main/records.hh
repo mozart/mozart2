@@ -36,17 +36,17 @@ namespace mozart {
 ////////////////
 
 template <class T>
-StableNode* BaseRecord<T>::getElement(Self self, size_t index) {
+StableNode* BaseRecord<T>::getElement(HSelf self, size_t index) {
   return &self[index];
 }
 
 template <class T>
-size_t BaseRecord<T>::width(Self self, VM vm) {
+size_t BaseRecord<T>::width(HSelf self, VM vm) {
   return getWidth();
 }
 
 template <class T>
-UnstableNode BaseRecord<T>::arityList(Self self, VM vm) {
+UnstableNode BaseRecord<T>::arityList(HSelf self, VM vm) {
   UnstableNode result = buildNil(vm);
 
   for (size_t i = getWidth(); i > 0; i--) {
@@ -60,7 +60,7 @@ UnstableNode BaseRecord<T>::arityList(Self self, VM vm) {
 }
 
 template <class T>
-UnstableNode BaseRecord<T>::waitOr(Self self, VM vm) {
+UnstableNode BaseRecord<T>::waitOr(HSelf self, VM vm) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < getArraySize(); i++) {
     RichNode element = self[i];

@@ -46,8 +46,6 @@ class Array: public DataType<Array>, public WithHome,
   public IntegerDottableHelper<Array>,
   StoredWithArrayOf<UnstableNode> {
 public:
-  typedef SelfType<Array>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("array"));
   }

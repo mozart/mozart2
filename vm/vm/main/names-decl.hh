@@ -42,8 +42,6 @@ namespace mozart {
 class OptName: public DataType<OptName>, public WithHome,
   public LiteralHelper<OptName>, StoredAs<SpaceRef> {
 public:
-  typedef SelfType<OptName>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("name"));
   }
@@ -92,8 +90,6 @@ public:
 
 class GlobalName: public DataType<GlobalName>, public WithHome,
   public LiteralHelper<GlobalName> {
-public:
-  typedef SelfType<GlobalName>::Self Self;
 public:
   static constexpr UUID uuid = "{3330919d-1e2f-41a4-a073-620dd36dd582}";
 
@@ -148,8 +144,6 @@ private:
 
 class NamedName: public DataType<NamedName>, public WithHome,
   public LiteralHelper<NamedName> {
-public:
-  typedef SelfType<NamedName>::Self Self;
 public:
   static constexpr UUID uuid = "{f9873e5a-65db-4894-9dd5-bcd276df14af}";
 
@@ -211,8 +205,6 @@ private:
 
 class UniqueName: public DataType<UniqueName>, public LiteralHelper<UniqueName>,
   Copyable, StoredAs<unique_name_t>, WithValueBehavior {
-public:
-  typedef SelfType<UniqueName>::Self Self;
 public:
   static constexpr UUID uuid = "{f6cdb080-98ad-47bf-9e67-629385261e9f}";
 

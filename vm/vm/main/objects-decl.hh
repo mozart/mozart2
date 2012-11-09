@@ -45,8 +45,6 @@ namespace mozart {
  */
 class Object: public DataType<Object>, public WithHome,
   StoredWithArrayOf<UnstableNode> {
-public:
-  typedef SelfType<Object>::Self Self;
 private:
   // defined in coredatatypes.cc
   static const ByteCode dispatchByteCode[9];

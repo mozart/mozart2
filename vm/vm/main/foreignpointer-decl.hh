@@ -44,8 +44,6 @@ namespace mozart {
  */
 class ForeignPointer: public DataType<ForeignPointer> {
 public:
-  typedef SelfType<ForeignPointer>::Self Self;
-public:
   template <class T>
   ForeignPointer(VM vm, const std::shared_ptr<T>& p):
     _pointer(std::static_pointer_cast<void>(p)), _pointerType(typeid(T)) {}

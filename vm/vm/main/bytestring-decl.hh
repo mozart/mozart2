@@ -51,8 +51,6 @@ enum EncodingVariant : uintptr_t;
 class ByteString: public DataType<ByteString>,
   public IntegerDottableHelper<ByteString>, WithValueBehavior {
 public:
-  typedef SelfType<ByteString>::Self Self;
-public:
   static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
   static atom_t getTypeAtom(VM vm) {

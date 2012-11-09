@@ -43,8 +43,6 @@ namespace mozart {
 
 class CodeArea: public DataType<CodeArea>, StoredWithArrayOf<StableNode> {
 public:
-  typedef SelfType<CodeArea>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("codeArea"));
   }

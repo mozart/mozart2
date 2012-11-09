@@ -36,7 +36,7 @@ namespace mozart {
 //////////////////
 
 template <class This>
-VariableBase<This>::VariableBase(VM vm, GR gr, Self from):
+VariableBase<This>::VariableBase(VM vm, GR gr, HSelf from):
   WithHome(vm, gr, from->home()) {
 
   for (auto iter = from->pendings.begin();
@@ -48,12 +48,12 @@ VariableBase<This>::VariableBase(VM vm, GR gr, Self from):
 }
 
 template <class This>
-void VariableBase<This>::addToSuspendList(Self self, VM vm, RichNode variable) {
+void VariableBase<This>::addToSuspendList(HSelf self, VM vm, RichNode variable) {
   pendings.push_back(vm, variable.getStableRef(vm));
 }
 
 template <class This>
-void VariableBase<This>::markNeeded(Self self, VM vm) {
+void VariableBase<This>::markNeeded(HSelf self, VM vm) {
   /* TODO What's supposed to happen if we're in a subspace?
    * The behavior of Mozart 1.4.0 was to send the needed flag up through
    * space boundaries, effectively making the original variable needed.
@@ -70,7 +70,7 @@ void VariableBase<This>::markNeeded(Self self, VM vm) {
 }
 
 template <class This>
-void VariableBase<This>::doBind(Self self, VM vm, RichNode src) {
+void VariableBase<This>::doBind(HSelf self, VM vm, RichNode src) {
   if (vm->isOnTopLevel()) {
     // The simple, fast binding when on top-level
     if (_needed) {
@@ -86,7 +86,7 @@ void VariableBase<This>::doBind(Self self, VM vm, RichNode src) {
 }
 
 template <class This>
-void VariableBase<This>::bindSubSpace(Self self, VM vm, RichNode src) {
+void VariableBase<This>::bindSubSpace(HSelf self, VM vm, RichNode src) {
   Space* currentSpace = vm->getCurrentSpace();
 
   // Is it a speculative binding?

@@ -42,8 +42,6 @@ typedef enum BOOL_OR_NOT_BOOL {
 class Boolean: public DataType<Boolean>, public LiteralHelper<Boolean>,
   Copyable, StoredAs<bool>, WithValueBehavior {
 public:
-  typedef SelfType<Boolean>::Self Self;
-public:
   constexpr static UUID uuid = "{ce34f46e-4751-4f2d-b6fd-0522198a4810}";
 
   static atom_t getTypeAtom(VM vm) {

@@ -36,8 +36,6 @@ namespace mozart {
 class SmallInt: public DataType<SmallInt>, Copyable, StoredAs<nativeint>,
   WithValueBehavior {
 public:
-  typedef SelfType<SmallInt>::Self Self;
-public:
   static constexpr UUID uuid = "{00000000-0000-4f00-0000-000000000001}";
 
   static atom_t getTypeAtom(VM vm) {

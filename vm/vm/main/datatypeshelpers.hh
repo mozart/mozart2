@@ -36,52 +36,52 @@ namespace mozart {
 ///////////////////
 
 template <class T>
-bool LiteralHelper<T>::lookupFeature(Self self, VM vm, RichNode feature,
+bool LiteralHelper<T>::lookupFeature(HSelf self, VM vm, RichNode feature,
                                      nullable<UnstableNode&> value) {
   requireFeature(vm, feature);
   return false;
 }
 
 template <class T>
-bool LiteralHelper<T>::lookupFeature(Self self, VM vm, nativeint feature,
+bool LiteralHelper<T>::lookupFeature(HSelf self, VM vm, nativeint feature,
                                      nullable<UnstableNode&> value) {
   return false;
 }
 
 template <class T>
-UnstableNode LiteralHelper<T>::label(Self self, VM vm) {
+UnstableNode LiteralHelper<T>::label(HSelf self, VM vm) {
   return { vm, self };
 }
 
 template <class T>
-size_t LiteralHelper<T>::width(Self self, VM vm) {
+size_t LiteralHelper<T>::width(HSelf self, VM vm) {
   return 0;
 }
 
 template <class T>
-UnstableNode LiteralHelper<T>::arityList(Self self, VM vm) {
+UnstableNode LiteralHelper<T>::arityList(HSelf self, VM vm) {
   return build(vm, vm->coreatoms.nil);
 }
 
 template <class T>
-UnstableNode LiteralHelper<T>::clone(Self self, VM vm) {
+UnstableNode LiteralHelper<T>::clone(HSelf self, VM vm) {
   return { vm, self };
 }
 
 template <class T>
-UnstableNode LiteralHelper<T>::waitOr(Self self, VM vm) {
+UnstableNode LiteralHelper<T>::waitOr(HSelf self, VM vm) {
   // Wait forever
   UnstableNode dummyVar = Variable::build(vm);
   waitFor(vm, dummyVar);
 }
 
 template <class T>
-bool LiteralHelper<T>::testRecord(Self self, VM vm, RichNode arity) {
+bool LiteralHelper<T>::testRecord(HSelf self, VM vm, RichNode arity) {
   return false;
 }
 
 template <class T>
-bool LiteralHelper<T>::testTuple(Self self, VM vm,
+bool LiteralHelper<T>::testTuple(HSelf self, VM vm,
                                  RichNode label, size_t width) {
   if (width == 0)
     return equals(vm, self, label);
@@ -90,7 +90,7 @@ bool LiteralHelper<T>::testTuple(Self self, VM vm,
 }
 
 template <class T>
-bool LiteralHelper<T>::testLabel(Self self, VM vm, RichNode label) {
+bool LiteralHelper<T>::testLabel(HSelf self, VM vm, RichNode label) {
   return equals(vm, self, label);
 }
 
@@ -99,7 +99,7 @@ bool LiteralHelper<T>::testLabel(Self self, VM vm, RichNode label) {
 ///////////////////////////
 
 template <class T>
-bool IntegerDottableHelper<T>::lookupFeature(Self self, VM vm, RichNode feature,
+bool IntegerDottableHelper<T>::lookupFeature(HSelf self, VM vm, RichNode feature,
                                              nullable<UnstableNode&> value) {
   using namespace patternmatching;
 
@@ -115,7 +115,7 @@ bool IntegerDottableHelper<T>::lookupFeature(Self self, VM vm, RichNode feature,
 }
 
 template <class T>
-bool IntegerDottableHelper<T>::lookupFeature(Self self, VM vm,
+bool IntegerDottableHelper<T>::lookupFeature(HSelf self, VM vm,
                                              nativeint feature,
                                              nullable<UnstableNode&> value) {
   if (!internalIsValidFeature(self, vm, feature)) {

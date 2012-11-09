@@ -42,8 +42,6 @@ namespace mozart {
 
 class BuiltinProcedure: public DataType<BuiltinProcedure>, Copyable,
   StoredAs<builtins::BaseBuiltin*>, WithValueBehavior {
-public:
-  typedef SelfType<BuiltinProcedure>::Self Self;
 private:
   typedef builtins::BaseBuiltin Builtin;
 public:
@@ -149,8 +147,6 @@ private:
  */
 class Abstraction: public DataType<Abstraction>, public WithHome,
   StoredWithArrayOf<StableNode> {
-public:
-  typedef SelfType<Abstraction>::Self Self;
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("procedure"));

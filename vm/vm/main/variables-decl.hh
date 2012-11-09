@@ -35,28 +35,28 @@ namespace mozart {
 
 template <class This>
 class VariableBase: public WithHome {
-public:
-  typedef typename SelfType<This>::Self Self;
+private:
+  typedef typename SelfType<This>::Self HSelf;
 public:
   VariableBase(VM vm): WithHome(vm) {}
 
   VariableBase(VM vm, Space* home): WithHome(home) {}
 
   inline
-  VariableBase(VM vm, GR gr, Self from);
+  VariableBase(VM vm, GR gr, HSelf from);
 
 public:
   // DataflowVariable interface
 
   inline
-  void addToSuspendList(Self self, VM vm, RichNode variable);
+  void addToSuspendList(HSelf self, VM vm, RichNode variable);
 
   bool isNeeded(VM vm) {
     return _needed;
   }
 
   inline
-  void markNeeded(Self self, VM vm);
+  void markNeeded(HSelf self, VM vm);
 
   /* To be implemented in subclasses
   inline
@@ -65,12 +65,12 @@ public:
 
 protected:
   inline
-  void doBind(Self self, VM vm, RichNode src);
+  void doBind(HSelf self, VM vm, RichNode src);
 
 private:
   // TODO Might be a good candidate for noinline
   inline
-  void bindSubSpace(Self self, VM vm, RichNode src);
+  void bindSubSpace(HSelf self, VM vm, RichNode src);
 
   inline
   void wakeUpPendings(VM vm);
@@ -95,8 +95,6 @@ private:
 
 class Variable: public DataType<Variable>, public VariableBase<Variable>,
   Transient, WithVariableBehavior<90> {
-public:
-  typedef SelfType<Variable>::Self Self;
 public:
   Variable(VM vm): VariableBase(vm) {}
 
@@ -144,8 +142,6 @@ class ReadOnlyVariable: public DataType<ReadOnlyVariable>,
   public VariableBase<ReadOnlyVariable>,
   Transient, WithVariableBehavior<80> {
 public:
-  typedef SelfType<ReadOnlyVariable>::Self Self;
-public:
   ReadOnlyVariable(VM vm): VariableBase(vm) {}
 
   ReadOnlyVariable(VM vm, Space* home): VariableBase(vm, home) {}
@@ -187,8 +183,6 @@ public:
 
 class OptVar: public DataType<OptVar>, public WithHome,
   Transient, StoredAs<SpaceRef>, WithVariableBehavior<100> {
-public:
-  typedef SelfType<OptVar>::Self Self;
 public:
   OptVar(SpaceRef home): WithHome(home) {}
 
@@ -248,8 +242,6 @@ public:
 
 class ReadOnly: public DataType<ReadOnly>, Transient, StoredAs<StableNode*>,
   WithVariableBehavior<80> {
-public:
-  typedef SelfType<ReadOnly>::Self Self;
 public:
   ReadOnly(StableNode* underlying): _underlying(underlying) {}
 
@@ -325,8 +317,6 @@ private:
 
 class FailedValue: public DataType<FailedValue>,
   Transient, StoredAs<StableNode*>, WithVariableBehavior<10> {
-public:
-  typedef SelfType<FailedValue>::Self Self;
 public:
   FailedValue(StableNode* underlying): _underlying(underlying) {}
 

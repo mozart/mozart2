@@ -36,8 +36,6 @@ namespace mozart {
 class Float: public DataType<Float>,
   Copyable, StoredAs<double>, WithValueBehavior {
 public:
-  typedef SelfType<Float>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("float"));
   }

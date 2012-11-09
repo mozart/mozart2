@@ -38,7 +38,7 @@ namespace mozart {
 template <class T>
 class BaseRecord {
 private:
-  typedef typename SelfType<T>::Self Self;
+  typedef typename SelfType<T>::Self HSelf;
 public:
   size_t getWidth() {
     return static_cast<T*>(this)->_width;
@@ -49,20 +49,20 @@ public:
   }
 
   inline
-  StableNode* getElement(Self self, size_t index);
+  StableNode* getElement(HSelf self, size_t index);
 public:
-  bool isRecord(Self self, VM vm) {
+  bool isRecord(HSelf self, VM vm) {
     return true;
   }
 
   inline
-  size_t width(Self self, VM vm);
+  size_t width(HSelf self, VM vm);
 
   inline
-  UnstableNode arityList(Self self, VM vm);
+  UnstableNode arityList(HSelf self, VM vm);
 
   inline
-  UnstableNode waitOr(Self self, VM vm);
+  UnstableNode waitOr(HSelf self, VM vm);
 protected:
   /* To be implemented in subclasses
   inline
@@ -84,8 +84,6 @@ protected:
 class Tuple: public DataType<Tuple>, public BaseRecord<Tuple>,
   public IntegerDottableHelper<Tuple>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
-public:
-  typedef SelfType<Tuple>::Self Self;
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("tuple"));
@@ -188,8 +186,6 @@ private:
  */
 class Cons: public DataType<Cons>, public IntegerDottableHelper<Cons>,
   WithStructuralBehavior {
-public:
-  typedef SelfType<Cons>::Self Self;
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("tuple"));
@@ -306,8 +302,6 @@ private:
 class Arity: public DataType<Arity>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
-  typedef SelfType<Arity>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("arity"));
   }
@@ -379,8 +373,6 @@ private:
  */
 class Record: public DataType<Record>, public BaseRecord<Record>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
-public:
-  typedef SelfType<Record>::Self Self;
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("record"));
@@ -466,8 +458,6 @@ private:
 #endif
 
 class Chunk: public DataType<Chunk>, StoredAs<StableNode*> {
-public:
-  typedef SelfType<Chunk>::Self Self;
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("chunk"));

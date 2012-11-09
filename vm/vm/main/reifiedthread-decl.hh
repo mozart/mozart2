@@ -40,8 +40,6 @@ namespace mozart {
 class ReifiedThread: public DataType<ReifiedThread>,
   StoredAs<Runnable*>, Copyable, WithValueBehavior {
 public:
-  typedef SelfType<ReifiedThread>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("thread"));
   }

@@ -200,8 +200,6 @@ private:
  */
 class Dictionary: public DataType<Dictionary>, public WithHome {
 public:
-  typedef SelfType<Dictionary>::Self Self;
-public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("dictionary"));
   }

@@ -45,6 +45,8 @@ namespace mozart {
  */
 template <class T>
 class DataType {
+protected:
+  typedef typename SelfType<T>::Self Self;
 public:
   static Type type() {
     return TypeInfoOf<T>::type();

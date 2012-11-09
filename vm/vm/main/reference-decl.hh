@@ -37,7 +37,8 @@ namespace mozart {
 #include "Reference-implem-decl.hh"
 #endif
 
-class Reference: public DataType<Reference>, Copyable, StoredAs<StableNode*> {
+class Reference: public DataType<Reference>, StoredAs<StableNode*>,
+  WithValueBehavior /* used by the generator to infer the Copyable flag */ {
 public:
   Reference(StableNode* dest) : _dest(dest) {}
 

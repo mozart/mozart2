@@ -41,7 +41,7 @@ namespace mozart {
  * Placeholder for a capture in pattern matching
  */
 class PatMatCapture: public DataType<PatMatCapture>, StoredAs<nativeint>,
-  Copyable, WithValueBehavior {
+  WithValueBehavior {
 public:
   PatMatCapture(nativeint index) : _index(index) {}
 

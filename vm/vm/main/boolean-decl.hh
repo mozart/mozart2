@@ -40,7 +40,7 @@ typedef enum BOOL_OR_NOT_BOOL {
 #endif
 
 class Boolean: public DataType<Boolean>, public LiteralHelper<Boolean>,
-  Copyable, StoredAs<bool>, WithValueBehavior {
+  StoredAs<bool>, WithValueBehavior {
 public:
   constexpr static UUID uuid = "{ce34f46e-4751-4f2d-b6fd-0522198a4810}";
 

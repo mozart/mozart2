@@ -36,7 +36,7 @@ namespace mozart {
 #endif
 
 class Unit: public DataType<Unit>, public LiteralHelper<Unit>,
-  Copyable, StoredAs<unit_t>, WithValueBehavior {
+  StoredAs<unit_t>, WithValueBehavior {
 public:
   constexpr static UUID uuid = "{f08642c3-5b42-4f7f-889f-9f43286973b7}";
 

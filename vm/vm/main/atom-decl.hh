@@ -39,7 +39,7 @@ namespace mozart {
 #endif
 
 class Atom: public DataType<Atom>, public LiteralHelper<Atom>,
-  Copyable, StoredAs<atom_t>, WithValueBehavior {
+  StoredAs<atom_t>, WithValueBehavior {
 public:
   static constexpr UUID uuid = "{55ed333b-1eaf-4c8a-a151-626d3f96efe8}";
 

@@ -95,8 +95,6 @@ struct ImplementedBy{};
 struct NoAutoWait{};
 struct NoAutoReflectiveCalls{};
 
-struct Copyable{};
-
 struct Transient{};
 
 template<class>

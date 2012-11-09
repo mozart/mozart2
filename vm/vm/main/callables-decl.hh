@@ -40,7 +40,7 @@ namespace mozart {
 #include "BuiltinProcedure-implem-decl.hh"
 #endif
 
-class BuiltinProcedure: public DataType<BuiltinProcedure>, Copyable,
+class BuiltinProcedure: public DataType<BuiltinProcedure>,
   StoredAs<builtins::BaseBuiltin*>, WithValueBehavior {
 private:
   typedef builtins::BaseBuiltin Builtin;

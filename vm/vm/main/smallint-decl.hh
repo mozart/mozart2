@@ -33,7 +33,7 @@ namespace mozart {
 #include "SmallInt-implem-decl.hh"
 #endif
 
-class SmallInt: public DataType<SmallInt>, Copyable, StoredAs<nativeint>,
+class SmallInt: public DataType<SmallInt>, StoredAs<nativeint>,
   WithValueBehavior {
 public:
   static constexpr UUID uuid = "{00000000-0000-4f00-0000-000000000001}";

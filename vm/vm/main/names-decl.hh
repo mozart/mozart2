@@ -204,7 +204,7 @@ private:
 #endif
 
 class UniqueName: public DataType<UniqueName>, public LiteralHelper<UniqueName>,
-  Copyable, StoredAs<unique_name_t>, WithValueBehavior {
+  StoredAs<unique_name_t>, WithValueBehavior {
 public:
   static constexpr UUID uuid = "{f6cdb080-98ad-47bf-9e67-629385261e9f}";
 

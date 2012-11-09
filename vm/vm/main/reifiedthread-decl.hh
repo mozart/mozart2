@@ -38,7 +38,7 @@ namespace mozart {
 #endif
 
 class ReifiedThread: public DataType<ReifiedThread>,
-  StoredAs<Runnable*>, Copyable, WithValueBehavior {
+  StoredAs<Runnable*>, WithValueBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("thread"));

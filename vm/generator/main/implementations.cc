@@ -88,7 +88,6 @@ struct ImplemMethodDef {
 struct ImplementationDef {
   ImplementationDef() {
     name = "";
-    copyable = false;
     transient = false;
     feature = false;
     storageKind = skDefault;
@@ -104,12 +103,21 @@ struct ImplementationDef {
     autoSClone = true;
   }
 
+  void computeProperties() {
+    if ((storageKind == skCustom) && (structuralBehavior == sbValue)) {
+      copyable = "(! ::mozart::MemWord::requiresExternalMemory<" +
+        storage + ">())";
+    } else {
+      copyable = "false";
+    }
+  }
+
   void makeOutputDeclBefore(llvm::raw_fd_ostream& to);
   void makeOutputDeclAfter(llvm::raw_fd_ostream& to);
   void makeOutput(llvm::raw_fd_ostream& to);
 
   std::string name;
-  bool copyable;
+  std::string copyable;
   bool transient;
   bool feature;
   StorageKind storageKind;
@@ -220,9 +228,7 @@ void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
     CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
     std::string markerLabel = marker->getNameAsString();
 
-    if (markerLabel == "Copyable") {
-      definition.copyable = true;
-    } else if (markerLabel == "Transient") {
+    if (markerLabel == "Transient") {
       definition.transient = true;
     } else if (markerLabel == "StoredAs") {
       definition.storageKind = skCustom;
@@ -263,6 +269,9 @@ void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
     }
   }
 
+  // Compute other properties
+  definition.computeProperties();
+
   // Write output
   withFileOutputStream(outputDir + name + "-implem-decl.hh",
     [&] (ostream& to) { definition.makeOutputDeclBefore(to); });
@@ -301,7 +310,7 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "  }\n";
   to << "public:\n";
   to << "  TypeInfoOf() : " << base << "(\"" << name << "\", uuid(), "
-     << b2s(copyable) << ", " << b2s(transient) << ", " << b2s(feature) << ", "
+     << copyable << ", " << b2s(transient) << ", " << b2s(feature) << ", "
      << sb2s(structuralBehavior) << ", " << ((int) bindingPriority)
      << ") {}\n";
   to << "\n";

@@ -34,7 +34,7 @@ namespace mozart {
 #endif
 
 class Float: public DataType<Float>,
-  Copyable, StoredAs<double>, WithValueBehavior {
+  StoredAs<double>, WithValueBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("float"));

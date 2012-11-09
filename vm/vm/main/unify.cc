@@ -198,14 +198,14 @@ bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
       UnstableNode unstableLeft = Tuple::build(vm, count, label);
       UnstableNode unstableRight = Tuple::build(vm, count, label);
 
-      auto leftTuple = RichNode(unstableLeft).as<Tuple>();
-      auto rightTuple = RichNode(unstableRight).as<Tuple>();
+      auto leftElements = RichNode(unstableLeft).as<Tuple>().getElementsArray();
+      auto rightElements = RichNode(unstableRight).as<Tuple>().getElementsArray();
 
       size_t i = 0;
       for (auto iter = suspendTrail.begin();
            iter != suspendTrail.end(); i++, ++iter) {
         UnstableNode leftTemp(vm, *iter->left);
-        leftTuple.initElement(vm, i, leftTemp);
+        leftElements[i].init(vm, leftTemp);
 
         RichNode richLeftTemp = leftTemp;
         if (richLeftTemp.isTransient()) {
@@ -214,7 +214,7 @@ bool StructuralDualWalk::run(VM vm, RichNode left, RichNode right) {
         }
 
         UnstableNode rightTemp(vm, *iter->right);
-        rightTuple.initElement(vm, i, rightTemp);
+        rightElements[i].init(vm, rightTemp);
 
         RichNode richRightTemp = rightTemp;
         if (richRightTemp.isTransient()) {

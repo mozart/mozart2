@@ -59,7 +59,6 @@ namespace mozart {
 #include "ArrayLike-interf.hh"
 #include "DictionaryLike-interf.hh"
 #include "ObjectLike-interf.hh"
-#include "ArrayInitializer-interf.hh"
 #include "SpaceLike-interf.hh"
 #include "ThreadLike-interf.hh"
 #include "CellLike-interf.hh"

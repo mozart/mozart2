@@ -91,10 +91,10 @@ public:
                                intArity, intXCount, atomPrintName, debugData);
 
       // Fill the K registers
-      ArrayInitializer KInitializer = result;
+      auto kregs = RichNode(result).as<CodeArea>().getElementsArray();
       ozListForEach(vm, KsList,
-        [&] (UnstableNode& elem, size_t index) {
-          KInitializer.initElement(vm, index, elem);
+        [&] (RichNode elem, size_t index) {
+          kregs[index].init(vm, elem);
         },
         MOZART_STR("list")
       );
@@ -117,10 +117,10 @@ public:
       result = Abstraction::build(vm, GCount, body);
 
       // Fill the G registers
-      ArrayInitializer GInitializer = result;
+      auto gregs = RichNode(result).as<Abstraction>().getElementsArray();
       ozListForEach(vm, GsList,
-        [&] (UnstableNode& elem, size_t index) {
-          GInitializer.initElement(vm, index, elem);
+        [&] (RichNode elem, size_t index) {
+          gregs[index].init(vm, elem);
         },
         MOZART_STR("list")
       );

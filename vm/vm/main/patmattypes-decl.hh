@@ -118,12 +118,6 @@ public:
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
 
 public:
-  // ArrayInitializer interface
-
-  inline
-  void initElement(Self self, VM vm, size_t index, RichNode value);
-
-public:
   inline
   void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
 
@@ -178,12 +172,6 @@ public:
 
   inline
   StaticArray<StableNode> getElementsArray(Self self);
-
-public:
-  // ArrayInitializer interface
-
-  inline
-  void initElement(Self self, VM vm, size_t index, RichNode value);
 
 public:
   inline

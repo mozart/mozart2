@@ -60,12 +60,6 @@ UnstableNode BaseRecord<T>::arityList(Self self, VM vm) {
 }
 
 template <class T>
-void BaseRecord<T>::initElement(Self self, VM vm, size_t index,
-                                RichNode value) {
-  self[index].init(vm, value);
-}
-
-template <class T>
 UnstableNode BaseRecord<T>::waitOr(Self self, VM vm) {
   // If there is a field which is bound, then return its feature
   for (size_t i = 0; i < getArraySize(); i++) {
@@ -417,10 +411,6 @@ bool Arity::equals(Self self, VM vm, Self right, WalkStack& stack) {
   stack.push(vm, &_label, &right->_label);
 
   return true;
-}
-
-void Arity::initElement(Self self, VM vm, size_t index, RichNode value) {
-  self[index].init(vm, value);
 }
 
 bool Arity::lookupFeature(Self self, VM vm, RichNode feature, size_t& offset) {

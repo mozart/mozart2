@@ -177,12 +177,6 @@ public:
   StaticArray<StableNode> getElementsArray(Self self);
 
 public:
-  // ArrayInitializer interface
-
-  inline
-  void initElement(Self self, VM vm, size_t index, RichNode value);
-
-public:
   // Callable interface
 
   bool isCallable(Self self, VM vm) {

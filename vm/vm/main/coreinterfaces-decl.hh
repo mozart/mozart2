@@ -569,17 +569,6 @@ struct Interface<ObjectLike>: ImplementedBy<Object> {
   }
 };
 
-class ArrayInitializer;
-template<>
-struct Interface<ArrayInitializer>:
-  ImplementedBy<Tuple, Record, Abstraction, CodeArea, PatMatOpenRecord>,
-  NoAutoReflectiveCalls {
-
-  void initElement(RichNode self, VM vm, size_t index, RichNode value) {
-    raiseTypeError(vm, MOZART_STR("Array initializer"), self);
-  }
-};
-
 class SpaceLike;
 template<>
 struct Interface<SpaceLike>:

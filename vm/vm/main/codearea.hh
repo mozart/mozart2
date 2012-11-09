@@ -71,8 +71,8 @@ CodeArea::CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
     gr->copyStableNode(_Ks[i], from[i]);
 }
 
-void CodeArea::initElement(Self self, VM vm, size_t index, RichNode value) {
-  self[index].init(vm, value);
+StaticArray<StableNode> CodeArea::getElementsArray(Self self) {
+  return self.getArray();
 }
 
 void CodeArea::getCodeAreaInfo(

@@ -60,12 +60,16 @@ public:
   CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
            GR gr, Self from);
 
+public:
   size_t getArraySize() {
     return _Kc;
   }
 
   inline
-  void initElement(Self self, VM vm, size_t index, RichNode value);
+  StaticArray<StableNode> getElementsArray(Self self);
+
+public:
+  // CodeAreaProvider interface
 
   bool isCodeAreaProvider(VM vm) {
     return true;
@@ -79,6 +83,7 @@ public:
   inline
   void getCodeAreaDebugInfo(Self self, VM vm,
                             atom_t& printName, UnstableNode& debugData);
+
 private:
   void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {
     _codeBlock = new (vm) ByteCode[size / sizeof(ByteCode)];

@@ -62,9 +62,6 @@ public:
   UnstableNode arityList(Self self, VM vm);
 
   inline
-  void initElement(Self self, VM vm, size_t index, RichNode value);
-
-  inline
   UnstableNode waitOr(Self self, VM vm);
 protected:
   /* To be implemented in subclasses
@@ -353,12 +350,6 @@ public:
 
   inline
   bool equals(Self self, VM vm, Self right, WalkStack& stack);
-
-public:
-  // ArrayInitializer interface
-
-  inline
-  void initElement(Self self, VM vm, size_t index, RichNode value);
 
 public:
   // Arity methods

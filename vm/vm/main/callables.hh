@@ -113,10 +113,6 @@ StaticArray<StableNode> Abstraction::getElementsArray(Self self) {
   return self.getArray();
 }
 
-void Abstraction::initElement(Self self, VM vm, size_t index, RichNode value) {
-  self[index].init(vm, value);
-}
-
 size_t Abstraction::procedureArity(Self self, VM vm) {
   ensureCodeAreaCacheValid(vm);
   return _arity;

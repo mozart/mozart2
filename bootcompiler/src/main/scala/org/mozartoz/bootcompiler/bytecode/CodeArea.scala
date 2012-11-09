@@ -134,12 +134,12 @@ class CodeArea(val abstraction: Abstraction) {
        |  };
        |
        |  atom_t printName = vm->getAtom(%s);
-       |  UnstableNode debugData = """.stripMargin % (
+       |  UnstableNode debugData = build(vm, """.stripMargin % (
            stringToMozartStr(abstraction.name))
 
-    produceCCForConstantTopLevel(out, debugData)
+    produceCCForConstant(out, debugData)
 
-    out << """;
+    out << """);
        |
        |  %s = CodeArea::build(vm, %d, codeBlock, sizeof(codeBlock), %d, %d,
        |                       printName, debugData);
@@ -148,41 +148,19 @@ class CodeArea(val abstraction: Abstraction) {
 
     if (!constants.isEmpty) {
       out << """
-         |  ArrayInitializer initializer = %s;
-         |  UnstableNode temp;
+         |  auto kregs = RichNode(%s).as<CodeArea>().getElementsArray();
          |""".stripMargin % ccCodeArea
 
       for ((constant, index) <- constants.zipWithIndex) {
-        produceCCInitConstant(out, constant)
-        out << "  initializer.initElement(vm, %d, temp);\n" % index
+        out << "  kregs[%d].init(vm, " % index
+        produceCCForConstant(out, constant)
+        out << ");\n"
       }
     }
 
     out << """
        |}
        |""".stripMargin
-  }
-
-  private def produceCCInitConstant(out: Output, constant: OzValue) {
-    import Output._
-
-    out << "  temp = ";
-    produceCCForConstantTopLevel(out, constant)
-    out << ";\n"
-  }
-
-  private def produceCCForConstantTopLevel(out: Output, constant: OzValue) {
-    import Output._
-
-    constant match {
-      case _:OzArity | _:OzRecord | _:OzPatMatOpenRecord =>
-        produceCCForConstant(out, constant)
-
-      case _ =>
-        out << "build(vm, "
-        produceCCForConstant(out, constant)
-        out << ")"
-    }
   }
 
   private def produceCCForConstant(out: Output, constant: OzValue) {

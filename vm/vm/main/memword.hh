@@ -43,91 +43,153 @@
 
 namespace mozart {
 
-// MWTest is a metafunction that returns T if i!=0 and a type guaranteed to be
-// smaller or equal to char* if i==0
-template<class T, int i>
-struct MWTest{
-public:
-  typedef T Type;
-};
-template<class T>
-class MWTest<T,0>{
-public:
-  typedef char Type;
-};
+namespace internal {
 
-template<class ...args>
+template<typename... Args>
 union MWUnion;
 
 // In an MWUAccessor, U is a specialization of MWUnion, T is the requested type
 // and R is the type of the first member of the union.
 // In the default case, the requested type is different from the first one and
 // we recurse in the rest.
-template<class U, class T, class R>
-class MWUAccessor{
-public:
-  static T& get(U *u){return (u->next).template get<T>();}
-  static void alloc(VM vm, U *u){u->next.template alloc<T>(vm);}
+template <typename U, typename T, typename R>
+struct MWUAccessor {
+  static T& get(U* u) {
+    return (u->next).template get<T>();
+  }
+
+  static void alloc(VM vm, U* u) {
+    (u->next).template alloc<T>(vm);
+  }
+
+  static constexpr bool requiresExternalMemory() {
+    return U::Next::template requiresExternalMemory<T>();
+  }
 };
 
 // The bottom case of the MWUnion contains just a char* as it can be cast to
 // any other pointer without fear of aliasing problems.
-template<>
-union MWUnion<>{
+template <>
+union MWUnion<> {
+  template <typename Q>
+  Q& get(){
+    return MWUAccessor<MWUnion, Q, Q>::get(this);
+  }
+
+  template <typename Q>
+  void alloc(VM vm) {
+    MWUAccessor<MWUnion, Q, Q>::alloc(vm, this);
+  }
+
+  template <typename Q>
+  static constexpr bool requiresExternalMemory() {
+    return MWUAccessor<MWUnion, Q, Q>::requiresExternalMemory();
+  }
+
   char* it;
-  template<class T>
-  T& get(){return MWUAccessor<MWUnion,T,T>::get(this);}
-  template<class T>
-  void alloc(VM vm){MWUAccessor<MWUnion,T,T>::alloc(vm,this);}
 };
 
 // The easy case of accessing what we have in the first member of the union.
-template<class U, class T>
-class MWUAccessor<U,T,T>{
-public:
-  static T& get(U *u){return u->it;}
-  static void alloc(VM vm, U *u){}
+template <typename U, typename T>
+struct MWUAccessor<U, T, T> {
+  static T& get(U* u) {
+    return u->it;
+  }
+
+  static void alloc(VM vm, U* u) {
+  }
+
+  static constexpr bool requiresExternalMemory() {
+    return false;
+  }
 };
 
 // Accessing something that wasn't there, if a pointer type, we just get away
 // with a cast.
-template<class T>
-class MWUAccessor<MWUnion<>,T*,T*>{
-public:
-  static T*& get(MWUnion<>* u){return reinterpret_cast<T*&>(u->it);}
-  static void alloc(VM vm, MWUnion<> *u){}
-};
-// It isn't there and isn't a pointer so we store a pointer to it.
-// This requires external memory
-template<class T>
-class MWUAccessor<MWUnion<>,T,T>{
-public:
-  static T& get(MWUnion<>* u){return *reinterpret_cast<T*>(u->it);}
-  static void alloc(VM vm, MWUnion<> *u){
-    u->it=reinterpret_cast<char*>(new(vm)T);
+template <typename T>
+struct MWUAccessor<MWUnion<>, T*, T*>{
+  static T*& get(MWUnion<>* u) {
+    return reinterpret_cast<T*&>(u->it);
+  }
+
+  static void alloc(VM vm, MWUnion<>* u) {
+  }
+
+  static constexpr bool requiresExternalMemory() {
+    return false;
   }
 };
+
+// It isn't there and isn't a pointer so we store a pointer to it.
+// This requires external memory
+template <typename T>
+struct MWUAccessor<MWUnion<>, T, T>{
+  static T& get(MWUnion<>* u) {
+    return *reinterpret_cast<T*>(u->it);
+  }
+
+  static void alloc(VM vm, MWUnion<>* u) {
+    u->it = reinterpret_cast<char*>(new (vm) T);
+  }
+
+  static constexpr bool requiresExternalMemory() {
+    return true;
+  }
+};
+
 // The union itself, recursive on the parameter pack. If the first type is too
 // big, we reduce it.
-template<class T, class ...args>
-union MWUnion<T,args...>{
-  typedef typename MWTest<T,sizeof(T)<=sizeof(char*)>::Type Tred;
+template <typename T, typename... Args>
+union MWUnion<T, Args...> {
+  typedef typename std::conditional<sizeof(T) <= sizeof(char*),
+                                    T, char*>::type Tred;
+
+  typedef MWUnion<Args...> Next;
+
+  template <typename Q>
+  Q& get() {
+    return MWUAccessor<MWUnion, Q, Tred>::get(this);
+  }
+
+  template <typename Q>
+  void init(VM vm, Q v) {
+    alloc<Q>(vm);
+    get<Q>() = v;
+  }
+
+  template <typename Q>
+  void alloc(VM vm) {
+    MWUAccessor<MWUnion, Q, Tred>::alloc(vm, this);
+  }
+
+  template <typename Q>
+  static constexpr bool requiresExternalMemory() {
+    return MWUAccessor<MWUnion, Q, Tred>::requiresExternalMemory();
+  }
+
   Tred it;
-  MWUnion<args...> next;
-  template<class Q>
-  Q& get(){return MWUAccessor<MWUnion,Q,Tred>::get(this);}
-  template<class Q>
-  void init(VM vm,Q v){ alloc<Q>(vm); get<Q>() = v; }
-  template<class Q>
-  void alloc(VM vm){MWUAccessor<MWUnion,Q,Tred>::alloc(vm,this);}
+  Next next;
 };
+
+} // namespace internal
 
 // Finally, here comes the list of potentially small types that we want to
 // optimize in a memory word.
-typedef MWUnion<nativeint, bool, double, unit_t, atom_t, SpaceRef> MemWord;
+typedef internal::MWUnion<nativeint, bool, double, unit_t, atom_t,
+                          SpaceRef> MemWord;
 
-static_assert(sizeof(MemWord) == sizeof(char *),
+// Sanity tests
+
+static_assert(sizeof(MemWord) == sizeof(char*),
   "MemWord has not the size of a word");
+
+static_assert(!MemWord::requiresExternalMemory<nativeint>(), "MemWord bug");
+static_assert(!MemWord::requiresExternalMemory<unit_t>(), "MemWord bug");
+static_assert(!MemWord::requiresExternalMemory<char*>(), "MemWord bug");
+static_assert(!MemWord::requiresExternalMemory<StableNode*>(), "MemWord bug");
+
+static_assert(MemWord::requiresExternalMemory<float>(), "MemWord bug");
+static_assert(MemWord::requiresExternalMemory<VMCleanupListNode>(), "MemWord bug");
 
 }
 

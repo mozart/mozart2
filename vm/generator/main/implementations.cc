@@ -275,12 +275,15 @@ void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
 }
 
 void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
+  to << "class " << name << ";\n";
+
   if (storageKind != skDefault) {
+    to << "\n";
     to << "template <>\n";
     to << "class Storage<" << name << "> {\n";
     to << "public:\n";
     to << "  typedef " << storage << " Type;\n";
-    to << "};\n\n";
+    to << "};\n";
   }
 }
 

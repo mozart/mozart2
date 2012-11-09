@@ -37,8 +37,6 @@ namespace mozart {
 // CodeArea //
 //////////////
 
-class CodeArea;
-
 #ifndef MOZART_GENERATOR
 #include "CodeArea-implem-decl.hh"
 #endif

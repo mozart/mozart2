@@ -33,8 +33,6 @@ namespace mozart {
 // ReifiedSpace //
 //////////////////
 
-class ReifiedSpace;
-
 #ifndef MOZART_GENERATOR
 #include "ReifiedSpace-implem-decl.hh"
 #endif
@@ -94,8 +92,6 @@ private:
 //////////////////
 // DeletedSpace //
 //////////////////
-
-class DeletedSpace;
 
 enum DeletedSpaceKind {
   dsFailed, dsMerged

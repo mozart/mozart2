@@ -31,8 +31,6 @@
 
 namespace mozart {
 
-class Boolean;
-
 typedef enum BOOL_OR_NOT_BOOL {
   bFalse, bTrue, bNotBool
 } BoolOrNotBool;

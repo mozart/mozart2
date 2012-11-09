@@ -44,8 +44,6 @@ enum class ByteStringEncoding {
 
 enum EncodingVariant : uintptr_t;
 
-class ByteString;
-
 #ifndef MOZART_GENERATOR
 #include "ByteString-implem-decl.hh"
 #endif

@@ -33,8 +33,6 @@ namespace mozart {
 // ReifiedThread //
 ///////////////////
 
-class ReifiedThread;
-
 #ifndef MOZART_GENERATOR
 #include "ReifiedThread-implem-decl.hh"
 #endif

@@ -33,8 +33,6 @@ namespace mozart {
 // Port //
 //////////
 
-class Port;
-
 #ifndef MOZART_GENERATOR
 #include "Port-implem-decl.hh"
 #endif

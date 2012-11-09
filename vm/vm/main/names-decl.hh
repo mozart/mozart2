@@ -35,8 +35,6 @@ namespace mozart {
 // OptName //
 /////////////
 
-class OptName;
-
 #ifndef MOZART_GENERATOR
 #include "OptName-implem-decl.hh"
 #endif
@@ -87,8 +85,6 @@ public:
 ////////////////
 // GlobalName //
 ////////////////
-
-class GlobalName;
 
 #ifndef MOZART_GENERATOR
 #include "GlobalName-implem-decl.hh"
@@ -145,8 +141,6 @@ private:
 ///////////////
 // NamedName //
 ///////////////
-
-class NamedName;
 
 #ifndef MOZART_GENERATOR
 #include "NamedName-implem-decl.hh"
@@ -210,8 +204,6 @@ private:
 ////////////////
 // UniqueName //
 ////////////////
-
-class UniqueName;
 
 #ifndef MOZART_GENERATOR
 #include "UniqueName-implem-decl.hh"

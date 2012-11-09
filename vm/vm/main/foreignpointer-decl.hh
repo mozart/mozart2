@@ -35,8 +35,6 @@ namespace mozart {
 // ForeignPointer //
 ////////////////////
 
-class ForeignPointer;
-
 #ifndef MOZART_GENERATOR
 #include "ForeignPointer-implem-decl.hh"
 #endif

@@ -36,8 +36,6 @@ namespace mozart {
 // Object //
 ////////////
 
-class Object;
-
 #ifndef MOZART_GENERATOR
 #include "Object-implem-decl.hh"
 #endif

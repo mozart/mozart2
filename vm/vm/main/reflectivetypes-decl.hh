@@ -36,8 +36,6 @@ namespace mozart {
 // ReflectiveEntity //
 //////////////////////
 
-class ReflectiveEntity;
-
 #ifndef MOZART_GENERATOR
 #include "ReflectiveEntity-implem-decl.hh"
 #endif
@@ -82,8 +80,6 @@ private:
 ////////////////////////
 // ReflectiveVariable //
 ////////////////////////
-
-class ReflectiveVariable;
 
 #ifndef MOZART_GENERATOR
 #include "ReflectiveVariable-implem-decl.hh"

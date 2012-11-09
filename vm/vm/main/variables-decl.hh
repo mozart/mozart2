@@ -89,8 +89,6 @@ private:
 // Variable //
 //////////////
 
-class Variable;
-
 #ifndef MOZART_GENERATOR
 #include "Variable-implem-decl.hh"
 #endif
@@ -138,8 +136,6 @@ public:
 // ReadOnlyVariable //
 //////////////////////
 
-class ReadOnlyVariable;
-
 #ifndef MOZART_GENERATOR
 #include "ReadOnlyVariable-implem-decl.hh"
 #endif
@@ -184,8 +180,6 @@ public:
 ////////////
 // OptVar //
 ////////////
-
-class OptVar;
 
 #ifndef MOZART_GENERATOR
 #include "OptVar-implem-decl.hh"
@@ -247,8 +241,6 @@ public:
 //////////////
 // ReadOnly //
 //////////////
-
-class ReadOnly;
 
 #ifndef MOZART_GENERATOR
 #include "ReadOnly-implem-decl.hh"
@@ -326,8 +318,6 @@ private:
 /////////////////
 // FailedValue //
 /////////////////
-
-class FailedValue;
 
 #ifndef MOZART_GENERATOR
 #include "FailedValue-implem-decl.hh"

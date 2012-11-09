@@ -29,8 +29,6 @@
 
 namespace mozart {
 
-class SmallInt;
-
 #ifndef MOZART_GENERATOR
 #include "SmallInt-implem-decl.hh"
 #endif

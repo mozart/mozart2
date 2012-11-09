@@ -74,8 +74,6 @@ protected:
 // Tuple //
 ///////////
 
-class Tuple;
-
 #ifndef MOZART_GENERATOR
 #include "Tuple-implem-decl.hh"
 #endif
@@ -180,8 +178,6 @@ private:
 //////////
 // Cons //
 //////////
-
-class Cons;
 
 #ifndef MOZART_GENERATOR
 #include "Cons-implem-decl.hh"
@@ -300,8 +296,6 @@ private:
 // Arity //
 ///////////
 
-class Arity;
-
 #ifndef MOZART_GENERATOR
 #include "Arity-implem-decl.hh"
 #endif
@@ -375,8 +369,6 @@ private:
 ////////////
 // Record //
 ////////////
-
-class Record;
 
 #ifndef MOZART_GENERATOR
 #include "Record-implem-decl.hh"
@@ -468,8 +460,6 @@ private:
 ///////////
 // Chunk //
 ///////////
-
-class Chunk;
 
 #ifndef MOZART_GENERATOR
 #include "Chunk-implem-decl.hh"

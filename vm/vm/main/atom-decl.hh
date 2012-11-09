@@ -34,8 +34,6 @@
 
 namespace mozart {
 
-class Atom;
-
 #ifndef MOZART_GENERATOR
 #include "Atom-implem-decl.hh"
 #endif

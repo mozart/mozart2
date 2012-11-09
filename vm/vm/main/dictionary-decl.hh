@@ -191,8 +191,6 @@ private:
 // Dictionary //
 ////////////////
 
-class Dictionary;
-
 #ifndef MOZART_GENERATOR
 #include "Dictionary-implem-decl.hh"
 #endif

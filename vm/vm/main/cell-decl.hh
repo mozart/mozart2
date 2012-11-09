@@ -33,8 +33,6 @@ namespace mozart {
 // Cell //
 //////////
 
-class Cell;
-
 #ifndef MOZART_GENERATOR
 #include "Cell-implem-decl.hh"
 #endif

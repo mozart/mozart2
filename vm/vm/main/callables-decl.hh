@@ -36,8 +36,6 @@ namespace mozart {
 // BuiltinProcedure //
 //////////////////////
 
-class BuiltinProcedure;
-
 #ifndef MOZART_GENERATOR
 #include "BuiltinProcedure-implem-decl.hh"
 #endif
@@ -141,8 +139,6 @@ private:
 /////////////////
 // Abstraction //
 /////////////////
-
-class Abstraction;
 
 #ifndef MOZART_GENERATOR
 #include "Abstraction-implem-decl.hh"

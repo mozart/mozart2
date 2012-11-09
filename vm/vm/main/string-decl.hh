@@ -35,8 +35,6 @@ namespace mozart {
 // String //
 ////////////
 
-class String;
-
 #ifndef MOZART_GENERATOR
 #include "String-implem-decl.hh"
 #endif

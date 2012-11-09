@@ -35,8 +35,6 @@ namespace mozart {
 // Array //
 ///////////
 
-class Array;
-
 #ifndef MOZART_GENERATOR
 #include "Array-implem-decl.hh"
 #endif

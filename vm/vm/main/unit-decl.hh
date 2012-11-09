@@ -31,8 +31,6 @@
 
 namespace mozart {
 
-class Unit;
-
 #ifndef MOZART_GENERATOR
 #include "Unit-implem-decl.hh"
 #endif

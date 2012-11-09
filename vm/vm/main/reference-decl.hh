@@ -33,8 +33,6 @@ namespace mozart {
 // Reference //
 ///////////////
 
-class Reference;
-
 #ifndef MOZART_GENERATOR
 #include "Reference-implem-decl.hh"
 #endif

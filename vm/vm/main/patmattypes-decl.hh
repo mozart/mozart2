@@ -33,8 +33,6 @@ namespace mozart {
 // PatMatCapture //
 ///////////////////
 
-class PatMatCapture;
-
 #ifndef MOZART_GENERATOR
 #include "PatMatCapture-implem-decl.hh"
 #endif
@@ -77,8 +75,6 @@ private:
 ///////////////////////
 // PatMatConjunction //
 ///////////////////////
-
-class PatMatConjunction;
 
 #ifndef MOZART_GENERATOR
 #include "PatMatConjunction-implem-decl.hh"
@@ -132,8 +128,6 @@ private:
 //////////////////////
 // PatMatOpenRecord //
 //////////////////////
-
-class PatMatOpenRecord;
 
 #ifndef MOZART_GENERATOR
 #include "PatMatOpenRecord-implem-decl.hh"

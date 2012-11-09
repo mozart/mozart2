@@ -29,8 +29,6 @@
 
 namespace mozart {
 
-class Float;
-
 #ifndef MOZART_GENERATOR
 #include "Float-implem-decl.hh"
 #endif

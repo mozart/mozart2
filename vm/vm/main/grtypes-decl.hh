@@ -33,8 +33,6 @@ namespace mozart {
 // GRedToStable //
 //////////////////
 
-class GRedToStable;
-
 class GRedToStableBase: public TypeInfo {
 public:
   GRedToStableBase(std::string name, const UUID& uuid,
@@ -84,8 +82,6 @@ private:
 ////////////////////
 // GRedToUnstable //
 ////////////////////
-
-class GRedToUnstable;
 
 class GRedToUnstableBase: public TypeInfo {
 public:

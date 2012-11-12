@@ -44,7 +44,7 @@ namespace mozart {
  * class SomeDataType: public DataType<SomeDataType> { ... };
  */
 template <class T>
-class DataType {
+class DataType: public DataTypeStorageHelper<T, typename Storage<T>::Type> {
 protected:
   typedef typename SelfType<T>::Self Self;
 public:

@@ -38,35 +38,44 @@ namespace mozart {
 template <class T>
 class BaseRecord {
 private:
-  typedef typename SelfType<T>::Self HSelf;
-public:
-  size_t getWidth() {
-    return static_cast<T*>(this)->_width;
+  T* getThis() {
+    return static_cast<T*>(this);
   }
 
-  size_t getArraySize() {
-    return static_cast<T*>(this)->_width;
+public:
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
+    return getThis()->_width;
+  }
+
+public:
+  size_t getWidth() {
+    return getThis()->getArraySize();
   }
 
   inline
-  StableNode* getElement(HSelf self, size_t index);
+  StableNode* getElement(size_t index);
+
 public:
-  bool isRecord(HSelf self, VM vm) {
+  // RecordLike interface
+
+  bool isRecord(VM vm) {
     return true;
   }
 
   inline
-  size_t width(HSelf self, VM vm);
+  size_t width(VM vm);
 
   inline
-  UnstableNode arityList(HSelf self, VM vm);
+  UnstableNode arityList(VM vm);
 
   inline
-  UnstableNode waitOr(HSelf self, VM vm);
+  UnstableNode waitOr(VM vm);
+
 protected:
   /* To be implemented in subclasses
   inline
-  UnstableNode getFeatureAt(Self self, size_t index);
+  UnstableNode getFeatureAt(size_t index);
   */
 };
 
@@ -103,64 +112,61 @@ public:
   }
 
   inline
-  StaticArray<StableNode> getElementsArray(Self self);
-
-  inline
-  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, Self right, WalkStack& stack);
 
 protected:
   friend class IntegerDottableHelper<Tuple>;
 
-  bool isValidFeature(Self self, VM vm, nativeint feature) {
+  bool isValidFeature(VM vm, nativeint feature) {
     return (feature > 0) && ((size_t) feature <= _width);
   }
 
   inline
-  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
+  UnstableNode getValueAt(VM vm, nativeint feature);
 
   inline
-  UnstableNode getFeatureAt(Self self, VM vm, size_t index);
+  UnstableNode getFeatureAt(VM vm, size_t index);
 
 public:
   // RecordLike interface
 
-  bool isTuple(Self self, VM vm) {
+  bool isTuple(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode label(Self self, VM vm);
+  UnstableNode label(VM vm);
 
   inline
-  UnstableNode clone(Self self, VM vm);
+  UnstableNode clone(VM vm);
 
   inline
-  bool testRecord(Self self, VM vm, RichNode arity);
+  bool testRecord(VM vm, RichNode arity);
 
   inline
-  bool testTuple(Self self, VM vm, RichNode label, size_t width);
+  bool testTuple(VM vm, RichNode label, size_t width);
 
   inline
-  bool testLabel(Self self, VM vm, RichNode label);
+  bool testLabel(VM vm, RichNode label);
 
 public:
   // VirtualString inteface
 
   inline
-  bool isVirtualString(Self self, VM vm);
+  bool isVirtualString(VM vm);
 
   inline
-  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  nativeint vsLength(Self self, VM vm);
+  nativeint vsLength(RichNode self, VM vm);
 
 private:
   inline bool hasSharpLabel(VM vm);
 
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   friend class BaseRecord<Tuple>;
@@ -217,68 +223,68 @@ public:
   }
 
   inline
-  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, Self right, WalkStack& stack);
 
 protected:
   friend class IntegerDottableHelper<Cons>;
 
-  bool isValidFeature(Self self, VM vm, nativeint feature) {
+  bool isValidFeature(VM vm, nativeint feature) {
     return (feature == 1) || (feature == 2);
   }
 
   inline
-  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
+  UnstableNode getValueAt(VM vm, nativeint feature);
 
 public:
   // RecordLike interface
 
-  bool isRecord(Self self, VM vm) {
+  bool isRecord(VM vm) {
     return true;
   }
 
-  bool isTuple(Self self, VM vm) {
+  bool isTuple(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode label(Self self, VM vm);
+  UnstableNode label(VM vm);
 
   inline
-  size_t width(Self self, VM vm);
+  size_t width(VM vm);
 
   inline
-  UnstableNode arityList(Self self, VM vm);
+  UnstableNode arityList(VM vm);
 
   inline
-  UnstableNode clone(Self self, VM vm);
+  UnstableNode clone(VM vm);
 
   inline
-  UnstableNode waitOr(Self self, VM vm);
+  UnstableNode waitOr(VM vm);
 
   inline
-  bool testRecord(Self self, VM vm, RichNode arity);
+  bool testRecord(VM vm, RichNode arity);
 
   inline
-  bool testTuple(Self self, VM vm, RichNode label, size_t width);
+  bool testTuple(VM vm, RichNode label, size_t width);
 
   inline
-  bool testLabel(Self self, VM vm, RichNode label);
+  bool testLabel(VM vm, RichNode label);
 
 public:
   // VirtualString inteface
 
   inline
-  bool isVirtualString(Self self, VM vm);
+  bool isVirtualString(RichNode self, VM vm);
 
   inline
-  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  nativeint vsLength(Self self, VM vm);
+  nativeint vsLength(RichNode self, VM vm);
 
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   StableNode _elements[2];
@@ -315,41 +321,40 @@ public:
         GR gr, Self from);
 
 public:
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
+    return _width;
+  }
+
+public:
   StableNode* getLabel() {
     return &_label;
   }
 
   size_t getWidth() {
-    return _width;
-  }
-
-  size_t getArraySize() {
-    return _width;
+    return getArraySizeImpl();
   }
 
   inline
-  StableNode* getElement(Self self, size_t index);
-
-  inline
-  StaticArray<StableNode> getElementsArray(Self self);
+  StableNode* getElement(size_t index);
 
 public:
   // StructuralEquatable interface
 
   inline
-  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, Self right, WalkStack& stack);
 
 public:
   // Arity methods
 
   inline
-  bool lookupFeature(Self self, VM vm, RichNode feature, size_t& offset);
+  bool lookupFeature(VM vm, RichNode feature, size_t& offset);
 
 public:
   // Miscellaneous
 
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   StableNode _label;
@@ -392,51 +397,48 @@ public:
   }
 
   inline
-  StaticArray<StableNode> getElementsArray(Self self);
-
-  inline
-  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, Self right, WalkStack& stack);
 
 protected:
   inline
-  UnstableNode getFeatureAt(Self self, VM vm, size_t index);
+  UnstableNode getFeatureAt(VM vm, size_t index);
 
 public:
   // Dottable interface
 
   inline
-  bool lookupFeature(Self self, VM vm, RichNode feature,
+  bool lookupFeature(VM vm, RichNode feature,
                      nullable<UnstableNode&> value);
 
   inline
-  bool lookupFeature(Self self, VM vm, nativeint feature,
+  bool lookupFeature(VM vm, nativeint feature,
                      nullable<UnstableNode&> value);
 
 public:
   // RecordLike interface
 
-  bool isTuple(Self self, VM vm) {
+  bool isTuple(VM vm) {
     return false;
   }
 
   inline
-  UnstableNode label(Self self, VM vm);
+  UnstableNode label(VM vm);
 
   inline
-  UnstableNode clone(Self self, VM vm);
+  UnstableNode clone(VM vm);
 
   inline
-  bool testRecord(Self self, VM vm, RichNode arity);
+  bool testRecord(VM vm, RichNode arity);
 
   inline
-  bool testTuple(Self self, VM vm, RichNode label, size_t width);
+  bool testTuple(VM vm, RichNode label, size_t width);
 
   inline
-  bool testLabel(Self self, VM vm, RichNode label);
+  bool testLabel(VM vm, RichNode label);
 
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   friend class BaseRecord<Record>;
@@ -485,24 +487,24 @@ public:
   // Dottable interface
 
   inline
-  bool lookupFeature(Self self, VM vm, RichNode feature,
+  bool lookupFeature(VM vm, RichNode feature,
                      nullable<UnstableNode&> value);
 
   inline
-  bool lookupFeature(Self self, VM vm, nativeint feature,
+  bool lookupFeature(VM vm, nativeint feature,
                      nullable<UnstableNode&> value);
 
 public:
   // ChunkLike interface
 
-  bool isChunk(Self self, VM vm) {
+  bool isChunk(VM vm) {
     return true;
   }
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Chunk>";
   }
 

@@ -41,7 +41,7 @@ void OptName::create(SpaceRef& self, VM vm, GR gr, Self from) {
   gr->copySpace(self, from.get().home());
 }
 
-void OptName::makeFeature(Self self, VM vm) {
+void OptName::makeFeature(RichNode self, VM vm) {
   self.become(vm, GlobalName::build(vm));
 }
 
@@ -118,8 +118,7 @@ int UniqueName::compareFeatures(VM vm, Self right) {
   return value().compare(right.get().value());
 }
 
-void UniqueName::printReprToStream(Self self, VM vm, std::ostream& out,
-                                   int depth) {
+void UniqueName::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << "<UniqueName '";
   out << toUTF<char>(makeLString(value().contents(), value().length()));
   out << "'>";

@@ -53,23 +53,23 @@ public:
 public:
   // CellLike interface
 
-  bool isCell(Self self, VM vm) {
+  bool isCell(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode exchange(RichNode self, VM vm, RichNode newValue);
+  UnstableNode exchange(VM vm, RichNode newValue);
 
   inline
-  UnstableNode access(RichNode self, VM vm);
+  UnstableNode access(VM vm);
 
   inline
-  void assign(RichNode self, VM vm, RichNode newValue);
+  void assign(VM vm, RichNode newValue);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Cell: " << repr(vm, _value, depth) << ">";
   }
 

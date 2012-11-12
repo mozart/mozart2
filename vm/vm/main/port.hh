@@ -46,7 +46,7 @@ Port::Port(VM vm, GR gr, Self from): WithHome(vm, gr, from->home()) {
   gr->copyUnstableNode(_stream, from->_stream);
 }
 
-void Port::send(RichNode self, VM vm, RichNode value) {
+void Port::send(VM vm, RichNode value) {
   // TODO Send to a parent space (no, the following test is not right)
   if (!isHomedInCurrentSpace(vm))
     raise(vm, MOZART_STR("globalState"), MOZART_STR("port"));
@@ -54,7 +54,7 @@ void Port::send(RichNode self, VM vm, RichNode value) {
   sendToReadOnlyStream(vm, _stream, value);
 }
 
-UnstableNode Port::sendReceive(RichNode self, VM vm, RichNode value) {
+UnstableNode Port::sendReceive(VM vm, RichNode value) {
   // TODO Send to a parent space (no, the following test is not right)
   if (!isHomedInCurrentSpace(vm))
     raise(vm, MOZART_STR("globalState"), MOZART_STR("port"));

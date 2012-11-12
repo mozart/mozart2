@@ -57,13 +57,13 @@ public:
 
   template <typename Label, typename... Args>
   inline
-  bool reflectiveCall(Self self, VM vm, const nchar* identity,
+  bool reflectiveCall(VM vm, const nchar* identity,
                       Label&& label, Args&&... args);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<ReflectiveEntity>";
   }
 
@@ -100,18 +100,18 @@ public:
   // DataflowVariable interface
 
   inline
-  void markNeeded(Self self, VM vm);
+  void markNeeded(VM vm);
 
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(VM vm, RichNode src);
 
   inline
-  void reflectiveBind(Self self, VM vm, RichNode src);
+  void reflectiveBind(RichNode self, VM vm, RichNode src);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "_<Reflective>";
   }
 

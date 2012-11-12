@@ -58,83 +58,83 @@ public:
   // Comparable interface
 
   inline
-  int compare(Self self, VM vm, RichNode right);
+  int compare(VM vm, RichNode right);
 
 public:
   // FloatValue inteface
 
-  double floatValue(Self self, VM vm) {
+  double floatValue(VM vm) {
     return value();
   }
 
   inline
-  bool equalsFloat(Self self, VM vm, double right);
+  bool equalsFloat(VM vm, double right);
 
 public:
   // Numeric inteface
 
-  bool isNumber(Self self, VM vm) {
+  bool isNumber(VM vm) {
     return true;
   }
 
-  bool isInt(Self self, VM vm) {
+  bool isInt(VM vm) {
     return false;
   }
 
-  bool isFloat(Self self, VM vm) {
+  bool isFloat(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode opposite(Self self, VM vm);
+  UnstableNode opposite(VM vm);
 
   inline
-  UnstableNode add(Self self, VM vm, RichNode right);
+  UnstableNode add(VM vm, RichNode right);
 
   inline
-  UnstableNode addValue(Self self, VM vm, double b);
+  UnstableNode addValue(VM vm, double b);
 
   inline
-  UnstableNode subtract(Self self, VM vm, RichNode right);
+  UnstableNode subtract(VM vm, RichNode right);
 
   inline
-  UnstableNode subtractValue(Self self, VM vm, double b);
+  UnstableNode subtractValue(VM vm, double b);
 
   inline
-  UnstableNode multiply(Self self, VM vm, RichNode right);
+  UnstableNode multiply(VM vm, RichNode right);
 
   inline
-  UnstableNode multiplyValue(Self self, VM vm, double b);
+  UnstableNode multiplyValue(VM vm, double b);
 
   inline
-  UnstableNode divide(Self self, VM vm, RichNode right);
+  UnstableNode divide(VM vm, RichNode right);
 
   inline
-  UnstableNode divideValue(Self self, VM vm, double b);
+  UnstableNode divideValue(VM vm, double b);
 
   inline
-  UnstableNode div(Self self, VM vm, RichNode right);
+  UnstableNode div(RichNode self, VM vm, RichNode right);
 
   inline
-  UnstableNode mod(Self self, VM vm, RichNode right);
+  UnstableNode mod(RichNode self, VM vm, RichNode right);
 
 public:
   // VirtualString inteface
 
-  bool isVirtualString(Self self, VM vm) {
+  bool isVirtualString(VM vm) {
     return true;
   }
 
   inline
-  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  nativeint vsLength(Self self, VM vm);
+  nativeint vsLength(VM vm);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << value();
   }
 private:

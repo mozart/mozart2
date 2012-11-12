@@ -62,20 +62,20 @@ public:
 public:
   // VirtualString inteface
 
-  bool isVirtualString(Self self, VM vm) {
+  bool isVirtualString(VM vm) {
     return true;
   }
 
   inline
-  void toString(Self self, VM vm, std::basic_ostream<nchar>& sink);
+  void toString(VM vm, std::basic_ostream<nchar>& sink);
 
   inline
-  nativeint vsLength(Self self, VM vm);
+  nativeint vsLength(VM vm);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "unit";
   }
 };

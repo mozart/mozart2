@@ -52,20 +52,20 @@ public:
 public:
   // PortLike interface
 
-  bool isPort(Self self, VM vm) {
+  bool isPort(VM vm) {
     return true;
   }
 
   inline
-  void send(RichNode self, VM vm, RichNode value);
+  void send(VM vm, RichNode value);
 
   inline
-  UnstableNode sendReceive(RichNode self, VM vm, RichNode value);
+  UnstableNode sendReceive(VM vm, RichNode value);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Port>";
   }
 

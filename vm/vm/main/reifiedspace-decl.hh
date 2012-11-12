@@ -58,27 +58,27 @@ public:
     return _space;
   }
 public:
-  bool isSpace(Self self, VM vm) {
+  bool isSpace(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode askSpace(Self self, VM vm);
+  UnstableNode askSpace(RichNode self, VM vm);
 
   inline
-  UnstableNode askVerboseSpace(Self self, VM vm);
+  UnstableNode askVerboseSpace(RichNode self, VM vm);
 
   inline
-  UnstableNode mergeSpace(Self self, VM vm);
+  UnstableNode mergeSpace(RichNode self, VM vm);
 
   inline
-  void commitSpace(Self self, VM vm, RichNode value);
+  void commitSpace(RichNode self, VM vm, RichNode value);
 
   inline
-  UnstableNode cloneSpace(Self self, VM vm);
+  UnstableNode cloneSpace(RichNode self, VM vm);
 
   inline
-  void killSpace(Self self, VM vm);
+  void killSpace(RichNode self, VM vm);
 private:
   SpaceRef _space;
 };
@@ -118,27 +118,27 @@ public:
     return _kind;
   }
 public:
-  bool isSpace(Self self, VM vm) {
+  bool isSpace(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode askSpace(Self self, VM vm);
+  UnstableNode askSpace(VM vm);
 
   inline
-  UnstableNode askVerboseSpace(Self self, VM vm);
+  UnstableNode askVerboseSpace(VM vm);
 
   inline
-  UnstableNode mergeSpace(Self self, VM vm);
+  UnstableNode mergeSpace(VM vm);
 
   inline
-  void commitSpace(Self self, VM vm, RichNode value);
+  void commitSpace(VM vm, RichNode value);
 
   inline
-  UnstableNode cloneSpace(Self self, VM vm);
+  UnstableNode cloneSpace(VM vm);
 
   inline
-  void killSpace(Self self, VM vm);
+  void killSpace(VM vm);
 private:
   DeletedSpaceKind _kind;
 };

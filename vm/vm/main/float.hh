@@ -47,61 +47,57 @@ bool Float::equals(VM vm, Self right) {
   return value() == right.get().value();
 }
 
-int Float::compare(Self self, VM vm, RichNode right) {
-  auto rightFloatValue = getArgument<double>(vm, right, MOZART_STR("float"));
+int Float::compare(VM vm, RichNode right) {
+  auto rightFloatValue = getArgument<double>(vm, right);
   return (value() < rightFloatValue) ? -1 : (value() > rightFloatValue) ? 1 : 0;
 }
 
-bool Float::equalsFloat(Self self, VM vm, double right) {
+bool Float::equalsFloat(VM vm, double right) {
   return value() == right;
 }
 
-UnstableNode Float::opposite(Self self, VM vm) {
+UnstableNode Float::opposite(VM vm) {
   return Float::build(vm, -value());
 }
 
-UnstableNode Float::add(Self self, VM vm, RichNode right) {
-  return addValue(self, vm,
-                  getArgument<double>(vm, right, MOZART_STR("float")));
+UnstableNode Float::add(VM vm, RichNode right) {
+  return addValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::addValue(Self self, VM vm, double b) {
+UnstableNode Float::addValue(VM vm, double b) {
   return Float::build(vm, value() + b);
 }
 
-UnstableNode Float::subtract(Self self, VM vm, RichNode right) {
-  return subtractValue(self, vm,
-                       getArgument<double>(vm, right, MOZART_STR("float")));
+UnstableNode Float::subtract(VM vm, RichNode right) {
+  return subtractValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::subtractValue(Self self, VM vm, double b) {
+UnstableNode Float::subtractValue(VM vm, double b) {
   return Float::build(vm, value() - b);
 }
 
-UnstableNode Float::multiply(Self self, VM vm, RichNode right) {
-  return multiplyValue(self, vm,
-                       getArgument<double>(vm, right, MOZART_STR("float")));
+UnstableNode Float::multiply(VM vm, RichNode right) {
+  return multiplyValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::multiplyValue(Self self, VM vm, double b) {
+UnstableNode Float::multiplyValue(VM vm, double b) {
   return Float::build(vm, value() * b);
 }
 
-UnstableNode Float::divide(Self self, VM vm, RichNode right) {
-  return divideValue(self, vm,
-                     getArgument<double>(vm, right, MOZART_STR("float")));
+UnstableNode Float::divide(VM vm, RichNode right) {
+  return divideValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::divideValue(Self self, VM vm, double b) {
+UnstableNode Float::divideValue(VM vm, double b) {
   return Float::build(vm, value() / b);
 }
 
-UnstableNode Float::div(Self self, VM vm, RichNode right) {
-  raiseTypeError(vm, MOZART_STR("Integer"), self);
+UnstableNode Float::div(RichNode self, VM vm, RichNode right) {
+  return Interface<Numeric>().div(self, vm, right);
 }
 
-UnstableNode Float::mod(Self self, VM vm, RichNode right) {
-  raiseTypeError(vm, MOZART_STR("Integer"), self);
+UnstableNode Float::mod(RichNode self, VM vm, RichNode right) {
+  return Interface<Numeric>().mod(self, vm, right);
 }
 
 namespace internal {
@@ -166,12 +162,12 @@ struct FloatToStringHelper {
 
 }
 
-void Float::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
-  const internal::FloatToStringHelper helper (value());
+void Float::toString(VM vm, std::basic_ostream<nchar>& sink) {
+  const internal::FloatToStringHelper helper(value());
   sink.write(helper.string.get(), helper.length);
 }
 
-nativeint Float::vsLength(Self self, VM vm) {
+nativeint Float::vsLength(VM vm) {
   return (nativeint) internal::FloatToStringHelper(value()).length;
 }
 

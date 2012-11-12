@@ -45,8 +45,7 @@ bool PatMatCapture::equals(VM vm, Self right) {
   return index() == right.get().index();
 }
 
-void PatMatCapture::printReprToStream(Self self, VM vm, std::ostream& out,
-                                      int depth) {
+void PatMatCapture::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << "<Capture/" << index() << ">";
 }
 
@@ -75,25 +74,20 @@ PatMatConjunction::PatMatConjunction(VM vm, size_t count,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StableNode* PatMatConjunction::getElement(Self self, size_t index) {
-  return &self[index];
+StableNode* PatMatConjunction::getElement(size_t index) {
+  return &getElements(index);
 }
 
-StaticArray<StableNode> PatMatConjunction::getElementsArray(Self self) {
-  return self.getArray();
-}
-
-bool PatMatConjunction::equals(Self self, VM vm, Self right, WalkStack& stack) {
+bool PatMatConjunction::equals(VM vm, Self right, WalkStack& stack) {
   if (_count != right->_count)
     return false;
 
-  stack.pushArray(vm, self.getArray(), right.getArray(), _count);
+  stack.pushArray(vm, getElementsArray(), right->getElementsArray(), _count);
 
   return true;
 }
 
-void PatMatConjunction::printReprToStream(Self self, VM vm, std::ostream& out,
-                                          int depth) {
+void PatMatConjunction::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << "<PatMatConjunction>(";
 
   if (depth <= 1) {
@@ -102,7 +96,7 @@ void PatMatConjunction::printReprToStream(Self self, VM vm, std::ostream& out,
     for (size_t i = 0; i < _count; i++) {
       if (i > 0)
         out << ", ";
-      out << repr(vm, self[i], depth);
+      out << repr(vm, getElements(i), depth);
     }
   }
 
@@ -140,23 +134,18 @@ PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
     gr->copyStableNode(_elements[i], from[i]);
 }
 
-StableNode* PatMatOpenRecord::getElement(Self self, size_t index) {
-  return &self[index];
+StableNode* PatMatOpenRecord::getElement(size_t index) {
+  return &getElements(index);
 }
 
-StaticArray<StableNode> PatMatOpenRecord::getElementsArray(Self self) {
-  return self.getArray();
-}
-
-void PatMatOpenRecord::printReprToStream(Self self, VM vm, std::ostream& out,
-                                         int depth) {
+void PatMatOpenRecord::printReprToStream(VM vm, std::ostream& out, int depth) {
   auto arity = RichNode(_arity).as<Arity>();
 
   out << "<PatMatOpenRecord " << repr(vm, *arity.getLabel(), depth) << "(";
 
   for (size_t i = 0; i < _width; i++) {
     out << repr(vm, *arity.getElement(i), depth) << ":";
-    out << repr(vm, self[i], depth) << " ";
+    out << repr(vm, getElements(i), depth) << " ";
   }
 
   out << "...)>";

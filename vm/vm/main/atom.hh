@@ -52,19 +52,19 @@ int Atom::compareFeatures(VM vm, Self right) {
   return lhs.compare(rhs);
 }
 
-int Atom::compare(Self self, VM vm, RichNode right) {
+int Atom::compare(VM vm, RichNode right) {
   auto rightAtomValue = getArgument<atom_t>(vm, right, MOZART_STR("atom"));
   return value().compare(rightAtomValue);
 }
 
-void Atom::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void Atom::toString(VM vm, std::basic_ostream<nchar>& sink) {
   atom_t a = value();
   if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
     sink.write(a.contents(), a.length());
   }
 }
 
-nativeint Atom::vsLength(Self self, VM vm) {
+nativeint Atom::vsLength(VM vm) {
   atom_t a = value();
   if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
     return 0;
@@ -72,7 +72,7 @@ nativeint Atom::vsLength(Self self, VM vm) {
     return codePointCount(makeLString(a.contents(), a.length()));
 }
 
-void Atom::printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+void Atom::printReprToStream(VM vm, std::ostream& out, int depth) {
   atom_t a = value();
   out << '\'' << toUTF<char>(makeLString(a.contents(), a.length())) << '\'';
 }

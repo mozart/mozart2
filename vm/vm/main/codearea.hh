@@ -71,23 +71,18 @@ CodeArea::CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
     gr->copyStableNode(_Ks[i], from[i]);
 }
 
-StaticArray<StableNode> CodeArea::getElementsArray(Self self) {
-  return self.getArray();
-}
-
 void CodeArea::getCodeAreaInfo(
-  Self self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
+  VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Ks) {
 
   arity = _arity;
   start = _codeBlock;
   Xcount = _Xcount;
-  Ks = self.getArray();
+  Ks = getElementsArray();
 }
 
-void CodeArea::getCodeAreaDebugInfo(
-  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
-
+void CodeArea::getCodeAreaDebugInfo(VM vm, atom_t& printName,
+                                    UnstableNode& debugData) {
   printName = _printName;
   debugData.copy(vm, _debugData);
 }

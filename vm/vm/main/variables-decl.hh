@@ -49,28 +49,28 @@ public:
   // DataflowVariable interface
 
   inline
-  void addToSuspendList(HSelf self, VM vm, RichNode variable);
+  void addToSuspendList(VM vm, RichNode variable);
 
   bool isNeeded(VM vm) {
     return _needed;
   }
 
   inline
-  void markNeeded(HSelf self, VM vm);
+  void markNeeded(VM vm);
 
   /* To be implemented in subclasses
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(VM vm, RichNode src);
   */
 
 protected:
   inline
-  void doBind(HSelf self, VM vm, RichNode src);
+  void doBind(RichNode self, VM vm, RichNode src);
 
 private:
   // TODO Might be a good candidate for noinline
   inline
-  void bindSubSpace(HSelf self, VM vm, RichNode src);
+  void bindSubSpace(RichNode self, VM vm, RichNode src);
 
   inline
   void wakeUpPendings(VM vm);
@@ -107,7 +107,7 @@ public:
   // Wakeable interface
 
   inline
-  void wakeUp(Self self, VM vm);
+  void wakeUp(RichNode self, VM vm);
 
   inline
   bool shouldWakeUpUnderSpace(VM vm, Space* space);
@@ -116,12 +116,12 @@ public:
   // DataflowVariable interface
 
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(RichNode self, VM vm, RichNode src);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "_";
   }
 };
@@ -153,18 +153,18 @@ public:
   // DataflowVariable interface
 
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(RichNode self, VM vm, RichNode src);
 
 public:
   // BindableReadOnly interface
 
   inline
-  void bindReadOnly(Self self, VM vm, RichNode src);
+  void bindReadOnly(RichNode self, VM vm, RichNode src);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "!!_";
   }
 };
@@ -201,29 +201,29 @@ public:
   // DataflowVariable interface
 
   inline
-  void addToSuspendList(Self self, VM vm, RichNode variable);
+  void addToSuspendList(RichNode self, VM vm, RichNode variable);
 
   bool isNeeded(VM vm) {
     return false;
   }
 
   inline
-  void markNeeded(Self self, VM vm);
+  void markNeeded(RichNode self, VM vm);
 
   inline
-  void bind(Self self, VM vm, UnstableNode&& src);
+  void bind(RichNode self, VM vm, UnstableNode&& src);
 
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(RichNode self, VM vm, RichNode src);
 
 private:
   inline
-  void makeBackupForSpeculativeBindingIfNeeded(Self& self, VM vm);
+  void makeBackupForSpeculativeBindingIfNeeded(RichNode self, VM vm);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "_<optimized>";
   }
 };
@@ -272,7 +272,7 @@ public:
   // Wakeable interface
 
   inline
-  void wakeUp(Self self, VM vm);
+  void wakeUp(RichNode self, VM vm);
 
   inline
   bool shouldWakeUpUnderSpace(VM vm, Space* space);
@@ -281,21 +281,21 @@ public:
   // DataflowVariable interface
 
   inline
-  void addToSuspendList(Self self, VM vm, RichNode variable);
+  void addToSuspendList(VM vm, RichNode variable);
 
   inline
   bool isNeeded(VM vm);
 
   inline
-  void markNeeded(Self self, VM vm);
+  void markNeeded(VM vm);
 
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(VM vm, RichNode src);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "!!" << repr(vm, *_underlying, depth);
   }
 
@@ -339,21 +339,21 @@ public:
   // DataflowVariable interface
 
   inline
-  void addToSuspendList(Self self, VM vm, RichNode variable);
+  void addToSuspendList(VM vm, RichNode variable);
 
   inline
   bool isNeeded(VM vm);
 
   inline
-  void markNeeded(Self self, VM vm);
+  void markNeeded(VM vm);
 
   inline
-  void bind(Self self, VM vm, RichNode src);
+  void bind(VM vm, RichNode src);
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Failed " << repr(vm, *_underlying, depth) << ">";
   }
 

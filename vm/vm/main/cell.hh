@@ -43,7 +43,7 @@ Cell::Cell(VM vm, GR gr, Self from):
   gr->copyUnstableNode(_value, from->_value);
 }
 
-UnstableNode Cell::exchange(RichNode self, VM vm, RichNode newValue) {
+UnstableNode Cell::exchange(VM vm, RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
     raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
 
@@ -52,11 +52,11 @@ UnstableNode Cell::exchange(RichNode self, VM vm, RichNode newValue) {
   return oldValue;
 }
 
-UnstableNode Cell::access(RichNode self, VM vm) {
+UnstableNode Cell::access(VM vm) {
   return { vm, _value };
 }
 
-void Cell::assign(RichNode self, VM vm, RichNode newValue) {
+void Cell::assign(VM vm, RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
     raise(vm, MOZART_STR("globalState"), MOZART_STR("cell"));
 

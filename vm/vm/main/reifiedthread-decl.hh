@@ -74,7 +74,7 @@ public:
 public:
   // ThreadLike interface
 
-  bool isThread(Self self, VM vm) {
+  bool isThread(VM vm) {
     return true;
   }
 

@@ -59,19 +59,19 @@ public:
   // PotentialFeature interface
 
   inline
-  void makeFeature(Self self, VM vm);
+  void makeFeature(RichNode self, VM vm);
 
 public:
   // NameLike interface
 
-  bool isName(Self self, VM vm) {
+  bool isName(VM vm) {
     return true;
   }
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<OptName>";
   }
 };
@@ -115,14 +115,14 @@ public:
 public:
   // NameLike interface
 
-  bool isName(Self self, VM vm) {
+  bool isName(VM vm) {
     return true;
   }
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Name>";
   }
 
@@ -175,14 +175,14 @@ public:
 public:
   // NameLike interface
 
-  bool isName(Self self, VM vm) {
+  bool isName(VM vm) {
     return true;
   }
 
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Name/" << repr(vm, _printName) << ">";
   }
 
@@ -235,7 +235,7 @@ public:
 public:
   // NameLike interface
 
-  bool isName(Self self, VM vm) {
+  bool isName(VM vm) {
     return true;
   }
 
@@ -243,7 +243,7 @@ public:
   // Miscellaneous
 
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   unique_name_t _value;

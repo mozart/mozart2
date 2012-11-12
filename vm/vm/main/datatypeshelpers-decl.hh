@@ -35,15 +35,11 @@ namespace mozart {
 
 template <class T>
 class LiteralHelper {
-private:
-  typedef T* This;
-  typedef typename SelfType<T>::Self HSelf;
-
 public:
   // Literal interface
 
   inline
-  bool isLiteral(HSelf self, VM vm) {
+  bool isLiteral(VM vm) {
     return true;
   }
 
@@ -51,47 +47,47 @@ public:
   // Dottable interface
 
   inline
-  bool lookupFeature(HSelf self, VM vm, RichNode feature,
+  bool lookupFeature(VM vm, RichNode feature,
                      nullable<UnstableNode&> value);
 
   inline
-  bool lookupFeature(HSelf self, VM vm, nativeint feature,
+  bool lookupFeature(VM vm, nativeint feature,
                      nullable<UnstableNode&> value);
 
 public:
   // RecordLike interface
 
-  bool isRecord(HSelf self, VM vm) {
+  bool isRecord(VM vm) {
     return true;
   }
 
-  bool isTuple(HSelf self, VM vm) {
+  bool isTuple(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode label(HSelf self, VM vm);
+  UnstableNode label(RichNode self, VM vm);
 
   inline
-  size_t width(HSelf self, VM vm);
+  size_t width(VM vm);
 
   inline
-  UnstableNode arityList(HSelf self, VM vm);
+  UnstableNode arityList(VM vm);
 
   inline
-  UnstableNode clone(HSelf self, VM vm);
+  UnstableNode clone(RichNode self, VM vm);
 
   inline
-  UnstableNode waitOr(HSelf self, VM vm);
+  UnstableNode waitOr(VM vm);
 
   inline
-  bool testRecord(HSelf self, VM vm, RichNode arity);
+  bool testRecord(VM vm, RichNode arity);
 
   inline
-  bool testTuple(HSelf self, VM vm, RichNode label, size_t width);
+  bool testTuple(RichNode self, VM vm, RichNode label, size_t width);
 
   inline
-  bool testLabel(HSelf self, VM vm, RichNode label);
+  bool testLabel(RichNode self, VM vm, RichNode label);
 };
 
 ///////////////////////////
@@ -101,36 +97,37 @@ public:
 template <class T>
 class IntegerDottableHelper {
 private:
-  typedef T* This;
-  typedef typename SelfType<T>::Self HSelf;
+  T* getThis() {
+    return static_cast<T*>(this);
+  }
 
 public:
   // Dottable interface
 
   inline
-  bool lookupFeature(HSelf self, VM vm, RichNode feature,
+  bool lookupFeature(VM vm, RichNode feature,
                      nullable<UnstableNode&> value);
 
   inline
-  bool lookupFeature(HSelf self, VM vm, nativeint feature,
+  bool lookupFeature(VM vm, nativeint feature,
                      nullable<UnstableNode&> value);
 
 private:
-  bool internalIsValidFeature(HSelf self, VM vm, nativeint feature) {
-    return static_cast<This>(this)->isValidFeature(self, vm, feature);
+  bool internalIsValidFeature(VM vm, nativeint feature) {
+    return getThis()->isValidFeature(vm, feature);
   }
 
-  UnstableNode internalGetValueAt(HSelf self, VM vm, nativeint feature) {
-    return static_cast<This>(this)->getValueAt(self, vm, feature);
+  UnstableNode internalGetValueAt(VM vm, nativeint feature) {
+    return getThis()->getValueAt(vm, feature);
   }
 
 protected:
   /* To be implemented in subclasses
   inline
-  bool isValidFeature(Self self, VM vm, nativeint feature);
+  bool isValidFeature(VM vm, nativeint feature);
 
   inline
-  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
+  UnstableNode getValueAt(VM vm, nativeint feature);
   */
 };
 

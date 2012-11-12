@@ -47,7 +47,7 @@ bool ByteString::equals(VM vm, Self right) {
   return _bytes == right->_bytes;
 }
 
-UnstableNode ByteString::getValueAt(Self self, VM vm, nativeint feature) {
+UnstableNode ByteString::getValueAt(VM vm, nativeint feature) {
   return mozart::build(vm, _bytes[feature]);
 }
 
@@ -69,22 +69,22 @@ namespace internal {
   }
 }
 
-int ByteString::compare(Self self, VM vm, RichNode right) {
+int ByteString::compare(VM vm, RichNode right) {
   return internal::compareByteStrings(_bytes,
                                       *StringLike(right).byteStringGet(vm));
 }
 
 // StringLike ------------------------------------------------------------------
 
-LString<unsigned char>* ByteString::byteStringGet(Self self, VM vm) {
+LString<unsigned char>* ByteString::byteStringGet(VM vm) {
   return &_bytes;
 }
 
-LString<nchar>* ByteString::stringGet(Self self, VM vm) {
-  raiseTypeError(vm, MOZART_STR("String"), self);
+LString<nchar>* ByteString::stringGet(RichNode self, VM vm) {
+  return Interface<StringLike>().stringGet(self, vm);
 }
 
-nativeint ByteString::stringCharAt(Self self, VM vm, RichNode offsetNode) {
+nativeint ByteString::stringCharAt(RichNode self, VM vm, RichNode offsetNode) {
   auto offset = getArgument<nativeint>(vm, offsetNode, MOZART_STR("integer"));
 
   if (offset < 0 || offset >= _bytes.length)
@@ -93,7 +93,7 @@ nativeint ByteString::stringCharAt(Self self, VM vm, RichNode offsetNode) {
   return _bytes[offset];
 }
 
-UnstableNode ByteString::stringAppend(Self self, VM vm, RichNode right) {
+UnstableNode ByteString::stringAppend(RichNode self, VM vm, RichNode right) {
   auto rightBytes = StringLike(right).byteStringGet(vm);
   LString<unsigned char> resultBytes = concatLString(vm, _bytes, *rightBytes);
   if (resultBytes.isError())
@@ -101,7 +101,7 @@ UnstableNode ByteString::stringAppend(Self self, VM vm, RichNode right) {
   return ByteString::build(vm, resultBytes);
 }
 
-UnstableNode ByteString::stringSlice(Self self, VM vm,
+UnstableNode ByteString::stringSlice(RichNode self, VM vm,
                                      RichNode from, RichNode to) {
   auto fromOffset = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
   auto toOffset = getArgument<nativeint>(vm, to, MOZART_STR("integer"));
@@ -113,7 +113,7 @@ UnstableNode ByteString::stringSlice(Self self, VM vm,
 }
 
 void ByteString::stringSearch(
-  Self self, VM vm, RichNode from, RichNode needleNode,
+  RichNode self, VM vm, RichNode from, RichNode needleNode,
   UnstableNode& begin, UnstableNode& end) {
 
   // TODO Fix this - it was deactivated because of a build problem on Mac OS
@@ -168,7 +168,7 @@ void ByteString::stringSearch(
 #endif
 }
 
-bool ByteString::stringHasPrefix(Self self, VM vm, RichNode prefixNode) {
+bool ByteString::stringHasPrefix(VM vm, RichNode prefixNode) {
   auto prefix = StringLike(prefixNode).stringGet(vm);
   if (_bytes.length < prefix->length)
     return false;
@@ -176,7 +176,7 @@ bool ByteString::stringHasPrefix(Self self, VM vm, RichNode prefixNode) {
     return memcmp(_bytes.string, prefix->string, prefix->bytesCount()) == 0;
 }
 
-bool ByteString::stringHasSuffix(Self self, VM vm, RichNode suffixNode) {
+bool ByteString::stringHasSuffix(VM vm, RichNode suffixNode) {
   auto suffix = StringLike(suffixNode).stringGet(vm);
   if (_bytes.length < suffix->length)
     return false;
@@ -187,18 +187,18 @@ bool ByteString::stringHasSuffix(Self self, VM vm, RichNode suffixNode) {
 
 // VirtualString ---------------------------------------------------------------
 
-void ByteString::toString(Self self, VM vm,
-                          std::basic_ostream<nchar>& sink) {
+void ByteString::toString(VM vm, std::basic_ostream<nchar>& sink) {
   sink << decodeLatin1(_bytes, EncodingVariant::none);
 }
 
-nativeint ByteString::vsLength(Self self, VM vm) {
+nativeint ByteString::vsLength(VM vm) {
   return _bytes.length;
 }
 
 // Encode & decode -------------------------------------------------------------
 
-UnstableNode ByteString::decode(Self self, VM vm, ByteStringEncoding encoding,
+UnstableNode ByteString::decode(RichNode self, VM vm,
+                                ByteStringEncoding encoding,
                                 EncodingVariant variant) {
   DecoderFun decoder;
   switch (encoding) {
@@ -239,8 +239,7 @@ UnstableNode encodeToBytestring(VM vm, const BaseLString<nchar>& input,
 
 // Miscellaneous ---------------------------------------------------------------
 
-void ByteString::printReprToStream(Self self, VM vm, std::ostream& out,
-                                   int depth) {
+void ByteString::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << "<ByteString \"";
   out.write(reinterpret_cast<const char*>(_bytes.string), _bytes.length);
   // TODO: Escape characters.

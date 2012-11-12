@@ -59,10 +59,12 @@ public:
         GR gr, Self from);
 
 public:
-  size_t getArraySize() {
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
     return _width;
   }
 
+public:
   size_t getWidth() {
     return _width;
   }
@@ -78,21 +80,21 @@ public:
 protected:
   friend class IntegerDottableHelper<Array>;
 
-  bool isValidFeature(Self self, VM vm, nativeint feature) {
+  bool isValidFeature(VM vm, nativeint feature) {
     return isIndexInRange(feature);
   }
 
   inline
-  UnstableNode getValueAt(Self self, VM vm, nativeint feature);
+  UnstableNode getValueAt(VM vm, nativeint feature);
 
 public:
   // DotAssignable interface
 
-  void dotAssign(Self self, VM vm, RichNode feature, RichNode newValue) {
+  void dotAssign(RichNode self, VM vm, RichNode feature, RichNode newValue) {
     return arrayPut(self, vm, feature, newValue);
   }
 
-  UnstableNode dotExchange(Self self, VM vm, RichNode feature,
+  UnstableNode dotExchange(RichNode self, VM vm, RichNode feature,
                            RichNode newValue) {
     return arrayExchange(self, vm, feature, newValue);
   }
@@ -100,29 +102,29 @@ public:
 public:
   // ArrayLike interface
 
-  bool isArray(Self self, VM vm) {
+  bool isArray(VM vm) {
     return true;
   }
 
   inline
-  UnstableNode arrayLow(Self self, VM vm);
+  UnstableNode arrayLow(VM vm);
 
   inline
-  UnstableNode arrayHigh(Self self, VM vm);
+  UnstableNode arrayHigh(VM vm);
 
   inline
-  UnstableNode arrayGet(Self self, VM vm, RichNode index);
+  UnstableNode arrayGet(RichNode self, VM vm, RichNode index);
 
   inline
-  void arrayPut(Self self, VM vm, RichNode index, RichNode value);
+  void arrayPut(RichNode self, VM vm, RichNode index, RichNode value);
 
   inline
-  UnstableNode arrayExchange(Self self, VM vm, RichNode index,
+  UnstableNode arrayExchange(RichNode self, VM vm, RichNode index,
                              RichNode newValue);
 
 private:
   inline
-  size_t getOffset(Self self, VM vm, RichNode index);
+  size_t getOffset(RichNode self, VM vm, RichNode index);
 
   bool isIndexInRange(nativeint index) {
     return (index >= getLow()) && (index <= getHigh());
@@ -135,7 +137,7 @@ private:
 
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   size_t _width;

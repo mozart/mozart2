@@ -49,23 +49,23 @@ bool String::equals(VM vm, Self right) {
 
 // Comparable ------------------------------------------------------------------
 
-int String::compare(Self self, VM vm, RichNode right) {
+int String::compare(VM vm, RichNode right) {
   auto rightString = StringLike(right).stringGet(vm);
   return compareByCodePoint(_string, *rightString);
 }
 
 // StringLike ------------------------------------------------------------------
 
-LString<nchar>* String::stringGet(Self self, VM vm) {
+LString<nchar>* String::stringGet(VM vm) {
   return &_string;
 }
 
-LString<unsigned char>* String::byteStringGet(Self self, VM vm) {
-  raiseTypeError(vm, MOZART_STR("ByteString"), self);
+LString<unsigned char>* String::byteStringGet(RichNode self, VM vm) {
+  return Interface<StringLike>().byteStringGet(self, vm);
 }
 
-nativeint String::stringCharAt(Self self, VM vm, RichNode indexNode) {
-  auto index = getArgument<nativeint>(vm, indexNode, MOZART_STR("integer"));
+nativeint String::stringCharAt(RichNode self, VM vm, RichNode indexNode) {
+  auto index = getArgument<nativeint>(vm, indexNode);
 
   LString<nchar> slice = sliceByCodePointsFromTo(_string, index, index+1);
   if (slice.isError()) {
@@ -84,7 +84,7 @@ nativeint String::stringCharAt(Self self, VM vm, RichNode indexNode) {
   return codePoint;
 }
 
-UnstableNode String::stringAppend(Self self, VM vm, RichNode right) {
+UnstableNode String::stringAppend(RichNode self, VM vm, RichNode right) {
   auto rightString = StringLike(right).stringGet(vm);
   auto resultString = concatLString(vm, _string, *rightString);
 
@@ -94,9 +94,10 @@ UnstableNode String::stringAppend(Self self, VM vm, RichNode right) {
   return String::build(vm, resultString);
 }
 
-UnstableNode String::stringSlice(Self self, VM vm, RichNode from, RichNode to) {
-  auto fromIndex = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
-  auto toIndex = getArgument<nativeint>(vm, to, MOZART_STR("integer"));
+UnstableNode String::stringSlice(RichNode self, VM vm,
+                                 RichNode from, RichNode to) {
+  auto fromIndex = getArgument<nativeint>(vm, from);
+  auto toIndex = getArgument<nativeint>(vm, to);
 
   LString<nchar> resultString =
     sliceByCodePointsFromTo(_string, fromIndex, toIndex);
@@ -111,9 +112,10 @@ UnstableNode String::stringSlice(Self self, VM vm, RichNode from, RichNode to) {
   return String::build(vm, resultString);
 }
 
-void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
+void String::stringSearch(RichNode self, VM vm, RichNode from,
+                          RichNode needleNode,
                           UnstableNode& begin, UnstableNode& end) {
-  auto fromIndex = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
+  auto fromIndex = getArgument<nativeint>(vm, from);
 
   nchar utf[4];
   mut::BaseLString<nchar> needleStorage;
@@ -174,7 +176,7 @@ void String::stringSearch(Self self, VM vm, RichNode from, RichNode needleNode,
   }
 }
 
-bool String::stringHasPrefix(Self self, VM vm, RichNode prefixNode) {
+bool String::stringHasPrefix(VM vm, RichNode prefixNode) {
   auto prefix = StringLike(prefixNode).stringGet(vm);
   if (_string.length < prefix->length)
     return false;
@@ -182,7 +184,7 @@ bool String::stringHasPrefix(Self self, VM vm, RichNode prefixNode) {
     return memcmp(_string.string, prefix->string, prefix->bytesCount()) == 0;
 }
 
-bool String::stringHasSuffix(Self self, VM vm, RichNode suffixNode) {
+bool String::stringHasSuffix(VM vm, RichNode suffixNode) {
   auto suffix = StringLike(suffixNode).stringGet(vm);
   if (_string.length < suffix->length)
     return false;
@@ -193,7 +195,7 @@ bool String::stringHasSuffix(Self self, VM vm, RichNode suffixNode) {
 
 // Dottable --------------------------------------------------------------------
 
-bool String::lookupFeature(Self self, VM vm, RichNode feature,
+bool String::lookupFeature(RichNode self, VM vm, RichNode feature,
                            nullable<UnstableNode&> value) {
   using namespace patternmatching;
 
@@ -208,7 +210,7 @@ bool String::lookupFeature(Self self, VM vm, RichNode feature,
   }
 }
 
-bool String::lookupFeature(Self self, VM vm, nativeint feature,
+bool String::lookupFeature(RichNode self, VM vm, nativeint feature,
                            nullable<UnstableNode&> value) {
   LString<nchar> slice = sliceByCodePointsFromTo(_string, feature, feature+1);
   if (slice.isError()) {
@@ -232,18 +234,17 @@ bool String::lookupFeature(Self self, VM vm, nativeint feature,
 
 // VirtualString ---------------------------------------------------------------
 
-void String::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void String::toString(VM vm, std::basic_ostream<nchar>& sink) {
   sink << _string;
 }
 
-nativeint String::vsLength(Self self, VM vm) {
+nativeint String::vsLength(VM vm) {
   return codePointCount(_string);
 }
 
 // Miscellaneous ---------------------------------------------------------------
 
-void String::printReprToStream(Self self, VM vm, std::ostream& out,
-                               int depth) {
+void String::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << '"' << toUTF<char>(_string) << '"';
 }
 

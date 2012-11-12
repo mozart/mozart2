@@ -87,43 +87,43 @@ public:
    * @param args   Actual parameters
    */
   inline
-  void callBuiltin(Self self, VM vm, size_t argc, UnstableNode* args[]);
+  void callBuiltin(VM vm, size_t argc, UnstableNode* args[]);
 
   template <class... Args>
   inline
-  void callBuiltin(Self self, VM vm, Args&&... args);
+  void callBuiltin(VM vm, Args&&... args);
 
-  builtins::BaseBuiltin* getBuiltin(RichNode self, VM vm) {
+  builtins::BaseBuiltin* getBuiltin(VM vm) {
     return _builtin;
   }
 
 public:
   // Callable interface
 
-  bool isCallable(Self self, VM vm) {
+  bool isCallable(VM vm) {
     return true;
   }
 
-  bool isProcedure(Self self, VM vm) {
+  bool isProcedure(VM vm) {
     return true;
   }
 
   inline
-  size_t procedureArity(Self self, VM vm);
+  size_t procedureArity(VM vm);
 
   inline
-  void getCallInfo(Self self, VM vm, size_t& arity,
+  void getCallInfo(RichNode self, VM vm, size_t& arity,
                    ProgramCounter& start, size_t& Xcount,
                    StaticArray<StableNode>& Gs,
                    StaticArray<StableNode>& Ks);
 
   inline
-  void getDebugInfo(Self self, VM vm,
+  void getDebugInfo(RichNode self, VM vm,
                     atom_t& printName, UnstableNode& debugData);
 public:
   // Miscellaneous
 
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<P/" << _builtin->getArity() << " " << _builtin->getName() << ">";
   }
 private:
@@ -161,26 +161,24 @@ public:
               GR gr, Self from);
 
 public:
-  size_t getArraySize() {
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
     return _Gc;
   }
-
-  inline
-  StaticArray<StableNode> getElementsArray(Self self);
 
 public:
   // Callable interface
 
-  bool isCallable(Self self, VM vm) {
+  bool isCallable(VM vm) {
     return true;
   }
 
-  bool isProcedure(Self self, VM vm) {
+  bool isProcedure(VM vm) {
     return true;
   }
 
   inline
-  size_t procedureArity(Self self, VM vm);
+  size_t procedureArity(VM vm);
 
   /**
    * Get the information needed to call this abstraction
@@ -192,20 +190,19 @@ public:
    * @param Ks       Output: K registers
    */
   inline
-  void getCallInfo(Self self, VM vm, size_t& arity,
+  void getCallInfo(VM vm, size_t& arity,
                    ProgramCounter& start, size_t& Xcount,
                    StaticArray<StableNode>& Gs,
                    StaticArray<StableNode>& Ks);
 
   inline
-  void getDebugInfo(Self self, VM vm,
-                    atom_t& printName, UnstableNode& debugData);
+  void getDebugInfo(VM vm, atom_t& printName, UnstableNode& debugData);
 
 public:
   // Miscellaneous
 
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   inline

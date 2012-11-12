@@ -45,34 +45,30 @@ bool BuiltinProcedure::equals(VM vm, Self right) {
   return _builtin == right.get()._builtin;
 }
 
-void BuiltinProcedure::callBuiltin(
-  Self self, VM vm, size_t argc, UnstableNode* args[]) {
-
+void BuiltinProcedure::callBuiltin(VM vm, size_t argc, UnstableNode* args[]) {
   assert(argc == getArity());
   return _builtin->call(vm, args);
 }
 
 template <class... Args>
-void BuiltinProcedure::callBuiltin(
-  Self self, VM vm, Args&&... args) {
-
+void BuiltinProcedure::callBuiltin(VM vm, Args&&... args) {
   assert(sizeof...(args) == getArity());
   return _builtin->call(vm, std::forward<Args>(args)...);
 }
 
-size_t BuiltinProcedure::procedureArity(Self self, VM vm) {
+size_t BuiltinProcedure::procedureArity(VM vm) {
   return getArity();
 }
 
 void BuiltinProcedure::getCallInfo(
-  Self self, VM vm, size_t& arity, ProgramCounter& start,
+  RichNode self, VM vm, size_t& arity, ProgramCounter& start,
   size_t& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   return _builtin->getCallInfo(self, vm, arity, start, Xcount, Gs, Ks);
 }
 
 void BuiltinProcedure::getDebugInfo(
-  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
+  RichNode self, VM vm, atom_t& printName, UnstableNode& debugData) {
 
   printName = _builtin->getNameAtom(vm);
   debugData = mozart::build(vm, unit);
@@ -109,17 +105,13 @@ Abstraction::Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
     gr->copyStableNode(_Gs[i], from[i]);
 }
 
-StaticArray<StableNode> Abstraction::getElementsArray(Self self) {
-  return self.getArray();
-}
-
-size_t Abstraction::procedureArity(Self self, VM vm) {
+size_t Abstraction::procedureArity(VM vm) {
   ensureCodeAreaCacheValid(vm);
   return _arity;
 }
 
 void Abstraction::getCallInfo(
-  Self self, VM vm, size_t& arity, ProgramCounter& start,
+  VM vm, size_t& arity, ProgramCounter& start,
   size_t& Xcount, StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
   ensureCodeAreaCacheValid(vm);
@@ -127,19 +119,16 @@ void Abstraction::getCallInfo(
   arity = _arity;
   start = _start;
   Xcount = _Xcount;
-  Gs = self.getArray();
+  Gs = getElementsArray();
   Ks = _Ks;
 }
 
-void Abstraction::getDebugInfo(
-  Self self, VM vm, atom_t& printName, UnstableNode& debugData) {
-
+void Abstraction::getDebugInfo(VM vm, atom_t& printName,
+                               UnstableNode& debugData) {
   return CodeAreaProvider(_body).getCodeAreaDebugInfo(vm, printName, debugData);
 }
 
-void Abstraction::printReprToStream(
-  Self self, VM vm, std::ostream& out, int depth) {
-
+void Abstraction::printReprToStream(VM vm, std::ostream& out, int depth) {
   MOZART_TRY(vm) {
     ensureCodeAreaCacheValid(vm);
 

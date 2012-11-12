@@ -54,11 +54,11 @@ int Boolean::compareFeatures(VM vm, Self right) {
     return -1;
 }
 
-void Boolean::toString(Self self, VM vm, std::basic_ostream<nchar>& sink) {
+void Boolean::toString(VM vm, std::basic_ostream<nchar>& sink) {
   sink << (value() ? MOZART_STR("true") : MOZART_STR("false"));
 }
 
-nativeint Boolean::vsLength(Self self, VM vm) {
+nativeint Boolean::vsLength(VM vm) {
   return value() ? 4 : 5;
 }
 

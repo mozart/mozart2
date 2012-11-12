@@ -57,12 +57,10 @@ public:
            GR gr, Self from);
 
 public:
-  size_t getArraySize() {
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
     return _Kc;
   }
-
-  inline
-  StaticArray<StableNode> getElementsArray(Self self);
 
 public:
   // CodeAreaProvider interface
@@ -72,13 +70,12 @@ public:
   }
 
   inline
-  void getCodeAreaInfo(Self self, VM vm, size_t& arity,
+  void getCodeAreaInfo(VM vm, size_t& arity,
                        ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Ks);
 
   inline
-  void getCodeAreaDebugInfo(Self self, VM vm,
-                            atom_t& printName, UnstableNode& debugData);
+  void getCodeAreaDebugInfo(VM vm, atom_t& printName, UnstableNode& debugData);
 
 private:
   void _setCodeBlock(VM vm, ByteCode* codeBlock, size_t size) {

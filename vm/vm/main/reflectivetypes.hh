@@ -48,7 +48,7 @@ ReflectiveEntity::ReflectiveEntity(VM vm, GR gr, Self from) {
 
 template <typename Label, typename... Args>
 bool ReflectiveEntity::reflectiveCall(
-  Self self, VM vm, const nchar* identity, Label&& label, Args&&... args) {
+  VM vm, const nchar* identity, Label&& label, Args&&... args) {
 
   if (!vm->isOnTopLevel())
     raise(vm, MOZART_STR("globalState"), MOZART_STR("reflective"));
@@ -85,22 +85,22 @@ ReflectiveVariable::ReflectiveVariable(VM vm, GR gr, Self from):
   gr->copyUnstableNode(_stream, from->_stream);
 }
 
-void ReflectiveVariable::markNeeded(Self self, VM vm) {
+void ReflectiveVariable::markNeeded(VM vm) {
   if (!isNeeded(vm)) {
-    VariableBase::markNeeded(self, vm);
+    VariableBase::markNeeded(vm);
     sendToReadOnlyStream(vm, _stream, buildSharp(vm, MOZART_STR("markNeeded"),
                                                  OptVar::build(vm)));
   }
 }
 
-void ReflectiveVariable::bind(Self self, VM vm, RichNode src) {
+void ReflectiveVariable::bind(VM vm, RichNode src) {
   ozcalls::internal::doReflectiveCall(
     vm, MOZART_STR("mozart::ReflectiveVariable::bind"), _stream,
     MOZART_STR("bind"), src
   );
 }
 
-void ReflectiveVariable::reflectiveBind(Self self, VM vm, RichNode src) {
+void ReflectiveVariable::reflectiveBind(RichNode self, VM vm, RichNode src) {
   doBind(self, vm, src);
 }
 

@@ -92,6 +92,7 @@ struct ImplementationDef {
     feature = false;
     storageKind = skDefault;
     storage = "";
+    storageElement = "";
     structuralBehavior = sbTokenEq;
     bindingPriority = 0;
     withHome = false;
@@ -122,6 +123,7 @@ struct ImplementationDef {
   bool feature;
   StorageKind storageKind;
   std::string storage;
+  std::string storageElement;
   StructuralBehavior structuralBehavior;
   unsigned char bindingPriority;
   bool withHome;
@@ -235,8 +237,9 @@ void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
       definition.storage = getTypeParamAsString(marker, false);
     } else if (markerLabel == "StoredWithArrayOf") {
       definition.storageKind = skWithArray;
+      definition.storageElement = getTypeParamAsString(marker, false);
       definition.storage = "ImplWithArray<" + name + ", " +
-        getTypeParamAsString(marker, false) + ">";
+        definition.storageElement + ">";
     } else if (markerLabel == "WithValueBehavior") {
       definition.structuralBehavior = sbValue;
     } else if (markerLabel == "WithStructuralBehavior") {
@@ -370,6 +373,19 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "public:\n";
   to << "  TypedRichNode(Self self) : BaseTypedRichNode(self) {}\n";
 
+  // Hack to include methods in DataTypeStorageHelper
+  if (storageKind == skWithArray) {
+    to << "\n";
+    to << "  inline\n";
+    to << "  size_t getArraySize();\n";
+    to << "\n";
+    to << "  inline\n";
+    to << "  StaticArray<" << storageElement << "> getElementsArray();\n";
+    to << "\n";
+    to << "  inline\n";
+    to << "  " << storageElement << "& getElements(size_t i);\n";
+  }
+
   for (auto method = methods.begin(); method != methods.end(); ++method) {
     to << "\n";
 
@@ -438,6 +454,24 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
        << "::compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {\n";
     to << "  return lhs.as<" << name << ">().compareFeatures(vm, rhs);\n";
     to << "}\n\n";
+  }
+
+  // Hack to include methods in DataTypeStorageHelper
+  if (storageKind == skWithArray) {
+    to << "\n";
+    to << "size_t TypedRichNode<" << name << ">::getArraySize() {\n";
+    to << "  return " << _selfArrow << "getArraySize();\n";
+    to << "}\n";
+    to << "\n";
+    to << "StaticArray<" << storageElement << "> TypedRichNode<"
+       << name << ">::getElementsArray() {\n";
+    to << "  return " << _selfArrow << "getElementsArray();\n";
+    to << "}\n";
+    to << "\n";
+    to << "" << storageElement << "& TypedRichNode<"
+       << name << ">::getElements(size_t i) {\n";
+    to << "  return " << _selfArrow << "getElements(i);\n";
+    to << "}\n";
   }
 
   for (auto method = methods.begin(); method != methods.end(); ++method) {

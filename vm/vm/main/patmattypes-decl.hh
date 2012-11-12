@@ -60,7 +60,7 @@ public:
 
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   nativeint _index;
@@ -92,26 +92,25 @@ public:
                     GR gr, Self from);
 
 public:
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
+    return _count;
+  }
+
+public:
   size_t getCount() {
     return _count;
   }
 
-  size_t getArraySize() {
-    return _count;
-  }
+  inline
+  StableNode* getElement(size_t index);
 
   inline
-  StableNode* getElement(Self self, size_t index);
-
-  inline
-  StaticArray<StableNode> getElementsArray(Self self);
-
-  inline
-  bool equals(Self self, VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, Self right, WalkStack& stack);
 
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   size_t _count;
@@ -146,24 +145,23 @@ public:
                    GR gr, Self from);
 
 public:
-  size_t getArraySize() {
+  // Requirement for StoredWithArrayOf
+  size_t getArraySizeImpl() {
     return _width;
   }
 
+public:
   inline
-  StableNode* getElement(Self self, size_t index);
+  StableNode* getElement(size_t index);
 
 public:
   StableNode* getArity() {
     return &_arity;
   }
 
-  inline
-  StaticArray<StableNode> getElementsArray(Self self);
-
 public:
   inline
-  void printReprToStream(Self self, VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth);
 
 private:
   StableNode _arity;

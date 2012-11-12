@@ -191,6 +191,39 @@ public:
 template <typename T>
 using Accessor = AccessorHelper<T, typename Storage<T>::Type>;
 
+/** Mixin class for DataType<T> for StoredAs<U> types */
+template <typename T, typename U>
+class DataTypeStorageHelper {
+};
+
+/** Mixin class for DataType<T> for default storage types */
+template <typename T>
+class DataTypeStorageHelper<T, DefaultStorage<T>> {
+};
+
+/** Mixin class for DataType<T> for StoredWithArrayOf<E> types */
+template <typename T, typename E>
+class DataTypeStorageHelper<T, ImplWithArray<T, E>> {
+public:
+  size_t getArraySize() {
+    return static_cast<T*>(this)->getArraySizeImpl();
+  }
+
+  StaticArray<E> getElementsArray() {
+    return ImplWithArray<T, E>(static_cast<T*>(this)).getArray(getArraySize());
+  }
+
+  E& getElements(size_t i) {
+    return ImplWithArray<T, E>(static_cast<T*>(this))[i];
+  }
+
+public:
+  /* To be implemented in class T
+  inline
+  size_t getArraySizeImpl();
+  */
+};
+
 }
 
 #endif // __STORAGE_DECL_H

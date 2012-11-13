@@ -135,6 +135,9 @@ typedef GarbageCollector* GC;
 class SpaceCloner;
 typedef SpaceCloner* SC;
 
+template <typename T>
+class TypeInfoOf;
+
 class NodeDictionary;
 
 class Space;

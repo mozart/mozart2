@@ -417,51 +417,15 @@ public:
 };
 
 /**
- * Extractor function for the template parameters of ImplWithArray
- * Given
- *   typedef ImplWithArray<I, E> T;
- * this provides
- *   ExtractImplWithArray<T>::Impl === I
- *   ExtractImplWithArray<T>::Elem === E
- */
-template <class S>
-struct ExtractImplWithArray {};
-
-template <class I, class E>
-struct ExtractImplWithArray<ImplWithArray<I, E>> {
-  typedef I Impl;
-  typedef E Elem;
-};
-
-/**
  * Self type for ImplWithArray-based types
  */
 template <class T>
 class ImplWithArraySelf: public BaseSelf<T> {
-private:
-  typedef typename Storage<T>::Type StorageType;
-  typedef typename ExtractImplWithArray<StorageType>::Elem Elem;
 public:
   ImplWithArraySelf(RichNode node) : BaseSelf<T>(node) {}
 
   T* operator->() {
-    return get().operator->();
-  }
-
-  Elem& operator[](size_t i) {
-    return get().operator[](i);
-  }
-
-  size_t getArraySize() {
-    return get()->getArraySize();
-  }
-
-  StaticArray<Elem> getArray() {
-    return get().getArray(getArraySize());
-  }
-private:
-  ImplWithArray<T, Elem> get() {
-    return ImplWithArray<T, Elem>(&this->getBase());
+    return &this->getBase();
   }
 };
 

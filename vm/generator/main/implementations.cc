@@ -525,7 +525,7 @@ void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
 
   to << "  " << toPrefix << "make<" << name << ">(gc->vm, ";
   if (storageKind == skWithArray)
-    to << "fromAsSelf.getArraySize(), ";
+    to << "fromAsSelf->getArraySize(), ";
   to << "gc, fromAsSelf);\n";
 }
 
@@ -535,7 +535,7 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
 
   std::string cloneStatement = std::string("make<") + name + ">(sc->vm, ";
   if (storageKind == skWithArray)
-    cloneStatement += "fromAsSelf.getArraySize(), ";
+    cloneStatement += "fromAsSelf->getArraySize(), ";
   cloneStatement += "sc, fromAsSelf);";
 
   if (!toStableNode && requiresStableNodeInGR()) {

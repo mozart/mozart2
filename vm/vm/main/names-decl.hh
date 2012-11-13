@@ -46,14 +46,14 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  OptName(SpaceRef home): WithHome(home) {}
+  explicit OptName(SpaceRef home): WithHome(home) {}
 
   static void create(SpaceRef& self, VM vm) {
     self = vm->getCurrentSpace();
   }
 
   inline
-  static void create(SpaceRef& self, VM vm, GR gr, Self from);
+  static void create(SpaceRef& self, VM vm, GR gr, OptName from);
 
 public:
   // PotentialFeature interface
@@ -99,10 +99,10 @@ public:
 
   GlobalName(VM vm, UUID uuid): WithHome(vm), _uuid(uuid) {}
 
-  GlobalName(VM vm): WithHome(vm), _uuid(vm->genUUID()) {}
+  explicit GlobalName(VM vm): WithHome(vm), _uuid(vm->genUUID()) {}
 
   inline
-  GlobalName(VM vm, GR gr, Self from);
+  GlobalName(VM vm, GR gr, GlobalName& from);
 
 public:
   const UUID& getUUID() {
@@ -162,7 +162,7 @@ public:
   }
 
   inline
-  NamedName(VM vm, GR gr, Self from);
+  NamedName(VM vm, GR gr, NamedName& from);
 
 public:
   const UUID& getUUID() {
@@ -212,14 +212,14 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  UniqueName(unique_name_t value) : _value(value) {}
+  explicit UniqueName(unique_name_t value) : _value(value) {}
 
   static void create(unique_name_t& self, VM vm, unique_name_t value) {
     self = value;
   }
 
   inline
-  static void create(unique_name_t& self, VM vm, GR gr, Self from);
+  static void create(unique_name_t& self, VM vm, GR gr, UniqueName from);
 
 public:
   unique_name_t value() const {

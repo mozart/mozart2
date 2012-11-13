@@ -36,11 +36,11 @@ namespace mozart {
 //////////////////
 
 template <class This>
-VariableBase<This>::VariableBase(VM vm, GR gr, HSelf from):
-  WithHome(vm, gr, from->home()) {
+VariableBase<This>::VariableBase(VM vm, GR gr, This& from):
+  WithHome(vm, gr, from) {
 
-  for (auto iter = from->pendings.begin();
-       iter != from->pendings.end();
+  for (auto iter = from.pendings.begin();
+       iter != from.pendings.end();
        ++iter) {
     pendings.push_back(vm, *iter);
     gr->copyStableRef(pendings.back(), pendings.back());
@@ -139,7 +139,8 @@ void VariableBase<This>::wakeUpPendingsSubSpace(VM vm, Space* currentSpace) {
 
 #include "Variable-implem.hh"
 
-Variable::Variable(VM vm, GR gr, Self from): VariableBase(vm, gr, from) {}
+Variable::Variable(VM vm, GR gr, Variable& from): VariableBase(vm, gr, from) {
+}
 
 void Variable::wakeUp(RichNode self, VM vm) {
   UnstableNode temp = Unit::build(vm);
@@ -160,8 +161,9 @@ void Variable::bind(RichNode self, VM vm, RichNode src) {
 
 #include "ReadOnlyVariable-implem.hh"
 
-ReadOnlyVariable::ReadOnlyVariable(VM vm, GR gr, Self from):
-  VariableBase(vm, gr, from) {}
+ReadOnlyVariable::ReadOnlyVariable(VM vm, GR gr, ReadOnlyVariable& from):
+  VariableBase(vm, gr, from) {
+}
 
 void ReadOnlyVariable::bind(RichNode self, VM vm, RichNode src) {
   waitFor(vm, self);
@@ -177,8 +179,8 @@ void ReadOnlyVariable::bindReadOnly(RichNode self, VM vm, RichNode src) {
 
 #include "OptVar-implem.hh"
 
-void OptVar::create(SpaceRef& self, VM vm, GR gr, Self from) {
-  gr->copySpace(self, from.get().home());
+void OptVar::create(SpaceRef& self, VM vm, GR gr, OptVar from) {
+  gr->copySpace(self, from.home());
 }
 
 void OptVar::addToSuspendList(RichNode self, VM vm, RichNode variable) {
@@ -218,8 +220,8 @@ void OptVar::makeBackupForSpeculativeBindingIfNeeded(RichNode self, VM vm) {
 
 #include "ReadOnly-implem.hh"
 
-void ReadOnly::create(StableNode*& self, VM vm, GR gr, Self from) {
-  gr->copyStableRef(self, from.get().getUnderlying());
+void ReadOnly::create(StableNode*& self, VM vm, GR gr, ReadOnly from) {
+  gr->copyStableRef(self, from.getUnderlying());
 }
 
 void ReadOnly::newReadOnly(StableNode& dest, VM vm, RichNode underlying) {
@@ -285,8 +287,8 @@ void ReadOnly::bind(VM vm, RichNode src) {
 
 #include "FailedValue-implem.hh"
 
-void FailedValue::create(StableNode*& self, VM vm, GR gr, Self from) {
-  gr->copyStableRef(self, from.get().getUnderlying());
+void FailedValue::create(StableNode*& self, VM vm, GR gr, FailedValue from) {
+  gr->copyStableRef(self, from.getUnderlying());
 }
 
 void FailedValue::raiseUnderlying(VM vm) {

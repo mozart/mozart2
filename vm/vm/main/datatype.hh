@@ -37,8 +37,8 @@ WithHome::WithHome(VM vm) {
   _home = vm->getCurrentSpace();
 }
 
-WithHome::WithHome(VM vm, GR gr, SpaceRef fromHome) {
-  gr->copySpace(_home, fromHome);
+WithHome::WithHome(VM vm, GR gr, WithHome& from) {
+  gr->copySpace(_home, from._home);
 }
 
 bool WithHome::isHomedInCurrentSpace(VM vm) {

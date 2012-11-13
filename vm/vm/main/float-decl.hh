@@ -40,14 +40,14 @@ public:
     return vm->getAtom(MOZART_STR("float"));
   }
 
-  Float(double value) : _value(value) {}
+  explicit Float(double value) : _value(value) {}
 
   static void create(double& self, VM, double value) {
     self = value;
   }
 
   inline
-  static void create(double& self, VM vm, GR gr, Self from);
+  static void create(double& self, VM vm, GR gr, Float from);
 
   double value() const { return _value; }
 

@@ -50,7 +50,7 @@ public:
   String(VM vm, const LString<nchar>& string) : _string(string) {}
 
   inline
-  String(VM vm, GR gr, Self self);
+  String(VM vm, GR gr, String& self);
 
 public:
   const LString<nchar>& value() const { return _string; }

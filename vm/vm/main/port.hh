@@ -42,8 +42,8 @@ Port::Port(VM vm, UnstableNode& stream): WithHome(vm) {
   stream.copy(vm, _stream);
 }
 
-Port::Port(VM vm, GR gr, Self from): WithHome(vm, gr, from->home()) {
-  gr->copyUnstableNode(_stream, from->_stream);
+Port::Port(VM vm, GR gr, Port& from): WithHome(vm, gr, from) {
+  gr->copyUnstableNode(_stream, from._stream);
 }
 
 void Port::send(VM vm, RichNode value) {

@@ -60,7 +60,7 @@ public:
   ByteString(VM vm, const LString<unsigned char>& bytes) : _bytes(bytes) {}
 
   inline
-  ByteString(VM vm, GR gr, Self from);
+  ByteString(VM vm, GR gr, ByteString& from);
 
 public:
   const LString<unsigned char>& value() const { return _bytes; }

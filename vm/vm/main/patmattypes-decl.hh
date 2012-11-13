@@ -43,14 +43,14 @@ namespace mozart {
 class PatMatCapture: public DataType<PatMatCapture>, StoredAs<nativeint>,
   WithValueBehavior {
 public:
-  PatMatCapture(nativeint index) : _index(index) {}
+  explicit PatMatCapture(nativeint index) : _index(index) {}
 
   static void create(nativeint& self, VM, nativeint index) {
     self = index;
   }
 
   inline
-  static void create(nativeint& self, VM vm, GR gr, Self from);
+  static void create(nativeint& self, VM vm, GR gr, PatMatCapture from);
 
 public:
   nativeint index() const { return _index; }
@@ -88,7 +88,7 @@ public:
   PatMatConjunction(VM vm, size_t width);
 
   inline
-  PatMatConjunction(VM vm, size_t width, GR gr, Self from);
+  PatMatConjunction(VM vm, size_t width, GR gr, PatMatConjunction& from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -139,7 +139,7 @@ public:
   PatMatOpenRecord(VM vm, size_t width, A&& arity);
 
   inline
-  PatMatOpenRecord(VM vm, size_t width, GR gr, Self from);
+  PatMatOpenRecord(VM vm, size_t width, GR gr, PatMatOpenRecord& from);
 
 public:
   // Requirement for StoredWithArrayOf

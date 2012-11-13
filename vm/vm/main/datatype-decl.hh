@@ -45,8 +45,6 @@ namespace mozart {
  */
 template <class T>
 class DataType: public DataTypeStorageHelper<T, typename Storage<T>::Type> {
-protected:
-  typedef typename SelfType<T>::Self Self;
 public:
   static Type type() {
     return TypeInfoOf<T>::type();
@@ -70,7 +68,7 @@ public:
   WithHome(VM vm);
 
   inline
-  WithHome(VM vm, GR gr, SpaceRef fromHome);
+  WithHome(VM vm, GR gr, WithHome& from);
 
   Space* home() {
     return _home;

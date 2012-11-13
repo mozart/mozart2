@@ -42,14 +42,14 @@ public:
     return vm->getAtom(MOZART_STR("int"));
   }
 
-  SmallInt(nativeint value) : _value(value) {}
+  explicit SmallInt(nativeint value) : _value(value) {}
 
   static void create(nativeint& self, VM vm, nativeint value) {
     self = value;
   }
 
   inline
-  static void create(nativeint& self, VM vm, GR gr, Self from);
+  static void create(nativeint& self, VM vm, GR gr, SmallInt from);
 
 public:
   nativeint value() const { return _value; }

@@ -50,7 +50,7 @@ public:
   ReflectiveEntity(VM vm, UnstableNode& stream);
 
   inline
-  ReflectiveEntity(VM vm, GR gr, Self from);
+  ReflectiveEntity(VM vm, GR gr, ReflectiveEntity& from);
 
 public:
   // Reflective call
@@ -94,7 +94,7 @@ public:
   ReflectiveVariable(VM vm, Space* home, UnstableNode& stream);
 
   inline
-  ReflectiveVariable(VM vm, GR gr, Self from);
+  ReflectiveVariable(VM vm, GR gr, ReflectiveVariable& from);
 
 public:
   // DataflowVariable interface

@@ -52,7 +52,7 @@ public:
            size_t Xcount, atom_t printName, RichNode debugData);
 
   inline
-  CodeArea(VM vm, size_t Kc, GR gr, Self from);
+  CodeArea(VM vm, size_t Kc, GR gr, CodeArea& from);
 
 public:
   // Requirement for StoredWithArrayOf

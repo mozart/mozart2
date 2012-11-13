@@ -204,14 +204,14 @@ public:
     return vm->getAtom(MOZART_STR("dictionary"));
   }
 
-  Dictionary(VM vm): WithHome(vm) {}
+  explicit Dictionary(VM vm): WithHome(vm) {}
 
   Dictionary(VM vm, NodeDictionary& src): WithHome(vm) {
     dict.clone(vm, src);
   }
 
   inline
-  Dictionary(VM vm, GR gr, Self from);
+  Dictionary(VM vm, GR gr, Dictionary& from);
 
 public:
   // Dottable interface

@@ -42,8 +42,8 @@ ReflectiveEntity::ReflectiveEntity(VM vm, UnstableNode& stream) {
   stream.copy(vm, _stream);
 }
 
-ReflectiveEntity::ReflectiveEntity(VM vm, GR gr, Self from) {
-  gr->copyUnstableNode(_stream, from->_stream);
+ReflectiveEntity::ReflectiveEntity(VM vm, GR gr, ReflectiveEntity& from) {
+  gr->copyUnstableNode(_stream, from._stream);
 }
 
 template <typename Label, typename... Args>
@@ -79,10 +79,10 @@ ReflectiveVariable::ReflectiveVariable(VM vm, Space* home,
   stream.copy(vm, _stream);
 }
 
-ReflectiveVariable::ReflectiveVariable(VM vm, GR gr, Self from):
+ReflectiveVariable::ReflectiveVariable(VM vm, GR gr, ReflectiveVariable& from):
   VariableBase(vm, gr, from) {
 
-  gr->copyUnstableNode(_stream, from->_stream);
+  gr->copyUnstableNode(_stream, from._stream);
 }
 
 void ReflectiveVariable::markNeeded(VM vm) {

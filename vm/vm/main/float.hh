@@ -39,8 +39,8 @@ namespace mozart {
 
 #include "Float-implem.hh"
 
-void Float::create(double& self, VM vm, GR gr, Self from) {
-  self = from.get().value();
+void Float::create(double& self, VM vm, GR gr, Float from) {
+  self = from.value();
 }
 
 bool Float::equals(VM vm, RichNode right) {

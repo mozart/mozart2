@@ -94,17 +94,16 @@ Object::Object(VM vm, size_t attrCount, RichNode clazz,
   _GsInitialized = false;
 }
 
-Object::Object(VM vm, size_t attrCount, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
+Object::Object(VM vm, size_t attrCount, GR gr, Object& from):
+  WithHome(vm, gr, from) {
 
-  gr->copyStableNode(_attrArity, from->_attrArity);
-  _attrCount = from->_attrCount;
+  gr->copyStableNode(_attrArity, from._attrArity);
+  _attrCount = from._attrCount;
 
-  gr->copyStableNode(_clazz, from->_clazz);
-  gr->copyStableNode(_features, from->_features);
+  gr->copyStableNode(_clazz, from._clazz);
+  gr->copyStableNode(_features, from._features);
 
-  gr->copyUnstableNodes(getElementsArray(), from->getElementsArray(),
-                        attrCount);
+  gr->copyUnstableNodes(getElementsArray(), from.getElementsArray(), attrCount);
 
   _GsInitialized = false;
 }

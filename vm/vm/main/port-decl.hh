@@ -47,7 +47,7 @@ public:
   Port(VM vm, UnstableNode& stream);
 
   inline
-  Port(VM vm, GR gr, Self from);
+  Port(VM vm, GR gr, Port& from);
 
 public:
   // PortLike interface

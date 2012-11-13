@@ -58,7 +58,7 @@ public:
          RichNode attrModel, RichNode featModel);
 
   inline
-  Object(VM vm, size_t attrCount, GR gr, Self from);
+  Object(VM vm, size_t attrCount, GR gr, Object& from);
 
 public:
   // Requirement for StoredWithArrayOf

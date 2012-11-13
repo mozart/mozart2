@@ -261,7 +261,7 @@ StableNode* RichNode::dereferenceLoop(StableNode* node) {
 }
 
 StableNode* RichNode::destOf(Node* node) {
-  return Accessor<Reference>::get(node->value()).dest();
+  return node->access<Reference>().dest();
 }
 
 }

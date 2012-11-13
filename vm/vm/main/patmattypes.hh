@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "PatMatCapture-implem.hh"
 
-void PatMatCapture::create(nativeint& self, VM vm, GR gr, Self from) {
-  self = from.get().index();
+void PatMatCapture::create(nativeint& self, VM vm, GR gr, PatMatCapture from) {
+  self = from.index();
 }
 
 bool PatMatCapture::equals(VM vm, RichNode right) {
@@ -64,10 +64,11 @@ PatMatConjunction::PatMatConjunction(VM vm, size_t count) {
     getElements(i).init(vm);
 }
 
-PatMatConjunction::PatMatConjunction(VM vm, size_t count, GR gr, Self from) {
+PatMatConjunction::PatMatConjunction(VM vm, size_t count, GR gr,
+                                     PatMatConjunction& from) {
   _count = count;
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), count);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), count);
 }
 
 StableNode* PatMatConjunction::getElement(size_t index) {
@@ -120,11 +121,12 @@ PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, A&& arity) {
     getElements(i).init(vm);
 }
 
-PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, GR gr, Self from) {
-  gr->copyStableNode(_arity, from->_arity);
+PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, GR gr,
+                                   PatMatOpenRecord& from) {
+  gr->copyStableNode(_arity, from._arity);
   _width = width;
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
 }
 
 StableNode* PatMatOpenRecord::getElement(size_t index) {

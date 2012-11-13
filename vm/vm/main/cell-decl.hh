@@ -48,7 +48,7 @@ public:
   }
 
   inline
-  Cell(VM vm, GR gr, Self from);
+  Cell(VM vm, GR gr, Cell& from);
 
 public:
   // CellLike interface

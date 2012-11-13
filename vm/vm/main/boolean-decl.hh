@@ -48,14 +48,14 @@ public:
     return vm->getAtom(MOZART_STR("name")); // compatibility with Mozart 1.4.0
   }
 
-  Boolean(bool value) : _value(value) {}
+  explicit Boolean(bool value) : _value(value) {}
 
   static void create(bool& self, VM, bool value) {
     self = value;
   }
 
   inline
-  static void create(bool& self, VM vm, GR gr, Self from);
+  static void create(bool& self, VM vm, GR gr, Boolean from);
 
 public:
   bool value() const { return _value; }

@@ -37,7 +37,7 @@ namespace mozart {
 
 #include "Unit-implem.hh"
 
-void Unit::create(unit_t& self, VM vm, GR gr, Self from) {
+void Unit::create(unit_t& self, VM vm, GR gr, Unit from) {
 }
 
 bool Unit::equals(VM vm, RichNode right) {

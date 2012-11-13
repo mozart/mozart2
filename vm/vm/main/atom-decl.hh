@@ -47,7 +47,7 @@ public:
     return vm->getAtom(MOZART_STR("atom"));
   }
 
-  Atom(atom_t value) : _value(value) {}
+  explicit Atom(atom_t value) : _value(value) {}
 
   static void create(atom_t& self, VM vm, std::size_t length,
                      const nchar* contents) {
@@ -63,7 +63,7 @@ public:
   }
 
   inline
-  static void create(atom_t& self, VM vm, GR gr, Self from);
+  static void create(atom_t& self, VM vm, GR gr, Atom from);
 
 public:
   atom_t value() const {

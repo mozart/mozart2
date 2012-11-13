@@ -75,8 +75,10 @@ private:
     return data.type;
   }
 
-  MemWord value() {
-    return data.value;
+  template <typename T>
+  __attribute__((always_inline))
+  auto access() -> decltype(Accessor<T>::get(std::declval<MemWord>())) {
+    return Accessor<T>::get(data.value);
   }
 
   bool isCopyable() {
@@ -253,6 +255,9 @@ private:
   template <class T>
   friend class BaseSelf;
 
+  template <typename T>
+  friend class TypeInfoOf;
+
   friend class GarbageCollector;
   friend class SpaceCloner;
   friend struct StructuralDualWalk;
@@ -262,9 +267,10 @@ private:
   inline void reinit(VM vm, UnstableNode&& from);
   inline void reinit(VM vm, RichNode from);
 
+  template <typename T>
   __attribute__((always_inline))
-  MemWord value() {
-    return node()->value();
+  auto access() -> decltype(std::declval<Node>().access<T>()) {
+    return node()->access<T>();
   }
 private:
   friend class StableNode;
@@ -374,17 +380,12 @@ class BaseSelf {
 public:
   BaseSelf(RichNode node) : _node(node) {}
 
-  template<class U>
-  void become(VM vm, U&& from) {
-    _node.reinit(vm, std::forward<U>(from));
-  }
-
   operator RichNode() {
     return _node;
   }
 protected:
-  auto getBase() -> decltype(Accessor<T>::get(std::declval<MemWord>())) {
-    return Accessor<T>::get(_node.value());
+  auto getBase() -> decltype(std::declval<RichNode>().access<T>()) {
+    return _node.access<T>();
   }
 private:
   RichNode _node;

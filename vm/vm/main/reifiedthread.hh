@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "ReifiedThread-implem.hh"
 
-void ReifiedThread::create(Runnable*& self, VM vm, GR gr, Self from) {
-  gr->copyThread(self, from.get()._runnable);
+void ReifiedThread::create(Runnable*& self, VM vm, GR gr, ReifiedThread from) {
+  gr->copyThread(self, from._runnable);
 }
 
 bool ReifiedThread::equals(VM vm, RichNode right) {

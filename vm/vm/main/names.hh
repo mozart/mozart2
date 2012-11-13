@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "OptName-implem.hh"
 
-void OptName::create(SpaceRef& self, VM vm, GR gr, Self from) {
-  gr->copySpace(self, from.get().home());
+void OptName::create(SpaceRef& self, VM vm, GR gr, OptName from) {
+  gr->copySpace(self, from.home());
 }
 
 void OptName::makeFeature(RichNode self, VM vm) {
@@ -51,13 +51,13 @@ void OptName::makeFeature(RichNode self, VM vm) {
 
 #include "GlobalName-implem.hh"
 
-GlobalName::GlobalName(VM vm, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
+GlobalName::GlobalName(VM vm, GR gr, GlobalName& from):
+  WithHome(vm, gr, from) {
 
   if (gr->kind() == GraphReplicator::grkSpaceCloning)
     _uuid = vm->genUUID();
   else
-    _uuid = from->_uuid;
+    _uuid = from._uuid;
 }
 
 int GlobalName::compareFeatures(VM vm, RichNode right) {
@@ -77,15 +77,15 @@ int GlobalName::compareFeatures(VM vm, RichNode right) {
 
 #include "NamedName-implem.hh"
 
-NamedName::NamedName(VM vm, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
+NamedName::NamedName(VM vm, GR gr, NamedName& from):
+  WithHome(vm, gr, from) {
 
-  gr->copyStableNode(_printName, from->_printName);
+  gr->copyStableNode(_printName, from._printName);
 
   if (gr->kind() == GraphReplicator::grkSpaceCloning)
     _uuid = vm->genUUID();
   else
-    _uuid = from->_uuid;
+    _uuid = from._uuid;
 }
 
 int NamedName::compareFeatures(VM vm, RichNode right) {
@@ -105,8 +105,8 @@ int NamedName::compareFeatures(VM vm, RichNode right) {
 
 #include "UniqueName-implem.hh"
 
-void UniqueName::create(unique_name_t& self, VM vm, GR gr, Self from) {
-  unique_name_t fromValue = from.get().value();
+void UniqueName::create(unique_name_t& self, VM vm, GR gr, UniqueName from) {
+  unique_name_t fromValue = from.value();
   self = vm->getUniqueName(fromValue.length(), fromValue.contents());
 }
 

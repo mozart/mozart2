@@ -103,7 +103,7 @@ public:
   Tuple(VM vm, size_t width, L&& label);
 
   inline
-  Tuple(VM vm, size_t width, GR gr, Self from);
+  Tuple(VM vm, size_t width, GR gr, Tuple& from);
 
 public:
   StableNode* getLabel() {
@@ -203,10 +203,10 @@ public:
   Cons(VM vm, Head&& head, Tail&& tail);
 
   inline
-  Cons(VM vm);
+  explicit Cons(VM vm);
 
   inline
-  Cons(VM vm, GR gr, Self from);
+  Cons(VM vm, GR gr, Cons& from);
 
 public:
   StableNode* getHead() {
@@ -316,7 +316,7 @@ public:
   Arity(VM vm, size_t width, L&& label);
 
   inline
-  Arity(VM vm, size_t width, GR gr, Self from);
+  Arity(VM vm, size_t width, GR gr, Arity& from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -386,7 +386,7 @@ public:
   Record(VM vm, size_t width, A&& arity);
 
   inline
-  Record(VM vm, size_t width, GR gr, Self from);
+  Record(VM vm, size_t width, GR gr, Record& from);
 
 public:
   StableNode* getArity() {
@@ -462,7 +462,7 @@ public:
     return vm->getAtom(MOZART_STR("chunk"));
   }
 
-  Chunk(StableNode* underlying): _underlying(underlying) {}
+  explicit Chunk(StableNode* underlying): _underlying(underlying) {}
 
   static void create(StableNode*& self, VM vm, StableNode* underlying) {
     self = underlying;
@@ -473,7 +473,7 @@ public:
   }
 
   inline
-  static void create(StableNode*& self, VM vm, GR gr, Self from);
+  static void create(StableNode*& self, VM vm, GR gr, Chunk from);
 
 public:
   StableNode* getUnderlying() {

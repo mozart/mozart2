@@ -47,13 +47,13 @@ Array::Array(VM vm, size_t width, nativeint low, RichNode initValue):
     getElements(i).init(vm, initValue);
 }
 
-Array::Array(VM vm, size_t width, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
+Array::Array(VM vm, size_t width, GR gr, Array& from):
+  WithHome(vm, gr, from) {
 
   _width = width;
-  _low = from->_low;
+  _low = from._low;
 
-  gr->copyUnstableNodes(getElementsArray(), from->getElementsArray(), width);
+  gr->copyUnstableNodes(getElementsArray(), from.getElementsArray(), width);
 }
 
 UnstableNode Array::getValueAt(VM vm, nativeint feature) {

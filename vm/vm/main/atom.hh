@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "Atom-implem.hh"
 
-void Atom::create(atom_t& self, VM vm, GR gr, Self from) {
-  self = gr->copyAtom(from.get().value());
+void Atom::create(atom_t& self, VM vm, GR gr, Atom from) {
+  self = gr->copyAtom(from.value());
 }
 
 bool Atom::equals(VM vm, RichNode right) {

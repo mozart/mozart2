@@ -104,11 +104,11 @@ Tuple::Tuple(VM vm, size_t width, L&& label) {
     getElements(i).init(vm);
 }
 
-Tuple::Tuple(VM vm, size_t width, GR gr, Self from) {
+Tuple::Tuple(VM vm, size_t width, GR gr, Tuple& from) {
   _width = width;
-  gr->copyStableNode(_label, from->_label);
+  gr->copyStableNode(_label, from._label);
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
 }
 
 bool Tuple::equals(VM vm, RichNode right, WalkStack& stack) {
@@ -234,9 +234,9 @@ Cons::Cons(VM vm) {
   _elements[1].init(vm);
 }
 
-Cons::Cons(VM vm, GR gr, Self from) {
-  gr->copyStableNode(_elements[0], from->_elements[0]);
-  gr->copyStableNode(_elements[1], from->_elements[1]);
+Cons::Cons(VM vm, GR gr, Cons& from) {
+  gr->copyStableNode(_elements[0], from._elements[0]);
+  gr->copyStableNode(_elements[1], from._elements[1]);
 }
 
 bool Cons::equals(VM vm, RichNode right, WalkStack& stack) {
@@ -383,11 +383,11 @@ Arity::Arity(VM vm, size_t width, L&& label) {
     getElements(i).init(vm);
 }
 
-Arity::Arity(VM vm, size_t width, GR gr, Self from) {
+Arity::Arity(VM vm, size_t width, GR gr, Arity& from) {
   _width = width;
-  gr->copyStableNode(_label, from->_label);
+  gr->copyStableNode(_label, from._label);
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
 }
 
 StableNode* Arity::getElement(size_t index) {
@@ -465,11 +465,11 @@ Record::Record(VM vm, size_t width, A&& arity) {
     getElements(i).init(vm);
 }
 
-Record::Record(VM vm, size_t width, GR gr, Self from) {
-  gr->copyStableNode(_arity, from->_arity);
+Record::Record(VM vm, size_t width, GR gr, Record& from) {
+  gr->copyStableNode(_arity, from._arity);
   _width = width;
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), width);
 }
 
 bool Record::equals(VM vm, RichNode right, WalkStack& stack) {
@@ -563,8 +563,8 @@ void Record::printReprToStream(VM vm, std::ostream& out, int depth) {
 
 #include "Chunk-implem.hh"
 
-void Chunk::create(StableNode*& self, VM vm, GR gr, Self from) {
-  gr->copyStableRef(self, from.get().getUnderlying());
+void Chunk::create(StableNode*& self, VM vm, GR gr, Chunk from) {
+  gr->copyStableRef(self, from.getUnderlying());
 }
 
 bool Chunk::lookupFeature(VM vm, RichNode feature,

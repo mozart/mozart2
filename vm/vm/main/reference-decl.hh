@@ -40,13 +40,13 @@ namespace mozart {
 class Reference: public DataType<Reference>, StoredAs<StableNode*>,
   WithValueBehavior /* used by the generator to infer the Copyable flag */ {
 public:
-  Reference(StableNode* dest) : _dest(dest) {}
+  explicit Reference(StableNode* dest) : _dest(dest) {}
 
   static void create(StableNode*& self, VM, StableNode* dest) {
     self = dest;
   }
 
-  static void create(StableNode*& self, VM vm, GR gr, Self from) {
+  static void create(StableNode*& self, VM vm, GR gr, Reference from) {
     assert(false);
     self = nullptr;
   }

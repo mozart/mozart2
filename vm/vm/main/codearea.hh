@@ -54,18 +54,18 @@ CodeArea::CodeArea(
     getElements(i).init(vm);
 }
 
-CodeArea::CodeArea(VM vm, size_t Kc, GR gr, Self from) {
-  _size = from->_size;
-  _arity = from->_arity;
-  _Xcount = from->_Xcount;
+CodeArea::CodeArea(VM vm, size_t Kc, GR gr, CodeArea& from) {
+  _size = from._size;
+  _arity = from._arity;
+  _Xcount = from._Xcount;
   _Kc = Kc;
 
-  _setCodeBlock(vm, from->_codeBlock, _size);
+  _setCodeBlock(vm, from._codeBlock, _size);
 
-  _printName = gr->copyAtom(from->_printName);
-  gr->copyStableNode(_debugData, from->_debugData);
+  _printName = gr->copyAtom(from._printName);
+  gr->copyStableNode(_debugData, from._debugData);
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), Kc);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), Kc);
 }
 
 void CodeArea::getCodeAreaInfo(

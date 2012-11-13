@@ -44,14 +44,14 @@ public:
     return vm->getAtom(MOZART_STR("thread"));
   }
 
-  ReifiedThread(Runnable* runnable): _runnable(runnable) {}
+  explicit ReifiedThread(Runnable* runnable): _runnable(runnable) {}
 
   static void create(Runnable*& self, VM vm, Runnable* runnable) {
     self = runnable;
   }
 
   inline
-  static void create(Runnable*& self, VM vm, GR gr, Self from);
+  static void create(Runnable*& self, VM vm, GR gr, ReifiedThread from);
 
 public:
   inline

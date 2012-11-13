@@ -40,8 +40,8 @@ namespace mozart {
 
 #include "SmallInt-implem.hh"
 
-void SmallInt::create(nativeint& self, VM vm, GR gr, Self from) {
-  self = from.get().value();
+void SmallInt::create(nativeint& self, VM vm, GR gr, SmallInt from) {
+  self = from.value();
 }
 
 bool SmallInt::equals(VM vm, RichNode right) {

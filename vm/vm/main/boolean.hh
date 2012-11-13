@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "Boolean-implem.hh"
 
-void Boolean::create(bool& self, VM vm, GR gr, Self from) {
-  self = from.get().value();
+void Boolean::create(bool& self, VM vm, GR gr, Boolean from) {
+  self = from.value();
 }
 
 bool Boolean::equals(VM vm, RichNode right) {

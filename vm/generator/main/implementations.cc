@@ -302,8 +302,6 @@ void ImplementationDef::makeOutputDeclBefore(llvm::raw_fd_ostream& to) {
 void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "template <>\n";
   to << "class TypeInfoOf<" << name << ">: public " << base << " {\n";
-  to << "private:\n";
-  to << "  typedef SelfType<" << name << ">::Self Self;\n";
   to << "\n";
   to << "  static constexpr UUID uuid() {\n";
   if (hasUUID)
@@ -513,7 +511,6 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
 void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
                                                    bool toStableNode) {
   to << "  assert(from.type() == type());\n";
-  to << "  Self fromAsSelf = from;\n";
 
   std::string toPrefix = "to.";
 
@@ -525,8 +522,8 @@ void ImplementationDef::makeContentsOfAutoGCollect(llvm::raw_fd_ostream& to,
 
   to << "  " << toPrefix << "make<" << name << ">(gc->vm, ";
   if (storageKind == skWithArray)
-    to << "fromAsSelf->getArraySize(), ";
-  to << "gc, fromAsSelf);\n";
+    to << "from.as<" << name << ">().getArraySize(), ";
+  to << "gc, from.access<" << name << ">());\n";
 }
 
 void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
@@ -535,8 +532,8 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
 
   std::string cloneStatement = std::string("make<") + name + ">(sc->vm, ";
   if (storageKind == skWithArray)
-    cloneStatement += "fromAsSelf->getArraySize(), ";
-  cloneStatement += "sc, fromAsSelf);";
+    cloneStatement += "from.as<" + name + ">().getArraySize(), ";
+  cloneStatement += "sc, from.access<" + name + ">());";
 
   if (!toStableNode && requiresStableNodeInGR()) {
     cloneStatement = std::string("stable->") + cloneStatement;
@@ -548,11 +545,7 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
   }
 
   if (withHome) {
-    to << "  Self fromAsSelf = from;\n";
-    if (storageKind == skCustom)
-      to << "  if (fromAsSelf.get().home()->shouldBeCloned()) {\n";
-    else
-      to << "  if (fromAsSelf->home()->shouldBeCloned()) {\n";
+    to << "  if (from.as<" << name << ">().home()->shouldBeCloned()) {\n";
     to << "    " << cloneStatement << "\n";
     to << "  } else {\n";
     to << "    to.init(sc->vm, from);\n";
@@ -561,7 +554,6 @@ void ImplementationDef::makeContentsOfAutoSClone(llvm::raw_fd_ostream& to,
     switch (this->structuralBehavior) {
       case sbValue:
       case sbStructural: {
-        to << "  Self fromAsSelf = from;\n";
         to << "  " << cloneStatement << "\n";
         break;
       }

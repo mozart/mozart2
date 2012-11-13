@@ -37,10 +37,10 @@ namespace mozart {
 
 #include "Cell-implem.hh"
 
-Cell::Cell(VM vm, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
+Cell::Cell(VM vm, GR gr, Cell& from):
+  WithHome(vm, gr, from) {
 
-  gr->copyUnstableNode(_value, from->_value);
+  gr->copyUnstableNode(_value, from._value);
 }
 
 UnstableNode Cell::exchange(VM vm, RichNode newValue) {

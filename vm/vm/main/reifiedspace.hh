@@ -116,8 +116,8 @@ private:
 
 #include "ReifiedSpace-implem.hh"
 
-void ReifiedSpace::create(SpaceRef& self, VM vm, GR gr, Self from) {
-  gr->copySpace(self, from.get().home());
+void ReifiedSpace::create(SpaceRef& self, VM vm, GR gr, ReifiedSpace from) {
+  gr->copySpace(self, from.home());
 }
 
 UnstableNode ReifiedSpace::askSpace(RichNode self, VM vm) {
@@ -235,8 +235,9 @@ void ReifiedSpace::killSpace(RichNode self, VM vm) {
 
 #include "DeletedSpace-implem.hh"
 
-void DeletedSpace::create(DeletedSpaceKind& self, VM vm, GR gr, Self from) {
-  self = from.get().kind();
+void DeletedSpace::create(DeletedSpaceKind& self, VM vm, GR gr,
+                          DeletedSpace from) {
+  self = from.kind();
 }
 
 UnstableNode DeletedSpace::askSpace(VM vm) {

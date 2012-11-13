@@ -40,8 +40,9 @@ namespace mozart {
 
 // Core methods ----------------------------------------------------------------
 
-String::String(VM vm, GR gr, Self from)
-  : _string(vm, from->_string) {}
+String::String(VM vm, GR gr, String& from)
+  : _string(vm, from._string) {
+}
 
 bool String::equals(VM vm, RichNode right) {
   return value() == right.as<String>().value();

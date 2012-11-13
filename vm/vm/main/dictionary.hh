@@ -415,8 +415,8 @@ void NodeDictionary::rotateRight(Node* parent, Node* child) {
 
 #include "Dictionary-implem.hh"
 
-Dictionary::Dictionary(VM vm, GR gr, Self from):
-  WithHome(vm, gr, from->home()), dict(gr, from->dict) {
+Dictionary::Dictionary(VM vm, GR gr, Dictionary& from):
+  WithHome(vm, gr, from), dict(gr, from.dict) {
 }
 
 bool Dictionary::lookupFeature(VM vm, RichNode feature,

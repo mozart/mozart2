@@ -40,8 +40,9 @@ namespace mozart {
 
 // Core methods ----------------------------------------------------------------
 
-ByteString::ByteString(VM vm, GR gr, Self from)
-  : _bytes(vm, from->_bytes) {}
+ByteString::ByteString(VM vm, GR gr, ByteString& from)
+  : _bytes(vm, from._bytes) {
+}
 
 bool ByteString::equals(VM vm, RichNode right) {
   return value() == right.as<ByteString>().value();

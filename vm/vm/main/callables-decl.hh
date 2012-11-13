@@ -49,7 +49,7 @@ public:
     return vm->getAtom(MOZART_STR("procedure"));
   }
 
-  BuiltinProcedure(Builtin* builtin): _builtin(builtin) {}
+  explicit BuiltinProcedure(Builtin* builtin): _builtin(builtin) {}
 
   static void create(Builtin*& self, VM vm, Builtin* builtin) {
     self = builtin;
@@ -60,7 +60,7 @@ public:
   }
 
   inline
-  static void create(Builtin*& self, VM vm, GR gr, Self from);
+  static void create(Builtin*& self, VM vm, GR gr, BuiltinProcedure from);
 
 public:
   builtins::BaseBuiltin* value() {
@@ -161,7 +161,7 @@ public:
   Abstraction(VM vm, size_t Gc, RichNode body);
 
   inline
-  Abstraction(VM vm, size_t Gc, GR gr, Self from);
+  Abstraction(VM vm, size_t Gc, GR gr, Abstraction& from);
 
 public:
   // Requirement for StoredWithArrayOf

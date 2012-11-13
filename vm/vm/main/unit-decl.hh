@@ -44,13 +44,13 @@ public:
     return vm->getAtom(MOZART_STR("name")); // compatibility with Mozart 1.4.0
   }
 
-  Unit(unit_t value) {}
+  explicit Unit(unit_t value) {}
 
   static void create(unit_t& self, VM vm) {
   }
 
   inline
-  static void create(unit_t& self, VM vm, GR gr, Self from);
+  static void create(unit_t& self, VM vm, GR gr, Unit from);
 
 public:
   inline

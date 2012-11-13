@@ -37,8 +37,9 @@ namespace mozart {
 
 #include "BuiltinProcedure-implem.hh"
 
-void BuiltinProcedure::create(Builtin*& self, VM vm, GR gr, Self from) {
-  self = from.get()._builtin;
+void BuiltinProcedure::create(Builtin*& self, VM vm, GR gr,
+                              BuiltinProcedure from) {
+  self = from._builtin;
 }
 
 bool BuiltinProcedure::equals(VM vm, RichNode right) {
@@ -91,15 +92,15 @@ Abstraction::Abstraction(VM vm, size_t Gc, RichNode body)
     getElements(i).init(vm);
 }
 
-Abstraction::Abstraction(VM vm, size_t Gc, GR gr, Self from):
-  WithHome(vm, gr, from->home()) {
+Abstraction::Abstraction(VM vm, size_t Gc, GR gr, Abstraction& from):
+  WithHome(vm, gr, from) {
 
-  gr->copyStableNode(_body, from->_body);
+  gr->copyStableNode(_body, from._body);
   _Gc = Gc;
 
   _codeAreaCacheValid = false;
 
-  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), Gc);
+  gr->copyStableNodes(getElementsArray(), from.getElementsArray(), Gc);
 }
 
 size_t Abstraction::procedureArity(VM vm) {

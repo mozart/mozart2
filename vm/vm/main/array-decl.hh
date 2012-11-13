@@ -54,7 +54,7 @@ public:
   Array(VM vm, size_t width, nativeint low, RichNode initValue);
 
   inline
-  Array(VM vm, size_t width, GR gr, Self from);
+  Array(VM vm, size_t width, GR gr, Array& from);
 
 public:
   // Requirement for StoredWithArrayOf

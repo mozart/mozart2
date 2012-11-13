@@ -44,7 +44,7 @@ public:
     return vm->getAtom(MOZART_STR("space"));
   }
 
-  ReifiedSpace(SpaceRef space):
+  explicit ReifiedSpace(SpaceRef space):
     WithHome(space->getParent()), _space(space) {}
 
   static void create(SpaceRef& self, VM vm, SpaceRef space) {
@@ -52,7 +52,7 @@ public:
   }
 
   inline
-  static void create(SpaceRef& self, VM vm, GR gr, Self from);
+  static void create(SpaceRef& self, VM vm, GR gr, ReifiedSpace from);
 public:
   Space* getSpace() {
     return _space;
@@ -105,14 +105,14 @@ public:
     return vm->getAtom(MOZART_STR("space"));
   }
 
-  DeletedSpace(DeletedSpaceKind kind): _kind(kind) {}
+  explicit DeletedSpace(DeletedSpaceKind kind): _kind(kind) {}
 
   static void create(DeletedSpaceKind& self, VM vm, DeletedSpaceKind kind) {
     self = kind;
   }
 
   inline
-  static void create(DeletedSpaceKind& self, VM vm, GR gr, Self from);
+  static void create(DeletedSpaceKind& self, VM vm, GR gr, DeletedSpace from);
 public:
   DeletedSpaceKind kind() {
     return _kind;

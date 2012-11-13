@@ -48,8 +48,8 @@ public:
   ForeignPointer(VM vm, const std::shared_ptr<T>& p):
     _pointer(std::static_pointer_cast<void>(p)), _pointerType(typeid(T)) {}
 
-  ForeignPointer(VM vm, GR gr, Self from):
-    _pointer(std::move(from->_pointer)), _pointerType(from->_pointerType) {}
+  ForeignPointer(VM vm, GR gr, ForeignPointer& from):
+    _pointer(std::move(from._pointer)), _pointerType(from._pointerType) {}
 public:
   template <class T>
   std::shared_ptr<T> value() {

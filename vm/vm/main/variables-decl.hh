@@ -35,15 +35,13 @@ namespace mozart {
 
 template <class This>
 class VariableBase: public WithHome {
-private:
-  typedef typename SelfType<This>::Self HSelf;
 public:
-  VariableBase(VM vm): WithHome(vm) {}
+  explicit VariableBase(VM vm): WithHome(vm) {}
 
   VariableBase(VM vm, Space* home): WithHome(home) {}
 
   inline
-  VariableBase(VM vm, GR gr, HSelf from);
+  VariableBase(VM vm, GR gr, This& from);
 
 public:
   // DataflowVariable interface
@@ -96,12 +94,12 @@ private:
 class Variable: public DataType<Variable>, public VariableBase<Variable>,
   Transient, WithVariableBehavior<90> {
 public:
-  Variable(VM vm): VariableBase(vm) {}
+  explicit Variable(VM vm): VariableBase(vm) {}
 
   Variable(VM vm, Space* home): VariableBase(vm, home) {}
 
   inline
-  Variable(VM vm, GR gr, Self from);
+  Variable(VM vm, GR gr, Variable& from);
 
 public:
   // Wakeable interface
@@ -142,12 +140,12 @@ class ReadOnlyVariable: public DataType<ReadOnlyVariable>,
   public VariableBase<ReadOnlyVariable>,
   Transient, WithVariableBehavior<80> {
 public:
-  ReadOnlyVariable(VM vm): VariableBase(vm) {}
+  explicit ReadOnlyVariable(VM vm): VariableBase(vm) {}
 
   ReadOnlyVariable(VM vm, Space* home): VariableBase(vm, home) {}
 
   inline
-  ReadOnlyVariable(VM vm, GR gr, Self from);
+  ReadOnlyVariable(VM vm, GR gr, ReadOnlyVariable& from);
 
 public:
   // DataflowVariable interface
@@ -184,7 +182,7 @@ public:
 class OptVar: public DataType<OptVar>, public WithHome,
   Transient, StoredAs<SpaceRef>, WithVariableBehavior<100> {
 public:
-  OptVar(SpaceRef home): WithHome(home) {}
+  explicit OptVar(SpaceRef home): WithHome(home) {}
 
   static void create(SpaceRef& self, VM vm) {
     self = vm->getCurrentSpace();
@@ -195,7 +193,7 @@ public:
   }
 
   inline
-  static void create(SpaceRef& self, VM vm, GR gr, Self from);
+  static void create(SpaceRef& self, VM vm, GR gr, OptVar from);
 
 public:
   // DataflowVariable interface
@@ -243,14 +241,14 @@ public:
 class ReadOnly: public DataType<ReadOnly>, Transient, StoredAs<StableNode*>,
   WithVariableBehavior<80> {
 public:
-  ReadOnly(StableNode* underlying): _underlying(underlying) {}
+  explicit ReadOnly(StableNode* underlying): _underlying(underlying) {}
 
   static void create(StableNode*& self, VM vm, StableNode* underlying) {
     self = underlying;
   }
 
   inline
-  static void create(StableNode*& self, VM vm, GR gr, Self from);
+  static void create(StableNode*& self, VM vm, GR gr, ReadOnly from);
 
 public:
   inline
@@ -318,14 +316,14 @@ private:
 class FailedValue: public DataType<FailedValue>,
   Transient, StoredAs<StableNode*>, WithVariableBehavior<10> {
 public:
-  FailedValue(StableNode* underlying): _underlying(underlying) {}
+  explicit FailedValue(StableNode* underlying): _underlying(underlying) {}
 
   static void create(StableNode*& self, VM vm, StableNode* underlying) {
     self = underlying;
   }
 
   inline
-  static void create(StableNode*& self, VM vm, GR gr, Self from);
+  static void create(StableNode*& self, VM vm, GR gr, FailedValue from);
 
 public:
   StableNode* getUnderlying() {

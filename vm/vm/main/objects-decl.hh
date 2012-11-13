@@ -54,12 +54,11 @@ public:
   }
 
   inline
-  Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
-         RichNode clazz, RichNode attrModel, RichNode featModel);
+  Object(VM vm, size_t attrCount, RichNode clazz,
+         RichNode attrModel, RichNode featModel);
 
   inline
-  Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
-         GR gr, Self from);
+  Object(VM vm, size_t attrCount, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf

@@ -94,24 +94,21 @@ UnstableNode BaseRecord<T>::waitOr(VM vm) {
 #include "Tuple-implem.hh"
 
 template <typename L>
-Tuple::Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
-             L&& label) {
+Tuple::Tuple(VM vm, size_t width, L&& label) {
   _label.init(vm, std::forward<L>(label));
   _width = width;
 
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].init(vm);
+    getElements(i).init(vm);
 }
 
-Tuple::Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
-             GR gr, Self from) {
+Tuple::Tuple(VM vm, size_t width, GR gr, Self from) {
   _width = width;
   gr->copyStableNode(_label, from->_label);
 
-  for (size_t i = 0; i < width; i++)
-    gr->copyStableNode(_elements[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
 bool Tuple::equals(VM vm, Self right, WalkStack& stack) {
@@ -372,24 +369,21 @@ void Cons::printReprToStream(VM vm, std::ostream& out, int depth) {
 #include "Arity-implem.hh"
 
 template <typename L>
-Arity::Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
-             L&& label) {
+Arity::Arity(VM vm, size_t width, L&& label) {
   _label.init(vm, std::forward<L>(label));
   _width = width;
 
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].init(vm);
+    getElements(i).init(vm);
 }
 
-Arity::Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
-             GR gr, Self from) {
+Arity::Arity(VM vm, size_t width, GR gr, Self from) {
   _width = width;
   gr->copyStableNode(_label, from->_label);
 
-  for (size_t i = 0; i < width; i++)
-    gr->copyStableNode(_elements[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
 StableNode* Arity::getElement(size_t index) {
@@ -453,8 +447,7 @@ void Arity::printReprToStream(VM vm, std::ostream& out, int depth) {
 #include "Record-implem.hh"
 
 template <typename A>
-Record::Record(VM vm, size_t width, StaticArray<StableNode> _elements,
-               A&& arity) {
+Record::Record(VM vm, size_t width, A&& arity) {
   _arity.init(vm, std::forward<A>(arity));
   _width = width;
 
@@ -463,16 +456,14 @@ Record::Record(VM vm, size_t width, StaticArray<StableNode> _elements,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].init(vm);
+    getElements(i).init(vm);
 }
 
-Record::Record(VM vm, size_t width, StaticArray<StableNode> _elements,
-               GR gr, Self from) {
+Record::Record(VM vm, size_t width, GR gr, Self from) {
   gr->copyStableNode(_arity, from->_arity);
   _width = width;
 
-  for (size_t i = 0; i < width; i++)
-    gr->copyStableNode(_elements[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
 bool Record::equals(VM vm, Self right, WalkStack& stack) {

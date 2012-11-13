@@ -175,8 +175,7 @@ public:
 
     // Initialize the impl
     T* impl = implWithArray.operator->();
-    new (impl) T(vm, elemCount, implWithArray.getArray(elemCount),
-                 std::forward<Args>(args)...);
+    new (impl) T(vm, elemCount, std::forward<Args>(args)...);
 
     // Fill in output parameters
     type = T::type();

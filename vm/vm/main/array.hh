@@ -37,26 +37,23 @@ namespace mozart {
 
 #include "Array-implem.hh"
 
-Array::Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
-             nativeint low, RichNode initValue):
+Array::Array(VM vm, size_t width, nativeint low, RichNode initValue):
   WithHome(vm) {
 
   _width = width;
   _low = low;
 
   for (size_t i = 0; i < width; i++)
-    _elements[i].init(vm, initValue);
+    getElements(i).init(vm, initValue);
 }
 
-Array::Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
-             GR gr, Self from):
+Array::Array(VM vm, size_t width, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   _width = width;
   _low = from->_low;
 
-  for (size_t i = 0; i < width; i++)
-    gr->copyUnstableNode(_elements[i], from[i]);
+  gr->copyUnstableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
 UnstableNode Array::getValueAt(VM vm, nativeint feature) {

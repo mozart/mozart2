@@ -153,12 +153,10 @@ public:
   }
 
   inline
-  Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-              RichNode body);
+  Abstraction(VM vm, size_t Gc, RichNode body);
 
   inline
-  Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-              GR gr, Self from);
+  Abstraction(VM vm, size_t Gc, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf

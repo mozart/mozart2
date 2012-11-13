@@ -85,11 +85,10 @@ class PatMatConjunction: public DataType<PatMatConjunction>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   inline
-  PatMatConjunction(VM vm, size_t width, StaticArray<StableNode> _elements);
+  PatMatConjunction(VM vm, size_t width);
 
   inline
-  PatMatConjunction(VM vm, size_t width, StaticArray<StableNode> _elements,
-                    GR gr, Self from);
+  PatMatConjunction(VM vm, size_t width, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -137,12 +136,10 @@ class PatMatOpenRecord: public DataType<PatMatOpenRecord>,
 public:
   template <typename A>
   inline
-  PatMatOpenRecord(VM vm, size_t width, StaticArray<StableNode> _elements,
-                   A&& arity);
+  PatMatOpenRecord(VM vm, size_t width, A&& arity);
 
   inline
-  PatMatOpenRecord(VM vm, size_t width, StaticArray<StableNode> _elements,
-                   GR gr, Self from);
+  PatMatOpenRecord(VM vm, size_t width, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf

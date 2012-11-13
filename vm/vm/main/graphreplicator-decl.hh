@@ -68,6 +68,16 @@ public:
   void copyStableRef(StableNode*& to, StableNode* from);
 
   inline
+  void copyStableNodes(StaticArray<StableNode> to,
+                       StaticArray<StableNode> from,
+                       size_t count);
+
+  inline
+  void copyUnstableNodes(StaticArray<UnstableNode> to,
+                         StaticArray<UnstableNode> from,
+                         size_t count);
+
+  inline
   atom_t copyAtom(atom_t from);
 protected:
   template <class Self>

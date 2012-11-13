@@ -80,8 +80,7 @@ void BuiltinProcedure::getDebugInfo(
 
 #include "Abstraction-implem.hh"
 
-Abstraction::Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                         RichNode body)
+Abstraction::Abstraction(VM vm, size_t Gc, RichNode body)
   : WithHome(vm), _Gc(Gc) {
   _body.init(vm, body);
   _codeAreaCacheValid = false;
@@ -89,11 +88,10 @@ Abstraction::Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < Gc; i++)
-    _Gs[i].init(vm);
+    getElements(i).init(vm);
 }
 
-Abstraction::Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
-                         GR gr, Self from):
+Abstraction::Abstraction(VM vm, size_t Gc, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   gr->copyStableNode(_body, from->_body);
@@ -101,8 +99,7 @@ Abstraction::Abstraction(VM vm, size_t Gc, StaticArray<StableNode> _Gs,
 
   _codeAreaCacheValid = false;
 
-  for (size_t i = 0; i < Gc; i++)
-    gr->copyStableNode(_Gs[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), Gc);
 }
 
 size_t Abstraction::procedureArity(VM vm) {

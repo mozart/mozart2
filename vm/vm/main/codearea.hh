@@ -38,9 +38,8 @@ namespace mozart {
 #include "CodeArea-implem.hh"
 
 CodeArea::CodeArea(
-  VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-  ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
-  atom_t printName, RichNode debugData)
+  VM vm, size_t Kc, ByteCode* codeBlock, size_t size, size_t arity,
+  size_t Xcount, atom_t printName, RichNode debugData)
 
   : _size(size), _arity(arity), _Xcount(Xcount), _Kc(Kc),
     _printName(printName) {
@@ -52,11 +51,10 @@ CodeArea::CodeArea(
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < Kc; i++)
-    _Ks[i].init(vm);
+    getElements(i).init(vm);
 }
 
-CodeArea::CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-                   GR gr, Self from) {
+CodeArea::CodeArea(VM vm, size_t Kc, GR gr, Self from) {
   _size = from->_size;
   _arity = from->_arity;
   _Xcount = from->_Xcount;
@@ -67,8 +65,7 @@ CodeArea::CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
   _printName = gr->copyAtom(from->_printName);
   gr->copyStableNode(_debugData, from->_debugData);
 
-  for (size_t i = 0; i < Kc; i++)
-    gr->copyStableNode(_Ks[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), Kc);
 }
 
 void CodeArea::getCodeAreaInfo(

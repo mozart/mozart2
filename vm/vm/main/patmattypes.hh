@@ -55,23 +55,19 @@ void PatMatCapture::printReprToStream(VM vm, std::ostream& out, int depth) {
 
 #include "PatMatConjunction-implem.hh"
 
-PatMatConjunction::PatMatConjunction(VM vm, size_t count,
-                                     StaticArray<StableNode> _elements) {
+PatMatConjunction::PatMatConjunction(VM vm, size_t count) {
   _count = count;
 
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < count; i++)
-    _elements[i].init(vm);
+    getElements(i).init(vm);
 }
 
-PatMatConjunction::PatMatConjunction(VM vm, size_t count,
-                                     StaticArray<StableNode> _elements,
-                                     GR gr, Self from) {
+PatMatConjunction::PatMatConjunction(VM vm, size_t count, GR gr, Self from) {
   _count = count;
 
-  for (size_t i = 0; i < count; i++)
-    gr->copyStableNode(_elements[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), count);
 }
 
 StableNode* PatMatConjunction::getElement(size_t index) {
@@ -110,9 +106,7 @@ void PatMatConjunction::printReprToStream(VM vm, std::ostream& out, int depth) {
 #include "PatMatOpenRecord-implem.hh"
 
 template <typename A>
-PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
-                                   StaticArray<StableNode> _elements,
-                                   A&& arity) {
+PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, A&& arity) {
   _arity.init(vm, std::forward<A>(arity));
   _width = width;
 
@@ -121,17 +115,14 @@ PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
   // Initialize elements with non-random data
   // TODO An Uninitialized type?
   for (size_t i = 0; i < width; i++)
-    _elements[i].init(vm);
+    getElements(i).init(vm);
 }
 
-PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width,
-                                   StaticArray<StableNode> _elements,
-                                   GR gr, Self from) {
+PatMatOpenRecord::PatMatOpenRecord(VM vm, size_t width, GR gr, Self from) {
   gr->copyStableNode(_arity, from->_arity);
   _width = width;
 
-  for (size_t i = 0; i < width; i++)
-    gr->copyStableNode(_elements[i], from[i]);
+  gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
 StableNode* PatMatOpenRecord::getElement(size_t index) {

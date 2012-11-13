@@ -100,11 +100,10 @@ public:
 
   template <typename L>
   inline
-  Tuple(VM vm, size_t width, StaticArray<StableNode> _elements, L&& label);
+  Tuple(VM vm, size_t width, L&& label);
 
   inline
-  Tuple(VM vm, size_t width, StaticArray<StableNode> _elements,
-        GR gr, Self from);
+  Tuple(VM vm, size_t width, GR gr, Self from);
 
 public:
   StableNode* getLabel() {
@@ -314,11 +313,10 @@ public:
 
   template <typename L>
   inline
-  Arity(VM vm, size_t width, StaticArray<StableNode> _elements, L&& label);
+  Arity(VM vm, size_t width, L&& label);
 
   inline
-  Arity(VM vm, size_t width, StaticArray<StableNode> _elements,
-        GR gr, Self from);
+  Arity(VM vm, size_t width, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf
@@ -385,11 +383,10 @@ public:
 
   template <typename A>
   inline
-  Record(VM vm, size_t width, StaticArray<StableNode> _elements, A&& arity);
+  Record(VM vm, size_t width, A&& arity);
 
   inline
-  Record(VM vm, size_t width, StaticArray<StableNode> _elements,
-         GR gr, Self from);
+  Record(VM vm, size_t width, GR gr, Self from);
 
 public:
   StableNode* getArity() {

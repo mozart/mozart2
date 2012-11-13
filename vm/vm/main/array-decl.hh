@@ -51,12 +51,10 @@ public:
   }
 
   inline
-  Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
-        nativeint low, RichNode initValue);
+  Array(VM vm, size_t width, nativeint low, RichNode initValue);
 
   inline
-  Array(VM vm, size_t width, StaticArray<UnstableNode> _elements,
-        GR gr, Self from);
+  Array(VM vm, size_t width, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf

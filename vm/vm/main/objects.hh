@@ -37,8 +37,8 @@ namespace mozart {
 
 #include "Object-implem.hh"
 
-Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
-               RichNode clazz, RichNode attrModel, RichNode featModel):
+Object::Object(VM vm, size_t attrCount, RichNode clazz,
+               RichNode attrModel, RichNode featModel):
   WithHome(vm) {
 
   using namespace patternmatching;
@@ -60,7 +60,7 @@ Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
     _attrCount = attrCount;
 
     for (size_t i = 0; i < attrCount; i++) {
-      UnstableNode& attr = _attributes[i];
+      UnstableNode& attr = getElements(i);
 
       if (isFreeFlag(vm, *attrModelRec.getElement(i)))
         attr.init(vm, OptVar::build(vm));
@@ -94,8 +94,7 @@ Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
   _GsInitialized = false;
 }
 
-Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
-               GR gr, Self from):
+Object::Object(VM vm, size_t attrCount, GR gr, Self from):
   WithHome(vm, gr, from->home()) {
 
   gr->copyStableNode(_attrArity, from->_attrArity);
@@ -104,8 +103,8 @@ Object::Object(VM vm, size_t attrCount, StaticArray<UnstableNode> _attributes,
   gr->copyStableNode(_clazz, from->_clazz);
   gr->copyStableNode(_features, from->_features);
 
-  for (size_t i = 0; i < attrCount; i++)
-    gr->copyUnstableNode(_attributes[i], from[i]);
+  gr->copyUnstableNodes(getElementsArray(), from->getElementsArray(),
+                        attrCount);
 
   _GsInitialized = false;
 }

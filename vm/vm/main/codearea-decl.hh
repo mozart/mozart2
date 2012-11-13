@@ -48,13 +48,11 @@ public:
   }
 
   inline
-  CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-           ByteCode* codeBlock, size_t size, size_t arity, size_t Xcount,
-           atom_t printName, RichNode debugData);
+  CodeArea(VM vm, size_t Kc, ByteCode* codeBlock, size_t size, size_t arity,
+           size_t Xcount, atom_t printName, RichNode debugData);
 
   inline
-  CodeArea(VM vm, size_t Kc, StaticArray<StableNode> _Ks,
-           GR gr, Self from);
+  CodeArea(VM vm, size_t Kc, GR gr, Self from);
 
 public:
   // Requirement for StoredWithArrayOf

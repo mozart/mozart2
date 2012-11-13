@@ -40,11 +40,11 @@ namespace mozart {
 void Unit::create(unit_t& self, VM vm, GR gr, Self from) {
 }
 
-bool Unit::equals(VM vm, Self right) {
+bool Unit::equals(VM vm, RichNode right) {
   return true;
 }
 
-int Unit::compareFeatures(VM vm, Self right) {
+int Unit::compareFeatures(VM vm, RichNode right) {
   return 0;
 }
 

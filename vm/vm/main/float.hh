@@ -43,8 +43,8 @@ void Float::create(double& self, VM vm, GR gr, Self from) {
   self = from.get().value();
 }
 
-bool Float::equals(VM vm, Self right) {
-  return value() == right.get().value();
+bool Float::equals(VM vm, RichNode right) {
+  return value() == right.as<Float>().value();
 }
 
 int Float::compare(VM vm, RichNode right) {

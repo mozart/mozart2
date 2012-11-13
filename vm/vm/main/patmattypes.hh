@@ -41,8 +41,8 @@ void PatMatCapture::create(nativeint& self, VM vm, GR gr, Self from) {
   self = from.get().index();
 }
 
-bool PatMatCapture::equals(VM vm, Self right) {
-  return index() == right.get().index();
+bool PatMatCapture::equals(VM vm, RichNode right) {
+  return index() == right.as<PatMatCapture>().index();
 }
 
 void PatMatCapture::printReprToStream(VM vm, std::ostream& out, int depth) {
@@ -74,11 +74,13 @@ StableNode* PatMatConjunction::getElement(size_t index) {
   return &getElements(index);
 }
 
-bool PatMatConjunction::equals(VM vm, Self right, WalkStack& stack) {
-  if (_count != right->_count)
+bool PatMatConjunction::equals(VM vm, RichNode right, WalkStack& stack) {
+  auto rhs = right.as<PatMatConjunction>();
+
+  if (getCount() != rhs.getCount())
     return false;
 
-  stack.pushArray(vm, getElementsArray(), right->getElementsArray(), _count);
+  stack.pushArray(vm, getElementsArray(), rhs.getElementsArray(), getCount());
 
   return true;
 }

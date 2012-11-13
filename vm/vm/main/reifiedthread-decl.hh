@@ -55,7 +55,7 @@ public:
 
 public:
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
 public:
   Runnable* value() {

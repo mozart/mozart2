@@ -71,10 +71,10 @@ public:
   }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
   inline
-  int compareFeatures(VM vm, Self right);
+  int compareFeatures(VM vm, RichNode right);
 
 public:
   // AtomLike interface

@@ -111,7 +111,7 @@ public:
   }
 
   inline
-  bool equals(VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, RichNode right, WalkStack& stack);
 
 protected:
   friend class IntegerDottableHelper<Tuple>;
@@ -222,7 +222,7 @@ public:
   }
 
   inline
-  bool equals(VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, RichNode right, WalkStack& stack);
 
 protected:
   friend class IntegerDottableHelper<Cons>;
@@ -340,7 +340,7 @@ public:
   // StructuralEquatable interface
 
   inline
-  bool equals(VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, RichNode right, WalkStack& stack);
 
 public:
   // Arity methods
@@ -394,7 +394,7 @@ public:
   }
 
   inline
-  bool equals(VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, RichNode right, WalkStack& stack);
 
 protected:
   inline

@@ -56,7 +56,7 @@ public:
   const LString<nchar>& value() const { return _string; }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
 public:
   // Comparable interface

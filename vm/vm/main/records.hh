@@ -111,12 +111,14 @@ Tuple::Tuple(VM vm, size_t width, GR gr, Self from) {
   gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
-bool Tuple::equals(VM vm, Self right, WalkStack& stack) {
-  if (_width != right->_width)
+bool Tuple::equals(VM vm, RichNode right, WalkStack& stack) {
+  auto rhs = right.as<Tuple>();
+
+  if (getWidth() != rhs.getWidth())
     return false;
 
-  stack.pushArray(vm, getElementsArray(), right->getElementsArray(), _width);
-  stack.push(vm, &_label, &right->_label);
+  stack.pushArray(vm, getElementsArray(), rhs.getElementsArray(), getWidth());
+  stack.push(vm, getLabel(), rhs.getLabel());
 
   return true;
 }
@@ -237,9 +239,11 @@ Cons::Cons(VM vm, GR gr, Self from) {
   gr->copyStableNode(_elements[1], from->_elements[1]);
 }
 
-bool Cons::equals(VM vm, Self right, WalkStack& stack) {
-  stack.push(vm, &_elements[1], &right->_elements[1]);
-  stack.push(vm, &_elements[0], &right->_elements[0]);
+bool Cons::equals(VM vm, RichNode right, WalkStack& stack) {
+  auto rhs = right.as<Cons>();
+
+  stack.push(vm, getTail(), rhs.getTail());
+  stack.push(vm, getHead(), rhs.getHead());
 
   return true;
 }
@@ -390,12 +394,14 @@ StableNode* Arity::getElement(size_t index) {
   return &getElements(index);
 }
 
-bool Arity::equals(VM vm, Self right, WalkStack& stack) {
-  if (_width != right->_width)
+bool Arity::equals(VM vm, RichNode right, WalkStack& stack) {
+  auto rhs = right.as<Arity>();
+
+  if (getWidth() != rhs.getWidth())
     return false;
 
-  stack.pushArray(vm, getElementsArray(), right->getElementsArray(), _width);
-  stack.push(vm, &_label, &right->_label);
+  stack.pushArray(vm, getElementsArray(), rhs.getElementsArray(), getWidth());
+  stack.push(vm, getLabel(), rhs.getLabel());
 
   return true;
 }
@@ -466,12 +472,14 @@ Record::Record(VM vm, size_t width, GR gr, Self from) {
   gr->copyStableNodes(getElementsArray(), from->getElementsArray(), width);
 }
 
-bool Record::equals(VM vm, Self right, WalkStack& stack) {
-  if (_width != right->_width)
+bool Record::equals(VM vm, RichNode right, WalkStack& stack) {
+  auto rhs = right.as<Record>();
+
+  if (getWidth() != rhs.getWidth())
     return false;
 
-  stack.pushArray(vm, getElementsArray(), right->getElementsArray(), _width);
-  stack.push(vm, &_arity, &right->_arity);
+  stack.pushArray(vm, getElementsArray(), rhs.getElementsArray(), getWidth());
+  stack.push(vm, getArity(), rhs.getArity());
 
   return true;
 }

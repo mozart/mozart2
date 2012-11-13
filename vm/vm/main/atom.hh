@@ -41,13 +41,13 @@ void Atom::create(atom_t& self, VM vm, GR gr, Self from) {
   self = gr->copyAtom(from.get().value());
 }
 
-bool Atom::equals(VM vm, Self right) {
-  return value() == right.get().value();
+bool Atom::equals(VM vm, RichNode right) {
+  return value() == right.as<Atom>().value();
 }
 
-int Atom::compareFeatures(VM vm, Self right) {
+int Atom::compareFeatures(VM vm, RichNode right) {
   atom_t lhs = value();
-  atom_t rhs = right.get().value();
+  atom_t rhs = right.as<Atom>().value();
 
   return lhs.compare(rhs);
 }

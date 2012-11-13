@@ -43,8 +43,8 @@ namespace mozart {
 ByteString::ByteString(VM vm, GR gr, Self from)
   : _bytes(vm, from->_bytes) {}
 
-bool ByteString::equals(VM vm, Self right) {
-  return _bytes == right->_bytes;
+bool ByteString::equals(VM vm, RichNode right) {
+  return value() == right.as<ByteString>().value();
 }
 
 UnstableNode ByteString::getValueAt(VM vm, nativeint feature) {

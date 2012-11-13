@@ -60,8 +60,8 @@ GlobalName::GlobalName(VM vm, GR gr, Self from):
     _uuid = from->_uuid;
 }
 
-int GlobalName::compareFeatures(VM vm, Self right) {
-  const UUID& rhsUUID = right->getUUID();
+int GlobalName::compareFeatures(VM vm, RichNode right) {
+  const UUID& rhsUUID = right.as<GlobalName>().getUUID();
 
   if (_uuid == rhsUUID)
     return 0;
@@ -88,8 +88,8 @@ NamedName::NamedName(VM vm, GR gr, Self from):
     _uuid = from->_uuid;
 }
 
-int NamedName::compareFeatures(VM vm, Self right) {
-  const UUID& rhsUUID = right->getUUID();
+int NamedName::compareFeatures(VM vm, RichNode right) {
+  const UUID& rhsUUID = right.as<NamedName>().getUUID();
 
   if (_uuid == rhsUUID)
     return 0;
@@ -110,12 +110,12 @@ void UniqueName::create(unique_name_t& self, VM vm, GR gr, Self from) {
   self = vm->getUniqueName(fromValue.length(), fromValue.contents());
 }
 
-bool UniqueName::equals(VM vm, Self right) {
-  return value() == right.get().value();
+bool UniqueName::equals(VM vm, RichNode right) {
+  return value() == right.as<UniqueName>().value();
 }
 
-int UniqueName::compareFeatures(VM vm, Self right) {
-  return value().compare(right.get().value());
+int UniqueName::compareFeatures(VM vm, RichNode right) {
+  return value().compare(right.as<UniqueName>().value());
 }
 
 void UniqueName::printReprToStream(VM vm, std::ostream& out, int depth) {

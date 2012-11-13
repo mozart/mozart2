@@ -41,8 +41,8 @@ void BuiltinProcedure::create(Builtin*& self, VM vm, GR gr, Self from) {
   self = from.get()._builtin;
 }
 
-bool BuiltinProcedure::equals(VM vm, Self right) {
-  return _builtin == right.get()._builtin;
+bool BuiltinProcedure::equals(VM vm, RichNode right) {
+  return value() == right.as<BuiltinProcedure>().value();
 }
 
 void BuiltinProcedure::callBuiltin(VM vm, size_t argc, UnstableNode* args[]) {

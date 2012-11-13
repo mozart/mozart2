@@ -56,7 +56,7 @@ public:
   nativeint index() const { return _index; }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
 public:
   inline
@@ -105,7 +105,7 @@ public:
   StableNode* getElement(size_t index);
 
   inline
-  bool equals(VM vm, Self right, WalkStack& stack);
+  bool equals(VM vm, RichNode right, WalkStack& stack);
 
 public:
   inline

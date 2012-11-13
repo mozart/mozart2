@@ -43,8 +43,8 @@ namespace mozart {
 String::String(VM vm, GR gr, Self from)
   : _string(vm, from->_string) {}
 
-bool String::equals(VM vm, Self right) {
-  return _string == right->_string;
+bool String::equals(VM vm, RichNode right) {
+  return value() == right.as<String>().value();
 }
 
 // Comparable ------------------------------------------------------------------

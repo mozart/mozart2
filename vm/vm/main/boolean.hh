@@ -41,12 +41,12 @@ void Boolean::create(bool& self, VM vm, GR gr, Self from) {
   self = from.get().value();
 }
 
-bool Boolean::equals(VM vm, Self right) {
-  return value() == right.get().value();
+bool Boolean::equals(VM vm, RichNode right) {
+  return value() == right.as<Boolean>().value();
 }
 
-int Boolean::compareFeatures(VM vm, Self right) {
-  if (value() == right.get().value())
+int Boolean::compareFeatures(VM vm, RichNode right) {
+  if (value() == right.as<Boolean>().value())
     return 0;
   else if (value())
     return 1;

@@ -55,10 +55,10 @@ public:
   nativeint value() const { return _value; }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
   inline
-  int compareFeatures(VM vm, Self right);
+  int compareFeatures(VM vm, RichNode right);
 
 public:
   // Comparable interface

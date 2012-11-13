@@ -41,8 +41,8 @@ void ReifiedThread::create(Runnable*& self, VM vm, GR gr, Self from) {
   gr->copyThread(self, from.get()._runnable);
 }
 
-bool ReifiedThread::equals(VM vm, Self right) {
-  return _runnable == right.get()._runnable;
+bool ReifiedThread::equals(VM vm, RichNode right) {
+  return value() == right.as<ReifiedThread>().value();
 }
 
 void ReifiedThread::wakeUp(VM vm) {

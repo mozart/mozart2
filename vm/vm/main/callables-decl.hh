@@ -63,6 +63,11 @@ public:
   static void create(Builtin*& self, VM vm, GR gr, Self from);
 
 public:
+  builtins::BaseBuiltin* value() {
+    return _builtin;
+  }
+
+public:
   /**
    * Arity of this builtin
    */
@@ -71,7 +76,7 @@ public:
   }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
 public:
   // BuiltinCallable interface

@@ -52,7 +52,7 @@ public:
   double value() const { return _value; }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
 public:
   // Comparable interface

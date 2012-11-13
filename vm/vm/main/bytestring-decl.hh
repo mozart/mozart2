@@ -66,7 +66,7 @@ public:
   const LString<unsigned char>& value() const { return _bytes; }
 
   inline
-  bool equals(VM vm, Self right);
+  bool equals(VM vm, RichNode right);
 
 protected:
   friend class IntegerDottableHelper<ByteString>;

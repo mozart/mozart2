@@ -44,14 +44,16 @@ void SmallInt::create(nativeint& self, VM vm, GR gr, Self from) {
   self = from.get().value();
 }
 
-bool SmallInt::equals(VM vm, Self right) {
-  return value() == right.get().value();
+bool SmallInt::equals(VM vm, RichNode right) {
+  return value() == right.as<SmallInt>().value();
 }
 
-int SmallInt::compareFeatures(VM vm, Self right) {
-  if (value() == right.get().value())
+int SmallInt::compareFeatures(VM vm, RichNode right) {
+  auto rhs = right.as<SmallInt>().value();
+
+  if (value() == rhs)
     return 0;
-  else if (value() < right.get().value())
+  else if (value() < rhs)
     return -1;
   else
     return 1;

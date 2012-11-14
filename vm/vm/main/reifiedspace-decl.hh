@@ -87,36 +87,28 @@ private:
 #include "ReifiedSpace-implem-decl-after.hh"
 #endif
 
-//////////////////
-// DeletedSpace //
-//////////////////
-
-enum DeletedSpaceKind {
-  dsFailed, dsMerged
-};
+/////////////////
+// FailedSpace //
+/////////////////
 
 #ifndef MOZART_GENERATOR
-#include "DeletedSpace-implem-decl.hh"
+#include "FailedSpace-implem-decl.hh"
 #endif
 
-class DeletedSpace: public DataType<DeletedSpace>, StoredAs<DeletedSpaceKind> {
+class FailedSpace: public DataType<FailedSpace>, StoredAs<unit_t> {
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom(MOZART_STR("space"));
   }
 
-  explicit DeletedSpace(DeletedSpaceKind kind): _kind(kind) {}
+  explicit FailedSpace(unit_t) {}
 
-  static void create(DeletedSpaceKind& self, VM vm, DeletedSpaceKind kind) {
-    self = kind;
+  static void create(unit_t& self, VM vm) {
   }
 
   inline
-  static void create(DeletedSpaceKind& self, VM vm, GR gr, DeletedSpace from);
-public:
-  DeletedSpaceKind kind() {
-    return _kind;
-  }
+  static void create(unit_t& self, VM vm, GR gr, FailedSpace from);
+
 public:
   bool isSpace(VM vm) {
     return true;
@@ -139,12 +131,60 @@ public:
 
   inline
   void killSpace(VM vm);
-private:
-  DeletedSpaceKind _kind;
 };
 
 #ifndef MOZART_GENERATOR
-#include "DeletedSpace-implem-decl-after.hh"
+#include "FailedSpace-implem-decl-after.hh"
+#endif
+
+/////////////////
+// MergedSpace //
+/////////////////
+
+#ifndef MOZART_GENERATOR
+#include "MergedSpace-implem-decl.hh"
+#endif
+
+class MergedSpace: public DataType<MergedSpace>, StoredAs<unit_t> {
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom(MOZART_STR("space"));
+  }
+
+  explicit MergedSpace(unit_t) {}
+
+  static void create(unit_t& self, VM vm) {
+  }
+
+  inline
+  static void create(unit_t& self, VM vm, GR gr, MergedSpace from);
+
+public:
+  bool isSpace(VM vm) {
+    return true;
+  }
+
+  inline
+  UnstableNode askSpace(VM vm);
+
+  inline
+  UnstableNode askVerboseSpace(VM vm);
+
+  inline
+  UnstableNode mergeSpace(VM vm);
+
+  inline
+  void commitSpace(VM vm, RichNode value);
+
+  inline
+  UnstableNode cloneSpace(VM vm);
+
+  inline
+  void killSpace(VM vm);
+};
+
+#ifndef MOZART_GENERATOR
+#include "MergedSpace-implem-decl-after.hh"
 #endif
 
 }

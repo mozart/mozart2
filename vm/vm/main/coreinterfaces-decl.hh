@@ -572,7 +572,7 @@ struct Interface<ObjectLike>: ImplementedBy<Object> {
 class SpaceLike;
 template<>
 struct Interface<SpaceLike>:
-  ImplementedBy<ReifiedSpace, DeletedSpace>,
+  ImplementedBy<ReifiedSpace, FailedSpace, MergedSpace>,
   NoAutoReflectiveCalls {
 
   bool isSpace(RichNode self, VM vm) {

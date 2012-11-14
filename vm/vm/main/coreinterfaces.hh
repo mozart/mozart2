@@ -74,9 +74,6 @@ struct Dottable: public BaseDottable {
   Dottable(UnstableNode& self): BaseDottable(self) {}
   Dottable(StableNode& self): BaseDottable(self) {}
 
-  template <class T>
-  Dottable(BaseSelf<T> self): BaseDottable(self) {}
-
   UnstableNode dot(VM vm, RichNode feature) {
     UnstableNode result;
     if (lookupFeature(vm, feature, result))

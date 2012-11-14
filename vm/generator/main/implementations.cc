@@ -366,10 +366,9 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
   to << "\n";
 
   to << "template <>\n";
-  to << "class TypedRichNode<" << name << "> "
-     << ": public BaseTypedRichNode<" << name << "> {\n";
+  to << "class TypedRichNode<" << name << ">: public BaseTypedRichNode {\n";
   to << "public:\n";
-  to << "  TypedRichNode(Self self) : BaseTypedRichNode(self) {}\n";
+  to << "  explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}\n";
 
   // Hack to include methods in DataTypeStorageHelper
   if (storageKind == skWithArray) {
@@ -404,11 +403,7 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
 void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   std::string className = std::string("TypeInfoOf<") + name + ">";
 
-  std::string _selfArrow;
-  if (storageKind == skCustom)
-    _selfArrow = "_self.get().";
-  else
-    _selfArrow = "_self->";
+  std::string access = "_self.access<" + name + ">().";
 
   if (hasPrintReprToStream) {
     to << "\n";
@@ -458,17 +453,17 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
   if (storageKind == skWithArray) {
     to << "\n";
     to << "size_t TypedRichNode<" << name << ">::getArraySize() {\n";
-    to << "  return " << _selfArrow << "getArraySize();\n";
+    to << "  return " << access << "getArraySize();\n";
     to << "}\n";
     to << "\n";
     to << "StaticArray<" << storageElement << "> TypedRichNode<"
        << name << ">::getElementsArray() {\n";
-    to << "  return " << _selfArrow << "getElementsArray();\n";
+    to << "  return " << access << "getElementsArray();\n";
     to << "}\n";
     to << "\n";
     to << "" << storageElement << "& TypedRichNode<"
        << name << ">::getElements(size_t i) {\n";
-    to << "  return " << _selfArrow << "getElements(i);\n";
+    to << "  return " << access << "getElements(i);\n";
     to << "}\n";
   }
 
@@ -489,7 +484,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     if (!method->function->getResultType().getTypePtr()->isVoidType())
       to << "return ";
 
-    to << _selfArrow << method->name;
+    to << access << method->name;
     if (method->funTemplate != nullptr)
       printActualTemplateParameters(to, method->funTemplate->getTemplateParameters());
     to << "(";

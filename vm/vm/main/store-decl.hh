@@ -56,12 +56,6 @@ private:
   friend class Space;
 
   template <class T>
-  friend class BaseSelf;
-
-  template <class T>
-  friend class WritableSelfType;
-
-  template <class T>
   friend class TypeInfoOf;
 
   Node() {}
@@ -253,7 +247,7 @@ private:
   static StableNode* destOf(Node* node);
 private:
   template <class T>
-  friend class BaseSelf;
+  friend class TypedRichNode;
 
   template <typename T>
   friend class TypeInfoOf;
@@ -373,111 +367,17 @@ public:
 };
 
 /**
- * Base class for Self types
- */
-template <class T>
-class BaseSelf {
-public:
-  BaseSelf(RichNode node) : _node(node) {}
-
-  operator RichNode() {
-    return _node;
-  }
-protected:
-  auto getBase() -> decltype(std::declval<RichNode>().access<T>()) {
-    return _node.access<T>();
-  }
-private:
-  RichNode _node;
-};
-
-/**
- * Self type for custom storage-based types
- */
-template <class T>
-class CustomStorageSelf: public BaseSelf<T> {
-public:
-  CustomStorageSelf(RichNode node) : BaseSelf<T>(node) {}
-
-  T get() {
-    return this->getBase();
-  }
-};
-
-/**
- * Self type for default storage-based types
- */
-template <class T>
-class DefaultStorageSelf: public BaseSelf<T> {
-public:
-  DefaultStorageSelf(RichNode node) : BaseSelf<T>(node) {}
-
-  T* operator->() {
-    return &this->getBase();
-  }
-};
-
-/**
- * Self type for ImplWithArray-based types
- */
-template <class T>
-class ImplWithArraySelf: public BaseSelf<T> {
-public:
-  ImplWithArraySelf(RichNode node) : BaseSelf<T>(node) {}
-
-  T* operator->() {
-    return &this->getBase();
-  }
-};
-
-/**
- * Helper for the metafunction SelfType
- */
-template <class T, class S>
-struct SelfTypeInner {
-  typedef CustomStorageSelf<T> Self;
-};
-
-/**
- * Helper for the metafunction SelfType
- */
-template <class T>
-struct SelfTypeInner<T, DefaultStorage<T>> {
-  typedef DefaultStorageSelf<T> Self;
-};
-
-/**
- * Helper for the metafunction SelfType
- */
-template <class T, class I, class E>
-struct SelfTypeInner<T, ImplWithArray<I, E>> {
-  typedef ImplWithArraySelf<T> Self;
-};
-
-/**
- * Metafunction from type to its Self type
- * Use as SelfType<T>::Self
- */
-template <class T>
-struct SelfType {
-  typedef typename SelfTypeInner<T, typename Storage<T>::Type>::Self Self;
-};
-
-/**
  * Base class for specializations of TypedRichNode<T>
  */
-template <class T>
 class BaseTypedRichNode {
-protected:
-  typedef typename SelfType<T>::Self Self;
 public:
-  BaseTypedRichNode(Self self) : _self(self) {}
+  explicit BaseTypedRichNode(RichNode self) : _self(self) {}
 
   operator RichNode() {
     return _self;
   }
 protected:
-  Self _self;
+  RichNode _self;
 };
 
 }

@@ -297,6 +297,42 @@ struct OzValueToPrimitiveValue<char> {
   }
 };
 
+template <>
+struct OzValueToPrimitiveValue<unsigned char> {
+  static bool call(VM vm, RichNode value, unsigned char& primitive) {
+    if (value.is<SmallInt>()) {
+      nativeint intValue = value.as<SmallInt>().value();
+
+      if ((intValue >= 0) && (intValue < 256)) {
+        primitive = (unsigned char) intValue;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+};
+
+template <>
+struct OzValueToPrimitiveValue<char32_t> {
+  static bool call(VM vm, RichNode value, char32_t& primitive) {
+    if (value.is<SmallInt>()) {
+      nativeint intValue = value.as<SmallInt>().value();
+
+      if (isValidCodePoint(intValue)) {
+        primitive = (char32_t) intValue;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+};
+
 template <class U>
 struct OzValueToPrimitiveValue<std::shared_ptr<U>,
   typename std::enable_if<!HasPrimitiveTypeToOzType<std::shared_ptr<U>>::value>::type> {

@@ -186,26 +186,6 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
   }
 }
 
-// VirtualString ---------------------------------------------------------------
-
-void SmallInt::toString(VM vm, std::basic_ostream<nchar>& sink) {
-//sink << value();  // doesn't seem to work, don't know why.
-  std::stringstream ss;
-  ss << value();
-  auto str = ss.str();
-  size_t length = str.length();
-  std::unique_ptr<nchar[]> nStr (new nchar[length]);
-  std::copy(str.begin(), str.end(), nStr.get());
-  sink.write(nStr.get(), length);
-}
-
-nativeint SmallInt::vsLength(VM vm) {
-  std::stringstream ss;
-  ss << value();
-  auto str = ss.str();
-  return (nativeint) str.length();
-}
-
 }
 
 #endif // MOZART_GENERATOR

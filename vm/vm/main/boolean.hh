@@ -54,14 +54,6 @@ int Boolean::compareFeatures(VM vm, RichNode right) {
     return -1;
 }
 
-void Boolean::toString(VM vm, std::basic_ostream<nchar>& sink) {
-  sink << (value() ? MOZART_STR("true") : MOZART_STR("false"));
-}
-
-nativeint Boolean::vsLength(VM vm) {
-  return value() ? 4 : 5;
-}
-
 }
 
 #endif // MOZART_GENERATOR

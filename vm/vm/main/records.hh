@@ -179,44 +179,6 @@ void Tuple::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << ")";
 }
 
-bool Tuple::isVirtualString(VM vm) {
-  if (hasSharpLabel(vm)) {
-    for (size_t i = 0; i < _width; ++ i) {
-      if (!VirtualString(getElements(i)).isVirtualString(vm))
-        return false;
-    }
-
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void Tuple::toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink) {
-  if (!hasSharpLabel(vm))
-    raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-
-  for (size_t i = 0; i < _width; ++ i) {
-    VirtualString(getElements(i)).toString(vm, sink);
-  }
-}
-
-nativeint Tuple::vsLength(RichNode self, VM vm) {
-  if (!hasSharpLabel(vm))
-    raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-
-  nativeint result = 0;
-  for (size_t i = 0; i < _width; ++ i)
-    result += VirtualString(getElements(i)).vsLength(vm);
-
-  return result;
-}
-
-bool Tuple::hasSharpLabel(VM vm) {
-  RichNode label = _label;
-  return label.is<Atom>() && label.as<Atom>().value() == vm->coreatoms.sharp;
-}
-
 //////////
 // Cons //
 //////////
@@ -309,57 +271,6 @@ bool Cons::testTuple(VM vm, RichNode label, size_t width) {
 
 bool Cons::testLabel(VM vm, RichNode label) {
   return label.is<Atom>() && (label.as<Atom>().value() == vm->coreatoms.pipe);
-}
-
-namespace internal {
-
-template <class F>
-inline
-void withConsAsVirtualString(VM vm, RichNode cons, const F& onChar) {
-  ozListForEach(vm, cons,
-    [&, vm](nativeint c) {
-      if (c < 0 || c >= 256) {
-        raiseTypeError(vm, MOZART_STR("char"), c);
-      }
-      onChar((char32_t) c);
-    },
-    MOZART_STR("VirtualString")
-  );
-}
-
-}
-
-bool Cons::isVirtualString(RichNode self, VM vm) {
-  // TODO Refactor this, we do not want to catch exceptions
-  MOZART_TRY(vm) {
-    internal::withConsAsVirtualString(vm, self, [](char32_t){});
-    MOZART_RETURN_IN_TRY(vm, true);
-  } MOZART_CATCH(vm, kind, node) {
-    if (kind == ExceptionKind::ekRaise)
-      return false;
-    else
-      MOZART_RETHROW(vm);
-  } MOZART_ENDTRY(vm);
-}
-
-void Cons::toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink) {
-  internal::withConsAsVirtualString(vm, self,
-    [&](char32_t c) {
-      nchar buffer[4];
-      nativeint length = toUTF(c, buffer);
-      sink.write(buffer, length);
-    }
-  );
-}
-
-nativeint Cons::vsLength(RichNode self, VM vm) {
-  nativeint length = 0;
-
-  internal::withConsAsVirtualString(vm, self,
-    [&](char32_t) { ++ length; }
-  );
-
-  return length;
 }
 
 void Cons::printReprToStream(VM vm, std::ostream& out, int depth) {

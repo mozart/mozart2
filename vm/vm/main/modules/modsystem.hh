@@ -82,14 +82,17 @@ public:
       auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
       auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
 
-      std::basic_stringstream<nchar> buffer;
-      VirtualString(value).toString(vm, buffer);
-      auto bufferStr = buffer.str();
+      size_t valueBufSize = ozVSLengthForBuffer(vm, value);
 
-      auto& stream = boolToStdErr ? std::cerr : std::cout;
-      stream << toUTF<char>(makeLString(bufferStr.c_str(), bufferStr.size()));
-      if (boolNewLine)
-        stream << std::endl;
+      {
+        std::string valueStr;
+        ozVSGet(vm, value, valueBufSize, valueStr);
+
+        auto& stream = boolToStdErr ? std::cerr : std::cout;
+        stream << valueStr;
+        if (boolNewLine)
+          stream << std::endl;
+      }
     }
   };
 

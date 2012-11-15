@@ -30,6 +30,13 @@
 
 namespace mozart {
 
+enum class ByteStringEncoding {
+  latin1,
+  utf8,
+  utf16,
+  utf32
+};
+
 enum EncodingVariant : uintptr_t {
   none = 0,
   littleEndian = 1,
@@ -70,6 +77,10 @@ auto encodeUTF16(const BaseLString<nchar>& input, EncodingVariant variant)
 auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>>;
 
+auto encodeGeneric(const BaseLString<nchar>& input,
+                   ByteStringEncoding encoding, EncodingVariant variant)
+    -> ContainedLString<std::vector<unsigned char>>;
+
 //////////////
 // Decoders //
 //////////////
@@ -88,6 +99,10 @@ auto decodeUTF16(const BaseLString<unsigned char>& input,
 
 auto decodeUTF32(const BaseLString<unsigned char>& input,
                  EncodingVariant variant)
+    -> ContainedLString<std::vector<nchar>>;
+
+auto decodeGeneric(const BaseLString<unsigned char>& input,
+                   ByteStringEncoding encoding, EncodingVariant variant)
     -> ContainedLString<std::vector<nchar>>;
 
 }

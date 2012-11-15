@@ -48,14 +48,6 @@ int Unit::compareFeatures(VM vm, RichNode right) {
   return 0;
 }
 
-void Unit::toString(VM vm, std::basic_ostream<nchar>& sink) {
-  sink << MOZART_STR("unit");
-}
-
-nativeint Unit::vsLength(VM vm) {
-  return 4;
-}
-
 }
 
 #endif // MOZART_GENERATOR

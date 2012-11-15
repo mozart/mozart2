@@ -186,58 +186,6 @@ bool ByteString::stringHasSuffix(VM vm, RichNode suffixNode) {
                   suffix->bytesCount()) == 0;
 }
 
-// VirtualString ---------------------------------------------------------------
-
-void ByteString::toString(VM vm, std::basic_ostream<nchar>& sink) {
-  sink << decodeLatin1(_bytes, EncodingVariant::none);
-}
-
-nativeint ByteString::vsLength(VM vm) {
-  return _bytes.length;
-}
-
-// Encode & decode -------------------------------------------------------------
-
-UnstableNode ByteString::decode(RichNode self, VM vm,
-                                ByteStringEncoding encoding,
-                                EncodingVariant variant) {
-  DecoderFun decoder;
-  switch (encoding) {
-    case ByteStringEncoding::latin1: decoder = &decodeLatin1; break;
-    case ByteStringEncoding::utf8:   decoder = &decodeUTF8;   break;
-    case ByteStringEncoding::utf16:  decoder = &decodeUTF16;  break;
-    case ByteStringEncoding::utf32:  decoder = &decodeUTF32;  break;
-    default:
-      assert(false);
-      decoder = nullptr;
-  }
-
-  auto res = newLString(vm, decoder(_bytes, variant));
-  if (res.isError())
-    raiseUnicodeError(vm, res.error);
-  return String::build(vm, res);
-}
-
-UnstableNode encodeToBytestring(VM vm, const BaseLString<nchar>& input,
-                                ByteStringEncoding encoding,
-                                EncodingVariant variant) {
-  EncoderFun encoder;
-  switch (encoding) {
-    case ByteStringEncoding::latin1: encoder = &encodeLatin1; break;
-    case ByteStringEncoding::utf8:   encoder = &encodeUTF8;   break;
-    case ByteStringEncoding::utf16:  encoder = &encodeUTF16;  break;
-    case ByteStringEncoding::utf32:  encoder = &encodeUTF32;  break;
-    default:
-      assert(false);
-      encoder = nullptr;
-  }
-
-  auto res = newLString(vm, encoder(input, variant));
-  if (res.isError())
-    raiseUnicodeError(vm, res.error);
-  return ByteString::build(vm, res);
-}
-
 // Miscellaneous ---------------------------------------------------------------
 
 void ByteString::printReprToStream(VM vm, std::ostream& out, int depth) {

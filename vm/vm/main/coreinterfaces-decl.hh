@@ -651,26 +651,6 @@ struct Interface<StringLike>:
   }
 };
 
-class VirtualString;
-template<>
-struct Interface<VirtualString>:
-  ImplementedBy<SmallInt, Float, Atom, Boolean, String, Unit, Cons, Tuple,
-                ByteString>,
-  NoAutoReflectiveCalls {
-
-  bool isVirtualString(RichNode self, VM vm) {
-    return false;
-  }
-
-  void toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink) {
-    raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-  }
-
-  nativeint vsLength(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("VirtualString"), self);
-  }
-};
-
 }
 
 #endif // __COREINTERFACES_DECL_H

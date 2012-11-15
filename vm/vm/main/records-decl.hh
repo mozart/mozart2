@@ -149,21 +149,6 @@ public:
   bool testLabel(VM vm, RichNode label);
 
 public:
-  // VirtualString inteface
-
-  inline
-  bool isVirtualString(VM vm);
-
-  inline
-  void toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink);
-
-  inline
-  nativeint vsLength(RichNode self, VM vm);
-
-private:
-  inline bool hasSharpLabel(VM vm);
-
-public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
@@ -268,18 +253,6 @@ public:
 
   inline
   bool testLabel(VM vm, RichNode label);
-
-public:
-  // VirtualString inteface
-
-  inline
-  bool isVirtualString(RichNode self, VM vm);
-
-  inline
-  void toString(RichNode self, VM vm, std::basic_ostream<nchar>& sink);
-
-  inline
-  nativeint vsLength(RichNode self, VM vm);
 
 public:
   inline

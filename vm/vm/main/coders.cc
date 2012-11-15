@@ -151,6 +151,21 @@ auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
   return std::move(result);
 }
 
+auto encodeGeneric(const BaseLString<nchar>& input,
+                   ByteStringEncoding encoding, EncodingVariant variant)
+    -> ContainedLString<std::vector<unsigned char>> {
+
+  switch (encoding) {
+    case ByteStringEncoding::latin1: return encodeLatin1(input, variant);
+    case ByteStringEncoding::utf8:   return encodeUTF8(input, variant);
+    case ByteStringEncoding::utf16:  return encodeUTF16(input, variant);
+    case ByteStringEncoding::utf32:  return encodeUTF32(input, variant);
+    default:
+      assert(false);
+      std::abort();
+  }
+}
+
 //////////////
 // Decoders //
 //////////////
@@ -258,6 +273,21 @@ auto decodeUTF32(const BaseLString<unsigned char>& input,
   }
 
   return toUTF<nchar>(makeLString(buffer.data(), buffer.size()));
+}
+
+auto decodeGeneric(const BaseLString<unsigned char>& input,
+                   ByteStringEncoding encoding, EncodingVariant variant)
+    -> ContainedLString<std::vector<nchar>> {
+
+  switch (encoding) {
+    case ByteStringEncoding::latin1: return decodeLatin1(input, variant);
+    case ByteStringEncoding::utf8:   return decodeUTF8(input, variant);
+    case ByteStringEncoding::utf16:  return decodeUTF16(input, variant);
+    case ByteStringEncoding::utf32:  return decodeUTF32(input, variant);
+    default:
+      assert(false);
+      std::abort();
+  }
 }
 
 }

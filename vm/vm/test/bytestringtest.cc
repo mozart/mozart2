@@ -57,38 +57,6 @@ TEST_F(ByteStringTest, Append) {
   }
 }
 
-TEST_F(ByteStringTest, Decode) {
-  static const unsigned char a[] = "\xc3\x80\x01\x00\xc4\xbf\x10\x00";
-  UnstableNode bNode = ByteString::build(vm, newLString(a, 8));
-  auto b = RichNode(bNode).as<ByteString>();
-
-  // decode(vm, encoding, isLittleEndian, hasBOM, result)
-
-  UnstableNode res;
-
-  res = b.decode(vm, ByteStringEncoding::latin1, EncodingVariant::none);
-  EXPECT_EQ_STRING(makeLString(
-    MOZART_STR("\u00c3\u0080\u0001\0\u00c4\u00bf\u0010\0"),
-    std::is_same<nchar, char>::value ? 12 : 8), res);
-
-  res = b.decode(vm, ByteStringEncoding::utf8, EncodingVariant::none);
-  EXPECT_EQ_STRING(makeLString(
-    MOZART_STR("\u00c0\u0001\0\u013f\u0010\0"),
-    std::is_same<nchar, char>::value ? 8 : 6), res);
-
-  res = b.decode(vm, ByteStringEncoding::utf16, EncodingVariant::none);
-  EXPECT_EQ_STRING(MOZART_STR("\uc380\u0100\uc4bf\u1000"), res);
-
-  res = b.decode(vm, ByteStringEncoding::utf16, EncodingVariant::littleEndian);
-  EXPECT_EQ_STRING(MOZART_STR("\u80c3\u0001\ubfc4\u0010"), res);
-
-  res = b.decode(vm, ByteStringEncoding::utf32, EncodingVariant::littleEndian);
-  EXPECT_EQ_STRING(MOZART_STR("\U000180c3\U0010bfc4"), res);
-
-  EXPECT_RAISE(MOZART_STR("unicodeError"),
-               b.decode(vm, ByteStringEncoding::utf32, EncodingVariant::none));
-}
-
 TEST_F(ByteStringTest, Slice) {
   static const unsigned char a[] = "12345";
   UnstableNode b = ByteString::build(vm, a);
@@ -222,39 +190,5 @@ TEST_F(ByteStringTest, Search) {
   }
   if (EXPECT_IS<Boolean>(end)) {
     EXPECT_FALSE(RichNode(end).as<Boolean>().value());
-  }
-}
-
-TEST_F(ByteStringTest, Encode) {
-  auto test = MOZART_STR("a\U000180c3b");
-
-  UnstableNode res;
-
-  res = encodeToBytestring(vm, test, ByteStringEncoding::latin1,
-                           EncodingVariant::none);
-  if (EXPECT_IS<ByteString>(res)) {
-    const unsigned char expected[] = "a?b";
-    EXPECT_EQ(makeLString(expected, 3), RichNode(res).as<ByteString>().value());
-  }
-
-  res = encodeToBytestring(vm, test, ByteStringEncoding::utf8,
-                           EncodingVariant::none);
-  if (EXPECT_IS<ByteString>(res)) {
-    const unsigned char expected[] = "a\xf0\x98\x83\x83" "b";
-    EXPECT_EQ(makeLString(expected, 6), RichNode(res).as<ByteString>().value());
-  }
-
-  res = encodeToBytestring(vm, test, ByteStringEncoding::utf16,
-                           EncodingVariant::none);
-  if (EXPECT_IS<ByteString>(res)) {
-    const unsigned char expected[] = "\0a\xd8\x20\xdc\xc3\0b";
-    EXPECT_EQ(makeLString(expected, 8), RichNode(res).as<ByteString>().value());
-  }
-
-  res = encodeToBytestring(vm, test, ByteStringEncoding::utf32,
-                           EncodingVariant::none);
-  if (EXPECT_IS<ByteString>(res)) {
-    const unsigned char expected[] = "\0\0\0a\0\1\x80\xc3\0\0\0b";
-    EXPECT_EQ(makeLString(expected, 12), RichNode(res).as<ByteString>().value());
   }
 }

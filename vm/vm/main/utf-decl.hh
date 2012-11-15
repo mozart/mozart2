@@ -32,6 +32,13 @@
 
 namespace mozart {
 
+///////////////////
+// Unicode utils //
+///////////////////
+
+inline constexpr bool isValidCodePoint(char32_t codePoint);
+inline constexpr bool isValidCodePoint(nativeint codePoint);
+
 /////////////////////////////////
 // Unicode encoding conversion //
 /////////////////////////////////
@@ -86,11 +93,11 @@ inline std::pair<char32_t, nativeint> fromUTF(const wchar_t* utf,
  * both the functions "f" and "g" should return 'false' to quit early.
  */
 template <class C, class F, class G>
-inline void forEachCodePoint(const LString<C>& string,
+inline void forEachCodePoint(const BaseLString<C>& string,
                              const F& onChar, const G& onError);
 
 template <class C, class F>
-inline void forEachCodePoint(const LString<C>& string, const F& onChar) {
+inline void forEachCodePoint(const BaseLString<C>& string, const F& onChar) {
   forEachCodePoint(string, onChar, [](C, UnicodeErrorReason) { return false; });
 }
 

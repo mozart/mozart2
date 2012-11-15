@@ -35,15 +35,6 @@ namespace mozart {
 // ByteString //
 ////////////////
 
-enum class ByteStringEncoding {
-  latin1,
-  utf8,
-  utf16,
-  utf32
-};
-
-enum EncodingVariant : uintptr_t;
-
 #ifndef MOZART_GENERATOR
 #include "ByteString-implem-decl.hh"
 #endif
@@ -121,24 +112,7 @@ public:
   bool stringHasSuffix(VM vm, RichNode suffix);
 
 public:
-  // VirtualString interface
-
-  bool isVirtualString(VM vm) {
-    return true;
-  }
-
-  inline
-  void toString(VM vm, std::basic_ostream<nchar>& sink);
-
-  inline
-  nativeint vsLength(VM vm);
-
-public:
   // Miscellaneous
-
-  inline
-  UnstableNode decode(RichNode self, VM vm,
-                      ByteStringEncoding encoding, EncodingVariant variant);
 
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
@@ -146,11 +120,6 @@ public:
 private:
   LString<unsigned char> _bytes;
 };
-
-inline
-UnstableNode encodeToBytestring(VM vm, const BaseLString<nchar>& input,
-                                ByteStringEncoding encoding,
-                                EncodingVariant variant);
 
 #ifndef MOZART_GENERATOR
 #include "ByteString-implem-decl-after.hh"

@@ -166,22 +166,10 @@ private:
 ///////////////
 
 inline
-void ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer);
+atom_t systemStrToAtom(VM vm, const char* str);
 
 inline
-void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer);
-
-inline
-std::string ozStringToStdString(VM vm, RichNode value);
-
-inline
-UnstableNode stdStringToOzString(VM vm, const std::string& value);
-
-inline
-std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str);
-
-inline
-std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str);
+atom_t systemStrToAtom(VM vm, const std::string& str);
 
 inline
 void MOZART_NORETURN raiseOSError(VM vm, int errnum);

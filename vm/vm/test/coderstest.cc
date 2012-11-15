@@ -306,3 +306,55 @@ TEST_F(CodersTest, DecodeUTF32_Fail) {
     EXPECT_EQ(UnicodeErrorReason::truncated, res.error);
   }
 }
+
+TEST_F(CodersTest, EncodeGeneric) {
+  auto test = makeLString(MOZART_STR("a\U000180c3b"));
+
+  EXPECT_EQ(
+    makeLString(ustr("a?b"), 3),
+    encodeGeneric(test, ByteStringEncoding::latin1, EncodingVariant::none));
+
+  EXPECT_EQ(
+    makeLString(ustr("a\xf0\x98\x83\x83" "b"), 6),
+    encodeGeneric(test, ByteStringEncoding::utf8, EncodingVariant::none));
+
+  EXPECT_EQ(
+    makeLString(ustr("\0a\xd8\x20\xdc\xc3\0b"), 8),
+    encodeGeneric(test, ByteStringEncoding::utf16, EncodingVariant::none));
+
+  EXPECT_EQ(
+    makeLString(ustr("\0\0\0a\0\1\x80\xc3\0\0\0b"), 12),
+    encodeGeneric(test, ByteStringEncoding::utf32, EncodingVariant::none));
+}
+
+TEST_F(CodersTest, DecodeGeneric) {
+  static const unsigned char a[] = "\xc3\x80\x01\x00\xc4\xbf\x10\x00";
+  auto b = newLString(a, 8);
+
+  EXPECT_EQ(
+    makeLString(
+      MOZART_STR("\u00c3\u0080\u0001\0\u00c4\u00bf\u0010\0"),
+      std::is_same<nchar, char>::value ? 12 : 8),
+    decodeGeneric(b, ByteStringEncoding::latin1, EncodingVariant::none));
+
+  EXPECT_EQ(
+    makeLString(
+      MOZART_STR("\u00c0\u0001\0\u013f\u0010\0"),
+      std::is_same<nchar, char>::value ? 8 : 6),
+    decodeGeneric(b, ByteStringEncoding::utf8, EncodingVariant::none));
+
+  EXPECT_EQ(
+    MOZART_STR("\uc380\u0100\uc4bf\u1000"),
+    decodeGeneric(b, ByteStringEncoding::utf16, EncodingVariant::none));
+
+  EXPECT_EQ(
+    MOZART_STR("\u80c3\u0001\ubfc4\u0010"),
+    decodeGeneric(b, ByteStringEncoding::utf16, EncodingVariant::littleEndian));
+
+  EXPECT_EQ(
+    MOZART_STR("\U000180c3\U0010bfc4"),
+    decodeGeneric(b, ByteStringEncoding::utf32, EncodingVariant::littleEndian));
+
+  EXPECT_TRUE(
+    decodeGeneric(b, ByteStringEncoding::utf32, EncodingVariant::none).isError());
+}

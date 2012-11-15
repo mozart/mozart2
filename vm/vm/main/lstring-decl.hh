@@ -152,6 +152,12 @@ struct LString : BaseLString<C> {
   // LString is copyable (aliasable).
   constexpr LString(const LString& s) : BaseLString<C>(s.string, s.length) {}
 
+  LString& operator=(const LString& s) {
+    this->string = s.string;
+    this->length = s.length;
+    return *this;
+  }
+
   // Copy-construct with help of VM.
   inline LString(VM vm, const BaseLString<C>& other);
 

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODSTRING_H
-#define __MODSTRING_H
+#ifndef __MODCOMPACTSTRING_H
+#define __MODCOMPACTSTRING_H
 
 #include "../mozartcore.hh"
 
@@ -33,30 +33,29 @@ namespace mozart {
 
 namespace builtins {
 
-///////////////////
-// String module //
-///////////////////
+//////////////////////////
+// CompactString module //
+//////////////////////////
 
-class ModString : public Module {
+class ModCompactString : public Module {
 public:
-  ModString() : Module("String") {}
+  ModCompactString() : Module("CompactString") {}
 
-  class Is : public Builtin<Is> {
+  class IsCompactString : public Builtin<IsCompactString> {
   public:
-    Is() : Builtin("is") {}
+    IsCompactString() : Builtin("isCompactString") {}
 
     void operator()(VM vm, In value, Out result) {
       result = build(vm, StringLike(value).isString(vm));
     }
   };
 
-  class ToAtom : public Builtin<ToAtom> {
+  class IsCompactByteString : public Builtin<IsCompactByteString> {
   public:
-    ToAtom() : Builtin("toAtom") {}
+    IsCompactByteString() : Builtin("isCompactByteString") {}
 
     void operator()(VM vm, In value, Out result) {
-      auto content = StringLike(value).stringGet(vm);
-      result = Atom::build(vm, content->length, content->string);
+      result = build(vm, StringLike(value).isByteString(vm));
     }
   };
 
@@ -121,4 +120,4 @@ public:
 
 #endif
 
-#endif // __MODSTRING_H
+#endif // __MODCOMPACTSTRING_H

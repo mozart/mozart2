@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODBYTESTRING_H
-#define __MODBYTESTRING_H
+#ifndef __MODCODERS_H
+#define __MODCODERS_H
 
 #include "../mozartcore.hh"
 
@@ -35,11 +35,11 @@ namespace mozart {
 
 namespace builtins {
 
-///////////////////////
-// ByteString module //
-///////////////////////
+///////////////////
+// Coders module //
+///////////////////
 
-class ModByteString : public Module {
+class ModCoders : public Module {
 private:
   static void parseEncoding(VM vm, In encodingNode, In encodingVariantList,
                             ByteStringEncoding& encoding,
@@ -82,16 +82,7 @@ private:
   }
 
 public:
-  ModByteString() : Module("ByteString") {}
-
-  class Is : public Builtin<Is> {
-  public:
-    Is() : Builtin("is") {}
-
-    void operator()(VM vm, In value, Out result) {
-      result = build(vm, StringLike(value).isByteString(vm));
-    }
-  };
+  ModCoders() : Module("Coders") {}
 
   class Encode : public Builtin<Encode> {
   public:
@@ -103,16 +94,21 @@ public:
       EncodingVariant variant = EncodingVariant::none;
       parseEncoding(vm, encodingNode, variantNode, encoding, variant);
 
-      if (!VirtualString(string).isVirtualString(vm))
-        raiseTypeError(vm, MOZART_STR("VirtualString"), string);
+      size_t bufSize = ozVSLengthForBuffer(vm, string);
 
-      std::basic_ostringstream<nchar> combinedStringStream;
-      VirtualString(string).toString(vm, combinedStringStream);
-      auto combinedString = combinedStringStream.str();
-      auto rawString = makeLString(combinedString.data(),
-                                   combinedString.size());
+      mut::LString<unsigned char> encoded(nullptr);
+      {
+        std::vector<nchar> buffer;
+        ozVSGet(vm, string, bufSize, buffer);
+        auto rawString = makeLString(buffer.data(), buffer.size());
 
-      result = encodeToBytestring(vm, rawString, encoding, variant);
+        encoded = newLString(vm, encodeGeneric(rawString, encoding, variant));
+      }
+
+      if (encoded.isError())
+        raiseUnicodeError(vm, encoded.error);
+
+      result = ByteString::build(vm, encoded);
     }
   };
 
@@ -122,19 +118,25 @@ public:
 
     void operator()(VM vm, In value, In encodingNode,
                     In variantNode, Out result) {
-      // TODO Fix this test
-      if (!value.is<ByteString>()) {
-        if (value.isTransient())
-          waitFor(vm, value);
-        else
-          raiseTypeError(vm, MOZART_STR("ByteString"), value);
-      }
-
       ByteStringEncoding encoding = ByteStringEncoding::utf8;
       EncodingVariant variant = EncodingVariant::none;
       parseEncoding(vm, encodingNode, variantNode, encoding, variant);
 
-      result = value.as<ByteString>().decode(vm, encoding, variant);
+      size_t bufSize = ozVBSLengthForBuffer(vm, value);
+
+      mut::LString<nchar> decoded(nullptr);
+      {
+        std::vector<unsigned char> buffer;
+        ozVBSGet(vm, value, bufSize, buffer);
+        auto rawString = makeLString(buffer.data(), buffer.size());
+
+        decoded = newLString(vm, decodeGeneric(rawString, encoding, variant));
+      }
+
+      if (decoded.isError())
+        raiseUnicodeError(vm, decoded.error);
+
+      result = String::build(vm, decoded);
     }
   };
 };
@@ -145,4 +147,4 @@ public:
 
 #endif
 
-#endif // __MODBYTESTRING_H
+#endif // __MODCODERS_H

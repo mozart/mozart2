@@ -92,78 +92,29 @@ void BoostBasedVM::postVMEvent(std::function<void()> callback) {
 // Utilities //
 ///////////////
 
-void ozStringToBuffer(VM vm, RichNode value, size_t size, char* buffer) {
-  ozListForEach(
-    vm, value,
-    [size, buffer] (char c, size_t i) {
-      assert(i < size);
-      buffer[i] = c;
-    },
-    MOZART_STR("string")
-  );
-}
-
-void ozStringToBuffer(VM vm, RichNode value, std::vector<char>& buffer) {
-  size_t size = ozListLength(vm, value);
-  buffer.resize(size);
-
-  ozListForEach(
-    vm, value,
-    [size, &buffer] (char c, size_t i) {
-      assert(i < size);
-      buffer[i] = c;
-    },
-    MOZART_STR("string")
-  );
-}
-
-std::string ozStringToStdString(VM vm, RichNode value) {
-  std::stringbuf buffer;
-
-  ozListForEach(
-    vm, value,
-    [&buffer] (char c) {
-      buffer.sputc(c);
-    },
-    MOZART_STR("string")
-  );
-
-  return buffer.str();
-}
-
-UnstableNode stdStringToOzString(VM vm, const std::string& value) {
-  UnstableNode res = build(vm, vm->coreatoms.nil);
-
-  for (auto iter = value.rbegin(); iter != value.rend(); ++iter) {
-    res = buildCons(vm, *iter, std::move(res));
-  }
-
-  return std::move(res);
-}
-
-std::unique_ptr<nchar[]> systemStrToMozartStr(const char* str) {
+atom_t systemStrToAtom(VM vm, const char* str) {
   size_t len = std::strlen(str);
 
   auto ustr = std::unique_ptr<nchar[]>(new nchar[len+1]);
   for (size_t i = 0; i <= len; i++)
     ustr[i] = (nchar) str[i];
 
-  return ustr;
+  return vm->getAtom(len, ustr.get());
 }
 
-std::unique_ptr<nchar[]> systemStrToMozartStr(const std::string& str) {
+atom_t systemStrToAtom(VM vm, const std::string& str) {
   size_t len = str.length();
 
   auto ustr = std::unique_ptr<nchar[]>(new nchar[len+1]);
   for (size_t i = 0; i <= len; i++)
     ustr[i] = (nchar) str[i];
 
-  return ustr;
+  return vm->getAtom(len, ustr.get());
 }
 
 void raiseOSError(VM vm, int errnum) {
-  auto message = systemStrToMozartStr(std::strerror(errnum));
-  raise(vm, MOZART_STR("system"), errnum, message.get());
+  auto message = systemStrToAtom(vm, std::strerror(errnum));
+  raise(vm, MOZART_STR("system"), errnum, message);
 }
 
 void raiseLastOSError(VM vm) {
@@ -171,8 +122,8 @@ void raiseLastOSError(VM vm) {
 }
 
 void raiseSystemError(VM vm, const boost::system::system_error& error) {
-  auto message = systemStrToMozartStr(error.what());
-  raise(vm, MOZART_STR("system"), error.code().value(), message.get());
+  auto message = systemStrToAtom(vm, error.what());
+  raise(vm, MOZART_STR("system"), error.code().value(), message);
 }
 
 } }

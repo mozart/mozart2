@@ -57,21 +57,6 @@ int Atom::compare(VM vm, RichNode right) {
   return value().compare(rightAtomValue);
 }
 
-void Atom::toString(VM vm, std::basic_ostream<nchar>& sink) {
-  atom_t a = value();
-  if (a != vm->coreatoms.nil && a != vm->coreatoms.sharp) {
-    sink.write(a.contents(), a.length());
-  }
-}
-
-nativeint Atom::vsLength(VM vm) {
-  atom_t a = value();
-  if (a == vm->coreatoms.nil || a == vm->coreatoms.sharp)
-    return 0;
-  else
-    return codePointCount(makeLString(a.contents(), a.length()));
-}
-
 void Atom::printReprToStream(VM vm, std::ostream& out, int depth) {
   atom_t a = value();
   out << '\'' << toUTF<char>(makeLString(a.contents(), a.length())) << '\'';

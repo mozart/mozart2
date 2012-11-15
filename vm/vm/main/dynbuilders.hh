@@ -51,7 +51,6 @@ namespace internal {
   }
 }
 
-inline
 UnstableNode makeTuple(VM vm, RichNode label, size_t width) {
   requireLiteral(vm, label);
 
@@ -61,13 +60,19 @@ UnstableNode makeTuple(VM vm, RichNode label, size_t width) {
     return buildCons(vm, OptVar::build(vm), OptVar::build(vm));
   } else {
     auto result = Tuple::build(vm, width, label);
-    auto tuple = RichNode(result).as<Tuple>();
+    auto elements = RichNode(result).as<Tuple>().getElementsArray();
 
     for (size_t i = 0; i < width; i++)
-      tuple.getElement(i)->init(vm, OptVar::build(vm));
+      elements[i].init(vm, OptVar::build(vm));
 
     return result;
   }
+}
+
+template <typename Label>
+UnstableNode makeTuple(VM vm, Label&& label, size_t width) {
+  UnstableNode label0 = build(vm, std::forward<Label>(label));
+  return makeTuple(vm, RichNode(label0), width);
 }
 
 template <class T>

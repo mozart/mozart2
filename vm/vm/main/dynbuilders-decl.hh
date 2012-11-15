@@ -45,6 +45,10 @@ void requireLiteral(VM vm, RichNode label);
 inline
 UnstableNode makeTuple(VM vm, RichNode label, size_t width);
 
+template <typename Label>
+inline
+UnstableNode makeTuple(VM vm, Label&& label, size_t width);
+
 template <class T>
 inline
 UnstableNode buildTupleDynamic(VM vm, RichNode label, size_t width,

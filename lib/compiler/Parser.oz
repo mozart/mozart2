@@ -243,9 +243,9 @@ define
                    opt("~")
                    alt(
                       nzDigit|star(digit)
-                      plus(octDigit)
                       &0|alt(&x &X)|plus(hexDigit)
                       &0|alt(&b &B)|plus(binDigit)
+                      plus(octDigit)
                       )
                    pos] #fun{$ [P1 S L P2]} fInt({String.toInt {Append S L}} {MkPos P1 P2}) end
       pp_float: [pos
@@ -334,12 +334,12 @@ define
                                                                                  CtxOut=CtxIn
                                                                               end
                                                                            end
-                      
+
                       ['pp_\\ifdef'  pp_whiteSpace defined whiteToEOL]#{Nest true}
                       ['pp_\\ifndef' pp_whiteSpace undefined whiteToEOL]#{Nest true}
                       ['pp_\\ifdef'  pp_whiteSpace undefined whiteToEOL ignore 'pp_\\else' whiteToEOL]#{Nest false}
                       ['pp_\\ifndef' pp_whiteSpace defined   whiteToEOL ignore 'pp_\\else' whiteToEOL]#{Nest false}
-                      
+
                       ['pp_\\ifdef'  pp_whiteSpace undefined whiteToEOL ignore 'pp_\\endif' whiteToEOL]
                       ['pp_\\ifndef' pp_whiteSpace defined   whiteToEOL ignore 'pp_\\endif' whiteToEOL]
                       [ nestedCondE  'pp_\\else'   whiteToEOL ignore 'pp_\\endif' whiteToEOL]#Unnest
@@ -571,7 +571,7 @@ define
                                                                                      end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
-                  [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end                  
+                  [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end
                   dollar
                   underscore
                   string

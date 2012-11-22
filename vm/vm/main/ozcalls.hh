@@ -87,6 +87,20 @@ struct InitOneArg<OutputParam<T>, true> {
   }
 };
 
+template <typename T>
+struct InitOneArg<nullable<T&>, true> {
+  static void call(VM vm, UnstableNode& dest, nullable<T&> param) {
+    if (param.isNull())
+      dest = buildTuple(vm, MOZART_STR("none"));
+    else
+      dest = buildTuple(vm, MOZART_STR("some"), OptVar::build(vm));
+  }
+};
+
+template <typename T>
+struct InitOneArg<nullable<T&>&, true>: public InitOneArg<nullable<T&>, true> {
+};
+
 template <size_t i, bool synchronous>
 inline
 void initNodesFromVariadicArgs(VM vm, UnstableNode nodes[]) {
@@ -175,6 +189,40 @@ struct OutputProcessing<inputIdx, outputIdx, OutputParam<T>, Tail...> {
     head.value = getArgument<T>(vm, outputs[outputIdx]);
     Next::processOutputArguments(vm, outputs, std::forward<Tail>(tail)...);
   }
+};
+
+/** Optional output parameter specialization */
+template <size_t inputIdx, size_t outputIdx, typename T, typename... Tail>
+struct OutputProcessing<inputIdx, outputIdx, nullable<T&>, Tail...> {
+  typedef OutputProcessing<inputIdx+1, outputIdx+1, Tail...> Next;
+
+  static constexpr size_t outArgc() {
+    return Next::outArgc();
+  }
+
+  static void initOutputArguments(VM vm, StaticArray<StableNode> outputs,
+                                  UnstableNode inputs[]) {
+    outputs[outputIdx].init(vm, inputs[inputIdx]);
+    Next::initOutputArguments(vm, outputs, inputs);
+  }
+
+  static void processOutputArguments(VM vm, StaticArray<StableNode> outputs,
+                                     nullable<T&> head, Tail&&... tail) {
+    using namespace patternmatching;
+
+    if (!head.isNull()) {
+      RichNode value;
+      matchesTuple(vm, outputs[outputIdx], MOZART_STR("some"), capture(value));
+      head.get() = getArgument<T>(vm, value);
+    }
+
+    Next::processOutputArguments(vm, outputs, std::forward<Tail>(tail)...);
+  }
+};
+
+template <size_t inputIdx, size_t outputIdx, typename T, typename... Tail>
+struct OutputProcessing<inputIdx, outputIdx, nullable<T&>&, Tail...>
+  : public OutputProcessing<inputIdx, outputIdx, nullable<T&>, Tail...> {
 };
 
 } // namespace internal

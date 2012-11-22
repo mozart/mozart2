@@ -357,8 +357,7 @@ class BaseDottable;
 template<>
 struct Interface<BaseDottable>:
   ImplementedBy<Tuple, Record, Object, Chunk, Cons, Array, Dictionary,
-    Atom, OptName, GlobalName, Boolean, Unit>,
-  NoAutoReflectiveCalls {
+    Atom, OptName, GlobalName, Boolean, Unit> {
 
   bool lookupFeature(RichNode self, VM vm, RichNode feature,
                      nullable<UnstableNode&> value) {

@@ -262,6 +262,24 @@ struct OzValueToPrimitiveValue<mozart::internal::intIfDifferentFromNativeInt> {
 };
 
 template <>
+struct OzValueToPrimitiveValue<size_t> {
+  static bool call(VM vm, RichNode value, size_t& primitive) {
+    if (value.is<SmallInt>()) {
+      nativeint intValue = value.as<SmallInt>().value();
+
+      if (intValue >= 0) {
+        primitive = (size_t) intValue;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+};
+
+template <>
 struct OzValueToPrimitiveValue<char> {
   static bool call(VM vm, RichNode value, char& primitive) {
     if (value.is<SmallInt>()) {

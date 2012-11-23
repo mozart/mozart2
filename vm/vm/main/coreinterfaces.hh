@@ -35,6 +35,10 @@ namespace mozart {
 
 #ifndef MOZART_GENERATOR
 
+/////////////////////
+// Generated stuff //
+/////////////////////
+
 #include "DataflowVariable-interf.hh"
 #include "BindableReadOnly-interf.hh"
 #include "ValueEquatable-interf.hh"
@@ -65,6 +69,63 @@ namespace mozart {
 #include "ChunkLike-interf.hh"
 #include "StringLike-interf.hh"
 #include "VirtualString-interf.hh"
+
+//////////////
+// Callable //
+//////////////
+
+bool Interface<Callable>::isCallable(RichNode self, VM vm) {
+  if (self.is<ReflectiveEntity>()) {
+    bool result;
+    if (self.as<ReflectiveEntity>().reflectiveCall(
+          vm, MOZART_STR("$intf$::Callable::isCallable"),
+          MOZART_STR("isCallable"), ozcalls::out(result)))
+      return result;
+  }
+
+  return false;
+}
+
+bool Interface<Callable>::isProcedure(RichNode self, VM vm) {
+  if (self.is<ReflectiveEntity>()) {
+    bool result;
+    if (self.as<ReflectiveEntity>().reflectiveCall(
+          vm, MOZART_STR("$intf$::Callable::isProcedure"),
+          MOZART_STR("isProcedure"), ozcalls::out(result)))
+      return result;
+  }
+
+  return false;
+}
+
+size_t Interface<Callable>::procedureArity(RichNode self, VM vm) {
+  if (self.is<ReflectiveEntity>()) {
+    size_t result;
+    if (self.as<ReflectiveEntity>().reflectiveCall(
+          vm, MOZART_STR("$intf$::Callable::procedureArity"),
+          MOZART_STR("procedureArity"), ozcalls::out(result)))
+      return result;
+  }
+
+  raiseTypeError(vm, MOZART_STR("Procedure"), self);
+}
+
+void Interface<Callable>::getCallInfo(
+  RichNode self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
+  StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
+
+  raiseTypeError(vm, MOZART_STR("Callable"), self);
+}
+
+void Interface<Callable>::getDebugInfo(RichNode self, VM vm,
+                                       atom_t& printName,
+                                       UnstableNode& debugData) {
+  raiseTypeError(vm, MOZART_STR("Callable"), self);
+}
+
+//////////////
+// Dottable //
+//////////////
 
 struct Dottable: public BaseDottable {
   // Not supported by compilers yet

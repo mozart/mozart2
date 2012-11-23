@@ -213,7 +213,7 @@ void Thread::constructor(VM vm, RichNode abstraction,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable(abstraction).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
+  doGetCallInfo(vm, abstraction, arity, start, Xcount, Gs, Ks);
 
   if (argc != arity)
     raise(vm, MOZART_STR("illegalArity"), arity, argc);
@@ -1169,7 +1169,7 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
 
-  Callable(target).getCallInfo(vm, formalArity, start, Xcount, Gs, Ks);
+  doGetCallInfo(vm, target, formalArity, start, Xcount, Gs, Ks);
 
   if (actualArity != formalArity) {
     auto actualArgs = vm->newStaticArray<RichNode>(actualArity);
@@ -1219,6 +1219,7 @@ void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
                      bool& preempted) {
   // "Just make it work" implementation that always delegates to call()
 
+  derefReflectiveTarget(vm, target);
   if (target.isTransient())
     waitFor(vm, target);
 
@@ -1252,6 +1253,27 @@ void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
   call(target, 1, isTailCall,
        vm, abstraction, PC, yregCount,
        xregs, yregs, gregs, kregs, preempted, 3);
+}
+
+void Thread::doGetCallInfo(VM vm, RichNode& target, size_t& arity,
+                           ProgramCounter& start, size_t& Xcount,
+                           StaticArray<StableNode>& Gs,
+                           StaticArray<StableNode>& Ks) {
+  derefReflectiveTarget(vm, target);
+  Callable(target).getCallInfo(vm, arity, start, Xcount, Gs, Ks);
+}
+
+void Thread::derefReflectiveTarget(VM vm, RichNode& target) {
+  while (target.is<ReflectiveEntity>()) {
+    RichNode delegate;
+    if (target.as<ReflectiveEntity>().reflectiveCall(
+          vm, MOZART_STR("mozart::Thread::doGetCallInfo"),
+          MOZART_STR("getCallDelegate"), ozcalls::out(delegate))) {
+      target = delegate;
+    } else {
+      break;
+    }
+  }
 }
 
 void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
@@ -1363,6 +1385,7 @@ void Thread::applyRaise(VM vm, RichNode exception,
   } else {
     RichNode handler = *vm->getPropertyRegistry().getDefaultExceptionHandler();
 
+    // TODO Figure something better here that can cope with Mozart exceptions
     if (!handler.isTransient() && Callable(handler).isProcedure(vm) &&
         (Callable(handler).procedureArity(vm) == 1)) {
       bool dummyPreempted = false;

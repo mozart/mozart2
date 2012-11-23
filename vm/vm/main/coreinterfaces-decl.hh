@@ -211,29 +211,24 @@ struct Interface<Callable>:
   ImplementedBy<Abstraction, Object, BuiltinProcedure>,
   NoAutoReflectiveCalls {
 
-  bool isCallable(RichNode self, VM vm) {
-    return false;
-  }
+  inline
+  bool isCallable(RichNode self, VM vm);
 
-  bool isProcedure(RichNode self, VM vm) {
-    return false;
-  }
+  inline
+  bool isProcedure(RichNode self, VM vm);
 
-  size_t procedureArity(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Abstraction"), self);
-  }
+  inline
+  size_t procedureArity(RichNode self, VM vm);
 
+  inline
   void getCallInfo(RichNode self, VM vm, size_t& arity,
                    ProgramCounter& start, size_t& Xcount,
                    StaticArray<StableNode>& Gs,
-                   StaticArray<StableNode>& Ks) {
-    raiseTypeError(vm, MOZART_STR("Abstraction"), self);
-  }
+                   StaticArray<StableNode>& Ks);
 
+  inline
   void getDebugInfo(RichNode self, VM vm,
-                    atom_t& printName, UnstableNode& debugData) {
-    raiseTypeError(vm, MOZART_STR("Abstraction"), self);
-  }
+                    atom_t& printName, UnstableNode& debugData);
 };
 
 class CodeAreaProvider;

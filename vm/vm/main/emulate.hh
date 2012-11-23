@@ -267,6 +267,15 @@ private:
                StaticArray<StableNode>& kregs,
                bool& preempted);
 
+  inline
+  void doGetCallInfo(VM vm, RichNode& target, size_t& arity,
+                     ProgramCounter& start, size_t& Xcount,
+                     StaticArray<StableNode>& Gs,
+                     StaticArray<StableNode>& Ks);
+
+  inline
+  void derefReflectiveTarget(VM vm, RichNode& target);
+
   void patternMatch(VM vm, RichNode value, RichNode patterns,
                     StableNode*& abstraction,
                     ProgramCounter& PC, size_t& yregCount,

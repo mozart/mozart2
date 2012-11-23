@@ -322,6 +322,18 @@ bool syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
   }
 }
 
+template <size_t count, size_t i = 0, typename F>
+inline
+auto static_for(const F& f) -> typename std::enable_if<i != count, void>::type {
+  f(i);
+  static_for<count, i+1, F>(f);
+}
+
+template <size_t count, size_t i = 0, typename F>
+inline
+auto static_for(const F& f) -> typename std::enable_if<i == count, void>::type {
+}
+
 }
 
 template <typename... Args>
@@ -333,8 +345,11 @@ void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
       constexpr size_t argc = sizeof...(Args);
 
       RichNode arguments[argc];
-      for (size_t i = 0; i < argc; i++)
-        arguments[i] = unstableArgs[i];
+      internal::static_for<argc>(
+        [&] (size_t i) {
+          arguments[i] = unstableArgs[i];
+        }
+      );
 
       Thread* thr = new (vm) Thread(vm, vm->getCurrentSpace(),
                                     callable, argc, arguments);
@@ -367,8 +382,11 @@ bool doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
 
       auto message = Tuple::build(vm, argc, std::forward<Label>(label));
       auto messageElements = RichNode(message).as<Tuple>().getElementsArray();
-      for (size_t i = 0; i < argc; i++)
-        messageElements[i].init(vm, unstableArgs[i]);
+      internal::static_for<argc>(
+        [&] (size_t i) {
+          messageElements[i].init(vm, unstableArgs[i]);
+        }
+      );
 
       // Create the termination variable
 

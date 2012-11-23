@@ -635,15 +635,18 @@ void Thread::run() {
         }
 
         case OpCondBranch: {
-          int distance;
+          using namespace patternmatching;
 
-          switch (BooleanValue(XPC(1)).valueOrNotBool(vm)) {
-            case bFalse: distance = IntPC(2); break;
-            case bTrue:  distance = IntPC(3); break;
-            default:     distance = IntPC(4);
+          bool test;
+          if (matches(vm, XPC(1), capture(test))) {
+            if (test)
+              advancePC(4 + IntPC(3));
+            else
+              advancePC(4 + IntPC(2));
+          } else {
+            advancePC(4 + IntPC(4));
           }
 
-          advancePC(4 + distance);
           break;
         }
 
@@ -1059,7 +1062,7 @@ void Thread::run() {
         // Inlines for some builtins
 
         case OpInlineEqualsInteger: {
-          if (IntegerValue(XPC(1)).equalsInteger(vm, IntPC(2)))
+          if (patternmatching::matches(vm, XPC(1), (nativeint) IntPC(2)))
             advancePC(3);
           else
             advancePC(3 + IntPC(3));

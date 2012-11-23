@@ -52,16 +52,16 @@ int Float::compare(VM vm, RichNode right) {
   return (value() < rightFloatValue) ? -1 : (value() > rightFloatValue) ? 1 : 0;
 }
 
-bool Float::equalsFloat(VM vm, double right) {
-  return value() == right;
-}
-
 UnstableNode Float::opposite(VM vm) {
   return Float::build(vm, -value());
 }
 
 UnstableNode Float::add(VM vm, RichNode right) {
   return addValue(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::add(RichNode self, VM vm, nativeint right) {
+  return Interface<Numeric>().add(self, vm, right);
 }
 
 UnstableNode Float::addValue(VM vm, double b) {

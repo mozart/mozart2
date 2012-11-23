@@ -173,9 +173,7 @@ TEST_F(StringTest, StrChr) {
 
   StringLike(b).stringSearch(vm, four, char2, begin, end);
   for (auto node : {&begin, &end}) {
-    if (EXPECT_IS<Boolean>(*node)) {
-      EXPECT_FALSE(BooleanValue(*node).boolValue(vm));
-    }
+    EXPECT_TRUE(patternmatching::matches(vm, *node, false));
   }
 
   EXPECT_RAISE(MOZART_STR("unicodeError"),

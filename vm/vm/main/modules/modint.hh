@@ -73,7 +73,7 @@ public:
     Plus1(): Builtin("+1") {}
 
     void operator()(VM vm, In operand, Out result) {
-      result = IntegerValue(operand).addValue(vm, 1);
+      result = Numeric(operand).add(vm, 1);
     }
   };
 
@@ -82,7 +82,7 @@ public:
     Minus1(): Builtin("-1") {}
 
     void operator()(VM vm, In operand, Out result) {
-      result = IntegerValue(operand).addValue(vm, -1);
+      result = Numeric(operand).add(vm, -1);
     }
   };
 };

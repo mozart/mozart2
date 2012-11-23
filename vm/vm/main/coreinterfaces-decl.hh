@@ -277,6 +277,10 @@ struct Interface<Numeric>:
     raiseTypeError(vm, MOZART_STR("Numeric"), self);
   }
 
+  UnstableNode add(RichNode self, VM vm, nativeint right) {
+    raiseTypeError(vm, MOZART_STR("Integer"), self);
+  }
+
   UnstableNode subtract(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, MOZART_STR("Numeric"), self);
   }
@@ -286,65 +290,15 @@ struct Interface<Numeric>:
   }
 
   UnstableNode divide(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+    raiseTypeError(vm, MOZART_STR("Float"), self);
   }
 
   UnstableNode div(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+    raiseTypeError(vm, MOZART_STR("Integer"), self);
   }
 
   UnstableNode mod(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
-  }
-};
-
-class IntegerValue;
-template<>
-struct Interface<IntegerValue>:
-  ImplementedBy<SmallInt>, NoAutoReflectiveCalls {
-
-  nativeint intValue(RichNode self, VM vm) {
     raiseTypeError(vm, MOZART_STR("Integer"), self);
-  }
-
-  bool equalsInteger(RichNode self, VM vm, nativeint right) {
-    return false;
-  }
-
-  UnstableNode addValue(RichNode self, VM vm, nativeint b) {
-    raiseTypeError(vm, MOZART_STR("Integer"), self);
-  }
-};
-
-class FloatValue;
-template<>
-struct Interface<FloatValue>:
-  ImplementedBy<Float>, NoAutoReflectiveCalls {
-
-  double floatValue(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Float"), self);
-  }
-
-  bool equalsFloat(RichNode self, VM vm, double right) {
-    return false;
-  }
-
-  UnstableNode addValue(RichNode self, VM vm, double b) {
-    raiseTypeError(vm, MOZART_STR("Float"), self);
-  }
-};
-
-class BooleanValue;
-template<>
-struct Interface<BooleanValue>:
-  ImplementedBy<Boolean>, NoAutoReflectiveCalls {
-
-  bool boolValue(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Boolean"), self);
-  }
-
-  BoolOrNotBool valueOrNotBool(RichNode self, VM vm) {
-    return bNotBool;
   }
 };
 

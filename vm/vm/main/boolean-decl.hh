@@ -31,10 +31,6 @@
 
 namespace mozart {
 
-typedef enum BOOL_OR_NOT_BOOL {
-  bFalse, bTrue, bNotBool
-} BoolOrNotBool;
-
 #ifndef MOZART_GENERATOR
 #include "Boolean-implem-decl.hh"
 #endif
@@ -65,17 +61,6 @@ public:
 
   inline
   int compareFeatures(VM vm, RichNode right);
-
-public:
-  // BooleanValue interface
-
-  bool boolValue(VM vm) {
-    return value();
-  }
-
-  BoolOrNotBool valueOrNotBool(VM vm) {
-    return value() ? bTrue : bFalse;
-  }
 
 public:
   // VirtualString inteface

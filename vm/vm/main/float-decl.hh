@@ -61,16 +61,6 @@ public:
   int compare(VM vm, RichNode right);
 
 public:
-  // FloatValue inteface
-
-  double floatValue(VM vm) {
-    return value();
-  }
-
-  inline
-  bool equalsFloat(VM vm, double right);
-
-public:
   // Numeric inteface
 
   bool isNumber(VM vm) {
@@ -90,6 +80,9 @@ public:
 
   inline
   UnstableNode add(VM vm, RichNode right);
+
+  inline
+  UnstableNode add(RichNode self, VM vm, nativeint right);
 
   inline
   UnstableNode addValue(VM vm, double b);

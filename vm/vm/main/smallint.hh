@@ -66,12 +66,6 @@ int SmallInt::compare(VM vm, RichNode right) {
   return (value() == rightIntValue) ? 0 : (value() < rightIntValue) ? -1 : 1;
 }
 
-// IntegerValue ----------------------------------------------------------------
-
-bool SmallInt::equalsInteger(VM vm, nativeint right) {
-  return value() == right;
-}
-
 // Numeric ---------------------------------------------------------------------
 
 UnstableNode SmallInt::opposite(VM vm) {
@@ -86,10 +80,10 @@ UnstableNode SmallInt::opposite(VM vm) {
 }
 
 UnstableNode SmallInt::add(VM vm, RichNode right) {
-  return addValue(vm, getArgument<nativeint>(vm, right));
+  return add(vm, getArgument<nativeint>(vm, right));
 }
 
-UnstableNode SmallInt::addValue(VM vm, nativeint b) {
+UnstableNode SmallInt::add(VM vm, nativeint b) {
   nativeint a = value();
   nativeint c = a + b;
 

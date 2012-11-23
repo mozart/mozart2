@@ -67,16 +67,6 @@ public:
   int compare(VM vm, RichNode right);
 
 public:
-  // IntegerValue inteface
-
-  nativeint intValue(VM vm) {
-    return value();
-  }
-
-  inline
-  bool equalsInteger(VM vm, nativeint right);
-
-public:
   // Numeric inteface
 
   bool isNumber(VM vm) {
@@ -98,7 +88,7 @@ public:
   UnstableNode add(VM vm, RichNode right);
 
   inline
-  UnstableNode addValue(VM vm, nativeint b);
+  UnstableNode add(VM vm, nativeint b);
 
   inline
   UnstableNode subtract(VM vm, RichNode right);

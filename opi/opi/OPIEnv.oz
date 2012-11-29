@@ -28,7 +28,7 @@
 functor
 import
    Module(manager)
-   Compiler(engine) at 'Main.ozf'
+   Compiler(engine)
 export
    base: BaseEnv
    system: SystemEnv

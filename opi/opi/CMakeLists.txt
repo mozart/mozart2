@@ -1,12 +1,6 @@
-cmake_minimum_required(VERSION 2.8.6)
-project(testmozart)
-
-
 # Configure paths
-set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mozart2"
-    CACHE PATH "Path to Mozart2 source directory")
-set(MOZART_BUILD_DIR "${MOZART_DIR}/build"
-    CACHE PATH "Path to Mozart2 build directory")
+set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/../..")
 
 set(MOZART_LIB_DIR "${MOZART_DIR}/lib/main")
 set(MOZART_COMPILER_DIR "${MOZART_DIR}/lib/compiler")
@@ -40,18 +34,9 @@ endif()
 
 # Mozart VM library
 
-add_library(mozartvm STATIC IMPORTED)
-set_property(TARGET mozartvm PROPERTY
-             IMPORTED_LOCATION "${MOZART_BUILD_DIR}/vm/vm/main/libmozartvm.a")
-
 include_directories("${MOZART_DIR}/vm/vm/main" "${MOZART_BUILD_DIR}/vm/vm/main")
 
 # Mozart VM Boost library
-
-add_library(mozartvmboost STATIC IMPORTED)
-set_property(TARGET mozartvmboost PROPERTY
-             IMPORTED_LOCATION
-             "${MOZART_BUILD_DIR}/vm/boostenv/main/libmozartvmboost.a")
 
 include_directories("${MOZART_DIR}/vm/boostenv/main"
     "${MOZART_BUILD_DIR}/vm/boostenv/main")
@@ -77,7 +62,7 @@ add_custom_command(
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
     ${BOOTCOMPILER_DEFINES}
     ${BASE_FUNCTORS}
-  DEPENDS ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
+  DEPENDS bootcompiler ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
   COMMENT "base environment"
   VERBATIM)
 
@@ -96,7 +81,7 @@ file(GLOB SYS_FUNCTORS
 
 set(COMPILER_FUNCTORS
     "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
-    "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Main.oz" "Core.oz"
+    "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Compiler.oz" "Core.oz"
     "ForLoop.oz" "GroundZip.oz" "Macro.oz" "PrintName.oz" "RunTime.oz"
     "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz"
     "NewAssembler.oz" "Parser.oz" "PEG.oz")
@@ -106,7 +91,6 @@ foreach(FUNCTOR ${COMPILER_FUNCTORS})
 endforeach()
 
 set(ALL_FUNCTORS
-    #"${CMAKE_CURRENT_SOURCE_DIR}/MainTest.oz" # MainTest.oz must be first
     "${CMAKE_CURRENT_SOURCE_DIR}/OPI.oz"
     "${CMAKE_CURRENT_SOURCE_DIR}/Emacs.oz"
     "${CMAKE_CURRENT_SOURCE_DIR}/OPIServer.oz"
@@ -157,9 +141,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
-add_executable(testmozart ${ALL_CCFILES})
-target_link_libraries(testmozart mozartvmboost mozartvm ${Boost_LIBRARIES})
+add_executable(ozengine ${ALL_CCFILES})
+target_link_libraries(ozengine mozartvmboost mozartvm ${Boost_LIBRARIES})
 
 if(NOT MINGW)
-  target_link_libraries(testmozart pthread)
+  target_link_libraries(ozengine pthread)
 endif()

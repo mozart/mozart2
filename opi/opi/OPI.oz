@@ -33,7 +33,7 @@ import
    Property(get put)
    OS(getEnv)
    Open(file)
-   Compiler(engine) at 'Main.ozf'
+   Compiler(engine)
    Emacs(interface)
    OPIEnv(full)
 export

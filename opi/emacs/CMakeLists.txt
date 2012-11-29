@@ -37,6 +37,10 @@ else()
       VERBATIM)
   endforeach()
 
-  install(FILES ${ALL_ELC_FILES} DESTINATION bin)
   add_custom_target(emacs_mode ALL DEPENDS ${ALL_ELC_FILES} VERBATIM)
+
+  # Install
+
+  install(FILES ${ALL_ELC_FILES} DESTINATION share/mozart/elisp)
+  install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/oz" DESTINATION bin)
 endif()

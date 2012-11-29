@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
 
 # Boost library
 
-set(MOZART_BOOST_USE_STATIC_LIBS OFF
+set(MOZART_BOOST_USE_STATIC_LIBS ON
     CACHE BOOL "Use the static libraries of Boost")
 
 if(${MOZART_BOOST_USE_STATIC_LIBS})
@@ -147,3 +147,7 @@ target_link_libraries(ozengine mozartvmboost mozartvm ${Boost_LIBRARIES})
 if(NOT MINGW)
   target_link_libraries(ozengine pthread)
 endif()
+
+# Install
+install(TARGETS ozengine
+  DESTINATION bin)

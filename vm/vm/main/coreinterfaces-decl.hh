@@ -255,7 +255,7 @@ struct Interface<CodeAreaProvider>:
 class Numeric;
 template<>
 struct Interface<Numeric>:
-  ImplementedBy<SmallInt, Float>, NoAutoReflectiveCalls {
+  ImplementedBy<SmallInt, Float> {
 
   bool isNumber(RichNode self, VM vm) {
     return false;

@@ -3,3 +3,4 @@ project(MOZART NONE)
 
 add_subdirectory(vm)
 add_subdirectory(bootcompiler)
+add_subdirectory(opi)

@@ -10,3 +10,6 @@
 [submodule "lib/compiler"]
 	path = lib/compiler
 	url = git://github.com/mozart/mozart2-compiler.git
+[submodule "opi"]
+	path = opi
+	url = git://github.com/mozart/mozart2-opi.git

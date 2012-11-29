@@ -1,0 +1,8 @@
+#!/bin/bash
+
+MOZART_BUNDLE="`echo "$0" | sed -e 's/\/Contents\/MacOS\/Mozart2//'`"
+OZHOME="$MOZART_BUNDLE/Contents/Resources/"
+
+export OZHOME
+
+/Applications/Aquamacs.app/Contents/MacOS/Aquamacs --eval '(setq load-path (cons "'$OZHOME'/share/mozart/elisp" load-path))' -l oz.elc -f run-oz $2 &

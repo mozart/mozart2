@@ -26,30 +26,31 @@
 functor
 
 require
-   Boot_Value           at 'x-oz://boot/Value'
-   Boot_Literal         at 'x-oz://boot/Literal'
-   Boot_Cell            at 'x-oz://boot/Cell'
-   Boot_Port            at 'x-oz://boot/Port'
-   Boot_Atom            at 'x-oz://boot/Atom'
-   Boot_Name            at 'x-oz://boot/Name'
-   Boot_String          at 'x-oz://boot/String'
-   Boot_Int             at 'x-oz://boot/Int'
-   Boot_Float           at 'x-oz://boot/Float'
-   Boot_Number          at 'x-oz://boot/Number'
-   Boot_Tuple           at 'x-oz://boot/Tuple'
-   Boot_Procedure       at 'x-oz://boot/Procedure'
-   Boot_Dictionary      at 'x-oz://boot/Dictionary'
-   Boot_Record          at 'x-oz://boot/Record'
-   Boot_Chunk           at 'x-oz://boot/Chunk'
-   Boot_VirtualString   at 'x-oz://boot/VirtualString'
-   Boot_Array           at 'x-oz://boot/Array'
-   Boot_Object          at 'x-oz://boot/Object'
-   Boot_Thread          at 'x-oz://boot/Thread'
-   Boot_Exception       at 'x-oz://boot/Exception'
-   Boot_Time            at 'x-oz://boot/Time'
-   Boot_ForeignPointer  at 'x-oz://boot/ForeignPointer'
-   Boot_ByteString      at 'x-oz://boot/ByteString'
-   Boot_System          at 'x-oz://boot/System'
+   Boot_Value              at 'x-oz://boot/Value'
+   Boot_Literal            at 'x-oz://boot/Literal'
+   Boot_Cell               at 'x-oz://boot/Cell'
+   Boot_Port               at 'x-oz://boot/Port'
+   Boot_Atom               at 'x-oz://boot/Atom'
+   Boot_Name               at 'x-oz://boot/Name'
+   Boot_Int                at 'x-oz://boot/Int'
+   Boot_Float              at 'x-oz://boot/Float'
+   Boot_Number             at 'x-oz://boot/Number'
+   Boot_Tuple              at 'x-oz://boot/Tuple'
+   Boot_Procedure          at 'x-oz://boot/Procedure'
+   Boot_Dictionary         at 'x-oz://boot/Dictionary'
+   Boot_Record             at 'x-oz://boot/Record'
+   Boot_Chunk              at 'x-oz://boot/Chunk'
+   Boot_VirtualString      at 'x-oz://boot/VirtualString'
+   Boot_VirtualByteString  at 'x-oz://boot/VirtualByteString'
+   Boot_Coders             at 'x-oz://boot/Coders'
+   Boot_Array              at 'x-oz://boot/Array'
+   Boot_Object             at 'x-oz://boot/Object'
+   Boot_Thread             at 'x-oz://boot/Thread'
+   Boot_Exception          at 'x-oz://boot/Exception'
+   Boot_Time               at 'x-oz://boot/Time'
+   Boot_ForeignPointer     at 'x-oz://boot/ForeignPointer'
+   Boot_CompactString      at 'x-oz://boot/CompactString'
+   Boot_System             at 'x-oz://boot/System'
 
 prepare
 
@@ -136,7 +137,7 @@ prepare
    %% Atom
    %%
    IsAtom              = Boot_Atom.is
-   AtomToUnicodeString % Defined in Atom.oz
+   AtomToCompactString % Defined in Atom.oz
    AtomToString        % Defined in Atom.oz
 
    %%
@@ -155,14 +156,6 @@ prepare
    Or     = fun {$ X Y} X orelse Y end
 
    %%
-   %% UnicodeString
-   %%
-   IsUnicodeString      = Boot_String.is
-   UnicodeStringToAtom  = Boot_String.toAtom
-   UnicodeStringToInt   = fun {$ S} {StringToInt {UnicodeString.toString S}} end
-   UnicodeStringToFloat = Boot_VirtualString.toFloat
-
-   %%
    %% String
    %%
    IsString      % Defined in String.oz
@@ -173,14 +166,14 @@ prepare
    %%
    %% Char
    %%
-   IsChar = fun {$ X} {IsInt X} andthen X >= 0 andthen X < 256 end
+   IsChar % Defined in Char.oz
 
    %%
    %% Int
    %%
    IsInt              = Boot_Int.is
-   %IntToFloat         = Boot_Int.toFloat
-   IntToUnicodeString % Defined in Int.oz
+   IntToFloat         % Defined in Int.oz
+   IntToCompactString % Defined in Int.oz
    IntToString        % Defined in Int.oz
 
    %%
@@ -201,7 +194,7 @@ prepare
    Atan2                = Boot_Float.atan2
    Round                = Boot_Float.round
    FloatToInt           = Boot_Float.toInt*/
-   FloatToUnicodeString % Defined in Float.oz
+   FloatToCompactString % Defined in Float.oz
    FloatToString        % Defined in Float.oz
 
    %%
@@ -257,6 +250,11 @@ prepare
    %% VirtualString
    %%
    IsVirtualString = Boot_VirtualString.is
+
+   %%
+   %% VirtualByteString
+   %%
+   IsVirtualByteString = Boot_VirtualByteString.is
 
    %%
    %% Array
@@ -320,10 +318,12 @@ prepare
    Delay = proc {$ T} {Wait {Alarm T}} end
 
    %%
-   %% BitString ByteString
+   %% CompactString BitString ByteString
    %%
-   IsBitString  % Defined in BitString.oz
-   IsByteString = Boot_ByteString.is
+   IsCompactString     = Boot_CompactString.isCompactString
+   IsCompactByteString = Boot_CompactString.isCompactByteString
+   IsBitString         % Defined in BitString.oz
+   IsByteString        = Boot_CompactString.isCompactByteString
 
    \insert 'Exception.oz'
    \insert 'Value.oz'
@@ -335,7 +335,6 @@ prepare
    \insert 'Atom.oz'
    \insert 'Name.oz'
    \insert 'Bool.oz'
-   \insert 'UnicodeString.oz'
    \insert 'String.oz'
    \insert 'Char.oz'
    \insert 'Int.oz'
@@ -350,6 +349,8 @@ prepare
    \insert 'Record.oz'
    \insert 'Chunk.oz'
    \insert 'VirtualString.oz'
+   \insert 'VirtualByteString.oz'
+   \insert 'Coders.oz'
    \insert 'Array.oz'
    \insert 'Object.oz'
    \insert 'BitArray.oz'
@@ -357,6 +358,8 @@ prepare
    \insert 'Thread.oz'
    \insert 'Time.oz'
    \insert 'Functor.oz'
+   \insert 'CompactString.oz'
+   \insert 'CompactByteString.oz'
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
 
@@ -416,12 +419,6 @@ export
    'And'                : And
    'Or'                 : Or
    'Not'                : Not
-   %% UnicodeString
-   'UnicodeString'      : UnicodeString
-   'IsUnicodeString'    : IsUnicodeString
-   'UnicodeStringToAtom': UnicodeStringToAtom
-   'UnicodeStringToInt' : UnicodeStringToInt
-   'UnicodeStringToFloat': UnicodeStringToFloat
    %% String
    'String'             : String
    'IsString'           : IsString
@@ -437,8 +434,7 @@ export
    'IsNat'              : IsNat
    'IsOdd'              : IsOdd
    'IsEven'             : IsEven
-   %'IntToFloat'         : IntToFloat
-   'IntToUnicodeString' : IntToUnicodeString
+   'IntToFloat'         : IntToFloat
    'IntToString'        : IntToString
    %% Float
    'Float'              : Float
@@ -457,7 +453,6 @@ export
    'Atan2'              : Atan2
    'Round'              : Round*/
    %'FloatToInt'         : FloatToInt
-   'FloatToUnicodeString': FloatToUnicodeString
    'FloatToString'      : FloatToString
    %% Number
    'Number'             : Number
@@ -556,10 +551,17 @@ export
    %% ForeignPointer
    'ForeignPointer'     : ForeignPointer
    'IsForeignPointer'   : IsForeignPointer
+   %% CompactString
+   'CompactString'      : CompactString
+   'IsCompactString'    : IsCompactString
+   %% CompactByteString
+   'CompactByteString'  : CompactByteString
+   'IsCompactByteString': IsCompactByteString
    %% BitString
    'BitString'          : BitString
-   'ByteString'         : ByteString
    'IsBitString'        : IsBitString
+   %% ByteString
+   'ByteString'         : ByteString
    'IsByteString'       : IsByteString
 
    %% Reflexive me

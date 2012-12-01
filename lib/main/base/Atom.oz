@@ -27,18 +27,24 @@
 %% Module
 %%
 
-fun {AtomToUnicodeString A}
+fun {AtomToCompactString A}
    if {IsAtom A} then
-      {VirtualString.toUnicodeString A}
+      {VirtualString.toCompactString A}
    else
-      raise typeError('Atom' A) end
+      {Exception.raiseError kernel(type 'Atom.toCompactString' [A] 'Atom' 1)}
+      unit
    end
 end
 
 fun {AtomToString A}
-   {UnicodeString.toString {AtomToUnicodeString A}}
+   if {IsAtom A} then
+      {VirtualString.toString A}
+   else
+      {Exception.raiseError kernel(type 'Atom.toString' [A] 'Atom' 1)}
+      unit
+   end
 end
 
 Atom = atom(is:              IsAtom
-            toUnicodeString: AtomToUnicodeString
+            toCompactString: AtomToCompactString
             toString:        AtomToString)

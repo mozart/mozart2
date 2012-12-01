@@ -26,16 +26,22 @@
 %%
 %% Module
 %%
-fun {FloatToUnicodeString F}
+fun {FloatToCompactString F}
    if {IsFloat F} then
-      {VirtualString.toUnicodeString F}
+      {VirtualString.toCompactString F}
    else
-      raise typeError('Float' F) end
+      {Exception.raiseError kernel(type 'Float.toCompactString' [F] 'Float' 1)}
+      unit
    end
 end
 
 fun {FloatToString F}
-   {UnicodeString.toString {FloatToUnicodeString F}}
+   if {IsFloat F} then
+      {VirtualString.toString F}
+   else
+      {Exception.raiseError kernel(type 'Float.toString' [F] 'Float' 1)}
+      unit
+   end
 end
 
 Float = float(is:              IsFloat
@@ -61,5 +67,5 @@ Float = float(is:              IsFloat
               acosh:           Boot_Float.acosh
               atanh:           Boot_Float.atanh
               toInt:           FloatToInt*/
-              toUnicodeString: FloatToUnicodeString
+              toCompactString: FloatToCompactString
               toString:        FloatToString)

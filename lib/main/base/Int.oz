@@ -34,16 +34,26 @@ fun {IsEven X} X mod 2 == 0 end
 %%
 %% Module
 %%
-fun {IntToUnicodeString I}
+fun {IntToFloat I}
+   {StringToFloat {IntToCompactString I}}
+end
+
+fun {IntToCompactString I}
    if {IsInt I} then
-      {VirtualString.toUnicodeString I}
+      {VirtualString.toCompactString I}
    else
-      raise typeError('Integer' I) end
+      {Exception.raiseError kernel(type 'Int.toCompactString' [I] 'Integer' 1)}
+      unit
    end
 end
 
 fun {IntToString I}
-   {UnicodeString.toString {IntToUnicodeString I}}
+   if {IsInt I} then
+      {VirtualString.toString I}
+   else
+      {Exception.raiseError kernel(type 'Int.toString' [I] 'Integer' 1)}
+      unit
+   end
 end
 
 Int = int(is:              IsInt
@@ -54,6 +64,6 @@ Int = int(is:              IsInt
           'mod':           Boot_Int.'mod'
           '+1':            Boot_Int.'+1'
           '-1':            Boot_Int.'-1'
-          %toFloat:         IntToFloat
-          toUnicodeString: IntToUnicodeString
+          toFloat:         IntToFloat
+          toCompactString: IntToCompactString
           toString:        IntToString)

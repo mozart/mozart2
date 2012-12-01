@@ -37,13 +37,7 @@ fun {IsString Is}
    end
 end
 
-fun {StringToAtom Is}
-   if {IsString Is} then
-      {VirtualString.toAtom Is}
-   else
-      raise typeError('String' Is) end
-   end
-end
+StringToAtom = Boot_VirtualString.toAtom
 
 local
    HexBase = base(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7 &8:8 &9:9
@@ -54,16 +48,16 @@ local
    OctBase = base(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7)
    BinBase = base(&0:0 &1:1)
 
-   fun {RaiseStringNoInt Is}
-      {Exception.raiseError kernel(stringNoInt Is)}
+   fun {RaiseStringNoInt VS}
+      {Exception.raiseError kernel(stringNoInt VS)}
       unit
    end
 
-   fun {StringToIntBase Base BaseRec Is OriginalIs Acc IsFirst}
+   fun {StringToIntBase Base BaseRec Is OriginalVS Acc IsFirst}
       case Is
       of nil then
          if IsFirst then
-            {RaiseStringNoInt OriginalIs}
+            {RaiseStringNoInt OriginalVS}
          else
             Acc
          end
@@ -71,37 +65,37 @@ local
          Value = {CondSelect BaseRec I false}
       in
          if Value == false then
-            {RaiseStringNoInt OriginalIs}
+            {RaiseStringNoInt OriginalVS}
          else
-            {StringToIntBase Base BaseRec Ir OriginalIs Acc*Base+Value false}
+            {StringToIntBase Base BaseRec Ir OriginalVS Acc*Base+Value false}
          end
       else
-         {Exception.raiseError kernel(type 'String.toInt' [OriginalIs]
-                                      'ProperString' 1)}
+         {Exception.raiseError kernel(type 'String.toInt' [OriginalVS]
+                                      'VirtualString' 1)}
          unit
       end
    end
 in
-   fun {StringToInt Is}
-      case Is
+   fun {StringToInt VS}
+      case {VirtualString.toString VS}
       of &~|&~|_ then
-         {RaiseStringNoInt Is}
+         {RaiseStringNoInt VS}
       [] &~|Ir then
          ~{StringToInt Ir}
       [] &0|nil then
          0
       [] &0|&X|Ir then
-         {StringToIntBase 16 HexBase Ir Is 0 true}
+         {StringToIntBase 16 HexBase Ir VS 0 true}
       [] &0|&x|Ir then
-         {StringToIntBase 16 HexBase Ir Is 0 true}
+         {StringToIntBase 16 HexBase Ir VS 0 true}
       [] &0|&B|Ir then
-         {StringToIntBase 2 BinBase Ir Is 0 true}
+         {StringToIntBase 2 BinBase Ir VS 0 true}
       [] &0|&b|Ir then
-         {StringToIntBase 2 BinBase Ir Is 0 true}
+         {StringToIntBase 2 BinBase Ir VS 0 true}
       [] &0|Ir then
-         {StringToIntBase 8 OctBase Ir Is 0 true}
-      else
-         {StringToIntBase 10 DecBase Is Is 0 true}
+         {StringToIntBase 8 OctBase Ir VS 0 true}
+      [] Is then
+         {StringToIntBase 10 DecBase Is VS 0 true}
       end
    end
 end
@@ -111,14 +105,6 @@ fun {StringToFloat Is}
 end
 
 local
-   fun {StringToUnicodeString Is}
-      if {IsString Is} then
-         {VirtualString.toUnicodeString Is}
-      else
-         raise typeError('String' Is) end
-      end
-   end
-
    proc {Token Is J ?T ?R}
       case Is of nil then T=nil R=nil
       [] I|Ir then

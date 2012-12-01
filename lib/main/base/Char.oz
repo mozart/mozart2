@@ -22,6 +22,11 @@
 %%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %%% POSSIBILITY OF SUCH DAMAGE.
 
+fun {IsChar X}
+   {IsInt X} andthen
+   ((X >= 0 andthen X < 0xd800) orelse (X >= 0xe000 andthen X < 0x110000))
+end
+
 Char = char(is:       IsChar
             isAlpha:  fun {$ X} {Char.isUpper X} orelse {Char.isLower X} end
             isUpper:  fun {$ X} X >= &A andthen X =< &Z end
@@ -36,5 +41,7 @@ Char = char(is:       IsChar
             isCntrl:  Boot_Char.isCntrl*/
             toUpper:  fun {$ X} if {Char.isLower X} then X-32 else X end end
             toLower:  fun {$ X} if {Char.isUpper X} then X+32 else X end end
-            toAtom:   fun {$ C} {String.toAtom C|nil} end
+            toAtom:   fun {$ C}
+                         if C == 0 then '' else {String.toAtom C|nil} end
+                      end
             /*type:     Boot_Char.type*/)

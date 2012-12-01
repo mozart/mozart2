@@ -22,38 +22,21 @@
 %% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %% POSSIBILITY OF SUCH DAMAGE.
 
+
 %%
 %% Module
 %%
 
-%% Note that this module is entirely oriented for backward compatibility
-%% It should not be used anymore
+CompactByteString = compactByteString(
+   is: IsCompactByteString
+   toList: VirtualByteString.toList
+   toListWithTail: VirtualByteString.toListWithTail
+   length: VirtualByteString.length
 
-ByteString = byteString(
-   is: IsByteString
-   make: fun {$ VS} {Coders.encode VS [latin1]} end
-
-   get: CompactByteString.byteAt
-   append: CompactByteString.append
-   slice: CompactByteString.slice
-   width: CompactByteString.length
-   length: CompactByteString.length
-
-   toString:
-      fun {$ BS}
-         {VirtualString.toString {Coders.decode BS [latin1]}}
-      end
-   toStringWithTail:
-      fun {$ BS Tail}
-         {VirtualString.toStringWithTail {Coders.decode BS [latin1]} Tail}
-      end
-
-   strchr:
-      fun {$ BS From Chr}
-         if {IsInt Chr} then
-            {CompactByteString.search BS From Chr $ _}
-         else
-            raise typeError('char' Chr) end
-         end
-      end
+   byteAt: Boot_CompactString.charAt
+   append: Boot_CompactString.append
+   slice: Boot_CompactString.slice
+   search: Boot_CompactString.search
+   isPrefix: fun {$ X Y} {Boot_CompactString.hasPrefix Y X} end
+   isSuffix: fun {$ X Y} {Boot_CompactString.hasSuffix Y X} end
 )

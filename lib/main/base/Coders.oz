@@ -26,34 +26,33 @@
 %% Module
 %%
 
-%% Note that this module is entirely oriented for backward compatibility
-%% It should not be used anymore
+local
+   fun {IsVariant Opt}
+      Opt == littleEndian orelse Opt == bigEndian orelse Opt == bom
+   end
 
-ByteString = byteString(
-   is: IsByteString
-   make: fun {$ VS} {Coders.encode VS [latin1]} end
-
-   get: CompactByteString.byteAt
-   append: CompactByteString.append
-   slice: CompactByteString.slice
-   width: CompactByteString.length
-   length: CompactByteString.length
-
-   toString:
-      fun {$ BS}
-         {VirtualString.toString {Coders.decode BS [latin1]}}
-      end
-   toStringWithTail:
-      fun {$ BS Tail}
-         {VirtualString.toStringWithTail {Coders.decode BS [latin1]} Tail}
+   fun {Coder OptList Fun Input}
+      Variants
+      Encoding
+   in
+      case {List.partition OptList IsVariant Variants}
+      of H|_ then
+         Encoding = H
+      [] nil then
+         Encoding = utf8
       end
 
-   strchr:
-      fun {$ BS From Chr}
-         if {IsInt Chr} then
-            {CompactByteString.search BS From Chr $ _}
-         else
-            raise typeError('char' Chr) end
-         end
-      end
-)
+      {Fun Input Encoding Variants}
+   end
+in
+
+   Coders = coders(
+      encode: fun {$ VS OptList}
+                 {Coder OptList Boot_Coders.encode VS}
+              end
+      decode: fun {$ VBS OptList}
+                 {Coder OptList Boot_Coders.decode VBS}
+              end
+   )
+
+end

@@ -152,7 +152,7 @@ struct Interface<Literal>:
 class NameLike;
 template<>
 struct Interface<NameLike>:
-  ImplementedBy<OptName, GlobalName>,
+  ImplementedBy<OptName, GlobalName, Unit, Boolean>,
   NoAutoReflectiveCalls {
 
   bool isName(RichNode self, VM vm) {

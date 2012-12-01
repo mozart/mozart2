@@ -63,6 +63,13 @@ public:
   int compareFeatures(VM vm, RichNode right);
 
 public:
+  // NameLike interface
+
+  bool isName(VM vm) {
+    return true;
+  }
+
+public:
   // Miscellaneous
 
   void printReprToStream(VM vm, std::ostream& out, int depth) {

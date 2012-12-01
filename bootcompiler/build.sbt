@@ -4,7 +4,7 @@ version := "2.0-SNAPSHOT"
 
 scalaVersion := "2.9.1"
 
-scalacOptions += "-deprecation"
+scalacOptions ++= Seq("-deprecation", "-optimize")
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "2.1.0"
 

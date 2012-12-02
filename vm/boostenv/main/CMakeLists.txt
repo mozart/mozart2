@@ -28,10 +28,12 @@ link_directories("${CMAKE_CURRENT_BINARY_DIR}/../../vm/main")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-# Boost data types and interfaces
+# Generate sources
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
+
+  # First pass: generate data types and interfaces
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}" -femit-ast
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
@@ -42,21 +44,8 @@ add_custom_command(
   COMMAND generator intfimpl
     ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
     ${CMAKE_CURRENT_BINARY_DIR}/
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
-  DEPENDS generator gensources
-  IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/boostenv.hh"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMENT Processing data types and interfaces in boostenv.hh
-  VERBATIM)
 
-add_custom_target(genboostsources
-  DEPENDS boostenv.gen
-  VERBATIM)
-
-# Boost builtins
-
-add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.genbi
+  # Second pass: generate builtin information
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}" -femit-ast
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.astbi
@@ -70,19 +59,21 @@ add_custom_command(
     ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.astbi
     ${CMAKE_CURRENT_BINARY_DIR}/
     boostenvbuiltins
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen # hack for dependency management
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.genbi
-  DEPENDS generator gensources genboostsources
+
+  # Tag
+  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
+
+  DEPENDS generator gensources
   IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/boostenvmodules.hh"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMENT Processing builtins in boostenvmodules.hh
+  COMMENT "Generate sources for boostenv"
   VERBATIM)
 
-add_custom_target(genboostbuiltins
-  DEPENDS boostenvmodules.genbi
+add_custom_target(genboostsources
+  DEPENDS boostenv.gen
   VERBATIM)
 
 # Boost environment library
 
 add_library(mozartvmboost boostenv.cc boostenvmodules.cc)
-add_dependencies(mozartvmboost genboostsources genboostbuiltins)
+add_dependencies(mozartvmboost genboostsources)

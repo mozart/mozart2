@@ -7,6 +7,8 @@ endif()
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
+
+  # First pass: generate data types and interfaces
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/mozart.ast
@@ -16,19 +18,8 @@ add_custom_command(
   COMMAND generator intfimpl
     ${CMAKE_CURRENT_BINARY_DIR}/mozart.ast
     ${CMAKE_CURRENT_BINARY_DIR}/
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
-  DEPENDS generator
-  IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/mozart.hh"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMENT Processing mozart.hh
-  VERBATIM)
 
-add_custom_target(gensources
-  DEPENDS mozart.gen
-  VERBATIM)
-
-add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coremodules.genbi
+  # Second pass: generate builtin information
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/coremodules.astbi
@@ -40,19 +31,21 @@ add_custom_command(
     ${CMAKE_CURRENT_BINARY_DIR}/coremodules.astbi
     ${CMAKE_CURRENT_BINARY_DIR}/
     mozartbuiltins
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen # hack for dependency management
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/coremodules.genbi
-  DEPENDS generator gensources
+
+  # Tag
+  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
+
+  DEPENDS generator
   IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/coremodules.hh"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMENT Processing builtins in coremodules.hh
+  COMMENT "Generate sources for mozart"
   VERBATIM)
 
-add_custom_target(genbuiltins
-  DEPENDS coremodules.genbi
+add_custom_target(gensources
+  DEPENDS mozart.gen
   VERBATIM)
 
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
   unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc properties.cc
   coremodules.cc)
-add_dependencies(mozartvm gensources genbuiltins)
+add_dependencies(mozartvm gensources)

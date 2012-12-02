@@ -3751,18 +3751,20 @@ define
                                      Depth
                                      AnalysisWidth.Depth
                                      ?RecConstrValArgs)
-         if {Width Val} =< AnalysisWidth.Depth then
+         % TODO Uncomment the test when we have RecordC
+         /*if {Width Val} =< AnalysisWidth.Depth then*/
             RecVal = {List.toRecord Lab RecConstrValArgs}
-         else
+         /*else
             RecVal = {RecordC.tell Lab}
             {ForAll RecConstrValArgs proc {$ F#A}
                                         {RecordC.'^' RecVal F A}
                                      end}
-         end
+         end*/
          {New RecordConstr init(RecVal unit)}
       end
       meth RecordValToArgs(RecArgs Seen Depth Width ?ConstrValArgs)
-         case RecArgs of (F#X)|RAs andthen Width > 0 then V VO CVAr in
+         % TODO Uncomment the guard when we have RecordC
+         case RecArgs of (F#X)|RAs /*andthen Width > 0*/ then V VO CVAr in
             case {PLDotEQ X Seen} of unit then   % not seen
                V = {New Core.generatedVariable init('RecordArg' unit)}
                {V ValToSubst(Seen Depth - 1 X)}

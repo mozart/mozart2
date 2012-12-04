@@ -65,7 +65,7 @@ Float = float(is:              IsFloat
               tanh:            Boot_Float.tanh
               asinh:           Boot_Float.asinh
               acosh:           Boot_Float.acosh
-              atanh:           Boot_Float.atanh
-              toInt:           FloatToInt*/
+              atanh:           Boot_Float.atanh*/
+              toInt:           FloatToInt
               toCompactString: FloatToCompactString
               toString:        FloatToString)

@@ -192,8 +192,8 @@ prepare
    Acos                 = Boot_Float.acos
    Atan                 = Boot_Float.atan
    Atan2                = Boot_Float.atan2
-   Round                = Boot_Float.round
-   FloatToInt           = Boot_Float.toInt*/
+   Round                = Boot_Float.round*/
+   FloatToInt           = Boot_Float.toInt
    FloatToCompactString % Defined in Float.oz
    FloatToString        % Defined in Float.oz
 
@@ -452,7 +452,7 @@ export
    'Atan'               : Atan
    'Atan2'              : Atan2
    'Round'              : Round*/
-   %'FloatToInt'         : FloatToInt
+   'FloatToInt'         : FloatToInt
    'FloatToString'      : FloatToString
    %% Number
    'Number'             : Number

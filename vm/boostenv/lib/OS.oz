@@ -108,8 +108,7 @@ define
    Tmpnam = Boot_OS.tmpnam
 
    fun {Fopen FileName Mode}
-      {Boot_OS.fopen {VirtualString.toString FileName}
-       {VirtualString.toString Mode}}
+      {Boot_OS.fopen FileName Mode}
    end
 
    proc {Fread File Max ?Head Tail ?Count}
@@ -117,9 +116,7 @@ define
    end
 
    proc {Fwrite File DataV ?Count}
-      Data = {VirtualString.toString DataV}
-   in
-      {Boot_OS.fwrite File Data ?Count}
+      {Boot_OS.fwrite File DataV ?Count}
    end
 
    Fclose = Boot_OS.fclose
@@ -149,9 +146,7 @@ define
    TCPAcceptorClose = Boot_OS.tcpAcceptorClose
 
    fun {TCPConnect Host Service}
-      {WaitResult {Boot_OS.tcpConnect
-                   {VirtualString.toString Host}
-                   {VirtualString.toString Service}}}
+      {WaitResult {Boot_OS.tcpConnect Host Service}}
    end
 
    proc {TCPConnectionRead Connection Count ?Head Tail ?ReadCount}
@@ -163,9 +158,7 @@ define
    end
 
    fun {TCPConnectionWrite Connection DataV}
-      Data = {VirtualString.toString DataV}
-   in
-      {WaitResult {Boot_OS.tcpConnectionWrite Connection Data}}
+      {WaitResult {Boot_OS.tcpConnectionWrite Connection DataV}}
    end
 
    TCPConnectionShutdown = Boot_OS.tcpConnectionShutdown
@@ -232,12 +225,20 @@ define
       end
    end
 
+   fun {PatchVS Data}
+      if {Not {IsVirtualByteString Data}} andthen {IsVirtualString Data} then
+         {Coders.encode Data [latin1]}
+      else
+         Data
+      end
+   end
+
    proc {CompatRead FD Max ?Head Tail ?Count}
       {{DescGet FD} read(Max ?Head Tail ?Count)}
    end
 
    proc {CompatWrite FD Data ?Count}
-      {{DescGet FD} write(Data ?Count)}
+      {{DescGet FD} write({PatchVS Data} ?Count)}
    end
 
    proc {CompatLSeek FD Whence Offset ?Where}
@@ -462,11 +463,11 @@ define
    end
 
    proc {CompatSend Sock Msg Flags ?Len}
-      {{DescGet Sock} send(Msg Flags ?Len)}
+      {{DescGet Sock} send({PatchVS Msg} Flags ?Len)}
    end
 
    proc {CompatSendTo Sock Msg Flags Host Port ?Len}
-      {{DescGet Sock} sendTo(Msg Flags Host Port ?Len)}
+      {{DescGet Sock} sendTo({PatchVS Msg} Flags Host Port ?Len)}
    end
 
    proc {CompatReceiveFrom Sock Max Flags ?Head Tail ?Host ?Port ?Len}

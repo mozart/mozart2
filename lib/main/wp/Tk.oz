@@ -25,7 +25,7 @@
 functor
 
 import
-   TkBoot at 'x-oz://boot/Tk'
+   TkBoot
 
    Property(get)
 
@@ -35,6 +35,7 @@ import
 
    Open(pipe
         text
+        file
         socket)
 
    OS(getEnv
@@ -405,7 +406,6 @@ define
    %% Sending tickles
    %%
    TkInit         = TkBoot.init
-   TkGetNames     = TkBoot.getNames
 
    TkSend         = TkBoot.send
    TkBatch        = TkBoot.batch
@@ -431,8 +431,7 @@ define
    %%
    %% Master slave mechanism for widgets
    %%
-   AddSlave  = TkBoot.addGroup
-   DelSlave  = TkBoot.delGroup
+   AddSlave  = TkBoot.addSlave
 
    %%
    %% Printing error messages
@@ -494,7 +493,7 @@ define
    end
 
    local
-      RealRetStream = {TkInit {Stream getDesc(_ $)} TkDict}
+      RealRetStream = {TkInit Stream TkDict TclSlaves TclName}
    in
       RetStream = {Cell.new RealRetStream}
    end
@@ -613,9 +612,8 @@ define
    TkReturnMethod = {NewName}
    TkClass        = {NewName}
    TkWidget       = {NewName}
-
-   TclSlaves TclSlaveEntry TclName
-   {TkGetNames ?TclSlaves ?TclSlaveEntry ?TclName}
+   TclSlaves      = {NewName}
+   TclName        = {NewName}
 
    proc {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
       Fields = {GetFields Args}
@@ -647,10 +645,9 @@ define
       feat
          ActionId
          !TclName
-         !TclSlaveEntry
 
       meth tkInit(parent:Parent action:Action args:Args<=nil) = M
-         ParentSlaves = {CondSelect Parent TclSlaves unit}
+         ParentSlaves = {CondSelect Parent TclSlaves {NewCell unit}}
          ThisTclName  = self.TclName
          ThisActionId = self.ActionId
          GetTclName
@@ -660,9 +657,9 @@ define
          elseif {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self M)}
          else
-            self.TclSlaveEntry = {AddSlave ParentSlaves self}
+            {AddSlave ParentSlaves self}
             {DefineCommand Action Args ?ThisActionId ?GetTclName}
-            _ = {AddSlave ParentSlaves ThisActionId}
+            {AddSlave ParentSlaves ThisActionId}
             ThisTclName = GetTclName
          end
       end
@@ -676,7 +673,6 @@ define
 
       meth tkClose
          {Dictionary.remove TkDict self.ActionId}
-         {DelSlave self.TclSlaveEntry}
       end
 
    end
@@ -753,7 +749,6 @@ define
 
       feat
          !TclSlaves
-         !TclSlaveEntry
          !TclName        % widget name
 
       meth tkBind(event:  Event
@@ -765,7 +760,7 @@ define
             ActionId Command
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
-            {AddSlave self.TclSlaves ActionId _}
+            {AddSlave self.TclSlaves ActionId}
             {TkSend bind(self Event v(Command))}
          else
             {TkSend bind(self Event '')}
@@ -797,16 +792,15 @@ define
          end
          NewTkName  =
          if {IsObject Parent} then
-            ParentSlaves = {CondSelect Parent TclSlaves unit}
+            ParentSlaves = {CondSelect Parent TclSlaves {NewCell unit}}
          in
             if ParentSlaves==unit then
                {Exception.raiseError tk(wrongParent self Message)} _
             else
-               self.TclSlaveEntry = {AddSlave ParentSlaves self}
+               {AddSlave ParentSlaves self}
                {GenWidgetName Parent.TclName}
             end
          elseif {IsVirtualString Parent} then
-            self.TclSlaveEntry = nil
             {GenWidgetName Parent}
          else
             {Exception.raiseError tk(wrongParent self Message)} _
@@ -817,11 +811,11 @@ define
          in
             {DefineCommand Message.action {CondSelect Message args nil}
              ?ActionId ?Command}
-            self.TclSlaves = [nil ActionId]
+            self.TclSlaves = {NewCell [nil ActionId]}
             {TkSendFilter self.TkClass NewTkName Message
              [action args parent] v('-command '#Command)}
          else
-            self.TclSlaves = [nil]
+            self.TclSlaves = {NewCell [nil]}
             {TkSendFilter self.TkClass NewTkName Message [parent] unit}
          end
          ThisTclName = NewTkName
@@ -830,7 +824,7 @@ define
       meth tkAction(action:Action<=unit args:Args <= nil) = Message
          if {HasFeature Message action} then ActionId Command in
             {DefineCommand Action Args ?ActionId ?Command}
-            {AddSlave self.TclSlaves ActionId _}
+            {AddSlave self.TclSlaves ActionId}
             {TkSend o(self configure command: v(Command))}
          else
             {TkSend o(self configure command:'')}
@@ -849,22 +843,21 @@ define
          end
          NewTkName =
          if {IsObject Parent} then
-            ParentSlaves = {CondSelect Parent TclSlaves unit}
+            ParentSlaves = {CondSelect Parent TclSlaves {NewCell unit}}
          in
             if ParentSlaves==unit then
                {Exception.raiseError tk(wrongParent self Message)} _
             else
-               self.TclSlaveEntry = {AddSlave ParentSlaves self}
+               {AddSlave ParentSlaves self}
                {GenWidgetName Parent.TclName}
             end
          elseif {IsVirtualString Parent} then
-            self.TclSlaveEntry = nil
             {GenWidgetName Parent}
          else
             {Exception.raiseError tk(wrongParent self Message)} _
          end
       in
-         self.TclSlaves = [nil]
+         self.TclSlaves = {NewCell [nil]}
          {TkSendFilter self.TkClass NewTkName Message [parent] unit}
          ThisTclName = NewTkName
       end
@@ -885,29 +878,27 @@ define
             Parent = Message.parent
          in
             if {IsObject Parent} then
-               ParentSlaves = {CondSelect Parent TclSlaves unit}
+               ParentSlaves = {CondSelect Parent TclSlaves {NewCell unit}}
             in
                if ParentSlaves==unit then
                   {Exception.raiseError tk(wrongParent self Message)} _
                else
-                  self.TclSlaveEntry = {AddSlave ParentSlaves self}
+                  {AddSlave ParentSlaves self}
                   {GenWidgetName Parent.TclName}
                end
             elseif {IsVirtualString Parent} then
-               self.TclSlaveEntry = nil
                {GenWidgetName Parent}
             else
                {Exception.raiseError tk(wrongParent self Message)} _
             end
          else
-            self.TclSlaveEntry = nil
             {GenTopName}
          end
          CloseId  CloseCommand
       in
          {DefineCommand {CondSelect Message delete self#tkClose} nil
           ?CloseId ?CloseCommand}
-         self.TclSlaves = [nil CloseId]
+         self.TclSlaves = {NewCell [nil CloseId]}
          {TkSendFilter toplevel MyTkName Message
           [delete parent title withdraw]
           o(if {CondSelect Message withdraw false} then
@@ -1023,7 +1014,6 @@ define
             sited
          feat
             !TclSlaves
-            !TclSlaveEntry
             !TclName        % widget name
             !EntryVar
             !TkWidget
@@ -1051,13 +1041,13 @@ define
             in
                case MoveTcl of unit then skip else
                   self.TkWidget      = Parent
-                  self.TclSlaveEntry = {AddSlave Parent.TclSlaves self}
+                  {AddSlave Parent.TclSlaves self}
                   self.EntryVar      = VarName
                   if {HasFeature Message action} then
                      ActionId Command
                   in
                      {DefineCommand Action Args ?ActionId ?Command}
-                     self.TclSlaves = [nil ActionId]
+                     self.TclSlaves = {NewCell [nil ActionId]}
                      {TkSendFilter
                       o(Parent if IsInsert then insert(Before)
                                else add
@@ -1065,7 +1055,7 @@ define
                       self.TkType Message [action args before parent]
                       o(v('-command '#Command) b(MoveTcl))}
                   else
-                     self.TclSlaves = [nil]
+                     self.TclSlaves = {NewCell [nil]}
                      {TkSendFilter
                       o(Parent if IsInsert then insert(Before)
                                else add
@@ -1202,12 +1192,11 @@ define
          feat
             !TkWidget
             !TclSlaves
-            !TclSlaveEntry
             !TclName
 
          meth tkInit(parent:Parent)
             ThisTclName  = self.TclName
-            ParentSlaves = {CondSelect Parent TclSlaves unit}
+            ParentSlaves = {CondSelect Parent TclSlaves {NewCell unit}}
          in
             if ParentSlaves==unit then
                {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
@@ -1215,8 +1204,8 @@ define
             if {IsDet ThisTclName} then
                {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
             end
-            self.TclSlaves     = [nil]
-            self.TclSlaveEntry = {AddSlave ParentSlaves self}
+            self.TclSlaves     = {NewCell [nil]}
+            {AddSlave ParentSlaves self}
             self.TkWidget      = Parent
             ThisTclName        = {GenTagName}
          end
@@ -1244,7 +1233,7 @@ define
                ActionId Command
             in
                {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
-               {AddSlave self.TclSlaves ActionId _}
+               {AddSlave self.TclSlaves ActionId}
                {TkSend o(self.TkWidget self.TkQualify bind self Event
                          v(Command))}
             else
@@ -1268,7 +1257,7 @@ define
          feat !TkQualify: tag
 
          meth tkInit(parent:Parent ...) = M
-            ParentSlaves = {CondSelect Parent TclSlaves unit}
+            ParentSlaves = {CondSelect Parent TclSlaves {NewCell unit}}
             ThisTclName  = {GenTagName}
          in
             if ParentSlaves==unit then
@@ -1277,8 +1266,8 @@ define
             if {IsDet self.TclName} then
                {Exception.raiseError tk(alreadyInitialized self M)}
             end
-            self.TclSlaves     = [nil]
-            self.TclSlaveEntry = {AddSlave ParentSlaves self}
+            self.TclSlaves     = {NewCell [nil]}
+            {AddSlave ParentSlaves self}
             self.TkWidget      = Parent
             if {Width M}>1 then
                {TkSendFilter

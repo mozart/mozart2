@@ -166,10 +166,18 @@ template <typename C>
 inline
 void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::basic_string<C>& output);
 
+template <typename C = nchar>
+inline
+LString<C> ozVSGetAsLString(VM vm, RichNode vs, size_t bufSize);
+
 template <typename C>
 inline
 void ozVSGetNullTerminated(VM vm, RichNode vs, size_t bufSize,
                            std::vector<C>& output);
+
+template <typename C = nchar>
+inline
+LString<C> ozVSGetNullTerminatedAsLString(VM vm, RichNode vs, size_t bufSize);
 
 inline
 size_t ozVSLength(VM vm, RichNode vs);

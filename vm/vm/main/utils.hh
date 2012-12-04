@@ -593,6 +593,19 @@ void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::basic_string<C>& output) {
 }
 
 /**
+ * Get the actual value of a VirtualString in an LString
+ * Because ozVSLengthForBuffer() must have been called prior to calling this
+ * function, it is guaranteed not to throw any Mozart exception.
+ * @param bufSize Size of the buffer returned by ozVSLengthForBuffer()
+ */
+template <typename C>
+LString<C> ozVSGetAsLString(VM vm, RichNode vs, size_t bufSize) {
+  std::vector<C> buffer;
+  ozVSGet(vm, vs, bufSize, buffer);
+  return newLString(vm, buffer.data(), buffer.size());
+}
+
+/**
  * Get the actual value of a VirtualString with a '\0' terminator
  * Because ozVSLengthForBuffer() must have been called prior to calling this
  * function, it is guaranteed not to throw any Mozart exception.
@@ -603,6 +616,19 @@ void ozVSGetNullTerminated(VM vm, RichNode vs, size_t bufSize,
                            std::vector<C>& output) {
   ozVSGet(vm, vs, bufSize+1, output);
   output.push_back((C) 0);
+}
+
+/**
+ * Get the actual value of a VirtualString with a '\0' terminator in an LString
+ * Because ozVSLengthForBuffer() must have been called prior to calling this
+ * function, it is guaranteed not to throw any Mozart exception.
+ * @param bufSize Size of the buffer returned by ozVSLengthForBuffer()
+ */
+template <typename C>
+LString<C> ozVSGetNullTerminatedAsLString(VM vm, RichNode vs, size_t bufSize) {
+  std::vector<C> buffer;
+  ozVSGetNullTerminated(vm, vs, bufSize, buffer);
+  return newLString(vm, buffer.data(), buffer.size());
 }
 
 /**

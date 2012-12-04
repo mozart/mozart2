@@ -511,6 +511,11 @@ export
    %% VirtualString
    'VirtualString'      : VirtualString
    'IsVirtualString'    : IsVirtualString
+   %% VirtualByteString
+   'VirtualByteString'  : VirtualByteString
+   'IsVirtualByteString': IsVirtualByteString
+   %% Coders
+   'Coders'             : Coders
    %% WeakDictionary
    /*'WeakDictionary'     : WeakDictionary
    'IsWeakDictionary'   : IsWeakDictionary

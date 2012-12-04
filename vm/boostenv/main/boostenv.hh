@@ -27,7 +27,9 @@
 
 #include "boostenv-decl.hh"
 
+#include "boostenvutils.hh"
 #include "boostenvtcp.hh"
+#include "boostenvpipe.hh"
 
 #ifndef MOZART_GENERATOR
 

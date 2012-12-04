@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENVTCP_DECL_H
-#define __BOOSTENVTCP_DECL_H
+#ifndef __BOOSTENVPIPE_DECL_H
+#define __BOOSTENVPIPE_DECL_H
 
 #include <mozart.hh>
 
@@ -31,64 +31,21 @@
 
 namespace mozart { namespace boostenv {
 
-///////////////////
-// TCPConnection //
-///////////////////
+#ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
 
-class TCPConnection: public BaseSocketConnection<TCPConnection,
-  boost::asio::ip::tcp> {
+////////////////////
+// PipeConnection //
+////////////////////
+
+class PipeConnection: public BaseSocketConnection<PipeConnection,
+  boost::asio::local::stream_protocol> {
 public:
   inline
-  TCPConnection(BoostBasedVM& environment);
-
-public:
-  inline
-  void startAsyncConnect(std::string host, std::string service,
-                         const ProtectedNode& statusNode);
-
-private:
-  protocol::resolver _resolver;
+  PipeConnection(BoostBasedVM& environment);
 };
 
-/////////////////
-// TCPAcceptor //
-/////////////////
-
-class TCPAcceptor: public std::enable_shared_from_this<TCPAcceptor> {
-private:
-  typedef boost::asio::ip::tcp tcp;
-
-public:
-  typedef std::shared_ptr<TCPAcceptor> pointer;
-
-  static pointer create(BoostBasedVM& environment,
-                        const tcp::endpoint& endpoint) {
-    return pointer(new TCPAcceptor(environment, endpoint));
-  }
-
-public:
-  tcp::acceptor& acceptor() {
-    return _acceptor;
-  }
-
-  inline
-  void startAsyncAccept(const ProtectedNode& connectionNode);
-
-  inline
-  boost::system::error_code cancel();
-
-  inline
-  boost::system::error_code close();
-
-private:
-  inline
-  TCPAcceptor(BoostBasedVM& environment, const tcp::endpoint& endpoint);
-
-private:
-  BoostBasedVM& _environment;
-  tcp::acceptor _acceptor;
-};
+#endif // BOOST_ASIO_HAS_LOCAL_SOCKETS
 
 } }
 
-#endif // __BOOSTENVTCP_DECL_H
+#endif // __BOOSTENVPIPE_DECL_H

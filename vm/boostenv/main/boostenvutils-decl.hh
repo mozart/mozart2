@@ -22,73 +22,80 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENVTCP_DECL_H
-#define __BOOSTENVTCP_DECL_H
+#ifndef __BOOSTENVUTILS_DECL_H
+#define __BOOSTENVUTILS_DECL_H
 
 #include <mozart.hh>
 
-#include "boostenvutils-decl.hh"
+#include <memory>
+
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/bind.hpp>
 
 namespace mozart { namespace boostenv {
 
-///////////////////
-// TCPConnection //
-///////////////////
+class BoostBasedVM;
 
-class TCPConnection: public BaseSocketConnection<TCPConnection,
-  boost::asio::ip::tcp> {
+//////////////////////////
+// BaseSocketConnection //
+//////////////////////////
+
+template <typename T, typename Protocol>
+class BaseSocketConnection: public std::enable_shared_from_this<T> {
 public:
-  inline
-  TCPConnection(BoostBasedVM& environment);
-
-public:
-  inline
-  void startAsyncConnect(std::string host, std::string service,
-                         const ProtectedNode& statusNode);
-
-private:
-  protocol::resolver _resolver;
-};
-
-/////////////////
-// TCPAcceptor //
-/////////////////
-
-class TCPAcceptor: public std::enable_shared_from_this<TCPAcceptor> {
-private:
-  typedef boost::asio::ip::tcp tcp;
+  typedef Protocol protocol;
 
 public:
-  typedef std::shared_ptr<TCPAcceptor> pointer;
+  typedef std::shared_ptr<T> pointer;
 
-  static pointer create(BoostBasedVM& environment,
-                        const tcp::endpoint& endpoint) {
-    return pointer(new TCPAcceptor(environment, endpoint));
+  static pointer create(BoostBasedVM& environment) {
+    return std::make_shared<T>(environment);
   }
 
 public:
-  tcp::acceptor& acceptor() {
-    return _acceptor;
+  inline
+  BaseSocketConnection(BoostBasedVM& environment);
+
+public:
+  typename protocol::socket& socket() {
+    return _socket;
+  }
+
+  std::vector<char>& getReadData() {
+    return _readData;
+  }
+
+  std::vector<char>& getWriteData() {
+    return _writeData;
   }
 
   inline
-  void startAsyncAccept(const ProtectedNode& connectionNode);
+  void startAsyncRead(const ProtectedNode& tailNode,
+                      const ProtectedNode& statusNode);
 
   inline
-  boost::system::error_code cancel();
+  void startAsyncReadSome(const ProtectedNode& tailNode,
+                          const ProtectedNode& statusNode);
 
   inline
-  boost::system::error_code close();
+  void startAsyncWrite(const ProtectedNode& statusNode);
 
-private:
+protected:
   inline
-  TCPAcceptor(BoostBasedVM& environment, const tcp::endpoint& endpoint);
+  void readHandler(const boost::system::error_code& error,
+                   size_t bytes_transferred,
+                   const ProtectedNode& tailNode,
+                   const ProtectedNode& statusNode);
 
-private:
+protected:
   BoostBasedVM& _environment;
-  tcp::acceptor _acceptor;
+  typename protocol::socket _socket;
+
+  std::vector<char> _readData;
+  std::vector<char> _writeData;
 };
 
 } }
 
-#endif // __BOOSTENVTCP_DECL_H
+#endif // __BOOSTENVUTILS_DECL_H

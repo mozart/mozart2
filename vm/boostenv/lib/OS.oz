@@ -66,6 +66,14 @@ export
    tcpConnectionShutdown: TCPConnectionShutdown
    tcpConnectionClose: TCPConnectionClose
 
+   % Process management
+   SpawnProcess
+   SpawnProcessAndPipe
+   PipeConnectionRead
+   PipeConnectionWrite
+   PipeConnectionShutdown
+   PipeConnectionClose
+
    % Compatibility
    open: CompatOpen
    fileDesc: CompatFileDesc
@@ -89,6 +97,11 @@ export
    send:        CompatSend
    sendTo:      CompatSendTo
    receiveFrom: CompatReceiveFrom
+
+   exec: CompatExec
+   pipe: CompatPipe
+   kill: CompatKill
+   wait: CompatWait
 
 define
 
@@ -163,6 +176,26 @@ define
 
    TCPConnectionShutdown = Boot_OS.tcpConnectionShutdown
    TCPConnectionClose = Boot_OS.tcpConnectionClose
+
+   %% Process management
+
+   SpawnProcess = Boot_OS.exec
+   SpawnProcessAndPipe = Boot_OS.pipe
+
+   proc {PipeConnectionRead Connection Count ?Head Tail ?ReadCount}
+      case {Boot_OS.pipeConnectionRead Connection Count Tail}
+      of succeeded(C H) then
+         Head = H
+         ReadCount = C
+      end
+   end
+
+   fun {PipeConnectionWrite Connection DataV}
+      {WaitResult {Boot_OS.pipeConnectionWrite Connection DataV}}
+   end
+
+   PipeConnectionShutdown = Boot_OS.pipeConnectionShutdown
+   PipeConnectionClose = Boot_OS.pipeConnectionClose
 
    %% POSIX-like file descriptor management
 
@@ -472,6 +505,63 @@ define
 
    proc {CompatReceiveFrom Sock Max Flags ?Head Tail ?Host ?Port ?Len}
       {{DescGet Sock} receiveFrom(Max Flags ?Head Tail ?Host ?Port ?Len)}
+   end
+
+   %% POSIX-like process management
+
+   class CompatPipeConnectionClass from CompatIOClass
+      attr
+         connection
+
+      meth init(Connection desc:Desc <= _)
+         CompatIOClass, init(desc:Desc)
+
+         connection := Connection
+      end
+
+      meth read(Max ?Head Tail ?Count)
+         {PipeConnectionRead @connection Max ?Head Tail ?Count}
+      end
+
+      meth write(Data ?Count)
+         {PipeConnectionWrite @connection Data ?Count}
+      end
+
+      meth shutDown(How)
+         What = case How
+                of 0 then receive
+                [] 1 then send
+                else both
+                end
+      in
+         {TCPConnectionShutdown @connection What}
+      end
+
+      meth close()
+         CompatIOClass, close()
+         {PipeConnectionClose @connection}
+      end
+   end
+
+   proc {CompatExec Executable Args DoKill ?Pid}
+      {SpawnProcess Executable Executable|Args DoKill ?Pid}
+   end
+
+   proc {CompatPipe Executable Args ?Pid ?Status}
+      Connection = {SpawnProcessAndPipe Executable Executable|Args ?Pid}
+      Desc = {New CompatPipeConnectionClass init(Connection desc:$) _}
+   in
+      Status = Desc#Desc
+   end
+
+   proc {CompatKill Pid Signal ?Status}
+      % TODO
+      Status = 0
+   end
+
+   proc {CompatWait ?Pid ?Status}
+      % TODO
+      Status = 0
    end
 
 end

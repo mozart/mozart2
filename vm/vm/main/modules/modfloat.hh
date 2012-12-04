@@ -58,6 +58,16 @@ public:
       result = Numeric(left).divide(vm, right);
     }
   };
+
+  class ToInt: public Builtin<ToInt> {
+  public:
+    ToInt(): Builtin("toInt") {}
+
+    void operator()(VM vm, In value, Out result) {
+      auto floatValue = getArgument<double>(vm, value);
+      result = build(vm, (nativeint) floatValue);
+    }
+  };
 };
 
 }

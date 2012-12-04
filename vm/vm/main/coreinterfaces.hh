@@ -136,7 +136,7 @@ struct Dottable: public BaseDottable {
     if (lookupFeature(vm, feature, result))
       return result;
     else
-      raise(vm, vm->coreatoms.illegalFieldSelection, _self, feature);
+      raiseKernelError(vm, MOZART_STR("."), _self, feature);
   }
 
   UnstableNode dot(VM vm, nativeint feature) {
@@ -144,7 +144,7 @@ struct Dottable: public BaseDottable {
     if (lookupFeature(vm, feature, result))
       return result;
     else
-      raise(vm, vm->coreatoms.illegalFieldSelection, _self, feature);
+      raiseKernelError(vm, MOZART_STR("."), _self, feature);
   }
 
   bool hasFeature(VM vm, RichNode feature) {

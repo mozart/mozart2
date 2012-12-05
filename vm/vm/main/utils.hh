@@ -270,13 +270,9 @@ size_t ozListLength(VM vm, RichNode list) {
 namespace internal {
 
 inline
-constexpr size_t getIntToStrBufferSizeEx(nativeint value) {
-  return (value == 0) ? 0 : (getIntToStrBufferSizeEx(value / 10) + 1);
-}
-
-inline
 constexpr size_t getIntToStrBufferSize() {
-  return getIntToStrBufferSizeEx(std::numeric_limits<nativeint>::max()) + 2;
+  // +1 for the extra digit, +1 for the - and +1 for the '\0'
+  return std::numeric_limits<nativeint>::digits10 + 3;
 }
 
 using IntToStrBuffer = nchar[getIntToStrBufferSize()];

@@ -171,15 +171,24 @@ atom_t systemStrToAtom(VM vm, const char* str);
 inline
 atom_t systemStrToAtom(VM vm, const std::string& str);
 
+template <typename T>
 inline
-void MOZART_NORETURN raiseOSError(VM vm, int errnum);
+void MOZART_NORETURN raiseOSError(VM vm, const nchar* function,
+                                  nativeint errnum, T&& message);
 
 inline
-void MOZART_NORETURN raiseLastOSError(VM vm);
+void MOZART_NORETURN raiseOSError(VM vm, const nchar* function, int errnum);
 
 inline
-void MOZART_NORETURN raiseSystemError(VM vm,
-                                      const boost::system::system_error& error);
+void MOZART_NORETURN raiseLastOSError(VM vm, const nchar* function);
+
+inline
+void MOZART_NORETURN raiseOSError(VM vm, const nchar* function,
+                                  boost::system::error_code& ec);
+
+inline
+void MOZART_NORETURN raiseOSError(VM vm, const nchar* function,
+                                  const boost::system::system_error& error);
 
 } }
 

@@ -112,18 +112,29 @@ atom_t systemStrToAtom(VM vm, const std::string& str) {
   return vm->getAtom(len, ustr.get());
 }
 
-void raiseOSError(VM vm, int errnum) {
-  auto message = systemStrToAtom(vm, std::strerror(errnum));
-  raise(vm, MOZART_STR("system"), errnum, message);
+template <typename T>
+void raiseOSError(VM vm, const nchar* function, nativeint errnum, T&& message) {
+  raiseSystem(vm, MOZART_STR("os"),
+              MOZART_STR("os"), function, errnum, std::forward<T>(message));
 }
 
-void raiseLastOSError(VM vm) {
-  raiseOSError(vm, errno);
+void raiseOSError(VM vm, const nchar* function, int errnum) {
+  raiseOSError(vm, function, errnum,
+               systemStrToAtom(vm, std::strerror(errnum)));
 }
 
-void raiseSystemError(VM vm, const boost::system::system_error& error) {
-  auto message = systemStrToAtom(vm, error.what());
-  raise(vm, MOZART_STR("system"), error.code().value(), message);
+void raiseLastOSError(VM vm, const nchar* function) {
+  raiseOSError(vm, function, errno);
+}
+
+void raiseOSError(VM vm, const nchar* function, boost::system::error_code& ec) {
+  raiseOSError(vm, function, ec.value(), systemStrToAtom(vm, ec.message()));
+}
+
+void raiseOSError(VM vm, const nchar* function,
+                  const boost::system::system_error& error) {
+  raiseOSError(vm, function, error.code().value(),
+               systemStrToAtom(vm, error.what()));
 }
 
 } }

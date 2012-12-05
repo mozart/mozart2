@@ -201,7 +201,7 @@ public:
       }
 
       if (file == nullptr)
-        raiseLastOSError(vm);
+        raiseLastOSError(vm, MOZART_STR("fopen"));
 
       result = build(vm, std::make_shared<WrappedFile>(file));
     }
@@ -230,7 +230,7 @@ public:
       if ((readCount < bufferSize) && std::ferror(file)) {
         // error
         vm->free(buffer, bufferSize);
-        raise(vm, MOZART_STR("system"), MOZART_STR("fread"));
+        raiseLastOSError(vm, MOZART_STR("fread"));
       }
 
       char* charBuffer = static_cast<char*>(buffer);
@@ -269,7 +269,7 @@ public:
       }
 
       if (writtenSize != bufSize)
-        raiseLastOSError(vm);
+        raiseLastOSError(vm, MOZART_STR("fwrite"));
 
       writtenCount = build(vm, writtenSize);
     }
@@ -300,7 +300,7 @@ public:
       nativeint seekResult = std::fseek(file, (long) intOffset, intWhence);
 
       if (seekResult < 0)
-        raiseLastOSError(vm);
+        raiseLastOSError(vm, MOZART_STR("fseek"));
 
       where = build(vm, seekResult);
     }
@@ -373,7 +373,7 @@ public:
         auto acceptor = TCPAcceptor::create(BoostBasedVM::forVM(vm), endpoint);
         result = build(vm, acceptor);
       } catch (const boost::system::system_error& error) {
-        raiseSystemError(vm, error);
+        raiseOSError(vm, MOZART_STR("tcpAcceptorCreate"), error);
       }
     }
   };
@@ -403,7 +403,7 @@ public:
 
       auto error = tcpAcceptor->cancel();
       if (!error)
-        raise(vm, MOZART_STR("system"), MOZART_STR("cancel"), error.value());
+        raiseOSError(vm, MOZART_STR("cancel"), error);
     }
   };
 
@@ -417,7 +417,7 @@ public:
 
       auto error = tcpAcceptor->close();
       if (error)
-        raise(vm, MOZART_STR("system"), MOZART_STR("close"), error.value());
+        raiseOSError(vm, MOZART_STR("close"), error);
     }
   };
 
@@ -530,7 +530,7 @@ public:
       try {
         tcpConnection->socket().shutdown(whatValue);
       } catch (const boost::system::system_error& error) {
-        raiseSystemError(vm, error);
+        raiseOSError(vm, MOZART_STR("shutdown"), error);
       }
     }
   };
@@ -550,7 +550,7 @@ public:
         tcpConnection->socket().shutdown(tcp::socket::shutdown_both);
         tcpConnection->socket().close();
       } catch (const boost::system::system_error& error) {
-        raiseSystemError(vm, error);
+        raiseOSError(vm, MOZART_STR("close"), error);
       }
     }
   };

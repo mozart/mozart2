@@ -577,7 +577,7 @@ class OzParser extends OzTokenParsers with PackratParsers
   }
 
   lazy val methodParamFeat: PackratParser[Expression] = positioned {
-    opt(featureNoVar <~ ":") ^^ (x => x.getOrElse(AutoFeature()))
+    opt(feature <~ ":") ^^ (x => x.getOrElse(AutoFeature()))
   }
 
   lazy val methodParamName: PackratParser[Expression] =

@@ -301,9 +301,9 @@ object DesugarClass extends Transformer with TreeDSL {
     atPos(method) {
       PROC (name, List(selfParam, msgParam)) {
         LOCAL (paramVars:_*) IN {
-          CompoundStatement(fetchParamStats.toList) ~ {
-            withSelf(selfParam) {
-              transformStat {
+          withSelf(selfParam) {
+            transformStat {
+              CompoundStatement(fetchParamStats.toList) ~ {
                 if (resultVar.isDefined) {
                   resultVar.get === body.asInstanceOf[Expression]
                 } else {

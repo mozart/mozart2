@@ -324,14 +324,14 @@ bool syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
 
 template <size_t count, size_t i = 0, typename F>
 inline
-auto static_for(const F& f) -> typename std::enable_if<i != count, void>::type {
-  f(i);
-  static_for<count, i+1, F>(f);
+auto static_for(const F& f) -> typename std::enable_if<i == count, void>::type {
 }
 
 template <size_t count, size_t i = 0, typename F>
 inline
-auto static_for(const F& f) -> typename std::enable_if<i == count, void>::type {
+auto static_for(const F& f) -> typename std::enable_if<i != count, void>::type {
+  f(i);
+  static_for<count, i+1, F>(f);
 }
 
 }

@@ -117,6 +117,36 @@ public:
     }
   };
 
+  class PutEnv: public Builtin<PutEnv> {
+  public:
+    PutEnv(): Builtin("putEnv") {}
+
+    void operator()(VM vm, In var, In value) {
+      size_t varBufSize = ozVSLengthForBuffer(vm, var);
+      size_t valueBufSize = ozVSLengthForBuffer(vm, value);
+
+      bool succeeded;
+
+      {
+        std::vector<char> varVector, valueVector;
+        ozVSGetNullTerminated(vm, var, varBufSize, varVector);
+        ozVSGetNullTerminated(vm, value, valueBufSize, valueVector);
+
+#ifdef MOZART_WINDOWS
+        succeeded = SetEnvironmentVariable(varVector.data(),
+                                           valueVector.data()) != FALSE;
+#else
+        succeeded = setenv(varVector.data(), valueVector.data(), true) == 0;
+#endif
+      }
+
+      if (!succeeded) {
+        raiseOSError(vm, MOZART_STR("putenv"), 0,
+                     MOZART_STR("OS.putEnv failed."));
+      }
+    }
+  };
+
   // File I/O
 
 private:

@@ -40,6 +40,7 @@ export
 
    % Environment
    GetEnv
+   PutEnv
 
    % File I/0
    GetCWD
@@ -114,6 +115,7 @@ define
    % Environment
 
    GetEnv = Boot_OS.getEnv
+   PutEnv = Boot_OS.putEnv
 
    % File I/0
 

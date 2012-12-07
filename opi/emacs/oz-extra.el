@@ -28,7 +28,7 @@
   (mouse-set-point e)
   (save-excursion
     (end-of-line)
-    (if (outline-visible)
+    (if (not (outline-invisible-p))
         (hide-subtree)
       (show-subtree))))
 
@@ -38,7 +38,7 @@
   (show-branches))
 
 (provide 'oz-extra)
-
+
 ;;; Local Variables: ***
 ;;; mode: emacs-lisp ***
 ;;; byte-compile-dynamic-docstrings: nil ***

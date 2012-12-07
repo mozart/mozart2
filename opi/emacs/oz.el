@@ -151,7 +151,7 @@
     (defmacro defgroup (&rest args)
       nil)
     (defmacro defcustom (symbol value doc &rest args)
-      (` (defvar (, symbol) (, value) (, doc))))))
+      `(defvar ,symbol ,value ,doc))))
 
 (eval-and-compile
   (eval '(defgroup oz nil
@@ -949,6 +949,10 @@ buffer."
 ;;}}}
 ;;{{{ Keymap Definitions
 
+;; Silence the compiler warnings below
+(defvar is-alias)
+(defvar map)
+
 (defun oz-define-key (key fun)
   ;; if IS-ALIAS is non nil, define fun/tty to be an alias for fun
   ;; and use fun/tty as the definition instead of fun.  This way
@@ -1247,6 +1251,10 @@ if that value is non-nil."
   (if (and oz-want-font-lock window-system)
       (font-lock-mode 1))
   (run-hooks 'oz-mode-hook))
+
+;; Silence the compiler warnings below
+(defvar mode-popup-menu)
+(defvar current-menubar)
 
 (defun oz-set-lucid-menu ()
   ;; Add the Oz menu to the menu bar.
@@ -1679,7 +1687,7 @@ prefix ARG is negated."
 
 
 (provide 'oz)
-
+
 ;;; Local Variables: ***
 ;;; mode: emacs-lisp ***
 ;;; byte-compile-dynamic-docstrings: nil ***

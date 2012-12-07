@@ -253,7 +253,7 @@ not found in ALIST"
   "alist with entries of the form (TAG . HANDLER)")
 
 (defun oz-server-process-reply-generic (args errflag)
-  (let* ((id (string-to-int (car args)))
+  (let* ((id (string-to-number (car args)))
          (vals (cdr args))
          (callback (oz-server-alist-get oz-server-callback-alist id)))
     (if callback

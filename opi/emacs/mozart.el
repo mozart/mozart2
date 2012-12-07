@@ -128,20 +128,20 @@ Used as fallback if the environment variable OZHOME is not set."
 (defun oz-tmp-buffer () (get-buffer-create oz-tmp-buffer))
 
 (defun oz-escape-path-separator (s &rest l)
-  (save-excursion
-    (set-buffer (oz-tmp-buffer))
-    (widen)
-    (erase-buffer)
-    (insert s)
-    (let ((seps (cons path-separator l)) sep repl)
-      (while seps
-        (goto-char (point-min))
-        (setq sep  (car seps)
-              seps (cdr seps)
-              repl (concat "\\" sep))
-        (while (re-search-forward (regexp-quote sep) nil t)
-          (replace-match repl t t))))
-    (buffer-substring-no-properties (point-min) (point-max))))
+  (with-current-buffer (oz-tmp-buffer)
+    (save-excursion
+      (widen)
+      (erase-buffer)
+      (insert s)
+      (let ((seps (cons path-separator l)) sep repl)
+        (while seps
+          (goto-char (point-min))
+          (setq sep  (car seps)
+                seps (cdr seps)
+                repl (concat "\\" sep))
+          (while (re-search-forward (regexp-quote sep) nil t)
+            (replace-match repl t t))))
+      (buffer-substring-no-properties (point-min) (point-max)))))
 
 ;(defvar *OZVERSION*
 ;  (or (getenv "OZVERSION") "@OZVERSION@"))
@@ -442,9 +442,15 @@ Used as fallback if the environment variable OZHOME is not set."
       (substring d 0 -1)
     d))
 
+;; Silence the compiler warning below
+(defvar methods)
+
 (defun oz-push-method (m)
   (if methods (setq methods (cons path-separator methods)))
   (setq methods (cons m methods)))
+
+;; Silence the compiler warning below
+(defvar OZPATH)
 
 (defun oz-dirs-to-search-path (l user global)
   (let ((methods nil)
@@ -479,6 +485,9 @@ Used as fallback if the environment variable OZHOME is not set."
   (mapcar
    (function (lambda (v) (cons v (getenv v))))
    oz-environment-variables))
+
+;; Silence the compiler warning below
+(defvar *oz-ignore-env*)
 
 (defun oz-environment-install ()
   (setenv "OZ_PI" "1")
@@ -919,14 +928,14 @@ See variable `compilation-parse-errors-function' for the interface it uses."
                     ((not file-string)
                      (list error-marker))
                     (buffer
-                     (save-excursion
-                       (set-buffer buffer)
-                       (save-restriction
-                         (widen)
-                         (goto-line line)
-                         (if (and column (> column 0))
-                             (forward-char column))
-                         (cons error-marker (point-marker)))))
+                     (with-current-buffer buffer
+                       (save-excursion
+                         (save-restriction
+                           (widen)
+                           (goto-line line)
+                           (if (and column (> column 0))
+                               (forward-char column))
+                           (cons error-marker (point-marker))))))
                     (t
                      (let* ((file (oz-normalize-file-name file-string))
                             (filedata (list file default-directory))
@@ -1132,7 +1141,7 @@ With C-u C-u as prefix argument, send it a SIGKILL instead."
            (error "Missing port argument to oz-attach")))
     (oz-make-comint (cons host port))
     (oz-prepare-emulator-buffer 'oz-filter nil)
-    (process-kill-without-query (get-buffer-process oz-emulator-buffer))))
+    (set-process-query-on-exit-flag (get-buffer-process oz-emulator-buffer) nil)))
 
 (defun oz-make-comint (program &rest switches)
   (if (get-buffer oz-emulator-buffer)
@@ -1159,15 +1168,15 @@ With C-u C-u as prefix argument, send it a SIGKILL instead."
     (setq oz-compiler-buffers newbs))
   (let ((buffer (generate-new-buffer "*Oz Compiler*")))
     (setq oz-compiler-buffers (cons buffer oz-compiler-buffers))
-    (save-excursion
-      (set-buffer buffer)
-      (compilation-mode)
-      (setq buffer-read-only nil)
-      (set (make-local-variable 'compilation-parse-errors-function)
-           'oz-compilation-parse-errors))
+    (with-current-buffer buffer
+      (save-excursion
+        (compilation-mode)
+        (setq buffer-read-only nil)
+        (set (make-local-variable 'compilation-parse-errors-function)
+            'oz-compilation-parse-errors)))
     (comint-exec buffer (buffer-name buffer) (cons host port) nil nil)
     (let ((proc (get-buffer-process buffer)))
-      (process-kill-without-query proc nil)
+      (set-process-query-on-exit-flag proc nil)
       (set-process-filter proc 'oz-compiler-filter))
     (oz-buffer-show buffer)
     (bury-buffer buffer)
@@ -1225,9 +1234,9 @@ With C-u C-u as prefix argument, send it a SIGKILL instead."
         (setq start (match-beginning 0))
         (setq string (concat (substring string 0 start)
                              (substring string (match-end 0))))
-        (save-excursion
-          (set-buffer (process-buffer proc))
-          (oz-bar file line column state)))))
+        (with-current-buffer (process-buffer proc)
+          (save-excursion
+            (oz-bar file line column state))))))
   (oz-filter proc string))
 
 (defun oz-filter (proc string)
@@ -1313,11 +1322,11 @@ If it is, then delete the corresponding window."
     (if buffer
         (let ((win (get-buffer-window buffername)))
           (if win
-              (save-excursion
-                (set-buffer buffer)
-                (if (= (window-point win) (point-max))
-                    (delete-windows-on buffername)
-                  (set-window-point win (point-max))))
+              (with-current-buffer buffer
+                (save-excursion
+                  (if (= (window-point win) (point-max))
+                      (delete-windows-on buffername)
+                    (set-window-point win (point-max)))))
             (oz-buffer-show (get-buffer buffername)))))))
 
 ;;}}}
@@ -1377,13 +1386,13 @@ compiled using a default set of switches."
             (nconc oz-buffered-send-string (list (cons string system))))
     (let ((proc (get-buffer-process oz-compiler-buffer))
           (eof (concat (char-to-string 4) "\n")))
-      (save-excursion
-        (set-buffer oz-compiler-buffer)
-        (setq compilation-last-buffer (current-buffer))
-        (setq oz-compiler-output-start
-              (marker-position
-               (process-mark (get-buffer-process (current-buffer)))))
-        (setq compilation-error-list nil))
+      (with-current-buffer oz-compiler-buffer
+        (save-excursion
+          (setq compilation-last-buffer (current-buffer))
+          (setq oz-compiler-output-start
+                (marker-position
+                 (process-mark (get-buffer-process (current-buffer)))))
+          (setq compilation-error-list nil)))
       (if system
           (comint-send-string
            proc
@@ -1665,43 +1674,43 @@ With ARG, stop it instead."
       (let* ((buffer (oz-find-buffer-or-file file t))
              (window (display-buffer buffer))
              start1 end1 start2 end2)
-        (save-excursion
-          (set-buffer buffer)
-          (save-restriction
-            (widen)
-            (goto-line line)
-            (setq start1 (point))
-            (save-excursion
-              (forward-line 1)
-              (setq end1 (point)))
-            (if (> column 0)
-                (forward-char column))
-            (if (and (>= column 0) (looking-at oz-token-pattern))
-                (setq start2 (match-beginning 0) end2 (match-end 0))
-              (setq start2 start1 end2 start1))
-            (or oz-bar-overlay
-                (cond (oz-gnu-emacs
-                       (setq oz-bar-overlay (make-overlay start1 end1)
-                             oz-bar-overlay-here (make-overlay start2 end2))
-                       (overlay-put oz-bar-overlay 'priority 17)
-                       (overlay-put oz-bar-overlay-here 'priority 18))
-                      (oz-lucid-emacs
-                       (setq oz-bar-overlay (make-extent start1 end1)
-                             oz-bar-overlay-here (make-extent start2 end2))
-                       (set-extent-priority oz-bar-overlay 17)
-                       (set-extent-priority oz-bar-overlay-here 18))))
-            (cond (oz-gnu-emacs
-                   (move-overlay
-                    oz-bar-overlay start1 end1 (current-buffer))
-                   (move-overlay
-                    oz-bar-overlay-here start2 end2 (current-buffer)))
-                  (oz-lucid-emacs
-                   (set-extent-endpoints
-                    oz-bar-overlay start1 end1 (current-buffer))
-                   (set-extent-endpoints
-                    oz-bar-overlay-here start2 end2 (current-buffer))))
-            (or (string-equal state "unchanged")
-                (oz-bar-configure state))))
+        (with-current-buffer buffer
+          (save-excursion
+            (save-restriction
+              (widen)
+              (goto-line line)
+              (setq start1 (point))
+              (save-excursion
+                (forward-line 1)
+                (setq end1 (point)))
+              (if (> column 0)
+                  (forward-char column))
+              (if (and (>= column 0) (looking-at oz-token-pattern))
+                  (setq start2 (match-beginning 0) end2 (match-end 0))
+                (setq start2 start1 end2 start1))
+              (or oz-bar-overlay
+                  (cond (oz-gnu-emacs
+                         (setq oz-bar-overlay (make-overlay start1 end1)
+                               oz-bar-overlay-here (make-overlay start2 end2))
+                         (overlay-put oz-bar-overlay 'priority 17)
+                         (overlay-put oz-bar-overlay-here 'priority 18))
+                        (oz-lucid-emacs
+                         (setq oz-bar-overlay (make-extent start1 end1)
+                               oz-bar-overlay-here (make-extent start2 end2))
+                         (set-extent-priority oz-bar-overlay 17)
+                         (set-extent-priority oz-bar-overlay-here 18))))
+              (cond (oz-gnu-emacs
+                     (move-overlay
+                      oz-bar-overlay start1 end1 (current-buffer))
+                     (move-overlay
+                      oz-bar-overlay-here start2 end2 (current-buffer)))
+                    (oz-lucid-emacs
+                     (set-extent-endpoints
+                      oz-bar-overlay start1 end1 (current-buffer))
+                     (set-extent-endpoints
+                      oz-bar-overlay-here start2 end2 (current-buffer))))
+              (or (string-equal state "unchanged")
+                  (oz-bar-configure state)))))
         (save-selected-window
           (let ((old-buffer (current-buffer)) old-pos)
             (select-window window)
@@ -1916,7 +1925,7 @@ Commands:
 ;;}}}
 
 (provide 'mozart)
-
+
 ;;; Local Variables: ***
 ;;; mode: emacs-lisp ***
 ;;; byte-compile-dynamic-docstrings: nil ***

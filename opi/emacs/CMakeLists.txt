@@ -32,6 +32,7 @@ else()
         -eval "(setq load-path (append load-path '(\"${CMAKE_CURRENT_SOURCE_DIR}\")))"
         ${EMACS_OPTIONS}  "${el_file}"
       COMMAND ${CMAKE_COMMAND} -E rename "${gen_file}" "${tgt_file}"
+      DEPENDS "${el_file}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT "Generating: ${elc_file}"
       VERBATIM)

@@ -124,8 +124,8 @@ prepare
       /** The boot URL module (stub version) */
       BURL = 'export'(
          localize: fun {$ U} U end
-         open:     proc {$ U ?V}
-                      {Exception.raiseError notImplemented('URL.open')}
+         open:     fun {$ U}
+                      {OS.open U ['O_RDONLY'] nil}
                    end
          load:     URLLoad
       )

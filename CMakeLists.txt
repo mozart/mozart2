@@ -1,5 +1,30 @@
 cmake_minimum_required(VERSION 2.8)
-project(MOZART NONE)
+project(MOZART CXX)
+
+# Some helpers when using MinGW
+
+if(MINGW)
+  get_filename_component(CMAKE_MAKE_PROGRAM_PATH "${CMAKE_MAKE_PROGRAM}" PATH)
+  get_filename_component(CMAKE_MAKE_PROGRAM_PATH_PARENT "${CMAKE_MAKE_PROGRAM_PATH}" PATH)
+
+  set(MINGW_ROOT "${CMAKE_MAKE_PROGRAM_PATH_PARENT}"
+      CACHE PATH "Path where MinGW is installed")
+  set(MINGW_COMPILER_VERSION "4.7.2"
+      CACHE STRING "Version of GCC in your MinGW installation")
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+  set(DEFAULT_MOZART_GENERATOR_FLAGS
+      "-I${MINGW_ROOT}/include/c++/${MINGW_COMPILER_VERSION}"
+      "-I${MINGW_ROOT}/include/c++/${MINGW_COMPILER_VERSION}/i686-pc-mingw32")
+
+  set(BOOST_ROOT "${MINGW_ROOT}"
+      CACHE PATH "Path where Boost is installed")
+else()
+  set(DEFAULT_MOZART_GENERATOR_FLAGS "")
+endif()
+
+# The subdirectories which contain the real thing
 
 add_subdirectory(vm)
 add_subdirectory(bootcompiler)

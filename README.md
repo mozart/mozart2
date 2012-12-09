@@ -82,7 +82,7 @@ Windows, use the trunk version of LLVM instead.
 
 ```
 projects$ cd externals
-externals$ svn co http://googletest.googlecode.com/svn gtest
+externals$ svn co http://googletest.googlecode.com/svn/trunk gtest
 [...]
 externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_31/final llvm
 [...]

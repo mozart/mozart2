@@ -12,6 +12,10 @@ set(JAVA_OPTIONS "-Xmx1024m" CACHE STRING "Options passed to the java program")
 # Configure compiler
 set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
 
+if(WIN32)
+  # Boost requires this
+  add_definitions(-D_WIN32_WINNT=0x0501)
+endif()
 
 # Boost library
 

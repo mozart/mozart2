@@ -1,14 +1,13 @@
 cmake_minimum_required(VERSION 2.6)
 project(MOZARTBOOTCOMPILER NONE)
 
-set(JAVA "/usr/bin/java"
-    CACHE FILEPATH "Java executable")
-    
+find_package(Java COMPONENTS Runtime REQUIRED)
+
 set(SBT_JAVA_OPTS
     -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M
     CACHE STRING "Options passed to the Java executable when running sbt")
 
-set(SBT "${JAVA}" ${SBT_JAVA_OPTS} -Dfile.encoding=UTF-8
+set(SBT "${Java_JAVA_EXECUTABLE}" ${SBT_JAVA_OPTS} -Dfile.encoding=UTF-8
   -jar "${CMAKE_CURRENT_SOURCE_DIR}/sbt-launch.jar")
 
 add_custom_target(bootcompiler

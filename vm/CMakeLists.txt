@@ -14,7 +14,7 @@ set(DEFAULT_GTEST_BUILD_DIR "${ep_base}/Build/gtest")
 set(GTEST_SRC_DIR ${DEFAULT_GTEST_SRC_DIR} CACHE PATH "Path to GTest sources")
 set(GTEST_BUILD_DIR ${DEFAULT_GTEST_BUILD_DIR} CACHE PATH "Path to GTest build")
 
-set(MOZART_GENERATOR_FLAGS "" CACHE STRING
+set(MOZART_GENERATOR_FLAGS "${DEFAULT_MOZART_GENERATOR_FLAGS}" CACHE STRING
     "Additional flags for the generator parser (clang)")
 
 add_subdirectory(generator)

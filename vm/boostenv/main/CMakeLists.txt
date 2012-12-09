@@ -5,6 +5,12 @@ find_package(Boost COMPONENTS system thread filesystem chrono REQUIRED)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
+if(WIN32)
+  # Boost requires this
+  add_definitions(-D_WIN32_WINNT=0x0501)
+  set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" -D_WIN32_WINNT=0x0501)
+endif()
+
 if(MINGW)
   # Work around a bug in MinGW
   string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x "

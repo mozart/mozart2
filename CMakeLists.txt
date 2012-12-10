@@ -24,6 +24,13 @@ else()
   set(DEFAULT_MOZART_GENERATOR_FLAGS "")
 endif()
 
+# Some configuration
+
+if(WIN32)
+  add_definitions(-DMOZART_WINDOWS=1)
+  set(DEFAULT_MOZART_GENERATOR_FLAGS "-DMOZART_WINDOWS=1" ${DEFAULT_MOZART_GENERATOR_FLAGS})
+endif()
+
 # The subdirectories which contain the real thing
 
 add_subdirectory(vm)

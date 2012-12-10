@@ -51,8 +51,8 @@ local
          Meth = C.`ooMeth`
          L    = {Label Mess}
       in
-         case {Dictionary.condGet Meth L false} of false then
-            case {Dictionary.condGet Meth otherwise false} of false then
+         case {CondSelect Meth L false} of false then
+            case {CondSelect Meth otherwise false} of false then
                {Exception.raiseError object(lookup C Mess)}
             [] M then {M Obj otherwise(Mess)}
             end
@@ -83,26 +83,20 @@ local
 
    local
       %%
-      %% Builtins needed for class creation
-      %%
-      %MarkSafe   = Boot_Dictionary.markSafe
-      MarkSafe = proc {$ D} skip end
-
-      %%
       %% Inheritance does very little, it just determines the classes
       %% that define methods, attributes, or features. Additionally,
       %% it computes a dictionary of possible conflicts.
       %%
       local
-         proc {Add Fs Src SrcP Conf}
+         proc {Add Fs SrcDict SrcP Conf}
             case Fs of nil then skip
             [] F|Fr then
-               Def={Dictionary.get SrcP F}
+               Def=SrcP.F
             in
                %% Conflict arises, if already a definition there that
                %% originates from a different class
-               if {Dictionary.member Src F} then
-                  PrevDef={Dictionary.get Src F}
+               if {Dictionary.member SrcDict F} then
+                  PrevDef={Dictionary.get SrcDict F}
                in
                   if Def\=PrevDef then
                      CFs={Dictionary.condGet Conf F nil}
@@ -120,17 +114,17 @@ local
                   end
                else
                   %% Store definining class
-                  {Dictionary.put Src F {Dictionary.get SrcP F}}
+                  {Dictionary.put SrcDict F Def}
                end
-               {Add Fr Src SrcP Conf}
+               {Add Fr SrcDict SrcP Conf}
             end
          end
       in
-         proc {Inherit Ps Src SrcF Conf}
+         proc {Inherit Ps SrcDict SrcF Conf}
             case Ps of nil then skip
             [] P|Pr then SrcP=P.SrcF in
-               {Add {Dictionary.keys SrcP} Src SrcP Conf}
-               {Inherit Pr Src SrcF Conf}
+               {Add {Arity SrcP} SrcDict SrcP Conf}
+               {Inherit Pr SrcDict SrcF Conf}
             end
          end
       end
@@ -138,11 +132,11 @@ local
       %%
       %% Compute method tables
       %%
-      proc {SetMeth N NewMeth Meth FastMeth Defaults}
-         %% NewMeth:  tuple of method specifications
-         %% Meth:     dictionary of methods
-         %% FastMeth: dictionary of fast-methods
-         %% Defaults: dictionary of defaults
+      proc {SetMeth N NewMeth MethDict FastMethDict DefaultsDict}
+         %% NewMeth:      tuple of method specifications
+         %% MethDict:     dictionary of methods
+         %% FastMethDict: dictionary of fast-methods
+         %% DefaultsDict: dictionary of defaults
          if N>0 then
             One = NewMeth.N
             L   = One.1
@@ -150,40 +144,40 @@ local
             if {IsLiteral L} then skip else
                {Exception.raiseError object(nonLiteralMethod L)}
             end
-            {Dictionary.put Meth L One.2}
+            {Dictionary.put MethDict L One.2}
             if {HasFeature One fast} then
-               {Dictionary.put FastMeth L One.fast}
+               {Dictionary.put FastMethDict L One.fast}
             else
-               {Dictionary.remove FastMeth L}
+               {Dictionary.remove FastMethDict L}
             end
             if {HasFeature One default} then
-               {Dictionary.put Defaults L One.default}
+               {Dictionary.put DefaultsDict L One.default}
             else
-               {Dictionary.remove Defaults L}
+               {Dictionary.remove DefaultsDict L}
             end
-            {SetMeth N-1 NewMeth Meth FastMeth Defaults}
+            {SetMeth N-1 NewMeth MethDict FastMethDict DefaultsDict}
          end
       end
 
-      proc {CollectMeth Fs MethSrc Meth FastMeth Defaults}
+      proc {CollectMeth Fs MethSrcDict MethDict FastMethDict DefaultsDict}
          %% Collect methods from defining classes
          case Fs of nil then skip
          [] F|Fr then
-            C={Dictionary.get MethSrc F}
+            C={Dictionary.get MethSrcDict F}
             MethC=C.`ooMeth` FastMethC=C.`ooFastMeth` DefaultsC=C.`ooDefaults`
          in
-            {Dictionary.put Meth F {Dictionary.get MethC F}}
-            if {Dictionary.member FastMethC F} then
-               {Dictionary.put FastMeth F {Dictionary.get FastMethC F}}
+            {Dictionary.put MethDict F MethC.F}
+            if {HasFeature FastMethC F} then
+               {Dictionary.put FastMethDict F FastMethC.F}
             else
-               {Dictionary.remove FastMeth F}
+               {Dictionary.remove FastMethDict F}
             end
-            if {Dictionary.member DefaultsC F} then
-               {Dictionary.put Defaults F {Dictionary.get DefaultsC F}}
+            if {HasFeature DefaultsC F} then
+               {Dictionary.put DefaultsDict F DefaultsC.F}
             else
-               {Dictionary.remove Defaults F}
+               {Dictionary.remove DefaultsDict F}
             end
-            {CollectMeth Fr MethSrc Meth FastMeth Defaults}
+            {CollectMeth Fr MethSrcDict MethDict FastMethDict DefaultsDict}
          end
       end
 
@@ -195,30 +189,30 @@ local
          end
       end
 
-      proc {DefMeth N NewMeth MethSrc C}
+      proc {DefMeth N NewMeth MethSrcDict C}
          %% Set defining class for new methods
          if N>0 then
-            {Dictionary.put MethSrc NewMeth.N.1 C}
-            {DefMeth N-1 NewMeth MethSrc C}
+            {Dictionary.put MethSrcDict NewMeth.N.1 C}
+            {DefMeth N-1 NewMeth MethSrcDict C}
          end
       end
 
       %%
       %% Compute attributes and features
       %%
-      proc {SetOther Fs New Oth}
+      proc {SetOther Fs New OthDict}
          case Fs of nil then skip
          [] F|Fr then
-            {Dictionary.put Oth F New.F}
-            {SetOther Fr New Oth}
+            {Dictionary.put OthDict F New.F}
+            {SetOther Fr New OthDict}
          end
       end
 
-      proc {CollectOther Fs Src What Oth}
+      proc {CollectOther Fs SrcDict What OthDict}
          case Fs of nil then skip
-         [] F|Fr then C={Dictionary.get Src F} in
-            {Dictionary.put Oth F C.What.F}
-            {CollectOther Fr Src What Oth}
+         [] F|Fr then C={Dictionary.get SrcDict F} in
+            {Dictionary.put OthDict F C.What.F}
+            {CollectOther Fr SrcDict What OthDict}
          end
       end
 
@@ -229,10 +223,10 @@ local
          end
       end
 
-      proc {DefOther Fs Src C}
+      proc {DefOther Fs SrcDict C}
          %% Set defining class for new attributes or features
          case Fs of nil then skip
-         [] F|Fr then {Dictionary.put Src F C} {DefOther Fr Src C}
+         [] F|Fr then {Dictionary.put SrcDict F C} {DefOther Fr SrcDict C}
          end
       end
 
@@ -293,14 +287,12 @@ local
       fun {FindDefs Cs What}
          case Cs of nil then nil
          [] C|Cr then
-            if {Dictionary.isEmpty C.What} then {FindDefs Cr What}
+            if {Width C.What} == 0 then {FindDefs Cr What}
             else C|{FindDefs Cr What}
             end
          end
       end
 
-      EmptyDict = {Dictionary.new}
-      {MarkSafe EmptyDict}
    in
 
       %%
@@ -349,18 +341,24 @@ local
          MCs=case {FindDefs Parents `ooMethSrc`}
              of nil then
                 if NoNewMeth==0 then
-                   Meth     = EmptyDict
-                   FastMeth = EmptyDict
-                   Defaults = EmptyDict
-                   MethSrc  = EmptyDict
+                   Meth     = methods()
+                   FastMeth = fastmeths()
+                   Defaults = defaults()
+                   MethSrc  = methodsSrc()
                 else
-                   Meth     = {Dictionary.new}
-                   FastMeth = {Dictionary.new}
-                   Defaults = {Dictionary.new}
-                   {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+                   MethDict     = {Dictionary.new}
+                   FastMethDict = {Dictionary.new}
+                   DefaultsDict = {Dictionary.new}
+                in
+                   {SetMeth NoNewMeth NewMeth MethDict FastMethDict DefaultsDict}
+                   Meth     = {Dictionary.toRecord methods MethDict}
+                   FastMeth = {Dictionary.toRecord fastmeths FastMethDict}
+                   Defaults = {Dictionary.toRecord defaults DefaultsDict}
                    if IsFinal then skip else
-                      MethSrc = {Dictionary.new}
-                      {DefMeth NoNewMeth NewMeth MethSrc C}
+                      MethSrcDict = {Dictionary.new}
+                   in
+                      {DefMeth NoNewMeth NewMeth MethSrcDict C}
+                      MethSrc = {Dictionary.toRecord methodsSrc MethSrcDict}
                    end
                 end
                 nil
@@ -373,30 +371,43 @@ local
                       MethSrc  = P.`ooMethSrc`
                    end
                 else
-                   Meth     = {Dictionary.clone P.`ooMeth`}
-                   FastMeth = {Dictionary.clone P.`ooFastMeth`}
-                   Defaults = {Dictionary.clone P.`ooDefaults`}
-                   {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+                   MethDict     = {Record.toDictionary P.`ooMeth`}
+                   FastMethDict = {Record.toDictionary P.`ooFastMeth`}
+                   DefaultsDict = {Record.toDictionary P.`ooDefaults`}
+                in
+                   {SetMeth NoNewMeth NewMeth MethDict FastMethDict DefaultsDict}
+                   Meth     = {Dictionary.toRecord methods MethDict}
+                   FastMeth = {Dictionary.toRecord fastmeths FastMethDict}
+                   Defaults = {Dictionary.toRecord defaults DefaultsDict}
                    if IsFinal then skip else
-                      MethSrc  = {Dictionary.clone P.`ooMethSrc`}
-                      {DefMeth NoNewMeth NewMeth MethSrc C}
+                      MethSrcDict = {Record.toDictionary P.`ooMethSrc`}
+                   in
+                      {DefMeth NoNewMeth NewMeth MethSrcDict C}
+                      MethSrc = {Dictionary.toRecord methodsSrc MethSrcDict}
                    end
                 end
                 nil
-             [] Ps then Conf={Dictionary.new} in
-                MethSrc = {Dictionary.new}
+             [] Ps then
+                Conf={Dictionary.new}
+                MethSrcDict MethDict FastMethDict DefaultsDict
+             in
+                MethSrcDict = {Dictionary.new}
                 %% Collect conflicts and defining classes
-                {Inherit Ps MethSrc `ooMethSrc` Conf}
+                {Inherit Ps MethSrcDict `ooMethSrc` Conf}
                 %% Resolve conflicts by new definitions
                 {ClearMeth NoNewMeth NewMeth Conf}
                 %% Construct methods
-                Meth     = {Dictionary.new}
-                FastMeth = {Dictionary.new}
-                Defaults = {Dictionary.new}
-                {CollectMeth {Dictionary.keys MethSrc} MethSrc
-                 Meth FastMeth Defaults}
-                {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
-                {DefMeth NoNewMeth NewMeth MethSrc C}
+                MethDict     = {Dictionary.new}
+                FastMethDict = {Dictionary.new}
+                DefaultsDict = {Dictionary.new}
+                {CollectMeth {Dictionary.keys MethSrcDict} MethSrcDict
+                 MethDict FastMethDict DefaultsDict}
+                {SetMeth NoNewMeth NewMeth MethDict FastMethDict DefaultsDict}
+                {DefMeth NoNewMeth NewMeth MethSrcDict C}
+                Meth     = {Dictionary.toRecord methods MethDict}
+                FastMeth = {Dictionary.toRecord fastmeths FastMethDict}
+                Defaults = {Dictionary.toRecord defaults DefaultsDict}
+                MethSrc  = {Dictionary.toRecord methodsSrc MethSrcDict}
                 {Dictionary.entries Conf}
              end
          %% Attributes
@@ -404,11 +415,13 @@ local
              of nil then
                 Attr = NewAttr
                 if AsNewAttr==nil then
-                   AttrSrc = EmptyDict
+                   AttrSrc = attrsSrc
                 elseif IsFinal then skip
                 else
-                   AttrSrc = {Dictionary.new}
-                   {DefOther AsNewAttr AttrSrc C}
+                   AttrSrcDict = {Dictionary.new}
+                in
+                   {DefOther AsNewAttr AttrSrcDict C}
+                   AttrSrc = {Dictionary.toRecord attrsSrc AttrSrcDict}
                 end
                 nil
              [] [P] then
@@ -420,26 +433,29 @@ local
                 else
                    Attr = {Adjoin P.`ooAttr` NewAttr}
                    if IsFinal then skip else
-                      AttrSrc = {Dictionary.clone P.`ooAttrSrc`}
-                      {DefOther AsNewAttr AttrSrc C}
+                      AttrSrcDict = {Record.toDictionary P.`ooAttrSrc`}
+                   in
+                      {DefOther AsNewAttr AttrSrcDict C}
+                      AttrSrc = {Dictionary.toRecord attrsSrc AttrSrcDict}
                    end
                 end
                 nil
-             [] Ps then Conf={Dictionary.new} in
+             [] Ps then Conf={Dictionary.new} AttrSrcDict in
                 %% Perform conflict checks
-                AttrSrc={Dictionary.new}
+                AttrSrcDict={Dictionary.new}
                 %% Collect conflicts and defining classes
-                {Inherit Ps AttrSrc `ooAttrSrc` Conf}
+                {Inherit Ps AttrSrcDict `ooAttrSrc` Conf}
                 %% Resolve conflicts by new definitions
                 {ClearOther AsNewAttr Conf}
                 %% Construct attributes
-                Attr = local TmpAttr={Dictionary.new} in
-                          {CollectOther {Dictionary.keys AttrSrc} AttrSrc
-                           `ooAttr` TmpAttr}
-                          {SetOther AsNewAttr NewAttr TmpAttr}
-                          {DefOther AsNewAttr AttrSrc C}
-                          {Dictionary.toRecord 'attr' TmpAttr}
+                Attr = local TmpAttrDict={Dictionary.new} in
+                          {CollectOther {Dictionary.keys AttrSrcDict} AttrSrcDict
+                           `ooAttr` TmpAttrDict}
+                          {SetOther AsNewAttr NewAttr TmpAttrDict}
+                          {DefOther AsNewAttr AttrSrcDict C}
+                          {Dictionary.toRecord 'attr' TmpAttrDict}
                        end
+                AttrSrc = {Dictionary.toRecord attrsSrc AttrSrcDict}
                 {Dictionary.entries Conf}
              end
          %% Features
@@ -448,12 +464,14 @@ local
                 Feat = NewFeat
                 if AsNewFeat==nil then
                    FreeFeat = Feat
-                   FeatSrc  = EmptyDict
+                   FeatSrc  = featsSrc()
                 else
                    FreeFeat = {MakeFree Feat}
                    if IsFinal then skip else
-                      FeatSrc = {Dictionary.new}
-                      {DefOther AsNewFeat FeatSrc C}
+                      FeatSrcDict = {Dictionary.new}
+                   in
+                      {DefOther AsNewFeat FeatSrcDict C}
+                      FeatSrc = {Dictionary.toRecord featsSrc FeatSrcDict}
                    end
                 end
                 nil
@@ -468,26 +486,29 @@ local
                    Feat     = {Adjoin P.`ooFeat` NewFeat}
                    FreeFeat = {MakeFree Feat}
                    if IsFinal then skip else
-                      FeatSrc = {Dictionary.clone P.`ooFeatSrc`}
-                      {DefOther AsNewFeat FeatSrc C}
+                      FeatSrcDict = {Record.toDictionary P.`ooFeatSrc`}
+                   in
+                      {DefOther AsNewFeat FeatSrcDict C}
+                      FeatSrc = {Dictionary.toRecord featsSrc FeatSrcDict}
                    end
                 end
                 nil
-             [] Ps then Conf={Dictionary.new} in
-                FeatSrc = {Dictionary.new}
+             [] Ps then Conf={Dictionary.new} FeatSrcDict in
+                FeatSrcDict = {Dictionary.new}
                 %% Collect conflicts and defining classes
-                {Inherit Ps FeatSrc `ooFeatSrc` Conf}
+                {Inherit Ps FeatSrcDict `ooFeatSrc` Conf}
                 %% Resolve conflicts by new definitions
                 {ClearOther AsNewFeat Conf}
                 %% Construct features
-                Feat = local TmpFeat={Dictionary.new} in
-                          {CollectOther {Dictionary.keys FeatSrc} FeatSrc
-                           `ooFeat` TmpFeat}
-                          {SetOther AsNewFeat NewFeat TmpFeat}
-                          {DefOther AsNewFeat FeatSrc C}
-                          {Dictionary.toRecord 'feat' TmpFeat}
+                Feat = local TmpFeatDict={Dictionary.new} in
+                          {CollectOther {Dictionary.keys FeatSrcDict} FeatSrcDict
+                           `ooFeat` TmpFeatDict}
+                          {SetOther AsNewFeat NewFeat TmpFeatDict}
+                          {DefOther AsNewFeat FeatSrcDict C}
+                          {Dictionary.toRecord 'feat' TmpFeatDict}
                        end
                 FreeFeat = {MakeFree Feat}
+                FeatSrc = {Dictionary.toRecord featsSrc FeatSrcDict}
                 {Dictionary.entries Conf}
              end
       in
@@ -495,10 +516,6 @@ local
             {Exception.raiseError object(conflicts PrintName
                                          'meth':MCs 'attr':ACs 'feat':FCs)}
          end
-         %% Mark these dictionaries safe as it comes to marshalling
-         {MarkSafe Meth}
-         {MarkSafe FastMeth}
-         {MarkSafe Defaults}
          %% Create the real class
          C = {BuildClass
               if IsFinal then
@@ -511,20 +528,16 @@ local
                          `ooPrintName`:  PrintName
                          `ooFallback`:   Fallback)
               else
-                 %% Mark these dictionaries safe as it comes to marshalling
-                 {MarkSafe MethSrc}
-                 {MarkSafe AttrSrc}
-                 {MarkSafe FeatSrc}
                  'class'(%% Information for methods
-                         `ooMethSrc`:    MethSrc       % Dictionary
-                         `ooMeth`:       Meth          % Dictionary
-                         `ooFastMeth`:   FastMeth      % Dictionary
-                         `ooDefaults`:   Defaults      % Dictionary
+                         `ooMethSrc`:    MethSrc       % Record
+                         `ooMeth`:       Meth          % Record
+                         `ooFastMeth`:   FastMeth      % Record
+                         `ooDefaults`:   Defaults      % Record
                          %% Information for attributes
                          `ooAttrSrc`:    AttrSrc       % Record
                          `ooAttr`:       Attr          % Record
                          %% Information for features
-                         `ooFeatSrc`:    FeatSrc       % Dictionary
+                         `ooFeatSrc`:    FeatSrc       % Record
                          `ooFeat`:       Feat          % Record
                          `ooFreeFeat`:   FreeFeat      % Record
                          %% Other info
@@ -580,7 +593,7 @@ in
    OoExtensions = oo('class':      NewFullClass
                      getClass:     GetClass
                      getMethNames: fun {$ OC}
-                                      {Dictionary.keys {GetC OC}.`ooMeth`}
+                                      {Arity {GetC OC}.`ooMeth`}
                                    end
                      getAttrNames: fun {$ OC}
                                       {Arity {GetC OC}.`ooAttr`}

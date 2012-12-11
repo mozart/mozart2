@@ -5,6 +5,15 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   include_directories(/usr/lib/c++/v1)
 endif()
 
+# properties-config.cc
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/properties-config.cc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/properties-config.cc"
+  ESCAPE_QUOTES @ONLY)
+
+# Generated sources
+
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
 
@@ -44,6 +53,8 @@ add_custom_command(
 add_custom_target(gensources
   DEPENDS mozart.gen
   VERBATIM)
+
+# Build the library
 
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
   unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc properties.cc

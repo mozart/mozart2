@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(MOZART CXX)
 
+# Custom CMake modules
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_local ${CMAKE_MODULE_PATH})
+include(MozartProperties)
+
 # Some helpers when using MinGW
 
 if(MINGW)
@@ -42,7 +47,7 @@ add_subdirectory(opi)
 set(CPACK_PACKAGE_FILE_NAME "Mozart2")
 set(CPACK_PACKAGE_NAME "Mozart2")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Mozart Programming System v2")
-set(CPACK_PACKAGE_VERSION "2.0~alpha0")
+set(CPACK_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_PACKAGE_VENDOR "Université catholique de Louvain")
 set(CPACK_RESOURCE_FILE_LICENSE
     "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
@@ -59,7 +64,13 @@ set(CPACK_BUNDLE_ICON "${MACOS_RESOURCES_DIR}/mozart.icns")
 
 # Configuration of the DEB generator
 
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+if(${MOZART_PROP_PLATFORM_ARCH} MATCHES "x86_64")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+else()
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
+endif()
+string(REGEX REPLACE "-(alpha|beta|rc)\\." "~\\1"
+       CPACK_DEBIAN_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 

@@ -168,7 +168,9 @@ class CodeArea(val abstraction: Abstraction) {
 
     constant match {
       case OzBuiltin(builtin) =>
-        out << "::%s(vm)" % builtin.ccFullGetter
+        out << "vm->findBuiltin(%s, %s)" % (
+            stringToMozartStr(builtin.moduleName),
+            stringToMozartStr(builtin.name))
 
       case OzCodeArea(codeArea) =>
         out << "%s" % codeArea.ccCodeArea

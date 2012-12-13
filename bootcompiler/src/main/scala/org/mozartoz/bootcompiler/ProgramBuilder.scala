@@ -64,18 +64,13 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  }}}
    *
    *  The resulting Base module must export an unbound variable under feature
-   *  'Base', and the boot module manager it is supposed to have created under
-   *  feature '$BootMM'.
+   *  'Base'. It is also supposed to create the boot module manager, which has
+   *  to be bound to {Boot_Property.get 'internal.bootmm'}.
    *
-   *  The program then binds <Base>.'Base' to <Base>, and registers the boot
-   *  modules in the boot module manager.
+   *  The program then binds <Base>.'Base' to <Base>.
    *
    *  {{{
    *  <Base>.'Base' = <Base>
-   *  <BootMM> = <Base>.'$BootMM'
-   *  {<BootMM>.registerModule 'x-oz://boot/ModA' <constant Boot ModA>}
-   *  ...
-   *  {<BootMM>.registerModule 'x-oz://boot/ModN' <constant Boot ModN>}
    *  }}}
    */
   def buildBaseEnvProgram(prog: Program,
@@ -113,19 +108,10 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       (prog.baseEnvSymbol dot OzAtom("Base")) === prog.baseEnvSymbol
     }
 
-    // Register the boot modules
-    val registerBootModulesStat = CompoundStatement {
-      val registerProc = getBootMMProc(prog, "registerModule")
-      for ((url, module) <- bootModulesMap.toList) yield {
-        registerProc.call(OzAtom(url), module)
-      }
-    }
-
     // Put things together
     val wholeProgram = {
       applyBaseFunctorStat ~
-      bindBaseBaseStat ~
-      registerBootModulesStat
+      bindBaseBaseStat
     }
 
     prog.rawCode = wholeProgram

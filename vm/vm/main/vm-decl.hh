@@ -46,6 +46,33 @@
 
 namespace mozart {
 
+///////////////////
+// BuiltinModule //
+///////////////////
+
+class BuiltinModule {
+public:
+  inline
+  BuiltinModule(VM vm, const nchar* name);
+
+  virtual ~BuiltinModule() {}
+
+  atom_t getName() {
+    return _name;
+  }
+
+  StableNode& getModule() {
+    return _module;
+  }
+protected:
+  void initModule(VM vm, UnstableNode&& module) {
+    _module.init(vm, std::move(module));
+  }
+private:
+  atom_t _name;
+  StableNode _module;
+};
+
 ////////////////////
 // VirtualMachine //
 ////////////////////
@@ -187,6 +214,19 @@ public:
     return environment;
   }
 
+public:
+  inline
+  void registerBuiltinModule(const std::shared_ptr<BuiltinModule>& module);
+
+  template <typename T>
+  inline
+  UnstableNode findBuiltinModule(T&& name);
+
+  template <typename T, typename U>
+  inline
+  UnstableNode findBuiltin(T&& moduleName, U&& builtinName);
+
+public:
   PropertyRegistry& getPropertyRegistry() {
     return _propertyRegistry;
   }
@@ -293,6 +333,7 @@ private:
   Runnable* _currentThread;
   bool _isOnTopLevel;
 
+  NodeDictionary* _builtinModules;
   PropertyRegistry _propertyRegistry;
 
   RunnableList aliveThreads;

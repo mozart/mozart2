@@ -331,18 +331,49 @@ void BuiltinDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
 
 void ModuleDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
                                       llvm::raw_fd_ostream& code) {
-  header << "\nnamespace biref {\n";
+  header << "\nnamespace biref {\n\n";
+  header << "void registerBuiltin" << cppName << "(::mozart::VM vm);\n";
+  header << "\n}\n";
+
   code << "\nnamespace biref {\n";
+  code << "using namespace ::mozart;\n";
 
-  header << "\nstruct " << cppName << " {";
+  code << "\nclass " << cppName << ": public BuiltinModule {\n";
+  code << "public:\n";
+  code << "  " << cppName << "(VM vm): BuiltinModule(vm, MOZART_STR(";
+  nameExpr->printPretty(code, nullptr, context->getPrintingPolicy());
+  code << ")) {\n";
 
-  for (auto iter = builtins.begin(); iter != builtins.end(); ++iter) {
-    header << "\n";
-    iter->makeBuiltinDefsOutput(header, code);
+  code << "    UnstableField fields[" << builtins.size() << "];\n";
+
+  size_t i = 0;
+  for (auto iter = builtins.begin(); iter != builtins.end(); ++iter, ++i) {
+    code << "    fields[" << i << "].feature = build(vm, MOZART_STR(";
+    iter->nameExpr->printPretty(code, nullptr, context->getPrintingPolicy());
+    code << "));\n";
+
+    code << "    fields[" << i << "].value = build(vm, instance"
+         << iter->cppName << ");\n";
   }
 
-  header << "};\n";
+  code << "    UnstableNode label = build(vm, MOZART_STR(\"export\"));\n";
+  code << "    UnstableNode module = buildRecordDynamic(vm, label, "
+       << builtins.size() << ", fields);\n";
+  code << "    initModule(vm, std::move(module));\n";
+  code << "  }\n";
 
-  header << "\n}\n";
+  code << "private:\n";
+
+  for (auto iter = builtins.begin(); iter != builtins.end(); ++iter) {
+    code << "  " << iter->fullCppName << " instance" << iter->cppName << ";\n";
+  }
+
+  code << "};\n";
+
+  code << "void registerBuiltin" << cppName << "(VM vm) {\n";
+  code << "  auto module = std::make_shared<" << cppName << ">(vm);\n";
+  code << "  vm->registerBuiltinModule(module);\n";
+  code << "}\n";
+
   code << "\n}\n";
 }

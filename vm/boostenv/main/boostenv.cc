@@ -34,6 +34,8 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   _asyncIONodeCount(0),
   random_generator(std::time(nullptr)), uuidGenerator(random_generator),
   preemptionTimer(io_service), alarmTimer(io_service) {
+
+  builtins::biref::registerBuiltinModOS(vm);
 }
 
 void BoostBasedVM::setApplicationURL(char const* url) {

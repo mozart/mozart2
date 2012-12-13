@@ -25,8 +25,47 @@
 #include "mozart.hh"
 #include "coremodules.hh"
 
-namespace mozart { namespace builtins {
+namespace mozart {
+
+namespace builtins {
 
 #include "mozartbuiltins.cc"
 
-} }
+} // namespace builtins
+
+void registerCoreModules(VM vm) {
+  using namespace mozart::builtins::biref;
+
+  registerBuiltinModArray(vm);
+  registerBuiltinModAtom(vm);
+  registerBuiltinModCell(vm);
+  registerBuiltinModChunk(vm);
+  registerBuiltinModCoders(vm);
+  registerBuiltinModCompactString(vm);
+  registerBuiltinModCompilerSupport(vm);
+  registerBuiltinModDebug(vm);
+  registerBuiltinModDictionary(vm);
+  registerBuiltinModException(vm);
+  registerBuiltinModInt(vm);
+  registerBuiltinModFloat(vm);
+  registerBuiltinModForeignPointer(vm);
+  registerBuiltinModLiteral(vm);
+  registerBuiltinModName(vm);
+  registerBuiltinModNumber(vm);
+  registerBuiltinModObject(vm);
+  registerBuiltinModPort(vm);
+  registerBuiltinModProcedure(vm);
+  registerBuiltinModProperty(vm);
+  registerBuiltinModRecord(vm);
+  registerBuiltinModReflection(vm);
+  registerBuiltinModSpace(vm);
+  registerBuiltinModSystem(vm);
+  registerBuiltinModThread(vm);
+  registerBuiltinModTime(vm);
+  registerBuiltinModTuple(vm);
+  registerBuiltinModValue(vm);
+  registerBuiltinModVirtualByteString(vm);
+  registerBuiltinModVirtualString(vm);
+}
+
+} // namespace mozart

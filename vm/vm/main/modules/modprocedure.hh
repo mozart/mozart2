@@ -46,7 +46,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, Callable(value).isProcedure(vm));
     }
   };
@@ -55,7 +55,7 @@ public:
   public:
     Arity(): Builtin("arity") {}
 
-    void operator()(VM vm, In procedure, Out result) {
+    static void call(VM vm, In procedure, Out result) {
       result = build(vm, Callable(procedure).procedureArity(vm));
     }
   };
@@ -64,7 +64,7 @@ public:
   public:
     Apply(): Builtin("apply") {}
 
-    void operator()(VM vm, In procedure, In args) {
+    static void call(VM vm, In procedure, In args) {
       RichNode terminationVar = protectNonIdempotentStep(
         vm, MOZART_STR("::mozart::builtins::ModProcedure::Apply"),
         [=] () -> RichNode {

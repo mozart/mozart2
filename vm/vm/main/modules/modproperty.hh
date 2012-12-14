@@ -45,7 +45,7 @@ public:
   public:
     Get(): Builtin("get") {}
 
-    void operator()(VM vm, In property, Out result, Out found) {
+    static void call(VM vm, In property, Out result, Out found) {
       if (vm->getPropertyRegistry().get(vm, property, result)) {
         found = build(vm, true);
       } else {
@@ -59,7 +59,7 @@ public:
   public:
     Put(): Builtin("put") {}
 
-    void operator()(VM vm, In property, In value, Out found) {
+    static void call(VM vm, In property, In value, Out found) {
       found = build(vm, vm->getPropertyRegistry().put(vm, property, value));
     }
   };

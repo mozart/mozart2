@@ -45,7 +45,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, Numeric(value).isFloat(vm));
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     Divide(): Builtin("/") {}
 
-    void operator()(VM vm, In left, In right, Out result) {
+    static void call(VM vm, In left, In right, Out result) {
       result = Numeric(left).divide(vm, right);
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     ToInt(): Builtin("toInt") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       auto floatValue = getArgument<double>(vm, value);
       result = build(vm, (nativeint) floatValue);
     }

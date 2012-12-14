@@ -45,7 +45,7 @@ public:
   public:
     Alarm(): Builtin("alarm") {}
 
-    void operator()(VM vm, In delay, Out result) {
+    static void call(VM vm, In delay, Out result) {
       auto intDelay = getArgument<nativeint>(vm, delay, MOZART_STR("integer"));
 
       if (intDelay <= 0) {
@@ -61,7 +61,7 @@ public:
   public:
     GetReferenceTime(): Builtin("getReferenceTime") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = build(vm, vm->getReferenceTime());
     }
   };

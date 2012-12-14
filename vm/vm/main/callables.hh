@@ -48,13 +48,13 @@ bool BuiltinProcedure::equals(VM vm, RichNode right) {
 
 void BuiltinProcedure::callBuiltin(VM vm, size_t argc, UnstableNode* args[]) {
   assert(argc == getArity());
-  return _builtin->call(vm, args);
+  return _builtin->callBuiltin(vm, args);
 }
 
 template <class... Args>
 void BuiltinProcedure::callBuiltin(VM vm, Args&&... args) {
   assert(sizeof...(args) == getArity());
-  return _builtin->call(vm, std::forward<Args>(args)...);
+  return _builtin->callBuiltin(vm, std::forward<Args>(args)...);
 }
 
 size_t BuiltinProcedure::procedureArity(VM vm) {

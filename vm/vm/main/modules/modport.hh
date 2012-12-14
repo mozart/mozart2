@@ -45,7 +45,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, Out stream, Out result) {
+    static void call(VM vm, Out stream, Out result) {
       result = Port::build(vm, stream);
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, PortLike(value).isPort(vm));
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     Send(): Builtin("send") {}
 
-    void operator()(VM vm, In port, In value) {
+    static void call(VM vm, In port, In value) {
       PortLike(port).send(vm, value);
     }
   };
@@ -72,7 +72,7 @@ public:
   public:
     SendReceive(): Builtin("sendReceive") {}
 
-    void operator()(VM vm, In port, In value, Out reply) {
+    static void call(VM vm, In port, In value, Out reply) {
       reply = PortLike(port).sendReceive(vm, value);
     }
   };

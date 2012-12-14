@@ -67,7 +67,7 @@ public:
   public:
     Rand(): Builtin("rand") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = build(vm, (nativeint) BoostBasedVM::forVM(vm).random_generator());
     }
   };
@@ -76,7 +76,7 @@ public:
   public:
     Srand(): Builtin("srand") {}
 
-    void operator()(VM vm, In seed) {
+    static void call(VM vm, In seed) {
       auto intSeed = getArgument<nativeint>(vm, seed);
 
       BoostBasedVM::forVM(vm).random_generator.seed(
@@ -88,7 +88,7 @@ public:
   public:
     RandLimits(): Builtin("randLimits") {}
 
-    void operator()(VM vm, Out min, Out max) {
+    static void call(VM vm, Out min, Out max) {
       min = build(vm, (nativeint) BoostBasedVM::random_generator_t::min());
       max = build(vm, (nativeint) BoostBasedVM::random_generator_t::max());
     }
@@ -100,7 +100,7 @@ public:
   public:
     GetEnv(): Builtin("getEnv") {}
 
-    void operator()(VM vm, In var, Out result) {
+    static void call(VM vm, In var, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, var);
       char* value;
 
@@ -121,7 +121,7 @@ public:
   public:
     PutEnv(): Builtin("putEnv") {}
 
-    void operator()(VM vm, In var, In value) {
+    static void call(VM vm, In var, In value) {
       size_t varBufSize = ozVSLengthForBuffer(vm, var);
       size_t valueBufSize = ozVSLengthForBuffer(vm, value);
 
@@ -199,7 +199,7 @@ public:
   public:
     GetCWD(): Builtin("getCWD") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       auto nativeStr = boost::filesystem::current_path().native();
       auto nresult = toUTF<nchar>(makeLString(nativeStr.c_str(),
                                               nativeStr.size()));
@@ -212,7 +212,7 @@ public:
   public:
     Tmpnam(): Builtin("tmpnam") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       std::string nativeStr =
         std::string("/tmp/temp-") + vm->genUUID().toString();
       auto nresult = toUTF<nchar>(makeLString(nativeStr.c_str(),
@@ -226,7 +226,7 @@ public:
   public:
     Fopen(): Builtin("fopen") {}
 
-    void operator()(VM vm, In fileName, In mode, Out result) {
+    static void call(VM vm, In fileName, In mode, Out result) {
       size_t fileNameBufSize = ozVSLengthForBuffer(vm, fileName);
       size_t modeBufSize = ozVSLengthForBuffer(vm, mode);
 
@@ -250,8 +250,8 @@ public:
   public:
     Fread(): Builtin("fread") {}
 
-    void operator()(VM vm, In fileNode, In count, In end,
-                    Out actualCount, Out result) {
+    static void call(VM vm, In fileNode, In count, In end,
+                     Out actualCount, Out result) {
       auto file = getFileArgument(vm, fileNode)->file();
       auto intCount = getArgument<nativeint>(vm, count);
 
@@ -289,7 +289,7 @@ public:
   public:
     Fwrite(): Builtin("fwrite") {}
 
-    void operator()(VM vm, In fileNode, In data, Out writtenCount) {
+    static void call(VM vm, In fileNode, In data, Out writtenCount) {
       auto file = getFileArgument(vm, fileNode)->file();
       size_t bufSize = ozVBSLengthForBuffer(vm, data);
 
@@ -318,7 +318,7 @@ public:
   public:
     Fseek(): Builtin("fseek") {}
 
-    void operator()(VM vm, In fileNode, In offset, In whence, Out where) {
+    static void call(VM vm, In fileNode, In offset, In whence, Out where) {
       using namespace patternmatching;
 
       auto file = getFileArgument(vm, fileNode)->file();
@@ -349,7 +349,7 @@ public:
   public:
     Fclose(): Builtin("fclose") {}
 
-    void operator()(VM vm, In fileNode) {
+    static void call(VM vm, In fileNode) {
       auto wrappedFile = getFileArgument(vm, fileNode);
       wrappedFile->close();
     }
@@ -359,7 +359,7 @@ public:
   public:
     Stdin(): Builtin("stdin") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = build(vm, std::make_shared<WrappedFile>(stdin));
     }
   };
@@ -368,7 +368,7 @@ public:
   public:
     Stdout(): Builtin("stdout") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = build(vm, std::make_shared<WrappedFile>(stdout));
     }
   };
@@ -377,7 +377,7 @@ public:
   public:
     Stderr(): Builtin("stderr") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = build(vm, std::make_shared<WrappedFile>(stderr));
     }
   };
@@ -400,7 +400,7 @@ public:
   public:
     TCPAcceptorCreate(): Builtin("tcpAcceptorCreate") {}
 
-    void operator()(VM vm, In ipVersion, In port, Out result) {
+    static void call(VM vm, In ipVersion, In port, Out result) {
       using boost::asio::ip::tcp;
 
       auto intIPVersion = getArgument<nativeint>(vm, ipVersion,
@@ -433,7 +433,7 @@ public:
   public:
     TCPAccept(): Builtin("tcpAccept") {}
 
-    void operator()(VM vm, In acceptor, Out result) {
+    static void call(VM vm, In acceptor, Out result) {
       auto tcpAcceptor = getTCPAcceptorArg(vm, acceptor);
 
       auto connectionNode =
@@ -447,7 +447,7 @@ public:
   public:
     TCPCancelAccept(): Builtin("tcpCancelAccept") {}
 
-    void operator()(VM vm, In acceptor) {
+    static void call(VM vm, In acceptor) {
       auto tcpAcceptor = getTCPAcceptorArg(vm, acceptor);
 
       auto error = tcpAcceptor->cancel();
@@ -460,7 +460,7 @@ public:
   public:
     TCPAcceptorClose(): Builtin("tcpAcceptorClose") {}
 
-    void operator()(VM vm, In acceptor) {
+    static void call(VM vm, In acceptor) {
       auto tcpAcceptor = getTCPAcceptorArg(vm, acceptor);
 
       auto error = tcpAcceptor->close();
@@ -473,7 +473,7 @@ public:
   public:
     TCPConnect(): Builtin("tcpConnect") {}
 
-    void operator()(VM vm, In host, In service, Out status) {
+    static void call(VM vm, In host, In service, Out status) {
       size_t hostBufSize = ozVSLengthForBuffer(vm, host);
       size_t serviceBufSize = ozVSLengthForBuffer(vm, service);
 
@@ -586,7 +586,7 @@ public:
   public:
     TCPConnectionRead(): Builtin("tcpConnectionRead") {}
 
-    void operator()(VM vm, In connection, In count, In tail, Out status) {
+    static void call(VM vm, In connection, In count, In tail, Out status) {
       baseSocketConnectionRead(vm, getTCPConnectionArg(vm, connection),
                                count, tail, status);
     }
@@ -596,7 +596,7 @@ public:
   public:
     TCPConnectionWrite(): Builtin("tcpConnectionWrite") {}
 
-    void operator()(VM vm, In connection, In data, Out status) {
+    static void call(VM vm, In connection, In data, Out status) {
       baseSocketConnectionWrite(vm, getTCPConnectionArg(vm, connection),
                                 data, status);
     }
@@ -606,7 +606,7 @@ public:
   public:
     TCPConnectionShutdown(): Builtin("tcpConnectionShutdown") {}
 
-    void operator()(VM vm, In connection, In what) {
+    static void call(VM vm, In connection, In what) {
       baseSocketConnectionShutdown(vm, getTCPConnectionArg(vm, connection),
                                    what);
     }
@@ -616,7 +616,7 @@ public:
   public:
     TCPConnectionClose(): Builtin("tcpConnectionClose") {}
 
-    void operator()(VM vm, In connection) {
+    static void call(VM vm, In connection) {
       baseSocketConnectionClose(vm, getTCPConnectionArg(vm, connection));
     }
   };
@@ -657,8 +657,8 @@ public:
   public:
     Exec(): Builtin("exec") {}
 
-    void operator()(VM vm, In inExecutable, In inArgv, In inDoKill,
-                    Out outPid) {
+    static void call(VM vm, In inExecutable, In inArgv, In inDoKill,
+                     Out outPid) {
       // Extract arguments
 
       auto doKill = getArgument<bool>(vm, inDoKill);
@@ -831,8 +831,8 @@ public:
   public:
     Pipe(): Builtin("pipe") {}
 
-    void operator()(VM vm, In inExecutable, In inArgv,
-                    Out outPid, Out outStatus) {
+    static void call(VM vm, In inExecutable, In inArgv,
+                     Out outPid, Out outStatus) {
       // Extract arguments
 
       mut::LString<char> executable = nullptr;
@@ -1053,7 +1053,7 @@ public:
   public:
     PipeConnectionRead(): Builtin("pipeConnectionRead") {}
 
-    void operator()(VM vm, In connection, In count, In tail, Out status) {
+    static void call(VM vm, In connection, In count, In tail, Out status) {
       baseSocketConnectionRead(vm, getPipeConnectionArg(vm, connection),
                                count, tail, status);
     }
@@ -1063,7 +1063,7 @@ public:
   public:
     PipeConnectionWrite(): Builtin("pipeConnectionWrite") {}
 
-    void operator()(VM vm, In connection, In data, Out status) {
+    static void call(VM vm, In connection, In data, Out status) {
       baseSocketConnectionWrite(vm, getPipeConnectionArg(vm, connection),
                                 data, status);
     }
@@ -1073,7 +1073,7 @@ public:
   public:
     PipeConnectionShutdown(): Builtin("pipeConnectionShutdown") {}
 
-    void operator()(VM vm, In connection, In what) {
+    static void call(VM vm, In connection, In what) {
       baseSocketConnectionShutdown(vm, getPipeConnectionArg(vm, connection),
                                    what);
     }
@@ -1083,7 +1083,7 @@ public:
   public:
     PipeConnectionClose(): Builtin("pipeConnectionClose") {}
 
-    void operator()(VM vm, In connection) {
+    static void call(VM vm, In connection) {
       baseSocketConnectionClose(vm, getPipeConnectionArg(vm, connection));
     }
   };
@@ -1093,7 +1093,7 @@ public:
   public:
     PipeConnectionRead(): Builtin("pipeConnectionRead") {}
 
-    void operator()(VM vm, In connection, In count, In tail, Out status) {
+    static void call(VM vm, In connection, In count, In tail, Out status) {
       raiseError(vm, MOZART_STR("notImplemented"),
                  MOZART_STR("Pipes on Windows"));
     }
@@ -1103,7 +1103,7 @@ public:
   public:
     PipeConnectionWrite(): Builtin("pipeConnectionWrite") {}
 
-    void operator()(VM vm, In connection, In data, Out status) {
+    static void call(VM vm, In connection, In data, Out status) {
       raiseError(vm, MOZART_STR("notImplemented"),
                  MOZART_STR("Pipes on Windows"));
     }
@@ -1113,7 +1113,7 @@ public:
   public:
     PipeConnectionShutdown(): Builtin("pipeConnectionShutdown") {}
 
-    void operator()(VM vm, In connection, In what) {
+    static void call(VM vm, In connection, In what) {
       raiseError(vm, MOZART_STR("notImplemented"),
                  MOZART_STR("Pipes on Windows"));
     }
@@ -1123,7 +1123,7 @@ public:
   public:
     PipeConnectionClose(): Builtin("pipeConnectionClose") {}
 
-    void operator()(VM vm, In connection) {
+    static void call(VM vm, In connection) {
       raiseError(vm, MOZART_STR("notImplemented"),
                  MOZART_STR("Pipes on Windows"));
     }

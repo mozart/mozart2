@@ -47,7 +47,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, RecordLike(value).isRecord(vm));
     }
   };
@@ -56,7 +56,7 @@ public:
   public:
     Label(): Builtin("label") {}
 
-    void operator()(VM vm, In record, Out result) {
+    static void call(VM vm, In record, Out result) {
       result = RecordLike(record).label(vm);
     }
   };
@@ -65,7 +65,7 @@ public:
   public:
     Width(): Builtin("width") {}
 
-    void operator()(VM vm, In record, Out result) {
+    static void call(VM vm, In record, Out result) {
       result = build(vm, RecordLike(record).width(vm));
     }
   };
@@ -74,7 +74,7 @@ public:
   public:
     Arity(): Builtin("arity") {}
 
-    void operator()(VM vm, In record, Out result) {
+    static void call(VM vm, In record, Out result) {
       result = RecordLike(record).arityList(vm);
     }
   };
@@ -83,7 +83,7 @@ public:
   public:
     Clone(): Builtin("clone") {}
 
-    void operator()(VM vm, In record, Out result) {
+    static void call(VM vm, In record, Out result) {
       result = RecordLike(record).clone(vm);
     }
   };
@@ -92,7 +92,7 @@ public:
   public:
     WaitOr(): Builtin("waitOr") {}
 
-    void operator()(VM vm, In record, Out result) {
+    static void call(VM vm, In record, Out result) {
       result = RecordLike(record).waitOr(vm);
     }
   };
@@ -101,7 +101,7 @@ public:
   public:
     MakeDynamic(): Builtin("makeDynamic") {}
 
-    void operator()(VM vm, In label, In contents, Out result) {
+    static void call(VM vm, In label, In contents, Out result) {
       using namespace patternmatching;
 
       size_t contentsWidth = 0;
@@ -132,11 +132,11 @@ public:
   public:
     Test(): Builtin("test") {}
 
-    void operator()(VM vm, In value, In patLabel, In patFeatures, Out result) {
+    static void call(VM vm, In value, In patLabel, In patFeatures, Out result) {
       using namespace patternmatching;
 
       UnstableNode patArityUnstable;
-      ModCompilerSupport::MakeArityDynamic::builtin()(
+      ModCompilerSupport::MakeArityDynamic::call(
         vm, patLabel, patFeatures, patArityUnstable);
       RichNode patArity = patArityUnstable;
 
@@ -155,7 +155,7 @@ public:
   public:
     TestLabel(): Builtin("testLabel") {}
 
-    void operator()(VM vm, In value, In patLabel, Out result) {
+    static void call(VM vm, In value, In patLabel, Out result) {
       result = build(vm, RecordLike(value).testLabel(vm, patLabel));
     }
   };
@@ -164,7 +164,8 @@ public:
   public:
     TestFeature(): Builtin("testFeature") {}
 
-    void operator()(VM vm, In value, In patFeature, Out found, Out fieldValue) {
+    static void call(VM vm, In value, In patFeature,
+                     Out found, Out fieldValue) {
       if (Dottable(value).lookupFeature(vm, patFeature, fieldValue)) {
         found = build(vm, true);
       } else {

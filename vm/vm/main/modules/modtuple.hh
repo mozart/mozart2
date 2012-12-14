@@ -45,7 +45,7 @@ public:
   public:
     Make(): Builtin("make") {}
 
-    void operator()(VM vm, In label, In width, Out result) {
+    static void call(VM vm, In label, In width, Out result) {
       auto intWidth = getArgument<nativeint>(vm, width, MOZART_STR("Integer"));
       result = makeTuple(vm, label, intWidth);
     }
@@ -55,7 +55,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, RecordLike(value).isTuple(vm));
     }
   };

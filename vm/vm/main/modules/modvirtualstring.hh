@@ -48,7 +48,7 @@ public:
   public:
     Is() : Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ozIsVirtualString(vm, value));
     }
   };
@@ -57,7 +57,7 @@ public:
   public:
     ToCompactString() : Builtin("toCompactString") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
 
       {
@@ -72,7 +72,7 @@ public:
   public:
     ToCharList() : Builtin("toCharList") {}
 
-    void operator()(VM vm, In value, In tail, Out result) {
+    static void call(VM vm, In value, In tail, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
 
       {
@@ -95,7 +95,7 @@ public:
   public:
     ToAtom() : Builtin("toAtom") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
 
       {
@@ -110,7 +110,7 @@ public:
   public:
     Length() : Builtin("length") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ozVSLength(vm, value));
     }
   };
@@ -119,7 +119,7 @@ public:
   public:
     ToFloat() : Builtin("toFloat") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
 
       bool success;

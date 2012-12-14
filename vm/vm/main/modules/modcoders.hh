@@ -88,8 +88,8 @@ public:
   public:
     Encode() : Builtin("encode") {}
 
-    void operator()(VM vm, In string, In encodingNode,
-                    In variantNode, Out result) {
+    static void call(VM vm, In string, In encodingNode,
+                     In variantNode, Out result) {
       ByteStringEncoding encoding = ByteStringEncoding::utf8;
       EncodingVariant variant = EncodingVariant::none;
       parseEncoding(vm, encodingNode, variantNode, encoding, variant);
@@ -116,8 +116,8 @@ public:
   public:
     Decode() : Builtin("decode") {}
 
-    void operator()(VM vm, In value, In encodingNode,
-                    In variantNode, Out result) {
+    static void call(VM vm, In value, In encodingNode,
+                     In variantNode, Out result) {
       ByteStringEncoding encoding = ByteStringEncoding::utf8;
       EncodingVariant variant = EncodingVariant::none;
       parseEncoding(vm, encodingNode, variantNode, encoding, variant);

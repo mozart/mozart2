@@ -45,7 +45,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = OptName::build(vm);
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     NewUnique(): Builtin("newUnique") {}
 
-    void operator()(VM vm, In atom, Out result) {
+    static void call(VM vm, In atom, Out result) {
       auto atomValue = getArgument<atom_t>(vm, atom, MOZART_STR("Atom"));
       result = UniqueName::build(vm, unique_name_t(atomValue));
     }
@@ -64,7 +64,7 @@ public:
   public:
     NewNamed(): Builtin("newNamed") {}
 
-    void operator()(VM vm, In atom, Out result) {
+    static void call(VM vm, In atom, Out result) {
       if (AtomLike(atom).isAtom(vm)) {
         result = NamedName::build(vm, atom);
       } else {
@@ -77,7 +77,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, NameLike(value).isName(vm));
     }
   };

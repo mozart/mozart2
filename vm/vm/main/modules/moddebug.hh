@@ -45,7 +45,7 @@ public:
   public:
     GetRaiseOnBlock(): Builtin("getRaiseOnBlock") {}
 
-    void operator()(VM vm, In thread, Out result) {
+    static void call(VM vm, In thread, Out result) {
       auto runnable = getArgument<Runnable*>(vm, thread, MOZART_STR("Thread"));
 
       result = build(vm, runnable->getRaiseOnBlock());
@@ -56,7 +56,7 @@ public:
   public:
     SetRaiseOnBlock(): Builtin("setRaiseOnBlock") {}
 
-    void operator()(VM vm, In thread, In value) {
+    static void call(VM vm, In thread, In value) {
       auto runnable = getArgument<Runnable*>(vm, thread, MOZART_STR("Thread"));
       auto boolValue = getArgument<bool>(vm, value, MOZART_STR("Boolean"));
 
@@ -68,7 +68,7 @@ public:
   public:
     SetId(): Builtin("setId") {}
 
-    void operator()(VM vm, In thread, In id) {
+    static void call(VM vm, In thread, In id) {
       // TODO
     }
   };
@@ -77,7 +77,7 @@ public:
   public:
     Breakpoint(): Builtin("breakpoint") {}
 
-    void operator()(VM vm) {
+    static void call(VM vm) {
       // TODO
     }
   };

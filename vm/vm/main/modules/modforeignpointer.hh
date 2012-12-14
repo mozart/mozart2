@@ -45,7 +45,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       if (value.isTransient())
         waitFor(vm, value);
 
@@ -57,7 +57,7 @@ public:
   public:
     ToInt(): Builtin("toInt") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       if (value.is<ForeignPointer>()) {
         auto pointer = value.as<ForeignPointer>().getVoidPointer();
         result = build(vm, reinterpret_cast<nativeint>(pointer.get()));

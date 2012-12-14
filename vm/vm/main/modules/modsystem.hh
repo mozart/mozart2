@@ -47,7 +47,7 @@ public:
   public:
     PrintRepr(): Builtin("printRepr") {}
 
-    void operator()(VM vm, In value, In toStdErr, In newLine) {
+    static void call(VM vm, In value, In toStdErr, In newLine) {
       auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
       auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
 
@@ -62,7 +62,7 @@ public:
   public:
     GetRepr(): Builtin("getRepr") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       std::basic_stringstream<char> buffer;
       buffer << repr(vm, value);
       auto bufferStr = buffer.str();
@@ -78,7 +78,7 @@ public:
   public:
     PrintVS(): Builtin("printVS") {}
 
-    void operator()(VM vm, In value, In toStdErr, In newLine) {
+    static void call(VM vm, In value, In toStdErr, In newLine) {
       auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
       auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
 
@@ -100,7 +100,7 @@ public:
   public:
     GCDo(): Builtin("gcDo") {}
 
-    void operator()(VM vm) {
+    static void call(VM vm) {
       vm->requestGC();
     }
   };
@@ -109,7 +109,7 @@ public:
   public:
     Eq(): Builtin("eq") {}
 
-    void operator()(VM vm, In lhs, In rhs, Out result) {
+    static void call(VM vm, In lhs, In rhs, Out result) {
       result = build(vm, lhs.isSameNode(rhs));
     }
   };
@@ -118,7 +118,7 @@ public:
   public:
     OnTopLevel(): Builtin("onToplevel") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = build(vm, vm->isOnTopLevel());
     }
   };
@@ -127,7 +127,7 @@ public:
   public:
     Exit(): Builtin("exit") {}
 
-    void operator()(VM vm, In exitCode) {
+    static void call(VM vm, In exitCode) {
       std::exit(getArgument<nativeint>(vm, exitCode, MOZART_STR("Integer")));
     }
   };

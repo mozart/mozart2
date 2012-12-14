@@ -47,7 +47,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, In clazz, Out result) {
+    static void call(VM vm, In clazz, Out result) {
       auto ooAttr = build(vm, vm->coreatoms.ooAttr);
       auto attrModel = Dottable(clazz).dot(vm, ooAttr);
 
@@ -64,7 +64,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ObjectLike(value).isObject(vm));
     }
   };
@@ -73,7 +73,7 @@ public:
   public:
     GetClass(): Builtin("getClass") {}
 
-    void operator()(VM vm, In object, Out result) {
+    static void call(VM vm, In object, Out result) {
       result = ObjectLike(object).getClass(vm);
     }
   };
@@ -82,7 +82,7 @@ public:
   public:
     AttrGet(): Builtin("attrGet") {}
 
-    void operator()(VM vm, In object, In attribute, Out result) {
+    static void call(VM vm, In object, In attribute, Out result) {
       result = ObjectLike(object).attrGet(vm, attribute);
     }
   };
@@ -91,7 +91,7 @@ public:
   public:
     AttrPut(): Builtin("attrPut") {}
 
-    void operator()(VM vm, In object, In attribute, In newValue) {
+    static void call(VM vm, In object, In attribute, In newValue) {
       ObjectLike(object).attrPut(vm, attribute, newValue);
     }
   };
@@ -100,8 +100,8 @@ public:
   public:
     AttrExchangeFun(): Builtin("attrExchangeFun") {}
 
-    void operator()(VM vm, In object, In attribute,
-                    In newValue, Out oldValue) {
+    static void call(VM vm, In object, In attribute,
+                     In newValue, Out oldValue) {
       oldValue = ObjectLike(object).attrExchange(vm, attribute, newValue);
     }
   };
@@ -110,7 +110,7 @@ public:
   public:
     CellOrAttrGet(): Builtin("cellOrAttrGet") {}
 
-    void operator()(VM vm, In object, In cellOrAttr, Out result) {
+    static void call(VM vm, In object, In cellOrAttr, Out result) {
       if (CellLike(cellOrAttr).isCell(vm))
         result = CellLike(cellOrAttr).access(vm);
       else
@@ -122,7 +122,7 @@ public:
   public:
     CellOrAttrPut(): Builtin("cellOrAttrPut") {}
 
-    void operator()(VM vm, In object, In cellOrAttr, In newValue) {
+    static void call(VM vm, In object, In cellOrAttr, In newValue) {
       if (CellLike(cellOrAttr).isCell(vm))
         CellLike(cellOrAttr).assign(vm, newValue);
       else
@@ -134,8 +134,8 @@ public:
   public:
     CellOrAttrExchangeFun(): Builtin("cellOrAttrExchangeFun") {}
 
-    void operator()(VM vm, In object, In cellOrAttr,
-                    In newValue, Out oldValue) {
+    static void call(VM vm, In object, In cellOrAttr,
+                     In newValue, Out oldValue) {
       if (CellLike(cellOrAttr).isCell(vm))
         oldValue = CellLike(cellOrAttr).exchange(vm, newValue);
       else

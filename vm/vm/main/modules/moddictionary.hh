@@ -45,7 +45,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = Dictionary::build(vm);
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, DictionaryLike(value).isDictionary(vm));
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     IsEmpty(): Builtin("isEmpty") {}
 
-    void operator()(VM vm, In dict, Out result) {
+    static void call(VM vm, In dict, Out result) {
       result = build(vm, DictionaryLike(dict).dictIsEmpty(vm));
     }
   };
@@ -72,7 +72,7 @@ public:
   public:
     Member(): Builtin("member") {}
 
-    void operator()(VM vm, In dict, In feature, Out result) {
+    static void call(VM vm, In dict, In feature, Out result) {
       result = build(vm, DictionaryLike(dict).dictMember(vm, feature));
     }
   };
@@ -81,7 +81,7 @@ public:
   public:
     Get(): Builtin("get") {}
 
-    void operator()(VM vm, In dict, In feature, Out result) {
+    static void call(VM vm, In dict, In feature, Out result) {
       result = DictionaryLike(dict).dictGet(vm, feature);
     }
   };
@@ -90,7 +90,7 @@ public:
   public:
     CondGet(): Builtin("condGet") {}
 
-    void operator()(VM vm, In dict, In feature, In defaultValue, Out result) {
+    static void call(VM vm, In dict, In feature, In defaultValue, Out result) {
       result = DictionaryLike(dict).dictCondGet(vm, feature, defaultValue);
     }
   };
@@ -99,7 +99,7 @@ public:
   public:
     Put(): Builtin("put") {}
 
-    void operator()(VM vm, In dict, In feature, In newValue) {
+    static void call(VM vm, In dict, In feature, In newValue) {
       DictionaryLike(dict).dictPut(vm, feature, newValue);
     }
   };
@@ -108,7 +108,7 @@ public:
   public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
-    void operator()(VM vm, In dict, In feature, In newValue, Out oldValue) {
+    static void call(VM vm, In dict, In feature, In newValue, Out oldValue) {
       oldValue = DictionaryLike(dict).dictExchange(vm, feature, newValue);
     }
   };
@@ -117,8 +117,8 @@ public:
   public:
     CondExchangeFun(): Builtin("condExchangeFun") {}
 
-    void operator()(VM vm, In dict, In feature, In defaultValue,
-                    In newValue, Out oldValue) {
+    static void call(VM vm, In dict, In feature, In defaultValue,
+                     In newValue, Out oldValue) {
       oldValue = DictionaryLike(dict).dictCondExchange(
         vm, feature, defaultValue, newValue);
     }
@@ -128,7 +128,7 @@ public:
   public:
     Remove(): Builtin("remove") {}
 
-    void operator()(VM vm, In dict, In feature) {
+    static void call(VM vm, In dict, In feature) {
       DictionaryLike(dict).dictRemove(vm, feature);
     }
   };
@@ -137,7 +137,7 @@ public:
   public:
     RemoveAll(): Builtin("removeAll") {}
 
-    void operator()(VM vm, In dict) {
+    static void call(VM vm, In dict) {
       DictionaryLike(dict).dictRemoveAll(vm);
     }
   };
@@ -146,7 +146,7 @@ public:
   public:
     Keys(): Builtin("keys") {}
 
-    void operator()(VM vm, In dict, Out result) {
+    static void call(VM vm, In dict, Out result) {
       result = DictionaryLike(dict).dictKeys(vm);
     }
   };
@@ -155,7 +155,7 @@ public:
   public:
     Entries(): Builtin("entries") {}
 
-    void operator()(VM vm, In dict, Out result) {
+    static void call(VM vm, In dict, Out result) {
       result = DictionaryLike(dict).dictEntries(vm);
     }
   };
@@ -164,7 +164,7 @@ public:
   public:
     Items(): Builtin("items") {}
 
-    void operator()(VM vm, In dict, Out result) {
+    static void call(VM vm, In dict, Out result) {
       result = DictionaryLike(dict).dictItems(vm);
     }
   };
@@ -173,7 +173,7 @@ public:
   public:
     Clone(): Builtin("clone") {}
 
-    void operator()(VM vm, In dict, Out result) {
+    static void call(VM vm, In dict, Out result) {
       result = DictionaryLike(dict).dictClone(vm);
     }
   };

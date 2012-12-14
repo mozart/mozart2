@@ -45,7 +45,7 @@ public:
   public:
     FeatureLess(): Builtin("featureLess") {}
 
-    void operator()(VM vm, In lhs, In rhs, Out result) {
+    static void call(VM vm, In lhs, In rhs, Out result) {
       requireFeature(vm, lhs);
       requireFeature(vm, rhs);
 
@@ -57,8 +57,8 @@ public:
   public:
     NewCodeArea(): Builtin("newCodeArea") {}
 
-    void operator()(VM vm, In byteCodeList, In arity, In XCount, In KsList,
-                    In printName, In debugData, Out result) {
+    static void call(VM vm, In byteCodeList, In arity, In XCount, In KsList,
+                     In printName, In debugData, Out result) {
       // Read byte code
       std::vector<ByteCode> byteCode;
 
@@ -105,7 +105,7 @@ public:
   public:
     NewAbstraction(): Builtin("newAbstraction") {}
 
-    void operator()(VM vm, In body, In GsList, Out result) {
+    static void call(VM vm, In body, In GsList, Out result) {
       // Check the type of the code area
       if (!CodeAreaProvider(body).isCodeAreaProvider(vm))
         raiseTypeError(vm, MOZART_STR("Code area"), body);
@@ -131,7 +131,7 @@ public:
   public:
     MakeArityDynamic(): Builtin("makeArityDynamic") {}
 
-    void operator()(VM vm, In label, In features, Out result) {
+    static void call(VM vm, In label, In features, Out result) {
       using namespace patternmatching;
 
       size_t width = 0;
@@ -161,7 +161,7 @@ public:
   public:
     NewPatPatWildcard(): Builtin("newPatMatWildcard") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = PatMatCapture::build(vm, -1);
     }
   };
@@ -170,7 +170,7 @@ public:
   public:
     NewPatPatCapture(): Builtin("newPatMatCapture") {}
 
-    void operator()(VM vm, In index, Out result) {
+    static void call(VM vm, In index, Out result) {
       auto intIndex = getArgument<nativeint>(vm, index, MOZART_STR("Integer"));
       result = PatMatCapture::build(vm, intIndex);
     }
@@ -180,7 +180,7 @@ public:
   public:
     IsBuiltin(): Builtin("isBuiltin") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, BuiltinCallable(value).isBuiltin(vm));
     }
   };
@@ -189,7 +189,7 @@ public:
   public:
     GetBuiltinInfo(): Builtin("getBuiltinInfo") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       BaseBuiltin* builtin = BuiltinCallable(value).getBuiltin(vm);
 
       UnstableNode name = build(vm, builtin->getNameAtom(vm));
@@ -227,7 +227,7 @@ public:
   public:
     IsUniqueName(): Builtin("isUniqueName") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       if (value.isTransient())
         waitFor(vm, value);
 

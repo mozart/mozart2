@@ -45,7 +45,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, In initial, Out result) {
+    static void call(VM vm, In initial, Out result) {
       result = Cell::build(vm, initial);
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, CellLike(value).isCell(vm));
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
-    void operator()(VM vm, In cell, In newValue, Out oldValue) {
+    static void call(VM vm, In cell, In newValue, Out oldValue) {
       oldValue = CellLike(cell).exchange(vm, newValue);
     }
   };
@@ -72,7 +72,7 @@ public:
   public:
     Access(): Builtin("access") {}
 
-    void operator()(VM vm, In cell, Out result) {
+    static void call(VM vm, In cell, Out result) {
       result = CellLike(cell).access(vm);
     }
   };
@@ -81,7 +81,7 @@ public:
   public:
     Assign(): Builtin("assign") {}
 
-    void operator()(VM vm, In cell, In newValue) {
+    static void call(VM vm, In cell, In newValue) {
       CellLike(cell).assign(vm, newValue);
     }
   };

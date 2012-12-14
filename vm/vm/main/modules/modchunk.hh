@@ -45,7 +45,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, In underlying, Out result) {
+    static void call(VM vm, In underlying, Out result) {
       if (RecordLike(underlying).isRecord(vm)) {
         result = Chunk::build(vm, underlying);
       } else {
@@ -58,7 +58,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ChunkLike(value).isChunk(vm));
     }
   };

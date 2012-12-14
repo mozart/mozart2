@@ -93,7 +93,7 @@ struct BuiltinEntryPointGeneric {
 template <class T, size_t arity, class... Args>
 struct BuiltinEntryPointGeneric<T, arity, arity, Args...> {
   static void call(VM vm, UnstableNode* args[], Args&&... argsDone) {
-    return T::builtin()(vm, std::forward<Args>(argsDone)...);
+    return T::call(vm, std::forward<Args>(argsDone)...);
   }
 };
 
@@ -115,7 +115,7 @@ template <class T, size_t arity, class... Args>
 struct BuiltinEntryPoint<T, arity, arity, Args...> {
 private:
   static void entryPoint(VM vm, Args... args) {
-    return T::builtin()(vm, args...);
+    return T::call(vm, args...);
   }
 
   static void genericEntryPoint(VM vm, UnstableNode* args[]) {
@@ -237,12 +237,12 @@ public:
     return _inlineAsOpCode;
   }
 
-  void call(VM vm, UnstableNode* args[]) {
+  void callBuiltin(VM vm, UnstableNode* args[]) {
     return _genericEntryPoint(vm, args);
   }
 
   template <class... Args>
-  void call(VM vm, Args&&... args) {
+  void callBuiltin(VM vm, Args&&... args) {
     assert(sizeof...(args) == _arity);
     return _entryPoint(vm, std::forward<Args>(args)...);
   }
@@ -305,8 +305,8 @@ private:
   template <class Signature>
   struct ExtractArity {};
 
-  template <class Class, class... Args>
-  struct ExtractArity<void (Class::*)(VM vm, Args...)> {
+  template <class... Args>
+  struct ExtractArity<void (*)(VM vm, Args...)> {
     static const size_t arity = sizeof...(Args);
 
     static void initParams(StaticArray<ParamInfo> params) {
@@ -318,16 +318,12 @@ public:
     name, arity(), getEntryPoint(), getGenericEntryPoint(),
     getInlineAsInternal()) {
 
-    ExtractArity<decltype(&Self::operator())>::initParams(
+    ExtractArity<decltype(&Self::call)>::initParams(
       this->getParamArray());
   }
 public:
   static constexpr size_t arity() {
-    return ExtractArity<decltype(&Self::operator())>::arity;
-  }
-
-  static Self& builtin() {
-    return rawBuiltin;
+    return ExtractArity<decltype(&Self::call)>::arity;
   }
 private:
   static SpecializedBuiltinEntryPoint getEntryPoint() {
@@ -344,12 +340,7 @@ private:
     return internal::ExtractInlineAs<Self,
       internal::HasGetInlineAsOpCodeInternal<Self>::value>::get();
   }
-private:
-  static Self rawBuiltin;
 };
-
-template <class Self>
-Self Builtin<Self>::rawBuiltin;
 
 //////////////////////////
 // Markers for builtins //

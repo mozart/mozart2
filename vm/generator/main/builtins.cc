@@ -138,8 +138,8 @@ bool extractNameFromDefaultConstructor(
   return false;
 }
 
-void processBuiltinCallOperator(BuiltinDef& definition,
-                                const CXXMethodDecl* method) {
+void processBuiltinCallMethod(BuiltinDef& definition,
+                              const CXXMethodDecl* method) {
   for (auto iter = method->param_begin()+1, e = method->param_end();
        iter != e; ++iter) {
     ParmVarDecl* param = *iter;
@@ -186,8 +186,8 @@ void handleBuiltin(BuiltinDef& definition, const ClassDecl* CD) {
           definition.nameExpr = nameExpr;
       }
     } else if (const CXXMethodDecl* method = dyn_cast<CXXMethodDecl>(decl)) {
-      if (method->getOverloadedOperator() == OO_Call) {
-        processBuiltinCallOperator(definition, method);
+      if (method->getNameAsString() == "call") {
+        processBuiltinCallMethod(definition, method);
       }
     }
   }
@@ -299,7 +299,7 @@ void BuiltinDef::makeEmulateInlinesOutput(llvm::raw_fd_ostream& to) {
 
   to << "\n";
   to << "case " << inlineOpCode << ": {\n";
-  to << "  ::" << fullCppName << "::builtin()(\n";
+  to << "  ::" << fullCppName << "::call(\n";
   to << "    vm";
 
   for (size_t i = 1; i <= params.size(); i++)

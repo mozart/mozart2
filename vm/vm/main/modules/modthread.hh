@@ -45,7 +45,7 @@ public:
   public:
     Create(): Builtin("create") {}
 
-    void operator()(VM vm, In target) {
+    static void call(VM vm, In target) {
       ozcalls::asyncOzCall(vm, target);
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ThreadLike(value).isThread(vm));
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     This(): Builtin("this") {}
 
-    void operator()(VM vm, Out result) {
+    static void call(VM vm, Out result) {
       result = ReifiedThread::build(vm, vm->getCurrentThread());
     }
   };
@@ -72,7 +72,7 @@ public:
   public:
     GetPriority(): Builtin("getPriority") {}
 
-    void operator()(VM vm, In thread, Out result) {
+    static void call(VM vm, In thread, Out result) {
       ThreadPriority prio = ThreadLike(thread).getThreadPriority(vm);
 
       switch (prio) {
@@ -89,7 +89,7 @@ public:
   public:
     SetPriority(): Builtin("setPriority") {}
 
-    void operator()(VM vm, In thread, In priority) {
+    static void call(VM vm, In thread, In priority) {
       using namespace patternmatching;
 
       ThreadPriority prio = tpMiddle;
@@ -112,7 +112,7 @@ public:
   public:
     InjectException(): Builtin("injectException") {}
 
-    void operator()(VM vm, In thread, In exception) {
+    static void call(VM vm, In thread, In exception) {
       ThreadLike(thread).injectException(vm, exception);
     }
   };

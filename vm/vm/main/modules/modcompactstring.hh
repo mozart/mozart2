@@ -45,7 +45,7 @@ public:
   public:
     IsCompactString() : Builtin("isCompactString") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, StringLike(value).isString(vm));
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     IsCompactByteString() : Builtin("isCompactByteString") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, StringLike(value).isByteString(vm));
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     CharAt() : Builtin("charAt") {}
 
-    void operator()(VM vm, In value, In index, Out result) {
+    static void call(VM vm, In value, In index, Out result) {
       result = build(vm, StringLike(value).stringCharAt(vm, index));
     }
   };
@@ -72,7 +72,7 @@ public:
   public:
     Append() : Builtin("append") {}
 
-    void operator()(VM vm, In left, In right, Out result) {
+    static void call(VM vm, In left, In right, Out result) {
       result = StringLike(left).stringAppend(vm, right);
     }
   };
@@ -81,7 +81,7 @@ public:
   public:
     Slice() : Builtin("slice") {}
 
-    void operator()(VM vm, In value, In from, In to, Out result) {
+    static void call(VM vm, In value, In from, In to, Out result) {
       result = StringLike(value).stringSlice(vm, from, to);
     }
   };
@@ -90,7 +90,7 @@ public:
   public:
     Search() : Builtin("search") {}
 
-    void operator()(VM vm, In value, In from, In needle, Out begin, Out end) {
+    static void call(VM vm, In value, In from, In needle, Out begin, Out end) {
       return StringLike(value).stringSearch(vm, from, needle, begin, end);
     }
   };
@@ -99,7 +99,7 @@ public:
   public:
     HasPrefix() : Builtin("hasPrefix") {}
 
-    void operator()(VM vm, In string, In prefix, Out result) {
+    static void call(VM vm, In string, In prefix, Out result) {
       result = build(vm, StringLike(string).stringHasPrefix(vm, prefix));
     }
   };
@@ -108,7 +108,7 @@ public:
   public:
     HasSuffix() : Builtin("hasSuffix") {}
 
-    void operator()(VM vm, In string, In suffix, Out result) {
+    static void call(VM vm, In string, In suffix, Out result) {
       result = build(vm, StringLike(string).stringHasSuffix(vm, suffix));
     }
   };

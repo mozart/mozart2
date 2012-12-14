@@ -47,7 +47,7 @@ public:
   public:
     Raise(): Builtin("raise") {}
 
-    void operator()(VM vm, In value) {
+    static void call(VM vm, In value) {
       return raise(vm, value);
     }
   };
@@ -56,7 +56,7 @@ public:
   public:
     RaiseError(): Builtin("raiseError") {}
 
-    void operator()(VM vm, In value) {
+    static void call(VM vm, In value) {
       return raise(vm, buildRecord(
         vm, buildArity(vm, MOZART_STR("error"), 1, MOZART_STR("debug")),
         value, unit));
@@ -67,7 +67,7 @@ public:
   public:
     Fail(): Builtin("fail") {}
 
-    void operator()(VM vm) {
+    static void call(VM vm) {
       return fail(vm);
     }
   };

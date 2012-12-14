@@ -48,7 +48,7 @@ public:
   public:
     Is() : Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ozIsVirtualByteString(vm, value));
     }
   };
@@ -57,7 +57,7 @@ public:
   public:
     ToCompactByteString() : Builtin("toCompactByteString") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVBSLengthForBuffer(vm, value);
 
       {
@@ -72,7 +72,7 @@ public:
   public:
     ToByteList() : Builtin("toByteList") {}
 
-    void operator()(VM vm, In value, In tail, Out result) {
+    static void call(VM vm, In value, In tail, Out result) {
       size_t bufSize = ozVBSLengthForBuffer(vm, value);
 
       {
@@ -91,7 +91,7 @@ public:
   public:
     Length() : Builtin("length") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ozVBSLength(vm, value));
     }
   };

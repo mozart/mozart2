@@ -45,7 +45,7 @@ public:
   public:
     NewReflectiveEntity(): Builtin("newReflectiveEntity") {}
 
-    void operator()(VM vm, Out stream, Out result) {
+    static void call(VM vm, Out stream, Out result) {
       result = ReflectiveEntity::build(vm, stream);
     }
   };
@@ -54,7 +54,7 @@ public:
   public:
     NewReflectiveVariable(): Builtin("newReflectiveVariable") {}
 
-    void operator()(VM vm, Out stream, Out result) {
+    static void call(VM vm, Out stream, Out result) {
       result = ReflectiveVariable::build(vm, stream);
     }
   };
@@ -63,7 +63,7 @@ public:
   public:
     BindReflectiveVariable(): Builtin("bindReflectiveVariable") {}
 
-    void operator()(VM vm, In variable, In value) {
+    static void call(VM vm, In variable, In value) {
       if (variable.is<ReflectiveVariable>())
         variable.as<ReflectiveVariable>().reflectiveBind(vm, value);
       else
@@ -75,7 +75,7 @@ public:
   public:
     Become(): Builtin("become") {}
 
-    void operator()(VM vm, In entity, In value) {
+    static void call(VM vm, In entity, In value) {
       auto behavior = entity.type().getStructuralBehavior();
 
       if ((behavior == sbTokenEq) || (behavior == sbVariable)) {

@@ -45,7 +45,7 @@ public:
   public:
     New(): Builtin("new") {}
 
-    void operator()(VM vm, In low, In high, In initValue, Out result) {
+    static void call(VM vm, In low, In high, In initValue, Out result) {
       auto intLow = getArgument<nativeint>(vm, low, MOZART_STR("integer"));
       auto intHigh = getArgument<nativeint>(vm, high, MOZART_STR("integer"));
 
@@ -61,7 +61,7 @@ public:
   public:
     Is(): Builtin("is") {}
 
-    void operator()(VM vm, In value, Out result) {
+    static void call(VM vm, In value, Out result) {
       result = build(vm, ArrayLike(value).isArray(vm));
     }
   };
@@ -70,7 +70,7 @@ public:
   public:
     Low(): Builtin("low") {}
 
-    void operator()(VM vm, In array, Out result) {
+    static void call(VM vm, In array, Out result) {
       result = build(vm, ArrayLike(array).arrayLow(vm));
     }
   };
@@ -79,7 +79,7 @@ public:
   public:
     High(): Builtin("high") {}
 
-    void operator()(VM vm, In array, Out result) {
+    static void call(VM vm, In array, Out result) {
       result = build(vm, ArrayLike(array).arrayHigh(vm));
     }
   };
@@ -88,7 +88,7 @@ public:
   public:
     Get(): Builtin("get") {}
 
-    void operator()(VM vm, In array, In index, Out result) {
+    static void call(VM vm, In array, In index, Out result) {
       result = ArrayLike(array).arrayGet(vm, index);
     }
   };
@@ -97,7 +97,7 @@ public:
   public:
     Put(): Builtin("put") {}
 
-    void operator()(VM vm, In array, In index, In newValue) {
+    static void call(VM vm, In array, In index, In newValue) {
       ArrayLike(array).arrayPut(vm, index, newValue);
     }
   };
@@ -106,7 +106,7 @@ public:
   public:
     ExchangeFun(): Builtin("exchangeFun") {}
 
-    void operator()(VM vm, In array, In index, In newValue, Out oldValue) {
+    static void call(VM vm, In array, In index, In newValue, Out oldValue) {
       oldValue = ArrayLike(array).arrayExchange(vm, index, newValue);
     }
   };

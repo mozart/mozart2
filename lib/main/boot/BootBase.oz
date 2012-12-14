@@ -1,6 +1,7 @@
 functor
 
 require
+   Boot_Boot at 'x-oz://boot/Boot'
    Boot_Property at 'x-oz://boot/Property'
 
 prepare
@@ -16,16 +17,23 @@ prepare
       end
 
       meth link(URL ?Module)
-         lock
-            ModMap = self.ModuleMap
-         in
-            if {Dictionary.member ModMap URL} then
-               % The module is already in the dictionary
-               Module = {Dictionary.get ModMap URL}
-            else
-               % Add a new lazy linking
-               Module = {ByNeedFuture fun {$} {self load(URL $)} end}
-               {Dictionary.put ModMap URL Module}
+         URLString = {VirtualString.toString URL}
+      in
+         if {List.isPrefix "x-oz://boot/" URLString} then
+            Module = {Boot_Boot.getInternal
+                      {VirtualString.toAtom {List.drop URLString 12}}}
+         else
+            lock
+               ModMap = self.ModuleMap
+            in
+               if {Dictionary.member ModMap URL} then
+                  % The module is already in the dictionary
+                  Module = {Dictionary.get ModMap URL}
+               else
+                  % Add a new lazy linking
+                  Module = {ByNeedFuture fun {$} {self load(URL $)} end}
+                  {Dictionary.put ModMap URL Module}
+               end
             end
          end
       end
@@ -52,17 +60,9 @@ prepare
       in
          Module = {Func.apply LinkedImports}
       end
-
-      meth enter(URL Module)
-         {Dictionary.put self.ModuleMap URL Module}
-      end
    end
 
    BootMM = {New BootModuleManager init}
-
-   proc {RegisterModule URLV Mod}
-      {BootMM enter({VirtualString.toAtom URLV} Mod)}
-   end
 
    proc {RegisterFunctor URLV Func}
       {Dictionary.put FunctorMap {VirtualString.toAtom URLV} Func}
@@ -148,18 +148,13 @@ prepare
             [] 'Property' then Property
             [] 'System' then System
             else
-               {BootMM link({VirtualString.toAtom 'x-oz://boot/'#Name} $)}
+               {Boot_Boot.getInternal Name}
             end
-         end
-
-         /** Stub for Boot.getNative */
-         proc {GetNative Name ?M}
-            {Exception.raiseError notImplemented('Boot.getNative')}
          end
       in
          Boot = 'export'(
             getInternal: GetInternal
-            getNative:   GetNative
+            getNative:   Boot_Boot.getNative
          )
       end
 
@@ -171,8 +166,7 @@ prepare
                                   'Boot':       Boot) _}
    end
 
-   ExportedBootMM = bootMM(registerModule:RegisterModule
-                           registerFunctor:RegisterFunctor
+   ExportedBootMM = bootMM(registerFunctor:RegisterFunctor
                            run:Run)
 
    local

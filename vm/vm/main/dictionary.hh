@@ -138,6 +138,8 @@ void NodeDictionary::clone(VM vm, NodeDictionary src) {
 
 bool NodeDictionary::lookupNode(VM vm, RichNode key, Node*& node,
                                 Node*& parent) {
+  requireFeature(vm, key);
+
   node = root;
   parent = nullptr;
 

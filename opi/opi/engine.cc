@@ -30,18 +30,12 @@
 
 using namespace mozart;
 
-void createThreadFromOZB(VM vm, const char* functorName,
-                         RichNode baseEnv, RichNode bootMM) {
+void createThreadFromOZB(VM vm, const char* functorName) {
   std::string fileName = std::string(functorName) + ".ozb";
   std::ifstream input(fileName);
   UnstableNode codeArea = bootUnpickle(vm, input);
 
-  UnstableNode abstraction = Abstraction::build(vm, 2, codeArea);
-  auto globalsArray =
-    RichNode(abstraction).as<Abstraction>().getElementsArray();
-
-  globalsArray[0].init(vm, baseEnv);
-  globalsArray[1].init(vm, bootMM);
+  UnstableNode abstraction = Abstraction::build(vm, 0, codeArea);
 
   new (vm) Thread(vm, vm->getTopLevelSpace(), abstraction);
 }
@@ -58,64 +52,68 @@ int main(int argc, char** argv) {
     boostBasedVM.setApplicationArgs(0, nullptr);
   }
 
+  UnstableNode bootVirtualFS = OptVar::build(vm);
+  UnstableNode runProc = OptVar::build(vm);
   UnstableNode baseEnv = OptVar::build(vm);
-  UnstableNode bootMM = OptVar::build(vm);
 
   vm->getPropertyRegistry().registerConstantProp(
-    vm, MOZART_STR("internal.bootmm"), bootMM);
+    vm, MOZART_STR("internal.boot.virtualfs"), bootVirtualFS);
+  vm->getPropertyRegistry().registerConstantProp(
+    vm, MOZART_STR("internal.boot.run"), runProc);
+  vm->getPropertyRegistry().registerConstantProp(
+    vm, MOZART_STR("internal.boot.base"), baseEnv);
 
-  createThreadFromOZB(vm, "Base", baseEnv, bootMM);
-  createThreadFromOZB(vm, "OPI", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Emacs", baseEnv, bootMM);
-  createThreadFromOZB(vm, "OPIServer", baseEnv, bootMM);
-  createThreadFromOZB(vm, "OPIEnv", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Space", baseEnv, bootMM);
-  createThreadFromOZB(vm, "System", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Property", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Listener", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Type", baseEnv, bootMM);
-  createThreadFromOZB(vm, "ErrorListener", baseEnv, bootMM);
-  createThreadFromOZB(vm, "ObjectSupport", baseEnv, bootMM);
-  createThreadFromOZB(vm, "CompilerSupport", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Narrator", baseEnv, bootMM);
-  createThreadFromOZB(vm, "DefaultURL", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Init", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Error", baseEnv, bootMM);
-  createThreadFromOZB(vm, "ErrorFormatters", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Open", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Combinator", baseEnv, bootMM);
-  createThreadFromOZB(vm, "RecordC", baseEnv, bootMM);
-  createThreadFromOZB(vm, "URL", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Application", baseEnv, bootMM);
-  createThreadFromOZB(vm, "OS", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Annotate", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Assembler", baseEnv, bootMM);
-  createThreadFromOZB(vm, "BackquoteMacro", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Builtins", baseEnv, bootMM);
-  createThreadFromOZB(vm, "CodeEmitter", baseEnv, bootMM);
-  createThreadFromOZB(vm, "CodeGen", baseEnv, bootMM);
-  createThreadFromOZB(vm, "CodeStore", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Compiler", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Core", baseEnv, bootMM);
-  createThreadFromOZB(vm, "ForLoop", baseEnv, bootMM);
-  createThreadFromOZB(vm, "GroundZip", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Macro", baseEnv, bootMM);
-  createThreadFromOZB(vm, "PrintName", baseEnv, bootMM);
-  createThreadFromOZB(vm, "RunTime", baseEnv, bootMM);
-  createThreadFromOZB(vm, "StaticAnalysis", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Unnester", baseEnv, bootMM);
-  createThreadFromOZB(vm, "WhileLoop", baseEnv, bootMM);
-  createThreadFromOZB(vm, "NewAssembler", baseEnv, bootMM);
-  createThreadFromOZB(vm, "Parser", baseEnv, bootMM);
-  createThreadFromOZB(vm, "PEG", baseEnv, bootMM);
+  createThreadFromOZB(vm, "Base");
 
   boostBasedVM.run();
 
-  {
-    auto runAtom = build(vm, MOZART_STR("run"));
-    auto runProc = Dottable(bootMM).dot(vm, runAtom);
-    new (vm) Thread(vm, vm->getTopLevelSpace(), runProc);
-  }
+  createThreadFromOZB(vm, "OPI");
+  createThreadFromOZB(vm, "Emacs");
+  createThreadFromOZB(vm, "OPIServer");
+  createThreadFromOZB(vm, "OPIEnv");
+  createThreadFromOZB(vm, "Space");
+  createThreadFromOZB(vm, "System");
+  createThreadFromOZB(vm, "Property");
+  createThreadFromOZB(vm, "Listener");
+  createThreadFromOZB(vm, "Type");
+  createThreadFromOZB(vm, "ErrorListener");
+  createThreadFromOZB(vm, "ObjectSupport");
+  createThreadFromOZB(vm, "CompilerSupport");
+  createThreadFromOZB(vm, "Narrator");
+  createThreadFromOZB(vm, "DefaultURL");
+  createThreadFromOZB(vm, "Init");
+  createThreadFromOZB(vm, "Error");
+  createThreadFromOZB(vm, "ErrorFormatters");
+  createThreadFromOZB(vm, "Open");
+  createThreadFromOZB(vm, "Combinator");
+  createThreadFromOZB(vm, "RecordC");
+  createThreadFromOZB(vm, "URL");
+  createThreadFromOZB(vm, "Application");
+  createThreadFromOZB(vm, "OS");
+  createThreadFromOZB(vm, "Annotate");
+  createThreadFromOZB(vm, "Assembler");
+  createThreadFromOZB(vm, "BackquoteMacro");
+  createThreadFromOZB(vm, "Builtins");
+  createThreadFromOZB(vm, "CodeEmitter");
+  createThreadFromOZB(vm, "CodeGen");
+  createThreadFromOZB(vm, "CodeStore");
+  createThreadFromOZB(vm, "Compiler");
+  createThreadFromOZB(vm, "Core");
+  createThreadFromOZB(vm, "ForLoop");
+  createThreadFromOZB(vm, "GroundZip");
+  createThreadFromOZB(vm, "Macro");
+  createThreadFromOZB(vm, "PrintName");
+  createThreadFromOZB(vm, "RunTime");
+  createThreadFromOZB(vm, "StaticAnalysis");
+  createThreadFromOZB(vm, "Unnester");
+  createThreadFromOZB(vm, "WhileLoop");
+  createThreadFromOZB(vm, "NewAssembler");
+  createThreadFromOZB(vm, "Parser");
+  createThreadFromOZB(vm, "PEG");
+
+  boostBasedVM.run();
+
+  new (vm) Thread(vm, vm->getTopLevelSpace(), runProc);
 
   boostBasedVM.run();
 }

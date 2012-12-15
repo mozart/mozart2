@@ -7,6 +7,7 @@ require
 prepare
 
    FunctorMap = {Dictionary.new}
+   {Boot_Property.get 'internal.boot.virtualfs' $ true} = FunctorMap
 
    class BootModuleManager
       prop locking
@@ -63,10 +64,6 @@ prepare
    end
 
    BootMM = {New BootModuleManager init}
-
-   proc {RegisterFunctor URLV Func}
-      {Dictionary.put FunctorMap {VirtualString.toAtom URLV} Func}
-   end
 
    /** The magic Run routine
     *  Sets up all the necessary things to be able to launch Init.ozf out of
@@ -166,14 +163,6 @@ prepare
                                   'Boot':       Boot) _}
    end
 
-   ExportedBootMM = bootMM(registerFunctor:RegisterFunctor
-                           run:Run)
-
-   local
-      BootMMProp
-   in
-      true = {Boot_Property.get 'internal.bootmm' ?BootMMProp}
-      BootMMProp = ExportedBootMM
-   end
+   {Boot_Property.get 'internal.boot.run' $ true} = Run
 
 end

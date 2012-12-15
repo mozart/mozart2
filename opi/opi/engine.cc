@@ -26,23 +26,39 @@
 #include <boostenv.hh>
 
 #include <iostream>
-#include <fstream>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 using namespace mozart;
+namespace fs = boost::filesystem;
 
-void createThreadFromOZB(VM vm, const char* functorName) {
-  std::string fileName = std::string(functorName) + ".ozb";
-  std::ifstream input(fileName);
+void createThreadFromOZB(VM vm, const fs::path& ozbPath,
+                         const std::string& functorName) {
+  fs::path fileName = ozbPath / fs::path(functorName + ".ozb");
+  fs::ifstream input(fileName);
+
+  if (!input.is_open()) {
+    std::cerr << "panic: cannot open " << fileName << "\n";
+    std::abort();
+  }
+
   UnstableNode codeArea = bootUnpickle(vm, input);
-
   UnstableNode abstraction = Abstraction::build(vm, 0, codeArea);
-
   new (vm) Thread(vm, vm->getTopLevelSpace(), abstraction);
 }
 
 int main(int argc, char** argv) {
   boostenv::BoostBasedVM boostBasedVM;
   VM vm = boostBasedVM.vm;
+
+  fs::path ozbPath;
+  {
+    char* ozbPathVar = std::getenv("OZ_BOOT_PATH");
+    if (ozbPathVar != nullptr)
+      ozbPath = fs::path(ozbPathVar);
+    else
+      ozbPath = fs::path(argv[0]).parent_path();
+  }
 
   if (argc >= 2) {
     boostBasedVM.setApplicationURL(argv[1]);
@@ -63,53 +79,53 @@ int main(int argc, char** argv) {
   vm->getPropertyRegistry().registerConstantProp(
     vm, MOZART_STR("internal.boot.base"), baseEnv);
 
-  createThreadFromOZB(vm, "Base");
+  createThreadFromOZB(vm, ozbPath, "Base");
 
   boostBasedVM.run();
 
-  createThreadFromOZB(vm, "OPI");
-  createThreadFromOZB(vm, "Emacs");
-  createThreadFromOZB(vm, "OPIServer");
-  createThreadFromOZB(vm, "OPIEnv");
-  createThreadFromOZB(vm, "Space");
-  createThreadFromOZB(vm, "System");
-  createThreadFromOZB(vm, "Property");
-  createThreadFromOZB(vm, "Listener");
-  createThreadFromOZB(vm, "Type");
-  createThreadFromOZB(vm, "ErrorListener");
-  createThreadFromOZB(vm, "ObjectSupport");
-  createThreadFromOZB(vm, "CompilerSupport");
-  createThreadFromOZB(vm, "Narrator");
-  createThreadFromOZB(vm, "DefaultURL");
-  createThreadFromOZB(vm, "Init");
-  createThreadFromOZB(vm, "Error");
-  createThreadFromOZB(vm, "ErrorFormatters");
-  createThreadFromOZB(vm, "Open");
-  createThreadFromOZB(vm, "Combinator");
-  createThreadFromOZB(vm, "RecordC");
-  createThreadFromOZB(vm, "URL");
-  createThreadFromOZB(vm, "Application");
-  createThreadFromOZB(vm, "OS");
-  createThreadFromOZB(vm, "Annotate");
-  createThreadFromOZB(vm, "Assembler");
-  createThreadFromOZB(vm, "BackquoteMacro");
-  createThreadFromOZB(vm, "Builtins");
-  createThreadFromOZB(vm, "CodeEmitter");
-  createThreadFromOZB(vm, "CodeGen");
-  createThreadFromOZB(vm, "CodeStore");
-  createThreadFromOZB(vm, "Compiler");
-  createThreadFromOZB(vm, "Core");
-  createThreadFromOZB(vm, "ForLoop");
-  createThreadFromOZB(vm, "GroundZip");
-  createThreadFromOZB(vm, "Macro");
-  createThreadFromOZB(vm, "PrintName");
-  createThreadFromOZB(vm, "RunTime");
-  createThreadFromOZB(vm, "StaticAnalysis");
-  createThreadFromOZB(vm, "Unnester");
-  createThreadFromOZB(vm, "WhileLoop");
-  createThreadFromOZB(vm, "NewAssembler");
-  createThreadFromOZB(vm, "Parser");
-  createThreadFromOZB(vm, "PEG");
+  createThreadFromOZB(vm, ozbPath, "OPI");
+  createThreadFromOZB(vm, ozbPath, "Emacs");
+  createThreadFromOZB(vm, ozbPath, "OPIServer");
+  createThreadFromOZB(vm, ozbPath, "OPIEnv");
+  createThreadFromOZB(vm, ozbPath, "Space");
+  createThreadFromOZB(vm, ozbPath, "System");
+  createThreadFromOZB(vm, ozbPath, "Property");
+  createThreadFromOZB(vm, ozbPath, "Listener");
+  createThreadFromOZB(vm, ozbPath, "Type");
+  createThreadFromOZB(vm, ozbPath, "ErrorListener");
+  createThreadFromOZB(vm, ozbPath, "ObjectSupport");
+  createThreadFromOZB(vm, ozbPath, "CompilerSupport");
+  createThreadFromOZB(vm, ozbPath, "Narrator");
+  createThreadFromOZB(vm, ozbPath, "DefaultURL");
+  createThreadFromOZB(vm, ozbPath, "Init");
+  createThreadFromOZB(vm, ozbPath, "Error");
+  createThreadFromOZB(vm, ozbPath, "ErrorFormatters");
+  createThreadFromOZB(vm, ozbPath, "Open");
+  createThreadFromOZB(vm, ozbPath, "Combinator");
+  createThreadFromOZB(vm, ozbPath, "RecordC");
+  createThreadFromOZB(vm, ozbPath, "URL");
+  createThreadFromOZB(vm, ozbPath, "Application");
+  createThreadFromOZB(vm, ozbPath, "OS");
+  createThreadFromOZB(vm, ozbPath, "Annotate");
+  createThreadFromOZB(vm, ozbPath, "Assembler");
+  createThreadFromOZB(vm, ozbPath, "BackquoteMacro");
+  createThreadFromOZB(vm, ozbPath, "Builtins");
+  createThreadFromOZB(vm, ozbPath, "CodeEmitter");
+  createThreadFromOZB(vm, ozbPath, "CodeGen");
+  createThreadFromOZB(vm, ozbPath, "CodeStore");
+  createThreadFromOZB(vm, ozbPath, "Compiler");
+  createThreadFromOZB(vm, ozbPath, "Core");
+  createThreadFromOZB(vm, ozbPath, "ForLoop");
+  createThreadFromOZB(vm, ozbPath, "GroundZip");
+  createThreadFromOZB(vm, ozbPath, "Macro");
+  createThreadFromOZB(vm, ozbPath, "PrintName");
+  createThreadFromOZB(vm, ozbPath, "RunTime");
+  createThreadFromOZB(vm, ozbPath, "StaticAnalysis");
+  createThreadFromOZB(vm, ozbPath, "Unnester");
+  createThreadFromOZB(vm, ozbPath, "WhileLoop");
+  createThreadFromOZB(vm, ozbPath, "NewAssembler");
+  createThreadFromOZB(vm, ozbPath, "Parser");
+  createThreadFromOZB(vm, ozbPath, "PEG");
 
   boostBasedVM.run();
 

@@ -14,12 +14,25 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  Given a URL <url> and a functor <functor>, the whole program is
    *  straightforward:
    *  {{{
-   *  {<BootMM>.registerFunctor '<url>' <functor>}
+   *  local
+   *     <Base>
+   *     <BootVirtualFS>
+   *  in
+   *     <Base> = {Boot_Property.get 'internal.boot.base' $ true}
+   *     <BootVirtualFS> = {Boot_Property.get 'internal.boot.virtualfs' $ true}
+   *     {Boot_Dictionary.put <BootVirtualFS> '<url>' <functor>}
+   *  end
    *  }}}
    */
   def buildModuleProgram(prog: Program, url: String, functor: Expression) {
-    val registerProc = Variable(prog.bootMMSymbol) dot OzAtom("registerFunctor")
-    prog.rawCode = registerProc.call(OzAtom(url), functor)
+    prog.rawCode = {
+      LOCAL (prog.baseEnvSymbol) IN {
+        (prog.baseEnvSymbol === getBootProperty(prog, "internal.boot.base")) ~
+        (prog.builtins.dictionaryPut call (
+            getBootProperty(prog, "internal.boot.virtualfs"),
+            OzAtom(url), functor))
+      }
+    }
   }
 
   /** Builds a program that creates the base environment
@@ -45,14 +58,18 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  All the base functors are merged together as a single functor, that we
    *  call the base functor and write <BaseFunctor> from here.
    *
+   *  The <BaseFunctor> must export an unbound variable under feature 'Base'.
+   *
    *  The program statement applies this functor, giving it as imports all
    *  the boot modules. These are looked up in the boot modules map.
    *  The result of the application, which is the Base module, is stored in
-   *  the outer-global variable <Base>.
+   *  the boot property 'internal.boot.base'. It is also bound to the exported
+   *  feature 'Base'.
    *
    *  Hence the program looks like this:
    *  {{{
    *  local
+   *     <Base>
    *     Imports = 'import'(
    *        'Boot_ModA': <constant looked up in the boot modules map>
    *        ...
@@ -60,17 +77,9 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *     )
    *  in
    *     <Base> = {<BaseFunctor>.apply Imports}
+   *     {Boot_Property.get 'internal.boot.base' <Base> true}
+   *     <Base>.'Base' = <Base>
    *  end
-   *  }}}
-   *
-   *  The resulting Base module must export an unbound variable under feature
-   *  'Base'. It is also supposed to create the boot module manager, which has
-   *  to be bound to {Boot_Property.get 'internal.bootmm'}.
-   *
-   *  The program then binds <Base>.'Base' to <Base>.
-   *
-   *  {{{
-   *  <Base>.'Base' = <Base>
    *  }}}
    */
   def buildBaseEnvProgram(prog: Program,
@@ -103,6 +112,11 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       (baseFunctor dot OzAtom("apply")) call (imports, prog.baseEnvSymbol)
     }
 
+    // Store <Base> in 'internal.boot.base'
+    val storePropertyStat = {
+      prog.baseEnvSymbol === getBootProperty(prog, "internal.boot.base")
+    }
+
     // Fill in <Base>.'Base'
     val bindBaseBaseStat = {
       (prog.baseEnvSymbol dot OzAtom("Base")) === prog.baseEnvSymbol
@@ -110,8 +124,11 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
 
     // Put things together
     val wholeProgram = {
-      applyBaseFunctorStat ~
-      bindBaseBaseStat
+      LOCAL (prog.baseEnvSymbol) IN {
+        applyBaseFunctorStat ~
+        storePropertyStat ~
+        bindBaseBaseStat
+      }
     }
 
     prog.rawCode = wholeProgram
@@ -144,5 +161,10 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
 
       Some(RawLocalStatement(lhsDecls ::: rhsDecls, lhsStat ~ rhsStat))
     }
+  }
+
+  private def getBootProperty(prog: Program, property: String) = {
+    prog.builtins.getProperty callExpr (
+        OzAtom(property), NestingMarker(), True())
   }
 }

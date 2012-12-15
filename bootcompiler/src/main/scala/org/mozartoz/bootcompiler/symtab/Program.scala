@@ -21,14 +21,8 @@ class Program(val isBaseEnvironment: Boolean = false) {
   /** Variables declared by the base environment */
   val baseDeclarations = new ArrayBuffer[String]
 
-  /** Outer-global Base environment variable */
-  val baseEnvSymbol = new Symbol("<Base>", synthetic = true, global = true)
-
-  /** Outer-global BootMM variable */
-  val bootMMSymbol = new Symbol("<BootMM>", synthetic = true, global = true)
-
-  /** All the outer-global variables */
-  val outerGlobalSymbols = Seq(baseEnvSymbol, bootMMSymbol)
+  /** Global <Base> variable, which contains the base environment */
+  val baseEnvSymbol = new Symbol("<Base>", synthetic = true)
 
   /** Map of base symbols (only in base environment mode) */
   val baseSymbols = new HashMap[String, Symbol]
@@ -36,12 +30,6 @@ class Program(val isBaseEnvironment: Boolean = false) {
   /** Implicit top-level abstraction */
   val topLevelAbstraction =
     new Abstraction(NoAbstraction, "<TopLevel>", NoPosition)
-
-  {
-    // Impose the globals of the top-level abstraction to be the outer-globals
-    for (sym <- outerGlobalSymbols)
-      topLevelAbstraction.acquire(sym)
-  }
 
   /** After flattening, list of the abstractions */
   val abstractions = new ListBuffer[Abstraction]

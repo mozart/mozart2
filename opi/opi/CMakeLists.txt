@@ -56,11 +56,10 @@ set(BASE_FUNCTORS
     "${MOZART_LIB_DIR}/boot/BootBase.oz")
 
 add_custom_command(
-  OUTPUT "Base.cc"
+  OUTPUT "Base.ozb"
   COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
     --baseenv
-    -o "${CMAKE_CURRENT_BINARY_DIR}/Base.cc"
-    -h "boostenv.hh"
+    -o "${CMAKE_CURRENT_BINARY_DIR}/Base.ozb"
     -m "${MOZART_BUILD_DIR}/vm/vm/main/"
     -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
@@ -101,43 +100,31 @@ set(ALL_FUNCTORS
     "${CMAKE_CURRENT_SOURCE_DIR}/OPIEnv.oz"
     ${SYS_FUNCTORS})
 
-set(ALL_CCFILES "LinkerMain.cc" "Base.cc")
+set(ALL_OZBFILES "Base.ozb")
 
 foreach(functor ${ALL_FUNCTORS})
   get_filename_component(basename ${functor} NAME_WE)
-  set(ccfile "${basename}.cc")
+  set(ozbfile "${basename}.ozb")
 
-  set(ALL_CCFILES ${ALL_CCFILES} ${ccfile})
+  set(ALL_OZBFILES ${ALL_OZBFILES} ${ozbfile})
 
   add_custom_command(
-    OUTPUT ${ccfile}
+    OUTPUT ${ozbfile}
     COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
-      -o "${CMAKE_CURRENT_BINARY_DIR}/${ccfile}"
-      -h "boostenv.hh"
+      -o "${CMAKE_CURRENT_BINARY_DIR}/${ozbfile}"
       -m "${MOZART_BUILD_DIR}/vm/vm/main/"
       -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
       -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
       ${BOOTCOMPILER_DEFINES}
       "${functor}"
-    DEPENDS ${functor} "Base.cc"
+    DEPENDS ${functor} "Base.ozb"
     COMMENT "${basename}.oz"
     VERBATIM)
 endforeach()
 
-add_custom_command(
-  OUTPUT LinkerMain.cc
-  COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
-    --linker
-    -o "${CMAKE_CURRENT_BINARY_DIR}/LinkerMain.cc"
-    -h "boostenv.hh"
-    -m "${MOZART_BUILD_DIR}/vm/vm/main/"
-    -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
-    -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
-    ${BOOTCOMPILER_DEFINES}
-    ${ALL_FUNCTORS}
-  DEPENDS "Base.cc"
-  COMMENT linker
-  VERBATIM)
+add_custom_target(
+  ozbfiles ALL
+  DEPENDS ${ALL_OZBFILES})
 
 # Compile the executable
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -145,7 +132,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
-add_executable(ozengine ${ALL_CCFILES})
+add_executable(ozengine engine.cc)
 target_link_libraries(ozengine mozartvmboost mozartvm ${Boost_LIBRARIES})
 
 if(NOT MINGW)

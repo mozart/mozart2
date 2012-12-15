@@ -685,14 +685,14 @@ void Thread::run() {
           break;
         }
 
-        case OpUnifyXK: {
-          unify(vm, XPC(1), KPC(2));
+        case OpUnifyXG: {
+          unify(vm, XPC(1), GPC(2));
           advancePC(2);
           break;
         }
 
-        case OpUnifyXG: {
-          unify(vm, XPC(1), GPC(2));
+        case OpUnifyXK: {
+          unify(vm, XPC(1), KPC(2));
           advancePC(2);
           break;
         }

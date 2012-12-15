@@ -98,8 +98,8 @@ const OpCode OpPatternMatchG = 0x46;
 
 const OpCode OpUnifyXX = 0x50;
 const OpCode OpUnifyXY = 0x51;
-const OpCode OpUnifyXK = 0x52;
-const OpCode OpUnifyXG = 0x53;
+const OpCode OpUnifyXG = 0x52;
+const OpCode OpUnifyXK = 0x53;
 const OpCode OpUnifyYY = 0x54;
 const OpCode OpUnifyYG = 0x55;
 const OpCode OpUnifyYK = 0x56;

@@ -97,8 +97,8 @@ define
 
       unifyXX: 0x50
       unifyXY: 0x51
-      unifyXK: 0x52
-      unifyXG: 0x53
+      unifyXG: 0x52
+      unifyXK: 0x53
       unifyYY: 0x54
       unifyYG: 0x55
       unifyYK: 0x56

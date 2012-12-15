@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2012, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,20 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_H
-#define __MOZARTCORE_H
+#ifndef __BOOTUNPICKLER_DECL_H
+#define __BOOTUNPICKLER_DECL_H
 
-#include "mozartcore-decl.hh"
+#include "mozartcore.hh"
 
-#include "bootunpickler-decl.hh"
-#include "builtins-decl.hh"
-#include "corebuilders.hh"
-#include "coredatatypes-decl.hh"
-#include "coreinterfaces.hh"
-#include "dynbuilders-decl.hh"
-#include "exchelpers-decl.hh"
-#include "matchdsl.hh"
-#include "ozcalls-decl.hh"
-#include "utils-decl.hh"
+#include <istream>
 
-#endif // __MOZARTCORE_H
+namespace mozart {
+
+UnstableNode bootUnpickle(VM vm, std::istream& input);
+
+}
+
+#endif // __BOOTUNPICKLER_DECL_H

@@ -18,7 +18,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  }}}
    */
   def buildModuleProgram(prog: Program, url: String, functor: Expression) {
-    val registerProc = getBootMMProc(prog, "registerFunctor")
+    val registerProc = Variable(prog.bootMMSymbol) dot OzAtom("registerFunctor")
     prog.rawCode = registerProc.call(OzAtom(url), functor)
   }
 
@@ -144,21 +144,5 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
 
       Some(RawLocalStatement(lhsDecls ::: rhsDecls, lhsStat ~ rhsStat))
     }
-  }
-
-  /** Builds a linker program
-   *
-   *  The statement that is built is straightforward:
-   *  {{{
-   *  {<BootMM>.run}
-   *  }}}
-   */
-  def buildLinkerProgram(prog: Program, urls: List[String]) {
-    val runProc = getBootMMProc(prog, "run")
-    prog.rawCode = runProc.call()
-  }
-
-  private def getBootMMProc(prog: Program, proc: String): Expression = {
-    Variable(prog.bootMMSymbol) dot OzAtom(proc)
   }
 }

@@ -111,6 +111,9 @@ case class OzRecord(label: OzLiteral,
   /** Arity of this record */
   lazy val arity = OzArity(label, fields map (_.feature))
 
+  /** Values in this record */
+  lazy val values = fields map (_.value)
+
   /** Returns true if this is a tuple */
   def isTuple = arity.isTupleArity
 
@@ -221,4 +224,7 @@ case class OzPatMatOpenRecord(label: OzLiteral,
 
   /** Arity of this record */
   lazy val arity = OzArity(label, fields map (_.feature))
+
+  /** Sub-patterns in this pattern */
+  lazy val values = fields map (_.value)
 }

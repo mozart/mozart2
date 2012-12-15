@@ -4,7 +4,7 @@ package bytecode
 /**
  * Base class for opcodes
  */
-sealed abstract class OpCode extends Product {
+sealed abstract class OpCode(val opCode: Int) extends Product {
   val name = getClass().getSimpleName()
 
   def argumentCount = productArity
@@ -21,20 +21,22 @@ sealed abstract class OpCode extends Product {
       (prev, arg) => prev + ", " + arg.code
     }
   }
+
+  def encoding = opCode :: (arguments map (_.encoding))
 }
 
 /** Do nothing */
-case class OpSkip() extends OpCode
+case class OpSkip() extends OpCode(0x00)
 
 /** Copy source register into destination register */
-case class OpMoveXX(source: XReg, dest: XReg) extends OpCode
-case class OpMoveXY(source: XReg, dest: YReg) extends OpCode
-case class OpMoveYX(source: YReg, dest: XReg) extends OpCode
-case class OpMoveYY(source: YReg, dest: YReg) extends OpCode
-case class OpMoveGX(source: GReg, dest: XReg) extends OpCode
-case class OpMoveGY(source: GReg, dest: YReg) extends OpCode
-case class OpMoveKX(source: KReg, dest: XReg) extends OpCode
-case class OpMoveKY(source: KReg, dest: YReg) extends OpCode
+case class OpMoveXX(source: XReg, dest: XReg) extends OpCode(0x01)
+case class OpMoveXY(source: XReg, dest: YReg) extends OpCode(0x02)
+case class OpMoveYX(source: YReg, dest: XReg) extends OpCode(0x03)
+case class OpMoveYY(source: YReg, dest: YReg) extends OpCode(0x04)
+case class OpMoveGX(source: GReg, dest: XReg) extends OpCode(0x05)
+case class OpMoveGY(source: GReg, dest: YReg) extends OpCode(0x06)
+case class OpMoveKX(source: KReg, dest: XReg) extends OpCode(0x07)
+case class OpMoveKY(source: KReg, dest: YReg) extends OpCode(0x08)
 
 object OpMove {
   def apply(source: Register, dest: XOrYReg) = (source, dest) match {
@@ -50,25 +52,29 @@ object OpMove {
 }
 
 /** Allocate `count` local variables, i.e., Y registers */
-case class OpAllocateY(count: ImmInt) extends OpCode
+case class OpAllocateY(count: ImmInt) extends OpCode(0x0D)
 /** Deallocate the current Y registers */
-case class OpDeallocateY() extends OpCode
+case class OpDeallocateY() extends OpCode(0x0E)
 
 /** Create a new Unbound variable and store it into `dest` */
-case class OpCreateVarX(dest: XReg) extends OpCode
-case class OpCreateVarY(dest: YReg) extends OpCode
+case class OpCreateVarX(dest: XReg) extends OpCode(0x0F)
+case class OpCreateVarY(dest: YReg) extends OpCode(0x10)
 
 /** Setup an exception handler */
-case class OpSetupExceptionHandler(distance: ImmInt) extends OpCode
+case class OpSetupExceptionHandler(distance: ImmInt) extends OpCode(0x18)
 
 /** Pop an exception handler */
-case class OpPopExceptionHandler() extends OpCode
+case class OpPopExceptionHandler() extends OpCode(0x19)
 
 /** Call the `builtin` whose arity is `arity` with the arguments `args` */
 case class OpCallBuiltin(builtin: KReg, arity: ImmInt,
-    args: List[XReg]) extends OpCode {
+    args: List[XReg]) extends OpCode(-1) {
   private val argc = arity.value
   private val isSpec = argc <= 5
+
+  override val opCode =
+    if (isSpec) 0x20 + argc
+    else 0x26
 
   override val name =
     if (isSpec) "OpCallBuiltin" + argc.toString()
@@ -84,7 +90,8 @@ case class OpCallBuiltin(builtin: KReg, arity: ImmInt,
 }
 
 /** Call an inline builtin */
-case class OpCallBuiltinInline(opCode: Int, args: List[XReg]) extends OpCode {
+case class OpCallBuiltinInline(opCode2: Int,
+    args: List[XReg]) extends OpCode(opCode2) {
   private val argc = args.size
 
   override val name = opCode.toString()
@@ -94,10 +101,10 @@ case class OpCallBuiltinInline(opCode: Int, args: List[XReg]) extends OpCode {
 
 /** Call the `target` whose arity is supposed to be `arity`
  *  Upon return, all X registers are invalidated */
-case class OpCallX(target: XReg, arity: ImmInt) extends OpCode
-case class OpCallY(target: YReg, arity: ImmInt) extends OpCode
-case class OpCallG(target: GReg, arity: ImmInt) extends OpCode
-case class OpCallK(target: KReg, arity: ImmInt) extends OpCode
+case class OpCallX(target: XReg, arity: ImmInt) extends OpCode(0x27)
+case class OpCallY(target: YReg, arity: ImmInt) extends OpCode(0x28)
+case class OpCallG(target: GReg, arity: ImmInt) extends OpCode(0x29)
+case class OpCallK(target: KReg, arity: ImmInt) extends OpCode(0x2A)
 
 object OpCall {
   def apply(target: Register, arity: ImmInt) = target match {
@@ -114,10 +121,10 @@ object OpCall {
 
 /** Tail-call the `target` whose arity is supposed to be `arity`
  *  Y registers must have been deallocated before this */
-case class OpTailCallX(target: XReg, arity: ImmInt) extends OpCode
-case class OpTailCallY(target: YReg, arity: ImmInt) extends OpCode
-case class OpTailCallG(target: GReg, arity: ImmInt) extends OpCode
-case class OpTailCallK(target: KReg, arity: ImmInt) extends OpCode
+case class OpTailCallX(target: XReg, arity: ImmInt) extends OpCode(0x2B)
+case class OpTailCallY(target: YReg, arity: ImmInt) extends OpCode(0x2C)
+case class OpTailCallG(target: GReg, arity: ImmInt) extends OpCode(0x2D)
+case class OpTailCallK(target: KReg, arity: ImmInt) extends OpCode(0x2E)
 
 object OpTailCall {
   def apply(target: Register, arity: ImmInt) = target match {
@@ -130,10 +137,10 @@ object OpTailCall {
 
 /** Return
  *  Y registers must have been deallocated before this */
-case class OpReturn() extends OpCode
+case class OpReturn() extends OpCode(0x40)
 
 /** Skip `distance` amount of bytecode */
-case class OpBranch(distance: ImmInt) extends OpCode
+case class OpBranch(distance: ImmInt) extends OpCode(0x41)
 
 /** Conditional branch
  *  If `test == false`, skip `falseDistance` amount of bytecode
@@ -141,12 +148,12 @@ case class OpBranch(distance: ImmInt) extends OpCode
  *  Otherwise, skip `errorDistance` amount of bytecode
  */
 case class OpCondBranch(test: XReg, falseDistance: ImmInt,
-    trueDistance: ImmInt, errorDistance: ImmInt) extends OpCode
+    trueDistance: ImmInt, errorDistance: ImmInt) extends OpCode(0x43)
 
 /** Pattern matching */
-case class OpPatternMatchX(value: XReg, patterns: KReg) extends OpCode
-case class OpPatternMatchY(value: YReg, patterns: KReg) extends OpCode
-case class OpPatternMatchG(value: GReg, patterns: KReg) extends OpCode
+case class OpPatternMatchX(value: XReg, patterns: KReg) extends OpCode(0x44)
+case class OpPatternMatchY(value: YReg, patterns: KReg) extends OpCode(0x45)
+case class OpPatternMatchG(value: GReg, patterns: KReg) extends OpCode(0x46)
 
 object OpPatternMatch {
   def apply(value: NotKReg, patterns: KReg) = value match {
@@ -157,16 +164,16 @@ object OpPatternMatch {
 }
 
 /** Unify `lhs` with `rhs`, i.e., `lhs = rhs` */
-case class OpUnifyXX(lhs: XReg, rhs: XReg) extends OpCode
-case class OpUnifyXY(lhs: XReg, rhs: YReg) extends OpCode
-case class OpUnifyXG(lhs: XReg, rhs: GReg) extends OpCode
-case class OpUnifyXK(lhs: XReg, rhs: KReg) extends OpCode
-case class OpUnifyYY(lhs: YReg, rhs: YReg) extends OpCode
-case class OpUnifyYG(lhs: YReg, rhs: GReg) extends OpCode
-case class OpUnifyYK(lhs: YReg, rhs: KReg) extends OpCode
-case class OpUnifyGG(lhs: GReg, rhs: GReg) extends OpCode
-case class OpUnifyGK(lhs: GReg, rhs: KReg) extends OpCode
-case class OpUnifyKK(lhs: KReg, rhs: KReg) extends OpCode
+case class OpUnifyXX(lhs: XReg, rhs: XReg) extends OpCode(0x50)
+case class OpUnifyXY(lhs: XReg, rhs: YReg) extends OpCode(0x51)
+case class OpUnifyXG(lhs: XReg, rhs: GReg) extends OpCode(0x52)
+case class OpUnifyXK(lhs: XReg, rhs: KReg) extends OpCode(0x53)
+case class OpUnifyYY(lhs: YReg, rhs: YReg) extends OpCode(0x54)
+case class OpUnifyYG(lhs: YReg, rhs: GReg) extends OpCode(0x55)
+case class OpUnifyYK(lhs: YReg, rhs: KReg) extends OpCode(0x56)
+case class OpUnifyGG(lhs: GReg, rhs: GReg) extends OpCode(0x57)
+case class OpUnifyGK(lhs: GReg, rhs: KReg) extends OpCode(0x58)
+case class OpUnifyKK(lhs: KReg, rhs: KReg) extends OpCode(0x59)
 
 object OpUnify {
   def apply(lhs: Register, rhs: Register) = (lhs, rhs) match {
@@ -194,13 +201,13 @@ object OpUnify {
  *  `globalCount` (number of G registers) and unify it with `dest`
  *  G registers must be initialized with `SubOpArrayFill_` afterwards. */
 case class OpCreateAbstractionUnifyX(body: KReg,
-    globalCount: ImmInt, dest: XReg) extends OpCode
+    globalCount: ImmInt, dest: XReg) extends OpCode(0x68)
 case class OpCreateAbstractionUnifyY(body: KReg,
-    globalCount: ImmInt, dest: YReg) extends OpCode
+    globalCount: ImmInt, dest: YReg) extends OpCode(0x6C)
 case class OpCreateAbstractionUnifyG(body: KReg,
-    globalCount: ImmInt, dest: GReg) extends OpCode
+    globalCount: ImmInt, dest: GReg) extends OpCode(0x70)
 case class OpCreateAbstractionUnifyK(body: KReg,
-    globalCount: ImmInt, dest: KReg) extends OpCode
+    globalCount: ImmInt, dest: KReg) extends OpCode(0x74)
 
 object OpCreateAbstractionUnify {
   def apply(body: KReg, globalCount: ImmInt, dest: Register) = dest match {
@@ -211,7 +218,7 @@ object OpCreateAbstractionUnify {
   }
 }
 
-abstract sealed class OpCreateConsBase extends OpCode {
+abstract sealed class OpCreateConsBase(opCode: Int) extends OpCode(opCode) {
   protected val dest: Register
   override def argumentCount = 3
   override def arguments = List(ImmInt(0), ImmInt(2), dest)
@@ -219,10 +226,10 @@ abstract sealed class OpCreateConsBase extends OpCode {
 
 /** Create a cons and unify it with `dest`
  *  Elements must be initialized with `SubOpArrayFill_' afterwards. */
-case class OpCreateConsUnifyX(dest: XReg) extends OpCreateConsBase
-case class OpCreateConsUnifyY(dest: YReg) extends OpCreateConsBase
-case class OpCreateConsUnifyG(dest: GReg) extends OpCreateConsBase
-case class OpCreateConsUnifyK(dest: KReg) extends OpCreateConsBase
+case class OpCreateConsUnifyX(dest: XReg) extends OpCreateConsBase(0x69)
+case class OpCreateConsUnifyY(dest: YReg) extends OpCreateConsBase(0x6D)
+case class OpCreateConsUnifyG(dest: GReg) extends OpCreateConsBase(0x71)
+case class OpCreateConsUnifyK(dest: KReg) extends OpCreateConsBase(0x75)
 
 object OpCreateConsUnify {
   def apply(dest: Register) = dest match {
@@ -236,13 +243,13 @@ object OpCreateConsUnify {
 /** Create a tuple of given `label' and `width' and unify it with `dest`
  *  Elements must be initialized with `SubOpArrayFill_' afterwards. */
 case class OpCreateTupleUnifyX(label: KReg, width: ImmInt,
-    dest: XReg) extends OpCode
+    dest: XReg) extends OpCode(0x6A)
 case class OpCreateTupleUnifyY(label: KReg, width: ImmInt,
-    dest: YReg) extends OpCode
+    dest: YReg) extends OpCode(0x6E)
 case class OpCreateTupleUnifyG(label: KReg, width: ImmInt,
-    dest: GReg) extends OpCode
+    dest: GReg) extends OpCode(0x72)
 case class OpCreateTupleUnifyK(label: KReg, width: ImmInt,
-    dest: KReg) extends OpCode
+    dest: KReg) extends OpCode(0x76)
 
 object OpCreateTupleUnify {
   def apply(label: KReg, width: ImmInt, dest: Register) = dest match {
@@ -256,13 +263,13 @@ object OpCreateTupleUnify {
 /** Create a record of given `arity' and `width' and  unify it with `dest`
  *  Elements must be initialized with `SubOpArrayFill_' afterwards. */
 case class OpCreateRecordUnifyX(arity: KReg, width: ImmInt,
-    dest: XReg) extends OpCode
+    dest: XReg) extends OpCode(0x6B)
 case class OpCreateRecordUnifyY(arity: KReg, width: ImmInt,
-    dest: YReg) extends OpCode
+    dest: YReg) extends OpCode(0x6F)
 case class OpCreateRecordUnifyG(arity: KReg, width: ImmInt,
-    dest: GReg) extends OpCode
+    dest: GReg) extends OpCode(0x73)
 case class OpCreateRecordUnifyK(arity: KReg, width: ImmInt,
-    dest: KReg) extends OpCode
+    dest: KReg) extends OpCode(0x77)
 
 object OpCreateRecordUnify {
   def apply(arity: KReg, width: ImmInt, dest: Register) = dest match {
@@ -274,10 +281,10 @@ object OpCreateRecordUnify {
 }
 
 /** Fill a newly created array */
-case class SubOpArrayFillX(value: XReg) extends OpCode
-case class SubOpArrayFillY(value: YReg) extends OpCode
-case class SubOpArrayFillG(value: GReg) extends OpCode
-case class SubOpArrayFillK(value: KReg) extends OpCode
+case class SubOpArrayFillX(value: XReg) extends OpCode(0)
+case class SubOpArrayFillY(value: YReg) extends OpCode(1)
+case class SubOpArrayFillG(value: GReg) extends OpCode(2)
+case class SubOpArrayFillK(value: KReg) extends OpCode(3)
 
 object SubOpArrayFillValue {
   def apply(value: Register) = value match {
@@ -291,4 +298,4 @@ object SubOpArrayFillValue {
 // Special
 
 /** Dummy used by `CodeArea.addHole()` (not a true opcode) */
-case class OpHole(override val size: Int) extends OpCode
+case class OpHole(override val size: Int) extends OpCode(-1)

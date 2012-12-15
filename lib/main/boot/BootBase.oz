@@ -6,117 +6,63 @@ require
 
 prepare
 
-   FunctorMap = {Dictionary.new}
-   {Boot_Property.get 'internal.boot.virtualfs' $ true} = FunctorMap
+   BootVirtualFS = {Dictionary.new}
+   {Boot_Property.get 'internal.boot.virtualfs' $ true} = BootVirtualFS
 
-   class BootModuleManager
-      prop locking
-      feat ModuleMap
-
-      meth init
-         self.ModuleMap = {Dictionary.new}
-      end
-
-      meth link(URL ?Module)
-         URLString = {VirtualString.toString URL}
-      in
-         if {List.isPrefix "x-oz://boot/" URLString} then
-            Module = {Boot_Boot.getInternal
-                      {VirtualString.toAtom {List.drop URLString 12}}}
-         else
-            lock
-               ModMap = self.ModuleMap
-            in
-               if {Dictionary.member ModMap URL} then
-                  % The module is already in the dictionary
-                  Module = {Dictionary.get ModMap URL}
-               else
-                  % Add a new lazy linking
-                  Module = {ByNeedFuture fun {$} {self load(URL $)} end}
-                  {Dictionary.put ModMap URL Module}
-               end
-            end
-         end
-      end
-
-      meth load(URL ?Module)
-         Func
-      in
-         try
-            Func = {Dictionary.get FunctorMap URL}
-         catch dictKeyNotFound(_ _) then
-            raise system(module(notFound load URL)) end
-         end
-
-         {self apply(URL Func Module)}
-      end
-
-      meth apply(URL Func ?Module)
-         LinkedImports = {Record.mapInd Func.'import'
-            fun {$ ModName Info}
-               EmbedURL = Info.'from'
-            in
-               {self link(EmbedURL $)}
-            end}
-      in
-         Module = {Func.apply LinkedImports}
+   /** Loads a functor located at a given URL
+    *  This never goes to the file system, but looks up functors in the
+    *  BootVirtualFS above instead.
+    */
+   fun {BootURLLoad URL}
+      URLAtom = {VirtualString.toAtom URL}
+   in
+      try
+         {Dictionary.get BootVirtualFS URLAtom}
+      catch dictKeyNotFound(_ _) then
+         raise system(module(notFound load URLAtom)) end
       end
    end
 
-   BootMM = {New BootModuleManager init}
+   /** Boot linker for the critical modules */
+   proc {LinkCriticalModules CriticalModules}
+      fun {Link URL}
+         URLString = {VirtualString.toString URL}
+      in
+         if {List.isPrefix "x-oz://boot/" URLString} then
+            {Boot_Boot.getInternal {List.drop URLString 12}}
+         elsecase {CondSelect CriticalModules {VirtualString.toAtom URL} false}
+         of false then
+            raise system(module(notFound load URL)) end
+         [] Mod then
+            Mod
+         end
+      end
+
+      fun lazy {Load URL}
+         Func = {BootURLLoad URL}
+         LinkedImports = {Record.mapInd Func.'import'
+                          fun {$ ModName Info}
+                             {Link Info.'from'}
+                          end}
+      in
+         {Func.apply LinkedImports}
+      end
+   in
+      {Record.forAllInd CriticalModules Load}
+   end
 
    /** The magic Run routine
     *  Sets up all the necessary things to be able to launch Init.ozf out of
     *  nowhere.
     */
    proc {Run}
-      % First checkout the critical modules from the boot module manager
-      OS         = {BootMM link('x-oz://system/OS.ozf' $)}
-      Property   = {BootMM link('x-oz://system/Property.ozf' $)}
-      System     = {BootMM link('x-oz://system/System.ozf' $)}
-      URL        = {BootMM link('x-oz://system/URL.ozf' $)}
-      DefaultURL = {BootMM link('x-oz://system/DefaultURL.ozf' $)}
-
-      /** RemoveCWD - removes the prefix CWD from FileNameV if present */
-      local
-         CWD = {VirtualString.toString {OS.getCWD}}
-
-         fun {StripPrefix Xs Ys Else}
-            case Xs#Ys
-            of (X|Xr)#nil then
-               if X == &/ orelse X == &\\ then
-                  Xr
-               else
-                  Xs
-               end
-            [] (X|Xr)#(Y|Yr) andthen X == Y then
-               {StripPrefix Xr Yr Else}
-            else
-               Else
-            end
-         end
-      in
-         fun {RemoveCWD FileNameV}
-            FileNameS = {VirtualString.toString FileNameV}
-         in
-            {StripPrefix FileNameS CWD FileNameS}
-         end
-      end
-
-      /** Loads a functor located a given URL
-       *  This never goes to the file system, but looks up functors in the
-       *  global FunctorMap instead.
-       *  Basically it uses FunctorMap as a virtual file system.
-       */
-      proc {URLLoad URL ?F}
-         URLAtom = {VirtualString.toAtom {RemoveCWD URL}}
-      in
-         try
-            F = {Dictionary.get FunctorMap URLAtom}
-         catch dictKeyNotFound(_ _) then
-            raise system(module(notFound load URLAtom)) end
-         end
-      end
+      % First link the critical modules
+      OS Property System URL DefaultURL
+      {LinkCriticalModules o('x-oz://system/OS.ozf':OS
+                             'x-oz://system/Property.ozf':Property
+                             'x-oz://system/System.ozf':System
+                             'x-oz://system/URL.ozf':URL
+                             'x-oz://system/DefaultURL.ozf':DefaultURL)}
 
       /** The boot URL module (stub version) */
       BURL = 'export'(
@@ -124,7 +70,7 @@ prepare
          open:     fun {$ U}
                       {OS.open U ['O_RDONLY'] nil}
                    end
-         load:     URLLoad
+         load:     BootURLLoad
       )
 
       /** The boot Pickle module (stub version) */
@@ -134,33 +80,17 @@ prepare
                end
       )
 
-      /** The boot Boot module */
-      local
-         /** Loads a boot module from its name */
-         fun {GetInternal Name}
-            case Name
-            of 'URL' then BURL
-            [] 'OS' then OS
-            [] 'Pickle' then Pickle
-            [] 'Property' then Property
-            [] 'System' then System
-            else
-               {Boot_Boot.getInternal Name}
-            end
-         end
-      in
-         Boot = 'export'(
-            getInternal: GetInternal
-            getNative:   Boot_Boot.getNative
-         )
-      end
-
       % And finally load the Init.ozf functor and apply it
-      InitFunctor = {URLLoad 'x-oz://system/Init.ozf'}
+      InitFunctor = {BootURLLoad 'x-oz://system/Init.ozf'}
    in
       {InitFunctor.apply 'import'('URL':        URL
                                   'DefaultURL': DefaultURL
-                                  'Boot':       Boot) _}
+                                  'Boot':       Boot_Boot
+                                  'BURL':       BURL
+                                  'OS':         OS
+                                  'Pickle':     Pickle
+                                  'Property':   Property
+                                  'System':     System) _}
    end
 
    {Boot_Property.get 'internal.boot.run' $ true} = Run

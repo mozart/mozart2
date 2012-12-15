@@ -174,19 +174,17 @@ prepare
 
 import
    Boot at 'x-oz://boot/Boot'
+   BURL at 'x-oz://boot/URL'
+   OS
+   Pickle
+   Property
+   System
 
 define
 
    %% The mechanism with which builtin modules can be accessed
    GetInternal = Boot.getInternal
    GetNative = Boot.getNative
-
-   %% Retrieve modules needed to get things started
-   BURL     = {GetInternal 'URL'}
-   OS       = {GetInternal 'OS'}
-   Pickle   = {GetInternal 'Pickle'}
-   Property = {GetInternal 'Property'}
-   System   = {GetInternal 'System'}
 
    %% Shortcuts
    Getenv = OS.getEnv

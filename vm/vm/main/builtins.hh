@@ -54,7 +54,7 @@ void BaseBuiltin::getCallInfo(
   start = _codeBlock;
   Xcount = 2*_arity;
   Gs = nullptr;
-  Ks = StaticArray<StableNode>(_selfKs, 1);
+  Ks = StaticArray<StableNode>(&*_selfValue, 1);
 }
 
 void BaseBuiltin::buildCodeBlock(VM vm, RichNode self) {
@@ -117,7 +117,8 @@ void BaseBuiltin::buildCodeBlock(VM vm, RichNode self) {
   assert(index == count);
 
   // Set Ks
-  _selfKs[0].init(vm, self);
+  _vmToUnprotectSelfValue = vm;
+  _selfValue = ozProtect(vm, *new (vm) StableNode(vm, self));
 }
 
 }

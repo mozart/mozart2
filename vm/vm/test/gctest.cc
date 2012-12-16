@@ -10,10 +10,6 @@ TEST_F(GCTest, GCSanity) {
     // This is to ensure the GC does release memory allocated on the VM, and to
     // ensure 'requestGC' does invoke the GC when the VM is running.
 
-    // 0. Reach a stable state before we do anything
-    vm->requestGC();
-    vm->run();
-
     // 1. Check that the size does increase after we allocate something.
     size_t original_size = vm->getMemoryManager().getAllocated();
     auto unit_node = build(vm, unit);
@@ -36,10 +32,6 @@ TEST_F(GCTest, GCSanity) {
 TEST_F(GCTest, Protect) {
     // This is to ensure protected nodes are noticed by GC, and thus won't be
     // freed.
-
-    // 0. Reach a stable state before we do anything
-    vm->requestGC();
-    vm->run();
 
     // 1. Check that the size does increase after we allocate something.
     size_t original_size = vm->getMemoryManager().getAllocated();

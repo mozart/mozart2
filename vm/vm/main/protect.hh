@@ -57,8 +57,9 @@ inline ProtectedNode ProtectedNodesContainer::protect(VM vm, UnstableNode&& node
 }
 
 inline void ProtectedNodesContainer::unprotect(ProtectedNode pp_node) {
-  if (_nodes.erase(pp_node._node)) {
+  if (!pp_node.empty() && _nodes.erase(pp_node._node)) {
     delete pp_node._node;
+    pp_node._node = nullptr;
   }
 }
 

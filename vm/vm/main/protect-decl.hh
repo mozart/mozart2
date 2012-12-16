@@ -39,12 +39,18 @@ namespace mozart {
  */
 class ProtectedNode {
 public:
+  ProtectedNode(): _node(nullptr) {}
+
   StableNode& operator*() const noexcept { return **_node; }
   StableNode& operator->() const noexcept { return **_node; }
   operator void*() const noexcept { return _node; }
 
   explicit ProtectedNode(void* ptr) noexcept
     : _node(static_cast<StableNode**>(ptr)) {}
+
+  bool empty() {
+    return _node == nullptr;
+  }
 
 private:
   friend class ProtectedNodesContainer;

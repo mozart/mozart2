@@ -55,22 +55,23 @@ public:
   inline
   BuiltinModule(VM vm, const nchar* name);
 
-  virtual ~BuiltinModule() {}
+  inline
+  virtual ~BuiltinModule();
 
   atom_t getName() {
     return _name;
   }
 
   StableNode& getModule() {
-    return _module;
+    return *_module;
   }
 protected:
-  void initModule(VM vm, UnstableNode&& module) {
-    _module.init(vm, std::move(module));
-  }
+  inline
+  void initModule(VM vm, UnstableNode&& module);
 private:
+  VM _vm;
   atom_t _name;
-  StableNode _module;
+  ProtectedNode _module;
 };
 
 ////////////////////

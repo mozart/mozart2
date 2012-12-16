@@ -35,8 +35,17 @@ namespace mozart {
 // BuiltinModule //
 ///////////////////
 
-BuiltinModule::BuiltinModule(VM vm, const nchar* name) {
+BuiltinModule::BuiltinModule(VM vm, const nchar* name): _vm(vm) {
   _name = vm->getAtom(name);
+}
+
+BuiltinModule::~BuiltinModule() {
+  ozUnprotect(_vm, _module);
+}
+
+void BuiltinModule::initModule(VM vm, UnstableNode&& module) {
+  StableNode* stableModule = new (vm) StableNode(vm, std::move(module));
+  _module = ozProtect(vm, *stableModule);
 }
 
 ////////////////////

@@ -35,20 +35,20 @@ namespace mozart {
 // IntermediateState //
 ///////////////////////
 
-IntermediateState::IntermediateState(VM vm): _last(_list.begin()) {
+IntermediateState::IntermediateState(VM vm) {
   _list.push_front_new(vm, vm, unit);
   _last = _list.begin();
 }
 
-IntermediateState::IntermediateState(VM vm, GR gr, IntermediateState& from):
-  _last(_list.begin()) {
-
+IntermediateState::IntermediateState(VM vm, GR gr, IntermediateState& from) {
   assert(from._last == from._list.begin());
 
   for (auto iter = from._list.begin(); iter != from._list.end(); ++iter) {
     _list.push_back_new(vm);
     gr->copyUnstableNode(_list.back(), *iter);
   }
+
+  _last = _list.begin();
 }
 
 void IntermediateState::reset(VM vm, CheckPoint checkPoint) {

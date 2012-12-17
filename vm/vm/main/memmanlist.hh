@@ -50,6 +50,8 @@ private:
   };
 public:
   struct iterator {
+    iterator() {}
+
     iterator(ListNode* node) : node(node) {}
 
     bool operator==(const iterator& other) {
@@ -94,6 +96,8 @@ public:
   };
 
   struct removable_iterator {
+    removable_iterator() {}
+
     removable_iterator(ListNode* node, ListNode* prev) :
       node(node), prev(prev) {}
 

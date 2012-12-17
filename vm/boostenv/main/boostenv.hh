@@ -41,13 +41,11 @@ namespace mozart { namespace boostenv {
 
 ProtectedNode BoostBasedVM::allocAsyncIONode(StableNode* node) {
   _asyncIONodeCount++;
-  return ozProtect(vm, *node);
+  return vm->protect(*node);
 }
 
 void BoostBasedVM::releaseAsyncIONode(const ProtectedNode& node) {
   assert(_asyncIONodeCount > 0);
-
-  ozUnprotect(vm, node);
   _asyncIONodeCount--;
 }
 

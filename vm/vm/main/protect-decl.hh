@@ -25,7 +25,7 @@
 #ifndef __PROTECT_DECL_H
 #define __PROTECT_DECL_H
 
-#include <unordered_set>
+#include <forward_list>
 #include <memory>
 #include "core-forward-decl.hh"
 #include "store-decl.hh"
@@ -33,76 +33,65 @@
 namespace mozart {
 
 /**
- * The returned value of 'ozProtect'. This can be thought as a rebindable
- * `StableNode* const&`, but it can be implicitly cast to a `void*` referring to
- * the address of this reference.
+ * The returned value of 'vm->protect()', a node protected from GC.
+ * This really is a std::shared_ptr<StableNode*>, but for convenience the
+ * * and -> operators dereference twice to get at the StableNode&.
+ * A ProtectedNode can be implictly converted back and forth to a genuine
+ * std::shared_ptr<StableNode*>.
  */
 class ProtectedNode {
 public:
-  ProtectedNode(): _node(nullptr) {}
+  ProtectedNode() {}
+  ProtectedNode(std::nullptr_t): _node(nullptr) {}
 
-  StableNode& operator*() const noexcept { return **_node; }
-  StableNode& operator->() const noexcept { return **_node; }
-  operator void*() const noexcept { return _node; }
+  ProtectedNode(std::shared_ptr<StableNode*>&& from): _node(std::move(from)) {}
+  ProtectedNode(const std::shared_ptr<StableNode*>& from): _node(from) {}
 
-  explicit ProtectedNode(void* ptr) noexcept
-    : _node(static_cast<StableNode**>(ptr)) {}
+  operator std::shared_ptr<StableNode*>() const {
+    return { _node };
+  }
 
-  bool empty() {
-    return _node == nullptr;
+  StableNode& operator*() const {
+    return **_node;
+  }
+
+  StableNode* operator->() const {
+    return *_node;
+  }
+
+  operator bool() const {
+    return (bool) _node;
+  }
+
+  void reset() {
+    _node.reset();
   }
 
 private:
-  friend class ProtectedNodesContainer;
-
-  explicit ProtectedNode(StableNode** pp_node) : _node(pp_node) {}
-
-  StableNode** _node;
+  std::shared_ptr<StableNode*> _node;
 };
 
+namespace internal {
+
 /**
- * A container of StableNodes should are protected from being garbage collected.
- * Nodes in this set will stay alive until explicitly unprotected.
+ * A container of StableNodes that are protected from being garbage collected.
+ * Nodes in this set will stay alive until their reference count drops to zero.
  */
 class ProtectedNodesContainer {
 public:
-  inline ProtectedNode protect(VM vm, RichNode node);
-  inline ProtectedNode protect(VM vm, StableNode& node);
-  inline ProtectedNode protect(VM vm, UnstableNode& node);
-  inline ProtectedNode protect(VM vm, UnstableNode&& node);
-  inline void unprotect(ProtectedNode pp_node);
+  template <typename T>
+  inline
+  ProtectedNode protect(VM vm, T&& node);
 
-  inline void gCollect(GC gc);
+  inline
+  void gCollect(GC gc);
 
 private:
-  inline ProtectedNode protect(VM vm, StableNode* node_ptr);
-
-  std::unordered_set<StableNode**> _nodes;
+  std::forward_list<std::weak_ptr<StableNode*>> _nodes;
 };
 
-/**
- * Protect a node from being freed. Returns a double pointer to a stable node
- * which can be stored externally.
- *
- * The returned type is a double pointer, because the node itself may be moved
- * around by the GC, and thus the value of a single pointer may change. But the
- * double pointer will be immutable.
- *
- * Assuming the returned value is `pp_node`, the following are guaranteed:
- *
- * 1. `**pp_node` is valid until calling `ozUnprotect(vm, pp_node)`.
- * 2. Before the GC, the node and the returned double pointer refer to the same
- *    node, i.e. `node.isSameNode(**pp_node) == true`.
- */
-template <typename T>
-inline ProtectedNode ozProtect(VM vm, T&& node);
+} // namespace internal
 
-/**
- * Reverse the operation of ozProtect, so that the node can be freed by the GC.
- * The input must be a return type of ozProtect.
- */
-inline void ozUnprotect(VM vm, ProtectedNode pp_node);
-
-}
+} // namespace mozart
 
 #endif

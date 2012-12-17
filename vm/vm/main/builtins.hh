@@ -116,9 +116,8 @@ void BaseBuiltin::buildCodeBlock(VM vm, RichNode self) {
   // Finalize
   assert(index == count);
 
-  // Set Ks
-  _vmToUnprotectSelfValue = vm;
-  _selfValue = ozProtect(vm, *new (vm) StableNode(vm, self));
+  // Set _selfValue
+  _selfValue = vm->protect(self);
 }
 
 }

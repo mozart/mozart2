@@ -209,15 +209,9 @@ public:
               nativeint opCode):
     _name(name), _arity(arity), _entryPoint(entryPoint),
     _genericEntryPoint(genericEntryPoint), _inlineAsOpCode(opCode),
-    _vmToUnprotectSelfValue(nullptr), _codeBlock(nullptr) {
+    _codeBlock(nullptr) {
 
     _params = StaticArray<ParamInfo>(new ParamInfo[arity], arity);
-  }
-
-  inline
-  ~BaseBuiltin() {
-    if (_vmToUnprotectSelfValue != nullptr)
-      ozUnprotect(_vmToUnprotectSelfValue, _selfValue);
   }
 
   const std::string& getName() {
@@ -275,7 +269,6 @@ private:
   nativeint _inlineAsOpCode;
 
   // CodeArea-like data
-  VM _vmToUnprotectSelfValue;
   ByteCode* _codeBlock;
   ProtectedNode _selfValue;
 };

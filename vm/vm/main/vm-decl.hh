@@ -55,8 +55,7 @@ public:
   inline
   BuiltinModule(VM vm, const nchar* name);
 
-  inline
-  virtual ~BuiltinModule();
+  virtual ~BuiltinModule() {}
 
   atom_t getName() {
     return _name;
@@ -66,8 +65,9 @@ public:
     return *_module;
   }
 protected:
+  template <typename T>
   inline
-  void initModule(VM vm, UnstableNode&& module);
+  void initModule(VM vm, T&& module);
 private:
   VM _vm;
   atom_t _name;
@@ -260,6 +260,15 @@ public:
     return atomTable.getUniqueName(this, length, data);
   }
 public:
+  /** Protect a node from the GC.
+   *  Returns a reference-counted ref to that node.
+   */
+  template <typename T>
+  inline
+  ProtectedNode protect(T&& node) {
+    return _protectedNodes.protect(this, std::forward<T>(node));
+  }
+public:
   // Influence from the external world
   void requestPreempt() {
     _preemptRequested = true;
@@ -285,10 +294,6 @@ private:
 
   friend void* ::operator new (size_t size, mozart::VM vm);
   friend void* ::operator new[] (size_t size, mozart::VM vm);
-
-  template <typename T>
-  friend ProtectedNode ozProtect(VM vm, T&& node);
-  friend void ozUnprotect(VM vm, ProtectedNode pp_node);
 
   void* getMemory(size_t size) {
     return memoryManager.getMemory(size);
@@ -344,7 +349,7 @@ private:
   SpaceCloner sc;
 
   VMAllocatedList<AlarmRecord> _alarms;
-  ProtectedNodesContainer _protectedNodes;
+  internal::ProtectedNodesContainer _protectedNodes;
 
   // Flags set externally for preemption etc.
   // TODO Use atomic data types

@@ -25,61 +25,49 @@
 #ifndef __PROTECT_H
 #define __PROTECT_H
 
-#include "protect-decl.hh"
-#include "vm-decl.hh"
+#include "mozartcore.hh"
 
 namespace mozart {
 
-inline ProtectedNode ProtectedNodesContainer::protect(VM vm, StableNode* node_ptr) {
-  StableNode** ptr = new StableNode*(node_ptr);
-  _nodes.insert(ptr);
-  return ProtectedNode(ptr);
-}
-
-inline ProtectedNode ProtectedNodesContainer::protect(VM vm, RichNode node) {
-  return protect(vm, node.getStableRef(vm));
-}
-
-inline ProtectedNode ProtectedNodesContainer::protect(VM vm, StableNode& node) {
-  return protect(vm, &node);
-}
-
-inline ProtectedNode ProtectedNodesContainer::protect(VM vm, UnstableNode& node) {
-  StableNode* node_ptr = new (vm) StableNode;
-  node_ptr->init(vm, node);
-  return protect(vm, node_ptr);
-}
-
-inline ProtectedNode ProtectedNodesContainer::protect(VM vm, UnstableNode&& node) {
-  StableNode* node_ptr = new (vm) StableNode;
-  node_ptr->init(vm, std::move(node));
-  return protect(vm, node_ptr);
-}
-
-inline void ProtectedNodesContainer::unprotect(ProtectedNode pp_node) {
-  if (!pp_node.empty() && _nodes.erase(pp_node._node)) {
-    delete pp_node._node;
-    pp_node._node = nullptr;
-  }
-}
-
-inline void ProtectedNodesContainer::gCollect(GC gc) {
-  for (auto node : _nodes) {
-    gc->copyStableRef(*node, *node);
-  }
-}
+namespace internal {
 
 template <typename T>
-ProtectedNode ozProtect(VM vm, T&& node)
-{
-  return vm->_protectedNodes.protect(vm, std::forward<T>(node));
+ProtectedNode ProtectedNodesContainer::protect(VM vm, T&& node) {
+  /* Yes, it must always be a *new* StableNode, otherwise protecting twice
+   * the same node fails!
+   */
+  auto result = std::make_shared<StableNode*>(
+    new (vm) StableNode(vm, std::forward<T>(node)));
+  _nodes.emplace_front(result);
+  return ProtectedNode(std::move(result));
 }
 
-void ozUnprotect(VM vm, ProtectedNode pp_node)
-{
-  vm->_protectedNodes.unprotect(pp_node);
+void ProtectedNodesContainer::gCollect(GC gc) {
+  /* Elements that are still referenced somewhere are garbage-collected, and
+   * the StableNode* is updated to point to the GCed node.
+   *
+   * Elements that are not referenced anymore are erased from the list of
+   * protected nodes.
+   */
+
+  auto previous = _nodes.before_begin();
+  auto current = _nodes.begin();
+
+  while (current != _nodes.end()) {
+    auto locked = current->lock();
+    if (locked) {
+      gc->copyStableRef(*locked, *locked);
+      previous = current++;
+    } else {
+      _nodes.erase_after(previous);
+      current = previous;
+      ++current;
+    }
+  }
 }
 
-}
+} // namespace internal
+
+} // namespace mozart
 
 #endif

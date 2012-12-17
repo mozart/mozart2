@@ -46,7 +46,7 @@ TEST_F(GCTest, Protect) {
 
     // 2. Protect a node, and try to run the GC. Verify it is not freed and has
     //    the correct value.
-    auto protected_array_node = ozProtect(vm, array_node);
+    auto protected_array_node = vm->protect(array_node);
     EXPECT_TRUE(RichNode(*protected_array_node).isSameNode(array_node));
 
     vm->requestGC();
@@ -62,7 +62,7 @@ TEST_F(GCTest, Protect) {
     }
 
     // 3. Unprotect a node, and run the GC again. Verify it is freed.
-    ozUnprotect(vm, protected_array_node);
+    protected_array_node.reset();
     vm->requestGC();
     vm->run();
     vm->requestGC();
@@ -71,18 +71,17 @@ TEST_F(GCTest, Protect) {
     EXPECT_EQ(original_size, vm->getMemoryManager().getAllocated());
 }
 
-TEST_F(GCTest, ProtectedNodeConversionWithVoidStar) {
-    // This is to ensure a ProtectedNode can be converted between void*'s.
+TEST_F(GCTest, ProtectedNodeConversionWithSharedPtr) {
+    // ProtectedNode must be convertible to and from
+    // std::shared_ptr<StableNode*>
 
-    void* some_c_ptr = ozProtect(vm, build(vm, 123));
+    std::shared_ptr<StableNode*> some_shared_ptr = vm->protect(build(vm, 123));
 
     vm->requestGC();
     vm->run();
 
-    ProtectedNode protected_node (some_c_ptr);
+    ProtectedNode protected_node = some_shared_ptr;
     EXPECT_EQ_INT(123, *protected_node);
-
-    ozUnprotect(vm, protected_node);
 }
 
 TEST_F(GCTest, ProtectTwice) {
@@ -91,19 +90,18 @@ TEST_F(GCTest, ProtectTwice) {
     StableNode node;
     node.init(vm, build(vm, 402));
 
-    auto protected_1 = ozProtect(vm, node);
-    auto protected_2 = ozProtect(vm, node);
+    auto protected_1 = vm->protect(node);
+    auto protected_2 = vm->protect(node);
 
     #define CHECK(message) \
         SCOPED_TRACE(::testing::Message() << message << ": " << &node << "; " \
-                                          << &(*protected_1) << ", " \
-                                          << &(*protected_2))
+                                          << (protected_1 ? &(*protected_1) : nullptr) << ", " \
+                                          << (protected_2 ? &(*protected_2) : nullptr))
 
     {
         CHECK("sanity");
         EXPECT_EQ_INT(402, *protected_1);
         EXPECT_EQ_INT(402, *protected_2);
-        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
     vm->requestGC();
@@ -113,7 +111,6 @@ TEST_F(GCTest, ProtectTwice) {
         CHECK("pre 2nd-gc");
         EXPECT_EQ_INT(402, *protected_1);
         EXPECT_EQ_INT(402, *protected_2);
-        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
     vm->requestGC();
@@ -123,10 +120,9 @@ TEST_F(GCTest, ProtectTwice) {
         CHECK("pre unprotect");
         EXPECT_EQ_INT(402, *protected_1);
         EXPECT_EQ_INT(402, *protected_2);
-        EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
-    ozUnprotect(vm, protected_1);
+    protected_1.reset();
 
     {
         CHECK("post unprotect");
@@ -142,8 +138,6 @@ TEST_F(GCTest, ProtectTwice) {
         CHECK("post 4th-gc");
         EXPECT_EQ_INT(402, *protected_2);
     }
-
-    ozUnprotect(vm, protected_2);
 }
 
 TEST_F(GCTest, ProtectTwiceUncopyable) {
@@ -152,8 +146,8 @@ TEST_F(GCTest, ProtectTwiceUncopyable) {
     StableNode node;
     node.init(vm, buildList(vm, 123, 456, 789));
 
-    auto protected_1 = ozProtect(vm, node);
-    auto protected_2 = ozProtect(vm, node);
+    auto protected_1 = vm->protect(node);
+    auto protected_2 = vm->protect(node);
 
     {
         CHECK("sanity");
@@ -174,7 +168,7 @@ TEST_F(GCTest, ProtectTwiceUncopyable) {
         EXPECT_TRUE(RichNode(*protected_1).isSameNode(*protected_2));
     }
 
-    ozUnprotect(vm, protected_1);
+    protected_1.reset();
 
     {
         CHECK("post unprotect");
@@ -192,8 +186,6 @@ TEST_F(GCTest, ProtectTwiceUncopyable) {
     }
 
     #undef CHECK
-
-    ozUnprotect(vm, protected_2);
 }
 
 class InstanceCounter {
@@ -274,7 +266,7 @@ TEST_F(GCTest, KeepForeignPointerWhenReferenced) {
   EXPECT_EQ(1, instanceCount);
 
   // We protect `foreign` to ensure it is kept by GC
-  auto protectedForeign = ozProtect(vm, foreign);
+  auto protectedForeign = vm->protect(foreign);
 
   vm->requestGC();
   vm->run();
@@ -284,7 +276,7 @@ TEST_F(GCTest, KeepForeignPointerWhenReferenced) {
   EXPECT_EQ(1, instanceCount);
 
   // Now we release it
-  ozUnprotect(vm, protectedForeign);
+  protectedForeign.reset();
 
   vm->requestGC();
   vm->run();

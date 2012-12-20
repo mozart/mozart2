@@ -36,6 +36,7 @@
 #include <cstdint>
 #include <ostream>
 #include <functional>
+#include <memory>
 
 #define MOZART_NORETURN __attribute__((noreturn))
 

@@ -380,6 +380,45 @@ protected:
   RichNode _self;
 };
 
+/**
+ * The returned value of 'vm->protect()', a node protected from GC.
+ * This really is a std::shared_ptr<StableNode*>, but for convenience the
+ * * and -> operators dereference twice to get at the StableNode&.
+ * A ProtectedNode can be implictly converted back and forth to a genuine
+ * std::shared_ptr<StableNode*>.
+ */
+class ProtectedNode {
+public:
+  ProtectedNode() {}
+  ProtectedNode(std::nullptr_t): _node(nullptr) {}
+
+  ProtectedNode(std::shared_ptr<StableNode*>&& from): _node(std::move(from)) {}
+  ProtectedNode(const std::shared_ptr<StableNode*>& from): _node(from) {}
+
+  operator std::shared_ptr<StableNode*>() const {
+    return { _node };
+  }
+
+  StableNode& operator*() const {
+    return **_node;
+  }
+
+  StableNode* operator->() const {
+    return *_node;
+  }
+
+  explicit operator bool() const {
+    return (bool) _node;
+  }
+
+  void reset() {
+    _node.reset();
+  }
+
+private:
+  std::shared_ptr<StableNode*> _node;
+};
+
 }
 
 #endif // __STORE_DECL_H

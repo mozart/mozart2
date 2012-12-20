@@ -26,6 +26,7 @@
 #define __VM_DECL_H
 
 #include <cstdlib>
+#include <forward_list>
 
 #include "core-forward-decl.hh"
 
@@ -42,7 +43,6 @@
 #include "atomtable.hh"
 #include "coreatoms-decl.hh"
 #include "properties-decl.hh"
-#include "protect-decl.hh"
 
 namespace mozart {
 
@@ -265,9 +265,7 @@ public:
    */
   template <typename T>
   inline
-  ProtectedNode protect(T&& node) {
-    return _protectedNodes.protect(this, std::forward<T>(node));
-  }
+  ProtectedNode protect(T&& node);
 public:
   // Influence from the external world
   void requestPreempt() {
@@ -315,6 +313,9 @@ private:
   void startGC(GC gc);
 
   inline
+  void gcProtectedNodes(GC gc);
+
+  inline
   VMCleanupListNode* acquireCleanupList();
 
   inline
@@ -349,7 +350,7 @@ private:
   SpaceCloner sc;
 
   VMAllocatedList<AlarmRecord> _alarms;
-  internal::ProtectedNodesContainer _protectedNodes;
+  std::forward_list<std::weak_ptr<StableNode*>> _protectedNodes;
 
   // Flags set externally for preemption etc.
   // TODO Use atomic data types

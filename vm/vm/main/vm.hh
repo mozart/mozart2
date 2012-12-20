@@ -140,6 +140,17 @@ void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
   _alarms.insert_before_new(this, iter, expiration, wakeable);
 }
 
+template <typename T>
+ProtectedNode VirtualMachine::protect(T&& node) {
+  /* Yes, it must always be a *new* StableNode, otherwise protecting twice
+   * the same node fails!
+   */
+  auto result = std::make_shared<StableNode*>(
+    new (this) StableNode(this, std::forward<T>(node)));
+  _protectedNodes.emplace_front(result);
+  return ProtectedNode(std::move(result));
+}
+
 void VirtualMachine::initialize() {
   coreatoms.initialize(this, atomTable);
 }
@@ -202,7 +213,7 @@ void VirtualMachine::startGC(GC gc) {
   getThreadPool().gCollect(gc);
 
   // Protected nodes
-  _protectedNodes.gCollect(gc);
+  gcProtectedNodes(gc);
 
   // Pending alarms
   for (auto iter = alarms.begin(); iter != alarms.end(); ++iter) {
@@ -212,6 +223,30 @@ void VirtualMachine::startGC(GC gc) {
 
   // Environmental roots
   environment.gCollect(gc);
+}
+
+void VirtualMachine::gcProtectedNodes(GC gc) {
+  /* Elements that are still referenced somewhere are garbage-collected, and
+   * the StableNode* is updated to point to the GCed node.
+   *
+   * Elements that are not referenced anymore are erased from the list of
+   * protected nodes.
+   */
+
+  auto previous = _protectedNodes.before_begin();
+  auto current = _protectedNodes.begin();
+
+  while (current != _protectedNodes.end()) {
+    auto locked = current->lock();
+    if (locked) {
+      gc->copyStableRef(*locked, *locked);
+      previous = current++;
+    } else {
+      _protectedNodes.erase_after(previous);
+      current = previous;
+      ++current;
+    }
+  }
 }
 
 VMCleanupListNode* VirtualMachine::acquireCleanupList() {

@@ -40,7 +40,6 @@
 #include "lstring.hh"
 #include "ozcalls.hh"
 #include "properties.hh"
-#include "protect.hh"
 #include "runnable.hh"
 #include "sclone.hh"
 #include "space.hh"

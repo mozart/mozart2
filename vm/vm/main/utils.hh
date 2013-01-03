@@ -474,6 +474,8 @@ nativeint ozVBSLengthForBufferNoRaise(VM vm, RichNode vbs) {
       return result;
     else
       return -1;
+  } else if (matches(vm, vbs, vm->coreatoms.nil)) {
+    return 0;
   } else if (vbs.is<ByteString>()) {
     return vbs.as<ByteString>().value().length;
   } else {
@@ -506,6 +508,8 @@ bool ozVBSGetNoRaise(VM vm, RichNode vbs, std::vector<C>& output) {
         output.push_back(b);
       }
     );
+  } else if (matches(vm, vbs, vm->coreatoms.nil)) {
+    return true;
   } else if (vbs.is<ByteString>()) {
     auto& value = vbs.as<ByteString>().value();
     std::copy(value.begin(), value.end(), std::back_inserter(output));

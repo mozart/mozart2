@@ -80,7 +80,11 @@ in
       case {VirtualString.toString VS}
       of &~|&~|_ then
          {RaiseStringNoInt VS}
+      [] &-|&-|_ then
+         {RaiseStringNoInt VS}
       [] &~|Ir then
+         ~{StringToInt Ir}
+      [] &-|Ir then
          ~{StringToInt Ir}
       [] &0|nil then
          0

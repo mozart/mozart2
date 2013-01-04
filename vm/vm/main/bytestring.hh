@@ -190,8 +190,18 @@ bool ByteString::stringHasSuffix(VM vm, RichNode suffixNode) {
 
 void ByteString::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << "<ByteString \"";
-  out.write(reinterpret_cast<const char*>(_bytes.string), _bytes.length);
-  // TODO: Escape characters.
+  if (_bytes.isError()) {
+    out << "error " << _bytes.error;
+  } else {
+    auto savedFlags = out.setf(out.hex, out.basefield);
+    auto savedFill = out.fill('0');
+
+    for (auto c: _bytes)
+      out << std::setw(2) << (int) c;
+
+    out.flags(savedFlags);
+    out.fill(savedFill);
+  }
   out << "\">";
 }
 

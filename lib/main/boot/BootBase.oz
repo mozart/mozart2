@@ -73,13 +73,6 @@ prepare
          load:     BootURLLoad
       )
 
-      /** The boot Pickle module (stub version) */
-      Pickle = 'export'(
-         load: proc {$ VI ?VO}
-                  {Exception.raiseError notImplemented('Pickle.load')}
-               end
-      )
-
       % And finally load the Init.ozf functor and apply it
       InitFunctor = {BootURLLoad 'x-oz://system/Init.ozf'}
    in
@@ -88,7 +81,6 @@ prepare
                                   'Boot':       Boot_Boot
                                   'BURL':       BURL
                                   'OS':         OS
-                                  'Pickle':     Pickle
                                   'Property':   Property
                                   'System':     System) _}
    end

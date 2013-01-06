@@ -176,7 +176,6 @@ import
    Boot at 'x-oz://boot/Boot'
    BURL at 'x-oz://boot/URL'
    OS
-   Pickle
    Property
    System
 
@@ -229,7 +228,6 @@ define
       %% Register volatile system modules
       {RM enter(url:'x-oz://system/OS.ozf'       OS)}
       {RM enter(url:'x-oz://system/Property.ozf' Property)}
-      {RM enter(url:'x-oz://system/Pickle.ozf'   Pickle)}
       {RM enter(url:'x-oz://system/System.ozf'   System)}
       {RM enter(url:'x-oz://system/Resolve.ozf'  Resolve)}
       {RM enter(url:'x-oz://system/Module.ozf'   RealModule)}

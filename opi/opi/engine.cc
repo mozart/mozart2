@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
   createThreadFromOZB(vm, ozbPath, "Space");
   createThreadFromOZB(vm, ozbPath, "System");
   createThreadFromOZB(vm, ozbPath, "Property");
+  createThreadFromOZB(vm, ozbPath, "Pickle");
   createThreadFromOZB(vm, ozbPath, "Listener");
   createThreadFromOZB(vm, ozbPath, "Type");
   createThreadFromOZB(vm, ozbPath, "ErrorListener");

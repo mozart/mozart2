@@ -113,6 +113,12 @@ int NamedName::compareFeatures(VM vm, RichNode right) {
     return 1;
 }
 
+UnstableNode NamedName::serialize(VM vm, SE se) {
+  auto result = buildTuple(vm, MOZART_STR("namedname"), OptVar::build(vm));
+  se->copy(RichNode(result).as<Tuple>().getElements(0), _printName);
+  return result;
+}
+
 GlobalNode* NamedName::globalize(RichNode self, VM vm) {
   GlobalNode* result;
   if (!GlobalNode::get(vm, _uuid, result)) {
@@ -139,6 +145,10 @@ bool UniqueName::equals(VM vm, RichNode right) {
 
 int UniqueName::compareFeatures(VM vm, RichNode right) {
   return value().compare(right.as<UniqueName>().value());
+}
+
+UnstableNode UniqueName::serialize(VM vm, SE se) {
+  return buildTuple(vm, MOZART_STR("uniquename"), atom_t(value()));
 }
 
 void UniqueName::printReprToStream(VM vm, std::ostream& out, int depth) {

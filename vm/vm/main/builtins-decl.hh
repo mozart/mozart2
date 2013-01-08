@@ -214,9 +214,16 @@ public:
     _params = StaticArray<ParamInfo>(new ParamInfo[arity], arity);
   }
 
+  const std::string& getModuleName() {
+    return _moduleName;
+  }
+
   const std::string& getName() {
     return _name;
   }
+
+  inline
+  atom_t getModuleNameAtom(VM vm);
 
   inline
   atom_t getNameAtom(VM vm);
@@ -253,11 +260,17 @@ public:
                    StaticArray<StableNode>& Gs,
                    StaticArray<StableNode>& Ks);
 
+public:
+  void setModuleName(const std::string& moduleName) {
+    _moduleName = moduleName;
+  }
+
 private:
   inline
   void buildCodeBlock(VM vm, RichNode self);
 
 private:
+  std::string _moduleName;
   std::string _name;
   size_t _arity;
   StaticArray<ParamInfo> _params;

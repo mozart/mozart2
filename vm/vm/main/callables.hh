@@ -75,6 +75,11 @@ void BuiltinProcedure::getDebugInfo(
   debugData = mozart::build(vm, unit);
 }
 
+UnstableNode BuiltinProcedure::serialize(VM vm, SE se) {
+  return buildTuple(vm, MOZART_STR("builtin"),
+                    _builtin->getModuleNameAtom(vm), _builtin->getNameAtom(vm));
+}
+
 /////////////////
 // Abstraction //
 /////////////////
@@ -143,6 +148,16 @@ void Abstraction::printReprToStream(VM vm, std::ostream& out, int depth) {
   } MOZART_CATCH(vm, kind, node) {
     out << "<P/?>";
   } MOZART_ENDTRY(vm);
+}
+
+UnstableNode Abstraction::serialize(VM vm, SE se) {
+  UnstableNode r = makeTuple(vm, MOZART_STR("abstraction"), _Gc+1);
+  auto elements=RichNode(r).as<Tuple>().getElementsArray();
+  for (size_t i=0; i< _Gc; ++i) {
+    se->copy(elements[i], getElements(i));
+  }
+  se->copy(elements[_Gc], _body);
+  return r;
 }
 
 GlobalNode* Abstraction::globalize(RichNode self, VM vm) {

@@ -54,6 +54,10 @@ int Boolean::compareFeatures(VM vm, RichNode right) {
     return -1;
 }
 
+UnstableNode Boolean::serialize(VM vm, SE se) {
+  return buildTuple(vm, MOZART_STR("bool"), value());
+}
+
 }
 
 #endif // MOZART_GENERATOR

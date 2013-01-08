@@ -74,6 +74,10 @@ public:
         MOZART_STR("List of byte code elements")
       );
 
+      // Apparently the compiler wants to give us NamedNames sometimes
+      if (printName.is<NamedName>())
+        printName = printName.as<NamedName>().getPrintName();
+
       // Read scalar args
       auto intArity = getArgument<nativeint>(vm, arity);
       auto intXCount = getArgument<nativeint>(vm, XCount);
@@ -173,22 +177,105 @@ public:
     }
   };
 
-  class NewPatPatWildcard: public Builtin<NewPatPatWildcard> {
+  class MakeRecordFromArity: public Builtin<MakeRecordFromArity> {
   public:
-    NewPatPatWildcard(): Builtin("newPatMatWildcard") {}
+    MakeRecordFromArity(): Builtin("makeRecordFromArity") {}
+
+    static void call(VM vm, In arity, In fields, Out result) {
+      using namespace patternmatching;
+
+      if (!arity.is<Arity>()) {
+        if (arity.isTransient())
+          waitFor(vm, arity);
+        raiseTypeError(vm, MOZART_STR("Arity"), arity);
+      }
+
+      size_t width;
+      StaticArray<StableNode> fieldsData;
+
+      if (matchesVariadicSharp(vm, fields, width, fieldsData)) {
+        if (width != arity.as<Arity>().getWidth())
+          raiseKernelError(vm, MOZART_STR("widthMismatch"), arity, width);
+
+        result = Record::build(vm, width, arity);
+        auto elements = RichNode(result).as<Record>().getElementsArray();
+
+        for (size_t i = 0; i < width; ++i)
+          elements[i].init(vm, fieldsData[i]);
+      } else {
+        raiseTypeError(vm, MOZART_STR("#-tuple"), fields);
+      }
+    }
+  };
+
+  class NewPatMatWildcard: public Builtin<NewPatMatWildcard> {
+  public:
+    NewPatMatWildcard(): Builtin("newPatMatWildcard") {}
 
     static void call(VM vm, Out result) {
       result = PatMatCapture::build(vm, -1);
     }
   };
 
-  class NewPatPatCapture: public Builtin<NewPatPatCapture> {
+  class NewPatMatCapture: public Builtin<NewPatMatCapture> {
   public:
-    NewPatPatCapture(): Builtin("newPatMatCapture") {}
+    NewPatMatCapture(): Builtin("newPatMatCapture") {}
 
     static void call(VM vm, In index, Out result) {
       auto intIndex = getArgument<nativeint>(vm, index, MOZART_STR("Integer"));
       result = PatMatCapture::build(vm, intIndex);
+    }
+  };
+
+  class NewPatMatConjunction: public Builtin<NewPatMatConjunction> {
+  public:
+    NewPatMatConjunction(): Builtin("newPatMatConjunction") {}
+
+    static void call(VM vm, In parts, Out result) {
+      using namespace patternmatching;
+
+      size_t width = 0;
+      StaticArray<StableNode> partsData;
+
+      if (matchesVariadicSharp(vm, parts, width, partsData)) {
+        result = PatMatConjunction::build(vm, width);
+        auto elements = RichNode(result).as<PatMatConjunction>().getElementsArray();
+        for (size_t i = 0; i < width; ++i)
+          elements[i].init(vm, partsData[i]);
+      } else {
+        raiseTypeError(vm, MOZART_STR("#-tuple"), parts);
+      }
+    }
+  };
+
+  class NewPatMatOpenRecord: public Builtin<NewPatMatOpenRecord> {
+  public:
+    NewPatMatOpenRecord(): Builtin("newPatMatOpenRecord") {}
+
+    static void call(VM vm, In arity, In fields, Out result) {
+      using namespace patternmatching;
+
+      if (!arity.is<Arity>()) {
+        if (arity.isTransient())
+          waitFor(vm, arity);
+        raiseTypeError(vm, MOZART_STR("Arity"), arity);
+      }
+
+      size_t width;
+      StaticArray<StableNode> fieldsData;
+
+      if (matchesVariadicSharp(vm, fields, width, fieldsData)) {
+        if (width != arity.as<Arity>().getWidth())
+          raiseKernelError(vm, MOZART_STR("widthMismatch"), arity, width);
+
+        result = PatMatOpenRecord::build(vm, width, arity);
+        auto elements = RichNode(result).as<PatMatOpenRecord>().getElementsArray();
+
+        for (size_t i = 0; i < width; ++i)
+          elements[i].init(vm, fieldsData[i]);
+      } else {
+        raiseTypeError(vm, MOZART_STR("#-tuple"), fields);
+      }
     }
   };
 

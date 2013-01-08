@@ -179,6 +179,16 @@ void Tuple::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << ")";
 }
 
+UnstableNode Tuple::serialize(VM vm, SE se) {
+  UnstableNode r = makeTuple(vm, MOZART_STR("tuple"), _width+1);
+  auto elements=RichNode(r).as<Tuple>().getElementsArray();
+  for (size_t i=0; i< _width; ++i) {
+    se->copy(elements[i], getElements(i));
+  }
+  se->copy(elements[_width], _label);
+  return r;
+}
+
 //////////
 // Cons //
 //////////
@@ -277,6 +287,15 @@ void Cons::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << repr(vm, _elements[0], depth) << "|" << repr(vm, _elements[1], depth);
 }
 
+UnstableNode Cons::serialize(VM vm, SE se) {
+  auto result = buildTuple(vm, MOZART_STR("cons"),
+                           OptVar::build(vm), OptVar::build(vm));
+  auto elements = RichNode(result).as<Tuple>().getElementsArray();
+  se->copy(elements[0], _elements[0]);
+  se->copy(elements[1], _elements[1]);
+  return result;
+}
+
 ///////////
 // Arity //
 ///////////
@@ -355,6 +374,16 @@ void Arity::printReprToStream(VM vm, std::ostream& out, int depth) {
   }
 
   out << ")>";
+}
+
+UnstableNode Arity::serialize(VM vm, SE se) {
+  UnstableNode r = makeTuple(vm, MOZART_STR("arity"), _width+1);
+  auto elements=RichNode(r).as<Tuple>().getElementsArray();
+  for (size_t i=0; i< _width; ++i) {
+    se->copy(elements[i], getElements(i));
+  }
+  se->copy(elements[_width], _label);
+  return r;
 }
 
 ////////////
@@ -468,6 +497,16 @@ void Record::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << ")";
 }
 
+UnstableNode Record::serialize(VM vm, SE se) {
+  UnstableNode r = makeTuple(vm, MOZART_STR("record"), _width+1);
+  auto elements=RichNode(r).as<Tuple>().getElementsArray();
+  for (size_t i=0; i< _width; ++i) {
+    se->copy(elements[i], getElements(i));
+  }
+  se->copy(elements[_width], _arity);
+  return r;
+}
+
 ///////////
 // Chunk //
 ///////////
@@ -486,6 +525,12 @@ bool Chunk::lookupFeature(VM vm, RichNode feature,
 bool Chunk::lookupFeature(VM vm, nativeint feature,
                           nullable<UnstableNode&> value) {
   return Dottable(*_underlying).lookupFeature(vm, feature, value);
+}
+
+UnstableNode Chunk::serialize(VM vm, SE se) {
+  auto result = buildTuple(vm, MOZART_STR("chunk"), OptVar::build(vm));
+  se->copy(RichNode(result).as<Tuple>().getElements(0), *_underlying);
+  return result;
 }
 
 }

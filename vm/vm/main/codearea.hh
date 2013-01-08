@@ -41,7 +41,7 @@ CodeArea::CodeArea(
   VM vm, size_t Kc, ByteCode* codeBlock, size_t size, size_t arity,
   size_t Xcount, atom_t printName, RichNode debugData)
 
-  : _size(size), _arity(arity), _Xcount(Xcount), _Kc(Kc),
+  : _gnode(nullptr), _size(size), _arity(arity), _Xcount(Xcount), _Kc(Kc),
     _printName(printName) {
 
   _setCodeBlock(vm, codeBlock, size);
@@ -55,6 +55,8 @@ CodeArea::CodeArea(
 }
 
 CodeArea::CodeArea(VM vm, size_t Kc, GR gr, CodeArea& from) {
+  gr->copyGNode(_gnode, from._gnode);
+
   _size = from._size;
   _arity = from._arity;
   _Xcount = from._Xcount;
@@ -82,6 +84,31 @@ void CodeArea::getCodeAreaDebugInfo(VM vm, atom_t& printName,
                                     UnstableNode& debugData) {
   printName = _printName;
   debugData.copy(vm, _debugData);
+}
+
+UnstableNode CodeArea::serialize(VM vm, SE se) {
+  UnstableNode codeAtom = mozart::build(vm, MOZART_STR("code"));
+  UnstableNode block = buildTupleDynamic(
+    vm, codeAtom, _size, _codeBlock,
+    [=](ByteCode b) {
+      return mozart::build(vm, (nativeint) b);
+    });
+
+  UnstableNode Ks = makeTuple(vm, MOZART_STR("registers"), _Kc);
+  if (_Kc != 0) {
+    auto elements = RichNode(Ks).as<Tuple>().getElementsArray();
+    for (size_t i = 0; i< _Kc; ++i) {
+      se->copy(elements[i], getElements(i));
+    }
+  }
+
+  UnstableNode result = buildTuple(vm, MOZART_STR("codearea"),
+                                   std::move(block), _arity, _Xcount,
+                                   std::move(Ks), _printName, OptVar::build(vm));
+
+  se->copy(RichNode(result).as<Tuple>().getElements(5), _debugData);
+
+  return result;
 }
 
 GlobalNode* CodeArea::globalize(RichNode self, VM vm) {

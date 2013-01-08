@@ -79,6 +79,9 @@ public:
   // Miscellaneous
 
   inline
+  UnstableNode serialize(VM vm, SE se);
+
+  inline
   GlobalNode* globalize(RichNode self, VM vm);
 
 public:

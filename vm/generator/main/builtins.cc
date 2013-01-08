@@ -344,6 +344,13 @@ void ModuleDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
   nameExpr->printPretty(code, nullptr, context->getPrintingPolicy());
   code << ")) {\n";
 
+  for (auto iter = builtins.begin(); iter != builtins.end(); ++iter) {
+    code << "    instance" << iter->cppName << ".setModuleName(";
+    nameExpr->printPretty(code, nullptr, context->getPrintingPolicy());
+    code << ");\n";
+  }
+
+  code << "\n";
   code << "    UnstableField fields[" << builtins.size() << "];\n";
 
   size_t i = 0;

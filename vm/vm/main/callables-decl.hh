@@ -128,9 +128,13 @@ public:
 public:
   // Miscellaneous
 
+  inline
+  UnstableNode serialize(VM vm, SE se);
+
   void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<P/" << _builtin->getArity() << " " << _builtin->getName() << ">";
   }
+
 private:
   Builtin* _builtin;
 };
@@ -206,6 +210,9 @@ public:
 
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
+
+  inline
+  UnstableNode serialize(VM vm, SE se);
 
   inline
   GlobalNode* globalize(RichNode self, VM vm);

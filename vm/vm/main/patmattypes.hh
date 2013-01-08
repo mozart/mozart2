@@ -49,6 +49,13 @@ void PatMatCapture::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << "<Capture/" << index() << ">";
 }
 
+UnstableNode PatMatCapture::serialize(VM vm, SE se) {
+  if (index() == -1)
+    return mozart::build(vm, MOZART_STR("patmatwildcard"));
+  else
+    return buildTuple(vm, MOZART_STR("patmatcapture"), index());
+}
+
 ///////////////////////
 // PatMatConjunction //
 ///////////////////////
@@ -102,6 +109,15 @@ void PatMatConjunction::printReprToStream(VM vm, std::ostream& out, int depth) {
   out << ")";
 }
 
+UnstableNode PatMatConjunction::serialize(VM vm, SE se) {
+  UnstableNode r = makeTuple(vm, MOZART_STR("patmatconjunction"), _count);
+  auto elements = RichNode(r).as<Tuple>().getElementsArray();
+  for (size_t i=0; i<_count; ++i) {
+    se->copy(elements[i], getElements(i));
+  }
+  return r;
+}
+
 //////////////////////
 // PatMatOpenRecord //
 //////////////////////
@@ -144,6 +160,16 @@ void PatMatOpenRecord::printReprToStream(VM vm, std::ostream& out, int depth) {
   }
 
   out << "...)>";
+}
+
+UnstableNode PatMatOpenRecord::serialize(VM vm, SE se) {
+  UnstableNode r = makeTuple(vm, MOZART_STR("patmatopenrecord"), _width+1);
+  auto elements = RichNode(r).as<Tuple>().getElementsArray();
+  for (size_t i=0; i< _width; ++i) {
+    se->copy(elements[i], getElements(i));
+  }
+  se->copy(elements[_width], _arity);
+  return r;
 }
 
 }

@@ -62,6 +62,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
+  inline
+  UnstableNode serialize(VM vm, SE se);
+
 private:
   nativeint _index;
 };
@@ -111,6 +114,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
+  inline
+  UnstableNode serialize(VM vm, SE se);
+
 private:
   size_t _count;
 };
@@ -159,6 +165,9 @@ public:
 public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
+
+  inline
+  UnstableNode serialize(VM vm, SE se);
 
 private:
   StableNode _arity;

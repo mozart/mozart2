@@ -152,6 +152,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
+  inline
+  UnstableNode serialize(VM vm, SE se);
+
 private:
   friend class BaseRecord<Tuple>;
 
@@ -258,6 +261,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
+  inline
+  UnstableNode serialize(VM vm, SE se);
+
 private:
   StableNode _elements[2];
 };
@@ -326,6 +332,9 @@ public:
 
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
+
+  inline
+  UnstableNode serialize(VM vm, SE se);
 
 private:
   StableNode _label;
@@ -410,6 +419,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth);
 
+  inline
+  UnstableNode serialize(VM vm, SE se);
+
 private:
   friend class BaseRecord<Record>;
 
@@ -477,6 +489,9 @@ public:
   void printReprToStream(VM vm, std::ostream& out, int depth) {
     out << "<Chunk>";
   }
+
+  inline
+  UnstableNode serialize(VM vm, SE se);
 
 private:
   StableNode* _underlying;

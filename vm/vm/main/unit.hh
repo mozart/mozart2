@@ -48,6 +48,10 @@ int Unit::compareFeatures(VM vm, RichNode right) {
   return 0;
 }
 
+UnstableNode Unit::serialize(VM vm, SE se) {
+  return mozart::build(vm, MOZART_STR("unit"));
+}
+
 }
 
 #endif // MOZART_GENERATOR

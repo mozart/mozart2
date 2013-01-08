@@ -28,24 +28,39 @@
 
 functor
 
-require
-   URL(make:                    UrlMake
-       is:                      UrlIs
-       normalizePath:           UrlNormalizePath
-       resolve:                 UrlResolve
-       toVirtualString:         UrlToVs
-       toAtom:                  UrlToAtom
-       toBase:                  UrlToBase
-       toString:                UrlToString
-       isRelative:              UrlIsRelative
-       toVirtualStringExtended: UrlToVsExtended)
-
-   DefaultURL(ozScheme
-              functorExt:   FunctorExt
-              nameToUrl:    ModNameToUrl
-              isNatLibName: IsNatSystemName)
-
 prepare
+
+   %% Functors that must be pickled within Init.ozf
+
+   Functor_URL =
+   \insert '../dp/URL.oz'
+
+   Functor_DefaultURL =
+   \insert '../support/DefaultURL.oz'
+
+   Functor_System =
+   \insert '../sys/System.oz'
+
+   %% Apply manually URL and DefaultURL
+
+   URL = {Functor_URL.apply 'import'}
+   UrlMake = URL.make
+   UrlIs = URL.is
+   UrlNormalizePath = URL.normalizePath
+   UrlResolve = URL.resolve
+   UrlToVs = URL.toVirtualString
+   UrlToAtom = URL.toAtom
+   UrlToBase = URL.toBase
+   UrlToString = URL.toString
+   UrlIsRelative = URL.isRelative
+   UrlToVsExtended = URL.toVirtualStringExtended
+
+   DefaultURL = {Functor_DefaultURL.apply 'import'('URL':URL)}
+   FunctorExt = DefaultURL.functorExt
+   ModNameToUrl = DefaultURL.nameToUrl
+   IsNatSystemName = DefaultURL.isNatLibName
+
+   %% Now start our things
 
    DotUrl   = {UrlMake './'}
    OzScheme = {VirtualString.toString DefaultURL.ozScheme}
@@ -174,10 +189,6 @@ prepare
 
 import
    Boot at 'x-oz://boot/Boot'
-   BURL at 'x-oz://boot/URL'
-   OS
-   Property
-   System
 
 define
 
@@ -185,10 +196,66 @@ define
    GetInternal = Boot.getInternal
    GetNative = Boot.getNative
 
-   %% Shortcuts
-   Getenv = OS.getEnv
-   SET    = Property.put
-   GET    = Property.get
+   %% Properties
+   local
+      Boot_Property = {GetInternal 'Property'}
+   in
+      proc {SET Property Value}
+         if {Boot_Property.put Property Value} then skip else
+            {Boot_Property.registerValue Property Value}
+         end
+      end
+
+      fun {GET Property}
+         {Boot_Property.get Property $ true}
+      end
+   end
+
+   %% OS related stuff
+   local
+      Boot_OS = {GetInternal 'OS'}
+   in
+      Getenv = Boot_OS.getEnv
+      GetCWD = Boot_OS.getCWD
+   end
+
+   /** Loads a functor located at a given URL
+    *  This never goes to the file system, but looks up functors in the
+    *  BootVirtualFS above instead.
+    */
+   fun {BootURLLoad URL}
+      BootVirtualFS = {GET 'internal.boot.virtualfs'}
+      URLAtom = {VirtualString.toAtom URL}
+   in
+      try
+         {Dictionary.get BootVirtualFS URLAtom}
+      catch dictKeyNotFound(_ _) then
+         raise system(module(notFound load URLAtom)) end
+      end
+   end
+
+   %% Boot BURL
+   BURL = 'export'(
+      localize: fun {$ U}
+                   raise error(kernel(stub 'BURL.localize') debug:unit) end
+                end
+      open:     fun {$ U}
+                   raise error(kernel(stub 'BURL.open') debug:unit) end
+                end
+      load:     BootURLLoad
+   )
+
+   %% Apply manually the System module
+   System = {Functor_System.apply 'import'('Boot_System':{GetInternal 'System'})}
+
+   %% Make a stub OS module for our bootstrapping purpose
+   OS = 'export'(
+      getEnv:Getenv
+      getCWD:GetCWD
+      getpwname:fun {$ U}
+                   raise error(kernel(stub 'OS.getpwname') debug:unit) end
+                end
+   )
 
    %% usual system initialization
    \insert 'Prop.oz'
@@ -200,11 +267,14 @@ define
 
    local
 
+      %% stubs of OS and Property for the application of NewModule
+      StubProperty = 'export'(put:SET get:GET)
+
       %% create module manager
       Module = {NewModule.apply 'import'('System':   System
                                          'OS':       OS
                                          'Boot':     Boot
-                                         'Property': Property
+                                         'Property': StubProperty
                                          'Resolve':  Resolve)}
 
       %% The root module manager
@@ -226,11 +296,11 @@ define
       {RM enter(url:'x-oz://boot/Boot' Boot)}
 
       %% Register volatile system modules
-      {RM enter(url:'x-oz://system/OS.ozf'       OS)}
-      {RM enter(url:'x-oz://system/Property.ozf' Property)}
-      {RM enter(url:'x-oz://system/System.ozf'   System)}
-      {RM enter(url:'x-oz://system/Resolve.ozf'  Resolve)}
-      {RM enter(url:'x-oz://system/Module.ozf'   RealModule)}
+      {RM enter(url:'x-oz://system/URL.ozf'        URL)}
+      {RM enter(url:'x-oz://system/DefaultURL.ozf' DefaultURL)}
+      {RM enter(url:'x-oz://system/System.ozf'     System)}
+      {RM enter(url:'x-oz://system/Resolve.ozf'    Resolve)}
+      {RM enter(url:'x-oz://system/Module.ozf'     RealModule)}
 
       %% Install error handler
       {RM apply(ErrorHandler)}
@@ -241,6 +311,9 @@ define
          {RM enter(name:'Event' M)}
       end
 \endif
+
+      %% Link the real OS module, which should set up a proper BURL
+      {Wait {RM link(url:'x-oz://system/OS.ozf' $)}}
 
       %% Link root functor (i.e. application)
       {Wait {RM link(url:{GET 'application.url'} $)}}

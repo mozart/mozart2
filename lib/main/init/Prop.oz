@@ -77,15 +77,15 @@ OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
                   elseof V then V end
 
 USER_HOME       = case PLATFORM_OS of win32 then
-                     HOMEDRIVE = {OS.getEnv "HOMEDRIVE"}
-                     HOMEPATH  = {OS.getEnv "HOMEPATH"}
+                     HOMEDRIVE = {Getenv "HOMEDRIVE"}
+                     HOMEPATH  = {Getenv "HOMEPATH"}
                   in
                      if HOMEDRIVE == false orelse HOMEPATH == false then
-                        case {Getenv 'HOME'} of false then {OS.getCWD}
+                        case {Getenv 'HOME'} of false then {GetCWD}
                         elseof V then V end
                      else {VirtualString.toString HOMEDRIVE#HOMEPATH}
                      end
-                  elsecase {Getenv 'HOME'} of false then {OS.getCWD}
+                  elsecase {Getenv 'HOME'} of false then {GetCWD}
                   elseof V then V end
 
 OZ_TRACE_LOAD   = case {Getenv 'OZ_TRACE_LOAD'} of false then false

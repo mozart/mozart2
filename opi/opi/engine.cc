@@ -68,16 +68,15 @@ int main(int argc, char** argv) {
     boostBasedVM.setApplicationArgs(0, nullptr);
   }
 
-  UnstableNode bootVirtualFS = OptVar::build(vm);
-  UnstableNode runProc = OptVar::build(vm);
-  UnstableNode baseEnv = OptVar::build(vm);
+  {
+    UnstableNode bootVirtualFS = Dictionary::build(vm);
+    UnstableNode baseEnv = OptVar::build(vm);
 
-  vm->getPropertyRegistry().registerConstantProp(
-    vm, MOZART_STR("internal.boot.virtualfs"), bootVirtualFS);
-  vm->getPropertyRegistry().registerConstantProp(
-    vm, MOZART_STR("internal.boot.run"), runProc);
-  vm->getPropertyRegistry().registerConstantProp(
-    vm, MOZART_STR("internal.boot.base"), baseEnv);
+    vm->getPropertyRegistry().registerConstantProp(
+      vm, MOZART_STR("internal.boot.virtualfs"), bootVirtualFS);
+    vm->getPropertyRegistry().registerConstantProp(
+      vm, MOZART_STR("internal.boot.base"), baseEnv);
+  }
 
   createThreadFromOZB(vm, ozbPath, "Base");
 
@@ -88,7 +87,6 @@ int main(int argc, char** argv) {
   createThreadFromOZB(vm, ozbPath, "OPIServer");
   createThreadFromOZB(vm, ozbPath, "OPIEnv");
   createThreadFromOZB(vm, ozbPath, "Space");
-  createThreadFromOZB(vm, ozbPath, "System");
   createThreadFromOZB(vm, ozbPath, "Property");
   createThreadFromOZB(vm, ozbPath, "Pickle");
   createThreadFromOZB(vm, ozbPath, "Listener");
@@ -97,14 +95,12 @@ int main(int argc, char** argv) {
   createThreadFromOZB(vm, ozbPath, "ObjectSupport");
   createThreadFromOZB(vm, ozbPath, "CompilerSupport");
   createThreadFromOZB(vm, ozbPath, "Narrator");
-  createThreadFromOZB(vm, ozbPath, "DefaultURL");
   createThreadFromOZB(vm, ozbPath, "Init");
   createThreadFromOZB(vm, ozbPath, "Error");
   createThreadFromOZB(vm, ozbPath, "ErrorFormatters");
   createThreadFromOZB(vm, ozbPath, "Open");
   createThreadFromOZB(vm, ozbPath, "Combinator");
   createThreadFromOZB(vm, ozbPath, "RecordC");
-  createThreadFromOZB(vm, ozbPath, "URL");
   createThreadFromOZB(vm, ozbPath, "Application");
   createThreadFromOZB(vm, ozbPath, "OS");
   createThreadFromOZB(vm, ozbPath, "Annotate");
@@ -130,7 +126,26 @@ int main(int argc, char** argv) {
 
   boostBasedVM.run();
 
-  new (vm) Thread(vm, vm->getTopLevelSpace(), runProc);
+  {
+    UnstableNode bootVirtualFS;
+    auto VirtualFSProperty = build(vm, MOZART_STR("internal.boot.virtualfs"));
+    vm->getPropertyRegistry().get(vm, VirtualFSProperty, bootVirtualFS);
+
+    auto InitURLAtom = build(vm, MOZART_STR("x-oz://system/Init.ozf"));
+    auto InitFunctor = DictionaryLike(bootVirtualFS).dictGet(vm, InitURLAtom);
+
+    auto ApplyAtom = build(vm, MOZART_STR("apply"));
+    auto ApplyProc = Dottable(InitFunctor).dot(vm, ApplyAtom);
+
+    auto BootModule = vm->findBuiltinModule(MOZART_STR("Boot"));
+    auto ImportRecord = buildRecord(
+      vm, buildArity(vm, MOZART_STR("import"), MOZART_STR("Boot")),
+      BootModule);
+
+    UnstableNode dummy = OptVar::build(vm);
+    RichNode arguments[2] = { ImportRecord, dummy };
+    new (vm) Thread(vm, vm->getTopLevelSpace(), ApplyProc, 2, arguments);
+  }
 
   boostBasedVM.run();
 }

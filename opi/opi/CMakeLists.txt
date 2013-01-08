@@ -52,8 +52,7 @@ set(BOOTCOMPILER_JAR "${MOZART_BUILD_DIR}/bootcompiler/bootcompiler.jar")
 set(BOOTCOMPILER_DEFINES -D NO_GUMP)
 
 set(BASE_FUNCTORS
-    "${MOZART_LIB_DIR}/base/Base.oz"
-    "${MOZART_LIB_DIR}/boot/BootBase.oz")
+    "${MOZART_LIB_DIR}/base/Base.oz")
 
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Base.ozb"

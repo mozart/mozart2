@@ -276,7 +276,8 @@ public:
 
       UnstableNode res(vm, end);
       for (size_t i = readCount; i > 0; i--)
-        res = buildCons(vm, charBuffer[i-1], std::move(res));
+        res = buildCons(vm, (nativeint) (unsigned char) charBuffer[i-1],
+                        std::move(res));
 
       vm->free(buffer, bufferSize);
 

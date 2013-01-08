@@ -101,7 +101,8 @@ void BaseSocketConnection<T, P>::readHandler(
 
       UnstableNode head(vm, *tailNode);
       for (size_t i = bytes_transferred; i > 0; i--)
-        head = buildCons(vm, _readData[i-1], std::move(head));
+        head = buildCons(vm, (nativeint) (unsigned char) _readData[i-1],
+                         std::move(head));
 
       self->_environment.bindAndReleaseAsyncIOFeedbackNode(
         statusNode, MOZART_STR("succeeded"), bytes_transferred, std::move(head));

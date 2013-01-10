@@ -58,9 +58,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *
    *  The program statement applies this functor, giving it as imports all
    *  the boot modules. These are looked up in the boot modules map.
-   *  The result of the application, which is the Base module, is stored in
-   *  the boot property 'internal.boot.base'. It is also bound to the exported
-   *  feature 'Base'.
+   *  The result of this application is returned as the top-level result.
    *
    *  Hence the program looks like this:
    *  {{{
@@ -73,7 +71,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *     )
    *  in
    *     <Base> = {<BaseFunctor>.apply Imports}
-   *     <Base>.'Base' = <Base>
    *     <Result> = <Base>
    *  end
    *  }}}
@@ -108,16 +105,10 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       (baseFunctor dot OzAtom("apply")) call (imports, prog.baseEnvSymbol)
     }
 
-    // Fill in <Base>.'Base'
-    val bindBaseBaseStat = {
-      (prog.baseEnvSymbol dot OzAtom("Base")) === prog.baseEnvSymbol
-    }
-
     // Put things together
     val wholeProgram = {
       LOCAL (prog.baseEnvSymbol) IN {
         applyBaseFunctorStat ~
-        bindBaseBaseStat ~
         (prog.topLevelResultSymbol === prog.baseEnvSymbol)
       }
     }

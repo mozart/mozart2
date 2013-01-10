@@ -40,9 +40,7 @@ bool doBootLoad(VM vm, const fs::path& ozbPath,
   if (!input.is_open())
     return false;
 
-  UnstableNode codeArea = bootUnpickle(vm, input);
-  result = Abstraction::build(vm, 1, codeArea);
-
+  result = bootUnpickle(vm, input);
   return true;
 }
 
@@ -102,7 +100,7 @@ int main(int argc, char** argv) {
     if (!doBootLoad(vm, ozbPath, "Init", initAbstraction))
       std::cerr << "panic: could not load Init functor" << std::endl;
 
-    ozcalls::asyncOzCall(vm, baseAbstraction, OptVar::build(vm));
+    ozcalls::asyncOzCall(vm, baseAbstraction, baseEnv);
     ozcalls::asyncOzCall(vm, initAbstraction, initFunctor);
 
     boostBasedVM.run();

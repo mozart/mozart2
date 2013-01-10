@@ -31,6 +31,10 @@ functor
 
 require
    Boot_OS at 'x-oz://boot/OS'
+   Boot_Reflection at 'x-oz://boot/Reflection'
+
+import
+   BURL at 'x-oz://boot/URL'
 
 export
    % Random number generation
@@ -564,6 +568,16 @@ define
    proc {CompatWait ?Pid ?Status}
       % TODO
       Status = 0
+   end
+
+   %% Set up a non-stub BURL
+
+   local
+      fun {BURL_open URL}
+         {CompatOpen URL ['O_RDONLY'] nil}
+      end
+   in
+      {Boot_Reflection.become BURL.open BURL_open}
    end
 
 end

@@ -135,9 +135,10 @@ public:
     static void call(VM vm, In value, In patLabel, In patFeatures, Out result) {
       using namespace patternmatching;
 
+      UnstableNode falseNode(vm, false);
       UnstableNode patArityUnstable;
       ModCompilerSupport::MakeArityDynamic::call(
-        vm, patLabel, patFeatures, patArityUnstable);
+        vm, patLabel, patFeatures, falseNode, patArityUnstable);
       RichNode patArity = patArityUnstable;
 
       if (patArity.is<Boolean>()) {

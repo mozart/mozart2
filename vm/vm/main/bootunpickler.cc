@@ -39,24 +39,29 @@ public:
 
   /** Top-level unpickle function */
   UnstableNode unpickle() {
-    bool eof = false;
-    while (!eof) {
-      auto value = readValue(eof);
-      if (!eof)
-        nodes.emplace_back(std::move(value));
+    size_t count = readSize();
+    size_t resultIndex = readSize();
+
+    nodes.resize(count+1);
+    for (auto& node: nodes)
+      node = OptVar::build(vm);
+
+    while (true) {
+      size_t index = readSize();
+      if (index == 0)
+        break;
+
+      auto value = readValue();
+      RichNode(nodes[index]).as<OptVar>().bind(vm, std::move(value));
     }
 
-    return std::move(nodes.back());
+    return std::move(nodes[resultIndex]);
   }
 
   /** Read a value */
-  UnstableNode readValue(bool& eof) {
+  UnstableNode readValue() {
     auto kind = readByte();
     switch (kind) {
-      case 0: {
-        eof = true;
-        return build(vm, unit);
-      }
       case 1: return readIntValue();
       case 2: return readFloatValue();
       case 3: return readBooleanValue();
@@ -81,7 +86,11 @@ public:
 
 private:
   UnstableNode readIntValue() {
-    return build(vm, (int) readSize());
+    std::string str = readString();
+    char* end = nullptr;
+    long long intResult = std::strtoll(str.c_str(), &end, 10);
+    assert(*end == '\0' && "bad integer string");
+    return build(vm, (nativeint) intResult);
   }
 
   UnstableNode readFloatValue() {
@@ -111,24 +120,24 @@ private:
   }
 
   UnstableNode readTupleValue() {
-    size_t width = readSize();
     auto label = readNode();
+    size_t width = readSize();
     UnstableNode result = Tuple::build(vm, width, label);
     readNodes(RichNode(result).as<Tuple>().getElementsArray(), width);
     return result;
   }
 
   UnstableNode readArityValue() {
-    size_t width = readSize();
     auto label = readNode();
+    size_t width = readSize();
     UnstableNode result = Arity::build(vm, width, label);
     readNodes(RichNode(result).as<Arity>().getElementsArray(), width);
     return result;
   }
 
   UnstableNode readRecordValue() {
-    size_t width = readSize();
     auto arity = readNode();
+    size_t width = readSize();
     UnstableNode result = Record::build(vm, width, arity);
     readNodes(RichNode(result).as<Record>().getElementsArray(), width);
     return result;
@@ -141,26 +150,43 @@ private:
   }
 
   UnstableNode readCodeAreaValue() {
-    size_t size = readSize();
-    std::vector<unsigned char> buffer;
-    buffer.resize(size*2);
-    read(reinterpret_cast<char*>(buffer.data()), size*2);
+    UUID uuid = readUUID();
+    GlobalNode* gnode;
 
-    std::vector<ByteCode> codeBlock;
-    codeBlock.resize(size);
-    for (size_t i = 0; i < size; ++i)
-      codeBlock[i] = ((ByteCode) buffer[i*2] << 8) | (ByteCode) buffer[i*2+1];
+    if (!GlobalNode::get(vm, uuid, gnode)) {
+      size_t size = readSize();
+      std::vector<unsigned char> buffer;
+      buffer.resize(size*2);
+      read(reinterpret_cast<char*>(buffer.data()), size*2);
 
-    size_t Kcount = readSize();
-    size_t arity = readSize();
-    size_t Xcount = readSize();
-    atom_t printName = readAtom();
-    auto debugData = readNode();
+      std::vector<ByteCode> codeBlock;
+      codeBlock.resize(size);
+      for (size_t i = 0; i < size; ++i)
+        codeBlock[i] = ((ByteCode) buffer[i*2] << 8) | (ByteCode) buffer[i*2+1];
 
-    UnstableNode result = CodeArea::build(vm, Kcount, codeBlock.data(), size*2,
-                                          arity, Xcount, printName, debugData);
-    readNodes(RichNode(result).as<CodeArea>().getElementsArray(), Kcount);
-    return result;
+      size_t arity = readSize();
+      size_t Xcount = readSize();
+      atom_t printName = readAtom();
+      auto debugData = readNode();
+      size_t Kcount = readSize();
+
+      UnstableNode result = CodeArea::build(vm, Kcount, codeBlock.data(), size*2,
+                                            arity, Xcount, printName, debugData);
+      readNodes(RichNode(result).as<CodeArea>().getElementsArray(), Kcount);
+
+      RichNode(result).as<CodeArea>().setUUID(vm, uuid);
+
+      return result;
+    } else {
+      size_t size = readSize();
+      input.ignore(size*2 + (4 + 4));
+      readString();
+      readSize();
+      size_t Kcount = readSize();
+      input.ignore(Kcount*4);
+
+      return { vm, gnode->self };
+    }
   }
 
   UnstableNode readPatMatWildcardValue() {
@@ -179,8 +205,8 @@ private:
   }
 
   UnstableNode readPatMatOpenRecordValue() {
-    size_t width = readSize();
     auto arity = readNode();
+    size_t width = readSize();
     UnstableNode result = PatMatOpenRecord::build(vm, width, arity);
     readNodes(RichNode(result).as<PatMatOpenRecord>().getElementsArray(), width);
     return result;
@@ -220,7 +246,6 @@ private:
   template <typename T>
   void readNode(T& dest) {
     size_t index = readSize();
-    assert(index < nodes.size() && "forward reference");
     dest.init(vm, nodes[index]);
   }
 
@@ -236,6 +261,13 @@ private:
   void readNodes(StaticArray<T> elements, size_t count) {
     for (size_t i = 0; i < count; ++i)
       readNode(elements[i]);
+  }
+
+  /** Read a UUID */
+  UUID readUUID() {
+    char buffer[UUID::byte_count];
+    read(buffer, UUID::byte_count);
+    return UUID(reinterpret_cast<unsigned char*>(buffer));
   }
 
   /** Read a byte array */

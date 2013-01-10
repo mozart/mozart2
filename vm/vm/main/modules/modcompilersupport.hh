@@ -162,11 +162,13 @@ public:
   public:
     MakeArityDynamic(): Builtin("makeArityDynamic") {}
 
-    static void call(VM vm, In label, In features, Out result) {
+    static void call(VM vm, In label, In features, In force, Out result) {
       using namespace patternmatching;
 
       size_t width = 0;
       StaticArray<StableNode> featuresData;
+
+      auto doForce = getArgument<bool>(vm, force);
 
       if (matchesVariadicSharp(vm, features, width, featuresData)) {
         auto unstableFeatures = vm->newStaticArray<UnstableNode>(width);
@@ -176,10 +178,16 @@ public:
         auto arity = buildArityDynamic(vm, label, width,
                                        (UnstableNode*) unstableFeatures);
 
-        if (RichNode(arity).is<Unit>())
-          result = build(vm, false);
-        else
+        if (!RichNode(arity).is<Unit>())
           result = std::move(arity);
+        else if (!doForce)
+          result = build(vm, false);
+        else {
+          result = Arity::build(vm, width, label);
+          auto elements = RichNode(result).as<Arity>().getElementsArray();
+          for (size_t i = 0; i < width; ++i)
+            elements[i].init(vm, i+1);
+        }
 
         vm->deleteStaticArray(unstableFeatures, width);
       } else {

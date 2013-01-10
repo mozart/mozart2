@@ -79,6 +79,7 @@ file(GLOB SYS_FUNCTORS
     "${MOZART_LIB_DIR}/cp/RecordC.oz"
     "${MOZART_LIB_DIR}/dp/URL.oz"
     "${MOZART_LIB_DIR}/ap/Application.oz"
+    "${MOZART_LIB_DIR}/ozbatch/Compile.oz"
     "${MOZART_DIR}/vm/boostenv/lib/*.oz")
 
 set(COMPILER_FUNCTORS

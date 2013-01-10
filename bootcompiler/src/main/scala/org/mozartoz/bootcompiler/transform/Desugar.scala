@@ -74,9 +74,13 @@ object Desugar extends Transformer with TreeDSL {
       val proc = atPos(fun) {
         PROC(name, args :+ result, newFlags) {
           if (isLazy) {
-            THREAD {
-              (builtins.waitNeeded call (result)) ~
-              (result === body)
+            val result2 = Variable.newSynthetic("<Result2>")
+            LOCAL (result2) IN {
+              THREAD {
+                (builtins.waitNeeded call (result2)) ~
+                (result2 === body)
+              } ~
+              (builtins.unaryOpToBuiltin("!!") call (result2, result))
             }
           } else {
             result === body

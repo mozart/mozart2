@@ -217,24 +217,19 @@ define
    in
       Getenv = Boot_OS.getEnv
       GetCWD = Boot_OS.getCWD
-   end
 
-   /** Loads a functor located at a given URL
-    *  This never goes to the file system, but looks up functors in the
-    *  BootVirtualFS above instead.
-    */
-   fun {BootURLLoad URL}
-      BootVirtualFS = {GET 'internal.boot.virtualfs'}
-      URLAtom = {VirtualString.toAtom URL}
-   in
-      try
-         {Dictionary.get BootVirtualFS URLAtom}
-      catch dictKeyNotFound(_ _) then
-         raise system(module(notFound load URLAtom)) end
+      fun {BootURLLoad U}
+         TempResult = {Boot_OS.bootURLLoad U}
+      in
+         if {IsProcedure TempResult} then
+            {TempResult}
+         else
+            TempResult
+         end
       end
    end
 
-   %% Boot BURL
+   %% Boot BURL -- all the fields *must have token behavior*
    BURL = 'export'(
       localize: fun {$ U}
                    raise error(kernel(stub 'BURL.localize') debug:unit) end

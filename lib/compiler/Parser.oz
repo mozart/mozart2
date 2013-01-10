@@ -26,38 +26,33 @@ functor
 import
    PEG(translate:Translate)
    Open
+   URL
 export
    file:ParseFile
    virtualString:ParseVS
 define
-   fun{FileName Context FN}
-      case FN
-      of &/|_ then FN
-      else
-         {Append Context FN}
-      end
-   end
-   fun{ReadFile Context FN}
+   DefaultBaseURL = {URL.make "./"}
+
+   fun{ReadFile URL}
+      File = {New Open.file init(url:URL)}
+   in
       try
-         {{New Open.file init(name:{FileName Context FN})} read(list:$ size:all)}
-      catch system(os(os "open" 2 ...) ...) then
-         {{New Open.file init(name:{Append {FileName Context FN} ".oz"})} read(list:$ size:all)}
+         {File read(list:$ size:all)}
+      finally
+         {File close}
       end
    end
-   fun{FileContext Context FN}
-      {Reverse {List.dropWhile {Reverse {FileName Context FN}} fun{$ C}C\=&/ end}}
-   end
-   fun lazy {MkContext S F L C R TG D CS FS FC Next}
+   fun lazy {MkContext S F L C R TG D CS FS BaseURL Next}
       ctx(valid: true
           value: case S
                  of nil then
                     Next#eof
                  [] &\n|T then
-                    {MkContext T F L+1 0 false TG D CS FS FC Next}#&\n
+                    {MkContext T F L+1 0 false TG D CS FS BaseURL Next}#&\n
                  [] H|T andthen R then
-                    {MkContext T F L+1 0 H==&\r TG D CS FS FC Next}#H
+                    {MkContext T F L+1 0 H==&\r TG D CS FS BaseURL Next}#H
                  [] H|T then
-                    {MkContext T F L C+1 H==&\r TG D CS FS FC Next}#H
+                    {MkContext T F L C+1 H==&\r TG D CS FS BaseURL Next}#H
                  end
           grammar: TG
           cache: {Dictionary.new}
@@ -66,7 +61,7 @@ define
           condStack:CS
           f:F l:L c:C r:R
           fileStack:FS
-          fileContext:FC
+          baseURL:BaseURL
           rebind:fun{$ Opts}
                     {MkContext
                      S
@@ -78,7 +73,7 @@ define
                      {CondSelect Opts defines D}
                      {CondSelect Opts condStack CS}
                      {CondSelect Opts fileStack FS}
-                     {CondSelect Opts fileContext FC}
+                     {CondSelect Opts baseURL BaseURL}
                      Next
                     }
                  end
@@ -297,13 +292,25 @@ define
                       ['pp_\\insert' pp_whiteSpace fileName whiteToEOL]#proc{$ CtxIn SemIn CtxOut SemOut}
                                                                            SemOut=SemIn
                                                                            if CtxIn.valid then
-                                                                              [_ _ FN _]=SemIn in
+                                                                              [_ _ FN _]=SemIn
+                                                                              NewURL
+                                                                              NewContents
+                                                                           in
+                                                                              try TryNewURL TryNewContents in
+                                                                                 TryNewURL = {URL.resolve CtxIn.baseURL {URL.make FN}}
+                                                                                 TryNewContents = {ReadFile TryNewURL}
+                                                                                 NewURL = TryNewURL
+                                                                                 NewContents = TryNewContents
+                                                                              catch error(url(open _) ...) then
+                                                                                 NewURL = {URL.resolve CtxIn.baseURL {URL.make FN#'.oz'}}
+                                                                                 NewContents = {ReadFile NewURL}
+                                                                              end
                                                                               CtxOut={MkContext
-                                                                                      {ReadFile CtxIn.fileContext FN}
+                                                                                      {ReadFile NewURL}
                                                                                       {String.toAtom FN} 1 0 false
                                                                                       CtxIn.grammar CtxIn.defines nil
                                                                                       CtxIn|CtxIn.fileStack
-                                                                                      {FileContext CtxIn.fileContext FN}
+                                                                                      NewURL
                                                                                       ctx(valid:false)
                                                                                      }
                                                                            else
@@ -714,14 +721,16 @@ define
 
    fun{ParseVS VS Opts}
       CtxIn={MkContext {VirtualString.toString VS}
-             'top level' 1 0 false TG {Dictionary.keys Opts.defines} nil nil "./" ctx(valid:false)}
+             'top level' 1 0 false TG {Dictionary.keys Opts.defines} nil nil DefaultBaseURL ctx(valid:false)}
    in
       {ParseContext CtxIn Opts.defines}
    end
 
    fun{ParseFile FN Opts}
-      CtxIn={MkContext {ReadFile "./" {VirtualString.toString FN}}
-             {VirtualString.toAtom FN} 1 0 false TG {Dictionary.keys Opts.defines} nil nil "./" ctx(valid:false)}
+      RelURL = {URL.make FN}
+      TheURL = {URL.resolve DefaultBaseURL RelURL}
+      CtxIn={MkContext {ReadFile TheURL}
+             {VirtualString.toAtom FN} 1 0 false TG {Dictionary.keys Opts.defines} nil nil TheURL ctx(valid:false)}
    in
       {ParseContext CtxIn Opts.defines}
    end

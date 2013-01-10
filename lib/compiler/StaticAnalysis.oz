@@ -1365,6 +1365,9 @@ define
                         end}
             in
                if IsOpen then
+                  % TODO Uncomment when we have RecordC
+                  skip
+                  /*
                   if {DetTests.det @label} then
                      Rec = {RecordC.tell LData}
                   end
@@ -1373,6 +1376,7 @@ define
                                       {RecordC.'^' Rec F V}
                                    end}
                   end
+                  */
                elseif {DetTests.det @label}
                   andthen {All Args DetTests.det}
                then

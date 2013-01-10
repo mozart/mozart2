@@ -7,23 +7,75 @@ import oz._
 import symtab._
 
 class Serializer(program: Program, output: BufferedOutputStream) {
-  val alreadyWrittenNodes = new scala.collection.mutable.HashMap[OzValue, Int]
+  val nodeToIndex = new scala.collection.mutable.HashMap[OzValue, Int]
+  val indexCounter = new util.Counter(1)
 
   // Top-level
 
   def serialize() {
-    writeCodeArea(program.topLevelAbstraction.codeArea)
-    writeByte(0)
+    val topLevelValue = OzCodeArea(program.topLevelAbstraction.codeArea)
+    giveIndex(topLevelValue)
+
+    writeSize(nodeToIndex.size)
+    writeSize(nodeToIndex(topLevelValue))
+    for ((value, index) <- nodeToIndex.toSeq.sortBy(_._2))
+      writeValue(index, value)
+    writeSize(0)
+
     output.close()
+  }
+
+  // Give indices to nodes
+
+  private def giveIndex(value: OzValue) {
+    nodeToIndex.getOrElseUpdate(value, {
+      giveIndicesInside(value)
+      indexCounter.next()
+    })
+  }
+
+  private def giveIndicesInside(value: OzValue) {
+    value match {
+      case OzCons(head, tail) =>
+        giveIndex(head)
+        giveIndex(tail)
+
+      case OzTuple(label, fields) =>
+        giveIndex(label)
+        fields foreach giveIndex
+
+      case OzArity(label, features) =>
+        giveIndex(label)
+        features foreach giveIndex
+
+      case rec @ OzRecord(_, _) =>
+        giveIndex(rec.arity)
+        rec.values foreach giveIndex
+
+      case OzCodeArea(codeArea) =>
+        giveIndex(codeArea.debugData)
+        codeArea.constants foreach giveIndex
+
+      case OzPatMatConjunction(parts) =>
+        parts foreach giveIndex
+
+      case pat @ OzPatMatOpenRecord(_, _) =>
+        giveIndex(pat.arity)
+        pat.values foreach giveIndex
+
+      case _ => ()
+    }
   }
 
   // Writing of nodes
 
-  private def writeValue(value: OzValue) {
+  private def writeValue(index: Int, value: OzValue) {
+    writeSize(index)
+
     value match {
       case OzInt(intValue) =>
         writeByte(1)
-        writeSize(intValue.toInt)
+        writeString(intValue.toString)
 
       case OzFloat(floatValue) =>
         writeByte(2)
@@ -45,35 +97,24 @@ class Serializer(program: Program, output: BufferedOutputStream) {
         writeAtom(atom)
 
       case OzCons(head, tail) =>
-        val headRef = makeRef(head)
-        val tailRef = makeRef(tail)
         writeByte(6)
-        writeRef(headRef)
-        writeRef(tailRef)
+        writeRef(head)
+        writeRef(tail)
 
       case OzTuple(label, fields) =>
-        val labelRef = makeRef(label)
-        val fieldsRefs = fields map makeRef
         writeByte(7)
-        writeSize(fieldsRefs.size)
-        writeRef(labelRef)
-        fieldsRefs foreach writeRef
+        writeRef(label)
+        writeRefs(fields)
 
       case OzArity(label, features) =>
-        val labelRef = makeRef(label)
-        val featuresRefs = features map makeRef
         writeByte(8)
-        writeSize(featuresRefs.size)
-        writeRef(labelRef)
-        featuresRefs foreach writeRef
+        writeRef(label)
+        writeRefs(features)
 
       case rec @ OzRecord(_, _) =>
-        val arityRef = makeRef(rec.arity)
-        val fieldsRefs = rec.values map makeRef
         writeByte(9)
-        writeSize(fieldsRefs.size)
-        writeRef(arityRef)
-        fieldsRefs foreach writeRef
+        writeRef(rec.arity)
+        writeRefs(rec.values)
 
       case OzBuiltin(builtin) =>
         writeByte(10)
@@ -91,18 +132,13 @@ class Serializer(program: Program, output: BufferedOutputStream) {
         writeSize(symbol.captureIndex.toInt)
 
       case OzPatMatConjunction(parts) =>
-        val partsRefs = parts map makeRef
         writeByte(14)
-        writeSize(partsRefs.size)
-        partsRefs foreach writeRef
+        writeRefs(parts)
 
       case pat @ OzPatMatOpenRecord(_, _) =>
-        val arityRef = makeRef(pat.arity)
-        val fieldsRefs = pat.values map makeRef
         writeByte(15)
-        writeSize(fieldsRefs.size)
-        writeRef(arityRef)
-        fieldsRefs foreach writeRef
+        writeRef(pat.arity)
+        writeRefs(pat.values)
     }
   }
 
@@ -113,21 +149,20 @@ class Serializer(program: Program, output: BufferedOutputStream) {
       byte <- Seq(byteCodeElem >> 8 & 0xff, byteCodeElem & 0xff)
     } yield byte.toByte
 
-    val debugDataRef = makeRef(codeArea.debugData)
-    val constantsRefs = codeArea.constants.toList map makeRef
-
     writeByte(11)
+
+    writeRandomUUID()
 
     writeSize(codeBlock.size / 2)
     output.write(codeBlock.toArray)
 
-    writeSize(constantsRefs.size)
     writeSize(codeArea.abstraction.arity)
     writeSize(codeArea.computeXCount())
     writeAtom(codeArea.abstraction.name)
-    writeRef(debugDataRef)
+    writeRef(codeArea.debugData)
 
-    constantsRefs foreach writeRef
+    writeSize(codeArea.constants.size)
+    codeArea.constants foreach writeRef
   }
 
   // Low-level write procs
@@ -153,15 +188,24 @@ class Serializer(program: Program, output: BufferedOutputStream) {
     writeString(atom)
   }
 
-  private def makeRef(node: OzValue): Int = {
-    alreadyWrittenNodes.getOrElseUpdate(node, {
-      writeValue(node)
-      alreadyWrittenNodes.size
-    })
+  private def writeRef(value: OzValue) {
+    writeSize(nodeToIndex(value))
   }
 
-  private def writeRef(ref: Int) {
-    writeSize(ref)
+  private def writeRefs(values: Seq[OzValue]) {
+    writeSize(values.size)
+    values foreach writeRef
+  }
+
+  private def writeRandomUUID() {
+    def writeLong(value: Long) {
+      for (i <- (0 until 64 by 8).reverse)
+        output.write(((value >> i) & 0xff).asInstanceOf[Int])
+    }
+
+    val uuid = java.util.UUID.randomUUID()
+    writeLong(uuid.getMostSignificantBits)
+    writeLong(uuid.getLeastSignificantBits)
   }
 }
 

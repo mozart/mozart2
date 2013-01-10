@@ -13,7 +13,8 @@ class Serializer(program: Program, output: BufferedOutputStream) {
   // Top-level
 
   def serialize() {
-    val topLevelValue = OzCodeArea(program.topLevelAbstraction.codeArea)
+    val topLevelCodeArea = OzCodeArea(program.topLevelAbstraction.codeArea)
+    val topLevelValue = OzAbstraction(topLevelCodeArea, Nil)
     giveIndex(topLevelValue)
 
     writeSize(nodeToIndex.size)
@@ -62,6 +63,10 @@ class Serializer(program: Program, output: BufferedOutputStream) {
       case pat @ OzPatMatOpenRecord(_, _) =>
         giveIndex(pat.arity)
         pat.values foreach giveIndex
+
+      case OzAbstraction(codeArea, globals) =>
+        giveIndex(codeArea)
+        globals foreach giveIndex
 
       case _ => ()
     }
@@ -139,6 +144,12 @@ class Serializer(program: Program, output: BufferedOutputStream) {
         writeByte(15)
         writeRef(pat.arity)
         writeRefs(pat.values)
+
+      case OzAbstraction(codeArea, globals) =>
+        writeByte(16)
+        writeRandomUUID()
+        writeRef(codeArea)
+        writeRefs(globals)
     }
   }
 

@@ -228,3 +228,13 @@ case class OzPatMatOpenRecord(label: OzLiteral,
   /** Sub-patterns in this pattern */
   lazy val values = fields map (_.value)
 }
+
+/** Oz abstraction */
+case class OzAbstraction(codeArea: OzCodeArea,
+    globals: List[OzValue]) extends OzValue {
+
+  def syntax() = {
+    val abstraction = codeArea.codeArea.abstraction
+    "<P/" + abstraction.arity + " " + abstraction.fullName + ">"
+  }
+}

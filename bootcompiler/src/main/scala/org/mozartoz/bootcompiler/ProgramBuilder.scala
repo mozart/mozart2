@@ -73,7 +73,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *     )
    *  in
    *     <Base> = {<BaseFunctor>.apply Imports}
-   *     {Boot_Property.get 'internal.boot.base' <Base> true}
    *     <Base>.'Base' = <Base>
    *     <Result> = <Base>
    *  end
@@ -109,11 +108,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       (baseFunctor dot OzAtom("apply")) call (imports, prog.baseEnvSymbol)
     }
 
-    // Store <Base> in 'internal.boot.base'
-    val storePropertyStat = {
-      prog.baseEnvSymbol === getBootProperty(prog, "internal.boot.base")
-    }
-
     // Fill in <Base>.'Base'
     val bindBaseBaseStat = {
       (prog.baseEnvSymbol dot OzAtom("Base")) === prog.baseEnvSymbol
@@ -123,7 +117,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
     val wholeProgram = {
       LOCAL (prog.baseEnvSymbol) IN {
         applyBaseFunctorStat ~
-        storePropertyStat ~
         bindBaseBaseStat ~
         (prog.topLevelResultSymbol === prog.baseEnvSymbol)
       }

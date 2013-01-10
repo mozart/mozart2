@@ -32,19 +32,18 @@
 using namespace mozart;
 namespace fs = boost::filesystem;
 
-void createThreadFromOZB(VM vm, const fs::path& ozbPath,
-                         const std::string& functorName) {
+bool doBootLoad(VM vm, const fs::path& ozbPath,
+                const std::string& functorName, UnstableNode& result) {
   fs::path fileName = ozbPath / fs::path(functorName + ".ozb");
   fs::ifstream input(fileName);
 
-  if (!input.is_open()) {
-    std::cerr << "panic: cannot open " << fileName << "\n";
-    std::abort();
-  }
+  if (!input.is_open())
+    return false;
 
   UnstableNode codeArea = bootUnpickle(vm, input);
-  UnstableNode abstraction = Abstraction::build(vm, 0, codeArea);
-  new (vm) Thread(vm, vm->getTopLevelSpace(), abstraction);
+  result = Abstraction::build(vm, 1, codeArea);
+
+  return true;
 }
 
 int main(int argc, char** argv) {
@@ -60,6 +59,26 @@ int main(int argc, char** argv) {
       ozbPath = fs::path(argv[0]).parent_path();
   }
 
+  boostBasedVM.setBootLoader(
+    [ozbPath] (VM vm, const std::string& url, UnstableNode& result) -> bool {
+      std::string prefix = "x-oz://system/";
+      std::string suffix = ".ozf";
+      size_t prefixSize = prefix.size();
+      size_t suffixSize = suffix.size();
+      size_t urlSize = url.size();
+
+      if ((urlSize <= prefixSize + suffixSize) ||
+          (url.substr(0, prefixSize) != prefix) ||
+          (url.substr(urlSize-suffixSize, suffixSize) != suffix)) {
+        return false;
+      }
+
+      auto name = url.substr(prefixSize, urlSize-prefixSize-suffixSize);
+
+      return doBootLoad(vm, ozbPath, name, result);
+    }
+  );
+
   if (argc >= 2) {
     boostBasedVM.setApplicationURL(argv[1]);
     boostBasedVM.setApplicationArgs(argc-2, argv+2);
@@ -69,70 +88,30 @@ int main(int argc, char** argv) {
   }
 
   {
-    UnstableNode bootVirtualFS = Dictionary::build(vm);
     UnstableNode baseEnv = OptVar::build(vm);
+    UnstableNode initFunctor = OptVar::build(vm);
 
-    vm->getPropertyRegistry().registerConstantProp(
-      vm, MOZART_STR("internal.boot.virtualfs"), bootVirtualFS);
     vm->getPropertyRegistry().registerConstantProp(
       vm, MOZART_STR("internal.boot.base"), baseEnv);
+    vm->getPropertyRegistry().registerConstantProp(
+      vm, MOZART_STR("internal.boot.init"), initFunctor);
+
+    UnstableNode baseAbstraction, initAbstraction;
+    if (!doBootLoad(vm, ozbPath, "Base", baseAbstraction))
+      std::cerr << "panic: could not load Base module" << std::endl;
+    if (!doBootLoad(vm, ozbPath, "Init", initAbstraction))
+      std::cerr << "panic: could not load Init functor" << std::endl;
+
+    ozcalls::asyncOzCall(vm, baseAbstraction, OptVar::build(vm));
+    ozcalls::asyncOzCall(vm, initAbstraction, initFunctor);
+
+    boostBasedVM.run();
   }
 
-  createThreadFromOZB(vm, ozbPath, "Base");
-
-  boostBasedVM.run();
-
-  createThreadFromOZB(vm, ozbPath, "OPI");
-  createThreadFromOZB(vm, ozbPath, "Emacs");
-  createThreadFromOZB(vm, ozbPath, "OPIServer");
-  createThreadFromOZB(vm, ozbPath, "OPIEnv");
-  createThreadFromOZB(vm, ozbPath, "Space");
-  createThreadFromOZB(vm, ozbPath, "Property");
-  createThreadFromOZB(vm, ozbPath, "Pickle");
-  createThreadFromOZB(vm, ozbPath, "Listener");
-  createThreadFromOZB(vm, ozbPath, "Type");
-  createThreadFromOZB(vm, ozbPath, "ErrorListener");
-  createThreadFromOZB(vm, ozbPath, "ObjectSupport");
-  createThreadFromOZB(vm, ozbPath, "CompilerSupport");
-  createThreadFromOZB(vm, ozbPath, "Narrator");
-  createThreadFromOZB(vm, ozbPath, "Init");
-  createThreadFromOZB(vm, ozbPath, "Error");
-  createThreadFromOZB(vm, ozbPath, "ErrorFormatters");
-  createThreadFromOZB(vm, ozbPath, "Open");
-  createThreadFromOZB(vm, ozbPath, "Combinator");
-  createThreadFromOZB(vm, ozbPath, "RecordC");
-  createThreadFromOZB(vm, ozbPath, "Application");
-  createThreadFromOZB(vm, ozbPath, "OS");
-  createThreadFromOZB(vm, ozbPath, "Annotate");
-  createThreadFromOZB(vm, ozbPath, "Assembler");
-  createThreadFromOZB(vm, ozbPath, "BackquoteMacro");
-  createThreadFromOZB(vm, ozbPath, "Builtins");
-  createThreadFromOZB(vm, ozbPath, "CodeEmitter");
-  createThreadFromOZB(vm, ozbPath, "CodeGen");
-  createThreadFromOZB(vm, ozbPath, "CodeStore");
-  createThreadFromOZB(vm, ozbPath, "Compiler");
-  createThreadFromOZB(vm, ozbPath, "Core");
-  createThreadFromOZB(vm, ozbPath, "ForLoop");
-  createThreadFromOZB(vm, ozbPath, "GroundZip");
-  createThreadFromOZB(vm, ozbPath, "Macro");
-  createThreadFromOZB(vm, ozbPath, "PrintName");
-  createThreadFromOZB(vm, ozbPath, "RunTime");
-  createThreadFromOZB(vm, ozbPath, "StaticAnalysis");
-  createThreadFromOZB(vm, ozbPath, "Unnester");
-  createThreadFromOZB(vm, ozbPath, "WhileLoop");
-  createThreadFromOZB(vm, ozbPath, "NewAssembler");
-  createThreadFromOZB(vm, ozbPath, "Parser");
-  createThreadFromOZB(vm, ozbPath, "PEG");
-
-  boostBasedVM.run();
-
   {
-    UnstableNode bootVirtualFS;
-    auto VirtualFSProperty = build(vm, MOZART_STR("internal.boot.virtualfs"));
-    vm->getPropertyRegistry().get(vm, VirtualFSProperty, bootVirtualFS);
-
-    auto InitURLAtom = build(vm, MOZART_STR("x-oz://system/Init.ozf"));
-    auto InitFunctor = DictionaryLike(bootVirtualFS).dictGet(vm, InitURLAtom);
+    UnstableNode InitFunctor;
+    auto InitFunctorProperty = build(vm, MOZART_STR("internal.boot.init"));
+    vm->getPropertyRegistry().get(vm, InitFunctorProperty, InitFunctor);
 
     auto ApplyAtom = build(vm, MOZART_STR("apply"));
     auto ApplyProc = Dottable(InitFunctor).dot(vm, ApplyAtom);
@@ -142,10 +121,8 @@ int main(int argc, char** argv) {
       vm, buildArity(vm, MOZART_STR("import"), MOZART_STR("Boot")),
       BootModule);
 
-    UnstableNode dummy = OptVar::build(vm);
-    RichNode arguments[2] = { ImportRecord, dummy };
-    new (vm) Thread(vm, vm->getTopLevelSpace(), ApplyProc, 2, arguments);
-  }
+    ozcalls::asyncOzCall(vm, ApplyProc, ImportRecord, OptVar::build(vm));
 
-  boostBasedVM.run();
+    boostBasedVM.run();
+  }
 }

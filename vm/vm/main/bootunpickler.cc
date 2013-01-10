@@ -77,6 +77,11 @@ public:
       case 13: return readPatMatCaptureValue();
       case 14: return readPatMatConjunctionValue();
       case 15: return readPatMatOpenRecordValue();
+      case 16: return readAbstractionValue();
+      case 17: return readChunkValue();
+      case 18: return readUniqueNameValue();
+      case 19: return readNameValue();
+      case 20: return readNamedNameValue();
       default: {
         assert(false && "invalid value kind");
         std::abort();
@@ -150,43 +155,44 @@ private:
   }
 
   UnstableNode readCodeAreaValue() {
-    UUID uuid = readUUID();
-    GlobalNode* gnode;
+    return readGlobalEntity(
+      [this] (const UUID& uuid, GlobalNode* gnode) -> UnstableNode {
+        size_t size = readSize();
+        std::vector<unsigned char> buffer;
+        buffer.resize(size*2);
+        read(reinterpret_cast<char*>(buffer.data()), size*2);
 
-    if (!GlobalNode::get(vm, uuid, gnode)) {
-      size_t size = readSize();
-      std::vector<unsigned char> buffer;
-      buffer.resize(size*2);
-      read(reinterpret_cast<char*>(buffer.data()), size*2);
+        std::vector<ByteCode> codeBlock;
+        codeBlock.resize(size);
+        for (size_t i = 0; i < size; ++i) {
+          codeBlock[i] =
+            ((ByteCode) buffer[i*2] << 8) | (ByteCode) buffer[i*2+1];
+        }
 
-      std::vector<ByteCode> codeBlock;
-      codeBlock.resize(size);
-      for (size_t i = 0; i < size; ++i)
-        codeBlock[i] = ((ByteCode) buffer[i*2] << 8) | (ByteCode) buffer[i*2+1];
+        size_t arity = readSize();
+        size_t Xcount = readSize();
+        atom_t printName = readAtom();
+        auto debugData = readNode();
+        size_t Kcount = readSize();
 
-      size_t arity = readSize();
-      size_t Xcount = readSize();
-      atom_t printName = readAtom();
-      auto debugData = readNode();
-      size_t Kcount = readSize();
+        UnstableNode result = CodeArea::build(
+          vm, Kcount, codeBlock.data(), size*2,
+          arity, Xcount, printName, debugData);
 
-      UnstableNode result = CodeArea::build(vm, Kcount, codeBlock.data(), size*2,
-                                            arity, Xcount, printName, debugData);
-      readNodes(RichNode(result).as<CodeArea>().getElementsArray(), Kcount);
+        readNodes(RichNode(result).as<CodeArea>().getElementsArray(), Kcount);
+        RichNode(result).as<CodeArea>().setUUID(vm, uuid);
 
-      RichNode(result).as<CodeArea>().setUUID(vm, uuid);
-
-      return result;
-    } else {
-      size_t size = readSize();
-      input.ignore(size*2 + (4 + 4));
-      readString();
-      readSize();
-      size_t Kcount = readSize();
-      input.ignore(Kcount*4);
-
-      return { vm, gnode->self };
-    }
+        return result;
+      },
+      [this] () {
+        size_t size = readSize();
+        input.ignore(size*2 + (4 + 4));
+        readString();
+        readSize();
+        size_t Kcount = readSize();
+        input.ignore(Kcount*4);
+      }
+    );
   }
 
   UnstableNode readPatMatWildcardValue() {
@@ -210,6 +216,74 @@ private:
     UnstableNode result = PatMatOpenRecord::build(vm, width, arity);
     readNodes(RichNode(result).as<PatMatOpenRecord>().getElementsArray(), width);
     return result;
+  }
+
+  UnstableNode readAbstractionValue() {
+    return readGlobalEntity(
+      [this] (const UUID& uuid, GlobalNode* gnode) -> UnstableNode {
+        auto codeArea = readNode();
+        size_t Gcount = readSize();
+        UnstableNode result = Abstraction::build(vm, Gcount, codeArea);
+        readNodes(RichNode(result).as<Abstraction>().getElementsArray(), Gcount);
+        RichNode(result).as<Abstraction>().setUUID(vm, uuid);
+        return result;
+      },
+      [this] () {
+        input.ignore(4);
+        size_t Gcount = readSize();
+        input.ignore(Gcount*4);
+      }
+    );
+  }
+
+  UnstableNode readChunkValue() {
+    UnstableNode underlying = readNode();
+    return Chunk::build(vm, underlying);
+  }
+
+  UnstableNode readUniqueNameValue() {
+    atom_t atom = readAtom();
+    return build(vm, unique_name_t(atom));
+  }
+
+  UnstableNode readNameValue() {
+    return readGlobalEntity(
+      [this] (const UUID& uuid, GlobalNode* gnode) -> UnstableNode {
+        auto result = GlobalName::build(vm, uuid);
+        gnode->self.init(vm, result);
+        gnode->protocol.init(vm, MOZART_STR("immval"));
+        return result;
+      },
+      [this] () {
+      }
+    );
+  }
+
+  UnstableNode readNamedNameValue() {
+    return readGlobalEntity(
+      [this] (const UUID& uuid, GlobalNode* gnode) -> UnstableNode {
+        UnstableNode printName(vm, readAtom());
+        auto result = NamedName::build(vm, printName, uuid);
+        gnode->self.init(vm, result);
+        gnode->protocol.init(vm, MOZART_STR("immval"));
+        return result;
+      },
+      [this] () {
+      }
+    );
+  }
+
+  template <typename F, typename G>
+  UnstableNode readGlobalEntity(const F& createFun, const G& skipProc) {
+    UUID uuid = readUUID();
+    GlobalNode* gnode;
+
+    if (!GlobalNode::get(vm, uuid, gnode)) {
+      return createFun(uuid, gnode);
+    } else {
+      skipProc();
+      return { vm, gnode->self };
+    }
   }
 
 private:

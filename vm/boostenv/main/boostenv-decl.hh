@@ -48,6 +48,10 @@ namespace mozart { namespace boostenv {
 //////////////////
 
 class BoostBasedVM: public VirtualMachineEnvironment {
+private:
+  using BootLoader = std::function<bool(VM vm, const std::string& url,
+                                        UnstableNode& result)>;
+
 public:
   BoostBasedVM();
 
@@ -58,6 +62,14 @@ public:
 // Configuration
 
 public:
+  const BootLoader& getBootLoader() {
+    return _bootLoader;
+  }
+
+  void setBootLoader(const BootLoader& loader) {
+    _bootLoader = loader;
+  }
+
   void setApplicationURL(char const* url);
 
   void setApplicationArgs(int argc, char const* const* argv);
@@ -130,6 +142,10 @@ private:
   VirtualMachine virtualMachine;
 public:
   const VM vm;
+
+// Bootstrap
+private:
+  BootLoader _bootLoader;
 
 // Number of asynchronous IO nodes - used for termination detection
 private:

@@ -61,6 +61,31 @@ private:
 public:
   ModOS(): Module("OS") {}
 
+  // Bootstrap
+
+  class BootURLLoad: public Builtin<BootURLLoad> {
+  public:
+    BootURLLoad(): Builtin("bootURLLoad") {}
+
+    static void call(VM vm, In url, Out result) {
+      size_t urlBufSize = ozVSLengthForBuffer(vm, url);
+
+      bool ok;
+      {
+        std::string urlString;
+        ozVSGet(vm, url, urlBufSize, urlString);
+
+        auto& bootLoader = BoostBasedVM::forVM(vm).getBootLoader();
+        ok = bootLoader && bootLoader(vm, urlString, result);
+      }
+
+      if (!ok) {
+        raiseOSError(vm, MOZART_STR("bootURLLoad"), 1,
+                     MOZART_STR("panic: cannot open boot URL"));
+      }
+    }
+  };
+
   // Random number generation
 
   class Rand: public Builtin<Rand> {

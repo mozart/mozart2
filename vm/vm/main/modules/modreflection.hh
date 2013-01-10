@@ -71,6 +71,23 @@ public:
     }
   };
 
+  class GetStructuralBehavior: public Builtin<GetStructuralBehavior> {
+  public:
+    GetStructuralBehavior(): Builtin("getStructuralBehavior") {}
+
+    static void call(VM vm, In entity, Out result) {
+      auto behavior = entity.type().getStructuralBehavior();
+
+      switch (behavior) {
+        case sbValue: result = build(vm, MOZART_STR("value")); break;
+        case sbStructural: result = build(vm, MOZART_STR("structural")); break;
+        case sbTokenEq: result = build(vm, MOZART_STR("token")); break;
+        case sbVariable: result = build(vm, MOZART_STR("variable")); break;
+        default: assert(false);
+      }
+    }
+  };
+
   class Become: public Builtin<Become> {
   public:
     Become(): Builtin("become") {}

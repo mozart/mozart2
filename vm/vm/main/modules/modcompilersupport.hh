@@ -147,6 +147,17 @@ public:
     }
   };
 
+  class IsArity: public Builtin<IsArity> {
+  public:
+    IsArity(): Builtin("isArity") {}
+
+    static void call(VM vm, In value, Out result) {
+      if (value.isTransient())
+        waitFor(vm, value);
+      result = build(vm, value.is<Arity>());
+    }
+  };
+
   class MakeArityDynamic: public Builtin<MakeArityDynamic> {
   public:
     MakeArityDynamic(): Builtin("makeArityDynamic") {}

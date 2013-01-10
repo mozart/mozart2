@@ -86,6 +86,8 @@ int main(int argc, char** argv) {
   }
 
   {
+    // Load the Base environment and the Init functor
+
     UnstableNode baseEnv = OptVar::build(vm);
     UnstableNode initFunctor = OptVar::build(vm);
 
@@ -94,19 +96,50 @@ int main(int argc, char** argv) {
     vm->getPropertyRegistry().registerConstantProp(
       vm, MOZART_STR("internal.boot.init"), initFunctor);
 
-    UnstableNode baseAbstraction, initAbstraction;
-    if (!doBootLoad(vm, ozbPath, "Base", baseAbstraction))
-      std::cerr << "panic: could not load Base module" << std::endl;
-    if (!doBootLoad(vm, ozbPath, "Init", initAbstraction))
+    UnstableNode baseValue, initValue;
+    if (!doBootLoad(vm, ozbPath, "Base", baseValue))
+      std::cerr << "panic: could not load Base functor" << std::endl;
+    if (!doBootLoad(vm, ozbPath, "Init", initValue))
       std::cerr << "panic: could not load Init functor" << std::endl;
 
-    ozcalls::asyncOzCall(vm, baseAbstraction, baseEnv);
-    ozcalls::asyncOzCall(vm, initAbstraction, initFunctor);
+    // Create the thread that loads the Base environment
+    if (Callable(baseValue).isProcedure(vm)) {
+      ozcalls::asyncOzCall(vm, baseValue, baseEnv);
+    } else {
+      // Assume it is a functor that does not import anything
+      UnstableNode applyAtom = build(vm, MOZART_STR("apply"));
+      UnstableNode applyProc = Dottable(baseValue).dot(vm, applyAtom);
+      UnstableNode importParam = build(vm, MOZART_STR("import"));
+      ozcalls::asyncOzCall(vm, applyProc, importParam, baseEnv);
+    }
+
+    // Create the thread that loads the Init functor
+    if (Callable(initValue).isProcedure(vm)) {
+      ozcalls::asyncOzCall(vm, initValue, initFunctor);
+    } else {
+      // Assume it is already the Init functor
+      DataflowVariable(initFunctor).bind(vm, initValue);
+    }
 
     boostBasedVM.run();
   }
 
   {
+    // Base.'Base' = Base
+    UnstableNode Base;
+    auto BaseProperty = build(vm, MOZART_STR("internal.boot.base"));
+    vm->getPropertyRegistry().get(vm, BaseProperty, Base);
+
+    auto BaseAtom = build(vm, MOZART_STR("Base"));
+    auto BaseField = Dottable(Base).dot(vm, BaseAtom);
+
+    if (RichNode(BaseField).isTransient())
+      DataflowVariable(BaseField).bind(vm, Base);
+  }
+
+  {
+    // Apply the Init functor
+
     UnstableNode InitFunctor;
     auto InitFunctorProperty = build(vm, MOZART_STR("internal.boot.init"));
     vm->getPropertyRegistry().get(vm, InitFunctorProperty, InitFunctor);

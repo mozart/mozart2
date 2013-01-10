@@ -45,6 +45,8 @@ VariableBase<This>::VariableBase(VM vm, GR gr, This& from):
     pendings.push_back(vm, *iter);
     gr->copyStableRef(pendings.back(), pendings.back());
   }
+
+  _needed = from._needed;
 }
 
 template <class This>

@@ -112,7 +112,7 @@ define
    NewAbstraction = Boot_CompilerSupport.newAbstraction
 
    fun {MakeArity L Fs}
-      {Boot_CompilerSupport.makeArityDynamic L {List.toTuple '#' Fs}}
+      {Boot_CompilerSupport.makeArityDynamic L {List.toTuple '#' Fs} false}
    end
 
    NewPatMatWildcard = Boot_CompilerSupport.newPatMatWildcard

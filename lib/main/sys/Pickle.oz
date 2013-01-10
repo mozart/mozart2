@@ -248,11 +248,15 @@ define
          {Sink write(VBS)}
       end
 
+      proc {WriteByte B}
+         {Write [B]}
+      end
+
       proc {WriteSize Size}
-         {Write [Size mod 256
-                 Size div 256 mod 256
+         {Write [Size div (256*256*256) mod 256
                  Size div (256*256) mod 256
-                 Size div (256*256*256) mod 256]}
+                 Size div 256 mod 256
+                 Size mod 256]}
       end
 
       WriteRef = WriteSize
@@ -276,15 +280,23 @@ define
          end
       end
 
-      proc {WriteAggregateValue _ K}
-         {WriteSize {Width K}}
-         {Record.forAll K WriteRef}
+      local
+         proc {DoWriteRefs T I N}
+            if I =< N then
+               {WriteRef T.I}
+               {DoWriteRefs T I+1 N}
+            end
+         end
+      in
+         proc {WriteRefs T N}
+            {WriteSize N}
+            {DoWriteRefs T 1 N}
+         end
       end
 
-      proc {WriteAggregateValueWithUUID A K}
-         {WriteUUIDOf A}
-         {WriteSize {Width K}}
-         {Record.forAll K WriteRef}
+      proc {WriteTupleArityRecordValue _ K}
+         {WriteRef K.{Width K}}
+         {WriteRefs K {Width K}-1}
       end
 
       proc {WriteCodeAreaValue A K}
@@ -292,13 +304,31 @@ define
       in
          {WriteUUIDOf A}
          {WriteSize {Width Code}}
-         {Record.forAll Code proc {$ I} {Write [(I mod 256) (I div 256)]} end}
+         {Record.forAll Code proc {$ I} {Write [(I div 256) (I mod 256)]} end}
          {WriteSize Arity}
          {WriteSize XCount}
-         {WriteSize {Width Ks}}
-         {Record.forAll Ks WriteSize}
          {WriteStr PrintName}
          {WriteRef DebugData}
+         {WriteRefs Ks {Width Ks}}
+      end
+
+      proc {WritePatMatOpenRecordValue _ K}
+         {WriteRef K.{Width K}}
+         {WriteRefs K {Width K}-1}
+      end
+
+      proc {WritePatMatConjunctionValue _ K}
+         {WriteRefs K {Width K}}
+      end
+
+      proc {WriteAbstractionValue A K}
+         {WriteUUIDOf A}
+         {WriteRef K.{Width K}}
+         {WriteRefs K {Width K}-1}
+      end
+
+      proc {WriteChunkValue _ K}
+         {WriteRef K.1}
       end
 
       proc {WriteResource Value _}
@@ -311,18 +341,18 @@ define
               'unit':proc {$ _ _} skip end
               atom:proc {$ A _} {WriteAtom A} end
               cons:proc {$ _ K} {WriteRef K.1} {WriteRef K.2} end
-              tuple:WriteAggregateValue
-              arity:WriteAggregateValue
-              record:WriteAggregateValue
+              tuple:WriteTupleArityRecordValue
+              arity:WriteTupleArityRecordValue
+              record:WriteTupleArityRecordValue
               builtin:proc {$ _ K} {WriteAtom K.1} {WriteAtom K.2} end
               codearea:WriteCodeAreaValue
               patmatwildcard:proc {$ _ _} skip end
               patmatcapture:proc {$ _ K} {WriteSize K.1} end
-              patmatopenrecord:WriteAggregateValue
-              patmatconjunction:WriteAggregateValue
+              patmatopenrecord:WritePatMatOpenRecordValue
+              patmatconjunction:WritePatMatConjunctionValue
 
-              abstraction:WriteAggregateValueWithUUID
-              chunk:WriteAggregateValue
+              abstraction:WriteAbstractionValue
+              chunk:WriteChunkValue
               uniquename:proc {$ _ K} {WriteAtom K.1} end
               name:proc {$ A _} {WriteUUIDOf A} end
               namedname:proc {$ A K} {WriteUUIDOf A} {WriteAtom K.1} end
@@ -348,11 +378,11 @@ define
             {List.partition InfoList Predicate ?InfoForNow ?RemainingInfo}
             {ForAll InfoForNow
                proc {$ I#V#K}
-                  TypeID = AtomToID.{Label K}
+                  TypeID = {CondSelect AtomToID {Label K} 0}
                   ValueWriter = {CondSelect ActualSer TypeID WriteResource}
                in
                   {WriteSize I}
-                  {WriteSize TypeID}
+                  {WriteByte TypeID}
                   {ValueWriter V K}
                end}
          end
@@ -397,10 +427,14 @@ define
          end
       end
 
+      fun {ReadByte}
+         {Read 1}.1
+      end
+
       fun {ReadInt}
          [A B C D] = {Read 4}
       in
-         A + B*256 + C*(256*256) + D*(256*256*256)
+         A*(256*256*256) + B*(256*256) + C*256 + D
       end
 
       fun {ReadUUID}
@@ -427,25 +461,25 @@ define
       end
 
       fun {ReadTupleValue}
-         W = {ReadInt}-1
-         Fields = {ReadRefs W}
          L = {ReadRef}
+         W = {ReadInt}
+         Fields = {ReadRefs W}
       in
          {Adjoin Fields L}
       end
 
       fun {ReadArityValue}
-         W = {ReadInt}-1
-         Features = {ReadRefs W}
          L = {ReadRef}
+         W = {ReadInt}
+         Features = {ReadRefs W}
       in
-         {Support.makeArityDynamic L Features}
+         {Support.makeArityDynamic L Features true}
       end
 
       fun {ReadRecordValue}
-         W = {ReadInt}-1
-         Fields = {ReadRefs W}
          A = {ReadRef}
+         W = {ReadInt}
+         Fields = {ReadRefs W}
       in
          {Support.makeRecordFromArity A Fields}
       end
@@ -460,7 +494,7 @@ define
       fun {MakeCode RawCode}
          case RawCode
          of nil then nil
-         [] Lo|Hi|T then (Hi*256 + Lo)|{MakeCode T}
+         [] Hi|Lo|T then (Hi*256 + Lo)|{MakeCode T}
          end
       end
 
@@ -483,10 +517,10 @@ define
                Code = {MakeCode {Read CodeSize*2}}
                Arity = {ReadInt}
                XCount = {ReadInt}
-               KCount = {ReadInt}
-               Ks = {Record.toList {ReadRefs KCount}}
                PrintName = {ReadAtom}
                DebugData = {ReadRef}
+               KCount = {ReadInt}
+               Ks = {Record.toList {ReadRefs KCount}}
             in
                Result = {Support.newCodeArea Code Arity XCount Ks
                                              PrintName DebugData}
@@ -495,11 +529,11 @@ define
             proc {$}
                CodeSize = {ReadInt}
                {Read CodeSize*2 + (4 + 4) _}
+               {ReadStr _}
+               {ReadInt _}
                KCount = {ReadInt}
             in
                {Read KCount*4 _}
-               {ReadStr _}
-               {ReadInt _}
             end}
       end
 
@@ -511,9 +545,9 @@ define
       end
 
       fun {ReadPatMatOpenRecordValue}
-         W = {ReadInt}-1
-         Fields = {ReadRefs W}
          A = {ReadRef}
+         W = {ReadInt}
+         Fields = {ReadRefs W}
       in
          {Support.newPatMatOpenRecord A Fields}
       end
@@ -521,14 +555,15 @@ define
       fun {ReadAbstractionValue}
          {ReadGlobalEntity
             proc {$ UUID GlobalNode ?Result}
-               GCount = {ReadInt}-1
-               Gs = {Record.toList {ReadRefs GCount}}
                CodeArea = {ReadRef}
+               GCount = {ReadInt}
+               Gs = {Record.toList {ReadRefs GCount}}
             in
                Result = {Support.newAbstraction CodeArea Gs}
                {Support.setUUID Result UUID}
             end
             proc {$}
+               {ReadInt _}
                PartCount = {ReadInt}
             in
                {Read PartCount*4 _}
@@ -536,7 +571,6 @@ define
       end
 
       fun {ReadChunkValue}
-         1 = {ReadInt}
          Underlying = {ReadRef}
       in
          {Chunk.new Underlying}
@@ -601,7 +635,7 @@ define
          Index = {ReadInt}
       in
          if Index \= 0 then % 0 means EOF here
-            TypeID = {ReadInt}
+            TypeID = {ReadByte}
             ValueReader = ActualDeser.TypeID
             Value = {ValueReader}
          in

@@ -9,28 +9,24 @@ import transform._
 object ProgramBuilder extends TreeDSL with TransformUtils {
   val treeCopy = new TreeCopier
 
-  /** Builds a program that registers a user-defined module (i.e., a functor)
+  /** Builds a program that defines a regular functor
    *
-   *  Given a URL <url> and a functor <functor>, the whole program is
+   *  Given a functor expression <functor>, the whole program is
    *  straightforward:
    *  {{{
    *  local
    *     <Base>
-   *     <BootVirtualFS>
    *  in
    *     <Base> = {Boot_Property.get 'internal.boot.base' $ true}
-   *     <BootVirtualFS> = {Boot_Property.get 'internal.boot.virtualfs' $ true}
-   *     {Boot_Dictionary.put <BootVirtualFS> '<url>' <functor>}
+   *     <Result> = <functor>
    *  end
    *  }}}
    */
-  def buildModuleProgram(prog: Program, url: String, functor: Expression) {
+  def buildModuleProgram(prog: Program, functor: Expression) {
     prog.rawCode = {
       LOCAL (prog.baseEnvSymbol) IN {
         (prog.baseEnvSymbol === getBootProperty(prog, "internal.boot.base")) ~
-        (prog.builtins.dictionaryPut call (
-            getBootProperty(prog, "internal.boot.virtualfs"),
-            OzAtom(url), functor))
+        (prog.topLevelResultSymbol === functor)
       }
     }
   }
@@ -79,6 +75,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *     <Base> = {<BaseFunctor>.apply Imports}
    *     {Boot_Property.get 'internal.boot.base' <Base> true}
    *     <Base>.'Base' = <Base>
+   *     <Result> = <Base>
    *  end
    *  }}}
    */
@@ -127,7 +124,8 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       LOCAL (prog.baseEnvSymbol) IN {
         applyBaseFunctorStat ~
         storePropertyStat ~
-        bindBaseBaseStat
+        bindBaseBaseStat ~
+        (prog.topLevelResultSymbol === prog.baseEnvSymbol)
       }
     }
 

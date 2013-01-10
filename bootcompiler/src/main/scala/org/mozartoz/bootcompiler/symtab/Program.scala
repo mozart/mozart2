@@ -31,6 +31,11 @@ class Program(val isBaseEnvironment: Boolean = false) {
   val topLevelAbstraction =
     new Abstraction(NoAbstraction, "<TopLevel>", NoPosition)
 
+  /** The <Result> parameter of the top-level abstraction */
+  val topLevelResultSymbol =
+    new Symbol("<Result>", synthetic = true, formal = true)
+  topLevelAbstraction.acquire(topLevelResultSymbol)
+
   /** After flattening, list of the abstractions */
   val abstractions = new ListBuffer[Abstraction]
   abstractions += topLevelAbstraction

@@ -101,11 +101,10 @@ object Main {
     val (program, _) = createProgram(moduleDefs, Some(baseDeclsFileName))
 
     val fileName = fileNames.head
-    val url = fileNameToURL(fileName)
     val functor = parseExpression(readerForFile(fileName), new File(fileName),
         defines)
 
-    ProgramBuilder.buildModuleProgram(program, url, functor)
+    ProgramBuilder.buildModuleProgram(program, functor)
     compile(program, fileName)
 
     Serializer.serialize(program, outputStream())
@@ -214,36 +213,6 @@ object Main {
   private def readerForFile(fileName: String) = {
     new PagedSeqReader(PagedSeq.fromReader(
         new BufferedReader(new FileReader(fileName))))
-  }
-
-  /** Builds a [[scala.util.parsing.input.PagedSeqReader]] for a resource
-   *
-   *  @param resourceName name of the resource to be read
-   */
-  private def readerForResource(resourceName: String) = {
-    new PagedSeqReader(PagedSeq.fromSource(io.Source.fromInputStream(
-        getClass.getResourceAsStream(resourceName))))
-  }
-
-  /** Returns the appropriate URL for a file name */
-  private def fileNameToURL(fileName: String) = {
-    val name = removeExt(new File(fileName).getName)
-
-    if (!SystemModules.isSystemModule(name)) name + ".ozf"
-    else "x-oz://system/" + name + ".ozf"
-  }
-
-  /** Returns the main proc name for registering a functor */
-  private def urlToProcName(url: String) = {
-    val name = removeExt(url.substring(url.lastIndexOf('/') + 1))
-
-    "createFunctor_" + name
-  }
-
-  /** Removes the extension from a file name */
-  private def removeExt(fileName: String) = {
-    if (!(fileName contains '.')) fileName
-    else fileName.substring(0, fileName.lastIndexOf('.'))
   }
 
   /** Loads the definitions of builtin modules

@@ -35,6 +35,7 @@ require
    BootBoot at 'x-oz://boot/Boot'
    Support at 'x-oz://boot/CompilerSupport'
    BootName at 'x-oz://boot/Name'
+   BootReflection at 'x-oz://boot/Reflection'
 
 prepare
 
@@ -333,29 +334,54 @@ define
          N
          Qs = {BootSerializer.serialize {BootSerializer.new} [TheValue#N]}
          Max = Qs.1
-         T = {Tuple.make '#' Max}
-         proc {Loop Qs}
+
+         fun {MakeInfo Qs}
             case Qs
-            of nil then skip
-            [] I#V#K#Qr then
-               T.I = I#V#K
-               {Loop Qr}
+            of nil then nil
+            [] I#V#K#Qr then (I#V#K)|{MakeInfo Qr}
             end
          end
-      in
-         {Loop Qs}
+
+         proc {DoPackSet InfoList Predicate ?RemainingInfo}
+            InfoForNow
+         in
+            {List.partition InfoList Predicate ?InfoForNow ?RemainingInfo}
+            {ForAll InfoForNow
+               proc {$ I#V#K}
+                  TypeID = AtomToID.{Label K}
+                  ValueWriter = {CondSelect ActualSer TypeID WriteResource}
+               in
+                  {WriteSize I}
+                  {WriteSize TypeID}
+                  {ValueWriter V K}
+               end}
+         end
+
+         fun {HasValueBehavior X}
+            {BootReflection.getStructuralBehavior X} == value
+         end
 
          {WriteSize Max}
          {WriteSize N}
-         {Record.forAll T
-            proc {$ N#V#K}
-               TypeID = AtomToID.{Label K}
-               ValueWriter = {CondSelect ActualSer TypeID WriteResource}
-            in
-               {WriteSize N}
-               {WriteSize TypeID}
-               {ValueWriter V K}
-            end}
+
+         Info0 = {MakeInfo Qs}
+         Info1 = {DoPackSet Info0
+                  fun {$ _#V#_}
+                     {HasValueBehavior V} orelse {IsLiteral V}
+                  end}
+         Info2 = {DoPackSet Info1
+                  fun {$ _#V#_}
+                     {Support.isArity V}
+                  end}
+         Info3 = {DoPackSet Info2
+                  fun {$ _#_#K}
+                     L = {Label K}
+                  in
+                     L \= abstraction andthen L \= chunk
+                  end}
+         Info4 = {DoPackSet Info3 fun {$ _} true end}
+      in
+         true = Info4 == nil
          {WriteSize 0}
       end
    end
@@ -369,16 +395,6 @@ define
          if {Source read(Size ?Result $)} \= Size then
             {Exception.raiseError eofTooEarly}
          end
-      end
-
-      TerminationToken = {NewCell unit}
-
-      fun {Delayed F}
-         OldToken NewToken Result
-      in
-         {Exchange TerminationToken OldToken NewToken}
-         thread {F ?Result} OldToken = NewToken end
-         !!Result
       end
 
       fun {ReadInt}
@@ -415,7 +431,7 @@ define
          Fields = {ReadRefs W}
          L = {ReadRef}
       in
-         {Delayed fun {$} {Adjoin Fields L} end}
+         {Adjoin Fields L}
       end
 
       fun {ReadArityValue}
@@ -423,7 +439,7 @@ define
          Features = {ReadRefs W}
          L = {ReadRef}
       in
-         {Delayed fun {$} {Support.makeArityDynamic L Features} end}
+         {Support.makeArityDynamic L Features}
       end
 
       fun {ReadRecordValue}
@@ -431,7 +447,7 @@ define
          Fields = {ReadRefs W}
          A = {ReadRef}
       in
-         {Delayed fun {$} {Support.makeRecordFromArity A Fields} end}
+         {Support.makeRecordFromArity A Fields}
       end
 
       fun {ReadBuiltinValue}
@@ -462,7 +478,7 @@ define
 
       fun {ReadCodeAreaValue}
          {ReadGlobalEntity
-            fun {$ UUID GlobalNode}
+            proc {$ UUID GlobalNode ?Result}
                CodeSize = {ReadInt}
                Code = {MakeCode {Read CodeSize*2}}
                Arity = {ReadInt}
@@ -472,12 +488,9 @@ define
                PrintName = {ReadAtom}
                DebugData = {ReadRef}
             in
-               {Delayed
-                  proc {$ ?R}
-                     R = {Support.newCodeArea Code Arity XCount Ks
-                                              PrintName DebugData}
-                     {Support.setUUID R UUID}
-                  end}
+               Result = {Support.newCodeArea Code Arity XCount Ks
+                                             PrintName DebugData}
+               {Support.setUUID Result UUID}
             end
             proc {$}
                CodeSize = {ReadInt}
@@ -494,7 +507,7 @@ define
          W = {ReadInt}
          Parts = {ReadRefs W}
       in
-         {Delayed fun {$} {Support.newPatMatConjunction Parts} end}
+         {Support.newPatMatConjunction Parts}
       end
 
       fun {ReadPatMatOpenRecordValue}
@@ -502,21 +515,18 @@ define
          Fields = {ReadRefs W}
          A = {ReadRef}
       in
-         {Delayed fun {$} {Support.newPatMatOpenRecord A Fields} end}
+         {Support.newPatMatOpenRecord A Fields}
       end
 
       fun {ReadAbstractionValue}
          {ReadGlobalEntity
-            fun {$ UUID GlobalNode}
+            proc {$ UUID GlobalNode ?Result}
                GCount = {ReadInt}-1
                Gs = {Record.toList {ReadRefs GCount}}
                CodeArea = {ReadRef}
             in
-               {Delayed
-                  proc {$ ?R}
-                     R = {Support.newAbstraction CodeArea Gs}
-                     {Support.setUUID R UUID}
-                  end}
+               Result = {Support.newAbstraction CodeArea Gs}
+               {Support.setUUID Result UUID}
             end
             proc {$}
                PartCount = {ReadInt}
@@ -529,7 +539,7 @@ define
          1 = {ReadInt}
          Underlying = {ReadRef}
       in
-         {Delayed fun {$} {Chunk.new Underlying} end}
+         {Chunk.new Underlying}
       end
 
       fun {ReadNameValue}
@@ -601,7 +611,6 @@ define
       end
    in
       {ReadValuesLoop}
-      {Wait @TerminationToken}
       Nodes.ResultIndex
    end
 

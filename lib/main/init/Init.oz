@@ -209,6 +209,8 @@ define
       fun {GET Property}
          {Boot_Property.get Property $ true}
       end
+
+      PropertyTestGet = Boot_Property.get
    end
 
    %% OS related stuff
@@ -257,6 +259,18 @@ define
    \insert 'Resolve.oz'
 
    {SET load Resolve.load}
+
+   %% Add a handler for boot functors
+   local
+      BootSearchPath
+   in
+      if {PropertyTestGet 'oz.search.boot' ?BootSearchPath} then
+         Handler = {Resolve.handler.cache
+                    {VirtualString.toString BootSearchPath}}
+      in
+         {Resolve.pickle.addHandler back(Handler)}
+      end
+   end
 
    %% execute application
 

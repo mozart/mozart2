@@ -31,7 +31,7 @@ namespace mozart {
 
 const size_t MegaBytes = 1024*1024;
 
-const size_t MAX_MEMORY = 512 * MegaBytes;
+const size_t MAX_MEMORY = 1024 * MegaBytes;
 const size_t MemoryRoom = 10 * MegaBytes;
 
 class MemoryManager {

@@ -961,9 +961,13 @@ define
          [] unifyVoid(N) | Rest then
             arrayFillNewVars(N) | {Loop Rest}
 
-         % callBI becomes callBuiltin
+         % callBI and inlineDot become callBuiltin
          [] callBI(Builtin InArgs#OutArgs) | Rest then
             callBuiltin(k(Builtin) {Append InArgs OutArgs}) | {Loop Rest}
+         [] inlineDot(R1=x(_) I R2=x(_) cache) | Rest then
+            move(k(I) x(UserXCount)) |
+            callBuiltin(k(Value.'.') [R1 x(UserXCount) R2]) |
+            {Loop Rest}
 
          % callConstant becomes callK
          [] callConstant(P ArityAndIsTail) | Rest then

@@ -67,14 +67,13 @@ add_custom_command(
     --baseenv
     -o "${BOOT_CACHE_SYSTEM}/Base.ozf"
     -m "${MOZART_BUILD_DIR}/vm/vm/main/"
-    -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
     -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv0.txt"
     ${BOOTCOMPILER_DEFINES}
     ${BASE_FUNCTORS}
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${CMAKE_CURRENT_BINARY_DIR}/baseenv0.txt"
     "${BASEENV_DATA_FILE}"
-  DEPENDS bootcompiler ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
+  DEPENDS gensources bootcompiler ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
   COMMENT "base environment"
   VERBATIM)
 
@@ -123,11 +122,10 @@ foreach(functor ${ALL_FUNCTORS})
     COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
       -o "${ozffile}"
       -m "${MOZART_BUILD_DIR}/vm/vm/main/"
-      -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
       -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
       ${BOOTCOMPILER_DEFINES}
       "${functor}"
-    DEPENDS bootcompiler "${functor}" "${BOOTCOMPILER_JAR}" "${BASEENV_DATA_FILE}"
+    DEPENDS gensources bootcompiler "${functor}" "${BOOTCOMPILER_JAR}" "${BASEENV_DATA_FILE}"
     COMMENT "${functor}"
     VERBATIM)
 endforeach()

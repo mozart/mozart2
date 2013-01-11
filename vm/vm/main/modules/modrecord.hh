@@ -175,6 +175,68 @@ public:
       }
     }
   };
+
+  // Some operations that can be implemented much more efficiently in C++
+
+  class AdjoinAtIfHasFeature: public Builtin<AdjoinAtIfHasFeature> {
+  public:
+    AdjoinAtIfHasFeature(): Builtin("adjoinAtIfHasFeature") {}
+
+    static void call(VM vm, In record, In feature, In fieldValue,
+                     Out result, Out success) {
+      using namespace patternmatching;
+
+      if (!RecordLike(record).isRecord(vm))
+        raiseTypeError(vm, MOZART_STR("record"), record);
+
+      if (!Dottable(record).hasFeature(vm, feature)) {
+        result = build(vm, unit);
+        success = build(vm, false);
+        return;
+      }
+
+      size_t width, featureIndex;
+      StaticArray<StableNode> srcElements, destElements;
+
+      if (record.is<Tuple>()) {
+        auto srcTuple = record.as<Tuple>();
+        width = srcTuple.getWidth();
+        result = Tuple::build(vm, width, *srcTuple.getLabel());
+        featureIndex = getArgument<nativeint>(vm, feature) - 1;
+
+        srcElements = srcTuple.getElementsArray();
+        destElements = RichNode(result).as<Tuple>().getElementsArray();
+      } else if (record.is<Cons>()) {
+        auto srcCons = record.as<Cons>();
+        width = 2;
+        result = Cons::build(vm);
+        featureIndex = getArgument<nativeint>(vm, feature) - 1;
+
+        srcElements = srcCons.getElementsArray();
+        destElements = RichNode(result).as<Cons>().getElementsArray();
+      } else {
+        assert(record.is<Record>());
+
+        auto srcRecord = record.as<Record>();
+        width = srcRecord.getWidth();
+        StableNode& arity = *srcRecord.getArity();
+        result = Record::build(vm, width, arity);
+        RichNode(arity).as<mozart::Arity>().lookupFeature(vm, feature, featureIndex);
+
+        srcElements = srcRecord.getElementsArray();
+        destElements = RichNode(result).as<Record>().getElementsArray();
+      }
+
+      for (size_t i = 0; i < width; ++i) {
+        if (i == featureIndex)
+          destElements[i].init(vm, fieldValue);
+        else
+          destElements[i].init(vm, srcElements[i]);
+      }
+
+      success = build(vm, true);
+    }
+  };
 };
 
 }

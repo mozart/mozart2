@@ -257,7 +257,7 @@ public:
     IsFuture(): Builtin("isFuture") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, value.is<ReadOnly>());
+      result = build(vm, value.is<ReadOnly>() || value.is<ReadOnlyVariable>());
     }
   };
 
@@ -285,7 +285,7 @@ public:
 
     static void call(VM vm, In value, Out result) {
       if (value.isTransient()) {
-        if (value.is<ReadOnly>())
+        if (value.is<ReadOnly>() || value.is<ReadOnlyVariable>())
           result = Atom::build(vm, MOZART_STR("future"));
         else if (value.is<FailedValue>())
           result = Atom::build(vm, MOZART_STR("failed"));

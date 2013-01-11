@@ -391,28 +391,38 @@ define
             {BootReflection.getStructuralBehavior X} == value
          end
 
-         {WriteSize Max}
-         {WriteSize N}
-
          Info0 = {MakeInfo Qs}
-         Info1 = {DoPackSet Info0
-                  fun {$ _#V#_}
-                     {HasValueBehavior V} orelse {IsLiteral V}
-                  end}
-         Info2 = {DoPackSet Info1
-                  fun {$ _#V#_}
-                     {Support.isArity V}
-                  end}
-         Info3 = {DoPackSet Info2
-                  fun {$ _#_#K}
-                     L = {Label K}
-                  in
-                     L \= abstraction andthen L \= chunk
-                  end}
-         Info4 = {DoPackSet Info3 fun {$ _} true end}
+
+         ReadOnlyVars = {Filter Info0 fun {$ _#V#_} {Value.isFuture V} end}
       in
-         true = Info4 == nil
-         {WriteSize 0}
+         if ReadOnlyVars == nil then
+            {WriteSize Max}
+            {WriteSize N}
+
+            Info1 = {DoPackSet Info0
+                     fun {$ _#V#_}
+                        {HasValueBehavior V} orelse {IsLiteral V}
+                     end}
+            Info2 = {DoPackSet Info1
+                     fun {$ _#V#_}
+                        {Support.isArity V}
+                     end}
+            Info3 = {DoPackSet Info2
+                     fun {$ _#_#K}
+                        L = {Label K}
+                     in
+                        L \= abstraction andthen L \= chunk
+                     end}
+            Info4 = {DoPackSet Info3 fun {$ _} true end}
+         in
+            true = Info4 == nil
+            {WriteSize 0}
+         else % ReadOnlyVars \= nil
+            % Wait for all the read only variables, then try again
+            {ForAll ReadOnlyVars proc {$ _#V#_} {Value.makeNeeded V} end}
+            {ForAll ReadOnlyVars proc {$ _#V#_} {Wait V} end}
+            {WriteValueToSink Sink TheValue}
+         end
       end
    end
 

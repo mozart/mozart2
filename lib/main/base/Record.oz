@@ -105,9 +105,15 @@ in
    end
 
    fun {AdjoinAt R F X}
-      L = {Label R}
+      MaybeResult
    in
-      {Adjoin R L(F:X)}
+      if {Boot_Record.adjoinAtIfHasFeature R F X ?MaybeResult} then
+         MaybeResult
+      else
+         L = {Label R}
+      in
+         {Adjoin R L(F:X)}
+      end
    end
 
    fun {AdjoinList R Ts}

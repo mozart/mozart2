@@ -33,8 +33,8 @@ export
 define
    DefaultBaseURL = {URL.make "./"}
 
-   fun{ReadFile URL}
-      File = {New Open.file init(url:URL)}
+   fun{ReadFile TheURL}
+      File = {New Open.file init(url:TheURL)}
    in
       try
          {File read(list:$ size:all)}
@@ -306,7 +306,7 @@ define
                                                                                  NewContents = {ReadFile NewURL}
                                                                               end
                                                                               CtxOut={MkContext
-                                                                                      {ReadFile NewURL}
+                                                                                      NewContents
                                                                                       {String.toAtom FN} 1 0 false
                                                                                       CtxIn.grammar CtxIn.defines nil
                                                                                       CtxIn|CtxIn.fileStack
@@ -635,7 +635,7 @@ define
                     )
       attrOrFeat:[alt(escVar feature) opt([':' lvl0])]#fun{$ [K V]}
                                                           if V==nil then K
-                                                          else K#V.2.1
+                                                          else K#(V.2).1
                                                           end
                                                        end
       method:[pB 'meth' methodHead inPhrase 'end' pE]#fun{$ [P1 _ H S _ P2]}

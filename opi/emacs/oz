@@ -12,14 +12,6 @@ then
 fi
 export OZHOME
 
-if test -z "${OZ_BOOT_PATH}"
-then
-  if test -f "${OZHOME}/share/mozart/boot/Base.ozb"; then
-    OZ_BOOT_PATH="${OZHOME}/share/mozart/boot"
-    export OZ_BOOT_PATH
-  fi
-fi
-
 # Determine OZEMACS
 
 if test -z "${OZEMACS}"

@@ -32,34 +32,66 @@
 using namespace mozart;
 namespace fs = boost::filesystem;
 
+atom_t pathToAtom(VM vm, const fs::path& path) {
+  auto nativeStr = path.native();
+  auto mozartStr = toUTF<nchar>(
+    makeLString(nativeStr.c_str(), nativeStr.size()));
+  return vm->getAtom(mozartStr.length, mozartStr.string);
+}
+
 int main(int argc, char** argv) {
   boostenv::BoostBasedVM boostBasedVM;
   VM vm = boostBasedVM.vm;
+
+  fs::path appPath = fs::path(argv[0]).parent_path();
+
+  // Hacky way to guess if we are in an installed setting
+  bool isInstalled = appPath.empty() || (appPath.filename() == "bin");
+
+  fs::path ozHome;
+  {
+    char* ozHomeVar = std::getenv("OZHOME");
+    if (ozHomeVar == nullptr)
+      ozHomeVar = std::getenv("OZ_HOME");
+
+    if (ozHomeVar != nullptr)
+      ozHome = fs::path(ozHomeVar);
+    else if (isInstalled)
+      ozHome = appPath.parent_path();
+    else
+      ozHome = appPath;
+
+    auto propValue = build(vm, pathToAtom(vm, ozHome));
+
+    auto propName = build(vm, MOZART_STR("oz.emulator.home"));
+    vm->getPropertyRegistry().put(vm, propName, propValue);
+
+    propName = build(vm, MOZART_STR("oz.configure.home"));
+    vm->getPropertyRegistry().put(vm, propName, propValue);
+  }
 
   fs::path bootSearchPath;
   {
     char* bootSearchPathVar = std::getenv("OZ_BOOT_PATH");
     if (bootSearchPathVar != nullptr)
       bootSearchPath = fs::path(bootSearchPathVar);
+    else if (isInstalled)
+      bootSearchPath = ozHome / "share" / "mozart" / "boot";
     else
-      bootSearchPath = fs::path(argv[0]).parent_path() / "boot";
-
-    auto bootSearchPathNative = bootSearchPath.native();
-    auto bootSearchPathMozart = toUTF<nchar>(
-      makeLString(bootSearchPathNative.c_str(), bootSearchPathNative.size()));
-    auto bootSearchPathAtom = Atom::build(
-      vm, bootSearchPathMozart.length, bootSearchPathMozart.string);
+      bootSearchPath = ozHome / "boot";
 
     vm->getPropertyRegistry().registerConstantProp(
-      vm, MOZART_STR("oz.search.boot"), bootSearchPathAtom);
+      vm, MOZART_STR("oz.search.boot"), pathToAtom(vm, bootSearchPath));
   }
 
-  if (argc >= 2) {
+  {
+    if (argc < 2) {
+      std::cerr << "usage: ozengine AppURL" << std::endl;
+      return 1;
+    }
+
     boostBasedVM.setApplicationURL(argv[1]);
     boostBasedVM.setApplicationArgs(argc-2, argv+2);
-  } else {
-    boostBasedVM.setApplicationURL(u8"x-oz://system/OPI.ozf");
-    boostBasedVM.setApplicationArgs(0, nullptr);
   }
 
   {
@@ -76,10 +108,16 @@ int main(int argc, char** argv) {
     UnstableNode baseValue, initValue;
     auto& bootLoader = boostBasedVM.getBootLoader();
     fs::path systemSearchPath = bootSearchPath / "x-oz" / "system";
-    if (!bootLoader(vm, (systemSearchPath / "Base.ozf").native(), baseValue))
+
+    if (!bootLoader(vm, (systemSearchPath / "Base.ozf").native(), baseValue)) {
       std::cerr << "panic: could not load Base functor" << std::endl;
-    if (!bootLoader(vm, (systemSearchPath / "Init.ozf").native(), initValue))
+      return 1;
+    }
+
+    if (!bootLoader(vm, (systemSearchPath / "Init.ozf").native(), initValue)) {
       std::cerr << "panic: could not load Init functor" << std::endl;
+      return 1;
+    }
 
     // Create the thread that loads the Base environment
     if (Callable(baseValue).isProcedure(vm)) {

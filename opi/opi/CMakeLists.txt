@@ -142,13 +142,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
-add_executable(ozengine engine.cc)
-target_link_libraries(ozengine mozartvmboost mozartvm ${Boost_LIBRARIES})
+add_executable(ozemulator engine.cc)
+target_link_libraries(ozemulator mozartvmboost mozartvm ${Boost_LIBRARIES})
 
 if(NOT MINGW)
-  target_link_libraries(ozengine pthread)
+  target_link_libraries(ozemulator pthread)
 endif()
 
 # Install
 install(FILES ${ALL_OZF_FILES} DESTINATION share/mozart/boot/x-oz/system)
-install(TARGETS ozengine DESTINATION bin)
+install(TARGETS ozemulator DESTINATION bin)
+install(PROGRAMS ozengine ozc DESTINATION bin)

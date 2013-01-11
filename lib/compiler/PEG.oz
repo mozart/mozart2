@@ -25,9 +25,18 @@
 functor
 import
    System(show:Show)
+   Boot_Record at 'x-oz://boot/Record'
+   Boot_Dictionary at 'x-oz://boot/Dictionary'
 export
    Translate
 define
+   % Get a maximum of optimizations
+   proc {ReplaceFeature R F X ?Result}
+      {Boot_Record.adjoinAtIfHasFeature R F X ?Result true}
+   end
+
+   DictCondExchangeFun = Boot_Dictionary.condExchangeFun
+
    fun{Translate WG}
       fun{TranslateRule G}
          case G
@@ -105,7 +114,7 @@ define
             proc{$ CtxIn CtxOut Sem} CtxTmp in
                {XX CtxIn CtxTmp Sem}
                if CtxTmp.valid then
-                  CtxOut={AdjoinAt CtxIn valid false}
+                  CtxOut={ReplaceFeature CtxIn valid false}
                else
                   CtxOut=CtxIn
                end
@@ -118,7 +127,7 @@ define
                if CtxTmp.valid then
                   CtxOut=CtxIn
                else
-                  CtxOut={AdjoinAt CtxIn valid false}
+                  CtxOut={ReplaceFeature CtxIn valid false}
                end
             end
          [] sem(X P) then
@@ -131,7 +140,7 @@ define
          [] nt(X) then
             proc{$ CtxIn CtxOut Sem} N in
                true=CtxIn.valid
-               case {Dictionary.condExchange CtxIn.cache X unit $ N}
+               case {DictCondExchangeFun CtxIn.cache X unit N $}
                of unit then
                   N=CtxOut#Sem
                   {CtxIn.grammar.X CtxIn CtxOut Sem}
@@ -146,7 +155,7 @@ define
                Id={NewName} XX in
                proc{P CtxIn CtxOut Sem} N in
                   true=CtxIn.valid
-                  case {Dictionary.condExchange CtxIn.cache Id unit $ N}
+                  case {DictCondExchangeFun CtxIn.cache Id unit N $}
                   of unit then
                      N=CtxOut#Sem
                      {XX CtxIn CtxOut Sem}
@@ -174,7 +183,7 @@ define
             proc{$ CtxIn CtxOut Sem} CtxTmp in
                {XX CtxIn CtxTmp Sem}
                if CtxTmp.valid then
-                  CtxOut={AdjoinAt CtxTmp valid {P Sem}}
+                  CtxOut={ReplaceFeature CtxTmp valid {P Sem}}
                else
                   CtxOut=CtxTmp
                end

@@ -32,50 +32,27 @@
 using namespace mozart;
 namespace fs = boost::filesystem;
 
-bool doBootLoad(VM vm, const fs::path& ozbPath,
-                const std::string& functorName, UnstableNode& result) {
-  fs::path fileName = ozbPath / fs::path(functorName + ".ozb");
-  fs::ifstream input(fileName);
-
-  if (!input.is_open())
-    return false;
-
-  result = bootUnpickle(vm, input);
-  return true;
-}
-
 int main(int argc, char** argv) {
   boostenv::BoostBasedVM boostBasedVM;
   VM vm = boostBasedVM.vm;
 
-  fs::path ozbPath;
+  fs::path bootSearchPath;
   {
-    char* ozbPathVar = std::getenv("OZ_BOOT_PATH");
-    if (ozbPathVar != nullptr)
-      ozbPath = fs::path(ozbPathVar);
+    char* bootSearchPathVar = std::getenv("OZ_BOOT_PATH");
+    if (bootSearchPathVar != nullptr)
+      bootSearchPath = fs::path(bootSearchPathVar);
     else
-      ozbPath = fs::path(argv[0]).parent_path();
+      bootSearchPath = fs::path(argv[0]).parent_path() / "boot";
+
+    auto bootSearchPathNative = bootSearchPath.native();
+    auto bootSearchPathMozart = toUTF<nchar>(
+      makeLString(bootSearchPathNative.c_str(), bootSearchPathNative.size()));
+    auto bootSearchPathAtom = Atom::build(
+      vm, bootSearchPathMozart.length, bootSearchPathMozart.string);
+
+    vm->getPropertyRegistry().registerConstantProp(
+      vm, MOZART_STR("oz.search.boot"), bootSearchPathAtom);
   }
-
-  boostBasedVM.setBootLoader(
-    [ozbPath] (VM vm, const std::string& url, UnstableNode& result) -> bool {
-      std::string prefix = "x-oz://system/";
-      std::string suffix = ".ozf";
-      size_t prefixSize = prefix.size();
-      size_t suffixSize = suffix.size();
-      size_t urlSize = url.size();
-
-      if ((urlSize <= prefixSize + suffixSize) ||
-          (url.substr(0, prefixSize) != prefix) ||
-          (url.substr(urlSize-suffixSize, suffixSize) != suffix)) {
-        return false;
-      }
-
-      auto name = url.substr(prefixSize, urlSize-prefixSize-suffixSize);
-
-      return doBootLoad(vm, ozbPath, name, result);
-    }
-  );
 
   if (argc >= 2) {
     boostBasedVM.setApplicationURL(argv[1]);
@@ -97,9 +74,11 @@ int main(int argc, char** argv) {
       vm, MOZART_STR("internal.boot.init"), initFunctor);
 
     UnstableNode baseValue, initValue;
-    if (!doBootLoad(vm, ozbPath, "Base", baseValue))
+    auto& bootLoader = boostBasedVM.getBootLoader();
+    fs::path systemSearchPath = bootSearchPath / "x-oz" / "system";
+    if (!bootLoader(vm, (systemSearchPath / "Base.ozf").native(), baseValue))
       std::cerr << "panic: could not load Base functor" << std::endl;
-    if (!doBootLoad(vm, ozbPath, "Init", initValue))
+    if (!bootLoader(vm, (systemSearchPath / "Init.ozf").native(), initValue))
       std::cerr << "panic: could not load Init functor" << std::endl;
 
     // Create the thread that loads the Base environment

@@ -51,19 +51,29 @@ include_directories("${MOZART_DIR}/vm/boostenv/main"
 set(BOOTCOMPILER_JAR "${MOZART_BUILD_DIR}/bootcompiler/bootcompiler.jar")
 set(BOOTCOMPILER_DEFINES -D NO_GUMP)
 
+set(BASEENV_DATA_FILE "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt")
+
+set(BOOT_CACHE_ROOT "${CMAKE_CURRENT_BINARY_DIR}/boot")
+set(BOOT_CACHE_SYSTEM "${BOOT_CACHE_ROOT}/x-oz/system")
+
+file(MAKE_DIRECTORY "${BOOT_CACHE_SYSTEM}")
+
 set(BASE_FUNCTORS
     "${MOZART_LIB_DIR}/base/Base.oz")
 
 add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Base.ozb"
+  OUTPUT "${BOOT_CACHE_SYSTEM}/Base.ozf" "${BASEENV_DATA_FILE}"
   COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
     --baseenv
-    -o "${CMAKE_CURRENT_BINARY_DIR}/Base.ozb"
+    -o "${BOOT_CACHE_SYSTEM}/Base.ozf"
     -m "${MOZART_BUILD_DIR}/vm/vm/main/"
     -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
-    -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
+    -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv0.txt"
     ${BOOTCOMPILER_DEFINES}
     ${BASE_FUNCTORS}
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_BINARY_DIR}/baseenv0.txt"
+    "${BASEENV_DATA_FILE}"
   DEPENDS bootcompiler ${BASE_FUNCTORS} "${BOOTCOMPILER_JAR}"
   COMMENT "base environment"
   VERBATIM)
@@ -100,31 +110,31 @@ set(ALL_FUNCTORS
     "${CMAKE_CURRENT_SOURCE_DIR}/OPIEnv.oz"
     ${SYS_FUNCTORS})
 
-set(ALL_OZB_FILES "${CMAKE_CURRENT_BINARY_DIR}/Base.ozb")
+set(ALL_OZF_FILES "${BOOT_CACHE_SYSTEM}/Base.ozf")
 
 foreach(functor ${ALL_FUNCTORS})
   get_filename_component(basename ${functor} NAME_WE)
-  set(ozbfile "${CMAKE_CURRENT_BINARY_DIR}/${basename}.ozb")
+  set(ozffile "${BOOT_CACHE_SYSTEM}/${basename}.ozf")
 
-  set(ALL_OZB_FILES ${ALL_OZB_FILES} "${ozbfile}")
+  set(ALL_OZF_FILES ${ALL_OZF_FILES} "${ozffile}")
 
   add_custom_command(
-    OUTPUT ${ozbfile}
+    OUTPUT ${ozffile}
     COMMAND ${Java_JAVA_EXECUTABLE} -jar  ${JAVA_OPTIONS} "${BOOTCOMPILER_JAR}"
-      -o "${ozbfile}"
+      -o "${ozffile}"
       -m "${MOZART_BUILD_DIR}/vm/vm/main/"
       -m "${MOZART_BUILD_DIR}/vm/boostenv/main/"
       -b "${CMAKE_CURRENT_BINARY_DIR}/baseenv.txt"
       ${BOOTCOMPILER_DEFINES}
       "${functor}"
-    DEPENDS bootcompiler "${functor}"
+    DEPENDS bootcompiler "${functor}" "${BOOTCOMPILER_JAR}" "${BASEENV_DATA_FILE}"
     COMMENT "${functor}"
     VERBATIM)
 endforeach()
 
 add_custom_target(
-  ozbfiles ALL
-  DEPENDS ${ALL_OZB_FILES})
+  ozffiles ALL
+  DEPENDS ${ALL_OZF_FILES})
 
 # Compile the executable
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -140,5 +150,5 @@ if(NOT MINGW)
 endif()
 
 # Install
-install(FILES ${ALL_OZB_FILES} DESTINATION share/mozart/boot)
+install(FILES ${ALL_OZF_FILES} DESTINATION share/mozart/boot/x-oz/system)
 install(TARGETS ozengine DESTINATION bin)

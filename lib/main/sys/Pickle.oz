@@ -36,6 +36,7 @@ require
    Support at 'x-oz://boot/CompilerSupport'
    BootName at 'x-oz://boot/Name'
    BootReflection at 'x-oz://boot/Reflection'
+   Debug at 'x-oz://boot/Debug'
 
 prepare
 
@@ -243,6 +244,9 @@ define
    %%
 
    proc {WriteValueToSink Sink TheValue}
+      OldSetRaiseOnBlock = {Debug.getRaiseOnBlock {Thread.this}}
+      {Debug.setRaiseOnBlock {Thread.this} true}
+
       proc {Write VBS}
          {VirtualByteString.length VBS _}
          {Sink write(VBS)}
@@ -396,6 +400,18 @@ define
          ReadOnlyVars = {Filter Info0 fun {$ _#V#_} {Value.isFuture V} end}
       in
          if ReadOnlyVars == nil then
+            ResourcesInfo = {Filter Info0 fun {$ _#_#K}
+                                             {Not {HasFeature Ser {Label K}}}
+                                          end}
+            if ResourcesInfo \= nil then
+               Resources = {Map ResourcesInfo fun {$ IVK} IVK.2 end}
+               Err = dp(generic 'pickle:resources'
+                        'Resources found during pickling'
+                        ['Resources'#Resources 'Filename'#'UNKNOWN FILENAME'])
+            in
+               {Exception.raiseError Err}
+            end
+
             {WriteSize Max}
             {WriteSize N}
 
@@ -417,10 +433,14 @@ define
          in
             true = Info4 == nil
             {WriteSize 0}
+
+            {Debug.setRaiseOnBlock {Thread.this} OldSetRaiseOnBlock}
          else % ReadOnlyVars \= nil
             % Wait for all the read only variables, then try again
+            {Debug.setRaiseOnBlock {Thread.this} false}
             {ForAll ReadOnlyVars proc {$ _#V#_} {Value.makeNeeded V} end}
             {ForAll ReadOnlyVars proc {$ _#V#_} {Wait V} end}
+            {Debug.setRaiseOnBlock {Thread.this} OldSetRaiseOnBlock}
             {WriteValueToSink Sink TheValue}
          end
       end

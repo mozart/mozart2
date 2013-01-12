@@ -142,19 +142,6 @@ int main(int argc, char** argv) {
   }
 
   {
-    // Base.'Base' = Base
-    UnstableNode Base;
-    auto BaseProperty = build(vm, MOZART_STR("internal.boot.base"));
-    vm->getPropertyRegistry().get(vm, BaseProperty, Base);
-
-    auto BaseAtom = build(vm, MOZART_STR("Base"));
-    auto BaseField = Dottable(Base).dot(vm, BaseAtom);
-
-    if (RichNode(BaseField).isTransient())
-      DataflowVariable(BaseField).bind(vm, Base);
-  }
-
-  {
     // Apply the Init functor
 
     UnstableNode InitFunctor;

@@ -46,7 +46,6 @@ prepare
    URL = {Functor_URL.apply 'import'}
    UrlMake = URL.make
    UrlIs = URL.is
-   UrlNormalizePath = URL.normalizePath
    UrlResolve = URL.resolve
    UrlToVs = URL.toVirtualString
    UrlToAtom = URL.toAtom

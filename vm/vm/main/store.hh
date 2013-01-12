@@ -208,7 +208,9 @@ void RichNode::ensureStable(VM vm) {
 }
 
 void RichNode::reinit(VM vm, StableNode& from) {
-  if (from.isCopyable()) {
+  if (node() == &from) {
+    // do nothing
+  } else if (from.isCopyable()) {
     node()->set(from);
   } else {
     node()->make<Reference>(vm, &from);
@@ -216,7 +218,9 @@ void RichNode::reinit(VM vm, StableNode& from) {
 }
 
 void RichNode::reinit(VM vm, UnstableNode& from) {
-  if (isStable()) {
+  if (node() == &from) {
+    // do nothing
+  } else if (isStable()) {
     asStable().init(vm, from);
   } else {
     asUnstable().init(vm, from);

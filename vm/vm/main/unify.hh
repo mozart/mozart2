@@ -75,6 +75,9 @@ bool fullPatternMatch(VM vm, RichNode value, RichNode pattern,
 #ifndef MOZART_GENERATOR
 
 void unify(VM vm, RichNode left, RichNode right) {
+  if (left.isSameNode(right))
+    return;
+
   auto leftType = left.type();
   auto rightType = right.type();
 

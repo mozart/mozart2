@@ -21,8 +21,12 @@ class Program(val isBaseEnvironment: Boolean = false) {
   /** Variables declared by the base environment */
   val baseDeclarations = new ArrayBuffer[String]
 
-  /** Global <Base> variable, which contains the base environment */
-  val baseEnvSymbol = new Symbol("<Base>", synthetic = true)
+  /** Global <Base> variable, which contains the base environment
+   *  (only in normal mode)
+   */
+  val baseEnvSymbol =
+    if (isBaseEnvironment) NoSymbol
+    else new Symbol("<Base>", synthetic = true)
 
   /** Map of base symbols (only in base environment mode) */
   val baseSymbols = new HashMap[String, Symbol]

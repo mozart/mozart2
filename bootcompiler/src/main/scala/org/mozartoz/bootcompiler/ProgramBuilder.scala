@@ -33,8 +33,8 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
 
   /** Builds a program that creates the base environment
    *
-   *  The base functors must be functors indeed, and should have the following
-   *  structure:
+   *  The base functors must contain exactly one top-level functor definition,
+   *  and should have the following structure:
    *  {{{
    *  functor
    *
@@ -54,8 +54,6 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  All the base functors are merged together as a single functor, that we
    *  call the base functor and write <BaseFunctor> from here.
    *
-   *  The <BaseFunctor> must export an unbound variable under feature 'Base'.
-   *
    *  The program statement applies this functor, giving it as imports all
    *  the boot modules. These are looked up in the boot modules map.
    *  The result of this application is returned as the top-level result.
@@ -63,15 +61,13 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  Hence the program looks like this:
    *  {{{
    *  local
-   *     <Base>
    *     Imports = 'import'(
    *        'Boot_ModA': <constant looked up in the boot modules map>
    *        ...
    *        'Boot_ModN': <...>
    *     )
    *  in
-   *     <Base> = {<BaseFunctor>.apply Imports}
-   *     <Result> = <Base>
+   *     <Result> = {<BaseFunctor>.apply Imports}
    *  end
    *  }}}
    */
@@ -88,10 +84,8 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
       prog.baseDeclarations += name
     }
 
-    // Now starts the synthesis of the program statement
-
-    // Application of the base functor
-    val applyBaseFunctorStat = {
+    // Synthesize the program statement
+    val wholeProgram = {
       val imports = {
         val reqs = baseFunctor.require ++ baseFunctor.imports
 
@@ -102,15 +96,8 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
         Record(OzAtom("import"), fields.toList)
       }
 
-      (baseFunctor dot OzAtom("apply")) call (imports, prog.baseEnvSymbol)
-    }
-
-    // Put things together
-    val wholeProgram = {
-      LOCAL (prog.baseEnvSymbol) IN {
-        applyBaseFunctorStat ~
-        (prog.topLevelResultSymbol === prog.baseEnvSymbol)
-      }
+      (baseFunctor dot OzAtom("apply")) call (
+          imports, prog.topLevelResultSymbol)
     }
 
     prog.rawCode = wholeProgram

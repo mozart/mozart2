@@ -19,6 +19,8 @@ abstract class Transformer extends (Program => Unit) {
   protected def baseEnvironment(name: String): Expression = {
     if (program.isBaseEnvironment) {
       Variable(program.baseSymbols(name))
+    } else if (name == "Base") {
+      Variable(program.baseEnvSymbol)
     } else {
       CallExpression(Constant(OzBuiltin(builtins.binaryOpToBuiltin("."))),
           List(Variable(program.baseEnvSymbol), Constant(OzAtom(name))))

@@ -267,7 +267,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
       if (symbol.isDefined) {
         treeCopy.Variable(v, symbol.get)
       } else if (!program.isBaseEnvironment &&
-          (program.baseDeclarations contains name)) {
+          ((program.baseDeclarations contains name) || (name == "Base"))) {
         atPos(v)(baseEnvironment(name))
       } else {
         program.reportError("Undeclared variable "+name, v)

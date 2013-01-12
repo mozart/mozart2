@@ -40,6 +40,13 @@ void ThreadQueue::gCollect(GC gc) {
   }
 }
 
+void ThreadQueue::dump() {
+  for (auto iterator = c.begin(); iterator != c.end(); iterator++) {
+    Runnable* runnable = *iterator;
+    runnable->dump();
+  }
+}
+
 ////////////////
 // ThreadPool //
 ////////////////

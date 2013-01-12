@@ -169,7 +169,8 @@ UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
                                           ProgramCounter PC) {
   OzListBuilder result(vm);
 
-  result.push_back(vm, buildStackTraceItem(vm, abstraction, PC));
+  if (abstraction != nullptr)
+    result.push_back(vm, buildStackTraceItem(vm, abstraction, PC));
 
   for (auto iter = begin(); iter != end(); ++iter) {
     StackEntry& entry = *iter;
@@ -1475,6 +1476,12 @@ void Thread::terminate() {
 
   auto unitNode = build(vm, unit);
   DataflowVariable(_terminationVar).bind(vm, unitNode);
+}
+
+void Thread::dump() {
+  std::cerr << "Thread " << this << ", runnable:" << isRunnable() << std::endl;
+  UnstableNode stackTrace = stack.buildStackTrace(vm, nullptr, nullptr);
+  std::cerr << repr(vm, stackTrace) << std::endl;
 }
 
 }

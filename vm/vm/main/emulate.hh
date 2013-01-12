@@ -227,6 +227,8 @@ protected:
 
     Super::dispose();
   }
+public:
+  void dump();
 private:
   inline
   void constructor(VM vm, RichNode abstraction,

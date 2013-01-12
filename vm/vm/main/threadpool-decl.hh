@@ -59,6 +59,9 @@ public:
 
     return false;
   }
+
+  inline
+  void dump();
 };
 
 ////////////////
@@ -111,6 +114,12 @@ public:
 
   inline
   Runnable* popNext();
+
+  void dump() {
+    queues[tpLow].dump();
+    queues[tpMiddle].dump();
+    queues[tpHi].dump();
+  }
 private:
   bool empty(ThreadPriority priority) {
     return queues[priority].empty();

@@ -165,7 +165,9 @@ protected:
 
   inline
   virtual void dispose();
-
+public:
+  virtual void dump() {}
+protected:
   VM vm;
 private:
   friend class RunnableList;

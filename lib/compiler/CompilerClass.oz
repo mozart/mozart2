@@ -144,7 +144,7 @@ local
          reporter <- ReporterObject
          self.variables = {NewDictionary}
          self.values = {NewDictionary}
-         CompilerStateClass, putEnv({Record.subtract Base 'OoExtensions'})
+         CompilerStateClass, putEnv(Base)
       end
 
       %%

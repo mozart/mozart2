@@ -80,6 +80,10 @@ prepare
       end
    end
 
+   fun {BootRecord_test Val Lab Feats}
+      {BootRecord.test Val Lab {List.toTuple '#' Feats}}
+   end
+
    local
       `ooFallback` = {NewUniqueName ooFallback}
    in
@@ -136,7 +140,7 @@ prepare
 
                      %% Record
                      'Record.width': Record.width
-                     'Record.test': BootRecord.test
+                     'Record.test': BootRecord_test
                      'Record.testLabel': BootRecord.testLabel
                      'Record.testFeature': BootRecord.testFeature
 

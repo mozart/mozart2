@@ -61,12 +61,19 @@ import
 export
    MakeExpressionQuery
    UnnestQuery
+\ifdef HAS_CSS
 require
    FD(sup: FdSup)
 prepare
    fun {IsFd I}
       I =< FdSup andthen I >= 0
    end
+\else
+prepare
+   fun {IsFd I}
+      false
+   end
+\endif
 define
    \insert TupleSyntax
    \insert BindingAnalysis

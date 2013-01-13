@@ -90,10 +90,13 @@ define
       branch: 0x41
       branchBackward: 0x42
       condBranch: 0x43
+      condBranchFB: 0x44
+      condBranchBF: 0x45
+      condBranchBB: 0x46
 
-      patternMatchX: 0x44
-      patternMatchY: 0x45
-      patternMatchG: 0x46
+      patternMatchX: 0x47
+      patternMatchY: 0x48
+      patternMatchG: 0x49
 
       unifyXX: 0x50
       unifyXY: 0x51
@@ -477,10 +480,9 @@ define
          [] branch(L) then
             {self declareLabel(L)}
 
-         [] condBranch(_ L1 L2 L3) then
+         [] condBranch(_ L1 L2) then
             {self declareLabel(L1)}
             {self declareLabel(L2)}
-            {self declareLabel(L3)}
 
          [] patternMatchX(_ Patterns) then
             {self DeclareLabelsInPatterns(Patterns)}
@@ -522,12 +524,16 @@ define
          in
             if A >= 0 then branch(A) else branchBackward(~A) end
 
-         [] condBranch(X L1 L2 L3) then
+         [] condBranch(X L1 L2) then
             A1 = {self TranslateLabel(L1 EndAddr $)}
             A2 = {self TranslateLabel(L2 EndAddr $)}
-            A3 = {self TranslateLabel(L3 EndAddr $)}
          in
-            condBranch(X A1 A2 A3)
+            case (A1 >= 0)#(A2 >= 0)
+            of true#true then condBranch(X A1 A2)
+            [] true#false then condBranchFB(X A1 ~A2)
+            [] false#true then condBranchBF(X ~A1 A2)
+            [] false#false then condBranchBB(X ~A1 ~A2)
+            end
 
          [] patternMatchX(X Patterns) then
             patternMatchX(X {self TranslatePatterns(Patterns EndAddr $)})

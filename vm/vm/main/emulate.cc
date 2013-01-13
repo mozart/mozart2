@@ -624,13 +624,13 @@ void Thread::run() {
         }
 
         case OpBranch: {
-          int distance = IntPC(1);
+          std::ptrdiff_t distance = IntPC(1);
           advancePC(1 + distance);
           break;
         }
 
         case OpBranchBackward: {
-          int distance = IntPC(1);
+          std::ptrdiff_t distance = IntPC(1);
           advancePC(1 - distance);
           break;
         }
@@ -641,11 +641,59 @@ void Thread::run() {
           bool test;
           if (matches(vm, XPC(1), capture(test))) {
             if (test)
-              advancePC(4 + IntPC(3));
+              advancePC(3);
             else
-              advancePC(4 + IntPC(2));
+              advancePC(3 + (std::ptrdiff_t) IntPC(2));
           } else {
-            advancePC(4 + IntPC(4));
+            advancePC(3 + (std::ptrdiff_t) IntPC(3));
+          }
+
+          break;
+        }
+
+        case OpCondBranchFB: {
+          using namespace patternmatching;
+
+          bool test;
+          if (matches(vm, XPC(1), capture(test))) {
+            if (test)
+              advancePC(3);
+            else
+              advancePC(3 + (std::ptrdiff_t) IntPC(2));
+          } else {
+            advancePC(3 - (std::ptrdiff_t) IntPC(3));
+          }
+
+          break;
+        }
+
+        case OpCondBranchBF: {
+          using namespace patternmatching;
+
+          bool test;
+          if (matches(vm, XPC(1), capture(test))) {
+            if (test)
+              advancePC(3);
+            else
+              advancePC(3 - (std::ptrdiff_t) IntPC(2));
+          } else {
+            advancePC(3 + (std::ptrdiff_t) IntPC(3));
+          }
+
+          break;
+        }
+
+        case OpCondBranchBB: {
+          using namespace patternmatching;
+
+          bool test;
+          if (matches(vm, XPC(1), capture(test))) {
+            if (test)
+              advancePC(3);
+            else
+              advancePC(3 - (std::ptrdiff_t) IntPC(2));
+          } else {
+            advancePC(3 - (std::ptrdiff_t) IntPC(3));
           }
 
           break;
@@ -1074,10 +1122,9 @@ void Thread::run() {
 #include "emulate-inline.cc"
 
         default: {
-          assert(false);
-          std::cerr << "Bad opcode: " << op << "\n";
-          terminate();
-          return;
+          /* We really should not come here, but raising a proper exception
+           * helps in debugging. */
+          raiseKernelError(vm, MOZART_STR("badOpCode"), (nativeint) op);
         }
       } // Big switch testing the opcode
 

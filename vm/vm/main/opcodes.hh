@@ -91,10 +91,13 @@ const OpCode OpReturn = 0x40;
 const OpCode OpBranch = 0x41;
 const OpCode OpBranchBackward = 0x42;
 const OpCode OpCondBranch = 0x43;
+const OpCode OpCondBranchFB = 0x44;
+const OpCode OpCondBranchBF = 0x45;
+const OpCode OpCondBranchBB = 0x46;
 
-const OpCode OpPatternMatchX = 0x44;
-const OpCode OpPatternMatchY = 0x45;
-const OpCode OpPatternMatchG = 0x46;
+const OpCode OpPatternMatchX = 0x47;
+const OpCode OpPatternMatchY = 0x48;
+const OpCode OpPatternMatchG = 0x49;
 
 const OpCode OpUnifyXX = 0x50;
 const OpCode OpUnifyXY = 0x51;

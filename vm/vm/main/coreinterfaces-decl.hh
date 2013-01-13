@@ -141,7 +141,9 @@ struct Interface<Wakeable>:
 class Literal;
 template<>
 struct Interface<Literal>:
-  ImplementedBy<Atom, OptName, GlobalName, Boolean, Unit>,
+  ImplementedBy<Atom,
+                OptName, GlobalName, NamedName, UniqueName,
+                Boolean, Unit>,
   NoAutoReflectiveCalls {
 
   bool isLiteral(RichNode self, VM vm) {
@@ -152,7 +154,8 @@ struct Interface<Literal>:
 class NameLike;
 template<>
 struct Interface<NameLike>:
-  ImplementedBy<OptName, GlobalName, Unit, Boolean>,
+  ImplementedBy<OptName, GlobalName, NamedName, UniqueName,
+                Unit, Boolean>,
   NoAutoReflectiveCalls {
 
   bool isName(RichNode self, VM vm) {

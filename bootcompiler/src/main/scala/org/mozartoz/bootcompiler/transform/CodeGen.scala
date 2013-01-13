@@ -108,25 +108,32 @@ object CodeGen extends Transformer with TreeDSL {
       case IfStatement(cond:Variable, trueStat, falseStat) =>
         XReg(0) := cond.symbol
         val condBranchHole = code.addHole()
-        var branchHole: CodeArea#Hole = null
-
-        val errorSize = code.counting {
-          // TODO generate error code
-        }
+        var branchHoleInFalseBranch: CodeArea#Hole = null
+        var branchHoleInTrueBranch: CodeArea#Hole = null
 
         val trueBranchSize = code.counting {
           generate(trueStat)
-          branchHole = code.addHole(2)
+          branchHoleInTrueBranch = code.addHole(2)
         }
 
         val falseBranchSize = code.counting {
           generate(falseStat)
+          branchHoleInFalseBranch = code.addHole(2)
+        }
+
+        val errorSize = code.counting {
+          // TODO generate proper error code
+          code += OpMove(code.registerFor(OzAtom("condBranchError")), XReg(0))
+          code += OpCallBuiltin(
+              code.registerFor(OzBuiltin(program.builtins.raiseError)),
+              1, List(XReg(0)))
         }
 
         condBranchHole fillWith OpCondBranch(XReg(0),
-            errorSize + trueBranchSize, errorSize, 0)
+            trueBranchSize, trueBranchSize + falseBranchSize)
 
-        branchHole fillWith OpBranch(falseBranchSize)
+        branchHoleInTrueBranch fillWith OpBranch(falseBranchSize + errorSize)
+        branchHoleInFalseBranch fillWith OpBranch(errorSize)
 
       case MatchStatement(Variable(value), clauses, elseStat) =>
         val matchHole = code.addHole()

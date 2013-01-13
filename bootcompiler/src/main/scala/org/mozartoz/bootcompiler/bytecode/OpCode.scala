@@ -143,17 +143,17 @@ case class OpReturn() extends OpCode(0x40)
 case class OpBranch(distance: ImmInt) extends OpCode(0x41)
 
 /** Conditional branch
+ *  If `test == true`, do nothing
  *  If `test == false`, skip `falseDistance` amount of bytecode
- *  If `test == true`, skip `trueDistance` amount of bytecode
  *  Otherwise, skip `errorDistance` amount of bytecode
  */
 case class OpCondBranch(test: XReg, falseDistance: ImmInt,
-    trueDistance: ImmInt, errorDistance: ImmInt) extends OpCode(0x43)
+    errorDistance: ImmInt) extends OpCode(0x43)
 
 /** Pattern matching */
-case class OpPatternMatchX(value: XReg, patterns: KReg) extends OpCode(0x44)
-case class OpPatternMatchY(value: YReg, patterns: KReg) extends OpCode(0x45)
-case class OpPatternMatchG(value: GReg, patterns: KReg) extends OpCode(0x46)
+case class OpPatternMatchX(value: XReg, patterns: KReg) extends OpCode(0x47)
+case class OpPatternMatchY(value: YReg, patterns: KReg) extends OpCode(0x48)
+case class OpPatternMatchG(value: GReg, patterns: KReg) extends OpCode(0x49)
 
 object OpPatternMatch {
   def apply(value: NotKReg, patterns: KReg) = value match {

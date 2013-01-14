@@ -105,8 +105,16 @@ public:
   inline
   bool get(VM vm, RichNode property, UnstableNode& result);
 
+  template <typename Prop>
+  inline
+  bool get(VM vm, Prop&& property, UnstableNode& result);
+
   inline
   bool put(VM vm, RichNode property, RichNode value);
+
+  template <typename Prop, typename Value>
+  inline
+  bool put(VM vm, Prop&& property, Value&& value);
 
 private:
   inline

@@ -156,6 +156,12 @@ bool PropertyRegistry::get(VM vm, RichNode property, UnstableNode& result) {
   }
 }
 
+template <typename Prop>
+bool PropertyRegistry::get(VM vm, Prop&& property, UnstableNode& result) {
+  auto prop = build(vm, std::forward<Prop>(property));
+  return get(vm, RichNode(prop), result);
+}
+
 bool PropertyRegistry::put(VM vm, RichNode property, RichNode value) {
   using namespace patternmatching;
 
@@ -180,6 +186,13 @@ bool PropertyRegistry::put(VM vm, RichNode property, RichNode value) {
     assert(false);
     return false;
   }
+}
+
+template <typename Prop, typename Value>
+bool PropertyRegistry::put(VM vm, Prop&& property, Value&& value) {
+  auto prop = build(vm, std::forward<Prop>(property));
+  auto val = build(vm, std::forward<Value>(value));
+  return put(vm, RichNode(prop), RichNode(val));
 }
 
 UnstableNode PropertyRegistry::getSystemProp(VM vm, RichNode property,

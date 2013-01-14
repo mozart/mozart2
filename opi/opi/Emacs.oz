@@ -23,7 +23,7 @@ functor
 import
    Parser(expandFileName) at 'x-oz://boot/Parser'
    Property(get condGet)
-   System(printInfo showError)
+   System(printInfo showInfo showError)
    Error(messageToVirtualString)
    OS(tmpnam)
    Open(socket text file)

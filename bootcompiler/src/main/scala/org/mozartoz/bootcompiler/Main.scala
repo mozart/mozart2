@@ -32,7 +32,7 @@ case class Config(
     moduleDefs: List[String] = Nil,
     baseDeclsFileName: String = "",
     defines: Set[String] = Set.empty,
-    fileNames: List[String] = Nil
+    fileName: String = ""
 )
 
 /** Entry point for the Mozart2 bootstrap compiler */
@@ -58,18 +58,15 @@ object Main {
         opt("D", "define", "add a symbol to the conditional defines") {
           (v, c) => c.copy(defines = c.defines + v)
         },
-        arglist("<files>", "input files") {
-          (v, c) => c.copy(fileNames = v :: c.fileNames)
+        arg("<file>", "input file") {
+          (v, c) => c.copy(fileName = v)
         }
       )
     }
 
     // Parse the options
-    optParser.parse(args, Config()) map { config0 =>
+    optParser.parse(args, Config()) map { config =>
       // OK, we're good to go
-      val config = config0.copy(
-          fileNames = config0.fileNames.reverse)
-
       try {
         config.mode match {
           case Config.Mode.Module =>
@@ -95,12 +92,8 @@ object Main {
   private def mainModule(config: Config) {
     import config._
 
-    if (fileNames.size != 1)
-      throw new Exception("Requires exactly one file name")
-
     val (program, _) = createProgram(moduleDefs, Some(baseDeclsFileName))
 
-    val fileName = fileNames.head
     val functor = parseExpression(readerForFile(fileName), new File(fileName),
         defines)
 
@@ -116,12 +109,10 @@ object Main {
 
     val (program, bootModules) = createProgram(moduleDefs, None, true)
 
-    val functors =
-      for (fileName <- fileNames)
-        yield parseExpression(readerForFile(fileName), new File(fileName),
-            defines)
+    val functor = parseExpression(readerForFile(fileName), new File(fileName),
+        defines)
 
-    ProgramBuilder.buildBaseEnvProgram(program, bootModules, functors)
+    ProgramBuilder.buildBaseEnvProgram(program, bootModules, functor)
     compile(program, "the base environment")
 
     Serializer.serialize(program, outputStream())

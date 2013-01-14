@@ -40,6 +40,8 @@ endif()
 
 add_subdirectory(vm)
 add_subdirectory(bootcompiler)
+add_subdirectory(boosthost)
+add_subdirectory(lib)
 add_subdirectory(opi)
 
 # General CPack configuration

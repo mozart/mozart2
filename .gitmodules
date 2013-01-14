@@ -13,3 +13,6 @@
 [submodule "opi"]
 	path = opi
 	url = git://github.com/mozart/mozart2-opi.git
+[submodule "boosthost"]
+	path = boosthost
+	url = git://github.com/mozart/mozart2-boosthost.git

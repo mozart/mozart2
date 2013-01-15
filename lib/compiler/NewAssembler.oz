@@ -568,7 +568,7 @@ define
             end})
       end
 
-      meth outputVS($)
+      meth outputVS(PrintName DebugData $)
          {self MarkEnd()}
 
          AddrToLabelDict = {NewDictionary}
@@ -580,6 +580,13 @@ define
              end
           end}
 
+         '%% Code area for '#PrintName#
+         case DebugData
+         of d(file:F line:L column:C) then
+            ' in file "'#F#'", line '#L#', column '#C
+         else
+            nil
+         end#'\n'#
          '%% Code Size:\n'#@Size#' % bytecode elements\n'#
          AssemblerClass, CodeToVS(@VSInstrsHd AddrToLabelDict $)
       end
@@ -775,7 +782,8 @@ define
 
       CodeArea = {InternalAssemble Arity {Assembler output($)}
                   PrintName DebugData}
-      VS = {ByNeedFuture fun {$} {Assembler outputVS($)} end}
+      VS = {ByNeedFuture
+            fun {$} {Assembler outputVS(PrintName DebugData $)} end}
    end
 
 end

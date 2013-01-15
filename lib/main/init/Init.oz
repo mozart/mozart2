@@ -209,6 +209,16 @@ define
          {Boot_Property.get Property $ true}
       end
 
+      fun {GetOrFalse Property}
+         MaybeResult
+      in
+         if {Boot_Property.get Property ?MaybeResult} then
+            MaybeResult
+         else
+            false
+         end
+      end
+
       PropertyTestGet = Boot_Property.get
    end
 

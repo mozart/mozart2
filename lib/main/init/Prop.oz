@@ -47,16 +47,20 @@ fun {SafePath P}
 end
 
 OZ_HOME         = {SafePath
-                   case {Getenv 'OZ_HOME'} of false then
-                      case {Getenv 'OZHOME'} of false then
-                         {GET 'oz.configure.home'}
+                   case {GetOrFalse 'oz.home'} of false then
+                      case {Getenv 'OZ_HOME'} of false then
+                         case {Getenv 'OZHOME'} of false then
+                            {GET 'oz.configure.home'}
+                         elseof V then V end
                       elseof V then V end
                    elseof V then V end}
 
-OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
-                     case {Getenv 'OZ_PATH'} of false then
-                        case {Getenv 'OZPATH'} of false then
-                           '.'#[PATH_SEPARATOR]#OZ_HOME#'/share'
+OZ_SEARCH_PATH  = case {GetOrFalse 'oz.search.path'} of false then
+                     case {Getenv 'OZ_SEARCH_PATH'} of false then
+                        case {Getenv 'OZ_PATH'} of false then
+                           case {Getenv 'OZPATH'} of false then
+                              '.'#[PATH_SEPARATOR]#OZ_HOME#'/share'
+                           elseof V then V end
                         elseof V then V end
                      elseof V then V end
                   elseof V then V end
@@ -67,11 +71,14 @@ OZ_DOTOZ        = case {Getenv 'OZ_DOTOZ'} of false then
                      elseof V then {SafePath V} end
                   elseof V then {SafePath V} end
 
-OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
-                     case {Getenv 'OZ_LOAD'} of false then
-                        case {Getenv 'OZLOAD'} of false then
-                           'cache='#OZ_DOTOZ#'/cache'#[PATH_SEPARATOR]#
-                           'cache='#OZ_HOME#'/cache'
+OZ_SEARCH_LOAD  = case {GetOrFalse 'oz.search.load'} of false then
+                     case {Getenv 'OZ_SEARCH_LOAD'} of false then
+                        case {Getenv 'OZ_LOAD'} of false then
+                           case {Getenv 'OZLOAD'} of false then
+                              'cache='#OZ_DOTOZ#'/cache'#[PATH_SEPARATOR]#
+                              'cache='#OZ_HOME#'/share/mozart/cache'#[PATH_SEPARATOR]#
+                              'cache='#OZ_HOME#'/lib/cache'
+                           elseof V then V end
                         elseof V then V end
                      elseof V then V end
                   elseof V then V end

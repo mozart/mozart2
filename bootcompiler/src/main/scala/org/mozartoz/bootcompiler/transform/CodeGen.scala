@@ -48,7 +48,7 @@ object CodeGen extends Transformer with TreeDSL {
     // Allocate local variables
     val localCount = abstraction.formals.size + abstraction.locals.size
     if (localCount != 0)
-      code += OpAllocateY(abstraction.formals.size + abstraction.locals.size)
+      code += OpAllocateY(localCount)
 
     // Save formals in local variables
     for ((formal, index) <- abstraction.formals.zipWithIndex)

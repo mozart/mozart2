@@ -80,19 +80,12 @@ object Flattener extends Transformer with TreeDSL {
       treeCopy.CreateAbstraction(proc,
           OzCodeArea(abs.codeArea), newGlobalArgs)
 
-    case v @ FreeVar(sym) =>
+    case v @ Variable(sym) if v.symbol.owner ne abstraction =>
       val global = abstraction.freeVarToGlobal(sym)
       globalToFreeVar += global -> sym
       treeCopy.Variable(v, global)
 
     case _ =>
       super.transformExpr(expression)
-  }
-
-  object FreeVar {
-    def unapply(v: Variable) = {
-      if (v.symbol.owner eq abstraction) None
-      else Some(v.symbol)
-    }
   }
 }

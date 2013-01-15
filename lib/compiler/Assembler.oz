@@ -1026,7 +1026,11 @@ define
          [] definition(Dest Lab pid(Name Arity Pos Flags NLiveRegs)
                        unit GRegRef InnerCode) |
                endDefinition(EndLab) | Rest then
-            InnerCodeArea = {AssembleInner Arity InnerCode Name unit}
+            DebugData = case Pos
+                        of pos(F L C) then d(file:F line:L column:C)
+                        else unit
+                        end
+            InnerCodeArea = {AssembleInner Arity InnerCode Name DebugData}
             GCount = {Length GRegRef}
          in
             createAbstractionStore(k(InnerCodeArea) GCount Dest) |

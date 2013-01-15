@@ -86,6 +86,16 @@ void CodeArea::getCodeAreaDebugInfo(VM vm, atom_t& printName,
   debugData.copy(vm, _debugData);
 }
 
+void CodeArea::printReprToStream(VM vm, std::ostream& out, int depth) {
+  out << "<CodeArea for <P/" << _arity;
+  if (_printName != vm->coreatoms.empty)
+    out << " " << _printName;
+  out << ">";
+  if (!RichNode(_debugData).is<Unit>())
+    out << " " << repr(vm, _debugData);
+  out << ">";
+}
+
 UnstableNode CodeArea::serialize(VM vm, SE se) {
   UnstableNode codeAtom = mozart::build(vm, MOZART_STR("code"));
   UnstableNode block = buildTupleDynamic(

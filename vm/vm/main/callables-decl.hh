@@ -132,7 +132,8 @@ public:
   UnstableNode serialize(VM vm, SE se);
 
   void printReprToStream(VM vm, std::ostream& out, int depth) {
-    out << "<P/" << _builtin->getArity() << " " << _builtin->getName() << ">";
+    out << "<P/" << _builtin->getArity() << " '" << _builtin->getModuleName();
+    out << "." << _builtin->getName() << "'>";
   }
 
 private:

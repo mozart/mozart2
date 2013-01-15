@@ -655,11 +655,11 @@ define
          {Assembler append(moveMove(X1 Y1 Y2 X2))}
          {Peephole Rest Assembler}
 
-      [] createVar(R) | move(R X=x(_)) | Rest then
-         {Peephole createVarMove(R X)|Rest Assembler}
+      [] createVar(R1) | move(R2 X=x(_)) | Rest andthen R1 == R2 then
+         {Peephole createVarMove(R1 X)|Rest Assembler}
 
-      [] createVar(X=x(_)) | move(X R) | Rest then
-         {Peephole createVarMove(R X)|Rest Assembler}
+      [] createVar(X1=x(_)) | move(X2 R) | Rest andthen X1 == X2 then
+         {Peephole createVarMove(R X1)|Rest Assembler}
 
       [] deallocateY | return | (Rest = lbl(_) | deallocateY | return | _) then
          {Peephole Rest Assembler}

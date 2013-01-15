@@ -244,10 +244,6 @@ define
             {Dictionary.remove DescDict I}
          end
       end
-
-      DescStdin = {AllocDesc Stdin}
-      DescStdout = {AllocDesc Stdout}
-      DescStderr = {AllocDesc Stderr}
    end
 
    %% POSIX-like generic compatibility layer
@@ -357,6 +353,10 @@ define
    in
       {New CompatFileClass init(File desc:$) _}
    end
+
+   DescStdin = {New CompatFileClass init(Stdin desc:$) _}
+   DescStdout = {New CompatFileClass init(Stdout desc:$) _}
+   DescStderr = {New CompatFileClass init(Stderr desc:$) _}
 
    fun {CompatFileDesc DescName}
       case DescName

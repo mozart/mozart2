@@ -183,12 +183,12 @@ int main(int argc, char** argv) {
       vm, MOZART_STR("application.gui"), appGUI);
   }
 
-  // Load the Base environment is required
-  if (useBaseFunctor) {
-    UnstableNode baseEnv = OptVar::build(vm);
+  // Some protected nodes
+  ProtectedNode baseEnv, initFunctor;
 
-    vm->getPropertyRegistry().registerConstantProp(
-      vm, MOZART_STR("internal.boot.base"), baseEnv);
+  // Load the Base environment if required
+  if (useBaseFunctor) {
+    baseEnv = vm->protect(OptVar::build(vm));
 
     UnstableNode baseValue;
     auto& bootLoader = boostBasedVM.getBootLoader();
@@ -201,13 +201,13 @@ int main(int argc, char** argv) {
 
     // Create the thread that loads the Base environment
     if (Callable(baseValue).isProcedure(vm)) {
-      ozcalls::asyncOzCall(vm, baseValue, baseEnv);
+      ozcalls::asyncOzCall(vm, baseValue, *baseEnv);
     } else {
       // Assume it is a functor that does not import anything
       UnstableNode applyAtom = build(vm, MOZART_STR("apply"));
       UnstableNode applyProc = Dottable(baseValue).dot(vm, applyAtom);
       UnstableNode importParam = build(vm, MOZART_STR("import"));
-      ozcalls::asyncOzCall(vm, applyProc, importParam, baseEnv);
+      ozcalls::asyncOzCall(vm, applyProc, importParam, *baseEnv);
     }
 
     boostBasedVM.run();
@@ -215,10 +215,7 @@ int main(int argc, char** argv) {
 
   // Load the Init functor
   {
-    UnstableNode initFunctor = OptVar::build(vm);
-
-    vm->getPropertyRegistry().registerConstantProp(
-      vm, MOZART_STR("internal.boot.init"), initFunctor);
+    initFunctor = vm->protect(OptVar::build(vm));
 
     UnstableNode initValue;
     auto& bootLoader = boostBasedVM.getBootLoader();
@@ -231,22 +228,24 @@ int main(int argc, char** argv) {
 
     // Create the thread that loads the Init functor
     if (Callable(initValue).isProcedure(vm)) {
-      ozcalls::asyncOzCall(vm, initValue, initFunctor);
+      if (!useBaseFunctor) {
+        std::cerr << "panic: Init.ozf is a procedure, "
+                  << "but I have no Base to give to it" << std::endl;
+        return 1;
+      }
+
+      ozcalls::asyncOzCall(vm, initValue, *baseEnv, *initFunctor);
       boostBasedVM.run();
     } else {
       // Assume it is already the Init functor
-      DataflowVariable(initFunctor).bind(vm, initValue);
+      DataflowVariable(*initFunctor).bind(vm, initValue);
     }
   }
 
   // Apply the Init functor
   {
-    UnstableNode InitFunctor;
-    vm->getPropertyRegistry().get(
-      vm, MOZART_STR("internal.boot.init"), InitFunctor);
-
     auto ApplyAtom = build(vm, MOZART_STR("apply"));
-    auto ApplyProc = Dottable(InitFunctor).dot(vm, ApplyAtom);
+    auto ApplyProc = Dottable(*initFunctor).dot(vm, ApplyAtom);
 
     auto BootModule = vm->findBuiltinModule(MOZART_STR("Boot"));
     auto ImportRecord = buildRecord(
@@ -254,6 +253,9 @@ int main(int argc, char** argv) {
       BootModule);
 
     ozcalls::asyncOzCall(vm, ApplyProc, ImportRecord, OptVar::build(vm));
+
+    baseEnv.reset();
+    initFunctor.reset();
 
     boostBasedVM.run();
   }

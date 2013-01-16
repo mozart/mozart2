@@ -13,5 +13,4 @@ fi
 export OZHOME
 
 "$OZHOME/bin/ozemulator" \
-  --base "$OZHOME/share/mozart/cache/Base.ozf" \
   -- "x-oz://system/Compile.ozf" "$@"

@@ -11,24 +11,17 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
 
   /** Builds a program that defines a regular functor
    *
-   *  Given a functor expression <functor>, the whole program is
+   *  Given a functor expression <functor>, the generated procedure is
    *  straightforward:
    *  {{{
-   *  local
-   *     <Base>
-   *  in
-   *     {Boot_Property.get 'internal.boot.base' ?<Base> true}
+   *  proc {$ <Base> ?<Result>}
    *     <Result> = <functor>
    *  end
    *  }}}
    */
   def buildModuleProgram(prog: Program, functor: Expression) {
     prog.rawCode = {
-      LOCAL (prog.baseEnvSymbol) IN {
-        (prog.builtins.getProperty call (
-            OzAtom("internal.boot.base"), prog.baseEnvSymbol, True())) ~
-        (prog.topLevelResultSymbol === functor)
-      }
+      prog.topLevelResultSymbol === functor
     }
   }
 
@@ -59,7 +52,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *
    *  Hence the program looks like this:
    *  {{{
-   *  local
+   *  proc {$ ?<Result>}
    *     Imports = 'import'(
    *        'Boot_ModA': <constant looked up in the boot modules map>
    *        ...

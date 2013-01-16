@@ -21,19 +21,21 @@ class Program(val isBaseEnvironment: Boolean = false) {
   /** Variables declared by the base environment */
   val baseDeclarations = new ArrayBuffer[String]
 
-  /** Global <Base> variable, which contains the base environment
-   *  (only in normal mode)
-   */
-  val baseEnvSymbol =
-    if (isBaseEnvironment) NoSymbol
-    else new Symbol("<Base>", synthetic = true)
-
   /** Map of base symbols (only in base environment mode) */
   val baseSymbols = new HashMap[String, Symbol]
 
   /** Implicit top-level abstraction */
   val topLevelAbstraction =
     new Abstraction(NoAbstraction, "<TopLevel>", NoPosition)
+
+  /** The <Base> parameter of the top-level abstraction (only in normal mode)
+   *  It contains the base environment
+   */
+  val baseEnvSymbol =
+    if (isBaseEnvironment) NoSymbol
+    else new Symbol("<Base>", synthetic = true, formal = true)
+  if (!isBaseEnvironment)
+    topLevelAbstraction.acquire(baseEnvSymbol)
 
   /** The <Result> parameter of the top-level abstraction */
   val topLevelResultSymbol =

@@ -247,6 +247,14 @@ define
       OldSetRaiseOnBlock = {Debug.getRaiseOnBlock {Thread.this}}
       {Debug.setRaiseOnBlock {Thread.this} true}
 
+      Redirections
+
+      ExistingFeatures = {NewDictionary}
+      ExistingBuiltins = {NewDictionary}
+      ExistingPatMatWildcard
+      ExistingPatMatCaptures = {NewDictionary}
+      ExistingArities = {NewDictionary}
+
       proc {Write VBS}
          {VirtualByteString.length VBS _}
          {Sink write(VBS)}
@@ -263,7 +271,9 @@ define
                  Size mod 256]}
       end
 
-      WriteRef = WriteSize
+      proc {WriteRef Ref}
+         {WriteSize Redirections.Ref}
+      end
 
       proc {WriteUUIDOf Entity}
          {Write {GNode.getUUID {GNode.globalize Entity}}}
@@ -376,19 +386,98 @@ define
             end
          end
 
-         proc {DoPackSet InfoList Predicate ?RemainingInfo}
+         proc {DoPackOne I#V#K}
+            TypeID = {CondSelect AtomToID {Label K} 0}
+            ValueWriter = {CondSelect ActualSer TypeID WriteResource}
+         in
+            Redirections.I = I
+            {WriteSize I}
+            {WriteByte TypeID}
+            {ValueWriter V K}
+         end
+
+         proc {DoPackOneValueBehaved IVK}
+            I#V#K = IVK
+         in
+            if {IsInt V} orelse {IsLiteral V} then
+               case {Dictionary.condGet ExistingFeatures V false}
+               of false then
+                  {Dictionary.put ExistingFeatures V I}
+                  {DoPackOne IVK}
+               [] J then
+                  Redirections.I = J
+               end
+            elsecase K
+            of builtin(ModName BIName) then
+               case {Dictionary.condGet ExistingBuiltins ModName false}
+               of false then
+                  ModDict = {NewDictionary} in
+                  {Dictionary.put ModDict BIName I}
+                  {Dictionary.put ExistingBuiltins ModName ModDict}
+                  {DoPackOne IVK}
+               [] ModDict then
+                  case {Dictionary.condGet ModDict BIName false}
+                  of false then
+                     {Dictionary.put ModDict BIName I}
+                     {DoPackOne IVK}
+                  [] J then
+                     Redirections.I = J
+                  end
+               end
+            [] patmatwildcard then
+               if {IsFree ExistingPatMatWildcard} then
+                  ExistingPatMatWildcard = I
+                  {DoPackOne IVK}
+               else
+                  Redirections.I = ExistingPatMatWildcard
+               end
+            [] patmatcapture(Index) then
+               case {Dictionary.condGet ExistingPatMatCaptures Index false}
+               of false then
+                  {Dictionary.put ExistingPatMatCaptures Index I}
+                  {DoPackOne IVK}
+               [] J then
+                  Redirections.I = J
+               end
+            else
+               {DoPackOne IVK}
+            end
+         end
+
+         proc {DoPackOneArity IVK}
+            I#V#K = IVK
+            LRef = Redirections.(K.{Width K})
+
+            fun {Loop LRefList}
+               case LRefList
+               of nil then false
+               [] H|T then
+                  if H.2 == V then H.1
+                  else {Loop T}
+                  end
+               end
+            end
+         in
+            case {Dictionary.condGet ExistingArities LRef false}
+            of false then
+               {Dictionary.put ExistingArities LRef [IVK]}
+               {DoPackOne IVK}
+            [] LRefList then
+               case {Loop LRefList}
+               of false then
+                  {Dictionary.put ExistingArities LRef IVK|LRefList}
+                  {DoPackOne IVK}
+               [] J then
+                  Redirections.I = J
+               end
+            end
+         end
+
+         proc {DoPackSet InfoList PackOneProc Predicate ?RemainingInfo}
             InfoForNow
          in
             {List.partition InfoList Predicate ?InfoForNow ?RemainingInfo}
-            {ForAll InfoForNow
-               proc {$ I#V#K}
-                  TypeID = {CondSelect AtomToID {Label K} 0}
-                  ValueWriter = {CondSelect ActualSer TypeID WriteResource}
-               in
-                  {WriteSize I}
-                  {WriteByte TypeID}
-                  {ValueWriter V K}
-               end}
+            {ForAll InfoForNow PackOneProc}
          end
 
          fun {HasValueBehavior X}
@@ -412,26 +501,34 @@ define
                {Exception.raiseError Err}
             end
 
+            !Redirections = {MakeTuple '#' Max}
+
             {WriteSize Max}
             {WriteSize N}
 
-            Info1 = {DoPackSet Info0
+            Info1 = {DoPackSet Info0 DoPackOneValueBehaved
                      fun {$ _#V#_}
-                        {HasValueBehavior V} orelse {IsLiteral V}
+                        {HasValueBehavior V}
                      end}
-            Info2 = {DoPackSet Info1
+            Info2 = {DoPackSet Info1 DoPackOne
+                     fun {$ _#V#_}
+                        {IsLiteral V}
+                     end}
+            Info3 = {DoPackSet Info2 DoPackOneArity
                      fun {$ _#V#_}
                         {Support.isArity V}
                      end}
-            Info3 = {DoPackSet Info2
+            {Record.forAllInd Redirections
+             proc {$ I J} if {IsFree J} then J = I end end}
+            Info4 = {DoPackSet Info3 DoPackOne
                      fun {$ _#_#K}
                         L = {Label K}
                      in
                         L \= abstraction andthen L \= chunk
                      end}
-            Info4 = {DoPackSet Info3 fun {$ _} true end}
+            Info5 = {DoPackSet Info4 DoPackOne fun {$ _} true end}
          in
-            true = Info4 == nil
+            true = Info5 == nil
             {WriteSize 0}
 
             {Debug.setRaiseOnBlock {Thread.this} OldSetRaiseOnBlock}

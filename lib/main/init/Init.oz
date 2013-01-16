@@ -233,7 +233,7 @@ define
          TempResult = {Boot_OS.bootURLLoad U}
       in
          if {IsProcedure TempResult} then
-            {TempResult}
+            {TempResult Base}
          else
             TempResult
          end

@@ -296,11 +296,19 @@ local
          {@narrator tell(env({Dictionary.toRecord env self.values}))}
       end
       meth MergeEnv(Env)
+         {Dictionary.remove self.variables 'Base'}
+         {Dictionary.remove self.values 'Base'}
+
          {Record.forAllInd Env
           proc {$ PrintName Value} V in
              V = {New Core.userVariable init(PrintName unit)}
              CompilerStateClass, Enter(V Value true)
           end}
+
+         NewBase = {Dictionary.toRecord base self.values}
+         NewBaseV = {New Core.userVariable init('Base' unit)}
+      in
+         CompilerStateClass, Enter(NewBaseV NewBase true)
       end
       meth annotateEnv(Vs)
          {ForAll Vs

@@ -18,7 +18,6 @@ foreach(FUNCTOR ${OPI_FUNCTORS})
   add_custom_command(
     OUTPUT "${FUNCTOR_OZF}"
     COMMAND ozemulator
-      --base "${MOZART_BUILD_DIR}/lib/cache/Base.ozf"
       --init "${MOZART_BUILD_DIR}/lib/cache/Init.ozf"
       --search-load "cache=${MOZART_BUILD_DIR}/lib/cache"
       --

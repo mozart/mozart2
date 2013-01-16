@@ -94,7 +94,8 @@ private:
     bytes[7] = value;
   }
 public:
-  constexpr static const size_t byte_count = 16;
+  // Definition lives in coredatatypes.cc
+  constexpr static size_t byte_count = 16;
 public:
   constexpr UUID(): data0(0), data1(0) {}
 

@@ -26,6 +26,9 @@
 
 namespace mozart {
 
+// Definitions in UUID
+constexpr size_t UUID::byte_count;
+
 // Definitions of the uuid's of data types
 constexpr UUID Atom::uuid;
 constexpr UUID Boolean::uuid;

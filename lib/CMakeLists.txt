@@ -187,7 +187,6 @@ add_dependencies(library_stage_2 library_stage_1)
 
 set(STAGE_3_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage3")
 set(STAGE_3_CACHE_SYSTEM "${STAGE_3_CACHE}/x-oz/system")
-set(STAGE_3_BASE_OZF "${STAGE_2_BASE_OZF}")
 set(STAGE_3_INIT_OZF "${STAGE_3_CACHE}/Init.ozf")
 set(STAGE_3_SEARCH_LOAD "cache=${STAGE_3_CACHE}:${STAGE_2_SEARCH_LOAD}")
 
@@ -220,17 +219,10 @@ add_dependencies(library_stage_3 library_stage_2)
 
 set(LIBRARY_CACHE "${CMAKE_CURRENT_BINARY_DIR}/cache")
 set(LIBRARY_CACHE_SYSTEM "${LIBRARY_CACHE}/x-oz/system")
-set(LIBRARY_BASE_OZF "${LIBRARY_CACHE}/Base.ozf")
 set(LIBRARY_INIT_OZF "${LIBRARY_CACHE}/Init.ozf")
 set(LIBRARY_SEARCH_LOAD "cache=${LIBRARY_CACHE}")
 
 file(MAKE_DIRECTORY "${LIBRARY_CACHE_SYSTEM}")
-
-add_custom_command(
-  OUTPUT "${LIBRARY_BASE_OZF}"
-  COMMAND "${CMAKE_COMMAND}" -E copy "${STAGE_3_BASE_OZF}" "${LIBRARY_BASE_OZF}"
-  DEPENDS "${STAGE_3_BASE_OZF}"
-  VERBATIM)
 
 add_custom_command(
   OUTPUT "${LIBRARY_INIT_OZF}"
@@ -238,7 +230,7 @@ add_custom_command(
   DEPENDS "${STAGE_3_INIT_OZF}"
   VERBATIM)
 
-set(LIBRARY_FUNCTORS_OZF "${LIBRARY_BASE_OZF}" "${LIBRARY_INIT_OZF}")
+set(LIBRARY_FUNCTORS_OZF "${LIBRARY_INIT_OZF}")
 
 foreach(FUNCTOR ${COMPILER_FUNCTORS})
   get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
@@ -265,7 +257,7 @@ add_custom_target(
 add_dependencies(library library_stage_3)
 
 # Install
-install(FILES "${LIBRARY_BASE_OZF}" "${LIBRARY_INIT_OZF}"
+install(FILES "${LIBRARY_INIT_OZF}"
         DESTINATION share/mozart/cache)
 install(FILES ${LIBRARY_FUNCTORS_OZF}
         DESTINATION share/mozart/cache/x-oz/system)

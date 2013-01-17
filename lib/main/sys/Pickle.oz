@@ -87,6 +87,7 @@ export
    ReadValueFromSource
 
 import
+   OS
    Open
 
 define
@@ -97,7 +98,7 @@ define
    %% Sinks - thing that we can pickle into
    %%
 
-   class OpenSink
+   class FileSink
       feat file
 
       meth init(File)
@@ -105,7 +106,7 @@ define
       end
 
       meth write(VBS)
-         {self.file write(vs:VBS)}
+         {OS.fwrite self.file VBS _}
       end
    end
 
@@ -139,7 +140,7 @@ define
       end
 
       meth read(Size ?Result ?ActualSize)
-         {self.file read(size:Size list:?Result len:?ActualSize)}
+         {OS.fread self.file Size ?Result nil ?ActualSize}
       end
    end
 
@@ -172,17 +173,17 @@ define
    end
 
    proc {SaveWithHeader Value FileName Header Level}
-      File = {New Open.file init(name:FileName flags:[write create truncate])}
+      File = {OS.fopen FileName "wb"}
    in
       try
-         Sink = {New OpenSink init(File)}
+         Sink = {New FileSink init(File)}
       in
          % TODO Actually write the header
          %{Sink write(Header)}
          %{Sink write(HeaderMagic)}
          {WriteValueToSink Sink Value}
       finally
-         {File close}
+         {OS.fclose File}
       end
    end
 

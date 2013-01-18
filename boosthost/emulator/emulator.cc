@@ -35,7 +35,14 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 std::string envVarToOptionName(const std::string& varName) {
-  if ((varName == "OZ_HOME") || (varName == "OZHOME"))
+  if (varName == "OZ_HOME")
+    return "home";
+  else
+    return "";
+}
+
+std::string envVarToOptionNameFallback(const std::string& varName) {
+  if (varName == "OZHOME")
     return "home";
   else
     return "";
@@ -106,7 +113,11 @@ int main(int argc, char** argv) {
               .positional(positional_options)
               .run(),
             varMap);
-  po::store(po::parse_environment(environment_options, &envVarToOptionName),
+  po::store(po::parse_environment(environment_options,
+                                  &envVarToOptionName),
+            varMap);
+  po::store(po::parse_environment(environment_options,
+                                  &envVarToOptionNameFallback),
             varMap);
   po::notify(varMap);
 

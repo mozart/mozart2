@@ -108,8 +108,8 @@ void raiseUnicodeError(VM vm, UnicodeErrorReason reason, Args&&... args) {
       reasonAtom = vm->coreatoms.nil;
   }
 
-  raise(vm, vm->coreatoms.unicodeError,
-        reasonAtom, std::forward<Args>(args)...);
+  raiseSystem(vm, vm->coreatoms.unicodeError,
+              reasonAtom, std::forward<Args>(args)...);
 }
 
 template <class... Args>

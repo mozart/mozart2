@@ -68,7 +68,7 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   failure = atomTable.get(vm, MOZART_STR("failure"));
   kernel = atomTable.get(vm, MOZART_STR("kernel"));
   illegalFieldSelection = atomTable.get(vm, MOZART_STR("illegalFieldSelection"));
-  unicodeError = atomTable.get(vm, MOZART_STR("unicodeError"));
+  unicodeError = atomTable.get(vm, MOZART_STR("unicode"));
   spaceAdmissible = atomTable.get(vm, MOZART_STR("spaceAdmissible"));
   spaceNoChoice = atomTable.get(vm, MOZART_STR("spaceNoChoice"));
   spaceAltRange = atomTable.get(vm, MOZART_STR("spaceAltRange"));

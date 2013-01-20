@@ -60,6 +60,11 @@ public:
     static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVBSLengthForBuffer(vm, value);
 
+      if (value.is<ByteString>()) {
+        result.copy(vm, value);
+        return;
+      }
+
       {
         std::vector<unsigned char> buffer;
         ozVBSGet(vm, value, bufSize, buffer);
@@ -74,6 +79,12 @@ public:
 
     static void call(VM vm, In value, In tail, Out result) {
       size_t bufSize = ozVBSLengthForBuffer(vm, value);
+
+      if (value.is<Cons>() ||
+          patternmatching::matches(vm, value, vm->coreatoms.nil)) {
+        result.copy(vm, value);
+        return;
+      }
 
       {
         std::vector<unsigned char> buffer;

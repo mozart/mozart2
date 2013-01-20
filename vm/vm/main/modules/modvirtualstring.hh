@@ -60,6 +60,11 @@ public:
     static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
 
+      if (value.is<String>()) {
+        result.copy(vm, value);
+        return;
+      }
+
       {
         std::vector<nchar> buffer;
         ozVSGet(vm, value, bufSize, buffer);
@@ -74,6 +79,12 @@ public:
 
     static void call(VM vm, In value, In tail, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
+
+      if (value.is<Cons>() ||
+          patternmatching::matches(vm, value, vm->coreatoms.nil)) {
+        result.copy(vm, value);
+        return;
+      }
 
       {
         std::vector<nchar> buffer;
@@ -97,6 +108,11 @@ public:
 
     static void call(VM vm, In value, Out result) {
       size_t bufSize = ozVSLengthForBuffer(vm, value);
+
+      if (value.is<Atom>()) {
+        result.copy(vm, value);
+        return;
+      }
 
       {
         std::vector<nchar> buffer;

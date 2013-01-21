@@ -1,4 +1,4 @@
-%%% Copyright © 2012, Université catholique de Louvain
+%%% Copyright © 2013, Université catholique de Louvain
 %%% All rights reserved.
 %%%
 %%% Redistribution and use in source and binary forms, with or without
@@ -23,438 +23,121 @@
 %%% POSSIBILITY OF SUCH DAMAGE.
 
 functor
+
 import
    PEG(translate:Translate)
-   Open
-   URL
+   Preprocessor
+   Lexer
+
 export
    file:ParseFile
    virtualString:ParseVS
+
 define
-   DefaultBaseURL = {URL.make "./"}
 
-   fun{ReadFile TheURL}
-      File = {New Open.file init(url:TheURL)}
-   in
-      try
-         {File read(list:$ size:all)}
-      finally
-         {File close}
-      end
-   end
-   fun lazy {MkContext S F L C R TG D CS FS BaseURL Next}
-      ctx(valid: true
-          value: case S
-                 of nil then
-                    Next#eof
-                 [] &\n|T then
-                    {MkContext T F L+1 0 false TG D CS FS BaseURL Next}#&\n
-                 [] H|T andthen R then
-                    {MkContext T F L+1 0 H==&\r TG D CS FS BaseURL Next}#H
-                 [] H|T then
-                    {MkContext T F L C+1 H==&\r TG D CS FS BaseURL Next}#H
-                 end
-          grammar: TG
-          cache: {Dictionary.new}
-
-          defines:D
-          condStack:CS
-          f:F l:L c:C r:R
-          fileStack:FS
-          baseURL:BaseURL
-          rebind:fun{$ Opts}
-                    {MkContext
-                     S
-                     {CondSelect Opts file F}
-                     {CondSelect Opts line L}
-                     {CondSelect Opts column C}
-                     {CondSelect Opts crSeen R}
-                     {CondSelect Opts grammar TG}
-                     {CondSelect Opts defines D}
-                     {CondSelect Opts condStack CS}
-                     {CondSelect Opts fileStack FS}
-                     {CondSelect Opts baseURL BaseURL}
-                     Next
-                    }
-                 end
-         )
-   end
-
-   fun{MkPos P1 P2}
+   fun {MkPos P1 P2}
       case P1#P2
       of pos(F1 L1 C1)#pos(F2 L2 C2) then
          pos(F1 L1 C1 F2 L2 C2)
       end
    end
-   OzKW=["true" "false" "unit"
-         "andthen" "at" "attr" "case" "catch" "choice"
-         "class" "cond" "declare" "define" "dis" "do"
-         "div" "else" "elsecase" "elseif" "elseof" "end"
-         "export" "fail" "feat" "finally" "from" "for"
-         "fun" "functor" "if" "import" "in" "local"
-         "lock" "meth" "mod" "not" "of" "or" "orelse"
-         "prepare" "proc" "prop" "raise" "require"
-         "self" "skip" "then" "thread" "try"
-        ]
-   OzSymb=["(" ")" "[" "]" "{" "}"
-           "|" "#" ":" "..." "=" "." ":=" "^" "[]" "$"
-           "!" "_" "~" "+" "-" "*" "/" "@" "<-"
-           "," "!!" "<=" "==" "\\=" "<" "=<" ">"
-           ">=" "=:" "\\=:" "<:" "=<:" ">:" ">=:" "::" ":::"
-           ".." ";"
 
-           "\\switch" "\\pushSwitches" "\\popSwitches" "\\localSwitches"
+   KeywordsAndSymbols = {Append Lexer.ozKeywords Lexer.ozSymbols}
+   RulesL = {Map KeywordsAndSymbols
+                 fun {$ KwSym}
+                    KwSym #
+                    ([pB elem(KwSym) pE] #
+                     fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
+                 end}
 
-           "\\line" "\\insert" "\\define" "\\undef"
-           "\\ifdef" "\\ifndef" "\\else" "\\endif"
-          ]
-   RulesL=
-   {Flatten
-    [
-     {Map OzKW fun{$ K}
-                  KA={String.toAtom &p|&p|&_|K}
-                  KB={String.toAtom K} in
-                  KA#([pos K nla(alNum) pos]#fun{$ [P1 _ _ P2]} fKeyword(KB {MkPos P1 P2}) end)
-               end}
-     {Map OzKW fun{$ K}
-                  KA={String.toAtom &p|&p|&_|K}
-                  KB={String.toAtom K} in
-                  KB#seq2(whiteSpace KA)
-               end}
-     {Map OzSymb fun{$ S}
-                    SA={String.toAtom &p|&p|&_|S}
-                    SB={String.toAtom S} in
-                    SA#(
-                        [
-                         pos
-                         nla(alt({Map {Filter OzSymb fun{$ S2}{List.isPrefix S S2} andthen S\=S2 end} String.toAtom}))
-                         case S
-                         of &\\|&=|_ then S
-                         [] &\\|_ then [S nla(alNum)]
-                         else S
-                         end
-                         pos
-                        ]#fun{$ [P1 _ _ P2]}fKeyword(SB {MkPos P1 P2}) end
-                       )
-                 end}
-     {Map OzSymb fun{$ S}
-                    SA={String.toAtom &p|&p|&_|S}
-                    SB={String.toAtom S} in
-                    SB#seq2(whiteSpace SA)
-                 end}
-    ]
-   }
-   SpecialChars=t(&a:&\a &b:&\b &f:&\f &n:&\n &r:&\r &t:&\t &v:&\v)
-   KWVal=k('unit':unit 'true':true 'false':false)
-   fun{Nest CanHaveElse}
-      proc{$ CIn SIn COut SOut}
-         SOut=SIn
-         if CIn.valid then
-            COut={CIn.rebind o(condStack:CanHaveElse|CIn.condStack)}
-         else
-            COut=CIn
-         end
-      end
-   end
-   proc{Unnest CIn SIn COut SOut}
-      SOut=SIn
-      if CIn.valid then
-         COut={CIn.rebind o(condStack:CIn.condStack.2)}
-      else
-         COut=CIn
-      end
-   end
-   Rules=
+   Rules =
    g(
-      %% LEXICAL ANALYSIS %%
-      pos:empty#proc{$ CIn _ COut SOut}
-                   COut=CIn
-                   SOut=pos(CIn.f CIn.l CIn.c)
-                end
-      lineStart: alt(is(pos fun{$ pos(_ _ C)}C==0 end) nla(wc))
+      %% positions %%
+      pB: raw(proc {$ CtxIn CtxOut SemOut}
+                 CtxOut = CtxIn
+                 SemOut = CtxIn.posbegin
+              end)
+      pE: raw(proc {$ CtxIn CtxOut SemOut}
+                 CtxOut = CtxIn
+                 SemOut = CtxIn.posend
+              end)
 
-      %% character classes %%
-      ucLetter:  is(wc Char.isUpper)
-      lcLetter:  is(wc Char.isLower)
-      digit:     is(wc Char.isDigit)
-      nzDigit:   seq2(nla(&0) digit)
-      alNum:     alt(ucLetter lcLetter digit &_)
-      binDigit:  alt(&0 &1)
-      octDigit:  alt(&0 &1 &2 &3 &4 &5 &6 &7)
-      octDigitV: octDigit                     #fun{$ X}X-&0 end
-      hexDigit:  alt(digit &a &b &c &d &e &f &A &B &C &D &E &F)
-      hexDigitV: alt(
-                    digit                     #fun{$ X}X-&0 end
-                    alt(&a &b &c &d &e &f)    #fun{$ X}10+X-&a end
-                    alt(&A &B &C &D &E &F)    #fun{$ X}10+X-&A end
-                    )
-      pseudoChar: seq2(&\\ alt(
-                              [ octDigitV octDigitV octDigitV] #fun{$ [A B C]}A*64+B*8+C end
-                              [alt(&x &X) hexDigitV hexDigitV] #fun{$ [_ A B]}A*16+B end
-                              alt(&a &b &f &n &r &t &v)        #fun{$ X}SpecialChars.X end
-                              alt(&\\ &' &" &` &&)
-                              ))
-      variableChar: alt(
-                       seq2(nla(alt(&` &\\ 0)) wc)
-                       pseudoChar
-                       )
-      atomChar: alt(
-                   seq2(nla(alt(&' &\\ 0)) wc)
-                   pseudoChar
-                   )
-      stringChar: alt(
-                     seq2(nla(alt(&" &\\ 0)) wc)
-                     pseudoChar
-                     )
-
-      %% naked tokens %%
-      variableN: alt(
-                    [pos ucLetter star(alNum) pos]     #fun{$ [P1 H T P2]}
-                                                           fVar({String.toAtom H|T} {MkPos P1 P2})
-                                                        end
-                    [pos &` star(variableChar) &` pos] #fun{$ [P1 _ L _ P2]}
-                                                           fVar({String.toAtom &`|{Append L "`"}} {MkPos P1 P2})
-                                                        end
-                    )
-      keyword: alt({Map OzKW fun{$ S}{String.toAtom &p|&p|&_|S}end})
-      symbol: alt({Map OzSymb fun{$ S}{String.toAtom &p|&p|&_|S}end})
-      atomN: alt(
-                [nla(keyword) pos lcLetter star(alNum) pos] #fun{$ [_ P1 H T P2]} fAtom({String.toAtom H|T} {MkPos P1 P2}) end
-                [pos &' star(atomChar) &' pos]              #fun{$ [P1 _ L _ P2]} fAtom({String.toAtom L  } {MkPos P1 P2}) end
-                )
-      pp_string: [&" star([pos stringChar pos]) &" pos] #fun{$ [_ L _ P]}
-                                                      {FoldR L fun{$ [P1 C P2] S}
-                                                                  fRecord(fAtom('|' P2) [fInt(C {MkPos P1 P2}) S])
-                                                               end fAtom(nil P)}
-                                                   end
-      pp_character: [pos && alt(seq2(nla(alt(&\\ 0)) wc) pseudoChar) pos] #fun{$ [P1 _ C P2]} fInt(C {MkPos P1 P2}) end
-      pp_atom: seq1(atomN nla(&())
-      pp_variable: seq1(variableN nla(&())
-      pp_kwValue:seq1(alt('pp_true' 'pp_false' 'pp_unit') nla(&())
-      pp_atomL: seq1(atomN pla(&())
-      pp_variableL: seq1(variableN pla(&())
-      pp_kwValueL:seq1(alt('pp_true' 'pp_false' 'pp_unit') pla(&())
-      pp_integer: [pos
-                   opt("~")
-                   alt(
-                      nzDigit|star(digit)
-                      &0|alt(&x &X)|plus(hexDigit)
-                      &0|alt(&b &B)|plus(binDigit)
-                      plus(octDigit)
-                      )
-                   pos] #fun{$ [P1 S L P2]} fInt({String.toInt {Append S L}} {MkPos P1 P2}) end
-      pp_float: [pos
-                 opt("~")
-                 plus(digit)
-                 seq1(&. nla([&. &.]))|star(digit)
-                 opt([alt(&e &E) opt("~") plus(digit)])
-                 pos] #fun{$ [P1 S M D E P2]}fFloat({String.toFloat {Flatten [S M D E]}} {MkPos P1 P2}) end
-
-      fileName: alt(
-                   plus(alt(alNum &~ &. &/ &-))
-                   [&' star(atomChar) &'] #fun{$ [_ L _]} L end
-                   )
-      pp_whiteSpace: star(alt(
-                             simpleSpace
-                             comment
-                             ))
-      simpleSpace:  alt(&\t &\v &\f & )
-      comment:      alt(&? blockComment [&% star([nla(lineStart) wc])])
-      blockComment: ["/*" star(alt(
-                                  [nla("/*") nla("*/") wc]
-                                  blockComment
-                                  )) "*/"]
-      whiteToEOL: [pp_whiteSpace star(alt(&\r &\n)) lineStart]
-
-      %% pre-processing %%
-      preprocessor:alt(
-                      ['pp_\\line'   pp_whiteSpace pp_integer pp_whiteSpace fileName whiteToEOL]#proc{$ CtxIn SemIn CtxOut SemOut}
-                                                                                                    SemOut=SemIn
-                                                                                                    if CtxIn.valid then
-                                                                                                       [_ _ L _ FN _]=SemIn in
-                                                                                                       CtxOut={CtxIn.rebind
-                                                                                                               o(file:{String.toAtom FN}
-                                                                                                                 line:L.1)}
-                                                                                                    else
-                                                                                                       CtxOut=CtxIn
-                                                                                                    end
-                                                                                                  end
-                      ['pp_\\line'   pp_whiteSpace fileName whiteToEOL]#proc{$ CtxIn SemIn CtxOut SemOut}
-                                                                           SemOut=SemIn
-                                                                           if CtxIn.valid then
-                                                                              [_ _ FN _]=SemIn in
-                                                                              CtxOut={CtxIn.rebind
-                                                                                      o(file:{String.toAtom FN})}
-                                                                           else
-                                                                              CtxOut=CtxIn
-                                                                           end
-                                                                        end
-                      ['pp_\\insert' pp_whiteSpace fileName whiteToEOL]#proc{$ CtxIn SemIn CtxOut SemOut}
-                                                                           SemOut=SemIn
-                                                                           if CtxIn.valid then
-                                                                              [_ _ FN _]=SemIn
-                                                                              NewURL
-                                                                              NewContents
-                                                                           in
-                                                                              try TryNewURL TryNewContents in
-                                                                                 TryNewURL = {URL.resolve CtxIn.baseURL {URL.make FN}}
-                                                                                 TryNewContents = {ReadFile TryNewURL}
-                                                                                 NewURL = TryNewURL
-                                                                                 NewContents = TryNewContents
-                                                                              catch error(url(open _) ...) then
-                                                                                 NewURL = {URL.resolve CtxIn.baseURL {URL.make FN#'.oz'}}
-                                                                                 NewContents = {ReadFile NewURL}
-                                                                              end
-                                                                              CtxOut={MkContext
-                                                                                      NewContents
-                                                                                      {String.toAtom FN} 1 0 false
-                                                                                      CtxIn.grammar CtxIn.defines nil
-                                                                                      CtxIn|CtxIn.fileStack
-                                                                                      NewURL
-                                                                                      ctx(valid:false)
-                                                                                     }
-                                                                           else
-                                                                              CtxOut=CtxIn
-                                                                           end
-                                                                        end
-                      ['pp_\\define' pp_whiteSpace pp_variable whiteToEOL]#proc{$ CtxIn SemIn CtxOut SemOut}
-                                                                              SemOut=SemIn
-                                                                              if CtxIn.valid then
-                                                                                 [_ _ D _]=SemIn in
-                                                                                 CtxOut={CtxIn.rebind
-                                                                                         o(defines:D.1|CtxIn.defines)}
-                                                                              else
-                                                                                 CtxOut=CtxIn
-                                                                              end
-                                                                           end
-                      ['pp_\\undef'  pp_whiteSpace pp_variable whiteToEOL]#proc{$ CtxIn SemIn CtxOut SemOut}
-                                                                              SemOut=SemIn
-                                                                              if CtxIn.valid then
-                                                                                 [_ _ D _]=SemIn in
-                                                                                 CtxOut={CtxIn.rebind
-                                                                                         o(defines:{Filter
-                                                                                                    CtxIn.defines
-                                                                                                    fun{$ X}
-                                                                                                       X\=D
-                                                                                                    end})}
-                                                                              else
-                                                                                 CtxOut=CtxIn
-                                                                              end
-                                                                           end
-
-                      ['pp_\\ifdef'  pp_whiteSpace defined whiteToEOL]#{Nest true}
-                      ['pp_\\ifndef' pp_whiteSpace undefined whiteToEOL]#{Nest true}
-                      ['pp_\\ifdef'  pp_whiteSpace undefined whiteToEOL ignore 'pp_\\else' whiteToEOL]#{Nest false}
-                      ['pp_\\ifndef' pp_whiteSpace defined   whiteToEOL ignore 'pp_\\else' whiteToEOL]#{Nest false}
-
-                      ['pp_\\ifdef'  pp_whiteSpace undefined whiteToEOL ignore 'pp_\\endif' whiteToEOL]
-                      ['pp_\\ifndef' pp_whiteSpace defined   whiteToEOL ignore 'pp_\\endif' whiteToEOL]
-                      [ nestedCondE  'pp_\\else'   whiteToEOL ignore 'pp_\\endif' whiteToEOL]#Unnest
-                      [ nestedCond   'pp_\\endif'  whiteToEOL]#Unnest
-                      )
-      nestedCondE: empty#proc{$ CtxIn SemIn CtxOut SemOut}
-                            SemOut=SemIn
-                            if CtxIn.valid then
-                               CtxOut={AdjoinAt CtxIn valid CtxIn.condStack\=nil andthen CtxIn.condStack.1}
-                            else
-                               CtxOut=CtxIn
-                            end
-                         end
-      nestedCond: empty#proc{$ CtxIn SemIn CtxOut SemOut}
-                            SemOut=SemIn
-                            if CtxIn.valid then
-                               CtxOut={AdjoinAt CtxIn valid CtxIn.condStack\=nil}
-                            else
-                               CtxOut=CtxIn
-                            end
-                         end
-      defined: pp_variable#proc{$ CtxIn SemIn CtxOut SemOut}
-                            SemOut=SemIn
-                            if CtxIn.valid then
-                               CtxOut={AdjoinAt CtxIn valid {Member SemIn.1 CtxIn.defines}}
-                            else
-                               CtxOut=CtxIn
-                            end
-                         end
-      undefined: pp_variable#proc{$ CtxIn SemIn CtxOut SemOut}
-                                SemOut=SemIn
-                                if CtxIn.valid then
-                                   CtxOut={AdjoinAt CtxIn valid {Not {Member SemIn.1 CtxIn.defines}}}
-                                else
-                                   CtxOut=CtxIn
-                                end
-                             end
-      ignore: alt(
-                 [alt('pp_\\ifdef' 'pp_\\ifndef') ignore 'pp_\\else' ignore 'pp_\\endif' ignore]
-                 [alt('pp_\\ifdef' 'pp_\\ifndef') ignore 'pp_\\endif' ignore]
-                 seq1(alt(keyword
-                          [nla(alt('pp_\\ifdef' 'pp_\\ifndef' 'pp_\\else' 'pp_\\endif')) symbol]
-                          pp_string
-                          pp_character
-                          atomN
-                          variableN
-                          pp_float
-                          pp_integer
-                          simpleSpace comment &\r &\n) ignore)
-                 empty
-                 )
-      whiteSpace: star(alt(simpleSpace comment &\r &\n preprocessor popFile))
-      popFile: nla(wc)#proc{$ CtxIn SemIn CtxOut SemOut}
-                          SemOut=SemIn
-                          if CtxIn.valid andthen CtxIn.condStack==nil andthen CtxIn.fileStack\=nil then
-                             CtxOut=CtxIn.fileStack.1
-                          elseif CtxIn.valid then
-                             CtxOut={AdjoinAt CtxIn valid false}
-                          else
-                             CtxOut=CtxIn
-                          end
-                       end
       %% tokens %%
-      string: seq2(whiteSpace pp_string)
-      character: seq2(whiteSpace pp_character)
-      atom: seq2(whiteSpace pp_atom)
-      variable: seq2(whiteSpace pp_variable)
-      kwValue: seq2(whiteSpace pp_kwValue)#fun{$ K}fAtom(KWVal.(K.1) K.2)end
-      atomL: seq2(whiteSpace pp_atomL)
-      variableL: seq2(whiteSpace pp_variableL)
-      kwValueL: seq2(whiteSpace pp_kwValueL)#fun{$ K}fAtom(KWVal.(K.1) K.2)end
-      integer: seq2(whiteSpace pp_integer)
-      float: seq2(whiteSpace pp_float)
+      string:
+         [pB elem(fun {$ Tok} case Tok of tkString(V) then some(V) else false end end) pE] #
+         fun {$ [P1 L P2]}
+            {FoldR L fun {$ C S}
+                        fRecord(fAtom('|' P1) [fInt(C P1) S])
+                     end fAtom(nil P2)}
+         end
 
-      %% SYNTACTICAL ANALYSIS %%
-      pB: seq2(whiteSpace pos)
-      pE: pos
+      character:
+         [pB elem(fun {$ Tok} case Tok of tkCharacter(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fInt(C {MkPos P1 P2})
+         end
+
+      atom:
+         [pB elem(fun {$ Tok} case Tok of tkAtom(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fAtom(C {MkPos P1 P2})
+         end
+
+      variable:
+         [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fVar(C {MkPos P1 P2})
+         end
+
+      atomL:
+         [pB elem(fun {$ Tok} case Tok of tkAtomLabel(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fAtom(C {MkPos P1 P2})
+         end
+
+      variableL:
+         [pB elem(fun {$ Tok} case Tok of tkVariableLabel(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fVar(C {MkPos P1 P2})
+         end
+
+      integer:
+         [pB elem(fun {$ Tok} case Tok of tkInteger(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fInt(C {MkPos P1 P2})
+         end
+
+      float:
+         [pB elem(fun {$ Tok} case Tok of tkFloat(V) then some(V) else false end end) pE] #
+         fun {$ [P1 C P2]}
+            fFloat(C {MkPos P1 P2})
+         end
 
       %% top-level %%
-      input: seq1(star(compilationUnit) atEnd)
-      compilationUnit:alt(cuDirective cuDeclare phrase)
-      cuDirective:alt(
-                     ['\\switch'
-                      star(
-                         [pp_whiteSpace alt('pp_+' 'pp_-') pp_whiteSpace pp_atom]#fun{$ [_ S _ A]}
-                                                                                     case S.1
-                                                                                     of '+' then on(A.1 A.2)
-                                                                                     [] '-' then off(A.1 A.2)
-                                                                                     end
-                                                                                  end
-                         )
-                      whiteToEOL]#fun{$ [_ Ss _]}dirSwitch(Ss)end
-                     seq1('\\pushSwitches' whiteToEOL) #fun{$ _}dirPushSwitches end
-                     seq1('\\popSwitches' whiteToEOL)  #fun{$ _}dirPopSwitches end
-                     seq1('\\localSwitches' whiteToEOL)#fun{$ _}dirLocalSwitches end
-                     )
-      cuDeclare:alt(
-                   [pB 'declare' phrase 'in' phrase pE]#fun{$ [P1 _ S1 _ S2 P2]}fDeclare(S1 S2        {MkPos P1 P2})end
-                   [pB 'declare' phrase pE]            #fun{$ [P1 _ S1      P2]}fDeclare(S1 fSkip(P2) {MkPos P1 P2})end
-                   )
-      atEnd:[whiteSpace nla(wc)]#proc{$ CtxIn SemIn CtxOut SemOut}
-                                    SemOut=SemIn
-                                    if CtxIn.valid then
-                                       CtxOut={AdjoinAt CtxIn valid CtxIn.condStack==nil andthen CtxIn.fileStack==nil}
-                                    else
-                                       CtxOut=CtxIn
-                                    end
-                                 end
+      input: [star(compilationUnit) eof]
+      compilationUnit: alt(cuDirective cuDeclare phrase)
+      cuDirective: alt(
+         [pB elem(fun {$ Tok} case Tok of tkDirSwitch(Ss) then some(Ss) else false end end) pE] #
+         fun {$ [P1 Ss P2]}
+            Pos = {MkPos P1 P2}
+         in
+            dirSwitch({Map Ss fun {$ Sw} L = {Label Sw} in L(Sw.1 Pos) end})
+         end
+
+         elem(tkPreprocessorDirective('showSwitches')) # dirShowSwitches
+         elem(tkPreprocessorDirective('pushSwitches')) # dirPushSwitches
+         elem(tkPreprocessorDirective('popSwitches')) # dirPopSwitches
+         elem(tkPreprocessorDirective('localSwitches')) # dirLocalSwitches
+      )
+      eof: elem(fun {$ Tok} case Tok of tkEof(Defs) then some(Defs) else false end end)
+
+      cuDeclare: alt(
+         [pB 'declare' phrase 'in' phrase pE] #
+         fun {$ [P1 _ S1 _ S2 P2]} fDeclare(S1 S2 {MkPos P1 P2}) end
+
+         [pB 'declare' phrase pE] #
+         fun{$ [P1 _ S1 P2]} fDeclare(S1 fSkip(P2) {MkPos P1 P2}) end
+      )
 
       %% expressions & statements %%
       phrase:alt(
@@ -572,10 +255,10 @@ define
                                                                fRecord(fAtom('|' P) [H T])
                                                             end fAtom('nil' P)}
                                                end
-                  [alt(atomL variableL kwValueL) '(' star(subtree) opt(['...']) ')']#fun{$ [L _ Ts D _]}
-                                                                                        LL=if D==nil then fRecord else fOpenRecord end in
-                                                                                        LL(L Ts)
-                                                                                     end
+                  [alt(atomL variableL) '(' star(subtree) opt(['...']) ')']#fun{$ [L _ Ts D _]}
+                                                                               LL=if D==nil then fRecord else fOpenRecord end in
+                                                                               LL(L Ts)
+                                                                            end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
                   [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end
@@ -646,8 +329,8 @@ define
                                                       end
                      methodHead1)
       methodHead1:alt(
-                     atom variable kwValue escVar
-                     [alt(atomL variableL kwValueL escVarL)
+                     atom variable escVar
+                     [alt(atomL variableL escVarL)
                       '(' star(methFormal) opt(['...']) ')']#fun{$ [L _ Ts D _]}
                                                                 LL=if D==nil then fRecord else fOpenRecord end in
                                                                 LL(L Ts)
@@ -689,7 +372,7 @@ define
       subtree:alt(
                  [feature ':' lvl0]#fun{$ [F _ S]}fColon(F S)end
                  lvl0)
-      feature:alt(variable atom integer character kwValue)
+      feature:alt(variable atom integer character)
       caseClause:alt(
                     [pB pat0 'andthen' opt(seq1(phrase 'in') fSkip(unit)) phrase pE 'then' inPhrase]
                     #fun{$ [P1 S1 _ OS S2 P2 _ S3]}
@@ -703,35 +386,43 @@ define
               )
       )
 
-   TG={Translate {Record.adjoinList Rules RulesL}}
+   TG = {Translate {Record.adjoinList Rules RulesL} true}
 
-   fun {ParseContext CtxIn Defs}
-      CtxOut
-      Sem
-   in
-      {CtxIn.grammar.input CtxIn CtxOut Sem}
-      if CtxOut.valid then
-         {Dictionary.removeAll Defs}
-         {ForAll CtxOut.defines proc{$ D}Defs.D:=true end}
-         Sem#nil
-      else
-         parseError#[error(kind:'parse error' msg:'Parse error')]
+   local
+      fun {ParseGeneric MakeInitCtxProc Opts}
+         DefsDict = Opts.defines
+         InitialDefines = {Dictionary.toRecord defines DefsDict}
+         CtxIn = {MakeInitCtxProc InitialDefines}
+
+         CtxOut Sem
+      in
+         {TG.input CtxIn ?CtxOut ?Sem}
+
+         if CtxOut.valid then
+            [AST FinalDefines] = Sem
+         in
+            {Dictionary.removeAll DefsDict}
+            {ForAll {Arity FinalDefines} proc {$ D} DefsDict.D := true end}
+            AST#nil
+         else
+            parseError#[error(kind:'parse error' msg:'Parse error')]
+         end
       end
-   end
-
-   fun{ParseVS VS Opts}
-      CtxIn={MkContext {VirtualString.toString VS}
-             'top level' 1 0 false TG {Dictionary.keys Opts.defines} nil nil DefaultBaseURL ctx(valid:false)}
    in
-      {ParseContext CtxIn Opts.defines}
-   end
+      fun {ParseVS VS Opts}
+         fun {MakeInitCtxProc Defines}
+            {Preprocessor.readAndPreprocessVS VS './' Defines}
+         end
+      in
+         {ParseGeneric MakeInitCtxProc Opts}
+      end
 
-   fun{ParseFile FN Opts}
-      RelURL = {URL.make FN}
-      TheURL = {URL.resolve DefaultBaseURL RelURL}
-      CtxIn={MkContext {ReadFile TheURL}
-             {VirtualString.toAtom FN} 1 0 false TG {Dictionary.keys Opts.defines} nil nil TheURL ctx(valid:false)}
-   in
-      {ParseContext CtxIn Opts.defines}
+      fun {ParseFile FN Opts}
+         fun {MakeInitCtxProc Defines}
+            {Preprocessor.readAndPreprocessSourceFile FN Defines}
+         end
+      in
+         {ParseGeneric MakeInitCtxProc Opts}
+      end
    end
 end

@@ -1,4 +1,4 @@
-%%% Copyright © 2012, Université catholique de Louvain
+%%% Copyright © 2013, Université catholique de Louvain
 %%% All rights reserved.
 %%%
 %%% Redistribution and use in source and binary forms, with or without
@@ -37,10 +37,17 @@ define
 
    DictCondExchangeFun = Boot_Dictionary.condExchangeFun
 
-   fun{Translate WG}
+   proc{Translate WG UseCache ?TG}
       fun{TranslateRule G}
          case G
-         of empty() then
+         of raw(P) then
+            P
+         [] success(S) then
+            proc{$ CtxIn CtxOut Sem}
+               CtxOut = CtxIn
+               Sem=S
+            end
+         [] empty then
             proc{$ CtxIn CtxOut Sem}
                CtxOut=CtxIn
                Sem=nil
@@ -138,19 +145,28 @@ define
                {P CtxMid SemMid CtxOut Sem}
             end
          [] nt(X) then
-            proc{$ CtxIn CtxOut Sem} N in
-               true=CtxIn.valid
-               case {DictCondExchangeFun CtxIn.cache X unit N $}
-               of unit then
-                  N=CtxOut#Sem
-                  {CtxIn.grammar.X CtxIn CtxOut Sem}
-               [] Ctx#S then
-                  N=Ctx#S
-                  CtxOut=Ctx
-                  Sem=S
+            if UseCache then
+               proc{$ CtxIn CtxOut Sem} N in
+                  true=CtxIn.valid
+                  case {DictCondExchangeFun CtxIn.cache X unit N $}
+                  of unit then
+                     N=CtxOut#Sem
+                     {{CondSelect CtxIn grammar TG}.X CtxIn CtxOut Sem}
+                  [] Ctx#S then
+                     N=Ctx#S
+                     CtxOut=Ctx
+                     Sem=S
+                  end
+               end
+            else
+               proc{$ CtxIn CtxOut Sem}
+                  {{CondSelect CtxIn grammar TG}.X CtxIn CtxOut Sem}
                end
             end
+         [] cache(X) then
+            {TranslateRule cache(X _)}
          [] cache(X P) then
+            true = UseCache
             if {IsFree P} then
                Id={NewName} XX in
                proc{P CtxIn CtxOut Sem} N in
@@ -188,16 +204,53 @@ define
                   CtxOut=CtxTmp
                end
             end
+         [] elem(P) andthen {IsProcedure P} then
+            proc {$ CtxIn CtxOut Sem}
+               true = CtxIn.valid
+               Pair = CtxIn.value
+               V = Pair.2 in
+               case {P V}
+               of some(Sem0) then
+                  CtxOut = Pair.1
+                  Sem = Sem0
+               [] false then
+                  CtxOut = {ReplaceFeature Pair.1 valid false}
+                  Sem = V
+               end
+            end
+         [] elem(V) then
+            proc {$ CtxIn CtxOut Sem}
+               true = CtxIn.valid
+               Pair = CtxIn.value in
+               Sem = Pair.2
+               if Sem == V then
+                  CtxOut = Pair.1
+               else
+                  CtxOut = {ReplaceFeature Pair.1 valid false}
+               end
+            end
          [] star(X) then
-            R=cache(alt(seq(X R) empty) _)
+            XX={TranslateRule X}
+            proc {P CtxIn CtxOut Sem} CtxMid Sem1 Sem2 in
+               {XX CtxIn CtxMid Sem1}
+               if CtxMid.valid then
+                  Sem=Sem1|Sem2
+                  {P CtxMid CtxOut Sem2}
+               else
+                  Sem=nil
+                  CtxOut=CtxIn
+               end
+            end
          in
-            {TranslateRule R}
+            P
          [] plus(X) then
-            R=cache(alt(seq(X R) seq(X empty)) _)
+            XX={TranslateRule X}
          in
-            {TranslateRule R}
+            {TranslateRule seq(raw(XX) star(raw(XX)))}
          [] sep(X Y) then
-            {TranslateRule seq(X star(seq2(Y X)))}
+            XX={TranslateRule X}
+         in
+            {TranslateRule seq(raw(XX) star(seq2(Y raw(XX))))}
          [] opt(X) then
             {TranslateRule alt(X empty)}
          [] opt(X Y) then
@@ -206,6 +259,15 @@ define
             {TranslateRule nt(X)}
          [] nil then {TranslateRule empty}
          [] _|_ then {TranslateRule seq(G)}
+         [] X#R andthen {Not {IsProcedure R}} then
+            {TranslateRule sem(X proc{$ Cin Sin Cout Sout}
+                                    Cout=Cin
+                                    if Cin.valid then
+                                       Sout=R
+                                    else
+                                       Sout=Sin
+                                    end
+                                 end)}
          [] X#P andthen {Procedure.arity P}==4 then
             {TranslateRule sem(X P)}
          [] X#P andthen {Procedure.arity P}==2 then
@@ -219,12 +281,12 @@ define
                                  end)}
          elseif {Char.is G} then
             {TranslateRule is(wc fun{$ X}X==G end)}
-         elsecase {Label G}
-         of alt then {TranslateRule alt({Record.toList G})}
+         elsecase G
+         of alt(...) then {TranslateRule alt({Record.toList G})}
          else {Show error(G)} unit
          end
       end
    in
-      {Record.map WG TranslateRule}
+      TG = {Record.map WG TranslateRule}
    end
 end

@@ -187,13 +187,18 @@ define
          [] wc then
             proc{$ CtxIn CtxOut Sem}
                true=CtxIn.valid
-               Pair=CtxIn.value in
-               CtxOut=Pair.1
-               Sem=Pair.2
+               CtxOut=CtxIn.rest
+               Sem=CtxIn.first
             end
          [] ts(nil) then {TranslateRule empty}
          [] ts(X|Xr) then
             {TranslateRule seq(is(wc fun{$ Y}X==Y end) ts(Xr))}
+         [] is(wc P) then
+            proc {$ CtxIn CtxOut Sem}
+               true = CtxIn.valid
+               Sem = CtxIn.first
+               CtxOut = {ReplaceFeature CtxIn.rest valid {P Sem}}
+            end
          [] is(X P) then
             XX={TranslateRule X} in
             proc{$ CtxIn CtxOut Sem} CtxTmp in
@@ -207,26 +212,24 @@ define
          [] elem(P) andthen {IsProcedure P} then
             proc {$ CtxIn CtxOut Sem}
                true = CtxIn.valid
-               Pair = CtxIn.value
-               V = Pair.2 in
+               V = CtxIn.first in
                case {P V}
                of some(Sem0) then
-                  CtxOut = Pair.1
+                  CtxOut = CtxIn.rest
                   Sem = Sem0
                [] false then
-                  CtxOut = {ReplaceFeature Pair.1 valid false}
+                  CtxOut = {ReplaceFeature CtxIn.rest valid false}
                   Sem = V
                end
             end
          [] elem(V) then
             proc {$ CtxIn CtxOut Sem}
-               true = CtxIn.valid
-               Pair = CtxIn.value in
-               Sem = Pair.2
+               true = CtxIn.valid in
+               Sem = CtxIn.first
                if Sem == V then
-                  CtxOut = Pair.1
+                  CtxOut = CtxIn.rest
                else
-                  CtxOut = {ReplaceFeature Pair.1 valid false}
+                  CtxOut = {ReplaceFeature CtxIn.rest valid false}
                end
             end
          [] star(X) then

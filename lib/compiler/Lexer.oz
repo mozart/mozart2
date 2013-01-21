@@ -304,11 +304,11 @@ define
       in
          case Input
          of nil then
-            Result = ctx(valid:true value:Result#EofCh pos:Pos input:Input)
+            Result = ctx(valid:true first:EofCh pos:Pos input:Input rest:Result)
          [] H|T then
             NextResult
          in
-            Result = ctx(valid:true value:!!NextResult#H pos:Pos input:Input)
+            Result = ctx(valid:true first:H pos:Pos input:Input rest:!!NextResult)
 
             if H == &\n orelse
                (H == &\r andthen case T of &\n|_ then false else true end) then

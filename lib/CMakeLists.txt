@@ -40,7 +40,7 @@ set(COMPILER_FUNCTORS_0
     "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Compiler.oz" "Core.oz"
     "ForLoop.oz" "GroundZip.oz" "Macro.oz" "PrintName.oz" "RunTime.oz"
     "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz"
-    "NewAssembler.oz" "Parser.oz" "PEG.oz")
+    "NewAssembler.oz" "Parser.oz" "PEG.oz" "Lexer.oz" "Preprocessor.oz")
 
 set(COMPILER_FUNCTORS ${SYS_FUNCTORS})
 foreach(FUNCTOR ${COMPILER_FUNCTORS_0})

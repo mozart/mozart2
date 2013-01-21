@@ -29,7 +29,11 @@
 
 fun {AtomToCompactString A}
    if {IsAtom A} then
-      {VirtualString.toCompactString A}
+      case A
+      of nil then {VirtualString.toCompactString "nil"}
+      [] '#' then {VirtualString.toCompactString "#"}
+      else {VirtualString.toCompactString A}
+      end
    else
       {Exception.raiseError kernel(type 'Atom.toCompactString' [A] 'Atom' 1)}
       unit
@@ -38,7 +42,11 @@ end
 
 fun {AtomToString A}
    if {IsAtom A} then
-      {VirtualString.toString A}
+      case A
+      of nil then "nil"
+      [] '#' then "#"
+      else {VirtualString.toString A}
+      end
    else
       {Exception.raiseError kernel(type 'Atom.toString' [A] 'Atom' 1)}
       unit

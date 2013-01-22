@@ -1,6 +1,6 @@
 # Boost library
 
-find_package(Boost COMPONENTS system thread filesystem chrono REQUIRED)
+find_package(Boost COMPONENTS random system thread filesystem chrono REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})

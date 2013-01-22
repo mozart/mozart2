@@ -20,7 +20,6 @@ foreach(FUNCTOR ${OPI_FUNCTORS})
     COMMAND ozemulator
       --init "${MOZART_BUILD_DIR}/lib/cache/Init.ozf"
       --search-load "cache=${MOZART_BUILD_DIR}/lib/cache"
-      --
       x-oz://system/Compile.ozf
       -c "${FUNCTOR}"
       -o "${FUNCTOR_OZF}"
@@ -34,4 +33,4 @@ add_custom_target(
   DEPENDS ${OPI_FUNCTORS_OZF})
 
 # Install
-#install(FILES ${OPI_FUNCTORS_OZF} DESTINATION share/mozart/cache/x-oz/system)
+install(FILES ${OPI_FUNCTORS_OZF} DESTINATION share/mozart/cache/x-oz/system)

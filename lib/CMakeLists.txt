@@ -29,11 +29,7 @@ set(SYS_FUNCTORS
     "${MOZART_LIB_DIR}/cp/RecordC.oz"
     "${MOZART_LIB_DIR}/ap/Application.oz"
     "${MOZART_LIB_DIR}/ozbatch/Compile.oz"
-    "${MOZART_DIR}/vm/boostenv/lib/OS.oz"
-    "${MOZART_DIR}/opi/opi/OPI.oz"
-    "${MOZART_DIR}/opi/opi/Emacs.oz"
-    "${MOZART_DIR}/opi/opi/OPIEnv.oz"
-    "${MOZART_DIR}/opi/opi/OPIServer.oz")
+    "${MOZART_DIR}/vm/boostenv/lib/OS.oz")
 
 set(COMPILER_FUNCTORS_0
     "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
@@ -133,7 +129,6 @@ add_custom_command(
     --base "${STAGE_0_BASE_OZF}"
     --init "${STAGE_0_INIT_OZF}"
     --search-load "${STAGE_0_SEARCH_LOAD}"
-    --
     x-oz://system/Compile.ozf
     -c "${BASE_FUNCTOR}"
     -o "${STAGE_1_BASE_OZF}"
@@ -166,7 +161,6 @@ add_custom_command(
     --base "${STAGE_1_BASE_OZF}"
     --init "${STAGE_1_INIT_OZF}"
     --search-load "${STAGE_1_SEARCH_LOAD}"
-    --
     x-oz://system/Compile.ozf
     -c "${MOZART_COMPILER_DIR}/RunTime.oz"
     -o "${STAGE_2_CACHE_SYSTEM}/RunTime.ozf"
@@ -198,7 +192,6 @@ add_custom_command(
     --base "${STAGE_2_BASE_OZF}"
     --init "${STAGE_2_INIT_OZF}"
     --search-load "${STAGE_2_SEARCH_LOAD}"
-    --
     x-oz://system/Compile.ozf
     -c "${INIT_FUNCTOR}"
     -o "${STAGE_3_INIT_OZF}"

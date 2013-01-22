@@ -20,7 +20,7 @@ if(${MOZART_BOOST_USE_STATIC_LIBS})
 endif()
 
 find_package(Boost COMPONENTS
-  program_options system thread filesystem chrono REQUIRED)
+  program_options random system thread filesystem chrono REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})

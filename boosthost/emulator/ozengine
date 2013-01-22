@@ -12,5 +12,4 @@ then
 fi
 export OZHOME
 
-"$OZHOME/bin/ozemulator" \
-  -- "$@"
+"$OZHOME/bin/ozemulator" "$@"

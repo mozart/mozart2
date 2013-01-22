@@ -12,5 +12,4 @@ then
 fi
 export OZHOME
 
-"$OZHOME/bin/ozemulator" \
-  -- "x-oz://system/Compile.ozf" "$@"
+"$OZHOME/bin/ozemulator" "x-oz://system/Compile.ozf" "$@"

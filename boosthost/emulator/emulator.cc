@@ -34,6 +34,29 @@ using namespace mozart;
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
+/** Extra style parser that captures as positional argument any element
+ *  starting from the first positional argument.
+ *
+ *  The structure was copied from po::detail::cmdline::parse_terminator.
+ */
+std::vector<po::option> all_positional_style_parser(
+  std::vector<std::string>& args) {
+
+  std::vector<po::option> result;
+  const std::string& tok = args[0];
+  if (!tok.empty() && (tok[0] != '-')) {
+    for (unsigned i = 0; i < args.size(); ++i) {
+      po::option opt;
+      opt.value.push_back(args[i]);
+      opt.original_tokens.push_back(args[i]);
+      opt.position_key = INT_MAX;
+      result.push_back(opt);
+    }
+    args.clear();
+  }
+  return result;
+}
+
 std::string envVarToOptionName(const std::string& varName) {
   if (varName == "OZ_HOME")
     return "home";
@@ -108,17 +131,19 @@ int main(int argc, char** argv) {
   // PARSE OPTIONS
 
   po::variables_map varMap;
-  po::store(po::command_line_parser(argc, argv)
-              .options(cmdline_options)
-              .positional(positional_options)
-              .run(),
-            varMap);
+
+  auto parsed_from_cmdline =
+    po::command_line_parser(argc, argv)
+      .options(cmdline_options)
+      .positional(positional_options)
+      .extra_style_parser(&all_positional_style_parser)
+      .run();
+
+  po::store(parsed_from_cmdline, varMap);
   po::store(po::parse_environment(environment_options,
-                                  &envVarToOptionName),
-            varMap);
+                                  &envVarToOptionName), varMap);
   po::store(po::parse_environment(environment_options,
-                                  &envVarToOptionNameFallback),
-            varMap);
+                                  &envVarToOptionNameFallback), varMap);
   po::notify(varMap);
 
   // READ OPTIONS

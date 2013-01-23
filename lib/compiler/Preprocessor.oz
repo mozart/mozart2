@@ -181,9 +181,9 @@ define
              posend:PrevPos
              rest:{MakeEOFContext tkEof(Defines) Pos.2 Pos.2})
 
-      [] tkPreprocessorDirective('ifdef') then
+      [] tkPreprocessorDirective('ifdef' _) then
          {Skip Rest BaseURL FileStack Offset PrevPos Defines SkipDepth+1}
-      [] tkPreprocessorDirective('ifndef') then
+      [] tkPreprocessorDirective('ifndef' _) then
          {Skip Rest BaseURL FileStack Offset PrevPos Defines SkipDepth+1}
       [] tkPreprocessorDirective('else') andthen SkipDepth == 1 then
          {Preprocess Rest BaseURL FileStack Offset PrevPos Defines}

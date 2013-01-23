@@ -927,7 +927,7 @@ define
       prop final
       attr destination: unit
       meth init(Destination Coord)
-         true = false
+         fail
          destination <- Destination
          coord <- Coord
       end

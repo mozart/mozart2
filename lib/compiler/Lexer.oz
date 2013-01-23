@@ -226,7 +226,7 @@ define
             "insert"
             whitespace
             preprocessorFileName
-         ] # fun {$ [D _ F]} tkPreprocessorDirective('insert' F) end
+         ] # fun {$ [_ _ F]} tkPreprocessorDirective('insert' F) end
 
          [
             "line"
@@ -292,10 +292,6 @@ define
    TokenGrammar = {PEG.translate TokenRules false}
 
    %% Functions %%
-
-   proc {MakeEOFReader Token Pos ?EOFReader}
-      EOFReader = reader(Token Pos true EOFReader)
-   end
 
    local
       proc {DoMakeStringContext Input FileName Line Column ?Result}

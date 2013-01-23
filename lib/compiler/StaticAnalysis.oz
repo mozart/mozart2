@@ -278,6 +278,7 @@ prepare
               else {IsKinded XD} end
            end)
 
+/*
    %%
    %% three valued tests for recursive data structures
    %%
@@ -378,6 +379,7 @@ prepare
             'Bool.or'           : doOr
             'Bool.not'          : doNot
        )
+*/
 
 
 

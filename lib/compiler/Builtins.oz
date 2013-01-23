@@ -61,14 +61,15 @@ define
 
    fun {NewInfoToOldInfo Info}
       case Info
-      of builtin(name:Name arity:Arity params:Params ...) then
+      of builtin(arity:Arity params:Params ...) then
          InParams OutParams
          {List.takeDropWhile Params
           fun {$ param(kind:K ...)} K == 'in' end
           ?InParams ?OutParams}
 
          IArity = {Length InParams}
-         OArity = Arity - IArity
+         OArity = {Length OutParams}
+         IArity + OArity = Arity
 
          Types = {Map Params fun {$ X} value end}
          Det = {Map Params fun {$ X} any end}

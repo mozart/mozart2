@@ -44,7 +44,7 @@ import
    Builtins(getInfo)
 \else
    NewAssembler(assemble)
-   CompilerSupport(newAbstraction)
+   CompilerSupport
 \endif
 export
    InternalAssemble
@@ -766,7 +766,7 @@ define
 
       meth output(?VS)
          VS = {FoldL @codeAreas
-               fun {$ Prev CodeArea#VS}
+               fun {$ Prev _#VS}
                   {Wait VS}
                   Prev#'\n'#VS
                end nil}
@@ -1023,9 +1023,9 @@ define
          [] getVoid(_)     | _ then {TransformPatMatGets Code UserXCount}
 
          % definition + endDefinition become createAbstraction
-         [] definition(Dest Lab pid(Name Arity Pos Flags NLiveRegs)
+         [] definition(Dest _ pid(Name Arity Pos _ _)
                        unit GRegRef InnerCode) |
-               endDefinition(EndLab) | Rest then
+               endDefinition(_) | Rest then
             DebugData = case Pos
                         of pos(F L C) then d(file:F line:L column:C)
                         else unit

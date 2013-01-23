@@ -504,7 +504,7 @@ define
       in
          {Record.forAll Patterns
           proc {$ Pattern}
-             Pat#L = Pattern
+             L = Pattern.2
           in
              {self declareLabel(L)}
           end}

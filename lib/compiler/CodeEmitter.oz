@@ -183,6 +183,7 @@ define
    end
 
    local
+\ifdef HAS_CSS
       local
          proc {DoAssign L H D X N}
             if L=<H then
@@ -217,6 +218,9 @@ define
             V
          end
       end
+\else
+      skip
+\endif
    in
       class RegisterOptimizer
          attr
@@ -283,11 +287,8 @@ define
             Ss <- (Y|I)|@Ss
          end
 
-         \ifdef HAS_CSS
-         /* Mozart 2 does not support FD constraint solving yet.
-          * So this great optimization routine must be left aside for now.
-          */
-         /*
+\ifdef HAS_CSS
+         /* Smart optimization method using CPS. */
          meth Optimize(AddNs $)
             LNs = @Ns
             LCDs = {Sort @CDs fun {$ C1|_ C2|_}
@@ -382,10 +383,8 @@ define
                 end
              end ~1}+1
          end
-         */
-         \endif
-
-         /* Instead, we use this naive fallback */
+\else % HAS_CSS
+         /* Dumb optimization method that does not use CPS */
          meth Optimize(AddNS $)
             LEs = @Es
             LSs = @Ss
@@ -432,6 +431,7 @@ define
                 end
              end ~1}+1
          end
+\endif % HAS_CSS
 
          %% PR#571, PR#931, PR#1244
          %% To fix register allocation bugs we have added inequality

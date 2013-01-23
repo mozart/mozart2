@@ -1,6 +1,4 @@
 functor
-import
-   ForLoop
 export
    Compile
 define

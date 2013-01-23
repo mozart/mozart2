@@ -64,6 +64,7 @@ export
    % Sockets
    tcpAcceptorCreate: TCPAcceptorCreate
    tcpAccept: TCPAccept
+   tcpCancelAccept: TCPCancelAccept
    tcpAcceptorClose: TCPAcceptorClose
    tcpConnect: TCPConnect
    tcpConnectionRead: TCPConnectionRead

@@ -795,8 +795,9 @@ define
       (ArityAndIsTail div 2) # (ArityAndIsTail mod 2 \= 0)
    end
 
-   fun {OldCodeToNewCode Code AssembleInner}
-      UserXCount = {ByNeedFuture fun {$} {ComputeXCountInOldCode Code 0} end}
+   fun {OldCodeToNewCode ProcArity Code AssembleInner}
+      UserXCount = {ByNeedFuture
+                    fun {$} {ComputeXCountInOldCode Code ProcArity} end}
 
       fun {MakeInitGRegs SourceRegs Rest}
          case SourceRegs
@@ -1051,7 +1052,7 @@ define
       !Assembler = {New CompatAssemblerClass init()}
 
       proc {AssembleInner Arity Code PrintName DebugData ?CodeArea}
-         NewCode = {OldCodeToNewCode Code AssembleInner}
+         NewCode = {OldCodeToNewCode Arity Code AssembleInner}
          VS
       in
          {NewAssembler.assemble Arity NewCode PrintName DebugData Switches

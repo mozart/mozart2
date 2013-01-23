@@ -1374,8 +1374,8 @@ void Thread::applyFail(VM vm,
     vm->getCurrentSpace()->fail(vm);
   } else {
     UnstableNode error = buildRecord(
-      vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
-      vm->coreatoms.failure, unit);
+      vm, buildArity(vm, vm->coreatoms.failure, vm->coreatoms.debug),
+      unit);
 
     applyRaise(vm, error,
                abstraction, PC, yregCount, xregs, yregs, gregs, kregs);

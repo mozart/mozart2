@@ -113,16 +113,18 @@ add_custom_target(
   DEPENDS ${STAGE_0_OUTPUTS})
 
 # ---------------------------------------------------------------------------- #
-# Stage 1: compile Base.ozf                                                    #
+# Stage 1: compile the 3 critical functors: Base.ozf, RunTime.ozf and Init.ozf #
 # ---------------------------------------------------------------------------- #
 
 set(STAGE_1_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage1")
 set(STAGE_1_CACHE_SYSTEM "${STAGE_1_CACHE}/x-oz/system")
-set(STAGE_1_BASE_OZF "${STAGE_1_CACHE}/Base.ozf")
-set(STAGE_1_INIT_OZF "${STAGE_0_INIT_OZF}")
 set(STAGE_1_SEARCH_LOAD "cache=${STAGE_1_CACHE}:${STAGE_0_SEARCH_LOAD}")
 
 file(MAKE_DIRECTORY "${STAGE_1_CACHE_SYSTEM}")
+
+set(STAGE_1_BASE_OZF "${STAGE_1_CACHE}/Base.ozf")
+set(STAGE_1_RUNTIME_OZF "${STAGE_1_CACHE_SYSTEM}/RunTime.ozf")
+set(FINAL_INIT_OZF "${CMAKE_CURRENT_BINARY_DIR}/Init.ozf")
 
 add_custom_command(
   OUTPUT "${STAGE_1_BASE_OZF}"
@@ -137,41 +139,73 @@ add_custom_command(
   COMMENT "(stage 1) ${STAGE_1_BASE_OZF}"
   VERBATIM)
 
-set(STAGE_1_OUTPUTS "${STAGE_1_BASE_OZF}")
+add_custom_command(
+  OUTPUT "${STAGE_1_RUNTIME_OZF}"
+  COMMAND ozemulator
+    --base "${STAGE_1_BASE_OZF}"
+    --init "${STAGE_0_INIT_OZF}"
+    --search-load "${STAGE_0_SEARCH_LOAD}"
+    x-oz://system/Compile.ozf
+    -c "${RUNTIME_FUNCTOR}"
+    -o "${STAGE_1_RUNTIME_OZF}"
+  DEPENDS library_stage_0 "${STAGE_1_BASE_OZF}" "${RUNTIME_FUNCTOR}"
+  COMMENT "(stage 1) ${STAGE_1_RUNTIME_OZF}"
+  VERBATIM)
+
+add_custom_command(
+  OUTPUT "${FINAL_INIT_OZF}"
+  COMMAND ozemulator
+    --base "${STAGE_1_BASE_OZF}"
+    --init "${STAGE_0_INIT_OZF}"
+    --search-load "${STAGE_1_SEARCH_LOAD}"
+    x-oz://system/Compile.ozf
+    -c "${INIT_FUNCTOR}"
+    -o "${FINAL_INIT_OZF}"
+  DEPENDS library_stage_0 "${STAGE_1_BASE_OZF}" "${STAGE_1_RUNTIME_OZF}" "${INIT_FUNCTOR}"
+  COMMENT "(stage 1) ${FINAL_INIT_OZF}"
+  VERBATIM)
+
+set(STAGE_1_OUTPUTS "${STAGE_1_RUNTIME_OZF}")
 
 add_custom_target(
   library_stage_1
-  DEPENDS ${STAGE_1_OUTPUTS})
+  DEPENDS "${STAGE_1_BASE_OZF}" "${STAGE_1_RUNTIME_OZF}" "${FINAL_INIT_OZF}")
 add_dependencies(library_stage_1 library_stage_0)
 
 # ---------------------------------------------------------------------------- #
-# Stage 2: compile RunTime.ozf                                                 #
+# Stage 2: compile all compiler functors with the compiler                     #
 # ---------------------------------------------------------------------------- #
 
 set(STAGE_2_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage2")
 set(STAGE_2_CACHE_SYSTEM "${STAGE_2_CACHE}/x-oz/system")
-set(STAGE_2_BASE_OZF "${STAGE_1_BASE_OZF}")
-set(STAGE_2_INIT_OZF "${STAGE_1_INIT_OZF}")
 set(STAGE_2_SEARCH_LOAD "cache=${STAGE_2_CACHE}:${STAGE_1_SEARCH_LOAD}")
 
 file(MAKE_DIRECTORY "${STAGE_2_CACHE_SYSTEM}")
 
-set(STAGE_2_RUNTIME_OZF "${STAGE_2_CACHE_SYSTEM}/RunTime.ozf")
+set(STAGE_2_OUTPUTS "")
 
-add_custom_command(
-  OUTPUT "${STAGE_2_RUNTIME_OZF}"
-  COMMAND ozemulator
-    --base "${STAGE_1_BASE_OZF}"
-    --init "${STAGE_1_INIT_OZF}"
-    --search-load "${STAGE_1_SEARCH_LOAD}"
-    x-oz://system/Compile.ozf
-    -c "${RUNTIME_FUNCTOR}"
-    -o "${STAGE_2_RUNTIME_OZF}"
-  DEPENDS library_stage_1 "${RUNTIME_FUNCTOR}"
-  COMMENT "(stage 2) ${STAGE_2_RUNTIME_OZF}"
-  VERBATIM)
+foreach(FUNCTOR ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
+  get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
+  set(FUNCTOR_OZF "${STAGE_2_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
 
-set(STAGE_2_OUTPUTS "${STAGE_2_RUNTIME_OZF}")
+  # The last buggy functor we have to exclude
+  if(NOT ("${FUNCTOR_BASENAME}" MATCHES "CodeGen"))
+
+  set(STAGE_2_OUTPUTS ${STAGE_2_OUTPUTS} "${FUNCTOR_OZF}")
+
+  add_custom_command(
+    OUTPUT "${FUNCTOR_OZF}"
+    COMMAND ozemulator
+      --search-load "${STAGE_1_SEARCH_LOAD}"
+      x-oz://system/Compile.ozf
+      -c "${FUNCTOR}"
+      -o "${FUNCTOR_OZF}"
+    DEPENDS library_stage_1 "${FUNCTOR}"
+    COMMENT "(stage 2) ${FUNCTOR_OZF}"
+    VERBATIM)
+
+  endif() # NOT CodeGen.oz
+endforeach()
 
 add_custom_target(
   library_stage_2
@@ -179,103 +213,23 @@ add_custom_target(
 add_dependencies(library_stage_2 library_stage_1)
 
 # ---------------------------------------------------------------------------- #
-# Stage 3: compile Init.ozf                                                    #
-# ---------------------------------------------------------------------------- #
-
-set(STAGE_3_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage3")
-set(STAGE_3_CACHE_SYSTEM "${STAGE_3_CACHE}/x-oz/system")
-set(STAGE_3_INIT_OZF "${STAGE_3_CACHE}/Init.ozf")
-set(STAGE_3_SEARCH_LOAD "cache=${STAGE_3_CACHE}:${STAGE_2_SEARCH_LOAD}")
-
-file(MAKE_DIRECTORY "${STAGE_3_CACHE_SYSTEM}")
-
-add_custom_command(
-  OUTPUT "${STAGE_3_INIT_OZF}"
-  COMMAND ozemulator
-    --base "${STAGE_2_BASE_OZF}"
-    --init "${STAGE_2_INIT_OZF}"
-    --search-load "${STAGE_2_SEARCH_LOAD}"
-    x-oz://system/Compile.ozf
-    -c "${INIT_FUNCTOR}"
-    -o "${STAGE_3_INIT_OZF}"
-  DEPENDS library_stage_2 "${INIT_FUNCTOR}"
-  COMMENT "(stage 3) ${STAGE_3_INIT_OZF}"
-  VERBATIM)
-
-set(STAGE_3_OUTPUTS "${STAGE_3_INIT_OZF}")
-
-add_custom_target(
-  library_stage_3
-  DEPENDS ${STAGE_3_OUTPUTS})
-add_dependencies(library_stage_3 library_stage_2)
-
-# ---------------------------------------------------------------------------- #
-# Stage 4: compile all compiler functors with the compiler                     #
-# ---------------------------------------------------------------------------- #
-
-set(STAGE_4_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage4")
-set(STAGE_4_CACHE_SYSTEM "${STAGE_4_CACHE}/x-oz/system")
-set(STAGE_4_INIT_OZF "${STAGE_3_INIT_OZF}")
-set(STAGE_4_SEARCH_LOAD "cache=${STAGE_4_CACHE}:${STAGE_3_SEARCH_LOAD}")
-
-file(MAKE_DIRECTORY "${STAGE_4_CACHE_SYSTEM}")
-
-set(STAGE_4_OUTPUTS "")
-
-foreach(FUNCTOR ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
-  get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
-  set(FUNCTOR_OZF "${STAGE_4_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
-
-  # The last buggy functor we have to exclude
-  if(NOT ("${FUNCTOR_BASENAME}" MATCHES "CodeGen"))
-
-  set(STAGE_4_OUTPUTS ${STAGE_4_OUTPUTS} "${FUNCTOR_OZF}")
-
-  add_custom_command(
-    OUTPUT "${FUNCTOR_OZF}"
-    COMMAND ozemulator
-      --init "${STAGE_3_INIT_OZF}"
-      --search-load "${STAGE_3_SEARCH_LOAD}"
-      x-oz://system/Compile.ozf
-      -c "${FUNCTOR}"
-      -o "${FUNCTOR_OZF}"
-    DEPENDS library_stage_3 "${FUNCTOR}"
-    COMMENT "(stage 4) ${FUNCTOR_OZF}"
-    VERBATIM)
-
-  endif() # NOT CodeGen.oz
-endforeach()
-
-add_custom_target(
-  library_stage_4
-  DEPENDS ${STAGE_4_OUTPUTS})
-add_dependencies(library_stage_4 library_stage_3)
-
-# ---------------------------------------------------------------------------- #
 # Target and install                                                           #
 # ---------------------------------------------------------------------------- #
 
 set(LIBRARY_CACHE "${CMAKE_CURRENT_BINARY_DIR}/cache")
 set(LIBRARY_CACHE_SYSTEM "${LIBRARY_CACHE}/x-oz/system")
-set(LIBRARY_INIT_OZF "${LIBRARY_CACHE}/Init.ozf")
 set(LIBRARY_SEARCH_LOAD "cache=${LIBRARY_CACHE}")
 
 file(MAKE_DIRECTORY "${LIBRARY_CACHE_SYSTEM}")
 
-add_custom_command(
-  OUTPUT "${LIBRARY_INIT_OZF}"
-  COMMAND "${CMAKE_COMMAND}" -E copy "${STAGE_4_INIT_OZF}" "${LIBRARY_INIT_OZF}"
-  DEPENDS "${STAGE_4_INIT_OZF}"
-  VERBATIM)
-
-set(LIBRARY_FUNCTORS_OZF "${LIBRARY_INIT_OZF}")
+set(LIBRARY_FUNCTORS_OZF "")
 
 foreach(FUNCTOR "${RUNTIME_FUNCTOR}" ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
   get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
   set(FUNCTOR_OZF "${LIBRARY_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
   set(LIBRARY_FUNCTORS_OZF ${LIBRARY_FUNCTORS_OZF} "${FUNCTOR_OZF}")
 
-  foreach(STAGE_NUM 4 3 2 1 0)
+  foreach(STAGE_NUM 2 1 0)
     set(SRC_OZF "${STAGE_${STAGE_NUM}_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
     list(FIND "STAGE_${STAGE_NUM}_OUTPUTS" "${SRC_OZF}" INDEX)
     if(NOT (INDEX EQUAL -1))
@@ -293,10 +247,10 @@ endforeach()
 add_custom_target(
   library ALL
   DEPENDS ${LIBRARY_FUNCTORS_OZF})
-add_dependencies(library library_stage_4)
+add_dependencies(library library_stage_2)
 
 # Install
-install(FILES "${LIBRARY_INIT_OZF}"
-        DESTINATION share/mozart/cache)
+install(FILES "${FINAL_INIT_OZF}"
+        DESTINATION share/mozart)
 install(FILES ${LIBRARY_FUNCTORS_OZF}
         DESTINATION share/mozart/cache/x-oz/system)

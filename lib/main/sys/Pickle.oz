@@ -92,7 +92,7 @@ import
 
 define
 
-   HeaderMagic = [0x56 0xb4 0x8c 0x48]
+   % HeaderMagic = [0x56 0xb4 0x8c 0x48]
 
    %%
    %% Sinks - thing that we can pickle into

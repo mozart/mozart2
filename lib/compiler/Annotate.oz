@@ -74,7 +74,7 @@ export
    generatedVariable: AnnotateGeneratedVariable
    restrictedVariable: AnnotateRestrictedVariable
    variableOccurrence: AnnotateVariableOccurrence
-prepare
+define
    BindingAnalysisWarning = 'binding analysis warning'
 
    fun {VariableUnion Vs Ws}

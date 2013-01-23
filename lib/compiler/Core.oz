@@ -43,6 +43,7 @@ functor
 import
    CompilerSupport(concatenateAtomAndInt)
    System(printName)
+   Annotate
    StaticAnalysis
    CodeGen
 export
@@ -98,8 +99,6 @@ export
    ProcedureToken
    ClassToken
    ObjectToken
-require
-   Annotate
 prepare
    %% some format string auxiliaries for output
    IN = format(indent)

@@ -10,6 +10,7 @@ set(MOZART_COMPILER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/compiler")
 # ---------------------------------------------------------------------------- #
 
 set(BASE_FUNCTOR "${MOZART_LIB_DIR}/base/Base.oz")
+set(RUNTIME_FUNCTOR "${MOZART_COMPILER_DIR}/RunTime.oz")
 set(INIT_FUNCTOR "${MOZART_LIB_DIR}/init/Init.oz")
 
 set(SYS_FUNCTORS
@@ -28,17 +29,17 @@ set(SYS_FUNCTORS
     "${MOZART_LIB_DIR}/cp/Combinator.oz"
     "${MOZART_LIB_DIR}/cp/RecordC.oz"
     "${MOZART_LIB_DIR}/ap/Application.oz"
-    "${MOZART_LIB_DIR}/ozbatch/Compile.oz"
     "${MOZART_DIR}/vm/boostenv/lib/OS.oz")
 
 set(COMPILER_FUNCTORS_0
     "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
     "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Compiler.oz" "Core.oz"
-    "ForLoop.oz" "GroundZip.oz" "Macro.oz" "PrintName.oz" "RunTime.oz"
-    "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz"
-    "NewAssembler.oz" "Parser.oz" "PEG.oz" "Lexer.oz" "Preprocessor.oz")
+    "ForLoop.oz" "GroundZip.oz" "Lexer.oz" "Macro.oz" "NewAssembler.oz"
+    "Parser.oz" "PEG.oz" "Preprocessor.oz" "PrintName.oz" "StaticAnalysis.oz"
+    "Unnester.oz" "WhileLoop.oz"
+    )
 
-set(COMPILER_FUNCTORS ${SYS_FUNCTORS})
+set(COMPILER_FUNCTORS "${MOZART_LIB_DIR}/ozbatch/Compile.oz")
 foreach(FUNCTOR ${COMPILER_FUNCTORS_0})
   set(COMPILER_FUNCTORS ${COMPILER_FUNCTORS} "${MOZART_COMPILER_DIR}/${FUNCTOR}")
 endforeach()
@@ -86,7 +87,7 @@ add_custom_command(
 
 set(STAGE_0_OUTPUTS "${STAGE_0_BASE_OZF}")
 
-foreach(FUNCTOR "${INIT_FUNCTOR}" ${COMPILER_FUNCTORS})
+foreach(FUNCTOR "${RUNTIME_FUNCTOR}" "${INIT_FUNCTOR}" ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
   if("${FUNCTOR}" MATCHES "${INIT_FUNCTOR}")
     set(FUNCTOR_OZF "${STAGE_0_CACHE}/Init.ozf")
   else()
@@ -155,20 +156,22 @@ set(STAGE_2_SEARCH_LOAD "cache=${STAGE_2_CACHE}:${STAGE_1_SEARCH_LOAD}")
 
 file(MAKE_DIRECTORY "${STAGE_2_CACHE_SYSTEM}")
 
+set(STAGE_2_RUNTIME_OZF "${STAGE_2_CACHE_SYSTEM}/RunTime.ozf")
+
 add_custom_command(
-  OUTPUT "${STAGE_2_CACHE_SYSTEM}/RunTime.ozf"
+  OUTPUT "${STAGE_2_RUNTIME_OZF}"
   COMMAND ozemulator
     --base "${STAGE_1_BASE_OZF}"
     --init "${STAGE_1_INIT_OZF}"
     --search-load "${STAGE_1_SEARCH_LOAD}"
     x-oz://system/Compile.ozf
-    -c "${MOZART_COMPILER_DIR}/RunTime.oz"
-    -o "${STAGE_2_CACHE_SYSTEM}/RunTime.ozf"
-  DEPENDS library_stage_1 "${MOZART_COMPILER_DIR}/RunTime.oz"
-  COMMENT "(stage 2) ${STAGE_2_CACHE_SYSTEM}/RunTime.ozf"
+    -c "${RUNTIME_FUNCTOR}"
+    -o "${STAGE_2_RUNTIME_OZF}"
+  DEPENDS library_stage_1 "${RUNTIME_FUNCTOR}"
+  COMMENT "(stage 2) ${STAGE_2_RUNTIME_OZF}"
   VERBATIM)
 
-set(STAGE_2_OUTPUTS "${STAGE_2_CACHE_SYSTEM}/RunTime.ozf")
+set(STAGE_2_OUTPUTS "${STAGE_2_RUNTIME_OZF}")
 
 add_custom_target(
   library_stage_2
@@ -207,6 +210,48 @@ add_custom_target(
 add_dependencies(library_stage_3 library_stage_2)
 
 # ---------------------------------------------------------------------------- #
+# Stage 4: compile all compiler functors with the compiler                     #
+# ---------------------------------------------------------------------------- #
+
+set(STAGE_4_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage4")
+set(STAGE_4_CACHE_SYSTEM "${STAGE_4_CACHE}/x-oz/system")
+set(STAGE_4_INIT_OZF "${STAGE_3_INIT_OZF}")
+set(STAGE_4_SEARCH_LOAD "cache=${STAGE_4_CACHE}:${STAGE_3_SEARCH_LOAD}")
+
+file(MAKE_DIRECTORY "${STAGE_4_CACHE_SYSTEM}")
+
+set(STAGE_4_OUTPUTS "")
+
+foreach(FUNCTOR ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
+  get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
+  set(FUNCTOR_OZF "${STAGE_4_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
+
+  # The last buggy functor we have to exclude
+  if(NOT ("${FUNCTOR_BASENAME}" MATCHES "CodeGen"))
+
+  set(STAGE_4_OUTPUTS ${STAGE_4_OUTPUTS} "${FUNCTOR_OZF}")
+
+  add_custom_command(
+    OUTPUT "${FUNCTOR_OZF}"
+    COMMAND ozemulator
+      --init "${STAGE_3_INIT_OZF}"
+      --search-load "${STAGE_3_SEARCH_LOAD}"
+      x-oz://system/Compile.ozf
+      -c "${FUNCTOR}"
+      -o "${FUNCTOR_OZF}"
+    DEPENDS library_stage_3 "${FUNCTOR}"
+    COMMENT "(stage 4) ${FUNCTOR_OZF}"
+    VERBATIM)
+
+  endif() # NOT CodeGen.oz
+endforeach()
+
+add_custom_target(
+  library_stage_4
+  DEPENDS ${STAGE_4_OUTPUTS})
+add_dependencies(library_stage_4 library_stage_3)
+
+# ---------------------------------------------------------------------------- #
 # Target and install                                                           #
 # ---------------------------------------------------------------------------- #
 
@@ -219,18 +264,18 @@ file(MAKE_DIRECTORY "${LIBRARY_CACHE_SYSTEM}")
 
 add_custom_command(
   OUTPUT "${LIBRARY_INIT_OZF}"
-  COMMAND "${CMAKE_COMMAND}" -E copy "${STAGE_3_INIT_OZF}" "${LIBRARY_INIT_OZF}"
-  DEPENDS "${STAGE_3_INIT_OZF}"
+  COMMAND "${CMAKE_COMMAND}" -E copy "${STAGE_4_INIT_OZF}" "${LIBRARY_INIT_OZF}"
+  DEPENDS "${STAGE_4_INIT_OZF}"
   VERBATIM)
 
 set(LIBRARY_FUNCTORS_OZF "${LIBRARY_INIT_OZF}")
 
-foreach(FUNCTOR ${COMPILER_FUNCTORS})
+foreach(FUNCTOR "${RUNTIME_FUNCTOR}" ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
   get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
   set(FUNCTOR_OZF "${LIBRARY_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
   set(LIBRARY_FUNCTORS_OZF ${LIBRARY_FUNCTORS_OZF} "${FUNCTOR_OZF}")
 
-  foreach(STAGE_NUM 3 2 1 0)
+  foreach(STAGE_NUM 4 3 2 1 0)
     set(SRC_OZF "${STAGE_${STAGE_NUM}_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
     list(FIND "STAGE_${STAGE_NUM}_OUTPUTS" "${SRC_OZF}" INDEX)
     if(NOT (INDEX EQUAL -1))
@@ -238,6 +283,7 @@ foreach(FUNCTOR ${COMPILER_FUNCTORS})
         OUTPUT "${FUNCTOR_OZF}"
         COMMAND "${CMAKE_COMMAND}" -E copy "${SRC_OZF}" "${FUNCTOR_OZF}"
         DEPENDS "${SRC_OZF}"
+        COMMENT "Copying from stage ${STAGE_NUM}: ${FUNCTOR_OZF}"
         VERBATIM)
       break()
     endif()
@@ -247,7 +293,7 @@ endforeach()
 add_custom_target(
   library ALL
   DEPENDS ${LIBRARY_FUNCTORS_OZF})
-add_dependencies(library library_stage_3)
+add_dependencies(library library_stage_4)
 
 # Install
 install(FILES "${LIBRARY_INIT_OZF}"

@@ -6,6 +6,10 @@ project(MOZART CXX)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_local ${CMAKE_MODULE_PATH})
 include(MozartProperties)
 
+# Set variables that the submodules will need to find me
+set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+
 # Some helpers when using MinGW
 
 if(MINGW)
@@ -44,6 +48,7 @@ add_subdirectory(boosthost)
 add_subdirectory(lib)
 add_subdirectory(opi)
 add_subdirectory(wish)
+add_subdirectory(stdlib)
 
 # General CPack configuration
 

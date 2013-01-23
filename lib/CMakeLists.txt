@@ -44,6 +44,12 @@ foreach(FUNCTOR ${COMPILER_FUNCTORS_0})
   set(COMPILER_FUNCTORS ${COMPILER_FUNCTORS} "${MOZART_COMPILER_DIR}/${FUNCTOR}")
 endforeach()
 
+set(OTHER_LIBRARY_FUNCTORS
+    "${MOZART_LIB_DIR}/wp/TkBoot.oz"
+    "${MOZART_LIB_DIR}/wp/Tk.oz"
+    "${MOZART_LIB_DIR}/wp/TkTools.oz"
+    "${MOZART_LIB_DIR}/wp/Tix.oz")
+
 # ---------------------------------------------------------------------------- #
 # Stage 0: boot-compile the functors used by the compiler                      #
 # ---------------------------------------------------------------------------- #
@@ -213,6 +219,41 @@ add_custom_target(
 add_dependencies(library_stage_2 library_stage_1)
 
 # ---------------------------------------------------------------------------- #
+# Stage 3: compile the rest of the library                                     #
+# ---------------------------------------------------------------------------- #
+
+set(STAGE_3_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage3")
+set(STAGE_3_CACHE_SYSTEM "${STAGE_3_CACHE}/x-oz/system")
+set(STAGE_3_SEARCH_LOAD "cache=${STAGE_3_CACHE}:${STAGE_2_SEARCH_LOAD}")
+
+file(MAKE_DIRECTORY "${STAGE_3_CACHE_SYSTEM}")
+
+set(STAGE_3_OUTPUTS "")
+
+foreach(FUNCTOR ${OTHER_LIBRARY_FUNCTORS})
+  get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
+  set(FUNCTOR_OZF "${STAGE_3_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
+
+  set(STAGE_3_OUTPUTS ${STAGE_3_OUTPUTS} "${FUNCTOR_OZF}")
+
+  add_custom_command(
+    OUTPUT "${FUNCTOR_OZF}"
+    COMMAND ozemulator
+      --search-load "${STAGE_2_SEARCH_LOAD}"
+      x-oz://system/Compile.ozf
+      -c "${FUNCTOR}"
+      -o "${FUNCTOR_OZF}"
+    DEPENDS library_stage_2 "${FUNCTOR}"
+    COMMENT "(stage 3) ${FUNCTOR_OZF}"
+    VERBATIM)
+endforeach()
+
+add_custom_target(
+  library_stage_3
+  DEPENDS ${STAGE_3_OUTPUTS})
+add_dependencies(library_stage_3 library_stage_2)
+
+# ---------------------------------------------------------------------------- #
 # Target and install                                                           #
 # ---------------------------------------------------------------------------- #
 
@@ -224,12 +265,12 @@ file(MAKE_DIRECTORY "${LIBRARY_CACHE_SYSTEM}")
 
 set(LIBRARY_FUNCTORS_OZF "")
 
-foreach(FUNCTOR "${RUNTIME_FUNCTOR}" ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
+foreach(FUNCTOR "${RUNTIME_FUNCTOR}" ${SYS_FUNCTORS} ${COMPILER_FUNCTORS} ${OTHER_LIBRARY_FUNCTORS})
   get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)
   set(FUNCTOR_OZF "${LIBRARY_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
   set(LIBRARY_FUNCTORS_OZF ${LIBRARY_FUNCTORS_OZF} "${FUNCTOR_OZF}")
 
-  foreach(STAGE_NUM 2 1 0)
+  foreach(STAGE_NUM 3 2 1 0)
     set(SRC_OZF "${STAGE_${STAGE_NUM}_CACHE_SYSTEM}/${FUNCTOR_BASENAME}.ozf")
     list(FIND "STAGE_${STAGE_NUM}_OUTPUTS" "${SRC_OZF}" INDEX)
     if(NOT (INDEX EQUAL -1))
@@ -247,10 +288,35 @@ endforeach()
 add_custom_target(
   library ALL
   DEPENDS ${LIBRARY_FUNCTORS_OZF})
-add_dependencies(library library_stage_2)
+add_dependencies(library library_stage_3)
+
+# Supplementary files
+
+set(SUPPLEMENTARY_FILES
+    "images/mini-dec.xbm"
+    "images/mini-inc.xbm")
+
+file(MAKE_DIRECTORY "${LIBRARY_CACHE_SYSTEM}/images")
+
+set(TARGET_SUPPLEMENTARY_FILES "")
+
+foreach(SUPP_FILE ${SUPPLEMENTARY_FILES})
+  set(SRC_FILE "${CMAKE_CURRENT_SOURCE_DIR}/main/${SUPP_FILE}")
+  set(TARGET_FILE "${LIBRARY_CACHE_SYSTEM}/${SUPP_FILE}")
+  set(TARGET_SUPPLEMENTARY_FILES ${TARGET_SUPPLEMENTARY_FILES} "${TARGET_FILE}")
+
+  add_custom_command(
+    TARGET library POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+      "${SRC_FILE}" "${TARGET_FILE}"
+    VERBATIM)
+endforeach()
 
 # Install
 install(FILES "${FINAL_INIT_OZF}"
         DESTINATION share/mozart)
 install(FILES ${LIBRARY_FUNCTORS_OZF}
         DESTINATION share/mozart/cache/x-oz/system)
+
+install(FILES ${TARGET_SUPPLEMENTARY_FILES}
+        DESTINATION share/mozart/cache/x-oz/system/images)

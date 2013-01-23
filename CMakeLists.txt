@@ -43,6 +43,7 @@ add_subdirectory(bootcompiler)
 add_subdirectory(boosthost)
 add_subdirectory(lib)
 add_subdirectory(opi)
+add_subdirectory(wish)
 
 # General CPack configuration
 

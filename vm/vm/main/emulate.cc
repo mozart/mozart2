@@ -1274,6 +1274,12 @@ void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
   if (target.isTransient())
     waitFor(vm, target);
 
+  /* Make it stable now, because if the target happens to be referencing x(0),
+   * the overriding of x(0) with the message, below, will break the node
+   * referenced by target!
+   */
+  target.ensureStable(vm);
+
   using namespace patternmatching;
 
   UnstableNode message;

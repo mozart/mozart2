@@ -169,9 +169,9 @@ int main(int argc, char** argv) {
 
   if (initFunctorPath.empty()) {
     if (isBuildSetting)
-      initFunctorPath = ozHome / "lib" / "cache" / "Init.ozf";
+      initFunctorPath = ozHome / "lib" / "Init.ozf";
     else
-      initFunctorPath = ozHome / "share" / "mozart" / "cache" / "Init.ozf";
+      initFunctorPath = ozHome / "share" / "mozart" / "Init.ozf";
   }
 
   bool useBaseFunctor = varMap.count("base") != 0;

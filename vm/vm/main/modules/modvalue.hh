@@ -238,7 +238,8 @@ public:
 
     static void call(VM vm, In value, Out result) {
       result = build(vm, value.isTransient() &&
-        !value.is<ReadOnly>() && !value.is<FailedValue>());
+        !value.is<ReadOnly>() && !value.is<ReadOnlyVariable>() &&
+        !value.is<FailedValue>());
     }
   };
 

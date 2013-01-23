@@ -63,7 +63,7 @@ trait OzPreprocessor {
       }
     } else if (skipping) {
       in.first match {
-        case PreprocessorDirective("ifdef" | "ifndef") =>
+        case PreprocessorDirectiveWithArg("ifdef" | "ifndef", _) =>
           preprocess(state.copy(skipDepth = skipDepth+1))
 
         case PreprocessorDirective("else" | "endif") if (skipDepth == 1) =>

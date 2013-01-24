@@ -215,8 +215,8 @@ define
               lvlD
               )
       lvlD:alt(
-              [pB '@' atPhrase pE]#fun{$ [P1 _ S1 P2]}fAt(S1 {MkPos P1 P2})end
-              [pB '!!' atPhrase pE]#fun{$ [P1 _ S1 P2]}fOpApply('!!' [S1] {MkPos P1 P2})end
+              [pB '@' lvlD pE]#fun{$ [P1 _ S1 P2]}fAt(S1 {MkPos P1 P2})end
+              [pB '!!' lvlD pE]#fun{$ [P1 _ S1 P2]}fOpApply('!!' [S1] {MkPos P1 P2})end
               atPhrase
               )
       atPhrase:alt(

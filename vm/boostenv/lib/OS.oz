@@ -579,10 +579,20 @@ define
    %% Set up a non-stub BURL
 
    local
+      fun {BURL_localize URL}
+         try
+            {Fclose {Fopen URL "rb"}}
+            old(URL)
+         catch system(os(os _ _ Msg) ...) then
+            raise system(url(localize Msg URL) debug:unit) end
+         end
+      end
+
       fun {BURL_open URL}
          {CompatOpen URL ['O_RDONLY'] nil}
       end
    in
+      {Boot_Reflection.become BURL.localize BURL_localize}
       {Boot_Reflection.become BURL.open BURL_open}
    end
 

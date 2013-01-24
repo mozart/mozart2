@@ -320,3 +320,7 @@ install(FILES ${LIBRARY_FUNCTORS_OZF}
 
 install(FILES ${TARGET_SUPPLEMENTARY_FILES}
         DESTINATION share/mozart/cache/x-oz/system/images)
+
+# Subdirectories
+
+add_subdirectory(tools)

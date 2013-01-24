@@ -142,7 +142,7 @@ local
              if UserHome \= false then
                 F = {Property.get 'oz.dotoz'} # '/wishrc'
              in
-                try {OS.stat F _} F
+                try {OS.fclose {OS.fopen F "rb"}} F
                 catch system(...) then unit end
              else unit end
           end

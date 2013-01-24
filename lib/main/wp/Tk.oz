@@ -43,7 +43,8 @@ import
       close
       exec
       pipe
-      stat)
+      fopen
+      fclose)
 
    Resolve(makeResolver pickle handler)
 

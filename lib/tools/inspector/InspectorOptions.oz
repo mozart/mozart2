@@ -564,18 +564,22 @@ define
          end
          %% WeakDictionary Secific Functions
          local
-            WeakDictKeys    = {NewName}
-            WeakDictItems   = {NewName}
-            WeakDictEntries = {NewName}
+            %WeakDictKeys    = {NewName}
+            %WeakDictItems   = {NewName}
+            %WeakDictEntries = {NewName}
+            skip
          in
             fun {ShowWeakDictKeys V W D}
-               WeakDictKeys({WeakDictionary.keys V})
+               % TODO WeakDictKeys({WeakDictionary.keys V})
+               raise error(notImplemented('WeakDictionary') debug:unit) end
             end
             fun {ShowWeakDictItems V W D}
-               WeakDictItems({WeakDictionary.items V})
+               % TODO WeakDictItems({WeakDictionary.items V})
+               raise error(notImplemented('WeakDictionary') debug:unit) end
             end
             fun {ShowWeakDictCont V W D}
-               {WeakDictionary.toRecord WeakDictEntries V}
+               % TODO {WeakDictionary.toRecord WeakDictEntries V}
+               raise error(notImplemented('WeakDictionary') debug:unit) end
             end
          end
          %% Class Specific Functions

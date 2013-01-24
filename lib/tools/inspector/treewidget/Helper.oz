@@ -32,19 +32,15 @@ define
       case Is
       of nil  then nil
       [] I|Ir then
-         case {Char.type I}
-         of punct then
-            case I
-            of 34  then 92|34|{TkQuoteStr Ir}  %% '"'
-            [] 36  then 92|36|{TkQuoteStr Ir}  %% '$'
-            [] 39  then 92|39|{TkQuoteStr Ir}  %% '''
-            [] 92  then 92|92|{TkQuoteStr Ir}  %% '\'
-            [] 91  then 92|91|{TkQuoteStr Ir}  %% '['
-            [] 93  then 92|93|{TkQuoteStr Ir}  %% ']'
-            [] 123 then 92|123|{TkQuoteStr Ir} %% '{'
-            [] 125 then 92|125|{TkQuoteStr Ir} %% '}'
-            else I|{TkQuoteStr Ir}
-            end
+         case I
+         of 34  then 92|34|{TkQuoteStr Ir}  %% '"'
+         [] 36  then 92|36|{TkQuoteStr Ir}  %% '$'
+         [] 39  then 92|39|{TkQuoteStr Ir}  %% '''
+         [] 92  then 92|92|{TkQuoteStr Ir}  %% '\'
+         [] 91  then 92|91|{TkQuoteStr Ir}  %% '['
+         [] 93  then 92|93|{TkQuoteStr Ir}  %% ']'
+         [] 123 then 92|123|{TkQuoteStr Ir} %% '{'
+         [] 125 then 92|125|{TkQuoteStr Ir} %% '}'
          else I|{TkQuoteStr Ir}
          end
       end
@@ -75,7 +71,7 @@ define
       end
    in
       proc {ConvertAtom MaxLen V PrintStr LenStr}
-         Str    = {Value.toVirtualString V ~1 ~1}
+         Str    = {VirtualString.toString {Value.toVirtualString V ~1 ~1}}
          Marker = case Str
                   of 39|_ then "...'"
                   [] _    then "..."

@@ -24,6 +24,9 @@
 
 functor
 
+require
+   BootSerializer at 'x-oz://boot/Serializer'
+
 import
    CompilerSupport
 
@@ -315,6 +318,17 @@ define
 
          {self AppendElem(OpCode)}
          {self AppendArgs(Args)}
+
+         case Instr
+         of patternMatchX(_ Patterns) then
+            {self LookForXRegsInPatterns(Patterns)}
+         [] patternMatchY(_ Patterns) then
+            {self LookForXRegsInPatterns(Patterns)}
+         [] patternMatchG(_ Patterns) then
+            {self LookForXRegsInPatterns(Patterns)}
+         else
+            skip
+         end
       end
 
       meth MarkEnd()
@@ -370,6 +384,33 @@ define
             kRegCount := Result+1
             kRegs := Value|@kRegs
          end
+      end
+
+      meth LookForXRegsInPatterns(Patterns)
+         {Record.forAll Patterns
+          proc {$ Pattern}
+             {self LookForXRegsInPattern(Pattern)}
+          end}
+      end
+
+      meth LookForXRegsInPattern(Pattern)
+         proc {Loop Qs}
+            case Qs
+            of nil then
+               skip
+            [] _#_#patmatcapture(Idx)#Qr then
+               if Idx >= @xRegCount then
+                  xRegCount := Idx+1
+               end
+               {Loop Qr}
+            [] _#_#_#Qr then
+               {Loop Qr}
+            end
+         end
+
+         Qs = {BootSerializer.serialize {BootSerializer.new} [Pattern#_]}
+      in
+         {Loop Qs}
       end
 
       meth output($)

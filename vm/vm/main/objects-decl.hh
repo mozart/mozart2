@@ -66,6 +66,11 @@ public:
     return _attrCount;
   }
 
+public:
+  StableNode* getFeaturesRecord() {
+    return &_features;
+  }
+
 private:
   inline
   bool isFreeFlag(VM vm, RichNode value);

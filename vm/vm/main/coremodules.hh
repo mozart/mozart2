@@ -30,6 +30,7 @@
 #include "modules/modarray.hh"
 #include "modules/modatom.hh"
 #include "modules/modboot.hh"
+#include "modules/modbrowser.hh"
 #include "modules/modcell.hh"
 #include "modules/modchunk.hh"
 #include "modules/modcoders.hh"

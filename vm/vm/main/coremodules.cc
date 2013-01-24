@@ -39,6 +39,7 @@ void registerCoreModules(VM vm) {
   registerBuiltinModArray(vm);
   registerBuiltinModAtom(vm);
   registerBuiltinModBoot(vm);
+  registerBuiltinModBrowser(vm);
   registerBuiltinModCell(vm);
   registerBuiltinModChunk(vm);
   registerBuiltinModCoders(vm);

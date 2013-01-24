@@ -47,6 +47,7 @@ export
    PutEnv
 
    % File I/0
+   GetDir
    GetCWD
    Tmpnam
 
@@ -123,6 +124,10 @@ define
    PutEnv = Boot_OS.putEnv
 
    % File I/0
+
+   fun {GetDir Path}
+      {Map {Boot_OS.getDir Path} AtomToString}
+   end
 
    GetCWD = Boot_OS.getCWD
    Tmpnam = Boot_OS.tmpnam

@@ -96,7 +96,7 @@ void requireFeature(VM vm, RichNode feature);
 class OzListBuilder {
 public:
   inline
-  OzListBuilder(VM vm);
+  explicit OzListBuilder(VM vm);
 
   template <class T>
   inline

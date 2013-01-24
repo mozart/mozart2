@@ -220,6 +220,43 @@ private:
   }
 
 public:
+  class GetDir: public Builtin<GetDir> {
+  public:
+    GetDir(): Builtin("getDir") {}
+
+    static void call(VM vm, In directory, Out result) {
+      using namespace boost::filesystem;
+
+      size_t dirBufSize = ozVSLengthForBuffer(vm, directory);
+
+      directory_iterator iter;
+      boost::system::error_code ec;
+      {
+        path::string_type strDirectory;
+        ozVSGet(vm, directory, dirBufSize, strDirectory);
+
+        path pathDirectory(strDirectory);
+        iter = directory_iterator(pathDirectory, ec);
+      }
+
+      if (ec)
+        raiseOSError(vm, MOZART_STR("getDir"), ec);
+
+      {
+        OzListBuilder builder(vm);
+        for (; iter != directory_iterator(); ++iter) {
+          auto nativeFileName = iter->path().filename().native();
+          auto mozartFileName = toUTF<nchar>(
+            makeLString(nativeFileName.c_str(), nativeFileName.size()));
+
+          builder.push_back(vm, vm->getAtom(mozartFileName.length,
+                                            mozartFileName.string));
+        }
+        result = builder.get(vm);
+      }
+    }
+  };
+
   class GetCWD: public Builtin<GetCWD> {
   public:
     GetCWD(): Builtin("getCWD") {}

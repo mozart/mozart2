@@ -30,14 +30,31 @@ import
 export
    Translate
 define
-   % Get a maximum of optimizations
-   proc {ReplaceFeature R F X ?Result}
-      {Boot_Record.adjoinAtIfHasFeature R F X ?Result true}
-   end
 
    DictCondExchangeFun = Boot_Dictionary.condExchangeFun
 
-   proc{Translate WG UseCache ?TG}
+   proc {FailedCtxNoLastNoSuccess Ctx ?Result}
+      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?Result true}
+   end
+
+   proc {FailedCtxLastNoSuccess Ctx ?Result}
+      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?Result true}
+      LastNoSuccess = Result.lastNoSuccess
+   in
+      if {Access LastNoSuccess}.offset < Result.offset then
+         {Assign LastNoSuccess Result}
+      end
+   end
+
+   proc{Translate WG Opts ?TG}
+      UseCache = {CondSelect Opts useCache false}
+      UseLastNoSuccess = {CondSelect Opts useLastNoSuccess false}
+
+      FailedCtx = if UseLastNoSuccess
+                  then FailedCtxLastNoSuccess
+                  else FailedCtxNoLastNoSuccess
+                  end
+
       fun{TranslateRule G}
          case G
          of raw(P) then
@@ -121,7 +138,7 @@ define
             proc{$ CtxIn CtxOut Sem} CtxTmp in
                {XX CtxIn CtxTmp Sem}
                if CtxTmp.valid then
-                  CtxOut={ReplaceFeature CtxIn valid false}
+                  CtxOut={FailedCtx CtxIn}
                else
                   CtxOut=CtxIn
                end
@@ -134,7 +151,7 @@ define
                if CtxTmp.valid then
                   CtxOut=CtxIn
                else
-                  CtxOut={ReplaceFeature CtxIn valid false}
+                  CtxOut={FailedCtx CtxIn}
                end
             end
          [] sem(X P) then
@@ -197,14 +214,22 @@ define
             proc {$ CtxIn CtxOut Sem}
                true = CtxIn.valid
                Sem = CtxIn.first
-               CtxOut = {ReplaceFeature CtxIn.rest valid {P Sem}}
+               if {P Sem} then
+                  CtxOut = CtxIn.rest
+               else
+                  CtxOut = {FailedCtx CtxIn.rest}
+               end
             end
          [] is(X P) then
             XX={TranslateRule X} in
             proc{$ CtxIn CtxOut Sem} CtxTmp in
                {XX CtxIn CtxTmp Sem}
                if CtxTmp.valid then
-                  CtxOut={ReplaceFeature CtxTmp valid {P Sem}}
+                  if {P Sem} then
+                     CtxOut = CtxTmp
+                  else
+                     CtxOut = {FailedCtx CtxTmp}
+                  end
                else
                   CtxOut=CtxTmp
                end
@@ -218,7 +243,7 @@ define
                   CtxOut = CtxIn.rest
                   Sem = Sem0
                [] false then
-                  CtxOut = {ReplaceFeature CtxIn.rest valid false}
+                  CtxOut = {FailedCtx CtxIn.rest}
                   Sem = V
                end
             end
@@ -229,7 +254,7 @@ define
                if Sem == V then
                   CtxOut = CtxIn.rest
                else
-                  CtxOut = {ReplaceFeature CtxIn.rest valid false}
+                  CtxOut = {FailedCtx CtxIn.rest}
                end
             end
          [] star(X) then

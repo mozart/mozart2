@@ -386,7 +386,8 @@ define
               )
       )
 
-   TG = {Translate {Record.adjoinList Rules RulesL} true}
+   TG = {Translate {Record.adjoinList Rules RulesL}
+         opts(useCache:true useLastNoSuccess:true)}
 
    local
       fun {ParseGeneric MakeInitCtxProc Opts}
@@ -405,7 +406,11 @@ define
             {ForAll {Arity FinalDefines} proc {$ D} DefsDict.D := true end}
             AST#nil
          else
-            parseError#[error(kind:'parse error' msg:'Parse error')]
+            LastNoSuccess = {Access CtxOut.lastNoSuccess}
+            Pos = LastNoSuccess.posbegin
+         in
+            parseError#[error(kind:'parse error' msg:'Parse error'
+                              items:[Pos])]
          end
       end
    in

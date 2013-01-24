@@ -448,20 +448,16 @@ define
 
 
    Stream = local
-               Platform = {Property.get 'platform.name'}
-               PLTFRM = ({Property.get 'oz.home'} #
-                         '/platform/'#Platform#'/')
-               TKEXE = case {Property.get 'platform.arch'}
-                       of 'darwin' then 'OzWish.app/Contents/MacOS/OzWish'
-                       else 'tk.exe' end
+               Home = {Property.get 'oz.home'}
+               TkExecutable = Home#'/bin/ozwish'
             in
-               {OS.putEnv 'TCL_LIBRARY' PLTFRM#'wish/tcl'}
-               {OS.putEnv 'TK_LIBRARY'  PLTFRM#'wish/tk'}
+               %{OS.putEnv 'TCL_LIBRARY' Home#'/share/mozart/tcltk/tcl'}
+               %{OS.putEnv 'TK_LIBRARY'  Home#'/share/mozart/tcltk/tk'}
 
                % RS: on MS Windows we use a socket: before we used
                % pipes, but on NT this made problems when certain background
                % tasks where running: Tk could get stuck here
-               if Platform == 'win32-i486'
+               if {Property.get 'platform.name'} == 'win32-i486'
                then Stream Port in
                   thread
                      Stream = {New class $ from Open.socket Open.text
@@ -470,14 +466,14 @@ define
                                server(port: ?Port)}
                   end
                   {Wait Port}
-                  _ = {OS.exec PLTFRM#TKEXE [Port] true}
+                  _ = {OS.exec TkExecutable [Port] true}
                   {Wait Stream}
                   Stream
                else
                   {New class $ from Open.pipe Open.text
                           prop final
                        end
-                   init(cmd:PLTFRM#TKEXE)}
+                   init(cmd:TkExecutable)}
                end
             end
 

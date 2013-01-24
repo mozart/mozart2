@@ -72,9 +72,10 @@ private:
            size_t critBit, int d, AtomImpl* other)
     : size(size), critBit(critBit) {
 
-    size_t dataLengthPlus1 = (size >> bitsPerChar) + 1;
-    nchar* data0 = new (vm) nchar[dataLengthPlus1];
-    std::memcpy(data0, data, dataLengthPlus1 * sizeof(nchar));
+    size_t dataLength = size >> bitsPerChar;
+    nchar* data0 = new (vm) nchar[dataLength + 1];
+    std::memcpy(data0, data, dataLength * sizeof(nchar));
+    data0[dataLength] = (nchar) 0;
     this->data = data0;
 
     side[d]=this;

@@ -1358,8 +1358,6 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
       raiseTypeError(vm, MOZART_STR("pattern"), patternList[index]);
     }
 
-    assert(jumpOffset >= 0);
-
     if (mozart::patternMatch(vm, value, pattern, xregs->getArray())) {
       advancePC(2 + jumpOffset);
       return;

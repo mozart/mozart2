@@ -36,9 +36,9 @@ namespace mozart {
 template <class This>
 class VariableBase: public WithHome {
 public:
-  explicit VariableBase(VM vm): WithHome(vm) {}
+  explicit VariableBase(VM vm): WithHome(vm), _needed(false) {}
 
-  VariableBase(VM vm, Space* home): WithHome(home) {}
+  VariableBase(VM vm, Space* home): WithHome(home), _needed(false) {}
 
   inline
   VariableBase(VM vm, GR gr, This& from);

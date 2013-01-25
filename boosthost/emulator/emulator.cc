@@ -83,6 +83,7 @@ atom_t pathToAtom(VM vm, const fs::path& path) {
 int main(int argc, char** argv) {
   // CONFIGURATION VARIABLES
 
+  std::string ozHomeStr, initFunctorPathStr, baseFunctorPathStr;
   fs::path ozHome, initFunctorPath, baseFunctorPath;
   std::string ozSearchPath, ozSearchLoad, appURL;
   std::vector<std::string> appArgs;
@@ -96,9 +97,9 @@ int main(int argc, char** argv) {
 
   po::options_description config("Configuration");
   config.add_options()
-    ("home", po::value<fs::path>(&ozHome),
+    ("home", po::value<std::string>(&ozHomeStr),
       "path to the home of the installation")
-    ("init", po::value<fs::path>(&initFunctorPath),
+    ("init", po::value<std::string>(&initFunctorPathStr),
       "path to the Init.ozf functor")
     ("search-path", po::value<std::string>(&ozSearchPath),
       "search path")
@@ -108,7 +109,7 @@ int main(int argc, char** argv) {
 
   po::options_description hidden("Hidden options");
   hidden.add_options()
-    ("base", po::value<fs::path>(&baseFunctorPath),
+    ("base", po::value<std::string>(&baseFunctorPathStr),
       "path to the Base.ozf functor")
     ("app-url", po::value<std::string>(&appURL),
       "application URL")
@@ -145,6 +146,10 @@ int main(int argc, char** argv) {
   po::store(po::parse_environment(environment_options,
                                   &envVarToOptionNameFallback), varMap);
   po::notify(varMap);
+
+  ozHome = ozHomeStr;
+  initFunctorPath = initFunctorPathStr;
+  baseFunctorPath = baseFunctorPathStr;
 
   // READ OPTIONS
 

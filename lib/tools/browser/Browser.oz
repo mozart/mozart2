@@ -56,8 +56,7 @@ import
        'var.is')
    at 'x-oz://boot/FSB'
 
-   BrowserSupport(recordCIsVarB
-                  getTermSize
+   BrowserSupport(isRecordCVar
                   getsBoundB
                   chunkArity
                   chunkWidth

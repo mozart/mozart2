@@ -41,7 +41,7 @@ end
 %% somewhere and somehow in Oz Kernel(?);
 IsVar =        fun {$ X} {Value.isDet X} == false end
 IsFdVar =      FDB.isVarB
-IsRecordCVar = BrowserSupport.recordCIsVarB
+IsRecordCVar = BrowserSupport.isRecordCVar
 
 %%
 %% Yields 'true' if a record given has a label already. Never
@@ -54,7 +54,9 @@ EQ = {fun {$ X} X end System.eq}
 %%
 %% it takes three arguments - a term, depth and width has to be
 %% walked through;
-TermSize = BrowserSupport.getTermSize
+fun {TermSize X Depth Width}
+   {VirtualString.length {Value.toVirtualString X Depth Width}}
+end
 
 %%
 %% Its argument is a term. It bounds its second argument to 'true'

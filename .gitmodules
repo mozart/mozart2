@@ -25,3 +25,6 @@
 [submodule "lib/tools/inspector"]
 	path = lib/tools/inspector
 	url = git://github.com/mozart/mozart2-tool-inspector.git
+[submodule "lib/tools/browser"]
+	path = lib/tools/browser
+	url = git://github.com/mozart/mozart2-tool-browser.git

@@ -47,15 +47,18 @@ in
                     this:               ThisThread
                     is:                 IsThread
                     /*suspend:            Boot_Thread.suspend
-                    resume:             Boot_Thread.resume
-                    preempt:            Boot_Thread.preempt*/
+                    resume:             Boot_Thread.resume*/
+                    preempt:            proc {$ T}
+                                           % TODO
+                                           skip
+                                        end
                     terminate:          proc {$ T}
                                            {Thread.injectException T
                                             {Exception.system
                                              kernel(terminate)}}
                                         end
                     injectException:    Boot_Thread.injectException
-                    /*state:              Boot_Thread.state
-                    isSuspended:        Boot_Thread.isSuspended*/)
+                    state:              Boot_Thread.state
+                    /*isSuspended:        Boot_Thread.isSuspended*/)
 
 end

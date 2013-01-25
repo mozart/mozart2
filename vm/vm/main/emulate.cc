@@ -122,16 +122,6 @@ bool ThreadStack::findExceptionHandler(VM vm, StableNode*& abstraction,
 }
 
 namespace {
-  template <class Feat, class Def>
-  inline
-  UnstableNode handyCondSelect(VM vm, RichNode record, Feat&& feature,
-                               Def&& def) {
-    UnstableNode featureNode = build(vm, std::forward<Feat>(feature));
-    UnstableNode defaultNode = build(vm, std::forward<Def>(def));
-
-    return Dottable(record).condSelect(vm, featureNode, defaultNode);
-  }
-
   inline
   UnstableNode buildStackTraceItem(VM vm, StableNode* abstraction,
                                    ProgramCounter PC) {
@@ -142,12 +132,11 @@ namespace {
     UnstableNode kind = build(vm, MOZART_STR("call"));
     UnstableNode data = build(vm, *abstraction);
 
-    UnstableNode file = handyCondSelect(vm, debugData, MOZART_STR("file"),
-                                        vm->coreatoms.empty);
-    UnstableNode line = handyCondSelect(vm, debugData, MOZART_STR("line"),
-                                        unit);
-    UnstableNode column = handyCondSelect(vm, debugData, MOZART_STR("column"),
-                                          -1);
+    Dottable dotDebugData(debugData);
+    UnstableNode file = dotDebugData.condSelect(vm, MOZART_STR("file"),
+                                                vm->coreatoms.empty);
+    UnstableNode line = dotDebugData.condSelect(vm, MOZART_STR("line"), unit);
+    UnstableNode column = dotDebugData.condSelect(vm, MOZART_STR("column"), -1);
 
     UnstableNode PCNode = build(vm, reinterpret_cast<std::intptr_t>(PC));
 

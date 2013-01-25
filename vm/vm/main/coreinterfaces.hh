@@ -25,6 +25,8 @@
 #ifndef __COREINTERFACES_H
 #define __COREINTERFACES_H
 
+#include <type_traits>
+
 #include "mozartcore-decl.hh"
 
 #include "coreinterfaces-decl.hh"
@@ -147,12 +149,30 @@ struct Dottable: public BaseDottable {
       raiseKernelError(vm, MOZART_STR("."), _self, feature);
   }
 
+  template <typename F>
+  auto dot(VM vm, F&& feature)
+    -> typename std::enable_if<
+      !std::is_convertible<F, RichNode>::value &&
+      !std::is_convertible<F, nativeint>::value, UnstableNode>::type {
+    UnstableNode featureNode(vm, std::forward<F>(feature));
+    return dot(vm, RichNode(featureNode));
+  }
+
   bool hasFeature(VM vm, RichNode feature) {
     return lookupFeature(vm, feature, nullptr);
   }
 
   bool hasFeature(VM vm, nativeint feature) {
     return lookupFeature(vm, feature, nullptr);
+  }
+
+  template <typename F>
+  auto hasFeature(VM vm, F&& feature)
+    -> typename std::enable_if<
+      !std::is_convertible<F, RichNode>::value &&
+      !std::is_convertible<F, nativeint>::value, bool>::type {
+    UnstableNode featureNode(vm, std::forward<F>(feature));
+    return hasFeature(vm, RichNode(featureNode));
   }
 
   UnstableNode condSelect(VM vm, RichNode feature, RichNode defaultResult) {
@@ -169,6 +189,24 @@ struct Dottable: public BaseDottable {
       return result;
     else
       return { vm, defaultResult };
+  }
+
+  template <typename D>
+  auto condSelect(VM vm, nativeint feature, D&& defaultResult)
+    -> typename std::enable_if<
+      !std::is_convertible<D, RichNode>::value, UnstableNode>::type {
+    UnstableNode defaultNode(vm, std::forward<D>(defaultResult));
+    return condSelect(vm, feature, RichNode(defaultNode));
+  }
+
+  template <typename F, typename D>
+  auto condSelect(VM vm, F&& feature, D&& defaultResult)
+    -> typename std::enable_if<
+      !std::is_convertible<F, nativeint>::value &&
+      !std::is_convertible<D, RichNode>::value, UnstableNode>::type {
+    UnstableNode featureNode(vm, std::forward<F>(feature));
+    UnstableNode defaultNode(vm, std::forward<D>(defaultResult));
+    return condSelect(vm, RichNode(featureNode), RichNode(defaultNode));
   }
 };
 

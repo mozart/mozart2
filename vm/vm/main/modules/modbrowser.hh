@@ -41,26 +41,47 @@ class ModBrowser: public Module {
 public:
   ModBrowser(): Module("Browser") {}
 
+  class IsRecordCVar: public Builtin<IsRecordCVar> {
+  public:
+    IsRecordCVar(): Builtin("isRecordCVar") {}
+
+    static void call(VM vm, In value, Out result) {
+      // TODO Update this when we have kinded variables
+      result = build(vm, !value.isTransient() && RecordLike(value).isRecord(vm));
+    }
+  };
+
+  class ChunkWidth: public Builtin<ChunkWidth> {
+  public:
+    ChunkWidth(): Builtin("chunkWidth") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, RecordLike(getChunkUnderlying(vm, value)).width(vm));
+    }
+  };
+
   class ChunkArity: public Builtin<ChunkArity> {
   public:
     ChunkArity(): Builtin("chunkArity") {}
 
     static void call(VM vm, In value, Out result) {
-      if (value.isTransient())
-        waitFor(vm, value);
-
-      RichNode underlying;
-
-      if (value.is<Chunk>())
-        underlying = *value.as<Chunk>().getUnderlying();
-      else if (value.is<Object>())
-        underlying = *value.as<Object>().getFeaturesRecord();
-      else
-        raiseTypeError(vm, MOZART_STR("Chunk"), value);
-
-      result = RecordLike(underlying).arityList(vm);
+      result = RecordLike(getChunkUnderlying(vm, value)).arityList(vm);
     }
   };
+
+private:
+  static StableNode& getChunkUnderlying(VM vm, In value) {
+      if (value.is<Chunk>())
+        return *value.as<Chunk>().getUnderlying();
+      else if (value.is<Object>())
+        return *value.as<Object>().getFeaturesRecord();
+      else if (value.isTransient())
+        waitFor(vm, value);
+      else
+        raiseTypeError(vm, MOZART_STR("Chunk"), value);
+  }
+
+public:
 
   class ShortName: public Builtin<ShortName> {
   public:
@@ -106,6 +127,34 @@ public:
         space = nullptr;
 
       result = build(vm, (nativeint) space);
+    }
+  };
+
+  class ProcLoc: public Builtin<ProcLoc> {
+  public:
+    ProcLoc(): Builtin("procLoc") {}
+
+    static void call(VM vm, In procedure, Out file, Out line, Out column) {
+      atom_t printName;
+      UnstableNode debugData;
+      Callable(procedure).getDebugInfo(vm, printName, debugData);
+
+      Dottable dotDebugData(debugData);
+      file = dotDebugData.condSelect(
+        vm, MOZART_STR("file"), MOZART_STR("procedure"));
+      line = dotDebugData.condSelect(
+        vm, MOZART_STR("line"), MOZART_STR("-"));
+      column = dotDebugData.condSelect(
+        vm, MOZART_STR("column"), MOZART_STR("-"));
+    }
+  };
+
+  class Addr: public Builtin<Addr> {
+  public:
+    Addr(): Builtin("addr") {}
+
+    static void call(VM vm, In entity, Out result) {
+      result = build(vm, (nativeint) entity.getStableRef(vm));
     }
   };
 };

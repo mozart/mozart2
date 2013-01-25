@@ -116,6 +116,22 @@ public:
       ThreadLike(thread).injectException(vm, exception);
     }
   };
+
+  class State: public Builtin<State> {
+  public:
+    State(): Builtin("state") {}
+
+    static void call(VM vm, In thread, Out result) {
+      Runnable* runnable = getArgument<Runnable*>(vm, thread);
+
+      if (runnable->isTerminated())
+        result = build(vm, MOZART_STR("terminated"));
+      else if (runnable->isRunnable())
+        result = build(vm, MOZART_STR("runnable"));
+      else
+        result = build(vm, MOZART_STR("blocked"));
+    }
+  };
 };
 
 }

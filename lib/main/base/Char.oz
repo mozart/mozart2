@@ -27,21 +27,63 @@ fun {IsChar X}
    ((X >= 0 andthen X < 0xd800) orelse (X >= 0xe000 andthen X < 0x110000))
 end
 
+% TODO This should be made Unicode-aware
+
 Char = char(is:       IsChar
-            isAlpha:  fun {$ X} {Char.isUpper X} orelse {Char.isLower X} end
-            isUpper:  fun {$ X} X >= &A andthen X =< &Z end
-            isLower:  fun {$ X} X >= &a andthen X =< &z end
-            isDigit:  fun {$ X} X >= &0 andthen X =< &9 end
-            %isXDigit: Boot_Char.isXDigit
-            isAlNum:  fun {$ X} {Char.isAlpha X} orelse {Char.isDigit X} end
-            /*isSpace:  Boot_Char.isSpace
-            isGraph:  Boot_Char.isGraph
-            isPrint:  Boot_Char.isPrint
-            isPunct:  Boot_Char.isPunct
-            isCntrl:  Boot_Char.isCntrl*/
+            isAlpha:  fun {$ X}
+                         {Char.isUpper X} orelse {Char.isLower X}
+                      end
+            isUpper:  fun {$ X}
+                         (X >= &A andthen X =< &Z) orelse
+                         (X >= 192 andthen X =< 222 andthen X \= 215)
+                      end
+            isLower:  fun {$ X}
+                         (X >= &a andthen X =< &z) orelse
+                         (X >= 223 andthen X =< 255 andthen X \= 247)
+                      end
+            isDigit:  fun {$ X}
+                         X >= &0 andthen X =< &9
+                      end
+            isXDigit: fun {$ X}
+                         (X >= &0 andthen X =< &9) orelse
+                         (X >= &A andthen X =< &F) orelse
+                         (X >= &a andthen X =< &f)
+                      end
+            isAlNum:  fun {$ X}
+                         {Char.isAlpha X} orelse {Char.isDigit X}
+                      end
+            isSpace:  fun {$ X}
+                         X == 32 orelse
+                         (X >= 9 andthen X =< 13) orelse
+                         X == 160
+                      end
+            isGraph:  fun {$ X}
+                         {Char.isAlNum X} orelse {Char.isPunct}
+                      end
+            isPrint:  fun {$ X}
+                         {Char.isGraph X} orelse X == 32 orelse X == 160
+                      end
+            isPunct:  fun {$ X}
+                         (X >= 33 andthen X =< 47) orelse
+                         (X >= 58 andthen X =< 64) orelse
+                         (X >= 91 andthen X =< 96) orelse
+                         (X >= 123 andthen X =< 126) orelse
+                         (X >= 161 andthen X =< 191) orelse
+                         (X == 215) orelse
+                         (X == 247)
+                      end
+            isCntrl:  fun {$ X} X < 32 orelse X == 127 end
             toUpper:  fun {$ X} if {Char.isLower X} then X-32 else X end end
             toLower:  fun {$ X} if {Char.isUpper X} then X+32 else X end end
             toAtom:   fun {$ C}
                          if C == 0 then '' else {String.toAtom C|nil} end
                       end
-            /*type:     Boot_Char.type*/)
+            type:     fun {$ X}
+                         if {Char.isUpper X} then upper
+                         elseif {Char.isLower X} then lower
+                         elseif {Char.isDigit X} then digit
+                         elseif {Char.isSpace X} then space
+                         elseif {Char.isPunct X} then punct
+                         else other
+                         end
+                      end)

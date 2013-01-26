@@ -57,9 +57,8 @@ int Atom::compare(VM vm, RichNode right) {
   return value().compare(rightAtomValue);
 }
 
-void Atom::printReprToStream(VM vm, std::ostream& out, int depth) {
-  atom_t a = value();
-  out << '\'' << toUTF<char>(makeLString(a.contents(), a.length())) << '\'';
+void Atom::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+  out << value();
 }
 
 }

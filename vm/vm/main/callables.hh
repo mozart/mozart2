@@ -133,7 +133,8 @@ void Abstraction::getDebugInfo(VM vm, atom_t& printName,
   return CodeAreaProvider(_body).getCodeAreaDebugInfo(vm, printName, debugData);
 }
 
-void Abstraction::printReprToStream(VM vm, std::ostream& out, int depth) {
+void Abstraction::printReprToStream(VM vm, std::ostream& out,
+                                    int depth, int width) {
   MOZART_TRY(vm) {
     ensureCodeAreaCacheValid(vm);
 

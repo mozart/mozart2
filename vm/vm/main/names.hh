@@ -151,10 +151,9 @@ UnstableNode UniqueName::serialize(VM vm, SE se) {
   return buildTuple(vm, MOZART_STR("uniquename"), atom_t(value()));
 }
 
-void UniqueName::printReprToStream(VM vm, std::ostream& out, int depth) {
-  out << "<UniqueName '";
-  out << toUTF<char>(makeLString(value().contents(), value().length()));
-  out << "'>";
+void UniqueName::printReprToStream(VM vm, std::ostream& out,
+                                   int depth, int width) {
+  out << value();
 }
 
 }

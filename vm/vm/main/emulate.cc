@@ -1439,10 +1439,10 @@ void Thread::applyRaise(VM vm, RichNode exception,
     } else {
       // Uncaught exception
       std::cout << "Uncaught exception" << std::endl;
-      std::cout << repr(vm, (*xregs)[0], 100) << std::endl;
+      std::cout << repr(vm, (*xregs)[0], 20, 20) << std::endl;
 
       UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
-      std::cout << repr(vm, stackTrace) << std::endl;
+      std::cout << repr(vm, stackTrace, 30, 20) << std::endl;
 
       terminate();
     }

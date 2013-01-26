@@ -30,6 +30,7 @@
 #include <cstring>
 #include <string>
 #include <type_traits>
+#include <sstream>
 
 #include "utf-decl.hh"
 
@@ -112,10 +113,134 @@ int basic_atom_t<atom_type>::compare(const basic_atom_t<atom_type>& rhs) const {
   return _impl->compare(rhs._impl);
 }
 
-template <class C, size_t atom_type>
-std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
-                                  const basic_atom_t<atom_type>& atom) {
-  return out << makeLString(atom.contents(), atom.length());
+///////////////////////
+// BasicAtomStreamer //
+///////////////////////
+
+template <>
+struct BasicAtomStreamer<nchar, 1> { // 1 = atom_t
+  static void print(std::basic_ostream<nchar>& out, const atom_t& atom) {
+    auto contents = makeLString(atom.contents(), atom.length());
+
+    if (needsQuote(contents)) {
+      out << MOZART_STR("'");
+      forEachCodePoint(contents,
+        [&out] (char32_t c) -> bool {
+          switch (c) {
+            case 7: out << MOZART_STR("\\a"); break;
+            case 8: out << MOZART_STR("\\b"); break;
+            case 9: out << MOZART_STR("\\t"); break;
+            case 10: out << MOZART_STR("\\n"); break;
+            case 11: out << MOZART_STR("\\v"); break;
+            case 12: out << MOZART_STR("\\f"); break;
+            case 13: out << MOZART_STR("\\r"); break;
+            case '\'': out << MOZART_STR("\\'"); break;
+            default: {
+              if (c < 32) {
+                out << '\\' << '0' << (c / 8) << (c % 8);
+              } else {
+                nchar data[4];
+                auto len = toUTF(c, data);
+                out.write(data, len);
+              }
+            }
+          }
+          return true;
+        }
+      );
+      out << MOZART_STR("'");
+    } else {
+      out.write(atom.contents(), atom.length());
+    }
+  }
+
+private:
+  static bool needsQuote(const BaseLString<nchar>& contents) {
+    return doesItNotLookLikeAnAtom(contents) || isKeyword(contents);
+  }
+
+  static bool doesItNotLookLikeAnAtom(const BaseLString<nchar>& contents) {
+    if (contents.length <= 0)
+      return true;
+
+    bool first = true;
+    bool result = false;
+    forEachCodePoint(contents,
+      [&first, &result] (char32_t c) -> bool {
+        if (first) {
+          if (!(c >= 'a' && c <= 'z')) {
+            result = true;
+            return false;
+          }
+          first = false;
+        } else {
+          if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || (c == '_'))) {
+            result = true;
+            return false;
+          }
+        }
+        return true;
+      }
+    );
+    return result;
+  }
+
+  static bool isKeyword(const BaseLString<nchar>& contents) {
+    // TODO Be smarter here, e.g. test length first, or first char, or both
+    static const nchar* keywords[] = {
+      MOZART_STR("andthen"), MOZART_STR("at"), MOZART_STR("attr"),
+      MOZART_STR("case"), MOZART_STR("catch"), MOZART_STR("choice"),
+      MOZART_STR("class"), MOZART_STR("cond"), MOZART_STR("declare"),
+      MOZART_STR("define"), MOZART_STR("dis"), MOZART_STR("do"),
+      MOZART_STR("div"), MOZART_STR("else"), MOZART_STR("elsecase"),
+      MOZART_STR("elseif"), MOZART_STR("elseof"), MOZART_STR("end"),
+      MOZART_STR("export"), MOZART_STR("fail"), MOZART_STR("false"),
+      MOZART_STR("feat"), MOZART_STR("finally"), MOZART_STR("from"),
+      MOZART_STR("for"), MOZART_STR("fun"), MOZART_STR("functor"),
+      MOZART_STR("if"), MOZART_STR("import"), MOZART_STR("in"),
+      MOZART_STR("local"), MOZART_STR("lock"), MOZART_STR("meth"),
+      MOZART_STR("mod"), MOZART_STR("not"), MOZART_STR("of"), MOZART_STR("or"),
+      MOZART_STR("orelse"), MOZART_STR("prepare"), MOZART_STR("proc"),
+      MOZART_STR("prop"), MOZART_STR("raise"), MOZART_STR("require"),
+      MOZART_STR("self"), MOZART_STR("skip"), MOZART_STR("then"),
+      MOZART_STR("thread"), MOZART_STR("true"), MOZART_STR("try"),
+      MOZART_STR("unit"),
+    };
+
+    using ct = std::char_traits<nchar>;
+
+    assert(contents.length > 0);
+    size_t len = (size_t) contents.length;
+    const nchar* s = contents.string;
+
+    for (const nchar* kw : keywords) {
+      if ((len == ct::length(kw)) && (ct::compare(s, kw, len) == 0)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+};
+
+template <>
+struct BasicAtomStreamer<nchar, 2> { // 1 = unique_name_t
+  static void print(std::basic_ostream<nchar>& out,
+                    const unique_name_t& atom) {
+    out << MOZART_STR("<N: ");
+    BasicAtomStreamer<nchar, 1>::print(out, atom_t(atom));
+    out << MOZART_STR(">");
+  }
+};
+
+template <typename C, size_t atom_type>
+void BasicAtomStreamer<C, atom_type>::print(
+  std::basic_ostream<C>& out, const basic_atom_t<atom_type>& atom) {
+
+  std::basic_stringstream<nchar> tempStream;
+  BasicAtomStreamer<nchar, atom_type>::print(tempStream, atom);
+  out << makeLString(tempStream.str().data(), tempStream.str().size());
 }
 
 ///////////////

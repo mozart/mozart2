@@ -188,7 +188,8 @@ bool ByteString::stringHasSuffix(VM vm, RichNode suffixNode) {
 
 // Miscellaneous ---------------------------------------------------------------
 
-void ByteString::printReprToStream(VM vm, std::ostream& out, int depth) {
+void ByteString::printReprToStream(VM vm, std::ostream& out,
+                                   int depth, int width) {
   out << "<ByteString \"";
   if (_bytes.isError()) {
     out << "error " << _bytes.error;

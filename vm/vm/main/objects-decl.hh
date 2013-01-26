@@ -141,7 +141,7 @@ public:
   void getDebugInfo(VM vm, atom_t& printName, UnstableNode& debugData);
 
 public:
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "<Object>";
   }
 

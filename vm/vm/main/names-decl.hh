@@ -74,7 +74,7 @@ public:
   inline
   GlobalNode* globalize(RichNode self, VM vm);
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "<OptName>";
   }
 };
@@ -128,7 +128,7 @@ public:
   inline
   GlobalNode* globalize(RichNode self, VM vm);
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "<Name>";
   }
 
@@ -198,8 +198,8 @@ public:
   inline
   GlobalNode* globalize(RichNode self, VM vm);
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
-    out << "<Name/" << repr(vm, _printName) << ">";
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    out << "<Name/" << repr(vm, _printName, depth, width) << ">";
   }
 
 private:
@@ -262,7 +262,7 @@ public:
   UnstableNode serialize(VM vm, SE se);
 
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 private:
   unique_name_t _value;

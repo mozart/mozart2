@@ -75,7 +75,7 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << (value() ? "true" : "false");
   }
 

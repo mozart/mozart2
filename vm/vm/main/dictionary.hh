@@ -572,7 +572,8 @@ UnstableNode Dictionary::dictClone(VM vm) {
   return Dictionary::build(vm, dict);
 }
 
-void Dictionary::printReprToStream(VM vm, std::ostream& out, int depth) {
+void Dictionary::printReprToStream(VM vm, std::ostream& out,
+                                   int depth, int width) {
   out << "<Dictionary>";
 }
 

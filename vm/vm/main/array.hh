@@ -100,7 +100,7 @@ size_t Array::getOffset(RichNode self, VM vm, RichNode index) {
   return indexToOffset(indexIntValue);
 }
 
-void Array::printReprToStream(VM vm, std::ostream& out, int depth) {
+void Array::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
   out << "<Array " << getLow() << ".." << getHigh() << ">";
 }
 

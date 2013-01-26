@@ -342,7 +342,7 @@ void ImplementationDef::makeOutputDeclAfter(llvm::raw_fd_ostream& to) {
     to << "\n";
     to << "  inline\n";
     to << "  void printReprToStream(VM vm, RichNode self, std::ostream& out,\n";
-    to << "                         int depth) const;\n";
+    to << "                         int depth, int width) const;\n";
   }
 
   if (hasSerialize) {
@@ -429,9 +429,10 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
     to << "\n";
     to << "void " << className
        << "::printReprToStream(VM vm, RichNode self, std::ostream& out,\n";
-    to << "                    int depth) const {\n";
+    to << "                    int depth, int width) const {\n";
     to << "  assert(self.is<" << name << ">());\n";
-    to << "  self.as<" << name << ">().printReprToStream(vm, out, depth);\n";
+    to << "  self.as<" << name
+       << ">().printReprToStream(vm, out, depth, width);\n";
     to << "}\n";
   }
 

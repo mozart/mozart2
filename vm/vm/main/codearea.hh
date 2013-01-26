@@ -86,13 +86,14 @@ void CodeArea::getCodeAreaDebugInfo(VM vm, atom_t& printName,
   debugData.copy(vm, _debugData);
 }
 
-void CodeArea::printReprToStream(VM vm, std::ostream& out, int depth) {
+void CodeArea::printReprToStream(VM vm, std::ostream& out,
+                                 int depth, int width) {
   out << "<CodeArea for <P/" << _arity;
   if (_printName != vm->coreatoms.empty)
     out << " " << _printName;
   out << ">";
   if (!RichNode(_debugData).is<Unit>())
-    out << " " << repr(vm, _debugData);
+    out << " " << repr(vm, _debugData, depth, width);
   out << ">";
 }
 

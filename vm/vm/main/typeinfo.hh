@@ -47,6 +47,32 @@ GlobalNode* TypeInfo::globalize(VM vm, RichNode from) const {
   return GlobalNode::make(vm, from, MOZART_STR("default"));
 }
 
+//////////
+// repr //
+//////////
+
+void repr::init(VM vm, RichNode value, int depth, int width) {
+  this->vm = vm;
+  this->value = value;
+  this->depth = depth;
+  this->width = width;
+}
+
+template <typename T>
+auto repr::init(VM vm, T&& value, int depth, int width)
+  -> typename std::enable_if<!std::is_convertible<T, RichNode>::value>::type {
+
+  unstableValue = build(vm, std::forward<T>(value));
+  init(vm, RichNode(unstableValue), depth, width);
+}
+
+template <typename T>
+void repr::init(VM vm, T&& value) {
+  init(vm, std::forward<T>(value),
+       vm->getPropertyRegistry().config.errorsDepth,
+       vm->getPropertyRegistry().config.errorsWidth);
+}
+
 }
 
 #endif // MOZART_GENERATOR

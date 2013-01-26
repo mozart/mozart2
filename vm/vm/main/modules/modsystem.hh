@@ -51,8 +51,12 @@ public:
       auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
       auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
 
+      auto& config = vm->getPropertyRegistry().config;
+
       auto& stream = boolToStdErr ? std::cerr : std::cout;
-      stream << repr(vm, value);
+      stream << repr(vm, value,
+                     boolToStdErr ? config.errorsDepth : config.errorsWidth,
+                     boolToStdErr ? config.printDepth : config.printWidth);
       if (boolNewLine)
         stream << std::endl;
     }
@@ -62,15 +66,35 @@ public:
   public:
     GetRepr(): Builtin("getRepr") {}
 
-    static void call(VM vm, In value, Out result) {
+    static void call(VM vm, In value, In depth, In width, Out result) {
+      auto intDepth = getArgument<nativeint>(vm, depth);
+      auto intWidth = getArgument<nativeint>(vm, width);
+
+      auto& config = vm->getPropertyRegistry().config;
+      if (intDepth <= 0)
+        intDepth = config.printDepth;
+      if (intWidth <= 0)
+        intWidth = config.printWidth;
+
       std::basic_stringstream<char> buffer;
-      buffer << repr(vm, value);
+      buffer << repr(vm, value, intDepth, intWidth);
       auto bufferStr = buffer.str();
 
       auto utf8str = makeLString(bufferStr.c_str(), bufferStr.size());
       auto str = toUTF<nchar>(utf8str);
 
       result = Atom::build(vm, str.length, str.string);
+    }
+  };
+
+  class PrintName: public Builtin<PrintName> {
+  public:
+    PrintName(): Builtin("printName") {}
+
+    static void call(VM vm, In value, Out result) {
+      // TODO
+      UnstableNode one(vm, 1);
+      GetRepr::call(vm, value, one, one, result);
     }
   };
 

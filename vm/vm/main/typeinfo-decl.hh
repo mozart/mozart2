@@ -32,6 +32,7 @@
 
 #include "store-decl.hh"
 #include "uuid-decl.hh"
+#include "lstring-decl.hh"
 
 namespace mozart {
 
@@ -81,7 +82,7 @@ public:
   }
 
   virtual void printReprToStream(VM vm, RichNode self, std::ostream& out,
-                                 int depth = 10) const {
+                                 int depth, int width) const {
     out << "<" << _name << ">";
   }
 
@@ -163,20 +164,41 @@ int compareFeatures(VM vm, RichNode lhs, RichNode rhs) {
 
 class repr {
 public:
-  repr(VM vm, RichNode value, int depth = 10):
-    vm(vm), value(value), depth(depth) {}
+  template <typename T>
+  repr(VM vm, T&& value, int depth, int width) {
+    init(vm, std::forward<T>(value), depth, width);
+  }
+
+  template <typename T>
+  repr(VM vm, T&& value) {
+    init(vm, std::forward<T>(value));
+  }
 
   std::ostream& operator()(std::ostream& out) const {
     if (depth <= 0)
       out << "...";
     else
-      value.type()->printReprToStream(vm, value, out, depth-1);
+      value.type()->printReprToStream(vm, value, out, depth-1, width);
     return out;
   }
 private:
+  inline
+  void init(VM vm, RichNode value, int depth, int width);
+
+  template <typename T>
+  inline
+  auto init(VM vm, T&& value, int depth, int width)
+    -> typename std::enable_if<!std::is_convertible<T, RichNode>::value>::type;
+
+  template <typename T>
+  inline
+  void init(VM vm, T&& value);
+private:
   mutable VM vm;
+  mutable UnstableNode unstableValue;
   mutable RichNode value;
   mutable int depth;
+  mutable int width;
 };
 
 inline

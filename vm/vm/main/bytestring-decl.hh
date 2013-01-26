@@ -115,7 +115,7 @@ public:
   // Miscellaneous
 
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 private:
   LString<unsigned char> _bytes;

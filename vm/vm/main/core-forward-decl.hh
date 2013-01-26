@@ -37,6 +37,7 @@
 #include <ostream>
 #include <functional>
 #include <memory>
+#include <cassert>
 
 #define MOZART_NORETURN __attribute__((noreturn))
 
@@ -110,10 +111,19 @@ bool operator!=(const basic_atom_t<atom_type>& lhs,
   return !lhs.equals(rhs);
 }
 
-template <class C, size_t atom_type>
-inline
+template <typename C, size_t atom_type>
+struct BasicAtomStreamer {
+  inline
+  static void print(std::basic_ostream<C>& out,
+                    const basic_atom_t<atom_type>& atom);
+};
+
+template <typename C, size_t atom_type>
 std::basic_ostream<C>& operator<<(std::basic_ostream<C>& out,
-                                  const basic_atom_t<atom_type>& atom);
+                                  const basic_atom_t<atom_type>& atom) {
+  BasicAtomStreamer<C, atom_type>::print(out, atom);
+  return out;
+}
 
 typedef basic_atom_t<1> atom_t;
 typedef basic_atom_t<2> unique_name_t;

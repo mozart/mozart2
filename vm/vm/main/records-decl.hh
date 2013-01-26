@@ -150,7 +150,10 @@ public:
 
 public:
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
+
+  inline
+  bool hasSharpRepr(VM vm, int depth);
 
   inline
   UnstableNode serialize(VM vm, SE se);
@@ -259,7 +262,10 @@ public:
 
 public:
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
+
+  inline
+  bool hasListRepr(VM vm, int depth);
 
   inline
   UnstableNode serialize(VM vm, SE se);
@@ -331,7 +337,7 @@ public:
   // Miscellaneous
 
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
   inline
   UnstableNode serialize(VM vm, SE se);
@@ -417,7 +423,7 @@ public:
 
 public:
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
   inline
   UnstableNode serialize(VM vm, SE se);
@@ -486,7 +492,7 @@ public:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "<Chunk>";
   }
 

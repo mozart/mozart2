@@ -135,7 +135,7 @@ private:
 
 public:
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 private:
   size_t _width;

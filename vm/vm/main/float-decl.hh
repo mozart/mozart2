@@ -114,7 +114,7 @@ public:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << value();
   }
 private:

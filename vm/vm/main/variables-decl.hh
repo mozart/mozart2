@@ -119,7 +119,7 @@ public:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "_";
   }
 };
@@ -162,7 +162,7 @@ public:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "!!_";
   }
 };
@@ -221,7 +221,7 @@ private:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     out << "_<optimized>";
   }
 };
@@ -293,8 +293,8 @@ public:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
-    out << "!!" << repr(vm, *_underlying, depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    out << "!!" << repr(vm, *_underlying, depth, width);
   }
 
 private:
@@ -351,8 +351,8 @@ public:
 public:
   // Miscellaneous
 
-  void printReprToStream(VM vm, std::ostream& out, int depth) {
-    out << "<Failed " << repr(vm, *_underlying, depth) << ">";
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    out << "<Failed " << repr(vm, *_underlying, depth, width) << ">";
   }
 
 private:

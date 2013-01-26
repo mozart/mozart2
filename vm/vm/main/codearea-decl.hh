@@ -79,7 +79,7 @@ public:
   // Miscellaneous
 
   inline
-  void printReprToStream(VM vm, std::ostream& out, int depth);
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
   inline
   UnstableNode serialize(VM vm, SE se);

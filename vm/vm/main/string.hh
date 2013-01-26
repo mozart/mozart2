@@ -235,7 +235,7 @@ bool String::lookupFeature(RichNode self, VM vm, nativeint feature,
 
 // Miscellaneous ---------------------------------------------------------------
 
-void String::printReprToStream(VM vm, std::ostream& out, int depth) {
+void String::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
   out << '"' << toUTF<char>(_string) << '"';
 }
 

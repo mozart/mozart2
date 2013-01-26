@@ -152,6 +152,7 @@ private:
 
   std::vector<PropertyRecord> _records;
 
+public:
   struct {
     // Print
     nativeint printDepth;

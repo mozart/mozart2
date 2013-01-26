@@ -87,6 +87,6 @@ Value = value(wait:            Wait
 
               toVirtualString:
                  fun {$ X Depth Width}
-                    {Boot_System.getRepr X}
+                    {Boot_System.getRepr X Depth Width}
                  end
              )

@@ -57,7 +57,7 @@ define
    end
 
    fun {PrintName Value}
-      {Boot_System.getRepr Value}
+      {Boot_System.printName Value}
    end
 
    proc {PrintInfo VS}

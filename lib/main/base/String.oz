@@ -37,7 +37,15 @@ fun {IsString Is}
    end
 end
 
-StringToAtom = Boot_VirtualString.toAtom
+fun {StringToAtom Is}
+   case Is
+   of nil then ''
+   [] _|_ then {Boot_VirtualString.toAtom Is}
+   else
+      {Exception.raiseError kernel(type 'String.toAtom' [Is] 'String' 1)}
+      _
+   end
+end
 
 local
    HexBase = base(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7 &8:8 &9:9

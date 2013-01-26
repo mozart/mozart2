@@ -47,7 +47,7 @@ define
             case S of false then ""
             elseof [4] then ""   % ^D
             elseof [4 13] then ""   % ^D^M
-            else S#'\n'#TextSocket, readQuery($)
+            else {Coders.decode S [utf8]}#'\n'#TextSocket, readQuery($)
             end
          end
       end
@@ -82,7 +82,7 @@ define
             case @Socket of unit then skip
             elseof S then
                try
-                  {S write(vs: VS)}
+                  {S write(vs: {Coders.encode VS [utf8]})}
                catch system(os(os _ 32 ...) ...) then
                   Socket <- unit
                end
@@ -118,7 +118,7 @@ define
                   File = {New Open.file
                           init(name: Name
                                flags: [write create truncate])}
-                  {File write(vs: VS)}
+                  {File write(vs: {Coders.encode VS [utf8]})}
                   {File close()}
                   CompilerInterfaceEmacs, Write({VirtualString.toAtom
                                                  '\'oz-show-temp '#Name#'\''})

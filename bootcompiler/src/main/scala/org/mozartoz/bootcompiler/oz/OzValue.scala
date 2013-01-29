@@ -69,7 +69,8 @@ case class UnitVal() extends BuiltinName("unit")
 /** Arity of a record */
 case class OzArity(label: OzLiteral,
     features: List[OzFeature]) extends OzValue {
-  def syntax() = "<Arity/" + toTuple.syntax() + ">"
+  def syntax() =
+    "<Arity/" + (if (features.isEmpty) label else toTuple).syntax() + ">"
 
   /** Width of this arity, aka number of features */
   val width = features.size

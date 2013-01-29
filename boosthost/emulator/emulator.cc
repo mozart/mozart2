@@ -76,6 +76,11 @@ atom_t strToAtom(VM vm, const std::string& str) {
   return vm->getAtom(mozartStr.length, mozartStr.string);
 }
 
+atom_t strToAtom(VM vm, const std::wstring& str) {
+  auto mozartStr = toUTF<nchar>(makeLString(str.c_str(), str.size()));
+  return vm->getAtom(mozartStr.length, mozartStr.string);
+}
+
 atom_t pathToAtom(VM vm, const fs::path& path) {
   return strToAtom(vm, path.native());
 }
@@ -234,7 +239,7 @@ int main(int argc, char** argv) {
     UnstableNode baseValue;
     auto& bootLoader = boostBasedVM.getBootLoader();
 
-    if (!bootLoader(vm, baseFunctorPath.native(), baseValue)) {
+    if (!bootLoader(vm, baseFunctorPath.string(), baseValue)) {
       std::cerr << "panic: could not load Base functor at "
                 << baseFunctorPath << std::endl;
       return 1;
@@ -261,7 +266,7 @@ int main(int argc, char** argv) {
     UnstableNode initValue;
     auto& bootLoader = boostBasedVM.getBootLoader();
 
-    if (!bootLoader(vm, initFunctorPath.native(), initValue)) {
+    if (!bootLoader(vm, initFunctorPath.string(), initValue)) {
       std::cerr << "panic: could not load Init functor at "
                 << initFunctorPath << std::endl;
       return 1;

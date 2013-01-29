@@ -4,7 +4,7 @@ project(MOZARTBOOTCOMPILER NONE)
 find_package(Java COMPONENTS Runtime REQUIRED)
 
 set(SBT_JAVA_OPTS
-    -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M
+    -Xms512M -Xmx1024M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M
     CACHE STRING "Options passed to the Java executable when running sbt")
 
 set(SBT "${Java_JAVA_EXECUTABLE}" ${SBT_JAVA_OPTS} -Dfile.encoding=UTF-8

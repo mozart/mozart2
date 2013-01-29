@@ -47,7 +47,7 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   // Set up a default boot loader
   setBootLoader(
     [] (VM vm, const std::string& url, UnstableNode& result) -> bool {
-      std::ifstream input(url);
+      std::ifstream input(url, std::ios::binary);
       if (!input.is_open())
         return false;
       result = bootUnpickle(vm, input);

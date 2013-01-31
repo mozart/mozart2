@@ -5,6 +5,13 @@ set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/..")
 set(MOZART_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/main")
 set(MOZART_COMPILER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/compiler")
 
+# Some OS-dependent configuration
+if(WIN32)
+  set(PATHSEP ";")
+else()
+  set(PATHSEP ":")
+endif()
+
 # ---------------------------------------------------------------------------- #
 # Find all the files we need to compile                                        #
 # ---------------------------------------------------------------------------- #
@@ -124,7 +131,7 @@ add_custom_target(
 
 set(STAGE_1_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage1")
 set(STAGE_1_CACHE_SYSTEM "${STAGE_1_CACHE}/x-oz/system")
-set(STAGE_1_SEARCH_LOAD "cache=${STAGE_1_CACHE}:${STAGE_0_SEARCH_LOAD}")
+set(STAGE_1_SEARCH_LOAD "cache=${STAGE_1_CACHE}${PATHSEP}${STAGE_0_SEARCH_LOAD}")
 
 file(MAKE_DIRECTORY "${STAGE_1_CACHE_SYSTEM}")
 
@@ -135,6 +142,7 @@ set(FINAL_INIT_OZF "${CMAKE_CURRENT_BINARY_DIR}/Init.ozf")
 add_custom_command(
   OUTPUT "${STAGE_1_BASE_OZF}"
   COMMAND ozemulator
+    --home "${MOZART_BUILD_DIR}"
     --base "${STAGE_0_BASE_OZF}"
     --init "${STAGE_0_INIT_OZF}"
     --search-load "${STAGE_0_SEARCH_LOAD}"
@@ -148,6 +156,7 @@ add_custom_command(
 add_custom_command(
   OUTPUT "${STAGE_1_RUNTIME_OZF}"
   COMMAND ozemulator
+    --home "${MOZART_BUILD_DIR}"
     --base "${STAGE_1_BASE_OZF}"
     --init "${STAGE_0_INIT_OZF}"
     --search-load "${STAGE_0_SEARCH_LOAD}"
@@ -161,6 +170,7 @@ add_custom_command(
 add_custom_command(
   OUTPUT "${FINAL_INIT_OZF}"
   COMMAND ozemulator
+    --home "${MOZART_BUILD_DIR}"
     --base "${STAGE_1_BASE_OZF}"
     --init "${STAGE_0_INIT_OZF}"
     --search-load "${STAGE_1_SEARCH_LOAD}"
@@ -184,7 +194,7 @@ add_dependencies(library_stage_1 library_stage_0)
 
 set(STAGE_2_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage2")
 set(STAGE_2_CACHE_SYSTEM "${STAGE_2_CACHE}/x-oz/system")
-set(STAGE_2_SEARCH_LOAD "cache=${STAGE_2_CACHE}:${STAGE_1_SEARCH_LOAD}")
+set(STAGE_2_SEARCH_LOAD "cache=${STAGE_2_CACHE}${PATHSEP}${STAGE_1_SEARCH_LOAD}")
 
 file(MAKE_DIRECTORY "${STAGE_2_CACHE_SYSTEM}")
 
@@ -202,6 +212,7 @@ foreach(FUNCTOR ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
   add_custom_command(
     OUTPUT "${FUNCTOR_OZF}"
     COMMAND ozemulator
+      --home "${MOZART_BUILD_DIR}"
       --search-load "${STAGE_1_SEARCH_LOAD}"
       x-oz://system/Compile.ozf
       -c "${FUNCTOR}"
@@ -224,7 +235,7 @@ add_dependencies(library_stage_2 library_stage_1)
 
 set(STAGE_3_CACHE "${CMAKE_CURRENT_BINARY_DIR}/stage3")
 set(STAGE_3_CACHE_SYSTEM "${STAGE_3_CACHE}/x-oz/system")
-set(STAGE_3_SEARCH_LOAD "cache=${STAGE_3_CACHE}:${STAGE_2_SEARCH_LOAD}")
+set(STAGE_3_SEARCH_LOAD "cache=${STAGE_3_CACHE}${PATHSEP}${STAGE_2_SEARCH_LOAD}")
 
 file(MAKE_DIRECTORY "${STAGE_3_CACHE_SYSTEM}")
 
@@ -239,6 +250,7 @@ foreach(FUNCTOR ${OTHER_LIBRARY_FUNCTORS})
   add_custom_command(
     OUTPUT "${FUNCTOR_OZF}"
     COMMAND ozemulator
+      --home "${MOZART_BUILD_DIR}"
       --search-load "${STAGE_2_SEARCH_LOAD}"
       x-oz://system/Compile.ozf
       -c "${FUNCTOR}"

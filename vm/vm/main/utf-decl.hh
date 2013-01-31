@@ -57,6 +57,7 @@ inline constexpr bool isValidCodePoint(nativeint codePoint);
 inline nativeint toUTF(char32_t character, char utf[4]);
 inline nativeint toUTF(char32_t character, char16_t utf[2]);
 inline nativeint toUTF(char32_t character, char32_t utf[1]);
+inline nativeint toUTF(char32_t character, wchar_t utf[4]);
 
 /**
  * Convert a UTF string to a Unicode character

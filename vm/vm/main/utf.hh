@@ -103,6 +103,34 @@ nativeint toUTF(char32_t character, char32_t utf[1]) {
   return 1;
 }
 
+namespace internal {
+  template <size_t i>
+  struct ToUTFWCharT {
+    static nativeint call(char32_t character, wchar_t utf[4]) {
+      static_assert(i != i, "Calling toUTF(wchar_t) with an unknown wchar_t");
+      return 0;
+    }
+  };
+
+  template <>
+  struct ToUTFWCharT<sizeof(char16_t)> {
+    static nativeint call(char32_t character, wchar_t utf[4]) {
+      return toUTF(character, reinterpret_cast<char16_t*>(utf));
+    }
+  };
+
+  template <>
+  struct ToUTFWCharT<sizeof(char32_t)> {
+    static nativeint call(char32_t character, wchar_t utf[4]) {
+      return toUTF(character, reinterpret_cast<char32_t*>(utf));
+    }
+  };
+}
+
+nativeint toUTF(char32_t character, wchar_t utf[4]) {
+  return internal::ToUTFWCharT<sizeof(wchar_t)>::call(character, utf);
+}
+
 inline std::pair<char32_t, nativeint> fromUTF8ContSeq(const char* utf,
                                                       char32_t val,
                                                       nativeint length,

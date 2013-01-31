@@ -14,6 +14,7 @@ foreach(FUNCTOR ${OPI_FUNCTORS})
   add_custom_command(
     OUTPUT "${FUNCTOR_OZF}"
     COMMAND ozemulator
+      --home "${MOZART_BUILD_DIR}"
       x-oz://system/Compile.ozf
       -c "${FUNCTOR}"
       -o "${FUNCTOR_OZF}"

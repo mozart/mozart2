@@ -29,6 +29,7 @@ foreach(FUNCTOR ${INSPECTOR_FUNCTORS})
   add_custom_command(
     OUTPUT "${FUNCTOR_OZF}"
     COMMAND ozemulator
+      --home "${MOZART_BUILD_DIR}"
       x-oz://system/Compile.ozf
       -c "${FUNCTOR}"
       -o "${FUNCTOR_OZF}"
@@ -41,7 +42,9 @@ set(INSPECTOR_OZF "${CMAKE_CURRENT_BINARY_DIR}/Inspector.ozf")
 
 add_custom_command(
   OUTPUT "${INSPECTOR_OZF}"
-  COMMAND ozemulator x-oz://system/Compile.ozf
+  COMMAND ozemulator
+    --home "${MOZART_BUILD_DIR}"
+    x-oz://system/Compile.ozf
     -c "${INSPECTOR_FUNCTOR}" -o "${INSPECTOR_OZF}"
   DEPENDS library "${INSPECTOR_FUNCTOR}"
   COMMENT "(compiling) ${INSPECTOR_OZF}"

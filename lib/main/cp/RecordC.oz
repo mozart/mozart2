@@ -76,8 +76,13 @@ define
       {Exception.raiseError kernel(notImplemented 'RecordC.tellSize')}
    end
 
-   fun {HasLabel R L}
-      {Label R} == L
+   fun {HasLabel R}
+      if {IsDet R} then
+         {Label R _} % for the type error
+         true
+      else
+         false
+      end
    end
 
    proc {MonitorArity R ?P ?S}

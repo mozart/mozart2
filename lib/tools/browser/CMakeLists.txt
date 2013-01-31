@@ -5,7 +5,9 @@ set(BROWSER_OZF "${CMAKE_CURRENT_BINARY_DIR}/Browser.ozf")
 
 add_custom_command(
   OUTPUT "${BROWSER_OZF}"
-  COMMAND ozemulator x-oz://system/Compile.ozf
+  COMMAND ozemulator
+    --home "${MOZART_BUILD_DIR}"
+    x-oz://system/Compile.ozf
     -c "${BROWSER_FUNCTOR}" -o "${BROWSER_OZF}"
   DEPENDS library "${BROWSER_FUNCTOR}"
   COMMENT "(compiling) ${BROWSER_OZF}"

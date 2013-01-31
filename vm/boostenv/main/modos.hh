@@ -294,11 +294,14 @@ public:
 
       std::FILE* file;
       {
-        std::vector<char> strFileName, strMode;
-        ozVSGetNullTerminated(vm, fileName, fileNameBufSize, strFileName);
+        std::string strFileName;
+        std::vector<char> strMode;
+        ozVSGet(vm, fileName, fileNameBufSize, strFileName);
         ozVSGetNullTerminated(vm, mode, modeBufSize, strMode);
-
-        file = std::fopen(strFileName.data(), strMode.data());
+        
+        boost::filesystem::path filePath(strFileName);
+        file = std::fopen(filePath.make_preferred().string().c_str(),
+                          strMode.data());
       }
 
       if (file == nullptr)

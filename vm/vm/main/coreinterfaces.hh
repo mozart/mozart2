@@ -54,6 +54,7 @@ namespace mozart {
 #include "BuiltinCallable-interf.hh"
 #include "Callable-interf.hh"
 #include "CodeAreaProvider-interf.hh"
+#include "WithPrintName-interf.hh"
 #include "Numeric-interf.hh"
 #include "BaseDottable-interf.hh"
 #include "DotAssignable-interf.hh"

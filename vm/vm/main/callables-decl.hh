@@ -79,6 +79,12 @@ public:
   bool equals(VM vm, RichNode right);
 
 public:
+  // WithPrintName interface
+
+  inline
+  atom_t getPrintName(VM vm);
+
+public:
   // BuiltinCallable interface
 
   bool isBuiltin(VM vm) {
@@ -131,10 +137,8 @@ public:
   inline
   UnstableNode serialize(VM vm, SE se);
 
-  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    out << "<P/" << _builtin->getArity() << " '" << _builtin->getModuleName();
-    out << "." << _builtin->getName() << "'>";
-  }
+  inline
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 private:
   Builtin* _builtin;
@@ -173,6 +177,12 @@ public:
   size_t getArraySizeImpl() {
     return _Gc;
   }
+
+public:
+  // WithPrintName interface
+
+  inline
+  atom_t getPrintName(VM vm);
 
 public:
   // Callable interface

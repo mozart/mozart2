@@ -92,9 +92,7 @@ public:
     PrintName(): Builtin("printName") {}
 
     static void call(VM vm, In value, Out result) {
-      // TODO
-      UnstableNode one(vm, 1);
-      GetRepr::call(vm, value, one, one, result);
+      result = build(vm, WithPrintName(value).getPrintName(vm));
     }
   };
 

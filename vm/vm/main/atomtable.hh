@@ -135,6 +135,7 @@ struct BasicAtomStreamer<nchar, 1> { // 1 = atom_t
             case 12: out << MOZART_STR("\\f"); break;
             case 13: out << MOZART_STR("\\r"); break;
             case '\'': out << MOZART_STR("\\'"); break;
+            case '\\': out << MOZART_STR("\\\\"); break;
             default: {
               if (c < 32) {
                 out << '\\' << '0' << (c / 8) << (c % 8);

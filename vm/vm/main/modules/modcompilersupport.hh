@@ -74,14 +74,16 @@ public:
         MOZART_STR("List of byte code elements")
       );
 
-      // Apparently the compiler wants to give us NamedNames sometimes
-      if (printName.is<NamedName>())
-        printName = printName.as<NamedName>().getPrintName();
-
       // Read scalar args
       auto intArity = getArgument<nativeint>(vm, arity);
       auto intXCount = getArgument<nativeint>(vm, XCount);
-      auto atomPrintName = getArgument<atom_t>(vm, printName);
+
+      // Apparently the compiler wants to give us NamedNames sometimes
+      atom_t atomPrintName;
+      if (printName.is<NamedName>())
+        atomPrintName = printName.as<NamedName>().getPrintName(vm);
+      else
+        atomPrintName = getArgument<atom_t>(vm, printName);
 
       // Read number of K registers
       size_t KCount = ozListLength(vm, KsList);

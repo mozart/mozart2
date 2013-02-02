@@ -46,6 +46,10 @@ bool BuiltinProcedure::equals(VM vm, RichNode right) {
   return value() == right.as<BuiltinProcedure>().value();
 }
 
+atom_t BuiltinProcedure::getPrintName(VM vm) {
+  return _builtin->getPrintName(vm);
+}
+
 void BuiltinProcedure::callBuiltin(VM vm, size_t argc, UnstableNode* args[]) {
   assert(argc == getArity());
   return _builtin->callBuiltin(vm, args);
@@ -71,13 +75,23 @@ void BuiltinProcedure::getCallInfo(
 void BuiltinProcedure::getDebugInfo(
   RichNode self, VM vm, atom_t& printName, UnstableNode& debugData) {
 
-  printName = _builtin->getNameAtom(vm);
+  printName = _builtin->getPrintName(vm);
   debugData = mozart::build(vm, unit);
 }
 
 UnstableNode BuiltinProcedure::serialize(VM vm, SE se) {
   return buildTuple(vm, MOZART_STR("builtin"),
                     _builtin->getModuleNameAtom(vm), _builtin->getNameAtom(vm));
+}
+
+void BuiltinProcedure::printReprToStream(VM vm, std::ostream& out,
+                                         int depth, int width) {
+  atom_t printName = _builtin->getPrintName(vm);
+
+  out << "<P/" << _builtin->getArity();
+  if (printName != vm->coreatoms.empty)
+    out << " " << makeLString(printName.contents(), printName.length());
+  out << ">";
 }
 
 /////////////////
@@ -110,6 +124,13 @@ Abstraction::Abstraction(VM vm, size_t Gc, GR gr, Abstraction& from):
   gr->copyStableNodes(getElementsArray(), from.getElementsArray(), Gc);
 }
 
+atom_t Abstraction::getPrintName(VM vm) {
+  atom_t result;
+  UnstableNode dummy;
+  getDebugInfo(vm, result, dummy);
+  return result;
+}
+
 size_t Abstraction::procedureArity(VM vm) {
   ensureCodeAreaCacheValid(vm);
   return _arity;
@@ -137,14 +158,11 @@ void Abstraction::printReprToStream(VM vm, std::ostream& out,
                                     int depth, int width) {
   MOZART_TRY(vm) {
     ensureCodeAreaCacheValid(vm);
-
-    atom_t printName;
-    UnstableNode debugData;
-    CodeAreaProvider(_body).getCodeAreaDebugInfo(vm, printName, debugData);
+    atom_t printName = getPrintName(vm);
 
     out << "<P/" << _arity;
     if (printName != vm->coreatoms.empty)
-      out << " " << printName;
+      out << " " << makeLString(printName.contents(), printName.length());
     out << ">";
   } MOZART_CATCH(vm, kind, node) {
     out << "<P/?>";

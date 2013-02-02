@@ -49,6 +49,19 @@ atom_t BaseBuiltin::getNameAtom(VM vm) {
   return vm->getAtom(nativeName.length, nativeName.string);
 }
 
+atom_t BaseBuiltin::getPrintName(VM vm) {
+  /* It is intentional that we stream _moduleName on the one hand (the string)
+   * and getNameAtom() on the other hand (the atom), so that we get results
+   * like Port.is, Value.'.', Int.'div' and Value.'\\='.
+   */
+  std::stringstream ss;
+  ss << _moduleName << '.' << getNameAtom(vm);
+  auto str = ss.str();
+  auto utf8PrintName = makeLString(str.c_str(), str.length());
+  auto nativePrintName = toUTF<nchar>(utf8PrintName);
+  return vm->getAtom(nativePrintName.length, nativePrintName.string);
+}
+
 void BaseBuiltin::getCallInfo(
   RichNode self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {

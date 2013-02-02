@@ -157,30 +157,28 @@ public:
     return vm->getAtom(MOZART_STR("name"));
   }
 
-  NamedName(VM vm, RichNode printName, UUID uuid):
-    WithHome(vm), _uuid(uuid) {
-    _printName.init(vm, printName);
-  }
+  NamedName(VM vm, atom_t printName, UUID uuid):
+    WithHome(vm), _printName(printName), _uuid(uuid) {}
 
-  NamedName(VM vm, RichNode printName):
-    WithHome(vm), _uuid(vm->genUUID()) {
-    _printName.init(vm, printName);
-  }
+  NamedName(VM vm, atom_t printName):
+    WithHome(vm), _printName(printName), _uuid(vm->genUUID()) {}
 
   inline
   NamedName(VM vm, GR gr, NamedName& from);
 
 public:
-  StableNode& getPrintName() {
-    return _printName;
-  }
-
   const UUID& getUUID() {
     return _uuid;
   }
 
   inline
   int compareFeatures(VM vm, RichNode right);
+
+public:
+  // WithPrintName interface
+
+  inline
+  atom_t getPrintName(VM vm);
 
 public:
   // NameLike interface
@@ -199,11 +197,11 @@ public:
   GlobalNode* globalize(RichNode self, VM vm);
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    out << "<Name/" << repr(vm, _printName, depth, width) << ">";
+    out << "<Name/" << _printName << ">";
   }
 
 private:
-  StableNode _printName;
+  atom_t _printName;
   UUID _uuid;
 };
 
@@ -247,6 +245,12 @@ public:
 
   inline
   int compareFeatures(VM vm, RichNode right);
+
+public:
+  // WithPrintName interface
+
+  inline
+  atom_t getPrintName(VM vm);
 
 public:
   // NameLike interface

@@ -74,12 +74,9 @@ public:
   public:
     NewNamed(): Builtin("newNamed") {}
 
-    static void call(VM vm, In atom, Out result) {
-      if (AtomLike(atom).isAtom(vm)) {
-        result = NamedName::build(vm, atom);
-      } else {
-        raiseTypeError(vm, MOZART_STR("Atom"), atom);
-      }
+    static void call(VM vm, In printName, Out result) {
+      auto printNameValue = getArgument<atom_t>(vm, printName);
+      result = NamedName::build(vm, printNameValue);
     }
   };
 
@@ -87,13 +84,10 @@ public:
   public:
     NewNamedWithUUID(): Builtin("newNamedWithUUID") {}
 
-    static void call(VM vm, In atom, In uuid, Out result) {
+    static void call(VM vm, In printName, In uuid, Out result) {
+      auto printNameValue = getArgument<atom_t>(vm, printName);
       auto uuidValue = getArgument<UUID>(vm, uuid);
-      if (AtomLike(atom).isAtom(vm)) {
-        result = NamedName::build(vm, atom, uuidValue);
-      } else {
-        raiseTypeError(vm, MOZART_STR("Atom"), atom);
-      }
+      result = NamedName::build(vm, printNameValue, uuidValue);
     }
   };
 

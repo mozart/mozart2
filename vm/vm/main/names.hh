@@ -94,7 +94,8 @@ GlobalNode* GlobalName::globalize(RichNode self, VM vm) {
 NamedName::NamedName(VM vm, GR gr, NamedName& from):
   WithHome(vm, gr, from) {
 
-  gr->copyStableNode(_printName, from._printName);
+  _printName = vm->getAtom(from._printName.length(),
+                           from._printName.contents());
 
   if (gr->kind() == GraphReplicator::grkSpaceCloning)
     _uuid = vm->genUUID();
@@ -113,10 +114,12 @@ int NamedName::compareFeatures(VM vm, RichNode right) {
     return 1;
 }
 
+atom_t NamedName::getPrintName(VM vm) {
+  return _printName;
+}
+
 UnstableNode NamedName::serialize(VM vm, SE se) {
-  auto result = buildTuple(vm, MOZART_STR("namedname"), OptVar::build(vm));
-  se->copy(RichNode(result).as<Tuple>().getElements(0), _printName);
-  return result;
+  return buildTuple(vm, MOZART_STR("namedname"), _printName);
 }
 
 GlobalNode* NamedName::globalize(RichNode self, VM vm) {
@@ -145,6 +148,10 @@ bool UniqueName::equals(VM vm, RichNode right) {
 
 int UniqueName::compareFeatures(VM vm, RichNode right) {
   return value().compare(right.as<UniqueName>().value());
+}
+
+atom_t UniqueName::getPrintName(VM vm) {
+  return atom_t(value());
 }
 
 UnstableNode UniqueName::serialize(VM vm, SE se) {

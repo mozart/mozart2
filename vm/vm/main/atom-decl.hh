@@ -77,6 +77,13 @@ public:
   int compareFeatures(VM vm, RichNode right);
 
 public:
+  // WithPrintName interface
+
+  atom_t getPrintName(VM vm) {
+    return value();
+  }
+
+public:
   // AtomLike interface
 
   bool isAtom(VM vm) {

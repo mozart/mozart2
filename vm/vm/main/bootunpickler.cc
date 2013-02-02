@@ -262,7 +262,7 @@ private:
   UnstableNode readNamedNameValue() {
     return readGlobalEntity(
       [this] (const UUID& uuid, GlobalNode* gnode) -> UnstableNode {
-        UnstableNode printName(vm, readAtom());
+        auto printName = readAtom();
         auto result = NamedName::build(vm, printName, uuid);
         gnode->self.init(vm, result);
         gnode->protocol.init(vm, MOZART_STR("immval"));

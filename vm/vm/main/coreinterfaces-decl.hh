@@ -255,6 +255,16 @@ struct Interface<CodeAreaProvider>:
   }
 };
 
+class WithPrintName;
+template<>
+struct Interface<WithPrintName>:
+  ImplementedBy<Abstraction, BuiltinProcedure, UniqueName, NamedName, Atom> {
+
+  atom_t getPrintName(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("WithPrintName"), self);
+  }
+};
+
 class Numeric;
 template<>
 struct Interface<Numeric>:

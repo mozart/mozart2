@@ -228,6 +228,9 @@ public:
   inline
   atom_t getNameAtom(VM vm);
 
+  inline
+  atom_t getPrintName(VM vm);
+
   size_t getArity() {
     return _arity;
   }

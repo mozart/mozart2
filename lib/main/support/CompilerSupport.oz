@@ -32,6 +32,7 @@ functor
 require
    Boot_CompilerSupport at 'x-oz://boot/CompilerSupport'
    Boot_Name(newNamed:NewNamedName) at 'x-oz://boot/Name'
+   Boot_Browser(chunkArity:ChunkArityBrowser) at 'x-oz://boot/Browser'
 
 export
    ChunkArity
@@ -55,10 +56,7 @@ export
 
 define
 
-   proc {ChunkArity Chunk ?ArityList}
-      % TODO
-      raise notImplemented('ChunkArity') end
-   end
+   ChunkArity = ChunkArityBrowser
 
    FeatureLess = Boot_CompilerSupport.featureLess
 

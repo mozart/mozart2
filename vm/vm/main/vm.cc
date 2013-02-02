@@ -50,20 +50,13 @@ VirtualMachine::run_return_type VirtualMachine::run() {
       _alarms.remove_front(this);
     }
 
-    Runnable* currentThread;
-
     // Select a thread
+    Runnable* currentThread;
     do {
       currentThread = threadPool.popNext();
+    } while (currentThread != nullptr && currentThread->isTerminated());
 
-      if (currentThread == nullptr) {
-        // All remaining threads are suspended
-        // TODO Is there something special to do in that case?
-        break;
-      }
-    } while (currentThread->isTerminated());
-
-    // Forward break
+    // When there is no runnable thread left, return to the external world
     if (currentThread == nullptr)
       break;
 

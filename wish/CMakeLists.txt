@@ -3,6 +3,8 @@ project(MOZARTWISH)
 
 find_package(TCL REQUIRED)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTERP_RESULT=1")
+
 include_directories("${TCL_INCLUDE_PATH}" "${TK_INCLUDE_PATH}")
 
 if(WIN32)

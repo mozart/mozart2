@@ -53,8 +53,6 @@ object OpMove {
 
 /** Allocate `count` local variables, i.e., Y registers */
 case class OpAllocateY(count: ImmInt) extends OpCode(0x0D)
-/** Deallocate the current Y registers */
-case class OpDeallocateY() extends OpCode(0x0E)
 
 /** Create a new Unbound variable and store it into `dest` */
 case class OpCreateVarX(dest: XReg) extends OpCode(0x0F)

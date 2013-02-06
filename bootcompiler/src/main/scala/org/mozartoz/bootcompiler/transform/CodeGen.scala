@@ -61,9 +61,7 @@ object CodeGen extends Transformer with TreeDSL {
     // Actual codegen
     generate(abstraction.body)
 
-    // Deallocate local variables and return
-    if (localCount != 0)
-      code += OpDeallocateY()
+    // Return
     code += OpReturn()
   }
 

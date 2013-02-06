@@ -854,15 +854,11 @@ define
       fun {Loop Code}
          case Code
 
-         % allocateL / deAllocateL become allocateY / deallocateY
-         of allocateL(0) | Rest then
-            {Loop Rest}
-         [] allocateL(I) | Rest then
+         % allocateL / deAllocateL become allocateY / nothing
+         of allocateL(I) | Rest then
             allocateY(I) | {Loop Rest}
-         [] deAllocateL(0) | Rest then
-            {Loop Rest}
          [] deAllocateL(_) | Rest then
-            deallocateY | {Loop Rest}
+            {Loop Rest}
 
          % createVariable and createVariableMove are renamed
          [] createVariable(R) | Rest then

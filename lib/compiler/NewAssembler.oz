@@ -53,7 +53,6 @@ define
       moveMoveXYYX: 0x0C
 
       allocateY: 0x0D
-      deallocateY: 0x0E
 
       createVarX: 0x0F
       createVarY: 0x10
@@ -709,7 +708,7 @@ define
       [] createVar(X1=x(_)) | move(X2 R) | Rest andthen X1 == X2 then
          {Peephole createVarMove(R X1)|Rest Assembler}
 
-      [] deallocateY | return | (Rest = lbl(_) | deallocateY | return | _) then
+      [] allocateY(0) | Rest then
          {Peephole Rest Assembler}
 
       [] return | (Rest = lbl(_) | return | _) then
@@ -720,7 +719,9 @@ define
       in
          {GetClears Instrs ?Clears ?Rest}
          case Rest
-         of deallocateY|_ then skip
+         of return|_ then skip
+         [] call(_ _)|return|_ then skip
+         [] sendMsg(_ _ _)|return|_ then skip
          else
             {ForAll Clears
              proc {$ Instr}
@@ -762,32 +763,8 @@ define
 
          {Peephole Rest Assembler}
 
-      [] call(T Arity) | deallocateY | return | Rest then
-         NewT
-      in
-         case T of y(_) then
-            {Assembler append(move(T NewT=x(Arity)))}
-         else
-            NewT = T
-         end
-         {Assembler append(deallocateY)}
-         {Assembler append(tailCall(NewT Arity))}
-         {EliminateDeadCode Rest Assembler}
-
       [] call(T Arity) | return | Rest then
          {Assembler append(tailCall(T Arity))}
-         {EliminateDeadCode Rest Assembler}
-
-      [] sendMsg(Obj LabelOrArity Width) | deallocateY | return | Rest then
-         NewObj
-      in
-         case Obj of y(_) then
-            {Assembler append(move(Obj NewObj=x(Width)))}
-         else
-            NewObj = Obj
-         end
-         {Assembler append(deallocateY)}
-         {Assembler append(tailSendMsg(NewObj LabelOrArity Width))}
          {EliminateDeadCode Rest Assembler}
 
       [] sendMsg(Obj LabelOrArity Width) | return | Rest then

@@ -380,14 +380,6 @@ void Thread::run() {
           advancePC(1); break;
         }
 
-        case OpDeallocateY: {
-          assert(yregs != nullptr); // Duplicate DeallocateY
-          vm->deleteStaticArray<UnstableNode>(yregs, yregCount);
-          yregCount = 0;
-          yregs = nullptr;
-          advancePC(0); break;
-        }
-
         // Variable allocation
 
         case OpCreateVarX: {
@@ -600,6 +592,8 @@ void Thread::run() {
         }
 
         case OpReturn: {
+          vm->deleteStaticArray<UnstableNode>(yregs, yregCount);
+
           if (stack.empty()) {
             terminate();
             preempted = true;
@@ -1221,20 +1215,27 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
 
     vm->deleteStaticArray<RichNode>(actualArgs, actualArity);
 
-    return raiseKernelError(vm, MOZART_STR("arity"),
-                            target, std::move(argumentsList));
+    raiseKernelError(vm, MOZART_STR("arity"),
+                     target, std::move(argumentsList));
   }
 
   advancePC(opcodeArgCount);
+
+  /* Get a stable ref now, in case target happens to be a Y register and
+   * we are doing a tail call. */
+  StableNode* stableTarget = target.getStableRef(vm);
 
   if (!isTailCall) {
     pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
   } else {
     assert(stack.empty() || !stack.front().isExceptionHandler());
+
+    // This will invalidate target if it is a Y register!
+    vm->deleteStaticArray<UnstableNode>(yregs, yregCount);
   }
 
   // Setup new frame
-  abstraction = target.getStableRef(vm);
+  abstraction = stableTarget;
   PC = start;
   xregs->grow(vm, Xcount, formalArity);
   yregCount = 0;

@@ -51,7 +51,6 @@ const OpCode OpMoveMoveYXXY = 0x0B;
 const OpCode OpMoveMoveXYYX = 0x0C;
 
 const OpCode OpAllocateY = 0x0D;
-const OpCode OpDeallocateY = 0x0E;
 
 const OpCode OpCreateVarX = 0x0F;
 const OpCode OpCreateVarY = 0x10;

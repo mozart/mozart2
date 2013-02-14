@@ -27,11 +27,11 @@
 
 #include "mozartcore.hh"
 
-#include <istream>
+#include <string>
 
 namespace mozart {
 
-UnstableNode bootUnpickle(VM vm, std::istream& input);
+UnstableNode bootUnpickle(VM vm, const std::string& input);
 
 }
 

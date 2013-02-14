@@ -41,4 +41,4 @@ registerConstantProp(vm, MOZART_STR("platform.arch"),
 registerConstantProp(vm, MOZART_STR("oz.version"),
                      MOZART_STR("@MOZART_PROP_OZ_VERSION@"));
 registerConstantProp(vm, MOZART_STR("oz.date"),
-                     __DATE__ " " __TIME__);
+                     MOZART_STR("@MOZART_PROP_OZ_DATE@"));

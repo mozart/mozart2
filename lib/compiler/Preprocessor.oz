@@ -112,7 +112,7 @@ define
          case FileStack
          of nil then
             % Totally the end
-            {MakeEOFContext tkEof(Defines) Offset Pos PrevPos LastNoSuccess}
+            {MakeEOFContext tkEof(Defines) Offset Pos.1 PrevPos LastNoSuccess}
          [] (NewIn#NewBaseURL)|NewStack then
             % Get out of one file
             {Preprocess NewIn NewBaseURL NewStack Offset PrevPos Defines LastNoSuccess}

@@ -186,11 +186,11 @@ private:
       },
       [this] () {
         size_t size = readSize();
-        input.ignore(size*2 + (4 + 4));
+        ignore(size*2 + (4 + 4));
         readString();
         readSize();
         size_t Kcount = readSize();
-        input.ignore(Kcount*4);
+        ignore(Kcount*4);
       }
     );
   }
@@ -229,9 +229,9 @@ private:
         return result;
       },
       [this] () {
-        input.ignore(4);
+        ignore(4);
         size_t Gcount = readSize();
-        input.ignore(Gcount*4);
+        ignore(Gcount*4);
       }
     );
   }
@@ -349,6 +349,15 @@ private:
     input.read(buffer, length);
     assert(!input.bad() && "failure while reading");
     assert(!input.eof() && "reached eof too early");
+  }
+
+  /** Ignore the `count` following bytes of the input */
+  void ignore(size_t count) {
+    /* We cannot use input.ignore() here because of a bug in the implementation
+     * of that function in libc++. */
+    std::vector<char> dummy;
+    dummy.resize(count);
+    read(dummy.data(), count);
   }
 
 private:

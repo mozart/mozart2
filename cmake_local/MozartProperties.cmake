@@ -23,8 +23,6 @@ execute_process(
   ERROR_QUIET
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-message(STATUS "${git_describe_output}")
-
 if("${git_describe_output}" MATCHES "^v[0-9].+-[0-9]+-g[0-9a-f]+(-dirty)?$")
   string(REGEX REPLACE "^v(.+)-([0-9]+)-g([0-9a-f]+)((-dirty)?)$" "\\1+build.\\2.\\3\\4"
          MOZART_PROP_OZ_VERSION "${git_describe_output}")
@@ -37,3 +35,20 @@ else()
 endif()
 
 unset(git_describe_output)
+
+# oz.date
+
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} log "--format=%aD" -1
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  OUTPUT_VARIABLE git_date_output
+  ERROR_QUIET
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set(MOZART_PROP_OZ_DATE "${git_date_output}")
+
+unset(git_date_output)
+
+# Display which version we found
+
+message(STATUS "Mozart ${MOZART_PROP_OZ_VERSION} (${MOZART_PROP_OZ_DATE})")

@@ -52,8 +52,11 @@ add_subdirectory(stdlib)
 
 # General CPack configuration
 
-set(CPACK_PACKAGE_FILE_NAME "Mozart2")
-set(CPACK_PACKAGE_NAME "Mozart2")
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" MOZART_SYSTEM_NAME)
+
+set(CPACK_PACKAGE_FILE_NAME
+    "mozart2-${MOZART_PROP_OZ_VERSION}-${MOZART_PROP_PLATFORM_ARCH}-${MOZART_SYSTEM_NAME}")
+set(CPACK_PACKAGE_NAME "mozart2")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Mozart Programming System v2")
 set(CPACK_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_PACKAGE_VENDOR "Université catholique de Louvain")

@@ -258,10 +258,15 @@ struct Interface<CodeAreaProvider>:
 class WithPrintName;
 template<>
 struct Interface<WithPrintName>:
-  ImplementedBy<Abstraction, BuiltinProcedure, UniqueName, NamedName, Atom> {
+  ImplementedBy<Abstraction, BuiltinProcedure, UniqueName, NamedName,
+                Atom, Boolean, Unit>,
+  NoAutoWait {
 
   atom_t getPrintName(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("WithPrintName"), self);
+    if (self.isTransient())
+      return vm->getAtom(MOZART_STR("_"));
+    else
+      return vm->coreatoms.empty;
   }
 };
 

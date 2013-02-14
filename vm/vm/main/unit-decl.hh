@@ -60,6 +60,13 @@ public:
   int compareFeatures(VM vm, RichNode right);
 
 public:
+  // WithPrintName interface
+
+  atom_t getPrintName(VM vm) {
+    return vm->getAtom(MOZART_STR("unit"));
+  }
+
+public:
   // NameLike interface
 
   bool isName(VM vm) {

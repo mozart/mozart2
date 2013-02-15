@@ -67,6 +67,12 @@ public:
     GetRepr(): Builtin("getRepr") {}
 
     static void call(VM vm, In value, In depth, In width, Out result) {
+      // nil is a nasty one, because its repr is nil, which is the empty string
+      if (value.is<Atom>() && (value.as<Atom>().value() == vm->coreatoms.nil)) {
+        result = buildList(vm, (nativeint) 'n', (nativeint) 'i', (nativeint) 'l');
+        return;
+      }
+
       auto intDepth = getArgument<nativeint>(vm, depth);
       auto intWidth = getArgument<nativeint>(vm, width);
 

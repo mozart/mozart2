@@ -24,8 +24,6 @@
 
 #include "mozart.hh"
 
-#include <fstream>
-
 namespace mozart {
 
 namespace {
@@ -36,14 +34,7 @@ namespace {
 
 class BootUnpickler {
 public:
-  BootUnpickler(VM vm, const std::string& url):
-    vm(vm), input(url, std::ios::binary) {
-
-    if (!input.good()) {
-      std::cerr << "panic: cannot open file in boot unpickler: "
-                << url << std::endl;
-      std::abort();
-    }
+  BootUnpickler(VM vm, std::istream& input): vm(vm), input(input) {
   }
 
   /** Top-level unpickle function */
@@ -371,7 +362,7 @@ private:
 
 private:
   VM vm;
-  std::ifstream input;
+  std::istream& input;
   std::vector<UnstableNode> nodes;
 };
 
@@ -381,7 +372,7 @@ private:
 // Entry point //
 /////////////////
 
-UnstableNode bootUnpickle(VM vm, const std::string& input) {
+UnstableNode bootUnpickle(VM vm, std::istream& input) {
   BootUnpickler unpickler(vm, input);
   return unpickler.unpickle();
 }

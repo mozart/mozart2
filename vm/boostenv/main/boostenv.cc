@@ -33,6 +33,16 @@ namespace mozart { namespace boostenv {
 // BoostBasedVM //
 //////////////////
 
+namespace {
+  bool defaultBootLoader(VM vm, const std::string& url, UnstableNode& result) {
+    std::ifstream input(url, std::ios::binary);
+    if (!input.is_open())
+      return false;
+    result = bootUnpickle(vm, input);
+    return true;
+  }
+}
+
 BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   _asyncIONodeCount(0),
   uuidGenerator(random_generator),
@@ -45,15 +55,7 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   random_generator.seed(generator);
 
   // Set up a default boot loader
-  setBootLoader(
-    [] (VM vm, const std::string& url, UnstableNode& result) -> bool {
-      std::ifstream input(url, std::ios::binary);
-      if (!input.is_open())
-        return false;
-      result = bootUnpickle(vm, input);
-      return true;
-    }
-  );
+  setBootLoader(&defaultBootLoader);
 }
 
 void BoostBasedVM::setApplicationURL(char const* url) {

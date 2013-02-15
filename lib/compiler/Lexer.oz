@@ -182,7 +182,7 @@ define
          [
             opt("~")
             plus(digit)
-            seq1(&. nla([&. &.]))|star(digit)
+            seq1(&. nla(&.))|star(digit)
             opt([alt(&e &E) opt("~") plus(digit)])
          ] #
          fun {$ [S M D E]}

@@ -234,8 +234,19 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  fs::path executablePath;
+#ifdef MOZART_WINDOWS
+  {
+    char buffer[2048];
+    GetModuleFileName(nullptr, buffer, sizeof(buffer));
+    executablePath = buffer;
+  }
+#else
+  executablePath = argv[0];
+#endif
+
   // Hacky way to guess if we are in a build setting
-  fs::path appPath = fs::path(argv[0]).parent_path();
+  fs::path appPath = executablePath.parent_path();
   bool isBuildSetting = appPath.filename() == "emulator";
 
   if (ozHome.empty()) {

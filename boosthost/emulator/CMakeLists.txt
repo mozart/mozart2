@@ -50,10 +50,20 @@ endif()
 add_executable(ozemulator emulator.cc)
 target_link_libraries(ozemulator mozartvmboost mozartvm ${Boost_LIBRARIES})
 
-if(NOT MINGW)
+# Here it starts to differ wildly on Windows
+if(NOT WIN32)
   target_link_libraries(ozemulator pthread)
-endif()
 
-# Install
-install(TARGETS ozemulator DESTINATION bin)
-install(PROGRAMS ozengine ozc DESTINATION bin)
+  # Install
+  install(TARGETS ozemulator DESTINATION bin)
+  install(PROGRAMS ozengine ozc DESTINATION bin)
+else() # WIN32
+  # ozemulator is ozengine.exe on Windows
+  set_target_properties(ozemulator PROPERTIES OUTPUT_NAME "ozengine")
+
+  # ozc
+  add_executable(ozc "windows/ozc.cc")
+
+  # Install
+  install(TARGETS ozemulator ozc DESTINATION bin)
+endif()

@@ -30,6 +30,12 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 
+#ifdef MOZART_WINDOWS
+#  include <windows.h>
+#endif
+
+namespace {
+
 using namespace mozart;
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
@@ -85,7 +91,72 @@ atom_t pathToAtom(VM vm, const fs::path& path) {
   return strToAtom(vm, path.native());
 }
 
+#ifdef MOZART_WINDOWS
+
+/* win32 does not support process groups,
+ * so we set OZPPID such that a subprocess can check whether
+ * its father still lives
+ */
+
+DWORD __stdcall watchParentThread(void* arg) {
+  HANDLE handle = (HANDLE) arg;
+  if (WaitForSingleObject(handle, INFINITE) == WAIT_FAILED) {
+    std::cerr << "panic: wait for parent process failed" << std::endl;
+    std::exit(1);
+  }
+  ExitProcess(0);
+  return 0;
+}
+
+inline
+void watchParentIfAny() {
+  char buf[100];
+  if (GetEnvironmentVariable("OZPPID", buf, sizeof(buf)) == 0)
+    return;
+
+  //--** this should really store an inherited handle instead of a pid
+  int pid = atoi(buf);
+  HANDLE handle = OpenProcess(SYNCHRONIZE, 0, pid);
+  if (!handle) {
+    std::cerr << "panic: could not access open parent process "
+              << pid << std::endl;
+    std::exit(1);
+  }
+
+  DWORD thrid;
+  HANDLE hThread = CreateThread(0, 0, watchParentThread, handle, 0, &thrid);
+  CloseHandle(hThread);
+}
+
+inline
+void publishPid() {
+  char auxbuf[100];
+  int ppid = GetCurrentProcessId();
+  sprintf(auxbuf, "%d", ppid);
+  SetEnvironmentVariable("OZPPID", strdup(auxbuf));
+}
+
+void simulateProcessGroupIfNecessary() {
+  /* First watch the parent, THEN publish my PID.
+   * Otherwise publishPid would override the env var read by watchParentIfAny()
+   */
+  watchParentIfAny();
+  publishPid();
+}
+
+#else // !MOZART_WINDOWS
+
+inline
+void simulateProcessGroupIfNecessary() {
+}
+
+#endif
+
+} // anonymous namespace
+
 int main(int argc, char** argv) {
+  simulateProcessGroupIfNecessary();
+
   // CONFIGURATION VARIABLES
 
   std::string ozHomeStr, initFunctorPathStr, baseFunctorPathStr;

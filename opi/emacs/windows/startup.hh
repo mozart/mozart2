@@ -22,7 +22,7 @@
 extern bool console;
 
 // panic.cc
-void panic(bool isSystem, char *format, ...);
+void panic(bool isSystem, const char *format, ...);
 
 // getenv.cc
 char *ozGetenv(const char *var);
@@ -36,7 +36,7 @@ char *getOzHome(bool toUnix);
 void initEnv(void);
 
 // makecmd.cc
-char *getCmdLine(void);
+const char *getCmdLine(void);
 char *makeCmdLine(bool isWrapper);
 
 // publishPid.cc
@@ -46,5 +46,5 @@ void publishPid(void);
 int createProcess(char *cmdline);
 
 // registry.cc
-char *getRegistry(char *subKey, char *valueName);
-char *getRegistry(char *valueName);
+char *getRegistry(const char *subKey, const char *valueName);
+char *getRegistry(const char *valueName);

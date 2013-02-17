@@ -32,9 +32,9 @@ bool console = false;
 
 #define APP_PATHS "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths"
 
-static char *gnuEmacsKey = "SOFTWARE\\GNU\\Emacs";
+static const char *gnuEmacsKey = "SOFTWARE\\GNU\\Emacs";
 
-static char *xEmacsAppPathKey = APP_PATHS "\\xemacs.exe";
+static const char *xEmacsAppPathKey = APP_PATHS "\\xemacs.exe";
 
 static char *concat(const char *s1, const char *s2)
 {
@@ -113,10 +113,10 @@ WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/,
   char *emacs  = getEmacs();
   char *ozhome = ozGetenv("OZHOME");
   sprintf(buffer,
-          "\"%s\" -l \"%s/share/elisp/oz.elc\" "
-          "-l \"%s/share/elisp/oz-server.elc\" "
-          "-l \"%s/share/elisp/oz-extra.elc\" "
-          "-l \"%s/share/elisp/mozart.elc\" -f run-oz %s",
+          "\"%s\" -l \"%s/share/mozart/elisp/oz.elc\" "
+          "-l \"%s/share/mozart/elisp/oz-server.elc\" "
+          "-l \"%s/share/mozart/elisp/oz-extra.elc\" "
+          "-l \"%s/share/mozart/elisp/mozart.elc\" -f run-oz %s",
           emacs,ozhome,ozhome,ozhome,ozhome,getCmdLine());
 
   STARTUPINFO si;

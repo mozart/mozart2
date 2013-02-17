@@ -25,11 +25,8 @@
 #include <string.h>
 
 #include "startup.hh"
-#include "version.h"
 
-static char *mozartKey = "SOFTWARE\\Mozart Consortium\\Mozart\\" OZVERSION;
-
-char *getRegistry(char *subKey, char *valueName)
+char *getRegistry(const char *subKey, const char *valueName)
 {
   char *ret = NULL;
 
@@ -63,9 +60,4 @@ char *getRegistry(char *subKey, char *valueName)
   RegCloseKey(hk);
 
   return ret;
-}
-
-char *getRegistry(char *valueName)
-{
-  return getRegistry(mozartKey, valueName);
 }

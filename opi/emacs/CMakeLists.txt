@@ -6,7 +6,7 @@ find_program(EMACS NAMES emacs xemacs Aquamacs
 )
 
 if(NOT EMACS)
-  message(WARNING "Emacs executable not found")
+  message(WARNING "Emacs executable not found, cannot build .el files")
 else()
   message(STATUS "Using emacs from: ${EMACS}")
   set(EMACS_OPTIONS -q -batch -f batch-byte-compile)
@@ -43,5 +43,14 @@ else()
   # Install
 
   install(FILES ${ALL_ELC_FILES} DESTINATION share/mozart/elisp)
+endif()
+
+# oz launcher
+if(NOT WIN32)
   install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/oz" DESTINATION bin)
+else() # WIN32
+  add_executable(oz "windows/oz.cc" "windows/panic.cc" "windows/getenv.cc"
+    "windows/path.cc" "windows/initenv.cc" "windows/makecmd.cc"
+    "windows/ppid.cc" "windows/process.cc" "windows/registry.cc")
+  install(TARGETS oz DESTINATION bin)
 endif()

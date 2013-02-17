@@ -76,7 +76,7 @@ void initEnv(void)
   ozSetenv("OZPLATFORM",ozplatform);
   ozSetenv("OZHOME",ozhome);
 
-  char *homedrive = ozGetenv("HOMEDRIVE");
+  const char *homedrive = ozGetenv("HOMEDRIVE");
   if (homedrive) homedrive = strdup(homedrive);
 
   char *homepath = ozGetenv("HOMEPATH");
@@ -90,7 +90,7 @@ void initEnv(void)
   }
   normalizePath(homepath,true);
 
-  char *ozpath = ozGetenv("OZPATH");
+  const char *ozpath = ozGetenv("OZPATH");
   if (ozpath == NULL) {
     ozpath = ".";
   }

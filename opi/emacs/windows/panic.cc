@@ -25,7 +25,7 @@
 
 #include "startup.hh"
 
-void panic(bool isSystem, char *format, ...)
+void panic(bool isSystem, const char *format, ...)
 {
   va_list argList;
   char buf[1024];

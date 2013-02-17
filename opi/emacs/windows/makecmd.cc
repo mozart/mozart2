@@ -27,7 +27,7 @@
 
 #define ISSPACE(a)        (a == ' ' || a == '\t')
 
-char *getCmdLine() {
+const char *getCmdLine() {
   char *lpszCmdLine = GetCommandLine();
   // Skip whitespace and application name
   if (lpszCmdLine) {
@@ -50,7 +50,7 @@ char *getCmdLine() {
 char *makeCmdLine(bool isWrapper) {
   static char buffer[1024];
 
-  char *args = getCmdLine();
+  const char *args = getCmdLine();
   if (isWrapper) {
     sprintf(buffer,"ozengine.exe \"");
     int len = strlen(buffer);

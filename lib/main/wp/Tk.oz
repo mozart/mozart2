@@ -457,8 +457,9 @@ define
                % RS: on MS Windows we use a socket: before we used
                % pipes, but on NT this made problems when certain background
                % tasks where running: Tk could get stuck here
-               if {Property.get 'platform.name'} == 'win32-i486'
-               then Stream Port in
+               if {Property.get 'platform.name'} == 'win32-i386' then
+                  Stream Port
+               in
                   thread
                      Stream = {New class $ from Open.socket Open.text
                                       prop final
@@ -466,7 +467,7 @@ define
                                server(port: ?Port)}
                   end
                   {Wait Port}
-                  _ = {OS.exec TkExecutable [Port] true}
+                  _ = {OS.exec TkExecutable#'.exe' [Port] true}
                   {Wait Stream}
                   Stream
                else

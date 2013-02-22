@@ -336,3 +336,4 @@ install(FILES ${TARGET_SUPPLEMENTARY_FILES}
 # Subdirectories
 
 add_subdirectory(tools)
+add_subdirectory(compiler)

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(MOZART CXX)
 
+ENABLE_TESTING()
+
 # Custom CMake modules
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_local ${CMAKE_MODULE_PATH})

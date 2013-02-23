@@ -51,6 +51,7 @@ add_subdirectory(lib)
 add_subdirectory(opi)
 add_subdirectory(wish)
 add_subdirectory(stdlib)
+add_subdirectory(platform-test)
 
 # General CPack configuration
 

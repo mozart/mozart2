@@ -50,9 +50,9 @@ static int getParent(char *path, int n)
 
 char *getOzHome(bool toUnix)
 {
+  char buffer[2048];
   char *ret = ozGetenv("OZHOME");
   if (ret == NULL) {
-    char buffer[2048];
     GetModuleFileName(NULL,buffer,sizeof(buffer));
     int n = getParent(buffer,2);
     if (n == -1) {

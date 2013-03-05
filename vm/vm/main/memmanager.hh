@@ -25,6 +25,7 @@
 #ifndef __MEMMANAGER_H
 #define __MEMMANAGER_H
 
+#include <cstdlib>
 #include <algorithm>
 
 namespace mozart {

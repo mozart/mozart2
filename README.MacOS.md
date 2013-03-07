@@ -14,7 +14,7 @@ Download and install the following tools:
 
 *  Install CMake if you do not have it already: `brew install cake` 
 *  Install the boost libraries: `brew install boost --with-c++11`.
-*  Install *llv* and *clang*. You need to keep note of the directory containing the sources and the one containing the built files. You can use: 
+*  Install *llvm* and *clang*. You need to keep note of the directory containing the sources and the one containing the built files. You can use: 
 
 ```
     $ curl -O http://llvm.org/releases/3.2/llvm-3.2.src.tar.gz

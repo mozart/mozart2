@@ -14,13 +14,13 @@ if("${LLVM_SRC_DIR}" STREQUAL "${DEFAULT_LLVM_SRC_DIR}" AND
   )
 
   ExternalProject_Add(llvm
-    SVN_REPOSITORY http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_31/final
+    SVN_REPOSITORY http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_32/final
     CMAKE_ARGS ${LLVM_CMAKE_ARGS}
     INSTALL_COMMAND ""
     TEST_COMMAND ""
     )
   ExternalProject_Add_Step(llvm download_clang
-    COMMAND svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_31/final ${ep_base}/Source/llvm/tools/clang
+    COMMAND svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_32/final ${ep_base}/Source/llvm/tools/clang
     DEPENDEES download
     DEPENDERS update
     )

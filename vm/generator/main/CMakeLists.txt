@@ -9,6 +9,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
+# Depending on the platform and version of clang, the clang library will
+# be named libclang or liblibclang. Now we detect that.
+find_library(CLANG_LIBRARY
+  NAMES clang libclang
+  PATHS "${LLVM_BUILD_DIR}/lib"
+  NO_DEFAULT_PATH)
+if("${CLANG_LIBRARY}" MATCHES "CLANG_LIBRARY-NOTFOUND")
+  message(FATAL_ERROR "Could not find clang library in ${LLVM_BUILD_DIR}")
+endif()
+
 include_directories(
   "${LLVM_SRC_DIR}/include"
   "${LLVM_BUILD_DIR}/include"
@@ -17,4 +27,4 @@ include_directories(
 link_directories("${LLVM_BUILD_DIR}/lib")
 add_executable(generator generator.cc interfaces.cc implementations.cc
   builtins.cc utils.cc)
-target_link_libraries(generator libclang)
+target_link_libraries(generator "${CLANG_LIBRARY}")

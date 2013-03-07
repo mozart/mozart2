@@ -69,7 +69,6 @@ protected:
   inline
   void initModule(VM vm, T&& module);
 private:
-  VM _vm;
   atom_t _name;
   ProtectedNode _module;
 };

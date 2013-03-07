@@ -26,13 +26,22 @@
 
 #include <fstream>
 #include <boost/random/random_device.hpp>
-#include <boost/filesystem.hpp>
 
 namespace mozart { namespace boostenv {
 
 //////////////////
 // BoostBasedVM //
 //////////////////
+
+namespace {
+  bool defaultBootLoader(VM vm, const std::string& url, UnstableNode& result) {
+    std::ifstream input(url, std::ios::binary);
+    if (!input.is_open())
+      return false;
+    result = bootUnpickle(vm, input);
+    return true;
+  }
+}
 
 BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   _asyncIONodeCount(0),
@@ -46,20 +55,7 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
   random_generator.seed(generator);
 
   // Set up a default boot loader
-  setBootLoader(
-    [] (VM vm, const std::string& url, UnstableNode& result) -> bool {
-      namespace fs = boost::filesystem;
-
-      // Check that the file exists
-      if (!fs::exists(fs::path(url))) {
-        return false;
-      } else {
-        // Otherwise it is supposed to work fine
-        result = bootUnpickle(vm, url);
-        return true;
-      }
-    }
-  );
+  setBootLoader(&defaultBootLoader);
 }
 
 void BoostBasedVM::setApplicationURL(char const* url) {

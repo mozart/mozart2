@@ -35,9 +35,8 @@ namespace mozart {
 // BuiltinModule //
 ///////////////////
 
-BuiltinModule::BuiltinModule(VM vm, const nchar* name): _vm(vm) {
-  _name = vm->getAtom(name);
-}
+BuiltinModule::BuiltinModule(VM vm, const nchar* name) 
+  : _name(vm->getAtom(name)) {}
 
 template <typename T>
 void BuiltinModule::initModule(VM vm, T&& module) {

@@ -89,7 +89,7 @@ Configure and build LLVM with:
 
 Configure and build Mozart with:
 
-Make sure you opene your command prompt with administrator privileges
+Make sure you open your command prompt with administrator privileges
 
     mozart2-release>cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM=C:/MinGW/bin/make.exe -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=../../externals/llvm -DLLVM_BUILD_DIR=../llvm-release ../../mozart2
     mozart2-release>make

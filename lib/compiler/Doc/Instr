@@ -1,0 +1,603 @@
+%%
+%%  This file documents the machine instructions used by the new
+%%  compiler as well as the assumptions (maybe context-sensitive)
+%%  that the emulator makes.  Not respecting these assumptions may
+%%  corrupt the internal state of the emulator; they must therefore
+%%  be enforced by a byte-code-verifier in order not to compromise
+%%  security.
+%%
+%%  Notes:
+%%  -- After each instruction its parameters are listed, one
+%%     parameter per line.  The type and a comment are given for
+%%     each parameter.
+%%  -- For some instructions, an equivalent instruction sequence
+%%     may be given after the "==" sign.
+%%  -- Instructions after the "^=" sign give a kind of pseudo-code
+%%     for an instruction.
+%%
+%%  General assumptions:
+%%  -- Although the Emulator uses more instructions internally
+%%     than those described in this document, none of the non-listed
+%%     instructions may appear inside the user code area.
+%%  -- No instruction may reference an address outside the current
+%%     definition or inside a nested definition or thread (this will
+%%     be easier to check with the introduction of segments).  Every
+%%     instruction must be directly followed by another instruction,
+%%     with no garbage bytes in-between.  Labels may only reference
+%%     the address of instructions, not of the operands.
+%%  -- There may not be an instruction sequence that executes
+%%     infinitely without offering the possibility of thread
+%%     preemption.  Since `return' is an instruction offering
+%%     this possibility, we require the code not to have loops
+%%     implemented by branches.
+%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Definitions
+%%
+%%  The following instructions always have to be used in the
+%%  following manner:
+%%
+%%  lbl(L1)   definition(_ L2 _ _ [R1 ... Rn])
+%%            profileProc        % optional
+%%            ...
+%%            endDefinition(L1)
+%%            localVarname(_)    % either 0 or as many as the environment size
+%%            ...                % (if these are present, there may only be one
+%%            localVarname(_)    % allocateL in the procedure)
+%%            globalVarname(_)   % either 0 or n
+%%            ...
+%%            globalVarname(_)
+%%  lbl(L2)
+%%
+%%  Neither of endDefinition, localVarname or globalVarname may ever be
+%%  executed by the emulator.  Slots of the local environments named via
+%%  localVarname (by a name other than '') may only be written to once
+%%  (and possibly be cleared via clearY).  In a linear run through the
+%%  code, definitions must always be correctly nested like this.
+%%
+
+definition
+   XRegister        register in which to store the created abstraction
+   Label            address to jump to after abstraction creation
+   PredId           print name, arity, source coordinates of the abstraction
+   OptProcedureRef  address of an AbstractionEntry or unit
+   GRegRef          contents of abstraction's local G registers
+
+definitionCopy
+   XRegister        both source and destination register
+   Label            address to jump to after abstraction creation
+   PredId           print name, arity, source coordinates of the abstraction
+   OptProcedureRef  address of an AbstractionEntry or unit
+   GRegRef          contents of abstraction's local G registers
+
+profileProc
+
+endDefinition
+   Label            address of the corresponding 'definition' instruction
+
+localVarname
+   Variablename     print name of the next Y register or ''
+
+globalVarname
+   Variablename     print name of the next G register or ''
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Moving Data Around
+%%
+
+move
+   Register         source
+   Register         destination, may not be a G register
+
+moveMoveXYXY        == move(x(Arg1) y(Arg2)) move(x(Arg3) y(Arg4))
+   XRegister
+   YRegister
+   XRegister
+   YRegister
+
+moveMoveYXYX        == move(y(Arg1) x(Arg2)) move(y(Arg3) x(Arg4))
+   YRegister
+   XRegister
+   YRegister
+   XRegister
+
+moveMoveXYYX        == move(x(Arg1) y(Arg2)) move(y(Arg3) x(Arg4))
+   XRegister
+   YRegister
+   YRegister
+   XRegister
+
+moveMoveYXXY        == move(y(Arg1) x(Arg2)) move(x(Arg3) y(Arg4))
+   YRegister
+   XRegister
+   XRegister
+   YRegister
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Creation of Variables
+%%
+
+createVariable
+   Register         destination, may not be a G register
+
+createVariableMove  == createVariable(Arg1) move(Arg1 x(Arg2))
+   Register         destination, may not be a G register
+   XRegister        co-destination
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Allocation of New Data Structures
+%%
+%%  After a putList, the values of exactly two subtrees must be initialized
+%%  by the setConstant/setValue/setVariable/setVoid instructions.
+%%  After a putRecord, the values of exactly a number of subtrees equal to
+%%  the with of the record must be initialized by the above instructions.
+%%  The subtree initialization instructions may only appear directly
+%%  after putList/putRecord.
+%%
+
+putConstant
+   Constant
+   Register         destination, may not be a G register
+
+putList             ^= putRecord('|' 2 Arg1)
+   Register         destination, may not be a G register
+
+putRecord
+   Literal          record label, may not be '|' if Arg2 == 2
+   RecordArity      record arity, may not be 2 if Arg1 == '|'
+   Register         destination, may not be a G register
+
+setConstant
+   Constant         source
+
+setValue
+   Register         source
+
+setVariable         == createVariable(Arg1) setValue(Arg1)
+   Register
+
+setVoid
+   Count            number of arguments to set to `_'
+
+setProcedureRef     used for definitionCopy
+   ProcedureRef
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Matching and Unifying Data Structures
+%%
+%%  After a getList, the values of exactly two subtrees must be unified
+%%  by the unifyNumber/unifyLiteral/unifyValue/unifyVariable/unifyValVar/
+%%  unifyVoid instructions.
+%%  After a putRecord, the values of exactly a number of subtrees equal
+%%  to the with of the record must be unified by the above instructions.
+%%  The subtree unification instructions may only appear directly
+%%  after getList/getRecord.
+%%
+
+getNumber
+   Number
+   Register
+
+getLiteral
+   Literal
+   Register
+
+getList             ^= getRecord('|' 2 Arg1)
+   Register
+
+getListValVar       == getList(x(Arg1)) unifyValue(Arg2) unifyVariable(x(Arg3))
+   XRegister
+   Register
+   XRegister
+
+getRecord
+   Literal          record label, may not be '|' if Arg2 == 2
+   RecordArity      record arity, may not be 2 if Arg1 == '|'
+   Register         value to unify with
+
+%%  Record Argument Unification
+
+unifyNumber
+   Number
+
+unifyLiteral
+   Literal
+
+unifyValue
+   Register
+
+unifyVariable       ^= createVariable(Arg1) unifyValue(Arg1)
+   Register
+
+unifyValVar         == unifyValue(Arg1) unifyVariable(Arg2)
+   Register
+   Register
+
+unifyVoid
+   Count            number of arguments to unify with `_'
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Unification
+%%
+
+unify
+   Register         operand #1
+   Register         operand #2
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Allocation of Local Environments
+%%
+%%  Notes on local environments:
+%%  The register y(I) may only be referenced after an allocateL(N) has
+%%  been executed in the same procedure and if I < N.  It may only be
+%%  read if it has been previously initialized explicitly.
+%%  A procedure needs not have an environment.  All environments
+%%  must be explicitly deallocated in the same procedure; if the
+%%  deAllocateL instruction specifies a size, then it must correspond
+%%  to the size given in the corresponding allocateL instruction.
+%%  An allocateL instruction may only be executed if for the procedure
+%%  application no environment is active.
+%%
+
+allocateL
+   Count            size of local environment to allocate, must be \= 0
+
+allocateL1          == allocateL(1)
+
+allocateL2          == allocateL(2)
+
+allocateL3          == allocateL(3)
+
+allocateL4          == allocateL(4)
+
+allocateL5          == allocateL(5)
+
+allocateL6          == allocateL(6)
+
+allocateL7          == allocateL(7)
+
+allocateL8          == allocateL(8)
+
+allocateL9          == allocateL(9)
+
+allocateL10         == allocateL(10)
+
+deAllocateL
+
+deAllocateL1
+
+deAllocateL2
+
+deAllocateL3
+
+deAllocateL4
+
+deAllocateL5
+
+deAllocateL6
+
+deAllocateL7
+
+deAllocateL8
+
+deAllocateL9
+
+deAllocateL10
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Applications
+%%
+
+%%
+%%  Applying Builtins
+%%
+
+callBI
+   Builtinname
+   Location
+
+inlineDot
+   XRegister        argument #1 register
+   Feature          argument #2 value
+   XRegister        argument #3 register
+   Cache            ignored
+
+inlineAt
+   Literal          attribute
+   XRegister        destination register
+   Cache            ignored
+
+inlineAssign
+   Literal          attribute
+   XRegister        source register
+   Cache            ignored
+
+inlinePlus1
+   XRegister        argument register
+   XRegister        result register
+
+inlineMinus1
+   XRegister       argument register
+   XRegister       result register
+
+inlinePlus
+   XRegister      argument #1 register
+   XRegister      argument #2 register
+   XRegister      result register
+
+inlineMinus
+   XRegister      argument #1 register
+   XRegister      argument #2 register
+   XRegister      result register
+
+%%
+%%  Applying Procedures
+%%
+
+call
+   Register
+   Arity
+
+tailCall            == call(Arg1 Arg2) return
+   Register
+   Arity
+
+consCall
+   Register
+   Arity
+
+tailConsCall
+   Register
+   Arity
+
+deconsCall
+   Register
+
+tailDeconsCall
+   Register
+
+callConstant
+   Constant         procedure
+   ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
+
+callProcedureRef
+   ProcedureRef     address of an AbstractionEntry
+   ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
+
+callGlobal
+   GRegister
+   ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
+
+callMethod
+   CallMethodInfo
+   Dummy            must be 0
+
+%%
+%%  Sending Messages
+%%
+
+sendMsg
+   Literal          method label
+   Register         object
+   RecordArity      method arity % may be 0
+   Cache            ignored
+
+tailSendMsg         == sendMsg(Arg1 Arg2 Arg3 Arg4) return
+   Literal          method label
+   Register         object
+   RecordArity      method arity % may be 0
+   Cache            ignored
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Control Flow
+%%
+
+branch
+   Label            address to jump to
+
+return
+
+%%
+%%  Exception Handling
+%%
+%%           exHandler(L1)
+%%           ...          % `catch' code; exception is in x(0).
+%%           ...          % May only access Y registers initialized before
+%%           ...          % the exHandler instruction
+%%           branch(L2)   % (typically)
+%%  lbl(L1)  ...          % `try' code; may not modify any Y registers
+%%           ...          % used in the handler code or execute deAllocateL
+%%           popEx
+%%  lbl(L2)
+%%
+
+exHandler
+   Label            address to jump to after exception handler creation
+
+popEx
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Conditionals
+%%
+
+testBI
+   Builtinname
+   Location
+   Label
+
+testLT              % Arg3 = (Arg1 < Arg2); if Arg3 then goto Arg4
+   XRegister
+   XRegister
+   XRegister
+   Label
+
+testLE              % Arg3 = (Arg1 <= Arg2); if Arg3 then goto Arg4
+   XRegister
+   XRegister
+   XRegister
+   Label
+
+testLiteral         % if Arg1 \= Arg2 then goto Arg3
+   Register
+   Literal
+   Label            address to jump to if not equal
+
+testNumber          % if Arg1 \= Arg2 then goto Arg3
+   Register
+   Number
+   Label            address to jump to if not equal
+
+testList
+   Register
+   Label
+
+testRecord
+   Register
+   Literal
+   RecordArity
+   Label
+
+testBool
+   Register         value to test
+   Label            address to jump to if false
+   Label            address to jump to if neither true nor false
+
+%%
+%%  Optimized Pattern-Matching Statements and Argument Fetching
+%%
+%%  In the beginning at each destination in the HashTableRef,
+%%  up to n (width of the corresponding pattern) record arguments
+%%  may be matched by the getVariable/getVarVar/getVoid instructions.
+%%  Also testList and testRecord may be matched by these instructions.
+%%  These instructions may not appear at any other location in the
+%%  code.
+%%
+
+match
+   Register         value to test
+   HashTableRef     destinations to choose from
+
+getVariable
+   Register
+
+getVarVar           == getVariable(Arg1) getVariable(Arg2)
+   Register
+   Register
+
+getVoid
+   Count            number of arguments for which to skip matching
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Miscellaneous
+%%
+
+skip
+
+%%
+%%           lockThread(L1 _)
+%%           ...      % `lock' body instructions
+%%           return   % release the lock and jump to L1
+%%  lbl(L1)  ...      % where to continue after releasing the lock
+%%
+
+lockThread
+   Label            where to continue after the critical section
+   XRegister        register pointing to lock
+
+getSelf
+   XRegister        destination register
+
+setSelf
+   XRegister        source register
+
+debugEntry
+   Literal          file name
+   Number           line number
+   Number           column number
+   Literal          comment
+
+debugExit
+   Literal          file name
+   Number           line number
+   Number           column number
+   Literal          comment
+
+clearY
+   YRegister
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Definition of the Argument Types
+%%
+
+Register = XRegister
+         | YRegister
+         | GRegister.
+XRegister = x(RegisterIndex).
+YRegister = y(RegisterIndex).
+GRegister = g(RegisterIndex).
+RegisterIndex = int.
+Label = int.
+PredId = pid(PrintName RecordArity Coord Flags NLiveRegs).
+Coord = pos(FileName Line Column)
+      | pos('' 1 0).
+Flags = [atom].   % only sited is recognized
+NLiveRegs = int.
+ProcedureRef = foreignPointer.
+OptProcedureRef = foreignPointer
+                | unit.
+GRegRef = [Register].
+Arity = int.
+Literal = literal.
+Number = number.
+Feature = literal
+        | int.
+Variablename = atom.
+Count = int.
+Dummy = int.   % ignored
+Location = [x(RegisterIndex)]#[x(RegisterIndex)].
+RecordArity = int   % must be > 0 and a smallInt
+            | [Feature].
+CallMethodInfo = cmi(g(RegisterIndex) % register index of class
+                     Name             % message name
+                     IsTail           % whether this is a tail call
+                     RecordArity).    % message's arity
+Builtinname = builtin.
+Cache = value.   % ignored
+HashTableRef = ht(Label [HashTableEntry]).
+
+%%
+%% Auxiliary types
+%%
+
+PrintName = atom.
+IsTail = bool.
+HashTableEntry = onScalar(NumOrLit Label)
+               | onRecord(Literal RecordArity Label).
+NumOrLit = number
+         | literal.
+FileName = atom.
+Line = int.

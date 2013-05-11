@@ -1,0 +1,28 @@
+for DECL* do STMT+ end
+
+DECL ::= ATOM : PATTERN
+      |  PATTERN in EXPR;EXPR;EXPR
+
+%%% STATEMENT
+
+CONTINUE = {NewName}
+BREAK    = {NewName}    % need new names for different loops
+RETURN   = {NewName}
+
+proc {LoopBody Pat1 ... PatN}
+  if Test1 andthen ... andthen TestN then
+    try STMTS catch !CONTINUE then skip end
+    {LoopBody Next1 ... NextN}
+  else skip end
+end
+
+try {LoopBody Init1 ... InitN}
+catch !BREAK then skip end
+
+%%% EXPRESSION
+
+try
+   try {LoopBody Init1 ... InitN}
+   catch !BREAK then skip end
+   VALUE_OF_ACCU
+catch !RETURN|V then V end

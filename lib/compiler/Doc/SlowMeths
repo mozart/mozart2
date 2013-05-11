@@ -1,0 +1,37 @@
+%%% -*- oz -*-
+
+class C
+   meth f(a1: X1 ... an: Xn b1: Y1 <= V1 ... bk: Yk <= Vk [...])=M
+      S
+   end
+end
+
+=>
+
+%% let MessagePattern and GroundVi be fresh variables
+
+MessagePattern = messagePattern(a1: unit ... an: unit b1: unit ... bk: unit)
+GroundVi = Vi   % for all 1 =< i =< k with Vi ground
+
+proc {'C,f' M}
+   case M of f(a1: X1 ... an: Xn
+               ...   % if k > 0 or M open
+              )
+      andthen {`Record.aritySublist` M MessagePattern}   % if k > 0 and M closed
+   then Y1 ... Yk M in
+      if {`Record.testFeature` M b1 $ Y1} then skip
+      else
+         Y1 = GroundV1   % if V1 ground
+         Y1 = V1         % else
+      end
+      ...
+      if {`Record.testFeature` M bk $ Yk} then skip
+      else
+         Yk = GroundVk   % if Vk ground
+         Yk = Vk         % else
+      end
+      S
+   else
+      {Exception.raiseError object(arityMismatch file line M self)}
+   end
+end

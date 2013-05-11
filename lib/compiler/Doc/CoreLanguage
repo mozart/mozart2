@@ -1,0 +1,336 @@
+Oz Core Language: Graph Representation
+--------------------------------------
+
+V  ::=  <Variable>
+
+O  ::=  <VariableOccurrence>
+
+% coordinates
+C  ::=  ...   % same as in FSyntax
+
+% terms
+T  ::=  <ValueNode> | <Construction> | O
+
+% patterns
+P  ::=  <ValueNode>
+     |  <RecordPattern> | <EquationPattern> | <PatternVariableOccurrence> | O
+
+% labels
+L  ::=  <ValueNode> | O   % <ValueNode> must be an atom
+
+% features
+F  ::=  <ValueNode> | O   % <ValueNode> must be a feature
+
+% arities
+A  ::=  int | F+
+
+% attr/feat identifier and optional initializer
+I  ::=  F | F#O
+
+% method formal
+M  ::=  <MethFormal>
+
+% statements
+S  ::=  <Statement>
+
+------------------------------------------------------------------------
+
+% (never instantiated)
+<Statement>
+     coord: C
+     next:  S   % singly linked list terminated by self reference
+
+
+% res = ...   % typeof arg
+<TypeOf> from <Statement>
+     arg: V
+     res: O
+
+
+% statements
+<StepPoint> from <Statement>
+     kind:       atom
+     statements: S+
+
+
+% 'local' localVars 'in' statements 'end'
+<Declaration> from <Statement>
+     localVars:  V+
+     statements: S+
+
+
+% 'skip' 'skip'
+<SkipNode> from <Statement>
+
+
+% left '=' right
+<Equation> from <Statement>
+     left:  O
+     right: T
+
+
+% label '(' args [ '...' ] ')'
+<Construction>
+     label:  L
+     args:   (T|F#T)+   % all featureless subtrees in front
+
+
+% 'proc' procFlags '{' designator formalArgs '}' statements 'end'
+<Definition> from <Statement>
+     designator:    O
+     formalArgs:    V*
+     statements:    S+
+     isStateUsing:  bool
+     procFlags:     [atom]
+     toCopy:        [(name|foreignPointer)] | unit
+     globalVars:    V*   % those of "local formalArgs in statements end"
+
+
+% 'proc' '{' designator formalArgs '}' statements 'end'
+<ClauseBody> from <Definition>
+
+
+% '{' designator actualArgs '}'
+<Application> from <Statement>
+     designator: O
+     actualArgs: O*
+
+
+% 'if' arbiter 'then' consequent alternative 'end'
+<IfNode> from <Statement>
+     arbiter:     O
+     consequent:  <IfClause>
+     alternative: <ElseNode> | <NoElse>
+     globalVars:  V*   % those of all clauses (not arbiter)
+
+
+% statements
+<IfClause>
+     statements: S+
+     globalVars: V*
+
+
+% 'case' arbiter 'of' ( clause // '[]' ) alternative 'end'
+<PatternCase> from <Statement>
+     arbiter:     O
+     clauses:     <PatternClause>+
+     alternative: <ElseNode> | <NoElse>
+     globalVars:  V*   % those of all clauses (not arbiter)
+
+
+% [ localVars 'in' ] pattern 'then' statements
+<PatternClause>
+     localVars:  V*
+     pattern:    <SideCondition> | P
+     statements: S+
+     globalVars: V*   % those of statements and pattern
+
+
+% pattern 'andthen' [ localVars 'in' ] statements arbiter
+<SideCondition>
+     pattern:    P
+     localVars:  V*
+     statements: S+
+     arbiter:    O
+
+
+% label '(' args [ '...' ] ')'
+<RecordPattern>
+     label:         L
+     args:          (P|F#P)+   % all featureless subpatterns in front
+     isOpen:        bool
+
+
+% left '=' right
+<EquationPattern>
+     left:  <PatternVariableOccurrence>
+     right: P
+     coord: C
+
+
+% 'else' statements
+<ElseNode>
+     statements: S+
+     globalVars: V*
+
+
+% (empty)
+<NoElse>
+     coord: C
+
+
+% 'try' tryStatements 'catch' exception 'then' catchStatements 'end'
+<TryNode> from <Statement>
+     tryStatements:   S+
+     exception:       V
+     catchStatements: S+
+     globalVars:      V*   % those of tryStatements and catchStatements
+
+
+% 'lock' lockVar 'then' statements 'end'
+<LockNode> from <Statement>
+     lockVar:    O
+     statements: S+
+
+
+% 'class' designator [ 'from' parents ] [ 'prop' properties ]
+% [ 'attr' attributes ] [ 'feat' features ] methods 'end'
+<ClassNode> from <Statement>
+     designator:        O
+     parents:           O*
+     properties:        O*
+     attributes:        I*
+     features:          I*
+     methods:           <Method>*
+     isVirtualToplevel: bool
+
+
+% 'meth' label '(' formalArgs [ '...' ] ')' [ '=' messageDesignator ]
+% statements 'end'
+<Method>
+     label:             L
+     formalArgs:        M*
+     isOpen:            bool
+     messageDesignator: V | unit
+     statements:        S+
+     coord:             C
+     globalVars:        V*   % only of "vars in label feats statements"
+
+
+% feature ':' arg
+<MethFormal>
+     feature: F
+     arg:     V
+
+
+% feature ':' arg '<=' '_'
+<MethFormalOptional> from <MethFormal>
+
+
+% feature ':' arg '<=' default
+<MethFormalWithDefault> from <MethFormal>
+     default: O | unit
+
+
+% 'lock' statements 'end'
+<ObjectLock> from <Statement>
+     statements: S+
+
+
+% destination '=' 'self'
+<GetSelf> from <Statement>
+     destination: O
+
+
+% 'raise kernel(noElse ...) end'
+<ExceptionNode> from <Statement>
+
+
+% 'cond' ( clause // '[]' ) alternative 'end'
+<CondNode> from <Statement>
+     clauses:     <Clause>+
+     alternative: <ElseNode> | <NoElse>
+     globalVars:  V*
+
+
+% (never instantiated)
+<ChoicesAndDisjunctions> from <Statement>
+     clauses:    <Clause>+
+     globalVars: V*
+
+
+% 'or' ( clause // '[]' ) 'end'
+<OrNode> from <ChoicesAndDisjunctions>
+
+
+% 'dis' ( clause // '[]' ) 'end'
+<DisNode> from <ChoicesAndDisjunctions>
+
+
+% 'choice' ( clause // '[]' ) 'end'
+<ChoiceNode> from <ChoicesAndDisjunctions>
+
+
+% [ localVars 'in' ] guard 'then' statements
+<Clause>
+     localVars:       V*
+     guard:           S+
+     kind:            'ask' | 'wait' | 'waitTop'
+     statements:      S+
+     globalVars:      V*   % those of guard and statements
+     guardGlobalVars: V*   % those of statements only
+
+
+% value
+<ValueNode>
+     value: literal | number
+     coord: C
+
+
+% printName
+<Variable>
+     coord:      C
+     isToplevel: bool
+     lastValue:  unit |   % meaning: not initialized
+                 O | <ValueNode> | <RecordConstr> | <Token>
+
+
+% printName
+<UserVariable> from <Variable>
+     printName: atom
+     use:       unused | wildcard | linear | multiple
+
+
+% printName
+<RestrictedVariable> from <UserVariable>
+     features: ( (atom|int)#C#bool | (atom|int)#C#bool#V )+
+     % the boolean value indicates whether the feature has been used
+
+
+% (generated)
+<GeneratedVariable> from <Variable>
+     origin: atom
+
+
+% variable
+<VariableOccurrence>
+     variable: V
+     value:    O |   % may point to itself or directly to a representant
+                     % of a set of aliased variables.  The value attribute
+                     % of this representant points to the representant itself.
+               <ValueNode> | <RecordConstr> | <Token>
+
+
+<RecordConstr>
+     value:     record
+     lastValue: unit |   % meaning: not initialized
+                O | <ValueNode> | <RecordConstr> | <Token>
+     origin:    unit | <Construction> | <RecordPattern>
+
+
+% variable
+<PatternVariableOccurrence> from <VariableOccurrence>
+
+
+Remarks:
+
+-- Some core syntax expansions require shared references to the same
+   code, such as when optimizing boolean conditionals with andthen/orelse
+   in the guard, e.g.:
+
+      if X orelse Y then S1 else S2 end
+
+   This is represented as
+
+      proc {A} S1 end   % these are both instances of <ClauseBody>
+      proc {B} S2 end   %
+      if X then {A}
+      else
+         if Y then {A}
+         else {B}
+         end
+      end
+
+   The code generator will behave differently for `Definition' and
+   `ClauseBody' and generate labels and branches instead of procedure
+   definitions and applications.

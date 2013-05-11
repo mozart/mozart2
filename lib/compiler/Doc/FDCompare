@@ -1,0 +1,61 @@
+% Generic cases (where Op is one of {'=:', '=<:', '\\=:'}):
+
+{`GenSum` '#'(X1 ... Xn) Op C}
+
+   X1 + ... + Xn Op C
+
+{`GenSumC` '#'(C1 ... Cn) '#'(X1 ... Xn) Op C}
+
+   C1*X1 + ... + Cn*Xn Op C
+
+{`GenSumCN` '#'(C1 ... Cn) '#'(X[1,1]#...#X[1,m1] ... X[n,1]#...#X[n,mn]) Op C}
+
+   C1*X[1,1]*...*X[1,m1] + ... + Cn*X[n,1]*...*X[n,mn] Op C
+
+{`GenSumR` '#'(X1 ... Xn) Op C V}
+
+   V = (X1 + ... + Xn Op C)
+
+{`GenSumCR` '#'(C1 ... Cn) '#'(X1 ... Xn) Op C V}
+
+   V = (C1*X1 + ... + Cn*Xn Op C)
+
+{`GenSumCNR` '#'(C1 ... Cn) '#'(X[1,1]#...#X[1,m1] ... X[n,1]#...#X[n,mn]) Op C V}
+
+   V = (C1*X[1,1]*...*X[1,m1] + ... + Cn*X[n,1]*...*X[n,mn] Op C)
+
+
+
+% Special cases not worth the trouble:
+
+{`PlusRel` X Y Z}
+
+   X + Y =: Z
+
+{`TimesRel` X Y Z}
+
+   X*Y =: Z
+
+{`Lepc` X Y C}
+
+   X - Y =<: C
+
+{`Lec` X C}
+
+   X =<: C
+
+{`Gec` X C}
+
+   X >=: C
+
+{`Neq` X Y}
+
+   X \=: Y
+
+{`Nec` X C}
+
+   X \=: C
+
+{`Nepc` X Y C}
+
+   X \=: Y + C

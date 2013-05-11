@@ -1,0 +1,90 @@
+%%
+%% This file documents the virtual machine code produced as intermediary
+%% representation (between Core Syntax and Emulator Code).  This code
+%% has the following properties:
+%% -- At each address Addr is stored a virtual machine instruction VInstr.
+%% -- VInstrs are threaded, that is, they always specify in their continuation
+%%    argument (Cont) the address of the following instruction to execute or
+%%    nil if there is none.
+%% -- The graph defined by address references must be a tree.  The only
+%%    exception is the vShared instruction, which makes shared code explicit.
+%% -- References of addresses which are neither continuations nor made via
+%%    vShared are to be viewed as subroutine calls:  After execution of the
+%%    references instruction (and those threaded by it until a nil is found
+%%    as continuation), execution resumes with the continuation of the
+%%    referencing instruction.
+%%
+%% VInstrs differ from "real" machine instructions in the following way:
+%% -- No registers have as yet been assigned.
+%% -- No local environments are allocated nor freed.
+%% -- Instructions only used in conjunction with others (e.g., conditional
+%%    clauses) have been merged into a single instruction.
+%%
+
+Addr = VInstr
+     | nil
+Cont = Addr
+Label = int
+VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
+       | vMakePermanent(OccsRS [Reg#int#atom] Cont)
+       | vClear(OccsRS Regs Cont)
+       | vUnify(OccsRS Reg Reg Cont)
+       | vEquateConstant(OccsRS Constant Reg Cont)
+       | vEquateRecord(OccsRS Atomname RecordArity Reg [VRecordArgument] Cont)
+       | vGetVariable(OccsRS Reg Cont)
+       | vCallBuiltin(OccsRS Builtinname [Reg] Coord Cont)
+       | vCallGlobal(OccsRS Reg [Reg] Coord Cont)
+       | vCallMethod(OccsRS Reg Atomname RecordArity [Reg] Coord Cont)
+       | vCall(OccsRS Reg [Reg] Coord Cont)
+       | vConsCall(OccsRS Reg [Reg] Coord Cont)
+       | vDeconsCall(OccsRS Reg Reg Reg Coord Cont)
+       | vCallProcedureRef(OccsRS ProcedureRef [Reg] Coord Cont)
+       | vCallConstant(OccsRS value [Reg] Coord Cont)
+       | vInlineDot(OccsRS Reg Feature Reg AlwaysSucceeds Coord Cont)
+       | vInlineAt(OccsRS Feature Reg Cont)
+       | vInlineAssign(OccsRS Feature Reg Cont)
+       | vGetSelf(OccsRS Reg Cont)
+       | vSetSelf(OccsRS Reg Cont)
+       | vDefinition(OccsRS Reg PredId OptProcedureRef GRegs Code Cont)
+       | vDefinitionCopy(OccsRS Reg Reg PredId OptProcedureRef GRegs Code Cont)
+       | vShared(OccsRS InitsRS Label Addr)
+       | vExHandler(OccsRS Addr Reg Addr Coord Cont InitsRS)
+       | vPopEx(OccsRS Coord Cont)
+       | vTestBool(OccsRS Reg Addr Addr Addr Coord Cont)
+       | vTestBuiltin(OccsRS Builtinname [Reg] Addr Addr Cont)
+       | vTestConstant(OccsRS Reg NumOrLit Addr Addr Coord Cont)
+       | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont)
+       | vLockThread(OccsRS Reg Coord Cont SharedData)
+       | vLockEnd(OccsRS Coord Cont SharedData)
+
+Reg = int
+Variablename = atom
+Integer = int
+Constant = value
+Atomname = atom
+         | name
+RecordArity = int
+            | [Feature]
+VRecordArgument = constant(Constant)
+                | procedureRef(ProcedureRef)
+                | value(Reg)
+                | record(Atomname RecordArity [VRecordArgument])
+Builtinname = atom
+Feature = atom
+        | name
+        | int
+IsMethod = bool
+ProcedureRef = foreignpointer
+OptProcedureRef = foreignPointer
+                | unit
+PredId = pid(Variablename Arity atom int)
+GRegs = [Reg]
+VClause = InitsRS#Addr#Addr
+VHashTableEntry = onScalar(NumOrLit Addr)
+                | onRecord(Atomname RecordArity Addr)
+AllocatesRS = bitArray
+InitsRS = bitArray
+OccsRS = bitArray
+Code = [Instr]   % "real" machine instructions
+AlwaysSucceeds = bool
+SharedData = value   % used for sharing data between vLockThread/End

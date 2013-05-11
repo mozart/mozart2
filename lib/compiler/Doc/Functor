@@ -1,0 +1,9 @@
+Functor = chunk(apply: procedure/2
+                'import': 'import'(Name: Info ...)
+                'export': 'export'(Name: Type ...)).
+Info = info(type: Type
+            'from': value).   % optional
+Type = [Feature]
+     | atom.
+Feature = int
+        | literal.

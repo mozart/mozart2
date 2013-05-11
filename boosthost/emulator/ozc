@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# where Oz resides:
+
+howcalled="$0"
+cmd=`basename "$howcalled"`
+
+if test -z "${OZHOME}"
+then
+  dir=`dirname "$howcalled"`
+  OZHOME=`(cd "$dir"; cd ..; /bin/pwd)`
+fi
+export OZHOME
+
+"$OZHOME/bin/ozemulator" "x-oz://system/Compile.ozf" "$@"

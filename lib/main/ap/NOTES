@@ -1,0 +1,162 @@
+-*-outline-*-
+
+Design notes for the customization facility
+
+* registering a new group
+
+  {Custom.register group(NAME [doc:DOC] [group:GROUP] [label:LABEL])}
+
+** NAME is a symbol identifying the group.  The recommended convention
+is to use 'foo.bar.baz' for subgroup baz of subgroup baz of group foo.
+** DOC is a virtual string documenting the group
+** GROUP is either a symbol or a list of symbols denoting all the
+parent groups for this group
+** LABEL is a virtual string to use for displaying the group name.
+if it is omitted, NAME is used instead.
+
+* registering a new option
+
+  {Custom.register option(NAME [doc:DOC] [group:GROUP] [label:LABEL]
+                               [type:TYPE]
+                               [default:DEFAULT]
+                               [set:SET]
+                               [init:INIT])}
+
+** TYPE is the type of the option and determines which option editor
+widget to invoke for modifying this option
+** DEFAULT is the default value
+** SET is a procedure to be called whenever the option is changed
+it is called with 2 args: the option name and new value
+*** if the option corresponds to a property, SET would set it
+** INIT is similar to SET, but is called on the initial value
+maybe delay, maybe do additional work
+
+* looking up the value of an option
+
+  {Custom.get +NAME ?VALUE}
+
+* exclusive access to custom module
+
+some operations may need exclusive access to the custom module.
+
+  lock Custom.lock then ... end
+
+* options are initialized from the user's custom database
+whose pathname is given by environment variable MOZART_CUSTOM_FILE
+or defaults to ~/.oz/CUSTOM
+
+Thus, if you want different customizations on different machines
+sharing the same file system, you should set MOZART_CUSTOM_FILE
+appropriately on each machine.
+
+* when the user changes an option, he should choose whether the setting
+is for the current session only or should be saved to the custom file.
+
+For example changing an option to enable tracing should probably
+not be saved.
+
+* overriding user/default settings using environment variables or
+command line options.
+** --customfile=FILE
+** --custom OPTION=VALUE
+this option can be repeated.
+
+To support overrides, an option declaration must declare an environment
+variable that should be consulted.  It must also specify a conversion
+function from string to its type.
+
+         [env:VAR] [fromString:FUN]
+
+* SET and INIT are not needed, instead the custom module should publish
+customization events.  A module can install one or more listeners that
+react to relevant events.  To facilitate filtering, each option should
+be assigned to an event category: this is an arbitrary term that
+listeners can match on to help them recognize relevant events.
+
+          [category:CAT]
+
+option(NAME [doc        : DOC]
+            [group      : GROUP]
+            [label      : LABEL]
+            [type       : TYPE]
+            [default    : DEFAULT]
+            [category   : CATEGORY]
+            [env        : VAR]
+            [fromString : FROMSTRING])
+
+In order for a customization event to take effect, appropriate listeners
+need to be installed.  We can do this either (1) by making groups objects
+that must be obtained from other modules rather than just symbols, or
+(2) by specifying an init procedure for a group: to be called when an
+option is registered with that group (but what about nested groups?).
+
+some settings have to take effect immediately, e.g. setting properties
+that affect the behaviour of the emulator.
+
+However, graphical settings should not causes Tk to get loaded.
+Or settings for the browser, should not cause it to get loaded either.
+
+** an optional can be given a setting before it is defined
+this happens when loading the user's custom file
+
+* options should be registered in bundles
+an agent registers a collection of option defs with the custom module
+and gets back a stream of customization events concerning these
+options.
+
+        {Custom.register +OPTIONS ?EVENTS}
+
+This way, each agent has its own stream.
+
+What if an option belonging to one bundle is also of interest to another
+agent?
+
+* one must distinguish between bundles and groups
+the former manage customization events and the latter partition
+customization options in a meaningful user-oriented fashion.
+
+bundle == custom manager
+
+an application (agent) may need options from several bundles.  Like
+any other values, bundles are obtained through imports from other
+modules.
+
+It may also be interested in customization events from these bundles.
+We cannot register the agent itself with the bundle because the agent
+maybe short-lived or there may be thousands of such agents.  Instead,
+we must opt for a event stream based architecture.
+
+bundles however live as long as the oz process.  For them, it makes
+sense to be registered with the custom module.
+
+However, if we directly invoke an operation on a bundle, e.g. to
+effect the setting of an option (1) we don't need a new thread
+(2) but we may block for a long time, (3) we must agree apriori
+on how to invoke the operation.  A stream-based architecture gives
+us more freedom and robustness.
+
+A customization `set' event might have the form:
+
+        set(OPTION VALUE SYNCH)
+
+where OPTION is the option to be set, VALUE is the new value, and
+SYNCH is a variable that the bundle manager should bind to true
+when the operation has successfully completed and to false or a term
+describing the problem when if has failed.  Thus SYNCH can be used
+to synchronize on completion.
+
+* kinds of customization events
+** for bundle managers
+*** user(OPTION VALUE)
+*** set(OPTION VALUE SYNCH)
+
+* performing a merge of N streams
+may be useful when interested in events from several bundles
+
+fun {Merge Streams}
+   L P={NewPort L}
+   proc {Forward V} {Send P V} end
+in
+   {ForAll Streams proc {$ L} thread {ForAll L Forward} end end}
+   L
+end

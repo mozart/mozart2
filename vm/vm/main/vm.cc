@@ -31,17 +31,16 @@ namespace mozart {
 ////////////////////
 
 VirtualMachine::run_return_type VirtualMachine::run() {
-  while (!(_exitRunRequested ||
+  while (!(testAndClearExitRunRequested() ||
       (_envUseDynamicPreemption && environment.testDynamicExitRun()))) {
 
-    if (_gcRequested || gc.isGCRequired()) {
+    if (testAndClearGCRequested() || gc.isGCRequired()) {
       getTopLevelSpace()->install();
       doGC();
-      _gcRequested = false;
     }
 
     // Trigger alarms
-    std::int64_t now = _referenceTime;
+    std::int64_t now = getReferenceTime();
     while (!_alarms.empty() && (_alarms.front().expiration <= now)) {
       getTopLevelSpace()->install();
 
@@ -73,14 +72,10 @@ VirtualMachine::run_return_type VirtualMachine::run() {
     currentThread->run();
     _currentThread = nullptr;
 
-    _preemptRequested = false;
-
     // Schedule the thread anew if it is still runnable
     if (currentThread->isRunnable())
       threadPool.schedule(currentThread);
   }
-
-  _exitRunRequested = false;
 
   // Before giving control to the external world, restore the top-level space
   getTopLevelSpace()->install();

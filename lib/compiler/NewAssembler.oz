@@ -28,6 +28,7 @@ require
    BootSerializer at 'x-oz://boot/Serializer'
 
 import
+   System
    CompilerSupport
 
 export
@@ -289,6 +290,21 @@ define
       end
    end
 
+   fun {NonBlockingEqEq X Y}
+      if {System.eq X Y} then
+         true
+      elseif {Not {IsDet X} andthen {IsDet Y}} then
+         false
+      elseif {IsRecord X} andthen {IsRecord Y} then
+         Ar = {Arity X}
+      in
+         {Label X} == {Label Y} andthen Ar == {Arity Y} andthen
+         {All Ar fun {$ F} {NonBlockingEqEq X.F Y.F} end}
+      else
+         X == Y
+      end
+   end
+
    class InternalAssemblerClass
       prop final
 
@@ -385,7 +401,7 @@ define
 
       meth GetKRegForInternal(Value ?Result KRegCount KRegs)
          case KRegs
-         of H|_ andthen H == Value then
+         of H|_ andthen {NonBlockingEqEq H Value} then
             Result = KRegCount-1
          [] _|T then
             {self GetKRegForInternal(Value ?Result KRegCount-1 T)}

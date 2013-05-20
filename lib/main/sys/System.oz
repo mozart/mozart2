@@ -31,6 +31,8 @@ functor
 
 require
    Boot_System at 'x-oz://boot/System'
+   Boot_Property at 'x-oz://boot/Property'
+   Boot_WeakRef at 'x-oz://boot/WeakReference'
 
 export
    Print
@@ -41,7 +43,7 @@ export
    PrintError
    ShowError
    gcDo: GCDo
-   % Postmortem
+   Postmortem
    Eq
    % NbSusps
    OnToplevel
@@ -77,6 +79,20 @@ define
    end
 
    GCDo = Boot_System.gcDo
+
+   proc {Postmortem X P Y}
+      WeakX = {Boot_WeakRef.new X}
+      proc {Watch}
+         {Wait {Boot_Property.get 'gc.watcher' $ true}}
+         if {Boot_WeakRef.get WeakX} == none then
+            {Send P Y}
+         else
+            {Watch}
+         end
+      end
+   in
+      thread {Watch} end
+   end
 
    Eq = Boot_System.eq
 

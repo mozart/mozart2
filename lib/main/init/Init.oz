@@ -252,7 +252,13 @@ define
    )
 
    %% Apply manually the System module
-   System = {Functor_System.apply 'import'('Boot_System':{GetInternal 'System'})}
+   local
+      SystemImports = 'import'('Boot_System':{GetInternal 'System'}
+                               'Boot_Property':{GetInternal 'Property'}
+                               'Boot_WeakRef':{GetInternal 'WeakReference'})
+   in
+      System = {Functor_System.apply SystemImports}
+   end
 
    %% Make a stub OS module for our bootstrapping purpose
    OS = 'export'(

@@ -792,6 +792,11 @@ void Thread::run() {
         case OpCreateTupleUnifyG:
         case OpCreateRecordUnifyG:
 
+        case OpCreateAbstractionUnifyK:
+        case OpCreateConsUnifyK:
+        case OpCreateTupleUnifyK:
+        case OpCreateRecordUnifyK:
+
         {
           auto what = op & OpCreateStructWhatMask;
           auto where = op & OpCreateStructWhereMask;

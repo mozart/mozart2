@@ -69,6 +69,14 @@ void GraphReplicator::copyStableRef(StableNode*& to, StableNode* from) {
   todos.stableRefs.push_front(secondMM, &to);
 }
 
+void GraphReplicator::copyWeakStableRef(StableNode*& to, StableNode* from) {
+  to = from;
+  if (kind() == grkGarbageCollection)
+    todos.weakStableRefs.push_front(secondMM, &to);
+  else
+    todos.stableRefs.push_front(secondMM, &to);
+}
+
 void GraphReplicator::copyStableNodes(StaticArray<StableNode> to,
                                       StaticArray<StableNode> from,
                                       size_t count) {
@@ -127,6 +135,13 @@ void GraphReplicator::runCopyLoop() {
         *todos.stableRefs.pop_front(secondMM));
     }
   }
+
+  if (kind() == grkGarbageCollection) {
+    while (!todos.weakStableRefs.empty()) {
+      processStableRefInternal<Self, /* weak = */ true>(
+        *todos.weakStableRefs.pop_front(secondMM));
+    }
+  }
 }
 
 template <class Self>
@@ -149,8 +164,11 @@ void GraphReplicator::processNodeInternal(Node*& list) {
   static_cast<Self*>(this)->template processNode<NodeType, GCedType>(to, from);
 }
 
-template <class Self>
+template <class Self, bool weak>
 void GraphReplicator::processStableRefInternal(StableNode*& ref) {
+  if (ref == nullptr)
+    return;
+
   RichNode from = *ref;
 
   if (from.is<GRedToStable>()) {
@@ -159,6 +177,8 @@ void GraphReplicator::processStableRefInternal(StableNode*& ref) {
   } else if (from.is<GRedToUnstable>()) {
     UnstableNode* dest = from.as<GRedToUnstable>().dest();
     ref = RichNode(*dest).getStableRef(vm);
+  } else if (weak) {
+    ref = nullptr;
   } else {
     ref = new (vm) StableNode;
     static_cast<Self*>(this)->template processNode<StableNode, GRedToStable>(

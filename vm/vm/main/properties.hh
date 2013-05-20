@@ -162,7 +162,8 @@ bool PropertyRegistry::get(VM vm, Prop&& property, UnstableNode& result) {
   return get(vm, RichNode(prop), result);
 }
 
-bool PropertyRegistry::put(VM vm, RichNode property, RichNode value) {
+bool PropertyRegistry::put(VM vm, RichNode property, RichNode value,
+                           bool forceWriteConstantProp) {
   using namespace patternmatching;
 
   UnstableNode* descriptor0;
@@ -171,16 +172,19 @@ bool PropertyRegistry::put(VM vm, RichNode property, RichNode value) {
 
   RichNode descriptor = *descriptor0;
   nativeint systemProp = 0;
+  bool isConstantProp = false;
 
   if (matches(vm, descriptor, capture(systemProp))) {
     putSystemProp(vm, property, systemProp, value);
     return true;
-  } else if (matchesSharp(vm, descriptor, false, wildcard())) {
-    *descriptor0 = buildTuple(vm, vm->coreatoms.sharp, false, value);
-    return true;
-  } else if (matchesSharp(vm, descriptor, true, wildcard())) {
-    raiseError(vm, vm->coreatoms.system,
-               MOZART_STR("putProperty"), property);
+  } else if (matchesSharp(vm, descriptor, capture(isConstantProp), wildcard())) {
+    if (!isConstantProp || forceWriteConstantProp) {
+      *descriptor0 = buildSharp(vm, isConstantProp, value);
+      return true;
+    } else {
+      raiseError(vm, vm->coreatoms.system,
+                 MOZART_STR("putProperty"), property);
+    }
   } else {
     std::cerr << repr(vm, descriptor) << "\n";
     assert(false);
@@ -189,10 +193,11 @@ bool PropertyRegistry::put(VM vm, RichNode property, RichNode value) {
 }
 
 template <typename Prop, typename Value>
-bool PropertyRegistry::put(VM vm, Prop&& property, Value&& value) {
+bool PropertyRegistry::put(VM vm, Prop&& property, Value&& value,
+                           bool forceWriteConstantProp) {
   auto prop = build(vm, std::forward<Prop>(property));
   auto val = build(vm, std::forward<Value>(value));
-  return put(vm, RichNode(prop), RichNode(val));
+  return put(vm, RichNode(prop), RichNode(val), forceWriteConstantProp);
 }
 
 UnstableNode PropertyRegistry::getSystemProp(VM vm, RichNode property,

@@ -36,18 +36,25 @@
 namespace mozart {
 
 /* In order to know if a type T has a trivial destructor we *should* use the
- * type trait std::is_tirivally_destructible<T>. However some standard library
- * provide the trait under the name std::has_trivial_destructor<T>. In the
- * following lines we alias any of those options depending on the standard
- * library we are using.
- * TODO: This is something we should eventually change or remove.
+ * type trait std::is_trivially_destructible<T>. However gcc prior to 4.8.0
+ * provides the trait under the name std::has_trivial_destructor<T>. In the
+ * following lines we alias the "right one" depending on the compiler.
+ *
+ * Note 1: an SFINAE solution has been explored, but it couldn't be made
+ * working with clang 3.1.
+ *
+ * Note 2: it is tempting to have only the 'then' part, and have it declare
+ * the alias in namespace std. But modifying std is undefined behavior.
+ *
+ * TODO: This is something we should eventually remove, when we decide not to
+ * support gcc < 4.8.0 anymore.
  */
-#ifdef _LIBCPP_TYPE_TRAITS // using libc++
-  template<typename T>
-  using is_trivially_destructible = std::is_trivially_destructible<T>;
-#else // libstdc++
+#if defined(__GNUC__) && (__GNUC__*100 + __GNUC__MINOR__ < 408)
   template<typename T>
   using is_trivially_destructible = std::has_trivial_destructor<T>;
+#else
+  template<typename T>
+  using is_trivially_destructible = std::is_trivially_destructible<T>;
 #endif
 
 // Now our stuff

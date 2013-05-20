@@ -17,13 +17,15 @@ endif()
 
 # GTest libraries
 
-add_library(custom_gtest STATIC IMPORTED)
-set_property(TARGET custom_gtest PROPERTY
-             IMPORTED_LOCATION "${GTEST_BUILD_DIR}/libgtest.a")
+find_library(GTEST_LIBRARY
+    NAMES libgtest.a gtest libgtest
+    HINTS "${GTEST_BUILD_DIR}"
+)
 
-add_library(custom_gtest_main STATIC IMPORTED)
-set_property(TARGET custom_gtest_main PROPERTY
-             IMPORTED_LOCATION "${GTEST_BUILD_DIR}/libgtest_main.a")
+find_library(GTEST_MAIN_LIBRARY
+    NAMES libgtest_main.a gtest_main libgtest_main
+    HINTS "${GTEST_BUILD_DIR}"
+)
 
 include_directories("${GTEST_SRC_DIR}" "${GTEST_SRC_DIR}/include")
 
@@ -40,7 +42,7 @@ else()
 endif()
 
 add_executable(vmtest ${VMTEST_SRCS})
-target_link_libraries(vmtest mozartvm custom_gtest custom_gtest_main)
+target_link_libraries(vmtest mozartvm ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY})
 
 if(NOT MINGW)
   target_link_libraries(vmtest pthread)

@@ -46,7 +46,7 @@ public:
     Make(): Builtin("make") {}
 
     static void call(VM vm, In label, In width, Out result) {
-      auto intWidth = getArgument<nativeint>(vm, width, MOZART_STR("Integer"));
+      auto intWidth = getArgument<nativeint>(vm, width, "Integer");
       result = makeTuple(vm, label, intWidth);
     }
   };

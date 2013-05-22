@@ -62,7 +62,7 @@ void asyncOzCall(VM vm, RichNode callable, Args&&... args);
 
 template <typename... Args>
 inline
-void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args);
+void ozCall(VM vm, const char* identity, RichNode callable, Args&&... args);
 
 template <typename... Args>
 inline
@@ -71,7 +71,7 @@ void ozCall(VM vm, RichNode callable, Args&&... args);
 namespace internal {
   template <typename Label, typename... Args>
   inline
-  bool doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
+  bool doReflectiveCall(VM vm, const char* identity, UnstableNode& stream,
                         Label&& label, Args&&... args);
 }
 

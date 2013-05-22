@@ -44,7 +44,7 @@ namespace mozart {
 class CodeArea: public DataType<CodeArea>, StoredWithArrayOf<StableNode> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("codeArea"));
+    return vm->getAtom("codeArea");
   }
 
   inline

@@ -81,12 +81,12 @@ LString<unsigned char>* ByteString::byteStringGet(VM vm) {
   return &_bytes;
 }
 
-LString<nchar>* ByteString::stringGet(RichNode self, VM vm) {
+LString<char>* ByteString::stringGet(RichNode self, VM vm) {
   return Interface<StringLike>().stringGet(self, vm);
 }
 
 nativeint ByteString::stringCharAt(RichNode self, VM vm, RichNode offsetNode) {
-  auto offset = getArgument<nativeint>(vm, offsetNode, MOZART_STR("integer"));
+  auto offset = getArgument<nativeint>(vm, offsetNode, "integer");
 
   if (offset < 0 || offset >= _bytes.length)
     raiseIndexOutOfBounds(vm, offsetNode, self);
@@ -104,8 +104,8 @@ UnstableNode ByteString::stringAppend(RichNode self, VM vm, RichNode right) {
 
 UnstableNode ByteString::stringSlice(RichNode self, VM vm,
                                      RichNode from, RichNode to) {
-  auto fromOffset = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
-  auto toOffset = getArgument<nativeint>(vm, to, MOZART_STR("integer"));
+  auto fromOffset = getArgument<nativeint>(vm, from, "integer");
+  auto toOffset = getArgument<nativeint>(vm, to, "integer");
 
   if (fromOffset < 0 || fromOffset > toOffset || toOffset > _bytes.length)
     raiseIndexOutOfBounds(vm, fromOffset, toOffset);
@@ -119,12 +119,12 @@ void ByteString::stringSearch(
 
   // TODO Fix this - it was deactivated because of a build problem on Mac OS
 #ifdef __llvm__ // or is it __clang__?
-  raiseError(vm, MOZART_STR("notImplemented"),
-             MOZART_STR("ByteString::stringSearch"));
+  raiseError(vm, "notImplemented",
+             "ByteString::stringSearch");
 #else
   using namespace patternmatching;
 
-  auto fromOffset = getArgument<nativeint>(vm, from, MOZART_STR("integer"));
+  auto fromOffset = getArgument<nativeint>(vm, from, "integer");
 
   if (fromOffset < 0 || fromOffset > _bytes.length)
     raiseIndexOutOfBounds(vm, fromOffset);
@@ -136,7 +136,7 @@ void ByteString::stringSearch(
   if (matches(vm, needleNode, capture(character))) {
 
     if (character < 0 || character >= 0x100)
-      raiseTypeError(vm, MOZART_STR("Integer between 0 and 255"), needleNode);
+      raiseTypeError(vm, "Integer between 0 and 255", needleNode);
 
     auto haystackUnsafe = const_cast<unsigned char*>(haystack.string);
     const void* searchRes = memchr(haystackUnsafe, character,

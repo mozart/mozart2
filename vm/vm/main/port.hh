@@ -49,7 +49,7 @@ Port::Port(VM vm, GR gr, Port& from): WithHome(vm, gr, from) {
 void Port::send(VM vm, RichNode value) {
   // TODO Send to a parent space (no, the following test is not right)
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("port"));
+    raise(vm, "globalState", "port");
 
   sendToReadOnlyStream(vm, _stream, value);
 }
@@ -57,7 +57,7 @@ void Port::send(VM vm, RichNode value) {
 UnstableNode Port::sendReceive(VM vm, RichNode value) {
   // TODO Send to a parent space (no, the following test is not right)
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("port"));
+    raise(vm, "globalState", "port");
 
   auto result = OptVar::build(vm);
   sendToReadOnlyStream(vm, _stream, buildSharp(vm, value, result));

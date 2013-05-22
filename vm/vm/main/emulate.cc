@@ -129,25 +129,25 @@ namespace {
     UnstableNode debugData;
     Callable(*abstraction).getDebugInfo(vm, printName, debugData);
 
-    UnstableNode kind = build(vm, MOZART_STR("call"));
+    UnstableNode kind = build(vm, "call");
     UnstableNode data = build(vm, *abstraction);
 
     Dottable dotDebugData(debugData);
-    UnstableNode file = dotDebugData.condSelect(vm, MOZART_STR("file"),
+    UnstableNode file = dotDebugData.condSelect(vm, "file",
                                                 vm->coreatoms.empty);
-    UnstableNode line = dotDebugData.condSelect(vm, MOZART_STR("line"), unit);
-    UnstableNode column = dotDebugData.condSelect(vm, MOZART_STR("column"), -1);
+    UnstableNode line = dotDebugData.condSelect(vm, "line", unit);
+    UnstableNode column = dotDebugData.condSelect(vm, "column", -1);
 
     UnstableNode PCNode = build(vm, reinterpret_cast<std::intptr_t>(PC));
 
     return buildRecord(
-      vm, buildArity(vm, MOZART_STR("entry"),
-                     MOZART_STR("PC"),
-                     MOZART_STR("column"),
-                     MOZART_STR("data"),
-                     MOZART_STR("file"),
-                     MOZART_STR("kind"),
-                     MOZART_STR("line")),
+      vm, buildArity(vm, "entry",
+                     "PC",
+                     "column",
+                     "data",
+                     "file",
+                     "kind",
+                     "line"),
       std::move(PCNode), std::move(column), std::move(data), std::move(file),
       std::move(kind), std::move(line)
     );
@@ -206,7 +206,7 @@ void Thread::constructor(VM vm, RichNode abstraction,
   doGetCallInfo(vm, abstraction, arity, start, Xcount, Gs, Ks);
 
   if (argc != arity)
-    raise(vm, MOZART_STR("illegalArity"), arity, argc);
+    raise(vm, "illegalArity", arity, argc);
 
   // Set up
 
@@ -1112,7 +1112,7 @@ void Thread::run() {
         default: {
           /* We really should not come here, but raising a proper exception
            * helps in debugging. */
-          raiseKernelError(vm, MOZART_STR("badOpCode"), (nativeint) op);
+          raiseKernelError(vm, "badOpCode", (nativeint) op);
         }
       } // Big switch testing the opcode
 
@@ -1220,7 +1220,7 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
 
     vm->deleteStaticArray<RichNode>(actualArgs, actualArity);
 
-    raiseKernelError(vm, MOZART_STR("arity"),
+    raiseKernelError(vm, "arity",
                      target, std::move(argumentsList));
   }
 
@@ -1319,8 +1319,8 @@ void Thread::derefReflectiveTarget(VM vm, RichNode& target) {
   while (target.is<ReflectiveEntity>()) {
     RichNode delegate;
     if (target.as<ReflectiveEntity>().reflectiveCall(
-          vm, MOZART_STR("mozart::Thread::doGetCallInfo"),
-          MOZART_STR("getCallDelegate"), ozcalls::out(delegate))) {
+          vm, "mozart::Thread::doGetCallInfo",
+          "getCallDelegate", ozcalls::out(delegate))) {
       target = delegate;
     } else {
       break;
@@ -1350,7 +1350,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
     if (!matchesSharp(vm, patternList[index],
                       capture(pattern), capture(jumpOffset))) {
       assert(false);
-      raiseTypeError(vm, MOZART_STR("pattern"), patternList[index]);
+      raiseTypeError(vm, "pattern", patternList[index]);
     }
 
     if (mozart::patternMatch(vm, value, pattern, xregs->getArray())) {
@@ -1391,7 +1391,7 @@ void Thread::applyWaitBefore(VM vm, RichNode waitee, bool isQuiet,
   if (getRaiseOnBlock() && (waitee.is<OptVar>() || waitee.is<Variable>())) {
     UnstableNode error = buildRecord(
       vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
-      buildTuple(vm, vm->coreatoms.kernel, MOZART_STR("block"), waitee), unit);
+      buildTuple(vm, vm->coreatoms.kernel, "block", waitee), unit);
 
     applyRaise(vm, error,
                abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
@@ -1481,8 +1481,8 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
     if (i == debugFeatureIndex) {
       UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
       UnstableNode debugField = buildRecord(
-        vm, buildArity(vm, MOZART_STR("d"), MOZART_STR("info"),
-                       MOZART_STR("stack")),
+        vm, buildArity(vm, "d", "info",
+                       "stack"),
         unit, std::move(stackTrace));
       destRecord.getElement(i)->init(vm, std::move(debugField));
     } else {

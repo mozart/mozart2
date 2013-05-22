@@ -46,7 +46,7 @@ private:
   typedef builtins::BaseBuiltin Builtin;
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("procedure"));
+    return vm->getAtom("procedure");
   }
 
   explicit BuiltinProcedure(Builtin* builtin): _builtin(builtin) {}
@@ -163,7 +163,7 @@ class Abstraction: public DataType<Abstraction>, public WithHome,
   StoredWithArrayOf<StableNode> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("procedure"));
+    return vm->getAtom("procedure");
   }
 
   inline

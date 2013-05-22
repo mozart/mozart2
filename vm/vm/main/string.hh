@@ -57,7 +57,7 @@ int String::compare(VM vm, RichNode right) {
 
 // StringLike ------------------------------------------------------------------
 
-LString<nchar>* String::stringGet(VM vm) {
+LString<char>* String::stringGet(VM vm) {
   return &_string;
 }
 
@@ -68,7 +68,7 @@ LString<unsigned char>* String::byteStringGet(RichNode self, VM vm) {
 nativeint String::stringCharAt(RichNode self, VM vm, RichNode indexNode) {
   auto index = getArgument<nativeint>(vm, indexNode);
 
-  LString<nchar> slice = sliceByCodePointsFromTo(_string, index, index+1);
+  LString<char> slice = sliceByCodePointsFromTo(_string, index, index+1);
   if (slice.isError()) {
     if (slice.error == UnicodeErrorReason::indexOutOfBounds)
       raiseIndexOutOfBounds(vm, indexNode, self);
@@ -100,7 +100,7 @@ UnstableNode String::stringSlice(RichNode self, VM vm,
   auto fromIndex = getArgument<nativeint>(vm, from);
   auto toIndex = getArgument<nativeint>(vm, to);
 
-  LString<nchar> resultString =
+  LString<char> resultString =
     sliceByCodePointsFromTo(_string, fromIndex, toIndex);
 
   if (resultString.isError()) {
@@ -118,9 +118,9 @@ void String::stringSearch(RichNode self, VM vm, RichNode from,
                           UnstableNode& begin, UnstableNode& end) {
   auto fromIndex = getArgument<nativeint>(vm, from);
 
-  nchar utf[4];
-  mut::BaseLString<nchar> needleStorage;
-  BaseLString<nchar>* needle;
+  char utf[4];
+  mut::BaseLString<char> needleStorage;
+  BaseLString<char>* needle;
 
   // Extract the needle. Could be a code point, or a string.
   {
@@ -133,14 +133,14 @@ void String::stringSearch(RichNode self, VM vm, RichNode from,
       if (length <= 0)
         raiseUnicodeError(vm, (UnicodeErrorReason) length, needleNode);
 
-      needle = new (&needleStorage) BaseLString<nchar>(utf, length);
+      needle = new (&needleStorage) BaseLString<char>(utf, length);
 
 #ifdef _LIBCPP_TYPE_TRAITS
-      static_assert(std::is_trivially_destructible<BaseLString<nchar>>::value,
-                    "BaseLString<nchar> has been modified to have non-trivial "
+      static_assert(std::is_trivially_destructible<BaseLString<char>>::value,
+                    "BaseLString<char> has been modified to have non-trivial "
                     "destructor! Please rewrite this piece of code to avoid "
                     "resource leak.");
-      // ^ BaseLString<nchar> has trivial destructor, so we shouldn't need to
+      // ^ BaseLString<char> has trivial destructor, so we shouldn't need to
       //   explicitly destroy it.
       //   Note: libstdc++ before 4.8 still calls it 'std::has_trivial_destructor'.
 #endif
@@ -151,7 +151,7 @@ void String::stringSearch(RichNode self, VM vm, RichNode from,
   }
 
   // Do the actual searching.
-  LString<nchar> haystack = sliceByCodePointsFrom(_string, fromIndex);
+  LString<char> haystack = sliceByCodePointsFrom(_string, fromIndex);
 
   if (haystack.isError()) {
     if (haystack.error == UnicodeErrorReason::indexOutOfBounds)
@@ -160,7 +160,7 @@ void String::stringSearch(RichNode self, VM vm, RichNode from,
       raiseUnicodeError(vm, haystack.error, self);
   }
 
-  const nchar* foundIter = std::search(haystack.begin(), haystack.end(),
+  const char* foundIter = std::search(haystack.begin(), haystack.end(),
                                        needle->begin(), needle->end());
 
   // Make result
@@ -168,7 +168,7 @@ void String::stringSearch(RichNode self, VM vm, RichNode from,
     begin = Boolean::build(vm, false);
     end = Boolean::build(vm, false);
   } else {
-    LString<nchar> haystackUntilNeedle =
+    LString<char> haystackUntilNeedle =
       haystack.slice(0, foundIter-haystack.begin());
     nativeint foundIndex = fromIndex + codePointCount(haystackUntilNeedle);
 
@@ -213,7 +213,7 @@ bool String::lookupFeature(RichNode self, VM vm, RichNode feature,
 
 bool String::lookupFeature(RichNode self, VM vm, nativeint feature,
                            nullable<UnstableNode&> value) {
-  LString<nchar> slice = sliceByCodePointsFromTo(_string, feature, feature+1);
+  LString<char> slice = sliceByCodePointsFromTo(_string, feature, feature+1);
   if (slice.isError()) {
     if (slice.error == UnicodeErrorReason::indexOutOfBounds) {
       return false;

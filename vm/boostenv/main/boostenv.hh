@@ -95,9 +95,9 @@ void BoostBasedVM::postVMEvent(std::function<void()> callback) {
 atom_t systemStrToAtom(VM vm, const char* str) {
   size_t len = std::strlen(str);
 
-  auto ustr = std::unique_ptr<nchar[]>(new nchar[len+1]);
+  auto ustr = std::unique_ptr<char[]>(new char[len+1]);
   for (size_t i = 0; i <= len; i++)
-    ustr[i] = (nchar) str[i];
+    ustr[i] = (char) str[i];
 
   return vm->getAtom(len, ustr.get());
 }
@@ -105,33 +105,33 @@ atom_t systemStrToAtom(VM vm, const char* str) {
 atom_t systemStrToAtom(VM vm, const std::string& str) {
   size_t len = str.length();
 
-  auto ustr = std::unique_ptr<nchar[]>(new nchar[len+1]);
+  auto ustr = std::unique_ptr<char[]>(new char[len+1]);
   for (size_t i = 0; i <= len; i++)
-    ustr[i] = (nchar) str[i];
+    ustr[i] = (char) str[i];
 
   return vm->getAtom(len, ustr.get());
 }
 
 template <typename T>
-void raiseOSError(VM vm, const nchar* function, nativeint errnum, T&& message) {
-  raiseSystem(vm, MOZART_STR("os"),
-              MOZART_STR("os"), function, errnum, std::forward<T>(message));
+void raiseOSError(VM vm, const char* function, nativeint errnum, T&& message) {
+  raiseSystem(vm, "os",
+              "os", function, errnum, std::forward<T>(message));
 }
 
-void raiseOSError(VM vm, const nchar* function, int errnum) {
+void raiseOSError(VM vm, const char* function, int errnum) {
   raiseOSError(vm, function, errnum,
                systemStrToAtom(vm, std::strerror(errnum)));
 }
 
-void raiseLastOSError(VM vm, const nchar* function) {
+void raiseLastOSError(VM vm, const char* function) {
   raiseOSError(vm, function, errno);
 }
 
-void raiseOSError(VM vm, const nchar* function, boost::system::error_code& ec) {
+void raiseOSError(VM vm, const char* function, boost::system::error_code& ec) {
   raiseOSError(vm, function, ec.value(), systemStrToAtom(vm, ec.message()));
 }
 
-void raiseOSError(VM vm, const nchar* function,
+void raiseOSError(VM vm, const char* function,
                   const boost::system::system_error& error) {
   raiseOSError(vm, function, error.code().value(),
                systemStrToAtom(vm, error.what()));

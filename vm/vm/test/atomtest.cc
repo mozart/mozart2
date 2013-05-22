@@ -7,25 +7,25 @@ using namespace mozart;
 
 class AtomTest : public MozartTest {};
 
-static const nchar* testVector[] = {
-  MOZART_STR("#"), MOZART_STR("|"), MOZART_STR("##"), MOZART_STR("o_O"),
-  MOZART_STR("unit"), MOZART_STR("###"), MOZART_STR("unittest"),
-  MOZART_STR("o"), MOZART_STR("\u0123"), MOZART_STR("\u0123\u4567"),
-  MOZART_STR("\U00012345"), MOZART_STR("o_O"), MOZART_STR("\U00012346")
+static const char* testVector[] = {
+  "#", "|", "##", "o_O",
+  "unit", "###", "unittest",
+  "o", u8"\u0123", u8"\u0123\u4567",
+  u8"\U00012345", "o_O", u8"\U00012346"
 };
 
 TEST_F(AtomTest, Build) {
-  for (const nchar* s : testVector) {
+  for (const char* s : testVector) {
     UnstableNode node = Atom::build(vm, s);
     EXPECT_EQ_ATOM(makeLString(s), node);
   }
 }
 
 TEST_F(AtomTest, EqualsAndCompare) {
-  for (const nchar* p : testVector) {
+  for (const char* p : testVector) {
     UnstableNode pNode = Atom::build(vm, p);
 
-    for (const nchar* q : testVector) {
+    for (const char* q : testVector) {
       UnstableNode qNode = Atom::build(vm, q);
 
       int compareResult = compareByCodePoint(p, q);
@@ -47,7 +47,7 @@ TEST_F(AtomTest, EqualsAndCompare) {
 }
 
 TEST_F(AtomTest, SomeCoreAtoms) {
-  UnstableNode sharpNodeA = Atom::build(vm, MOZART_STR("#"));
+  UnstableNode sharpNodeA = Atom::build(vm, "#");
   UnstableNode sharpNodeB = Atom::build(vm, vm->coreatoms.sharp);
   EXPECT_TRUE(ValueEquatable(sharpNodeA).equals(vm, sharpNodeB));
 }

@@ -201,7 +201,7 @@ private:
 class Dictionary: public DataType<Dictionary>, public WithHome {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("dictionary"));
+    return vm->getAtom("dictionary");
   }
 
   explicit Dictionary(VM vm): WithHome(vm) {}

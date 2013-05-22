@@ -77,8 +77,8 @@ bool Interface<Callable>::isCallable(RichNode self, VM vm) {
   if (self.is<ReflectiveEntity>()) {
     bool result;
     if (self.as<ReflectiveEntity>().reflectiveCall(
-          vm, MOZART_STR("$intf$::Callable::isCallable"),
-          MOZART_STR("isCallable"), ozcalls::out(result)))
+          vm, "$intf$::Callable::isCallable",
+          "isCallable", ozcalls::out(result)))
       return result;
   }
 
@@ -89,8 +89,8 @@ bool Interface<Callable>::isProcedure(RichNode self, VM vm) {
   if (self.is<ReflectiveEntity>()) {
     bool result;
     if (self.as<ReflectiveEntity>().reflectiveCall(
-          vm, MOZART_STR("$intf$::Callable::isProcedure"),
-          MOZART_STR("isProcedure"), ozcalls::out(result)))
+          vm, "$intf$::Callable::isProcedure",
+          "isProcedure", ozcalls::out(result)))
       return result;
   }
 
@@ -101,25 +101,25 @@ size_t Interface<Callable>::procedureArity(RichNode self, VM vm) {
   if (self.is<ReflectiveEntity>()) {
     size_t result;
     if (self.as<ReflectiveEntity>().reflectiveCall(
-          vm, MOZART_STR("$intf$::Callable::procedureArity"),
-          MOZART_STR("procedureArity"), ozcalls::out(result)))
+          vm, "$intf$::Callable::procedureArity",
+          "procedureArity", ozcalls::out(result)))
       return result;
   }
 
-  raiseTypeError(vm, MOZART_STR("Procedure"), self);
+  raiseTypeError(vm, "Procedure", self);
 }
 
 void Interface<Callable>::getCallInfo(
   RichNode self, VM vm, size_t& arity, ProgramCounter& start, size_t& Xcount,
   StaticArray<StableNode>& Gs, StaticArray<StableNode>& Ks) {
 
-  raiseTypeError(vm, MOZART_STR("Callable"), self);
+  raiseTypeError(vm, "Callable", self);
 }
 
 void Interface<Callable>::getDebugInfo(RichNode self, VM vm,
                                        atom_t& printName,
                                        UnstableNode& debugData) {
-  raiseTypeError(vm, MOZART_STR("Callable"), self);
+  raiseTypeError(vm, "Callable", self);
 }
 
 //////////////
@@ -139,7 +139,7 @@ struct Dottable: public BaseDottable {
     if (lookupFeature(vm, feature, result))
       return result;
     else
-      raiseKernelError(vm, MOZART_STR("."), _self, feature);
+      raiseKernelError(vm, ".", _self, feature);
   }
 
   UnstableNode dot(VM vm, nativeint feature) {
@@ -147,7 +147,7 @@ struct Dottable: public BaseDottable {
     if (lookupFeature(vm, feature, result))
       return result;
     else
-      raiseKernelError(vm, MOZART_STR("."), _self, feature);
+      raiseKernelError(vm, ".", _self, feature);
   }
 
   template <typename F>

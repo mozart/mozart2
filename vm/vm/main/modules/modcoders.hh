@@ -46,18 +46,18 @@ private:
                             EncodingVariant& variant) {
     using namespace patternmatching;
 
-    if (matches(vm, encodingNode, MOZART_STR("latin1"))) {
+    if (matches(vm, encodingNode, "latin1")) {
       encoding = ByteStringEncoding::latin1;
-    } else if (matches(vm, encodingNode, MOZART_STR("iso8859_1"))) {
+    } else if (matches(vm, encodingNode, "iso8859_1")) {
       encoding = ByteStringEncoding::latin1;
-    } else if (matches(vm, encodingNode, MOZART_STR("utf8"))) {
+    } else if (matches(vm, encodingNode, "utf8")) {
       encoding = ByteStringEncoding::utf8;
-    } else if (matches(vm, encodingNode, MOZART_STR("utf16"))) {
+    } else if (matches(vm, encodingNode, "utf16")) {
       encoding = ByteStringEncoding::utf16;
-    } else if (matches(vm, encodingNode, MOZART_STR("utf32"))) {
+    } else if (matches(vm, encodingNode, "utf32")) {
       encoding = ByteStringEncoding::utf8;
     } else {
-      raiseTypeError(vm, MOZART_STR("latin1, utf8, utf16 or utf32"),
+      raiseTypeError(vm, "latin1, utf8, utf16 or utf32",
                      encodingNode);
     }
 
@@ -66,19 +66,19 @@ private:
     ozListForEach(vm, encodingVariantList,
       [&](atom_t atom) {
         auto atomLStr = makeLString(atom.contents(), atom.length());
-        if (atomLStr == MOZART_STR("bom")) {
+        if (atomLStr == "bom") {
           variant |= EncodingVariant::hasBOM;
-        } else if (atomLStr == MOZART_STR("littleEndian")) {
+        } else if (atomLStr == "littleEndian") {
           variant |= EncodingVariant::littleEndian;
-        } else if (atomLStr == MOZART_STR("bigEndian")) {
+        } else if (atomLStr == "bigEndian") {
           variant &= ~EncodingVariant::littleEndian;
         } else {
           raiseTypeError(
-            vm, MOZART_STR("list of bom, littleEndian or bigEndian"),
+            vm, "list of bom, littleEndian or bigEndian",
             encodingVariantList);
         }
       },
-      MOZART_STR("List of Atoms"));
+      "List of Atoms");
   }
 
 public:
@@ -98,7 +98,7 @@ public:
 
       mut::LString<unsigned char> encoded(nullptr);
       {
-        std::vector<nchar> buffer;
+        std::vector<char> buffer;
         ozVSGet(vm, string, bufSize, buffer);
         auto rawString = makeLString(buffer.data(), buffer.size());
 
@@ -124,7 +124,7 @@ public:
 
       size_t bufSize = ozVBSLengthForBuffer(vm, value);
 
-      mut::LString<nchar> decoded(nullptr);
+      mut::LString<char> decoded(nullptr);
       {
         std::vector<unsigned char> buffer;
         ozVBSGet(vm, value, bufSize, buffer);

@@ -61,9 +61,9 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
 void BoostBasedVM::setApplicationURL(char const* url) {
   VM vm = this->vm;
 
-  auto property = build(vm, MOZART_STR("application.url"));
+  auto property = build(vm, "application.url");
 
-  auto decodedURL = toUTF<nchar>(makeLString(url));
+  auto decodedURL = toUTF<char>(makeLString(url));
   auto ozURL = build(vm, vm->getAtom(decodedURL.length, decodedURL.string));
 
   vm->getPropertyRegistry().put(vm, property, ozURL);
@@ -74,11 +74,11 @@ void BoostBasedVM::setApplicationArgs(int argc, char const* const* argv) {
   OzListBuilder args(vm);
 
   for (int i = 0; i < argc; i++) {
-    auto decodedArg = toUTF<nchar>(makeLString(argv[i]));
+    auto decodedArg = toUTF<char>(makeLString(argv[i]));
     args.push_back(vm, vm->getAtom(decodedArg.length, decodedArg.string));
   }
 
-  auto property = build(vm, MOZART_STR("application.args"));
+  auto property = build(vm, "application.args");
   auto ozArgs = args.get(vm);
 
   vm->getPropertyRegistry().put(vm, property, ozArgs);

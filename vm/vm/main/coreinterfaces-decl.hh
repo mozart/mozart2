@@ -60,7 +60,7 @@ struct Interface<DataflowVariable>:
   void bind(RichNode self, VM vm, RichNode src) {
     assert(self.type()->getStructuralBehavior() == sbVariable);
     assert(false);
-    return raiseTypeError(vm, MOZART_STR("Variable"), self);
+    return raiseTypeError(vm, "Variable", self);
   }
 };
 
@@ -70,7 +70,7 @@ struct Interface<BindableReadOnly>:
   ImplementedBy<ReadOnlyVariable>, NoAutoWait, NoAutoReflectiveCalls {
 
   void bindReadOnly(RichNode self, VM vm, RichNode src) {
-    raiseTypeError(vm, MOZART_STR("ReadOnlyVariable"), self);
+    raiseTypeError(vm, "ReadOnlyVariable", self);
   }
 };
 
@@ -120,7 +120,7 @@ struct Interface<Comparable>:
   ImplementedBy<SmallInt, Atom, Float, String, ByteString> {
 
   int compare(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("comparable"), self);
+    raiseTypeError(vm, "comparable", self);
   }
 };
 
@@ -180,7 +180,7 @@ struct Interface<PotentialFeature>:
 
   void makeFeature(RichNode self, VM vm) {
     if (!self.isFeature())
-      raiseTypeError(vm, MOZART_STR("feature"), self);
+      raiseTypeError(vm, "feature", self);
   }
 };
 
@@ -195,16 +195,16 @@ struct Interface<BuiltinCallable>:
 
   void callBuiltin(RichNode self, VM vm, size_t argc,
                    UnstableNode* args[]) {
-    raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
+    raiseTypeError(vm, "BuiltinProcedure", self);
   }
 
   template <class... Args>
   void callBuiltin(RichNode self, VM vm, Args&&... args) {
-    raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
+    raiseTypeError(vm, "BuiltinProcedure", self);
   }
 
   builtins::BaseBuiltin* getBuiltin(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("BuiltinProcedure"), self);
+    raiseTypeError(vm, "BuiltinProcedure", self);
   }
 };
 
@@ -246,12 +246,12 @@ struct Interface<CodeAreaProvider>:
   void getCodeAreaInfo(RichNode self, VM vm, size_t& arity,
                        ProgramCounter& start, size_t& Xcount,
                        StaticArray<StableNode>& Ks) {
-    raiseTypeError(vm, MOZART_STR("CodeArea"), self);
+    raiseTypeError(vm, "CodeArea", self);
   }
 
   void getCodeAreaDebugInfo(RichNode self, VM vm,
                             atom_t& printName, UnstableNode& debugData) {
-    raiseTypeError(vm, MOZART_STR("CodeArea"), self);
+    raiseTypeError(vm, "CodeArea", self);
   }
 };
 
@@ -264,7 +264,7 @@ struct Interface<WithPrintName>:
 
   atom_t getPrintName(RichNode self, VM vm) {
     if (self.isTransient())
-      return vm->getAtom(MOZART_STR("_"));
+      return vm->getAtom("_");
     else
       return vm->coreatoms.empty;
   }
@@ -288,35 +288,35 @@ struct Interface<Numeric>:
   }
 
   UnstableNode opposite(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+    raiseTypeError(vm, "Numeric", self);
   }
 
   UnstableNode add(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+    raiseTypeError(vm, "Numeric", self);
   }
 
   UnstableNode add(RichNode self, VM vm, nativeint right) {
-    raiseTypeError(vm, MOZART_STR("Integer"), self);
+    raiseTypeError(vm, "Integer", self);
   }
 
   UnstableNode subtract(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+    raiseTypeError(vm, "Numeric", self);
   }
 
   UnstableNode multiply(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+    raiseTypeError(vm, "Numeric", self);
   }
 
   UnstableNode divide(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Float"), self);
+    raiseTypeError(vm, "Float", self);
   }
 
   UnstableNode div(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Integer"), self);
+    raiseTypeError(vm, "Integer", self);
   }
 
   UnstableNode mod(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("Integer"), self);
+    raiseTypeError(vm, "Integer", self);
   }
 };
 
@@ -328,12 +328,12 @@ struct Interface<BaseDottable>:
 
   bool lookupFeature(RichNode self, VM vm, RichNode feature,
                      nullable<UnstableNode&> value) {
-    raiseTypeError(vm, MOZART_STR("Record or Chunk"), self);
+    raiseTypeError(vm, "Record or Chunk", self);
   }
 
   bool lookupFeature(RichNode self, VM vm, nativeint feature,
                      nullable<UnstableNode&> value) {
-    raiseTypeError(vm, MOZART_STR("Record or Chunk"), self);
+    raiseTypeError(vm, "Record or Chunk", self);
   }
 };
 
@@ -343,12 +343,12 @@ struct Interface<DotAssignable>:
   ImplementedBy<Array, Dictionary> {
 
   void dotAssign(RichNode self, VM vm, RichNode feature, RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("Array or Dictionary"), self);
+    raiseTypeError(vm, "Array or Dictionary", self);
   }
 
   UnstableNode dotExchange(RichNode self, VM vm, RichNode feature,
                            RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("Array or Dictionary"), self);
+    raiseTypeError(vm, "Array or Dictionary", self);
   }
 };
 
@@ -368,23 +368,23 @@ struct Interface<RecordLike>:
   }
 
   UnstableNode label(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Record"), self);
+    raiseTypeError(vm, "Record", self);
   }
 
   size_t width(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Record"), self);
+    raiseTypeError(vm, "Record", self);
   }
 
   UnstableNode arityList(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Record"), self);
+    raiseTypeError(vm, "Record", self);
   }
 
   UnstableNode clone(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Record"), self);
+    raiseTypeError(vm, "Record", self);
   }
 
   UnstableNode waitOr(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Record"), self);
+    raiseTypeError(vm, "Record", self);
   }
 
   bool testRecord(RichNode self, VM vm, RichNode arity) {
@@ -408,11 +408,11 @@ struct Interface<PortLike>: ImplementedBy<Port> {
   }
 
   void send(RichNode self, VM vm, RichNode value) {
-    raiseTypeError(vm, MOZART_STR("Port"), self);
+    raiseTypeError(vm, "Port", self);
   }
 
   UnstableNode sendReceive(RichNode self, VM vm, RichNode value) {
-    raiseTypeError(vm, MOZART_STR("Port"), self);
+    raiseTypeError(vm, "Port", self);
   }
 };
 
@@ -425,24 +425,24 @@ struct Interface<ArrayLike>: ImplementedBy<Array> {
   }
 
   UnstableNode arrayLow(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("array"), self);
+    raiseTypeError(vm, "array", self);
   }
 
   UnstableNode arrayHigh(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("array"), self);
+    raiseTypeError(vm, "array", self);
   }
 
   UnstableNode arrayGet(RichNode self, VM vm, RichNode index) {
-    raiseTypeError(vm, MOZART_STR("array"), self);
+    raiseTypeError(vm, "array", self);
   }
 
   void arrayPut(RichNode self, VM vm, RichNode index, RichNode value) {
-    raiseTypeError(vm, MOZART_STR("array"), self);
+    raiseTypeError(vm, "array", self);
   }
 
   UnstableNode arrayExchange(RichNode self, VM vm, RichNode index,
                              RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("array"), self);
+    raiseTypeError(vm, "array", self);
   }
 };
 
@@ -455,58 +455,58 @@ struct Interface<DictionaryLike>: ImplementedBy<Dictionary> {
   }
 
   bool dictIsEmpty(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   bool dictMember(RichNode self, VM vm, RichNode feature) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictGet(RichNode self, VM vm, RichNode feature) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictCondGet(RichNode self, VM vm, RichNode feature,
                            RichNode defaultValue) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   void dictPut(RichNode self, VM vm, RichNode feature, RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictExchange(RichNode self, VM vm, RichNode feature,
                             RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictCondExchange(RichNode self, VM vm, RichNode feature,
                                 RichNode defaultValue, RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   void dictRemove(RichNode self, VM vm, RichNode feature) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   void dictRemoveAll(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictKeys(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictEntries(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictItems(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 
   UnstableNode dictClone(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("dictionary"), self);
+    raiseTypeError(vm, "dictionary", self);
   }
 };
 
@@ -518,20 +518,20 @@ struct Interface<ObjectLike>: ImplementedBy<Object> {
   }
 
   UnstableNode getClass(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("object"), self);
+    raiseTypeError(vm, "object", self);
   }
 
   UnstableNode attrGet(RichNode self, VM vm, RichNode attribute) {
-    raiseTypeError(vm, MOZART_STR("object"), self);
+    raiseTypeError(vm, "object", self);
   }
 
   void attrPut(RichNode self, VM vm, RichNode attribute, RichNode value) {
-    raiseTypeError(vm, MOZART_STR("object"), self);
+    raiseTypeError(vm, "object", self);
   }
 
   UnstableNode attrExchange(RichNode self, VM vm, RichNode attribute,
                             RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("object"), self);
+    raiseTypeError(vm, "object", self);
   }
 };
 
@@ -546,27 +546,27 @@ struct Interface<SpaceLike>:
   }
 
   UnstableNode askSpace(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Space"), self);
+    raiseTypeError(vm, "Space", self);
   }
 
   UnstableNode askVerboseSpace(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Space"), self);
+    raiseTypeError(vm, "Space", self);
   }
 
   UnstableNode mergeSpace(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Space"), self);
+    raiseTypeError(vm, "Space", self);
   }
 
   void commitSpace(RichNode self, VM vm, RichNode value) {
-    raiseTypeError(vm, MOZART_STR("Space"), self);
+    raiseTypeError(vm, "Space", self);
   }
 
   UnstableNode cloneSpace(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Space"), self);
+    raiseTypeError(vm, "Space", self);
   }
 
   void killSpace(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Space"), self);
+    raiseTypeError(vm, "Space", self);
   }
 };
 
@@ -581,15 +581,15 @@ struct Interface<ThreadLike>:
   }
 
   ThreadPriority getThreadPriority(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Thread"), self);
+    raiseTypeError(vm, "Thread", self);
   }
 
   void setThreadPriority(RichNode self, VM vm, ThreadPriority priority) {
-    raiseTypeError(vm, MOZART_STR("Thread"), self);
+    raiseTypeError(vm, "Thread", self);
   }
 
   void injectException(RichNode self, VM vm, RichNode exception) {
-    raiseTypeError(vm, MOZART_STR("Thread"), self);
+    raiseTypeError(vm, "Thread", self);
   }
 };
 
@@ -601,15 +601,15 @@ struct Interface<CellLike>: ImplementedBy<Cell> {
   }
 
   UnstableNode exchange(RichNode self, VM vm, RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("Cell"), self);
+    raiseTypeError(vm, "Cell", self);
   }
 
   UnstableNode access(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("Cell"), self);
+    raiseTypeError(vm, "Cell", self);
   }
 
   void assign(RichNode self, VM vm, RichNode newValue) {
-    raiseTypeError(vm, MOZART_STR("Cell"), self);
+    raiseTypeError(vm, "Cell", self);
   }
 };
 
@@ -635,37 +635,37 @@ struct Interface<StringLike>:
     return false;
   }
 
-  LString<nchar>* stringGet(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+  LString<char>* stringGet(RichNode self, VM vm) {
+    raiseTypeError(vm, "String", self);
   }
 
   LString<unsigned char>* byteStringGet(RichNode self, VM vm) {
-    raiseTypeError(vm, MOZART_STR("ByteString"), self);
+    raiseTypeError(vm, "ByteString", self);
   }
 
   nativeint stringCharAt(RichNode self, VM vm, RichNode offset) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+    raiseTypeError(vm, "String", self);
   }
 
   UnstableNode stringAppend(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+    raiseTypeError(vm, "String", self);
   }
 
   UnstableNode stringSlice(RichNode self, VM vm, RichNode from, RichNode to) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+    raiseTypeError(vm, "String", self);
   }
 
   void stringSearch(RichNode self, VM vm, RichNode from, RichNode needle,
                     UnstableNode& begin, UnstableNode& end) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+    raiseTypeError(vm, "String", self);
   }
 
   bool stringHasPrefix(RichNode self, VM vm, RichNode prefix) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+    raiseTypeError(vm, "String", self);
   }
 
   bool stringHasSuffix(RichNode self, VM vm, RichNode suffix) {
-    raiseTypeError(vm, MOZART_STR("String"), self);
+    raiseTypeError(vm, "String", self);
   }
 };
 

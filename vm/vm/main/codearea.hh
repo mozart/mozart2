@@ -98,14 +98,14 @@ void CodeArea::printReprToStream(VM vm, std::ostream& out,
 }
 
 UnstableNode CodeArea::serialize(VM vm, SE se) {
-  UnstableNode codeAtom = mozart::build(vm, MOZART_STR("code"));
+  UnstableNode codeAtom = mozart::build(vm, "code");
   UnstableNode block = buildTupleDynamic(
     vm, codeAtom, _size, _codeBlock,
     [=](ByteCode b) {
       return mozart::build(vm, (nativeint) b);
     });
 
-  UnstableNode Ks = makeTuple(vm, MOZART_STR("registers"), _Kc);
+  UnstableNode Ks = makeTuple(vm, "registers", _Kc);
   if (_Kc != 0) {
     auto elements = RichNode(Ks).as<Tuple>().getElementsArray();
     for (size_t i = 0; i< _Kc; ++i) {
@@ -113,7 +113,7 @@ UnstableNode CodeArea::serialize(VM vm, SE se) {
     }
   }
 
-  UnstableNode result = buildTuple(vm, MOZART_STR("codearea"),
+  UnstableNode result = buildTuple(vm, "codearea",
                                    std::move(block), _arity, _Xcount,
                                    std::move(Ks), _printName, OptVar::build(vm));
 
@@ -124,14 +124,14 @@ UnstableNode CodeArea::serialize(VM vm, SE se) {
 
 GlobalNode* CodeArea::globalize(RichNode self, VM vm) {
   if (_gnode == nullptr) {
-    _gnode = GlobalNode::make(vm, self, MOZART_STR("immval"));
+    _gnode = GlobalNode::make(vm, self, "immval");
   }
   return _gnode;
 }
 
 void CodeArea::setUUID(RichNode self, VM vm, const UUID& uuid) {
   assert(_gnode == nullptr);
-  _gnode = GlobalNode::make(vm, uuid, self, MOZART_STR("immval"));
+  _gnode = GlobalNode::make(vm, uuid, self, "immval");
 }
 
 }

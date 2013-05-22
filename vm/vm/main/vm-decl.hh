@@ -54,7 +54,7 @@ namespace mozart {
 class BuiltinModule {
 public:
   inline
-  BuiltinModule(VM vm, const nchar* name);
+  BuiltinModule(VM vm, const char* name);
 
   virtual ~BuiltinModule() {}
 
@@ -244,19 +244,19 @@ public:
 public:
   CoreAtoms coreatoms;
 
-  atom_t getAtom(const nchar* data) {
+  atom_t getAtom(const char* data) {
     return atomTable.get(this, data);
   }
 
-  atom_t getAtom(size_t length, const nchar* data) {
+  atom_t getAtom(size_t length, const char* data) {
     return atomTable.get(this, length, data);
   }
 
-  unique_name_t getUniqueName(const nchar* data) {
+  unique_name_t getUniqueName(const char* data) {
     return atomTable.getUniqueName(this, data);
   }
 
-  unique_name_t getUniqueName(size_t length, const nchar* data) {
+  unique_name_t getUniqueName(size_t length, const char* data) {
     return atomTable.getUniqueName(this, length, data);
   }
 public:

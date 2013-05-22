@@ -41,7 +41,7 @@ public:
   constexpr static UUID uuid = "{f08642c3-5b42-4f7f-889f-9f43286973b7}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("name")); // compatibility with Mozart 1.4.0
+    return vm->getAtom("name"); // compatibility with Mozart 1.4.0
   }
 
   explicit Unit(unit_t value) {}
@@ -63,7 +63,7 @@ public:
   // WithPrintName interface
 
   atom_t getPrintName(VM vm) {
-    return vm->getAtom(MOZART_STR("unit"));
+    return vm->getAtom("unit");
   }
 
 public:

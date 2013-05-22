@@ -80,7 +80,7 @@ GlobalNode* GlobalName::globalize(RichNode self, VM vm) {
   GlobalNode* result;
   if (!GlobalNode::get(vm, _uuid, result)) {
     result->self.init(vm, self);
-    result->protocol.init(vm, MOZART_STR("immval"));
+    result->protocol.init(vm, "immval");
   }
   return result;
 }
@@ -119,14 +119,14 @@ atom_t NamedName::getPrintName(VM vm) {
 }
 
 UnstableNode NamedName::serialize(VM vm, SE se) {
-  return buildTuple(vm, MOZART_STR("namedname"), _printName);
+  return buildTuple(vm, "namedname", _printName);
 }
 
 GlobalNode* NamedName::globalize(RichNode self, VM vm) {
   GlobalNode* result;
   if (!GlobalNode::get(vm, _uuid, result)) {
     result->self.init(vm, self);
-    result->protocol.init(vm, MOZART_STR("immval"));
+    result->protocol.init(vm, "immval");
   }
   return result;
 }
@@ -155,7 +155,7 @@ atom_t UniqueName::getPrintName(VM vm) {
 }
 
 UnstableNode UniqueName::serialize(VM vm, SE se) {
-  return buildTuple(vm, MOZART_STR("uniquename"), atom_t(value()));
+  return buildTuple(vm, "uniquename", atom_t(value()));
 }
 
 void UniqueName::printReprToStream(VM vm, std::ostream& out,

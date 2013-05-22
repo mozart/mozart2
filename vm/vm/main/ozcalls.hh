@@ -91,9 +91,9 @@ template <typename T>
 struct InitOneArg<nullable<T&>, true> {
   static void call(VM vm, UnstableNode& dest, nullable<T&> param) {
     if (param.isNull())
-      dest = buildTuple(vm, MOZART_STR("none"));
+      dest = buildTuple(vm, "none");
     else
-      dest = buildTuple(vm, MOZART_STR("some"), OptVar::build(vm));
+      dest = buildTuple(vm, "some", OptVar::build(vm));
   }
 };
 
@@ -212,7 +212,7 @@ struct OutputProcessing<inputIdx, outputIdx, nullable<T&>, Tail...> {
 
     if (!head.isNull()) {
       RichNode value;
-      matchesTuple(vm, outputs[outputIdx], MOZART_STR("some"), capture(value));
+      matchesTuple(vm, outputs[outputIdx], "some", capture(value));
       head.get() = getArgument<T>(vm, value);
     }
 
@@ -252,7 +252,7 @@ void asyncOzCall(VM vm, RichNode callable, Args&&... args) {
 namespace internal {
 
 template <bool reflective, typename Effect, typename... Args>
-bool syncCallGeneric(VM vm, const nchar* identity, const Effect& effect,
+bool syncCallGeneric(VM vm, const char* identity, const Effect& effect,
                      Args&&... args) {
   constexpr size_t argc = sizeof...(args);
 
@@ -337,7 +337,7 @@ auto static_for(const F& f) -> typename std::enable_if<i != count, void>::type {
 }
 
 template <typename... Args>
-void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
+void ozCall(VM vm, const char* identity, RichNode callable, Args&&... args) {
   internal::syncCallGeneric</* reflective = */ false>(
     vm, identity,
     [callable] (VM vm, UnstableNode unstableArgs[],
@@ -362,7 +362,7 @@ void ozCall(VM vm, const nchar* identity, RichNode callable, Args&&... args) {
 
 template <typename... Args>
 void ozCall(VM vm, RichNode callable, Args&&... args) {
-  ozCall(vm, MOZART_STR("::mozart::ozcalls::ozCall"), callable,
+  ozCall(vm, "::mozart::ozcalls::ozCall", callable,
          std::forward<Args>(args)...);
 }
 
@@ -370,7 +370,7 @@ namespace internal {
 
 template <typename Label, typename... Args>
 inline
-bool doReflectiveCall(VM vm, const nchar* identity, UnstableNode& stream,
+bool doReflectiveCall(VM vm, const char* identity, UnstableNode& stream,
                       Label&& label, Args&&... args) {
   return internal::syncCallGeneric</* reflective = */ true>(
     vm, identity,

@@ -251,7 +251,7 @@ private:
       [this] (const UUID& uuid, GlobalNode* gnode) -> UnstableNode {
         auto result = GlobalName::build(vm, uuid);
         gnode->self.init(vm, result);
-        gnode->protocol.init(vm, MOZART_STR("immval"));
+        gnode->protocol.init(vm, "immval");
         return result;
       },
       [this] () {
@@ -265,7 +265,7 @@ private:
         auto printName = readAtom();
         auto result = NamedName::build(vm, printName, uuid);
         gnode->self.init(vm, result);
-        gnode->protocol.init(vm, MOZART_STR("immval"));
+        gnode->protocol.init(vm, "immval");
         return result;
       },
       [this] () {

@@ -36,7 +36,7 @@ namespace mozart {
 //////////////
 
 atom_t TypeInfo::getTypeAtom(VM vm) const {
-  return vm->getAtom(MOZART_STR("value"));
+  return vm->getAtom("value");
 }
 
 UnstableNode TypeInfo::serialize(VM vm, SE s, RichNode from) const {
@@ -44,7 +44,7 @@ UnstableNode TypeInfo::serialize(VM vm, SE s, RichNode from) const {
 }
 
 GlobalNode* TypeInfo::globalize(VM vm, RichNode from) const {
-  return GlobalNode::make(vm, from, MOZART_STR("default"));
+  return GlobalNode::make(vm, from, "default");
 }
 
 //////////

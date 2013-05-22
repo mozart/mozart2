@@ -121,7 +121,7 @@ public:
 
         vm->deleteStaticArray(elements, width);
       } else {
-        raiseTypeError(vm, MOZART_STR("#-tuple with even arity"), contents);
+        raiseTypeError(vm, "#-tuple with even arity", contents);
       }
     }
   };
@@ -187,7 +187,7 @@ public:
       using namespace patternmatching;
 
       if (!RecordLike(record).isRecord(vm))
-        raiseTypeError(vm, MOZART_STR("record"), record);
+        raiseTypeError(vm, "record", record);
 
       if (!Dottable(record).hasFeature(vm, feature)) {
         result = build(vm, unit);

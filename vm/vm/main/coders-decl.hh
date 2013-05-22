@@ -57,27 +57,27 @@ EncodingVariant operator~(EncodingVariant a) noexcept {
 }
 
 typedef ContainedLString<std::vector<unsigned char>> (*EncoderFun)
-    (const BaseLString<nchar>& input, EncodingVariant variant);
-typedef ContainedLString<std::vector<nchar>> (*DecoderFun)
+    (const BaseLString<char>& input, EncodingVariant variant);
+typedef ContainedLString<std::vector<char>> (*DecoderFun)
     (const BaseLString<unsigned char>& input, EncodingVariant variant);
 
 //////////////
 // Encoders //
 //////////////
 
-auto encodeLatin1(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeLatin1(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>>;
 
-auto encodeUTF8(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeUTF8(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>>;
 
-auto encodeUTF16(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeUTF16(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>>;
 
-auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeUTF32(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>>;
 
-auto encodeGeneric(const BaseLString<nchar>& input,
+auto encodeGeneric(const BaseLString<char>& input,
                    ByteStringEncoding encoding, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>>;
 
@@ -87,23 +87,23 @@ auto encodeGeneric(const BaseLString<nchar>& input,
 
 auto decodeLatin1(const BaseLString<unsigned char>& input,
                   EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>>;
+    -> ContainedLString<std::vector<char>>;
 
 auto decodeUTF8(const BaseLString<unsigned char>& input,
                 EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>>;
+    -> ContainedLString<std::vector<char>>;
 
 auto decodeUTF16(const BaseLString<unsigned char>& input,
                  EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>>;
+    -> ContainedLString<std::vector<char>>;
 
 auto decodeUTF32(const BaseLString<unsigned char>& input,
                  EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>>;
+    -> ContainedLString<std::vector<char>>;
 
 auto decodeGeneric(const BaseLString<unsigned char>& input,
                    ByteStringEncoding encoding, EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>>;
+    -> ContainedLString<std::vector<char>>;
 
 }
 

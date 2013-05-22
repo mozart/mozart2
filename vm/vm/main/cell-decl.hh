@@ -40,7 +40,7 @@ namespace mozart {
 class Cell: public DataType<Cell>, public WithHome {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("cell"));
+    return vm->getAtom("cell");
   }
 
   Cell(VM vm, RichNode initial): WithHome(vm) {

@@ -48,8 +48,8 @@ public:
     PrintRepr(): Builtin("printRepr") {}
 
     static void call(VM vm, In value, In toStdErr, In newLine) {
-      auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
-      auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
+      auto boolToStdErr = getArgument<bool>(vm, toStdErr, "Boolean");
+      auto boolNewLine = getArgument<bool>(vm, newLine, "Boolean");
 
       auto& config = vm->getPropertyRegistry().config;
 
@@ -87,7 +87,7 @@ public:
       auto bufferStr = buffer.str();
 
       auto utf8str = makeLString(bufferStr.c_str(), bufferStr.size());
-      auto str = toUTF<nchar>(utf8str);
+      auto str = toUTF<char>(utf8str);
 
       result = Atom::build(vm, str.length, str.string);
     }
@@ -107,8 +107,8 @@ public:
     PrintVS(): Builtin("printVS") {}
 
     static void call(VM vm, In value, In toStdErr, In newLine) {
-      auto boolToStdErr = getArgument<bool>(vm, toStdErr, MOZART_STR("Boolean"));
-      auto boolNewLine = getArgument<bool>(vm, newLine, MOZART_STR("Boolean"));
+      auto boolToStdErr = getArgument<bool>(vm, toStdErr, "Boolean");
+      auto boolNewLine = getArgument<bool>(vm, newLine, "Boolean");
 
       size_t valueBufSize = ozVSLengthForBuffer(vm, value);
 
@@ -156,7 +156,7 @@ public:
     Exit(): Builtin("exit") {}
 
     static void call(VM vm, In exitCode) {
-      std::exit(getArgument<nativeint>(vm, exitCode, MOZART_STR("Integer")));
+      std::exit(getArgument<nativeint>(vm, exitCode, "Integer"));
     }
   };
 };

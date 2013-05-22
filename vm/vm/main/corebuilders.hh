@@ -84,19 +84,19 @@ UnstableNode build(VM vm, double value) {
 }
 
 inline
-UnstableNode build(VM vm, const nchar* value) {
+UnstableNode build(VM vm, const char* value) {
   return Atom::build(vm, value);
 }
 
 // build an atom from a 'const char*' (as UTF string).
-// Only exists when 'nchar != char'.
+// Only exists when 'char != char'.
 template <typename T>
 inline
 auto build(VM vm, T value)
     -> typename std::enable_if<std::is_convertible<T, const char*>::value &&
-                               !std::is_same<nchar, char>::value, UnstableNode>::type {
+                               !std::is_same<char, char>::value, UnstableNode>::type {
   auto src = makeLString(value);
-  auto dest = toUTF<nchar>(src);
+  auto dest = toUTF<char>(src);
   return Atom::build(vm, dest.length, dest.string);
 }
 

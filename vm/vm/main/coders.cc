@@ -30,7 +30,7 @@ namespace mozart {
 // Encoders //
 //////////////
 
-auto encodeLatin1(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeLatin1(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>> {
   if (input.isErrorOrEmpty())
     return input.error;
@@ -44,7 +44,7 @@ auto encodeLatin1(const BaseLString<nchar>& input, EncodingVariant variant)
                      tempVector.push_back(codePoint > 0xff ? '?' : codePoint);
                      return true;
                    },
-                   [&](nchar, UnicodeErrorReason error) -> bool {
+                   [&](char, UnicodeErrorReason error) -> bool {
                      curError = error;
                      return false;
                    });
@@ -55,7 +55,7 @@ auto encodeLatin1(const BaseLString<nchar>& input, EncodingVariant variant)
     return std::move(tempVector);
 }
 
-auto encodeUTF8(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeUTF8(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>> {
 
   auto utf8Result = toUTF<char>(input);
@@ -83,7 +83,7 @@ auto encodeUTF8(const BaseLString<nchar>& input, EncodingVariant variant)
   return std::move(result);
 }
 
-auto encodeUTF16(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeUTF16(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>> {
 
   auto utf16Result = toUTF<char16_t>(input);
@@ -114,7 +114,7 @@ auto encodeUTF16(const BaseLString<nchar>& input, EncodingVariant variant)
   return std::move(result);
 }
 
-auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
+auto encodeUTF32(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>> {
 
   auto utf32Result = toUTF<char32_t>(input);
@@ -151,7 +151,7 @@ auto encodeUTF32(const BaseLString<nchar>& input, EncodingVariant variant)
   return std::move(result);
 }
 
-auto encodeGeneric(const BaseLString<nchar>& input,
+auto encodeGeneric(const BaseLString<char>& input,
                    ByteStringEncoding encoding, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>> {
 
@@ -172,16 +172,16 @@ auto encodeGeneric(const BaseLString<nchar>& input,
 
 auto decodeLatin1(const BaseLString<unsigned char>& input,
                   EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>> {
+    -> ContainedLString<std::vector<char>> {
 
-  std::vector<nchar> tempVector;
+  std::vector<char> tempVector;
   tempVector.reserve(input.length);
 
-  if (std::is_same<nchar, char>::value) {
+  if (std::is_same<char, char>::value) {
     // UTF-8 needs special consideration, because 0x80~0xff maps to 2-byte
     // sequences.
     for (char32_t c : input) {
-      nchar encoded[4];
+      char encoded[4];
       nativeint length = toUTF(c, encoded);   // always valid.
       tempVector.insert(tempVector.end(), encoded, encoded + length);
     }
@@ -194,7 +194,7 @@ auto decodeLatin1(const BaseLString<unsigned char>& input,
 
 auto decodeUTF8(const BaseLString<unsigned char>& input,
                 EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>> {
+    -> ContainedLString<std::vector<char>> {
 
   nativeint start = 0;
   if ((variant & EncodingVariant::hasBOM) != 0 && input.length >= 3) {
@@ -206,12 +206,12 @@ auto decodeUTF8(const BaseLString<unsigned char>& input,
   const auto& slice = input.unsafeSlice(start);
   BaseLString<char> utf8Input(reinterpret_cast<const char*>(slice.string),
                               slice.length);
-  return toUTF<nchar>(utf8Input);
+  return toUTF<char>(utf8Input);
 }
 
 auto decodeUTF16(const BaseLString<unsigned char>& input,
                  EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>> {
+    -> ContainedLString<std::vector<char>> {
 
   if (input.isError())
     return input.error;
@@ -238,12 +238,12 @@ auto decodeUTF16(const BaseLString<unsigned char>& input,
     buffer.push_back(low | high << 8);
   }
 
-  return toUTF<nchar>(makeLString(buffer.data(), buffer.size()));
+  return toUTF<char>(makeLString(buffer.data(), buffer.size()));
 }
 
 auto decodeUTF32(const BaseLString<unsigned char>& input,
                  EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>> {
+    -> ContainedLString<std::vector<char>> {
 
   if (input.isError())
     return input.error;
@@ -272,12 +272,12 @@ auto decodeUTF32(const BaseLString<unsigned char>& input,
     buffer.push_back(a | b << 8 | c << 16 | d << 24);
   }
 
-  return toUTF<nchar>(makeLString(buffer.data(), buffer.size()));
+  return toUTF<char>(makeLString(buffer.data(), buffer.size()));
 }
 
 auto decodeGeneric(const BaseLString<unsigned char>& input,
                    ByteStringEncoding encoding, EncodingVariant variant)
-    -> ContainedLString<std::vector<nchar>> {
+    -> ContainedLString<std::vector<char>> {
 
   switch (encoding) {
     case ByteStringEncoding::latin1: return decodeLatin1(input, variant);

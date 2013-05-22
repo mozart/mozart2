@@ -45,7 +45,7 @@ protected:
    * Expect that a node is an atom and the content is the given
    * null-terminated string.
    */
-  bool EXPECT_EQ_ATOM(const BaseLString<nchar>& expected,
+  bool EXPECT_EQ_ATOM(const BaseLString<char>& expected,
                       RichNode actual) const {
     if (!EXPECT_IS<Atom>(actual))
       return false;
@@ -84,7 +84,7 @@ protected:
    * Expect that a node is a string and the content is the given
    * null-terminated string.
    */
-  static bool EXPECT_EQ_STRING(const BaseLString<nchar>& expected,
+  static bool EXPECT_EQ_STRING(const BaseLString<char>& expected,
                                RichNode actual) {
     if (!EXPECT_IS<String>(actual))
       return false;
@@ -98,7 +98,7 @@ protected:
    * Expect that a node is a string and the content is the given
    * null-terminated string.
    */
-  static bool EXPECT_EQ_STRING(const BaseLString<nchar>& expected,
+  static bool EXPECT_EQ_STRING(const BaseLString<char>& expected,
                                UnstableNode&& actual) {
     return EXPECT_EQ_STRING(expected, RichNode(actual));
   }

@@ -49,7 +49,7 @@ public:
       if (RecordLike(underlying).isRecord(vm)) {
         result = Chunk::build(vm, underlying);
       } else {
-        raiseTypeError(vm, MOZART_STR("Record"), underlying);
+        raiseTypeError(vm, "Record", underlying);
       }
     }
   };

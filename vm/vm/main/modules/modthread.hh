@@ -76,9 +76,9 @@ public:
       ThreadPriority prio = ThreadLike(thread).getThreadPriority(vm);
 
       switch (prio) {
-        case tpLow: result = build(vm, MOZART_STR("low")); break;
-        case tpMiddle: result = build(vm, MOZART_STR("medium")); break;
-        case tpHi: result = build(vm, MOZART_STR("high")); break;
+        case tpLow: result = build(vm, "low"); break;
+        case tpMiddle: result = build(vm, "medium"); break;
+        case tpHi: result = build(vm, "high"); break;
 
         default: assert(false);
       }
@@ -94,14 +94,14 @@ public:
 
       ThreadPriority prio = tpMiddle;
 
-      if (matches(vm, priority, MOZART_STR("low"))) {
+      if (matches(vm, priority, "low")) {
         prio = tpLow;
-      } else if (matches(vm, priority, MOZART_STR("medium"))) {
+      } else if (matches(vm, priority, "medium")) {
         prio = tpMiddle;
-      } else if (matches(vm, priority, MOZART_STR("high"))) {
+      } else if (matches(vm, priority, "high")) {
         prio = tpHi;
       } else {
-        raiseTypeError(vm, MOZART_STR("low, medium or high"), priority);
+        raiseTypeError(vm, "low, medium or high", priority);
       }
 
       ThreadLike(thread).setThreadPriority(vm, prio);
@@ -125,11 +125,11 @@ public:
       Runnable* runnable = getArgument<Runnable*>(vm, thread);
 
       if (runnable->isTerminated())
-        result = build(vm, MOZART_STR("terminated"));
+        result = build(vm, "terminated");
       else if (runnable->isRunnable())
-        result = build(vm, MOZART_STR("runnable"));
+        result = build(vm, "runnable");
       else
-        result = build(vm, MOZART_STR("blocked"));
+        result = build(vm, "blocked");
     }
   };
 };

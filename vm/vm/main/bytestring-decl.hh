@@ -45,7 +45,7 @@ public:
   static constexpr UUID uuid = "{2ca6b7da-7a3f-4f65-be2f-75bb6f704c47}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("byteString"));
+    return vm->getAtom("byteString");
   }
 
   ByteString(VM vm, const LString<unsigned char>& bytes) : _bytes(bytes) {}
@@ -87,7 +87,7 @@ public:
   }
 
   inline
-  LString<nchar>* stringGet(RichNode self, VM vm);
+  LString<char>* stringGet(RichNode self, VM vm);
 
   inline
   LString<unsigned char>* byteStringGet(VM vm);

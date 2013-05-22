@@ -80,8 +80,8 @@ public:
       }
 
       if (!ok) {
-        raiseOSError(vm, MOZART_STR("bootURLLoad"), 1,
-                     MOZART_STR("panic: cannot open boot URL"));
+        raiseOSError(vm, "bootURLLoad", 1,
+                     "panic: cannot open boot URL");
       }
     }
   };
@@ -166,8 +166,8 @@ public:
       }
 
       if (!succeeded) {
-        raiseOSError(vm, MOZART_STR("putenv"), 0,
-                     MOZART_STR("OS.putEnv failed."));
+        raiseOSError(vm, "putenv", 0,
+                     "OS.putEnv failed.");
       }
     }
   };
@@ -209,11 +209,11 @@ private:
 
   static WrappedFile* getFileArgument(VM vm, RichNode arg) {
     auto wrappedFile = getPointerArgument<WrappedFile>(vm, arg,
-                                                       MOZART_STR("file"));
+                                                       "file");
 
     if (wrappedFile->isClosed()) {
-      raiseSystem(vm, MOZART_STR("os"), MOZART_STR("os"),
-                  MOZART_STR("close"), 9, MOZART_STR("Bad filedescriptor"));
+      raiseSystem(vm, "os", "os",
+                  "close", 9, "Bad filedescriptor");
     }
 
     return wrappedFile;
@@ -240,13 +240,13 @@ public:
       }
 
       if (ec)
-        raiseOSError(vm, MOZART_STR("getDir"), ec);
+        raiseOSError(vm, "getDir", ec);
 
       {
         OzListBuilder builder(vm);
         for (; iter != directory_iterator(); ++iter) {
           auto nativeFileName = iter->path().filename().native();
-          auto mozartFileName = toUTF<nchar>(
+          auto mozartFileName = toUTF<char>(
             makeLString(nativeFileName.c_str(), nativeFileName.size()));
 
           builder.push_back(vm, vm->getAtom(mozartFileName.length,
@@ -263,7 +263,7 @@ public:
 
     static void call(VM vm, Out result) {
       auto nativeStr = boost::filesystem::current_path().native();
-      auto nresult = toUTF<nchar>(makeLString(nativeStr.c_str(),
+      auto nresult = toUTF<char>(makeLString(nativeStr.c_str(),
                                               nativeStr.size()));
 
       result = Atom::build(vm, nresult.length, nresult.string);
@@ -277,7 +277,7 @@ public:
     static void call(VM vm, Out result) {
       std::string nativeStr =
         std::string("/tmp/temp-") + vm->genUUID().toString();
-      auto nresult = toUTF<nchar>(makeLString(nativeStr.c_str(),
+      auto nresult = toUTF<char>(makeLString(nativeStr.c_str(),
                                               nativeStr.size()));
 
       result = Atom::build(vm, nresult.length, nresult.string);
@@ -305,7 +305,7 @@ public:
       }
 
       if (file == nullptr)
-        raiseLastOSError(vm, MOZART_STR("fopen"));
+        raiseLastOSError(vm, "fopen");
 
       result = build(vm, std::make_shared<WrappedFile>(file));
     }
@@ -334,7 +334,7 @@ public:
       if ((readCount < bufferSize) && std::ferror(file)) {
         // error
         vm->free(buffer, bufferSize);
-        raiseLastOSError(vm, MOZART_STR("fread"));
+        raiseLastOSError(vm, "fread");
       }
 
       char* charBuffer = static_cast<char*>(buffer);
@@ -374,7 +374,7 @@ public:
       }
 
       if (writtenSize != bufSize)
-        raiseLastOSError(vm, MOZART_STR("fwrite"));
+        raiseLastOSError(vm, "fwrite");
 
       writtenCount = build(vm, writtenSize);
     }
@@ -391,21 +391,21 @@ public:
       auto intOffset = getArgument<nativeint>(vm, offset);
 
       int intWhence;
-      if (matches(vm, whence, MOZART_STR("SEEK_SET"))) {
+      if (matches(vm, whence, "SEEK_SET")) {
         intWhence = SEEK_SET;
-      } else if (matches(vm, whence, MOZART_STR("SEEK_CUR"))) {
+      } else if (matches(vm, whence, "SEEK_CUR")) {
         intWhence = SEEK_CUR;
-      } else if (matches(vm, whence, MOZART_STR("SEEK_END"))) {
+      } else if (matches(vm, whence, "SEEK_END")) {
         intWhence = SEEK_END;
       } else {
         raiseTypeError(
-          vm, MOZART_STR("'SEEK_SET', 'SEEK_CUR' or 'SEEK_END'"), whence);
+          vm, "'SEEK_SET', 'SEEK_CUR' or 'SEEK_END'", whence);
       }
 
       nativeint seekResult = std::fseek(file, (long) intOffset, intWhence);
 
       if (seekResult < 0)
-        raiseLastOSError(vm, MOZART_STR("fseek"));
+        raiseLastOSError(vm, "fseek");
 
       where = build(vm, seekResult);
     }
@@ -453,12 +453,12 @@ public:
 private:
   static TCPAcceptor* getTCPAcceptorArg(VM vm, In acceptor) {
     return getPointerArgument<TCPAcceptor>(vm, acceptor,
-                                           MOZART_STR("TCP acceptor"));
+                                           "TCP acceptor");
   }
 
   static TCPConnection* getTCPConnectionArg(VM vm, In connection) {
     return getPointerArgument<TCPConnection>(vm, connection,
-                                             MOZART_STR("TCP connection"));
+                                             "TCP connection");
   }
 
 public:
@@ -470,15 +470,15 @@ public:
       using boost::asio::ip::tcp;
 
       auto intIPVersion = getArgument<nativeint>(vm, ipVersion,
-                                                 MOZART_STR("4 or 6"));
+                                                 "4 or 6");
       if ((intIPVersion != 4) && (intIPVersion != 6))
-        raiseTypeError(vm, MOZART_STR("4 or 6"), ipVersion);
+        raiseTypeError(vm, "4 or 6", ipVersion);
 
       auto intPort = getArgument<nativeint>(vm, port,
-                                            MOZART_STR("valid port number"));
+                                            "valid port number");
       if ((intPort <= 0) ||
           (intPort > std::numeric_limits<unsigned short>::max()))
-        raiseTypeError(vm, MOZART_STR("valid port number"), port);
+        raiseTypeError(vm, "valid port number", port);
 
       tcp::endpoint endpoint;
       if (intIPVersion == 4)
@@ -490,7 +490,7 @@ public:
         auto acceptor = TCPAcceptor::create(BoostBasedVM::forVM(vm), endpoint);
         result = build(vm, acceptor);
       } catch (const boost::system::system_error& error) {
-        raiseOSError(vm, MOZART_STR("tcpAcceptorCreate"), error);
+        raiseOSError(vm, "tcpAcceptorCreate", error);
       }
     }
   };
@@ -518,7 +518,7 @@ public:
 
       auto error = tcpAcceptor->cancel();
       if (!error)
-        raiseOSError(vm, MOZART_STR("cancel"), error);
+        raiseOSError(vm, "cancel", error);
     }
   };
 
@@ -531,7 +531,7 @@ public:
 
       auto error = tcpAcceptor->close();
       if (error)
-        raiseOSError(vm, MOZART_STR("close"), error);
+        raiseOSError(vm, "close", error);
     }
   };
 
@@ -569,7 +569,7 @@ private:
 
     // 0 size
     if (intCount <= 0) {
-      status = buildTuple(vm, MOZART_STR("succeeded"), 0, tail);
+      status = buildTuple(vm, "succeeded", 0, tail);
       return;
     }
 
@@ -616,20 +616,20 @@ private:
 
     // Fetch what channels must be shut down
     typename socket::shutdown_type whatValue;
-    if (matches(vm, what, MOZART_STR("receive"))) {
+    if (matches(vm, what, "receive")) {
       whatValue = socket::shutdown_receive;
-    } else if (matches(vm, what, MOZART_STR("send"))) {
+    } else if (matches(vm, what, "send")) {
       whatValue = socket::shutdown_send;
-    } else if (matches(vm, what, MOZART_STR("both"))) {
+    } else if (matches(vm, what, "both")) {
       whatValue = socket::shutdown_both;
     } else {
-      raiseTypeError(vm, MOZART_STR("'receive', 'send' or 'both'"), what);
+      raiseTypeError(vm, "'receive', 'send' or 'both'", what);
     }
 
     try {
       connection->socket().shutdown(whatValue);
     } catch (const boost::system::system_error& error) {
-      raiseOSError(vm, MOZART_STR("shutdown"), error);
+      raiseOSError(vm, "shutdown", error);
     }
   }
 
@@ -643,7 +643,7 @@ private:
       connection->socket().shutdown(socket::shutdown_both);
       connection->socket().close();
     } catch (const boost::system::system_error& error) {
-      raiseOSError(vm, MOZART_STR("close"), error);
+      raiseOSError(vm, "close", error);
     }
   }
 
@@ -701,7 +701,7 @@ public:
       [vm, &argvBufSizes] (RichNode inArg, size_t i) {
         argvBufSizes[i] = ozVSLengthForBuffer(vm, inArg);
       },
-      MOZART_STR("list(VirtualString)")
+      "list(VirtualString)"
     );
 
     executable = ozVSGetNullTerminatedAsLString<char>(
@@ -713,7 +713,7 @@ public:
         argv[i] = ozVSGetNullTerminatedAsLString<char>(
           vm, inArg, argvBufSizes[i]);
       },
-      MOZART_STR("list(VirtualString)")
+      "list(VirtualString)"
     );
 
     vm->deleteStaticArray(argvBufSizes, argc);
@@ -782,8 +782,8 @@ public:
                           nullptr, nullptr, &si, &pinf)) {
         if (ozppidbuf[0] != '\0')
           SetEnvironmentVariable("OZPPID", ozppidbuf);
-        raiseOSError(vm, MOZART_STR("exec"), 0,
-                     MOZART_STR("Cannot exec process."));
+        raiseOSError(vm, "exec", 0,
+                     "Cannot exec process.");
       }
       CloseHandle(pinf.hThread);
       CloseHandle(pinf.hProcess); //--** unsafe! keep open while pid used
@@ -846,7 +846,7 @@ public:
             int dn;
             while ((dn = open("/dev/null", O_RDWR)) < 0) {
               if (errno != EINTR)
-                raiseLastOSError(vm, MOZART_STR("open"));
+                raiseLastOSError(vm, "open");
             }
 
             dup(dn); // stdout
@@ -872,7 +872,7 @@ public:
         }
 
         case -1: {
-          raiseLastOSError(vm, MOZART_STR("fork")); // fork failed
+          raiseLastOSError(vm, "fork"); // fork failed
         }
 
         default: { // parent
@@ -907,8 +907,8 @@ public:
       parseExecutableAndArgv(vm, inExecutable, inArgv, executable, argc, argv);
 
 #ifdef MOZART_WINDOWS
-      raiseError(vm, MOZART_STR("notImplemented"),
-                 MOZART_STR("OS.pipe on Windows"));
+      raiseError(vm, "notImplemented",
+                 "OS.pipe on Windows");
 #if 0
       std::stringstream scmdline;
       for (size_t i = 0; i < argc; i++) {
@@ -937,8 +937,8 @@ public:
 
         if (!CreatePipe(&rh0, &wh0Tmp, &sa1, 0)  ||
             !CreatePipe(&rh1Tmp, &wh1, &sa2, 0)) {
-          raiseOSError(vm, MOZART_STR("CreatePipe"), 0,
-                       MOZART_STR("Cannot create pipe."));
+          raiseOSError(vm, "CreatePipe", 0,
+                       "Cannot create pipe.");
         }
 
         /* The child must only inherit one side of each pipe.
@@ -952,8 +952,8 @@ public:
             !DuplicateHandle(GetCurrentProcess(), rh1Tmp,
                              GetCurrentProcess(), &rh1, 0,
                              false, DUPLICATE_SAME_ACCESS)) {
-          raiseOSError(vm, MOZART_STR("DuplicateHandle"), 0,
-                       MOZART_STR("Cannot duplicate handle."));
+          raiseOSError(vm, "DuplicateHandle", 0,
+                       "Cannot duplicate handle.");
         }
         CloseHandle(wh0Tmp);
         CloseHandle(rh1Tmp);
@@ -964,8 +964,8 @@ public:
       if (!DuplicateHandle(GetCurrentProcess(), wh1,
                            GetCurrentProcess(), &wh2, 0,
                            true, DUPLICATE_SAME_ACCESS)) {
-        raiseOSError(vm, MOZART_STR("DuplicateHandle"), 0,
-                     MOZART_STR("Cannot duplicate handle."));
+        raiseOSError(vm, "DuplicateHandle", 0,
+                     "Cannot duplicate handle.");
       }
 
       STARTUPINFO si;
@@ -980,8 +980,8 @@ public:
       if (!CreateProcess(nullptr, const_cast<char*>(cmdline.c_str()),
                          nullptr, nullptr, true, 0,
                          nullptr, nullptr, &si, &pinf)) {
-        raiseOSError(vm, MOZART_STR("CreateProcess"), 0,
-                     MOZART_STR("Cannot create process."));
+        raiseOSError(vm, "CreateProcess", 0,
+                     "Cannot create process.");
       }
 
       nativeint pid = pinf.dwProcessId;
@@ -1079,7 +1079,7 @@ public:
             }
 
             case -1: {
-              raiseLastOSError(vm, MOZART_STR("fork")); // fork failed
+              raiseLastOSError(vm, "fork"); // fork failed
             }
 
             default: { // parent
@@ -1100,7 +1100,7 @@ public:
       }
 
       if (ec) {
-        raiseOSError(vm, MOZART_STR("socketpair"), ec);
+        raiseOSError(vm, "socketpair", ec);
       }
 
 #endif
@@ -1111,7 +1111,7 @@ public:
 private:
   static PipeConnection* getPipeConnectionArg(VM vm, In connection) {
     return getPointerArgument<PipeConnection>(vm, connection,
-                                              MOZART_STR("Pipe connection"));
+                                              "Pipe connection");
   }
 
 public:
@@ -1160,8 +1160,8 @@ public:
     PipeConnectionRead(): Builtin("pipeConnectionRead") {}
 
     static void call(VM vm, In connection, In count, In tail, Out status) {
-      raiseError(vm, MOZART_STR("notImplemented"),
-                 MOZART_STR("Pipes on Windows"));
+      raiseError(vm, "notImplemented",
+                 "Pipes on Windows");
     }
   };
 
@@ -1170,8 +1170,8 @@ public:
     PipeConnectionWrite(): Builtin("pipeConnectionWrite") {}
 
     static void call(VM vm, In connection, In data, Out status) {
-      raiseError(vm, MOZART_STR("notImplemented"),
-                 MOZART_STR("Pipes on Windows"));
+      raiseError(vm, "notImplemented",
+                 "Pipes on Windows");
     }
   };
 
@@ -1180,8 +1180,8 @@ public:
     PipeConnectionShutdown(): Builtin("pipeConnectionShutdown") {}
 
     static void call(VM vm, In connection, In what) {
-      raiseError(vm, MOZART_STR("notImplemented"),
-                 MOZART_STR("Pipes on Windows"));
+      raiseError(vm, "notImplemented",
+                 "Pipes on Windows");
     }
   };
 
@@ -1190,8 +1190,8 @@ public:
     PipeConnectionClose(): Builtin("pipeConnectionClose") {}
 
     static void call(VM vm, In connection) {
-      raiseError(vm, MOZART_STR("notImplemented"),
-                 MOZART_STR("Pipes on Windows"));
+      raiseError(vm, "notImplemented",
+                 "Pipes on Windows");
     }
   };
 #endif // BOOST_ASIO_HAS_LOCAL_SOCKETS

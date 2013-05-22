@@ -59,7 +59,7 @@ struct PrimitiveTypeToExpectedAtom<UUID> {
 
 template <class T>
 inline
-T getArgument(VM vm, RichNode argValue, const nchar* expectedType);
+T getArgument(VM vm, RichNode argValue, const char* expectedType);
 
 template <class T>
 inline
@@ -75,7 +75,7 @@ RichNode getArgument(VM vm, RichNode argValue);
 
 template <class T>
 inline
-T* getPointerArgument(VM vm, RichNode argValue, const nchar* expectedType);
+T* getPointerArgument(VM vm, RichNode argValue, const char* expectedType);
 
 template <class T>
 inline
@@ -128,7 +128,7 @@ private:
 template <class F>
 inline
 auto ozListForEach(VM vm, RichNode list, const F& f,
-                   const nchar* expectedType)
+                   const char* expectedType)
     -> typename std::enable_if<function_traits<F>::arity == 1, void>::type;
 
 /**
@@ -142,7 +142,7 @@ auto ozListForEach(VM vm, RichNode list, const F& f,
 template <class F>
 inline
 auto ozListForEach(VM vm, RichNode list, const F& f,
-                   const nchar* expectedType)
+                   const char* expectedType)
     -> typename std::enable_if<function_traits<F>::arity == 2, void>::type;
 
 inline
@@ -158,7 +158,7 @@ inline
 nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs);
 
 inline
-bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<nchar>& output);
+bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<char>& output);
 
 inline
 nativeint ozVBSLengthForBufferNoRaise(VM vm, RichNode vbs);
@@ -176,10 +176,10 @@ inline
 size_t ozVSLengthForBuffer(VM vm, RichNode vs);
 
 inline
-void ozVSGet(VM vm, RichNode vs, std::vector<nchar>& output);
+void ozVSGet(VM vm, RichNode vs, std::vector<char>& output);
 
 inline
-void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<nchar>& output);
+void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<char>& output);
 
 template <typename C>
 inline
@@ -189,7 +189,7 @@ template <typename C>
 inline
 void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::basic_string<C>& output);
 
-template <typename C = nchar>
+template <typename C = char>
 inline
 LString<C> ozVSGetAsLString(VM vm, RichNode vs, size_t bufSize);
 
@@ -198,7 +198,7 @@ inline
 void ozVSGetNullTerminated(VM vm, RichNode vs, size_t bufSize,
                            std::vector<C>& output);
 
-template <typename C = nchar>
+template <typename C = char>
 inline
 LString<C> ozVSGetNullTerminatedAsLString(VM vm, RichNode vs, size_t bufSize);
 
@@ -242,13 +242,13 @@ void sendToReadOnlyStream(VM vm, UnstableNode& stream, T&& value);
 
 template <typename Step>
 inline
-auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+auto protectNonIdempotentStep(VM vm, const char* identity, const Step& step)
     -> typename std::enable_if<!std::is_void<decltype(step())>::value,
                                decltype(step())>::type;
 
 template <typename Step>
 inline
-auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+auto protectNonIdempotentStep(VM vm, const char* identity, const Step& step)
     -> typename std::enable_if<std::is_void<decltype(step())>::value,
                                void>::type;
 

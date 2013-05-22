@@ -37,7 +37,7 @@ class Float: public DataType<Float>,
   StoredAs<double>, WithValueBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("float"));
+    return vm->getAtom("float");
   }
 
   explicit Float(double value) : _value(value) {}

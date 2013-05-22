@@ -69,15 +69,15 @@ public:
 
   template <typename... Args>
   inline
-  bool fetch(VM vm, const nchar* identity, Args... args);
+  bool fetch(VM vm, const char* identity, Args... args);
 
   template <typename... Args>
   inline
-  void store(VM vm, const nchar* identity, Args&&... args);
+  void store(VM vm, const char* identity, Args&&... args);
 
   template <typename... Args>
   inline
-  void resetAndStore(VM vm, CheckPoint checkPoint, const nchar* identity,
+  void resetAndStore(VM vm, CheckPoint checkPoint, const char* identity,
                      Args&&... args);
 
   inline

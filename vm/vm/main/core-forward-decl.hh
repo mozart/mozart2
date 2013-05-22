@@ -55,8 +55,6 @@ namespace internal {
 }
 
 typedef intptr_t nativeint;
-typedef char nchar;
-#define MOZART_STR(S) u8##S
 
 struct unit_t {
 };
@@ -83,7 +81,7 @@ public:
   size_t length() const;
 
   inline
-  const nchar* contents() const;
+  const char* contents() const;
 
   inline
   bool equals(const basic_atom_t<atom_type>& rhs) const;

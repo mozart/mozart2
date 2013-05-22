@@ -44,16 +44,16 @@ public:
   static constexpr UUID uuid = "{163123b5-feaa-4e1d-8917-f74d81e11236}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("unicodeString"));
+    return vm->getAtom("unicodeString");
   }
 
-  String(VM vm, const LString<nchar>& string) : _string(string) {}
+  String(VM vm, const LString<char>& string) : _string(string) {}
 
   inline
   String(VM vm, GR gr, String& self);
 
 public:
-  const LString<nchar>& value() const { return _string; }
+  const LString<char>& value() const { return _string; }
 
   inline
   bool equals(VM vm, RichNode right);
@@ -76,7 +76,7 @@ public:
   }
 
   inline
-  LString<nchar>* stringGet(VM vm);
+  LString<char>* stringGet(VM vm);
 
   inline
   LString<unsigned char>* byteStringGet(RichNode self, VM vm);
@@ -122,7 +122,7 @@ public:
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 private:
-  LString<nchar> _string;
+  LString<char> _string;
 };
 
 #ifndef MOZART_GENERATOR

@@ -30,50 +30,50 @@
 namespace mozart {
 
 void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
-  empty = atomTable.get(vm, MOZART_STR(""));
+  empty = atomTable.get(vm, "");
 
-  nil = atomTable.get(vm, MOZART_STR("nil"));
-  pipe = atomTable.get(vm, MOZART_STR("|"));
-  sharp = atomTable.get(vm, MOZART_STR("#"));
+  nil = atomTable.get(vm, "nil");
+  pipe = atomTable.get(vm, "|");
+  sharp = atomTable.get(vm, "#");
 
-  succeeded = atomTable.get(vm, MOZART_STR("succeeded"));
-  entailed = atomTable.get(vm, MOZART_STR("entailed"));
-  stuck = atomTable.get(vm, MOZART_STR("stuck"));
-  alternatives = atomTable.get(vm, MOZART_STR("alternatives"));
-  failed = atomTable.get(vm, MOZART_STR("failed"));
-  merged = atomTable.get(vm, MOZART_STR("merged"));
+  succeeded = atomTable.get(vm, "succeeded");
+  entailed = atomTable.get(vm, "entailed");
+  stuck = atomTable.get(vm, "stuck");
+  alternatives = atomTable.get(vm, "alternatives");
+  failed = atomTable.get(vm, "failed");
+  merged = atomTable.get(vm, "merged");
 
-  ooMeth = atomTable.getUniqueName(vm, MOZART_STR("ooMeth"));
-  ooFastMeth = atomTable.getUniqueName(vm, MOZART_STR("ooFastMeth"));
-  ooDefaults = atomTable.getUniqueName(vm, MOZART_STR("ooDefaults"));
-  ooAttr = atomTable.getUniqueName(vm, MOZART_STR("ooAttr"));
-  ooFeat = atomTable.getUniqueName(vm, MOZART_STR("ooFeat"));
-  ooFreeFeat = atomTable.getUniqueName(vm, MOZART_STR("ooFreeFeat"));
-  ooFreeFlag = atomTable.getUniqueName(vm, MOZART_STR("ooFreeFlag"));
-  ooMethSrc = atomTable.getUniqueName(vm, MOZART_STR("ooMethSrc"));
-  ooAttrSrc = atomTable.getUniqueName(vm, MOZART_STR("ooAttrSrc"));
-  ooFeatSrc = atomTable.getUniqueName(vm, MOZART_STR("ooFeatSrc"));
-  ooPrintName = atomTable.getUniqueName(vm, MOZART_STR("ooPrintName"));
-  ooFallback = atomTable.getUniqueName(vm, MOZART_STR("ooFallback"));
+  ooMeth = atomTable.getUniqueName(vm, "ooMeth");
+  ooFastMeth = atomTable.getUniqueName(vm, "ooFastMeth");
+  ooDefaults = atomTable.getUniqueName(vm, "ooDefaults");
+  ooAttr = atomTable.getUniqueName(vm, "ooAttr");
+  ooFeat = atomTable.getUniqueName(vm, "ooFeat");
+  ooFreeFeat = atomTable.getUniqueName(vm, "ooFreeFeat");
+  ooFreeFlag = atomTable.getUniqueName(vm, "ooFreeFlag");
+  ooMethSrc = atomTable.getUniqueName(vm, "ooMethSrc");
+  ooAttrSrc = atomTable.getUniqueName(vm, "ooAttrSrc");
+  ooFeatSrc = atomTable.getUniqueName(vm, "ooFeatSrc");
+  ooPrintName = atomTable.getUniqueName(vm, "ooPrintName");
+  ooFallback = atomTable.getUniqueName(vm, "ooFallback");
 
-  outOfRange = atomTable.get(vm, MOZART_STR("outOfRange"));
-  surrogate = atomTable.get(vm, MOZART_STR("surrogate"));
-  invalidUTF8 = atomTable.get(vm, MOZART_STR("invalidUTF8"));
-  invalidUTF16 = atomTable.get(vm, MOZART_STR("invalidUTF16"));
-  truncated = atomTable.get(vm, MOZART_STR("truncated"));
+  outOfRange = atomTable.get(vm, "outOfRange");
+  surrogate = atomTable.get(vm, "surrogate");
+  invalidUTF8 = atomTable.get(vm, "invalidUTF8");
+  invalidUTF16 = atomTable.get(vm, "invalidUTF16");
+  truncated = atomTable.get(vm, "truncated");
 
-  debug = atomTable.get(vm, MOZART_STR("debug"));
-  error = atomTable.get(vm, MOZART_STR("error"));
-  system = atomTable.get(vm, MOZART_STR("system"));
-  failure = atomTable.get(vm, MOZART_STR("failure"));
-  kernel = atomTable.get(vm, MOZART_STR("kernel"));
-  illegalFieldSelection = atomTable.get(vm, MOZART_STR("illegalFieldSelection"));
-  unicodeError = atomTable.get(vm, MOZART_STR("unicode"));
-  spaceAdmissible = atomTable.get(vm, MOZART_STR("spaceAdmissible"));
-  spaceNoChoice = atomTable.get(vm, MOZART_STR("spaceNoChoice"));
-  spaceAltRange = atomTable.get(vm, MOZART_STR("spaceAltRange"));
-  spaceMerged = atomTable.get(vm, MOZART_STR("spaceMerged"));
-  indexOutOfBounds = atomTable.get(vm, MOZART_STR("indexOutOfBounds"));
+  debug = atomTable.get(vm, "debug");
+  error = atomTable.get(vm, "error");
+  system = atomTable.get(vm, "system");
+  failure = atomTable.get(vm, "failure");
+  kernel = atomTable.get(vm, "kernel");
+  illegalFieldSelection = atomTable.get(vm, "illegalFieldSelection");
+  unicodeError = atomTable.get(vm, "unicode");
+  spaceAdmissible = atomTable.get(vm, "spaceAdmissible");
+  spaceNoChoice = atomTable.get(vm, "spaceNoChoice");
+  spaceAltRange = atomTable.get(vm, "spaceAltRange");
+  spaceMerged = atomTable.get(vm, "spaceMerged");
+  indexOutOfBounds = atomTable.get(vm, "indexOutOfBounds");
 }
 
 }

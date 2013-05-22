@@ -74,7 +74,7 @@ UnstableNode Array::arrayGet(RichNode self, VM vm, RichNode index) {
 
 void Array::arrayPut(RichNode self, VM vm, RichNode index, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("array"));
+    raise(vm, "globalState", "array");
 
   getElements(getOffset(self, vm, index)).copy(vm, value);
 }
@@ -82,7 +82,7 @@ void Array::arrayPut(RichNode self, VM vm, RichNode index, RichNode value) {
 UnstableNode Array::arrayExchange(RichNode self, VM vm, RichNode index,
                                   RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("array"));
+    raise(vm, "globalState", "array");
 
   auto& element = getElements(getOffset(self, vm, index));
 
@@ -92,10 +92,10 @@ UnstableNode Array::arrayExchange(RichNode self, VM vm, RichNode index,
 }
 
 size_t Array::getOffset(RichNode self, VM vm, RichNode index) {
-  auto indexIntValue = getArgument<nativeint>(vm, index, MOZART_STR("integer"));
+  auto indexIntValue = getArgument<nativeint>(vm, index, "integer");
 
   if (!isIndexInRange(indexIntValue))
-    raise(vm, MOZART_STR("arrayIndexOutOfBounds"), self, index);
+    raise(vm, "arrayIndexOutOfBounds", self, index);
 
   return indexToOffset(indexIntValue);
 }

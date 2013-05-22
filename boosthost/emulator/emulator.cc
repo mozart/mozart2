@@ -78,12 +78,12 @@ std::string envVarToOptionNameFallback(const std::string& varName) {
 }
 
 atom_t strToAtom(VM vm, const std::string& str) {
-  auto mozartStr = toUTF<nchar>(makeLString(str.c_str(), str.size()));
+  auto mozartStr = toUTF<char>(makeLString(str.c_str(), str.size()));
   return vm->getAtom(mozartStr.length, mozartStr.string);
 }
 
 atom_t strToAtom(VM vm, const std::wstring& str) {
-  auto mozartStr = toUTF<nchar>(makeLString(str.c_str(), str.size()));
+  auto mozartStr = toUTF<char>(makeLString(str.c_str(), str.size()));
   return vm->getAtom(mozartStr.length, mozartStr.string);
 }
 
@@ -281,34 +281,34 @@ int main(int argc, char** argv) {
 
     atom_t ozHomeAtom = pathToAtom(vm, ozHome);
     properties.registerValueProp(
-      vm, MOZART_STR("oz.home"), ozHomeAtom);
+      vm, "oz.home", ozHomeAtom);
     properties.registerValueProp(
-      vm, MOZART_STR("oz.emulator.home"), ozHomeAtom);
+      vm, "oz.emulator.home", ozHomeAtom);
     properties.registerValueProp(
-      vm, MOZART_STR("oz.configure.home"), ozHomeAtom);
+      vm, "oz.configure.home", ozHomeAtom);
 
     if (varMap.count("search-path") != 0)
       properties.registerValueProp(
-        vm, MOZART_STR("oz.search.path"), strToAtom(vm, ozSearchPath));
+        vm, "oz.search.path", strToAtom(vm, ozSearchPath));
     if (varMap.count("search-load") != 0)
       properties.registerValueProp(
-        vm, MOZART_STR("oz.search.load"), strToAtom(vm, ozSearchLoad));
+        vm, "oz.search.load", strToAtom(vm, ozSearchLoad));
 
-    auto decodedURL = toUTF<nchar>(makeLString(appURL.c_str()));
+    auto decodedURL = toUTF<char>(makeLString(appURL.c_str()));
     auto appURLAtom = vm->getAtom(decodedURL.length, decodedURL.string);
     properties.registerValueProp(
-      vm, MOZART_STR("application.url"), appURLAtom);
+      vm, "application.url", appURLAtom);
 
     OzListBuilder argsBuilder(vm);
     for (auto& arg: appArgs) {
-      auto decodedArg = toUTF<nchar>(makeLString(arg.c_str()));
+      auto decodedArg = toUTF<char>(makeLString(arg.c_str()));
       argsBuilder.push_back(vm, vm->getAtom(decodedArg.length, decodedArg.string));
     }
     properties.registerValueProp(
-      vm, MOZART_STR("application.args"), argsBuilder.get(vm));
+      vm, "application.args", argsBuilder.get(vm));
 
     properties.registerValueProp(
-      vm, MOZART_STR("application.gui"), appGUI);
+      vm, "application.gui", appGUI);
   }
 
   // Some protected nodes
@@ -332,9 +332,9 @@ int main(int argc, char** argv) {
       ozcalls::asyncOzCall(vm, baseValue, *baseEnv);
     } else {
       // Assume it is a functor that does not import anything
-      UnstableNode applyAtom = build(vm, MOZART_STR("apply"));
+      UnstableNode applyAtom = build(vm, "apply");
       UnstableNode applyProc = Dottable(baseValue).dot(vm, applyAtom);
-      UnstableNode importParam = build(vm, MOZART_STR("import"));
+      UnstableNode importParam = build(vm, "import");
       ozcalls::asyncOzCall(vm, applyProc, importParam, *baseEnv);
     }
 
@@ -372,12 +372,12 @@ int main(int argc, char** argv) {
 
   // Apply the Init functor
   {
-    auto ApplyAtom = build(vm, MOZART_STR("apply"));
+    auto ApplyAtom = build(vm, "apply");
     auto ApplyProc = Dottable(*initFunctor).dot(vm, ApplyAtom);
 
-    auto BootModule = vm->findBuiltinModule(MOZART_STR("Boot"));
+    auto BootModule = vm->findBuiltinModule("Boot");
     auto ImportRecord = buildRecord(
-      vm, buildArity(vm, MOZART_STR("import"), MOZART_STR("Boot")),
+      vm, buildArity(vm, "import", "Boot"),
       BootModule);
 
     ozcalls::asyncOzCall(vm, ApplyProc, ImportRecord, OptVar::build(vm));

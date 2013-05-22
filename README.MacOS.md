@@ -41,6 +41,7 @@ With all the dependencies installed you can do:
             -DLLVM_SRC_DIR=LLVM_SOURCES -DLLVM_BUILD_DIR=LLVM_BUILD \
             -DCMAKE_BUILD_TYPE=Release ../mozart2/
     $ make
+    $ make install
 ``` 
 
 ## Common problems

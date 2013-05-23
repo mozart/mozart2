@@ -52,7 +52,7 @@ target_link_libraries(ozemulator mozartvmboost mozartvm ${Boost_LIBRARIES})
 
 # Here it starts to differ wildly on Windows
 if(NOT WIN32)
-  target_link_libraries(ozemulator pthread)
+  target_link_libraries(ozemulator pthread rt)
 
   # Install
   install(TARGETS ozemulator DESTINATION bin)

@@ -50,7 +50,11 @@ void BuiltinModule::initModule(VM vm, T&& module) {
 void registerCoreModules(VM vm);
 
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
-  rootGlobalNode(nullptr), environment(environment), gc(this), sc(this) {
+  rootGlobalNode(nullptr), environment(environment), gc(this), sc(this),
+  _preemptRequestedNot(ATOMIC_FLAG_INIT),
+  _exitRunRequestedNot(ATOMIC_FLAG_INIT),
+  _gcRequestedNot(ATOMIC_FLAG_INIT),
+  _referenceTime(0) {
 
   memoryManager.init();
 
@@ -65,10 +69,9 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
   _cleanupList = nullptr;
 
   _envUseDynamicPreemption = environment.useDynamicPreemption();
-  _preemptRequested = false;
-  _exitRunRequested = false;
-  _gcRequested = false;
-  _referenceTime = 0;
+  _preemptRequestedNot.test_and_set();
+  _exitRunRequestedNot.test_and_set();
+  _gcRequestedNot.test_and_set();
 
   initialize();
 
@@ -81,7 +84,7 @@ VirtualMachine::~VirtualMachine() {
 }
 
 bool VirtualMachine::testPreemption() {
-  return _preemptRequested ||
+  return testAndClearPreemptRequested() ||
     (_envUseDynamicPreemption && environment.testDynamicPreemption()) ||
     gc.isGCRequired();
 }
@@ -130,7 +133,7 @@ UUID VirtualMachine::genUUID() {
 }
 
 void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
-  std::int64_t expiration = _referenceTime + delay;
+  std::int64_t expiration = getReferenceTime() + delay;
 
   auto iter = _alarms.removable_begin();
   while ((iter != _alarms.removable_end()) && (iter->expiration < expiration))

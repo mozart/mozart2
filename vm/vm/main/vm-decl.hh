@@ -27,6 +27,7 @@
 
 #include <cstdlib>
 #include <forward_list>
+#include <atomic>
 
 #include "core-forward-decl.hh"
 
@@ -235,7 +236,7 @@ public:
   UUID genUUID();
 
   std::int64_t getReferenceTime() {
-    return _referenceTime;
+    return _referenceTime.load(std::memory_order_acquire);
   }
 
   inline
@@ -268,21 +269,35 @@ public:
 public:
   // Influence from the external world
   void requestPreempt() {
-    _preemptRequested = true;
+    _preemptRequestedNot.clear(std::memory_order_release);
   }
 
   void requestExitRun() {
-    _exitRunRequested = true;
-    _preemptRequested = true;
+    // The order of these two operations *is* important
+    _exitRunRequestedNot.clear(std::memory_order_release);
+    _preemptRequestedNot.clear(std::memory_order_release);
   }
 
   void requestGC() {
-    _gcRequested = true;
-    _preemptRequested = true;
+    // The order of these two operations *is* important
+    _gcRequestedNot.clear(std::memory_order_release);
+    _preemptRequestedNot.clear(std::memory_order_release);
   }
 
   void setReferenceTime(std::int64_t value) {
-    _referenceTime = value;
+    _referenceTime.store(value, std::memory_order_release);
+  }
+private:
+  bool testAndClearPreemptRequested() {
+    return !_preemptRequestedNot.test_and_set(std::memory_order_acquire);
+  }
+
+  bool testAndClearExitRunRequested() {
+    return !_exitRunRequestedNot.test_and_set(std::memory_order_acquire);
+  }
+
+  bool testAndClearGCRequested() {
+    return !_gcRequestedNot.test_and_set(std::memory_order_acquire);
   }
 private:
   friend class GarbageCollector;
@@ -356,10 +371,10 @@ private:
   // Flags set externally for preemption etc.
   // TODO Use atomic data types
   bool _envUseDynamicPreemption;
-  volatile bool _preemptRequested;
-  volatile bool _exitRunRequested;
-  volatile bool _gcRequested;
-  volatile std::int64_t _referenceTime;
+  std::atomic_flag _preemptRequestedNot;
+  std::atomic_flag _exitRunRequestedNot;
+  std::atomic_flag _gcRequestedNot;
+  std::atomic<std::int64_t> _referenceTime;
 
   // During GC, we need a SpaceRef version of the top-level space
   SpaceRef _topLevelSpaceRef;

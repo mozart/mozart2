@@ -61,7 +61,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Mozart Programming System v2")
 set(CPACK_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_PACKAGE_VENDOR "Université catholique de Louvain")
 set(CPACK_RESOURCE_FILE_LICENSE
-    "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+    "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_PACKAGE_CONTACT "Sébastien Doeraene <sjrdoeraene@gmail.com>")
 
 # Configuration of the Bundle generator

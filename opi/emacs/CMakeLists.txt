@@ -21,20 +21,19 @@ else()
   foreach(el_file ${EMACS_MODE_SRCS})
     get_filename_component(basename ${el_file} NAME_WE)
     get_filename_component(srcpath ${el_file} PATH)
-    set(elc_file "${basename}.elc")
-    set(gen_file "${srcpath}/${elc_file}")
-    set(tgt_file "${CMAKE_CURRENT_BINARY_DIR}/${elc_file}")
+    set(gen_el_file "${CMAKE_CURRENT_BINARY_DIR}/${basename}.el")
+    set(tgt_file "${CMAKE_CURRENT_BINARY_DIR}/${basename}.elc")
     set(ALL_ELC_FILES ${ALL_ELC_FILES} ${tgt_file})
 
     add_custom_command(
       OUTPUT ${tgt_file}
+      COMMAND ${CMAKE_COMMAND} -E copy "${el_file}" "${gen_el_file}"
       COMMAND ${EMACS}
         -eval "(setq load-path (append load-path '(\"${CMAKE_CURRENT_SOURCE_DIR}\")))"
-        ${EMACS_OPTIONS}  "${el_file}"
-      COMMAND ${CMAKE_COMMAND} -E rename "${gen_file}" "${tgt_file}"
+        ${EMACS_OPTIONS}  "${gen_el_file}"
       DEPENDS "${el_file}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT "Generating: ${elc_file}"
+      COMMENT "Generating: ${basename}.elc"
       VERBATIM)
   endforeach()
 

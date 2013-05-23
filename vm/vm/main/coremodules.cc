@@ -70,6 +70,7 @@ void registerCoreModules(VM vm) {
   registerBuiltinModValue(vm);
   registerBuiltinModVirtualByteString(vm);
   registerBuiltinModVirtualString(vm);
+  registerBuiltinModWeakReference(vm);
 }
 
 } // namespace mozart

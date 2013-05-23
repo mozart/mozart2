@@ -61,5 +61,6 @@
 #include "modules/modvalue.hh"
 #include "modules/modvirtualbytestring.hh"
 #include "modules/modvirtualstring.hh"
+#include "modules/modweakref.hh"
 
 #endif // __COREMODULES_H

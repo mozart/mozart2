@@ -35,7 +35,7 @@ namespace mozart {
 // BuiltinModule //
 ///////////////////
 
-BuiltinModule::BuiltinModule(VM vm, const nchar* name) 
+BuiltinModule::BuiltinModule(VM vm, const nchar* name)
   : _name(vm->getAtom(name)) {}
 
 template <typename T>
@@ -158,6 +158,19 @@ void VirtualMachine::doGC() {
   auto cleanupList = acquireCleanupList();
   gc.doGC();
   doCleanup(cleanupList);
+
+  // Handle the GC watcher
+  UnstableNode watcher;
+  if (getPropertyRegistry().get(this, MOZART_STR("gc.watcher"), watcher)) {
+    assert(RichNode(watcher).is<ReadOnlyVariable>());
+    UnstableNode unitNode(this, unit);
+    RichNode(watcher).as<ReadOnlyVariable>().bindReadOnly(this, unitNode);
+
+    // Put a new watcher
+    getPropertyRegistry().put(this, MOZART_STR("gc.watcher"),
+                              ReadOnlyVariable::build(this),
+                              /* forceWriteConstantProp = */ true);
+  }
 }
 
 void VirtualMachine::beforeGR(GR gr) {

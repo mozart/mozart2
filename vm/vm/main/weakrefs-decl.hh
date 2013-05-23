@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2013, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,40 +22,51 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_DECL_H
-#define __COREDATATYPES_DECL_H
+#ifndef __WEAKREFS_DECL_H
+#define __WEAKREFS_DECL_H
 
 #include "mozartcore-decl.hh"
 
-#include "datatypeshelpers-decl.hh"
+#include <typeinfo>
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+namespace mozart {
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedgnode-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "serializer-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
-#include "weakrefs-decl.hh"
+///////////////////
+// WeakReference //
+///////////////////
 
-#endif // __COREDATATYPES_DECL_H
+#ifndef MOZART_GENERATOR
+#include "WeakReference-implem-decl.hh"
+#endif
+
+/**
+ * Weak reference that does not maintain its underlying node alive
+ */
+class WeakReference: public DataType<WeakReference>, StoredAs<StableNode*> {
+public:
+  explicit WeakReference(StableNode* underlying): _underlying(underlying) {}
+
+  static void create(StableNode*& self, VM vm, StableNode* underlying) {
+    self = underlying;
+  }
+
+  inline
+  static void create(StableNode*& self, VM vm, GR gr, WeakReference from);
+
+public:
+  // Will return nullptr when the underlying node is dead
+  StableNode* getUnderlying() {
+    return _underlying;
+  }
+
+private:
+  StableNode* _underlying;
+};
+
+#ifndef MOZART_GENERATOR
+#include "WeakReference-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __WEAKREFS_DECL_H

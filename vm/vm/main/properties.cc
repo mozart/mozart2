@@ -81,6 +81,11 @@ void PropertyRegistry::registerPredefined(VM vm) {
   registerReadWriteProp(vm, MOZART_STR("errors.width"), config.errorsWidth);
   registerReadWriteProp(vm, MOZART_STR("errors.thread"), config.errorsThread);
 
+  // Garbage collection
+
+  registerConstantProp(vm, MOZART_STR("gc.watcher"),
+                       ReadOnlyVariable::build(vm));
+
   // Limits
 
   registerConstantProp(vm, MOZART_STR("limits.int.min"),

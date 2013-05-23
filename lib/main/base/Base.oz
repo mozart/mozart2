@@ -51,6 +51,8 @@ require
    Boot_ForeignPointer     at 'x-oz://boot/ForeignPointer'
    Boot_CompactString      at 'x-oz://boot/CompactString'
    Boot_System             at 'x-oz://boot/System'
+   Boot_Property           at 'x-oz://boot/Property'
+   Boot_WeakRef            at 'x-oz://boot/WeakReference'
 
 prepare
 
@@ -220,8 +222,8 @@ prepare
    %%
    %% Weak Dictionary
    %%
-   %IsWeakDictionary  = Boot_WeakDictionary.is
-   %NewWeakDictionary = Boot_WeakDictionary.new
+   IsWeakDictionary  % Defined in WeakDictionary.oz
+   NewWeakDictionary % Defined in WeakDictionary.oz
 
    %%
    %% Dictionary
@@ -344,7 +346,7 @@ prepare
    \insert 'List.oz'
    \insert 'Procedure.oz'
    \insert 'Loop.oz'
-   %\insert 'WeakDictionary.oz'
+   \insert 'WeakDictionary.oz'
    \insert 'Dictionary.oz'
    \insert 'Record.oz'
    \insert 'Chunk.oz'
@@ -515,9 +517,9 @@ export
    %% Coders
    'Coders'             : Coders
    %% WeakDictionary
-   /*'WeakDictionary'     : WeakDictionary
+   'WeakDictionary'     : WeakDictionary
    'IsWeakDictionary'   : IsWeakDictionary
-   'NewWeakDictionary'  : NewWeakDictionary*/
+   'NewWeakDictionary'  : NewWeakDictionary
    %% Dictionary
    'Dictionary'         : Dictionary
    'IsDictionary'       : IsDictionary

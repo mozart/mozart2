@@ -1,0 +1,39 @@
+@SET_MAKE@
+VPATH		= @srcdir@
+SRCDIR		= @srcdir@
+BUILDTOP	= @BUILDTOP@
+SRCTOP		= @SRCTOP@
+HOMEURL		= @HOMEURL@
+PLATFORM	= @PLATFORM@
+INSTALL_DIR	= @INSTALL_DIR@
+OZC		= @OZC@
+OZL		= @OZL@
+
+TARGETS		= copy speed Manager Client
+
+all: $(TARGETS)
+
+bootstrap: boot-all
+
+include $(BUILDTOP)/share/Makefile.boot
+
+$(TARGETS): % : %.ozf run.ozf
+	$(OZL) -x $(OZEXECFILE) $< -o $@
+
+%.ozf: %.oz
+	$(OZC) -c $< -o $@
+
+install:
+
+Makefile: Makefile.in ../../config.status
+	cd ../.. && ./config.status
+
+../../config.status: ../../configure
+	cd ../.. && ./config.status --recheck
+
+depend:
+
+clean:
+	-rm -f *~ *.ozf *.so-* $(TARGETS)
+veryclean: clean
+distclean: veryclean

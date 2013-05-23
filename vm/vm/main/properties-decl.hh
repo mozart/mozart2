@@ -110,11 +110,13 @@ public:
   bool get(VM vm, Prop&& property, UnstableNode& result);
 
   inline
-  bool put(VM vm, RichNode property, RichNode value);
+  bool put(VM vm, RichNode property, RichNode value,
+           bool forceWriteConstantProp = false);
 
   template <typename Prop, typename Value>
   inline
-  bool put(VM vm, Prop&& property, Value&& value);
+  bool put(VM vm, Prop&& property, Value&& value,
+           bool forceWriteConstantProp = false);
 
 private:
   inline

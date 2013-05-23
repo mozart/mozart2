@@ -68,6 +68,9 @@ public:
   void copyStableRef(StableNode*& to, StableNode* from);
 
   inline
+  void copyWeakStableRef(StableNode*& to, StableNode* from);
+
+  inline
   void copyStableNodes(StaticArray<StableNode> to,
                        StaticArray<StableNode> from,
                        size_t count);
@@ -102,7 +105,7 @@ private:
   inline
   void processNodeInternal(Node*& list);
 
-  template <class Self>
+  template <class Self, bool weak = false>
   inline
   void processStableRefInternal(StableNode*& ref);
 public:
@@ -118,6 +121,7 @@ private:
     Node* stableNodes;
     Node* unstableNodes;
     MemManagedList<StableNode**> stableRefs;
+    MemManagedList<StableNode**> weakStableRefs; // only for GC
   } todos;
 };
 

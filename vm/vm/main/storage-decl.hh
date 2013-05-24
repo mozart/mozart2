@@ -33,22 +33,89 @@
 
 #include <type_traits>
 
+// Hack to support the test below (not needed with libc++)
+#ifndef _LIBCPP_TYPE_TRAITS
+namespace std {
+  template<typename> struct has_trivial_destructor;
+  template<typename> struct is_trivially_destructible;
+}
+#endif
+
 namespace mozart {
 
 /* In order to know if a type T has a trivial destructor we *should* use the
- * type trait std::is_tirivally_destructible<T>. However some standard library
- * provide the trait under the name std::has_trivial_destructor<T>. In the
- * following lines we alias any of those options depending on the standard
- * library we are using.
- * TODO: This is something we should eventually change or remove.
+ * type trait std::is_trivially_destructible<T>. However libstdc++ < 4.8.0
+ * provides the trait under the name std::has_trivial_destructor<T>.
+ * Unfortunately, it seems impossible to detect reliably the version of
+ * libstdc++ that is used.
+ *
+ * The hack we use below to detect the available trait is taken from
+ * http://stackoverflow.com/questions/12702103
+ *
+ * It has been reported *not* to work with clang 3.1, which is a compiler we
+ * officially support. But it works with clang 3.2 which is the version of
+ * clang we use with the generator. So it does work for the generation
+ * phase on Windows/Linux, which use libstdc++.
+ *
+ * In order not to break support of clang 3.1 on Mac OS with libc++, we
+ * detect libc++ using a conditional define. Since all versions of libc++
+ * that we support have already std::is_trivially_destructible<T>, we bypass
+ * completely the hack.
+ *
+ * Hence, we are able to support:
+ *   * gcc >= 4.7.1 and clang >= 3.1 with libc++
+ *   * gcc >= 4.7.1 and clang >= 3.2 with libstdc++
+ * We do not support clang 3.1 with libstdc++.
+ *
+ * TODO: This is something we should eventually remove, when we decide not to
+ * support libstdc++ < 4.8.0 anymore. Btw, eventually we'll abandon support
+ * for clang 3.1 too.
  */
-#ifdef _LIBCPP_TYPE_TRAITS // using libc++
+#ifdef _LIBCPP_TYPE_TRAITS
+
+// using libc++, always alias std::is_trivially_destructible<T>
+using std::is_trivially_destructible;
+
+#else
+
+// using libstdc++, using an SFINAE-based hack to detect which trait to alias
+namespace internal {
   template<typename T>
-  using is_trivially_destructible = std::is_trivially_destructible<T>;
-#else // libstdc++
+  struct have_cxx11_trait_helper {
+  private:
+    template<typename U, bool = std::is_trivially_destructible<U>::type::value>
+    static std::true_type test(int);
+
+    template<typename U, bool = std::has_trivial_destructor<U>::type::value>
+    static std::false_type test(...);
+
+  public:
+    typedef decltype(test<T>(0)) type;
+  };
+
   template<typename T>
-  using is_trivially_destructible = std::has_trivial_destructor<T>;
-#endif
+  struct have_cxx11_trait : have_cxx11_trait_helper<T>::type {
+  };
+
+  template<typename T>
+  using is_trivially_destructible =
+    typename std::conditional<have_cxx11_trait<T>::value,
+                              std::is_trivially_destructible<T>,
+                              std::has_trivial_destructor<T>>::type;
+}
+
+using internal::is_trivially_destructible;
+
+#endif // libc++ or libstdc++
+
+// In all cases, let us do some trivial checks to make sure we got it right
+
+static_assert(is_trivially_destructible<int>::value,
+              "int is supposed to be trivially destructible");
+static_assert(!is_trivially_destructible<std::unique_ptr<int>>::value,
+              "std::unique_ptr<int> is not supposed to be trivially destructible");
+static_assert(is_trivially_destructible<MemWord>::value,
+              "MemWord is supposed to be trivially destructible");
 
 // Now our stuff
 

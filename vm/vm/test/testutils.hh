@@ -42,6 +42,26 @@ protected:
   }
 
   /**
+   * Expect that the repr() of a node is the given string
+   */
+  bool EXPECT_REPR_EQ(const BaseLString<char>& expected, RichNode node) const {
+    std::stringstream ss;
+    ss << repr(vm, node);
+    auto str = ss.str();
+    auto actual = makeLString(str.c_str(), str.length());
+    EXPECT_EQ(expected, actual);
+    return expected == actual;
+  }
+
+  /**
+   * Expect that the repr() of a node is the given string
+   */
+  bool EXPECT_REPR_EQ(const BaseLString<char>& expected,
+                      UnstableNode&& node) const {
+    return EXPECT_REPR_EQ(expected, RichNode(node));
+  }
+
+  /**
    * Expect that a node is an atom and the content is the given
    * null-terminated string.
    */

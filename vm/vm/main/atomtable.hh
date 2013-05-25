@@ -40,8 +40,7 @@ class Atom;
 class UniqueName;
 class AtomTable;
 
-static constexpr size_t bitsPerChar = std::is_same<char, char32_t>::value ? 5 :
-                                      std::is_same<char, char16_t>::value ? 4 : 3;
+static constexpr size_t bitsPerChar = 3;
 static constexpr size_t charBitsMask = (1 << bitsPerChar) - 1;
 
 //////////////
@@ -83,7 +82,7 @@ private:
     side[1-d]=other;
   }
 
-  size_t size;           // number of bits in this atom.
+  size_t size;          // number of bits in this atom.
   const char* data;     // the string content
   size_t critBit;
   AtomImpl* side[2];
@@ -120,36 +119,60 @@ int basic_atom_t<atom_type>::compare(const basic_atom_t<atom_type>& rhs) const {
 template <>
 struct BasicAtomStreamer<char, 1> { // 1 = atom_t
   static void print(std::basic_ostream<char>& out, const atom_t& atom) {
+    static const char hexdigits[16] = {
+      '0', '1', '2', '3', '4', '5', '6', '7',
+      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+
     auto contents = makeLString(atom.contents(), atom.length());
 
     if (needsQuote(contents)) {
-      out << "'";
-      forEachCodePoint(contents,
-        [&out] (char32_t c) -> bool {
-          switch (c) {
-            case 7: out << "\\a"; break;
-            case 8: out << "\\b"; break;
-            case 9: out << "\\t"; break;
-            case 10: out << "\\n"; break;
-            case 11: out << "\\v"; break;
-            case 12: out << "\\f"; break;
-            case 13: out << "\\r"; break;
-            case '\'': out << "\\'"; break;
-            case '\\': out << "\\\\"; break;
-            default: {
-              if (c < 32) {
-                out << '\\' << '0' << (c / 8) << (c % 8);
+      out << '\'';
+      for (nativeint i = 0; i < contents.length; ++i) {
+        char c = contents[i];
+        switch (c) {
+          case 7: out << "\\a"; break;
+          case 8: out << "\\b"; break;
+          case 9: out << "\\t"; break;
+          case 10: out << "\\n"; break;
+          case 11: out << "\\v"; break;
+          case 12: out << "\\f"; break;
+          case 13: out << "\\r"; break;
+          case '\'': out << "\\'"; break;
+          case '\\': out << "\\\\"; break;
+          case '\x7F': out << "\\x7F"; break; // <DEL>
+          case '\xC2': {
+            ++i;
+            if (i == contents.length) {
+              // Not valid UTF-8, but let us not crash
+              out << c;
+            } else {
+              char c2 = contents[i];
+              if ((c2 & '\xE0') == '\x80') { // === (c >= '\x80' && c < '\xA0')
+                // c c2 is a control character with scalar value
+                // 256 + c2 = (unsigned char) c2
+                out << '\\' << 'x'
+                    << hexdigits[((unsigned char) c2) >> 4]
+                    << hexdigits[((unsigned char) c2) & 0x0F];
               } else {
-                char data[4];
-                auto len = toUTF(c, data);
-                out.write(data, len);
+                // regular character formed of c + c2 (+ ...)
+                out << c << c2;
               }
             }
+            break;
           }
-          return true;
+          default: {
+            if ((c & '\xE0') == 0) { // === (c >= 0 && c < 32)
+              // control character with scalar value c
+              out << '\\' << 'x' << hexdigits[c >> 4] << hexdigits[c & 0x0F];
+            } else {
+              // anything else can be passed through directly
+              out << c;
+            }
+          }
         }
-      );
-      out << "'";
+      }
+      out << '\'';
     } else {
       out.write(atom.contents(), atom.length());
     }
@@ -161,30 +184,25 @@ private:
   }
 
   static bool doesItNotLookLikeAnAtom(const BaseLString<char>& contents) {
+    // Must not be empty
     if (contents.length <= 0)
       return true;
 
-    bool first = true;
-    bool result = false;
-    forEachCodePoint(contents,
-      [&first, &result] (char32_t c) -> bool {
-        if (first) {
-          if (!(c >= 'a' && c <= 'z')) {
-            result = true;
-            return false;
-          }
-          first = false;
-        } else {
-          if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                (c >= '0' && c <= '9') || (c == '_'))) {
-            result = true;
-            return false;
-          }
-        }
+    // First character must be an ASCII lowercase letter
+    char firstChar = contents[0];
+    if (!(firstChar >= 'a' && firstChar <= 'z'))
+      return true;
+
+    // Subsequent characters must be ASCII letters, digits or '_'
+    for (nativeint i = 1; i < contents.length; ++i) {
+      char c = contents[i];
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || (c == '_'))) {
         return true;
       }
-    );
-    return result;
+    }
+
+    return false;
   }
 
   static bool isKeyword(const BaseLString<char>& contents) {
@@ -286,15 +304,15 @@ private:
       size_t checkEnd = cur->critBit;
       bool cand = false;
       if(cur->critBit < nextToCheck) {
-	cand=true;
-	checkEnd=cur->size+16;
+        cand=true;
+        checkEnd=cur->size+16;
       }
       size_t f = firstMismatch(size, data,
-			       cur->size, cur->data,
-			       nextToCheck, checkEnd);
+                               cur->size, cur->data,
+                               nextToCheck, checkEnd);
       if(f < checkEnd){
-	++_count;
-	return cur = new (vm) AtomImpl(vm, size, data, f, bitAt(size, data, f), cur);
+        ++_count;
+        return cur = new (vm) AtomImpl(vm, size, data, f, bitAt(size, data, f), cur);
       }
       if(cand) return cur;
       nextToCheck=cur->critBit+1;
@@ -311,8 +329,8 @@ private:
     return data[i];
   }
   size_t firstMismatch(size_t s1, const char* d1,
-		       size_t s2, const char* d2,
-		       size_t start, size_t stop) {
+                       size_t s2, const char* d2,
+                       size_t start, size_t stop) {
     if(start == stop) return stop;
     stop--;
     size_t s1c = s1 >> bitsPerChar;

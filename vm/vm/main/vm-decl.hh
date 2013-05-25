@@ -252,6 +252,14 @@ public:
     return atomTable.get(this, length, data);
   }
 
+  atom_t getAtom(const BaseLString<char>& data) {
+    return atomTable.get(this, data.length, data.string);
+  }
+
+  atom_t getAtom(const std::string& data) {
+    return atomTable.get(this, data.length(), data.c_str());
+  }
+
   unique_name_t getUniqueName(const char* data) {
     return atomTable.getUniqueName(this, data);
   }

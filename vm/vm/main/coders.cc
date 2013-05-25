@@ -58,11 +58,7 @@ auto encodeLatin1(const BaseLString<char>& input, EncodingVariant variant)
 auto encodeUTF8(const BaseLString<char>& input, EncodingVariant variant)
     -> ContainedLString<std::vector<unsigned char>> {
 
-  auto utf8Result = toUTF<char>(input);
-  if (utf8Result.isError())
-    return utf8Result.error;
-
-  size_t encodedLength = utf8Result.bytesCount();
+  size_t encodedLength = input.bytesCount();
   bool hasBOM_ = (variant & EncodingVariant::hasBOM) != 0;
   if (hasBOM_)
     encodedLength += 3;
@@ -76,7 +72,7 @@ auto encodeUTF8(const BaseLString<char>& input, EncodingVariant variant)
     result.push_back('\xbf');
   }
 
-  for (char ch : utf8Result) {
+  for (char ch : input) {
     result.push_back(ch);
   }
 
@@ -177,16 +173,11 @@ auto decodeLatin1(const BaseLString<unsigned char>& input,
   std::vector<char> tempVector;
   tempVector.reserve(input.length);
 
-  if (std::is_same<char, char>::value) {
-    // UTF-8 needs special consideration, because 0x80~0xff maps to 2-byte
-    // sequences.
-    for (char32_t c : input) {
-      char encoded[4];
-      nativeint length = toUTF(c, encoded);   // always valid.
-      tempVector.insert(tempVector.end(), encoded, encoded + length);
-    }
-  } else {
-    std::copy(input.begin(), input.end(), std::back_inserter(tempVector));
+  // Characters in the range 0x80~0xff map to 2-byte sequences.
+  for (char32_t c : input) {
+    char encoded[4];
+    nativeint length = toUTF(c, encoded);   // always valid.
+    tempVector.insert(tempVector.end(), encoded, encoded + length);
   }
 
   return std::move(tempVector);
@@ -206,7 +197,7 @@ auto decodeUTF8(const BaseLString<unsigned char>& input,
   const auto& slice = input.unsafeSlice(start);
   BaseLString<char> utf8Input(reinterpret_cast<const char*>(slice.string),
                               slice.length);
-  return toUTF<char>(utf8Input);
+  return toUTF<char>(utf8Input); // will perform validity checks
 }
 
 auto decodeUTF16(const BaseLString<unsigned char>& input,

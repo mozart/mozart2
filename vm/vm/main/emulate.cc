@@ -1481,8 +1481,7 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
     if (i == debugFeatureIndex) {
       UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
       UnstableNode debugField = buildRecord(
-        vm, buildArity(vm, "d", "info",
-                       "stack"),
+        vm, buildArity(vm, "d", "info", "stack"),
         unit, std::move(stackTrace));
       destRecord.getElement(i)->init(vm, std::move(debugField));
     } else {

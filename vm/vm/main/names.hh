@@ -94,8 +94,7 @@ GlobalNode* GlobalName::globalize(RichNode self, VM vm) {
 NamedName::NamedName(VM vm, GR gr, NamedName& from):
   WithHome(vm, gr, from) {
 
-  _printName = vm->getAtom(from._printName.length(),
-                           from._printName.contents());
+  _printName = gr->copyAtom(from._printName);
 
   if (gr->kind() == GraphReplicator::grkSpaceCloning)
     _uuid = vm->genUUID();
@@ -138,8 +137,7 @@ GlobalNode* NamedName::globalize(RichNode self, VM vm) {
 #include "UniqueName-implem.hh"
 
 void UniqueName::create(unique_name_t& self, VM vm, GR gr, UniqueName from) {
-  unique_name_t fromValue = from.value();
-  self = vm->getUniqueName(fromValue.length(), fromValue.contents());
+  self = unique_name_t(gr->copyAtom(atom_t(from.value())));
 }
 
 bool UniqueName::equals(VM vm, RichNode right) {

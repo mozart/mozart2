@@ -208,8 +208,7 @@ UnstableNode PropertyRegistry::getSystemProp(VM vm, RichNode property,
   if (record.getter) {
     return record.getter(vm);
   } else {
-    raiseError(vm, vm->coreatoms.system,
-               "getProperty", property);
+    raiseError(vm, vm->coreatoms.system, "getProperty", property);
   }
 }
 
@@ -221,8 +220,7 @@ void PropertyRegistry::putSystemProp(VM vm, RichNode property,
   if (record.setter) {
     record.setter(vm, value);
   } else {
-    raiseError(vm, vm->coreatoms.system,
-               "putProperty", property);
+    raiseError(vm, vm->coreatoms.system, "putProperty", property);
   }
 }
 

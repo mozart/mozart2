@@ -88,18 +88,6 @@ UnstableNode build(VM vm, const char* value) {
   return Atom::build(vm, value);
 }
 
-// build an atom from a 'const char*' (as UTF string).
-// Only exists when 'char != char'.
-template <typename T>
-inline
-auto build(VM vm, T value)
-    -> typename std::enable_if<std::is_convertible<T, const char*>::value &&
-                               !std::is_same<char, char>::value, UnstableNode>::type {
-  auto src = makeLString(value);
-  auto dest = toUTF<char>(src);
-  return Atom::build(vm, dest.length, dest.string);
-}
-
 inline
 UnstableNode build(VM vm, atom_t value) {
   return Atom::build(vm, value);
@@ -186,13 +174,15 @@ void staticInitElements(VM vm, StaticArray<StableNode> elements, Args&&... args)
 template <class LT>
 inline
 UnstableNode buildTuple(VM vm, LT&& label) {
-  // Degenerated case, which is just an atom
+  // Degenerate case, which is just an atom
   return build(vm, std::forward<LT>(label));
 }
 
 /**
  * Build an Oz tuple inside a node, with its label and fields
  * The label and the arguments can be in any form supported by build().
+ * This function must not be used to create a Cons, i.e. it must not be the
+ * case that (label == '|' && sizeof...(args) == 2).
  * @param vm        Contextual VM
  * @param label     Label of the tuple
  * @param args...   Fields of the tuple
@@ -200,6 +190,7 @@ UnstableNode buildTuple(VM vm, LT&& label) {
 template <class LT, class... Args>
 inline
 UnstableNode buildTuple(VM vm, LT&& label, Args&&... args) {
+  // TODO Assert that we are not trying to create a Cons
   UnstableNode result = Tuple::build(vm, sizeof...(args),
                                      std::forward<LT>(label));
   staticInitElements(vm, RichNode(result).as<Tuple>().getElementsArray(),
@@ -261,6 +252,8 @@ UnstableNode buildList(VM vm, Head&& head, Tail&&... tail) {
 /**
  * Build a constant arity, with its label and features
  * The label and the features can be in any form supported by build().
+ * The features must be ordered! Typically features are atoms, so they must
+ * be in lexicographical order.
  * @param vm        Contextual VM
  * @param label     Label of the arity
  * @param args...   Features of the arity
@@ -268,6 +261,7 @@ UnstableNode buildList(VM vm, Head&& head, Tail&&... tail) {
 template <class LT, class... Args>
 inline
 UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
+  // TODO Assert that features are ordered
   UnstableNode result = Arity::build(vm, sizeof...(args),
                                      std::forward<LT>(label));
   staticInitElements(vm, RichNode(result).as<Arity>().getElementsArray(),
@@ -278,6 +272,8 @@ UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
 /**
  * Build an Oz record inside a node, with its arity and fields
  * The arity and the arguments can be in any form supported by build().
+ * The arity must not be a tuple arity, i.e., this cannot be used to build a
+ * tuple.
  * @param vm        Contextual VM
  * @param arity     Arity of the record
  * @param args...   Fields of the record
@@ -285,6 +281,7 @@ UnstableNode buildArity(VM vm, LT&& label, Args&&... args) {
 template <class AT, class... Args>
 inline
 UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
+  // TODO Assert that we are not trying to create a Tuple
   UnstableNode result = Record::build(vm, sizeof...(args),
                                       std::forward<AT>(arity));
   staticInitElements(vm, RichNode(result).as<Record>().getElementsArray(),
@@ -294,14 +291,14 @@ UnstableNode buildRecord(VM vm, AT&& arity, Args&&... args) {
 
 inline
 UnstableNode buildPatMatConjunction(VM vm) {
-  // Degenerated case, which is just a wildcard
+  // Degenerate case, which is just a wildcard
   return PatMatCapture::build(vm, -1);
 }
 
 template <class PT>
 inline
 UnstableNode buildPatMatConjunction(VM vm, PT&& part) {
-  // Degenerated case, which is just the only part
+  // Degenerate case, which is just the only part
   return build(vm, std::forward<PT>(part));
 }
 

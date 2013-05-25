@@ -161,7 +161,7 @@ void String::stringSearch(RichNode self, VM vm, RichNode from,
   }
 
   const char* foundIter = std::search(haystack.begin(), haystack.end(),
-                                       needle->begin(), needle->end());
+                                      needle->begin(), needle->end());
 
   // Make result
   if (foundIter == haystack.end()) {
@@ -236,7 +236,7 @@ bool String::lookupFeature(RichNode self, VM vm, nativeint feature,
 // Miscellaneous ---------------------------------------------------------------
 
 void String::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-  out << '"' << toUTF<char>(_string) << '"';
+  out << '"' << _string << '"';
 }
 
 }

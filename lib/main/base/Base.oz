@@ -182,7 +182,7 @@ prepare
    %% Float
    %%
    IsFloat              = Boot_Float.is
-   /*Exp                  = Boot_Float.exp
+   Exp                  = Boot_Float.exp
    Log                  = Boot_Float.log
    Sqrt                 = Boot_Float.sqrt
    Ceil                 = Boot_Float.ceil
@@ -194,7 +194,7 @@ prepare
    Acos                 = Boot_Float.acos
    Atan                 = Boot_Float.atan
    Atan2                = Boot_Float.atan2
-   Round                = Boot_Float.round*/
+   Round                = Boot_Float.round
    FloatToInt           = Boot_Float.toInt
    FloatToCompactString % Defined in Float.oz
    FloatToString        % Defined in Float.oz
@@ -203,9 +203,8 @@ prepare
    %% Number
    %%
    IsNumber = Boot_Number.is
-   Abs      = fun {$ X}
-                 if X < if {IsInt X} then 0 else 0.0 end then ~X else X end
-              end
+   Pow      = Boot_Number.pow
+   Abs      = Boot_Number.abs
 
    %%
    %% Tuple
@@ -439,7 +438,7 @@ export
    %% Float
    'Float'              : Float
    'IsFloat'            : IsFloat
-   /*'Exp'                : Exp
+   'Exp'                : Exp
    'Log'                : Log
    'Sqrt'               : Sqrt
    'Ceil'               : Ceil
@@ -451,13 +450,13 @@ export
    'Acos'               : Acos
    'Atan'               : Atan
    'Atan2'              : Atan2
-   'Round'              : Round*/
+   'Round'              : Round
    'FloatToInt'         : FloatToInt
    'FloatToString'      : FloatToString
    %% Number
    'Number'             : Number
    'IsNumber'           : IsNumber
-   %'Pow'                : Pow
+   'Pow'                : Pow
    'Abs'                : Abs
    %% Tuple
    'Tuple'              : Tuple

@@ -111,6 +111,75 @@ public:
   inline
   UnstableNode mod(RichNode self, VM vm, RichNode right);
 
+  inline
+  UnstableNode pow(VM vm, RichNode right);
+
+  inline
+  UnstableNode powValue(VM vm, double b);
+
+  inline
+  UnstableNode abs(VM vm);
+
+  inline
+  UnstableNode acos(VM vm);
+
+  inline
+  UnstableNode acosh(VM vm);
+
+  inline
+  UnstableNode asin(VM vm);
+
+  inline
+  UnstableNode asinh(VM vm);
+
+  inline
+  UnstableNode atan(VM vm);
+
+  inline
+  UnstableNode atanh(VM vm);
+
+  inline
+  UnstableNode atan2(VM vm, RichNode right);
+
+  inline
+  UnstableNode atan2Value(VM vm, double b);
+
+  inline
+  UnstableNode ceil(VM vm);
+
+  inline
+  UnstableNode cos(VM vm);
+
+  inline
+  UnstableNode cosh(VM vm);
+
+  inline
+  UnstableNode exp(VM vm);
+
+  inline
+  UnstableNode floor(VM vm);
+
+  inline
+  UnstableNode log(VM vm);
+
+  inline
+  UnstableNode round(VM vm);
+
+  inline
+  UnstableNode sin(VM vm);
+
+  inline
+  UnstableNode sinh(VM vm);
+
+  inline
+  UnstableNode sqrt(VM vm);
+
+  inline
+  UnstableNode tan(VM vm);
+
+  inline
+  UnstableNode tanh(VM vm);
+
 public:
   // Miscellaneous
 

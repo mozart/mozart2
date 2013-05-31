@@ -46,7 +46,6 @@ end
 
 Float = float(is:              IsFloat
               '/':             Boot_Float.'/'
-              /*'mod':           Boot_Float.fMod
               exp:             Exp
               log:             Log
               sqrt:            Sqrt
@@ -65,7 +64,8 @@ Float = float(is:              IsFloat
               tanh:            Boot_Float.tanh
               asinh:           Boot_Float.asinh
               acosh:           Boot_Float.acosh
-              atanh:           Boot_Float.atanh*/
+              atanh:           Boot_Float.atanh
               toInt:           FloatToInt
               toCompactString: FloatToCompactString
               toString:        FloatToString)
+

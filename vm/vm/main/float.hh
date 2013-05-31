@@ -27,6 +27,7 @@
 
 #include <tuple>
 #include <memory>
+#include <cmath>
 #include "mozartcore.hh"
 
 #ifndef MOZART_GENERATOR
@@ -88,7 +89,7 @@ UnstableNode Float::divide(VM vm, RichNode right) {
   return divideValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::divideValue(VM vm, double b) {
+UnstableNode Float::divideValue(VM vm, double b) { 
   return Float::build(vm, value() / b);
 }
 
@@ -98,6 +99,99 @@ UnstableNode Float::div(RichNode self, VM vm, RichNode right) {
 
 UnstableNode Float::mod(RichNode self, VM vm, RichNode right) {
   return Interface<Numeric>().mod(self, vm, right);
+}
+
+UnstableNode Float::abs(VM vm) {
+  double a = value();  
+  return Float::build(vm, a >=0 ? a : -a);
+}
+
+UnstableNode Float::acos(VM vm) {
+  return Float::build(vm, ::acos(value()));
+}
+
+UnstableNode Float::acosh(VM vm) {
+  return Float::build(vm, ::acosh(value()));
+}
+
+UnstableNode Float::asin(VM vm) {
+  return Float::build(vm, ::asin(value()));
+}
+
+UnstableNode Float::asinh(VM vm) {
+  return Float::build(vm, ::asinh(value()));
+}
+
+UnstableNode Float::atan(VM vm) {
+  return Float::build(vm, ::atan(value()));
+}
+
+UnstableNode Float::atanh(VM vm) {
+  return Float::build(vm, ::atanh(value()));
+}
+
+UnstableNode Float::atan2(VM vm, RichNode right) {
+  return atan2Value(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::atan2Value(VM vm, double b) {
+  return Float::build(vm, ::atan2(value(),b));
+}
+
+UnstableNode Float::ceil(VM vm) {
+  return Float::build(vm, ::ceil(value()));
+}
+
+UnstableNode Float::cos(VM vm) {
+  return Float::build(vm, ::cos(value()));
+}
+
+UnstableNode Float::cosh(VM vm) {
+  return Float::build(vm, ::cosh(value()));
+}
+
+UnstableNode Float::exp(VM vm) {
+  return Float::build(vm, ::exp(value()));
+}
+
+UnstableNode Float::floor(VM vm) {
+  return Float::build(vm, ::floor(value()));
+}
+
+UnstableNode Float::log(VM vm) {
+  return Float::build(vm, ::log(value()));
+}
+
+UnstableNode Float::pow(VM vm, RichNode right) {
+  return powValue(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::powValue(VM vm, double b) {
+  return Float::build(vm, ::pow(value(),b));
+}
+
+UnstableNode Float::round(VM vm) {
+  return Float::build(vm, ::round(value()));
+}
+
+UnstableNode Float::sin(VM vm) {
+  return Float::build(vm, ::sin(value()));
+}
+
+UnstableNode Float::sinh(VM vm) {
+  return Float::build(vm, ::sinh(value()));
+}
+
+UnstableNode Float::sqrt(VM vm) {
+  return Float::build(vm, ::sqrt(value()));
+}
+
+UnstableNode Float::tan(VM vm) {
+  return Float::build(vm, ::tan(value()));
+}
+
+UnstableNode Float::tanh(VM vm) {
+  return Float::build(vm, ::tanh(value()));
 }
 
 }

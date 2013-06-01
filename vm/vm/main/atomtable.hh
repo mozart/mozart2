@@ -40,8 +40,7 @@ class Atom;
 class UniqueName;
 class AtomTable;
 
-static constexpr size_t bitsPerChar = std::is_same<nchar, char32_t>::value ? 5 :
-                                      std::is_same<nchar, char16_t>::value ? 4 : 3;
+static constexpr size_t bitsPerChar = 3;
 static constexpr size_t charBitsMask = (1 << bitsPerChar) - 1;
 
 //////////////
@@ -54,7 +53,7 @@ public:
     return size >> bitsPerChar;
   }
 
-  const nchar* contents() const {
+  const char* contents() const {
     return data;
   }
 
@@ -69,22 +68,22 @@ public:
 private:
   friend class AtomTable;
 
-  AtomImpl(VM vm, size_t size, const nchar* data,
+  AtomImpl(VM vm, size_t size, const char* data,
            size_t critBit, int d, AtomImpl* other)
     : size(size), critBit(critBit) {
 
     size_t dataLength = size >> bitsPerChar;
-    nchar* data0 = new (vm) nchar[dataLength + 1];
-    std::memcpy(data0, data, dataLength * sizeof(nchar));
-    data0[dataLength] = (nchar) 0;
+    char* data0 = new (vm) char[dataLength + 1];
+    std::memcpy(data0, data, dataLength * sizeof(char));
+    data0[dataLength] = (char) 0;
     this->data = data0;
 
     side[d]=this;
     side[1-d]=other;
   }
 
-  size_t size;           // number of bits in this atom.
-  const nchar* data;     // the string content
+  size_t size;          // number of bits in this atom.
+  const char* data;     // the string content
   size_t critBit;
   AtomImpl* side[2];
 };
@@ -99,7 +98,7 @@ size_t basic_atom_t<atom_type>::length() const {
 }
 
 template <size_t atom_type>
-const nchar* basic_atom_t<atom_type>::contents() const {
+const char* basic_atom_t<atom_type>::contents() const {
   return _impl->contents();
 }
 
@@ -118,104 +117,123 @@ int basic_atom_t<atom_type>::compare(const basic_atom_t<atom_type>& rhs) const {
 ///////////////////////
 
 template <>
-struct BasicAtomStreamer<nchar, 1> { // 1 = atom_t
-  static void print(std::basic_ostream<nchar>& out, const atom_t& atom) {
+struct BasicAtomStreamer<char, 1> { // 1 = atom_t
+  static void print(std::basic_ostream<char>& out, const atom_t& atom) {
+    static const char hexdigits[16] = {
+      '0', '1', '2', '3', '4', '5', '6', '7',
+      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+
     auto contents = makeLString(atom.contents(), atom.length());
 
     if (needsQuote(contents)) {
-      out << MOZART_STR("'");
-      forEachCodePoint(contents,
-        [&out] (char32_t c) -> bool {
-          switch (c) {
-            case 7: out << MOZART_STR("\\a"); break;
-            case 8: out << MOZART_STR("\\b"); break;
-            case 9: out << MOZART_STR("\\t"); break;
-            case 10: out << MOZART_STR("\\n"); break;
-            case 11: out << MOZART_STR("\\v"); break;
-            case 12: out << MOZART_STR("\\f"); break;
-            case 13: out << MOZART_STR("\\r"); break;
-            case '\'': out << MOZART_STR("\\'"); break;
-            case '\\': out << MOZART_STR("\\\\"); break;
-            default: {
-              if (c < 32) {
-                out << '\\' << '0' << (c / 8) << (c % 8);
+      out << '\'';
+      for (nativeint i = 0; i < contents.length; ++i) {
+        char c = contents[i];
+        switch (c) {
+          case 7: out << "\\a"; break;
+          case 8: out << "\\b"; break;
+          case 9: out << "\\t"; break;
+          case 10: out << "\\n"; break;
+          case 11: out << "\\v"; break;
+          case 12: out << "\\f"; break;
+          case 13: out << "\\r"; break;
+          case '\'': out << "\\'"; break;
+          case '\\': out << "\\\\"; break;
+          case '\x7F': out << "\\x7F"; break; // <DEL>
+          case '\xC2': {
+            ++i;
+            if (i == contents.length) {
+              // Not valid UTF-8, but let us not crash
+              out << c;
+            } else {
+              char c2 = contents[i];
+              if ((c2 & '\xE0') == '\x80') { // === (c >= '\x80' && c < '\xA0')
+                // c c2 is a control character with scalar value
+                // 256 + c2 = (unsigned char) c2
+                out << '\\' << 'x'
+                    << hexdigits[((unsigned char) c2) >> 4]
+                    << hexdigits[((unsigned char) c2) & 0x0F];
               } else {
-                nchar data[4];
-                auto len = toUTF(c, data);
-                out.write(data, len);
+                // regular character formed of c + c2 (+ ...)
+                out << c << c2;
               }
             }
+            break;
           }
-          return true;
+          default: {
+            if ((c & '\xE0') == 0) { // === (c >= 0 && c < 32)
+              // control character with scalar value c
+              out << '\\' << 'x' << hexdigits[c >> 4] << hexdigits[c & 0x0F];
+            } else {
+              // anything else can be passed through directly
+              out << c;
+            }
+          }
         }
-      );
-      out << MOZART_STR("'");
+      }
+      out << '\'';
     } else {
       out.write(atom.contents(), atom.length());
     }
   }
 
 private:
-  static bool needsQuote(const BaseLString<nchar>& contents) {
+  static bool needsQuote(const BaseLString<char>& contents) {
     return doesItNotLookLikeAnAtom(contents) || isKeyword(contents);
   }
 
-  static bool doesItNotLookLikeAnAtom(const BaseLString<nchar>& contents) {
+  static bool doesItNotLookLikeAnAtom(const BaseLString<char>& contents) {
+    // Must not be empty
     if (contents.length <= 0)
       return true;
 
-    bool first = true;
-    bool result = false;
-    forEachCodePoint(contents,
-      [&first, &result] (char32_t c) -> bool {
-        if (first) {
-          if (!(c >= 'a' && c <= 'z')) {
-            result = true;
-            return false;
-          }
-          first = false;
-        } else {
-          if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                (c >= '0' && c <= '9') || (c == '_'))) {
-            result = true;
-            return false;
-          }
-        }
+    // First character must be an ASCII lowercase letter
+    char firstChar = contents[0];
+    if (!(firstChar >= 'a' && firstChar <= 'z'))
+      return true;
+
+    // Subsequent characters must be ASCII letters, digits or '_'
+    for (nativeint i = 1; i < contents.length; ++i) {
+      char c = contents[i];
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || (c == '_'))) {
         return true;
       }
-    );
-    return result;
+    }
+
+    return false;
   }
 
-  static bool isKeyword(const BaseLString<nchar>& contents) {
+  static bool isKeyword(const BaseLString<char>& contents) {
     // TODO Be smarter here, e.g. test length first, or first char, or both
-    static const nchar* keywords[] = {
-      MOZART_STR("andthen"), MOZART_STR("at"), MOZART_STR("attr"),
-      MOZART_STR("case"), MOZART_STR("catch"), MOZART_STR("choice"),
-      MOZART_STR("class"), MOZART_STR("cond"), MOZART_STR("declare"),
-      MOZART_STR("define"), MOZART_STR("dis"), MOZART_STR("do"),
-      MOZART_STR("div"), MOZART_STR("else"), MOZART_STR("elsecase"),
-      MOZART_STR("elseif"), MOZART_STR("elseof"), MOZART_STR("end"),
-      MOZART_STR("export"), MOZART_STR("fail"), MOZART_STR("false"),
-      MOZART_STR("feat"), MOZART_STR("finally"), MOZART_STR("from"),
-      MOZART_STR("for"), MOZART_STR("fun"), MOZART_STR("functor"),
-      MOZART_STR("if"), MOZART_STR("import"), MOZART_STR("in"),
-      MOZART_STR("local"), MOZART_STR("lock"), MOZART_STR("meth"),
-      MOZART_STR("mod"), MOZART_STR("not"), MOZART_STR("of"), MOZART_STR("or"),
-      MOZART_STR("orelse"), MOZART_STR("prepare"), MOZART_STR("proc"),
-      MOZART_STR("prop"), MOZART_STR("raise"), MOZART_STR("require"),
-      MOZART_STR("self"), MOZART_STR("skip"), MOZART_STR("then"),
-      MOZART_STR("thread"), MOZART_STR("true"), MOZART_STR("try"),
-      MOZART_STR("unit"),
+    static const char* keywords[] = {
+      "andthen", "at", "attr",
+      "case", "catch", "choice",
+      "class", "cond", "declare",
+      "define", "dis", "do",
+      "div", "else", "elsecase",
+      "elseif", "elseof", "end",
+      "export", "fail", "false",
+      "feat", "finally", "from",
+      "for", "fun", "functor",
+      "if", "import", "in",
+      "local", "lock", "meth",
+      "mod", "not", "of", "or",
+      "orelse", "prepare", "proc",
+      "prop", "raise", "require",
+      "self", "skip", "then",
+      "thread", "true", "try",
+      "unit",
     };
 
-    using ct = std::char_traits<nchar>;
+    using ct = std::char_traits<char>;
 
     assert(contents.length > 0);
     size_t len = (size_t) contents.length;
-    const nchar* s = contents.string;
+    const char* s = contents.string;
 
-    for (const nchar* kw : keywords) {
+    for (const char* kw : keywords) {
       if ((len == ct::length(kw)) && (ct::compare(s, kw, len) == 0)) {
         return true;
       }
@@ -226,12 +244,12 @@ private:
 };
 
 template <>
-struct BasicAtomStreamer<nchar, 2> { // 1 = unique_name_t
-  static void print(std::basic_ostream<nchar>& out,
+struct BasicAtomStreamer<char, 2> { // 1 = unique_name_t
+  static void print(std::basic_ostream<char>& out,
                     const unique_name_t& atom) {
-    out << MOZART_STR("<N: ");
-    BasicAtomStreamer<nchar, 1>::print(out, atom_t(atom));
-    out << MOZART_STR(">");
+    out << "<N: ";
+    BasicAtomStreamer<char, 1>::print(out, atom_t(atom));
+    out << ">";
   }
 };
 
@@ -239,8 +257,8 @@ template <typename C, size_t atom_type>
 void BasicAtomStreamer<C, atom_type>::print(
   std::basic_ostream<C>& out, const basic_atom_t<atom_type>& atom) {
 
-  std::basic_stringstream<nchar> tempStream;
-  BasicAtomStreamer<nchar, atom_type>::print(tempStream, atom);
+  std::basic_stringstream<char> tempStream;
+  BasicAtomStreamer<char, atom_type>::print(tempStream, atom);
   out << makeLString(tempStream.str().data(), tempStream.str().size());
 }
 
@@ -254,24 +272,24 @@ public:
 
   size_t count() {return _count;}
 
-  atom_t get(VM vm, const nchar* data) {
-    return get(vm, std::char_traits<nchar>::length(data), data);
+  atom_t get(VM vm, const char* data) {
+    return get(vm, std::char_traits<char>::length(data), data);
   }
 
-  atom_t get(VM vm, size_t size, const nchar* data) {
+  atom_t get(VM vm, size_t size, const char* data) {
     return atom_t(getInternal(vm, size, data));
   }
 
-  unique_name_t getUniqueName(VM vm, const nchar* data) {
-    return getUniqueName(vm, std::char_traits<nchar>::length(data), data);
+  unique_name_t getUniqueName(VM vm, const char* data) {
+    return getUniqueName(vm, std::char_traits<char>::length(data), data);
   }
 
-  unique_name_t getUniqueName(VM vm, size_t size, const nchar* data) {
+  unique_name_t getUniqueName(VM vm, size_t size, const char* data) {
     return unique_name_t(getInternal(vm, size, data));
   }
 private:
   __attribute__((noinline))
-  AtomImpl* getInternal(VM vm, size_t size, const nchar* data) {
+  AtomImpl* getInternal(VM vm, size_t size, const char* data) {
     assert(size == (size << (bitsPerChar+1)) >> (bitsPerChar+1));   // ??
     size <<= bitsPerChar;
     if(root == nullptr){
@@ -286,15 +304,15 @@ private:
       size_t checkEnd = cur->critBit;
       bool cand = false;
       if(cur->critBit < nextToCheck) {
-	cand=true;
-	checkEnd=cur->size+16;
+        cand=true;
+        checkEnd=cur->size+16;
       }
       size_t f = firstMismatch(size, data,
-			       cur->size, cur->data,
-			       nextToCheck, checkEnd);
+                               cur->size, cur->data,
+                               nextToCheck, checkEnd);
       if(f < checkEnd){
-	++_count;
-	return cur = new (vm) AtomImpl(vm, size, data, f, bitAt(size, data, f), cur);
+        ++_count;
+        return cur = new (vm) AtomImpl(vm, size, data, f, bitAt(size, data, f), cur);
       }
       if(cand) return cur;
       nextToCheck=cur->critBit+1;
@@ -302,29 +320,29 @@ private:
     }
   }
 private:
-  int bitAt(size_t size, const nchar* data, size_t pos) {
+  int bitAt(size_t size, const char* data, size_t pos) {
     if(pos >= size) return 1;
     return (data[pos >> bitsPerChar] & (1 << (pos & charBitsMask))) ? 1 : 0;
   }
-  nchar charAt(size_t sizeC, const nchar* data, size_t i) {
-    if(i >= sizeC) return ~(nchar)0;
+  char charAt(size_t sizeC, const char* data, size_t i) {
+    if(i >= sizeC) return ~(char)0;
     return data[i];
   }
-  size_t firstMismatch(size_t s1, const nchar* d1,
-		       size_t s2, const nchar* d2,
-		       size_t start, size_t stop) {
+  size_t firstMismatch(size_t s1, const char* d1,
+                       size_t s2, const char* d2,
+                       size_t start, size_t stop) {
     if(start == stop) return stop;
     stop--;
     size_t s1c = s1 >> bitsPerChar;
     size_t s2c = s2 >> bitsPerChar;
-    nchar mask = (1 << (start & charBitsMask)) - 1;
+    char mask = (1 << (start & charBitsMask)) - 1;
     mask = ~mask;
     for(size_t i = start >> bitsPerChar; (i <= stop >> bitsPerChar); ++i) {
-      nchar x = charAt(s1c, d1, i);
-      nchar y = charAt(s2c, d2, i);
-      nchar d = (x ^ y) & mask;
+      char x = charAt(s1c, d1, i);
+      char y = charAt(s2c, d2, i);
+      char d = (x ^ y) & mask;
       if(d) return (i << bitsPerChar) + __builtin_ctz(d);
-      mask = ~(nchar)0;
+      mask = ~(char)0;
     }
     return stop+1;
   }

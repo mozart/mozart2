@@ -35,7 +35,7 @@ namespace mozart {
 // BuiltinModule //
 ///////////////////
 
-BuiltinModule::BuiltinModule(VM vm, const nchar* name)
+BuiltinModule::BuiltinModule(VM vm, const char* name)
   : _name(vm->getAtom(name)) {}
 
 template <typename T>
@@ -113,11 +113,11 @@ UnstableNode VirtualMachine::findBuiltinModule(T&& name) {
   UnstableNode* moduleNode;
   if (_builtinModules->lookup(this, nameNode, moduleNode)) {
     auto module = getPointerArgument<BuiltinModule>(this, *moduleNode,
-                                                    MOZART_STR("BuiltinModule"));
+                                                    "BuiltinModule");
     return { this, module->getModule() };
   } else {
-    raiseError(this, MOZART_STR("foreign"),
-               MOZART_STR("cannotFindBootModule"), nameNode);
+    raiseError(this, "foreign",
+               "cannotFindBootModule", nameNode);
   }
 }
 
@@ -164,13 +164,13 @@ void VirtualMachine::doGC() {
 
   // Handle the GC watcher
   UnstableNode watcher;
-  if (getPropertyRegistry().get(this, MOZART_STR("gc.watcher"), watcher)) {
+  if (getPropertyRegistry().get(this, "gc.watcher", watcher)) {
     assert(RichNode(watcher).is<ReadOnlyVariable>());
     UnstableNode unitNode(this, unit);
     RichNode(watcher).as<ReadOnlyVariable>().bindReadOnly(this, unitNode);
 
     // Put a new watcher
-    getPropertyRegistry().put(this, MOZART_STR("gc.watcher"),
+    getPropertyRegistry().put(this, "gc.watcher",
                               ReadOnlyVariable::build(this),
                               /* forceWriteConstantProp = */ true);
   }

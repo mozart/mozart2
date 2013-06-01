@@ -138,8 +138,8 @@ void InterfaceDef::makeOutput(const SpecDecl* ND, llvm::raw_fd_ostream& to) {
       if (resultType != "void")
         to << "        " << resultType << " _result;\n";
       to << "        if (_self.as< ::mozart::ReflectiveEntity>()."
-         << "reflectiveCall(vm, MOZART_STR(\"$intf$::"
-         << name << "::" << funName << "\"), MOZART_STR(\"" << funName << "\")";
+         << "reflectiveCall(vm, \"$intf$::" << name << "::" << funName
+         << "\", \"" << funName << "\"";
       if (!reflectActuals.empty())
         to << ", " << reflectActuals;
       if (resultType != "void")

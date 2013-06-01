@@ -40,13 +40,13 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
       if (matchesSharp(vm, head, capture(v), capture(n))) {
         cb.copy(n, v);
       } else {
-        raiseTypeError(vm, MOZART_STR("list of pairs"), todo);
+        raiseTypeError(vm, "list of pairs", todo);
       }
       todo=tail;
     } else if (matches(vm, todo, vm->coreatoms.nil)) {
       break;
     } else {
-      raiseTypeError(vm, MOZART_STR("list of pairs"), todo);
+      raiseTypeError(vm, "list of pairs", todo);
     }
   }
   UnstableNode next;

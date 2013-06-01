@@ -41,7 +41,7 @@ class ReifiedSpace: public DataType<ReifiedSpace>, public WithHome,
   StoredAs<SpaceRef> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("space"));
+    return vm->getAtom("space");
   }
 
   explicit ReifiedSpace(SpaceRef space):
@@ -98,7 +98,7 @@ private:
 class FailedSpace: public DataType<FailedSpace>, StoredAs<unit_t> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("space"));
+    return vm->getAtom("space");
   }
 
   explicit FailedSpace(unit_t) {}
@@ -148,7 +148,7 @@ public:
 class MergedSpace: public DataType<MergedSpace>, StoredAs<unit_t> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("space"));
+    return vm->getAtom("space");
   }
 
   explicit MergedSpace(unit_t) {}

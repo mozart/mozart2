@@ -43,7 +43,7 @@ class OptName: public DataType<OptName>, public WithHome,
   public LiteralHelper<OptName>, StoredAs<SpaceRef> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("name"));
+    return vm->getAtom("name");
   }
 
   explicit OptName(SpaceRef home): WithHome(home) {}
@@ -97,7 +97,7 @@ public:
   static constexpr UUID uuid = "{3330919d-1e2f-41a4-a073-620dd36dd582}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("name"));
+    return vm->getAtom("name");
   }
 
   GlobalName(VM vm, UUID uuid): WithHome(vm), _uuid(uuid) {}
@@ -154,7 +154,7 @@ public:
   static constexpr UUID uuid = "{f9873e5a-65db-4894-9dd5-bcd276df14af}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("name"));
+    return vm->getAtom("name");
   }
 
   NamedName(VM vm, atom_t printName, UUID uuid):
@@ -223,7 +223,7 @@ public:
   static constexpr UUID uuid = "{f6cdb080-98ad-47bf-9e67-629385261e9f}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("name"));
+    return vm->getAtom("name");
   }
 
   explicit UniqueName(unique_name_t value) : _value(value) {}

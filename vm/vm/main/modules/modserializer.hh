@@ -61,7 +61,7 @@ public:
       } else if (serializer.isTransient()) {
         waitFor(vm, serializer);
       } else {
-        raiseError(vm, MOZART_STR("serializer"), serializer);
+        raiseError(vm, "serializer", serializer);
       }
     }
   };

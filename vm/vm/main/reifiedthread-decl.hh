@@ -41,7 +41,7 @@ class ReifiedThread: public DataType<ReifiedThread>,
   StoredAs<Runnable*>, WithValueBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("thread"));
+    return vm->getAtom("thread");
   }
 
   explicit ReifiedThread(Runnable* runnable): _runnable(runnable) {}

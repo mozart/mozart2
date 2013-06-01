@@ -38,15 +38,11 @@ namespace builtins {
 /////////////////
 
 atom_t BaseBuiltin::getModuleNameAtom(VM vm) {
-  auto utf8Name = makeLString(_moduleName.c_str(), _moduleName.length());
-  auto nativeName = toUTF<nchar>(utf8Name);
-  return vm->getAtom(nativeName.length, nativeName.string);
+  return vm->getAtom(_moduleName);
 }
 
 atom_t BaseBuiltin::getNameAtom(VM vm) {
-  auto utf8Name = makeLString(_name.c_str(), _name.length());
-  auto nativeName = toUTF<nchar>(utf8Name);
-  return vm->getAtom(nativeName.length, nativeName.string);
+  return vm->getAtom(_name);
 }
 
 atom_t BaseBuiltin::getPrintName(VM vm) {
@@ -57,9 +53,7 @@ atom_t BaseBuiltin::getPrintName(VM vm) {
   std::stringstream ss;
   ss << _moduleName << '.' << getNameAtom(vm);
   auto str = ss.str();
-  auto utf8PrintName = makeLString(str.c_str(), str.length());
-  auto nativePrintName = toUTF<nchar>(utf8PrintName);
-  return vm->getAtom(nativePrintName.length, nativePrintName.string);
+  return vm->getAtom(ss.str());
 }
 
 void BaseBuiltin::getCallInfo(

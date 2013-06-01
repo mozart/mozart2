@@ -61,45 +61,45 @@ public:
 
 private:
   inline
-  UnstableNode* registerInternal(VM vm, const nchar* property);
+  UnstableNode* registerInternal(VM vm, const char* property);
 
 public:
   template <class T>
   inline
-  void registerValueProp(VM vm, const nchar* property, T&& value);
+  void registerValueProp(VM vm, const char* property, T&& value);
 
   template <class T>
   inline
-  void registerConstantProp(VM vm, const nchar* property, T&& value);
+  void registerConstantProp(VM vm, const char* property, T&& value);
 
   inline
-  void registerProp(VM vm, const nchar* property,
+  void registerProp(VM vm, const char* property,
                     const PropertyRecord::Getter& getter,
                     const PropertyRecord::Setter& setter);
 
   template <class T>
   inline
-  void registerReadWriteProp(VM vm, const nchar* property,
+  void registerReadWriteProp(VM vm, const char* property,
                              const std::function<T(VM)>& getter,
                              const std::function<void(VM, T)>& setter);
 
   template <class T>
   inline
-  void registerReadOnlyProp(VM vm, const nchar* property,
+  void registerReadOnlyProp(VM vm, const char* property,
                             const std::function<T(VM)>& getter);
 
   template <class T>
   inline
-  void registerWriteOnlyProp(VM vm, const nchar* property,
+  void registerWriteOnlyProp(VM vm, const char* property,
                              const std::function<void(VM, T)>& setter);
 
   template <class T>
   inline
-  void registerReadWriteProp(VM vm, const nchar* property, T& variable);
+  void registerReadWriteProp(VM vm, const char* property, T& variable);
 
   template <class T>
   inline
-  void registerReadOnlyProp(VM vm, const nchar* property, T& variable);
+  void registerReadOnlyProp(VM vm, const char* property, T& variable);
 
 public:
   inline

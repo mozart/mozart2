@@ -126,14 +126,14 @@ public:
 
     static void call(VM vm, In alts, Out result) {
       auto alternatives = getArgument<nativeint>(vm, alts,
-                                                 MOZART_STR("integer"));
+                                                 "integer");
 
       Space* space = vm->getCurrentSpace();
 
       if (space->isTopLevel()) {
         result = OptVar::build(vm);
       } else if (space->hasDistributor()) {
-        raise(vm, MOZART_STR("spaceDistributor"));
+        raise(vm, "spaceDistributor");
       } else {
         ChooseDistributor* distributor =
           new (vm) ChooseDistributor(vm, space, alternatives);

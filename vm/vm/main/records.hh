@@ -216,7 +216,7 @@ bool Tuple::hasSharpRepr(VM vm, int depth) {
 }
 
 UnstableNode Tuple::serialize(VM vm, SE se) {
-  UnstableNode r = makeTuple(vm, MOZART_STR("tuple"), _width+1);
+  UnstableNode r = makeTuple(vm, "tuple", _width+1);
   auto elements=RichNode(r).as<Tuple>().getElementsArray();
   for (size_t i=0; i< _width; ++i) {
     se->copy(elements[i], getElements(i));
@@ -326,7 +326,7 @@ void Cons::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
       [vm, &out, depth, width] (RichNode element) {
         out << " " << repr(vm, element, depth, width);
       },
-      MOZART_STR("list")
+      "list"
     );
     out << "]";
   } else {
@@ -360,7 +360,7 @@ bool Cons::hasListRepr(VM vm, int depth) {
 }
 
 UnstableNode Cons::serialize(VM vm, SE se) {
-  auto result = buildTuple(vm, MOZART_STR("cons"),
+  auto result = buildTuple(vm, "cons",
                            OptVar::build(vm), OptVar::build(vm));
   auto elements = RichNode(result).as<Tuple>().getElementsArray();
   se->copy(elements[0], _elements[0]);
@@ -455,7 +455,7 @@ void Arity::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
 }
 
 UnstableNode Arity::serialize(VM vm, SE se) {
-  UnstableNode r = makeTuple(vm, MOZART_STR("arity"), _width+1);
+  UnstableNode r = makeTuple(vm, "arity", _width+1);
   auto elements=RichNode(r).as<Tuple>().getElementsArray();
   for (size_t i=0; i< _width; ++i) {
     se->copy(elements[i], getElements(i));
@@ -578,7 +578,7 @@ void Record::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
 }
 
 UnstableNode Record::serialize(VM vm, SE se) {
-  UnstableNode r = makeTuple(vm, MOZART_STR("record"), _width+1);
+  UnstableNode r = makeTuple(vm, "record", _width+1);
   auto elements=RichNode(r).as<Tuple>().getElementsArray();
   for (size_t i=0; i< _width; ++i) {
     se->copy(elements[i], getElements(i));
@@ -608,7 +608,7 @@ bool Chunk::lookupFeature(VM vm, nativeint feature,
 }
 
 UnstableNode Chunk::serialize(VM vm, SE se) {
-  auto result = buildTuple(vm, MOZART_STR("chunk"), OptVar::build(vm));
+  auto result = buildTuple(vm, "chunk", OptVar::build(vm));
   se->copy(RichNode(result).as<Tuple>().getElements(0), *_underlying);
   return result;
 }

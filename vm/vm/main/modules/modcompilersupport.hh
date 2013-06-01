@@ -66,12 +66,12 @@ public:
         [&] (nativeint elem) {
           if ((elem < std::numeric_limits<ByteCode>::min()) ||
               (elem > std::numeric_limits<ByteCode>::max())) {
-            raiseTypeError(vm, MOZART_STR("Byte code element"), elem);
+            raiseTypeError(vm, "Byte code element", elem);
           } else {
             byteCode.push_back((ByteCode) elem);
           }
         },
-        MOZART_STR("List of byte code elements")
+        "List of byte code elements"
       );
 
       // Read scalar args
@@ -99,7 +99,7 @@ public:
         [&] (RichNode elem, size_t index) {
           kregs[index].init(vm, elem);
         },
-        MOZART_STR("list")
+        "list"
       );
     }
   };
@@ -111,7 +111,7 @@ public:
     static void call(VM vm, In body, In GsList, Out result) {
       // Check the type of the code area
       if (!CodeAreaProvider(body).isCodeAreaProvider(vm))
-        raiseTypeError(vm, MOZART_STR("Code area"), body);
+        raiseTypeError(vm, "Code area", body);
 
       // Read number of G registers
       size_t GCount = ozListLength(vm, GsList);
@@ -125,7 +125,7 @@ public:
         [&] (RichNode elem, size_t index) {
           gregs[index].init(vm, elem);
         },
-        MOZART_STR("list")
+        "list"
       );
     }
   };
@@ -144,7 +144,7 @@ public:
       } else if (value.isTransient()) {
         waitFor(vm, value);
       } else {
-        raiseTypeError(vm, MOZART_STR("Codea area or abstraction"), value);
+        raiseTypeError(vm, "Codea area or abstraction", value);
       }
     }
   };
@@ -193,7 +193,7 @@ public:
 
         vm->deleteStaticArray(unstableFeatures, width);
       } else {
-        raiseTypeError(vm, MOZART_STR("#-tuple"), features);
+        raiseTypeError(vm, "#-tuple", features);
       }
     }
   };
@@ -208,7 +208,7 @@ public:
       if (!arity.is<Arity>()) {
         if (arity.isTransient())
           waitFor(vm, arity);
-        raiseTypeError(vm, MOZART_STR("Arity"), arity);
+        raiseTypeError(vm, "Arity", arity);
       }
 
       size_t width;
@@ -216,7 +216,7 @@ public:
 
       if (matchesVariadicSharp(vm, fields, width, fieldsData)) {
         if (width != arity.as<Arity>().getWidth())
-          raiseKernelError(vm, MOZART_STR("widthMismatch"), arity, width);
+          raiseKernelError(vm, "widthMismatch", arity, width);
 
         result = Record::build(vm, width, arity);
         auto elements = RichNode(result).as<Record>().getElementsArray();
@@ -224,7 +224,7 @@ public:
         for (size_t i = 0; i < width; ++i)
           elements[i].init(vm, fieldsData[i]);
       } else {
-        raiseTypeError(vm, MOZART_STR("#-tuple"), fields);
+        raiseTypeError(vm, "#-tuple", fields);
       }
     }
   };
@@ -243,7 +243,7 @@ public:
     NewPatMatCapture(): Builtin("newPatMatCapture") {}
 
     static void call(VM vm, In index, Out result) {
-      auto intIndex = getArgument<nativeint>(vm, index, MOZART_STR("Integer"));
+      auto intIndex = getArgument<nativeint>(vm, index, "Integer");
       result = PatMatCapture::build(vm, intIndex);
     }
   };
@@ -264,7 +264,7 @@ public:
         for (size_t i = 0; i < width; ++i)
           elements[i].init(vm, partsData[i]);
       } else {
-        raiseTypeError(vm, MOZART_STR("#-tuple"), parts);
+        raiseTypeError(vm, "#-tuple", parts);
       }
     }
   };
@@ -279,7 +279,7 @@ public:
       if (!arity.is<Arity>()) {
         if (arity.isTransient())
           waitFor(vm, arity);
-        raiseTypeError(vm, MOZART_STR("Arity"), arity);
+        raiseTypeError(vm, "Arity", arity);
       }
 
       size_t width;
@@ -287,7 +287,7 @@ public:
 
       if (matchesVariadicSharp(vm, fields, width, fieldsData)) {
         if (width != arity.as<Arity>().getWidth())
-          raiseKernelError(vm, MOZART_STR("widthMismatch"), arity, width);
+          raiseKernelError(vm, "widthMismatch", arity, width);
 
         result = PatMatOpenRecord::build(vm, width, arity);
         auto elements = RichNode(result).as<PatMatOpenRecord>().getElementsArray();
@@ -295,7 +295,7 @@ public:
         for (size_t i = 0; i < width; ++i)
           elements[i].init(vm, fieldsData[i]);
       } else {
-        raiseTypeError(vm, MOZART_STR("#-tuple"), fields);
+        raiseTypeError(vm, "#-tuple", fields);
       }
     }
   };
@@ -323,25 +323,25 @@ public:
       for (size_t i = builtin->getArity(); i > 0; i--) {
         auto& paramInfo = builtin->getParams(i-1);
         UnstableNode param = buildRecord(
-          vm, buildArity(vm, MOZART_STR("param"), MOZART_STR("kind")),
+          vm, buildArity(vm, "param", "kind"),
           paramInfo.kind == ParamInfo::Kind::pkIn ?
-            MOZART_STR("in") : MOZART_STR("out"));
+            "in" : "out");
         params = buildCons(vm, std::move(param), std::move(params));
       }
 
       UnstableNode inlineAs;
       if (builtin->getInlineAs() < 0)
-        inlineAs = build(vm, MOZART_STR("none"));
+        inlineAs = build(vm, "none");
       else
-        inlineAs = buildTuple(vm, MOZART_STR("some"), builtin->getInlineAs());
+        inlineAs = buildTuple(vm, "some", builtin->getInlineAs());
 
       result = buildRecord(
         vm, buildArity(vm,
-                       MOZART_STR("builtin"),
-                       MOZART_STR("arity"),
-                       MOZART_STR("inlineAs"),
-                       MOZART_STR("name"),
-                       MOZART_STR("params")),
+                       "builtin",
+                       "arity",
+                       "inlineAs",
+                       "name",
+                       "params"),
         std::move(arity), std::move(inlineAs), std::move(name),
         std::move(params));
     }

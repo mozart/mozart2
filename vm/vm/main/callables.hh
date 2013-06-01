@@ -80,7 +80,7 @@ void BuiltinProcedure::getDebugInfo(
 }
 
 UnstableNode BuiltinProcedure::serialize(VM vm, SE se) {
-  return buildTuple(vm, MOZART_STR("builtin"),
+  return buildTuple(vm, "builtin",
                     _builtin->getModuleNameAtom(vm), _builtin->getNameAtom(vm));
 }
 
@@ -170,7 +170,7 @@ void Abstraction::printReprToStream(VM vm, std::ostream& out,
 }
 
 UnstableNode Abstraction::serialize(VM vm, SE se) {
-  UnstableNode r = makeTuple(vm, MOZART_STR("abstraction"), _Gc+1);
+  UnstableNode r = makeTuple(vm, "abstraction", _Gc+1);
   auto elements=RichNode(r).as<Tuple>().getElementsArray();
   for (size_t i=0; i< _Gc; ++i) {
     se->copy(elements[i], getElements(i));
@@ -181,14 +181,14 @@ UnstableNode Abstraction::serialize(VM vm, SE se) {
 
 GlobalNode* Abstraction::globalize(RichNode self, VM vm) {
   if (_gnode == nullptr) {
-    _gnode = GlobalNode::make(vm, self, MOZART_STR("immval"));
+    _gnode = GlobalNode::make(vm, self, "immval");
   }
   return _gnode;
 }
 
 void Abstraction::setUUID(RichNode self, VM vm, const UUID& uuid) {
   assert(_gnode == nullptr);
-  _gnode = GlobalNode::make(vm, uuid, self, MOZART_STR("immval"));
+  _gnode = GlobalNode::make(vm, uuid, self, "immval");
 }
 
 void Abstraction::ensureCodeAreaCacheValid(VM vm) {

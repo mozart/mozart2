@@ -48,10 +48,10 @@ ReflectiveEntity::ReflectiveEntity(VM vm, GR gr, ReflectiveEntity& from) {
 
 template <typename Label, typename... Args>
 bool ReflectiveEntity::reflectiveCall(
-  VM vm, const nchar* identity, Label&& label, Args&&... args) {
+  VM vm, const char* identity, Label&& label, Args&&... args) {
 
   if (!vm->isOnTopLevel())
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("reflective"));
+    raise(vm, "globalState", "reflective");
 
   return ozcalls::internal::doReflectiveCall(
     vm, identity, _stream,
@@ -88,15 +88,15 @@ ReflectiveVariable::ReflectiveVariable(VM vm, GR gr, ReflectiveVariable& from):
 void ReflectiveVariable::markNeeded(VM vm) {
   if (!isNeeded(vm)) {
     VariableBase::markNeeded(vm);
-    sendToReadOnlyStream(vm, _stream, buildSharp(vm, MOZART_STR("markNeeded"),
+    sendToReadOnlyStream(vm, _stream, buildSharp(vm, "markNeeded",
                                                  OptVar::build(vm)));
   }
 }
 
 void ReflectiveVariable::bind(VM vm, RichNode src) {
   ozcalls::internal::doReflectiveCall(
-    vm, MOZART_STR("mozart::ReflectiveVariable::bind"), _stream,
-    MOZART_STR("bind"), src
+    vm, "mozart::ReflectiveVariable::bind", _stream,
+    "bind", src
   );
 }
 

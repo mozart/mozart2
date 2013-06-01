@@ -29,16 +29,12 @@
 
 // Platform (should be filled by the environment)
 
-registerConstantProp(vm, MOZART_STR("platform.name"),
-                     MOZART_STR("@MOZART_PROP_PLATFORM_OS@-@MOZART_PROP_PLATFORM_ARCH@"));
-registerConstantProp(vm, MOZART_STR("platform.os"),
-                     MOZART_STR("@MOZART_PROP_PLATFORM_OS@"));
-registerConstantProp(vm, MOZART_STR("platform.arch"),
-                     MOZART_STR("@MOZART_PROP_PLATFORM_ARCH@"));
+registerConstantProp(vm, "platform.name",
+                     "@MOZART_PROP_PLATFORM_OS@-@MOZART_PROP_PLATFORM_ARCH@");
+registerConstantProp(vm, "platform.os", "@MOZART_PROP_PLATFORM_OS@");
+registerConstantProp(vm, "platform.arch", "@MOZART_PROP_PLATFORM_ARCH@");
 
 // Misc
 
-registerConstantProp(vm, MOZART_STR("oz.version"),
-                     MOZART_STR("@MOZART_PROP_OZ_VERSION@"));
-registerConstantProp(vm, MOZART_STR("oz.date"),
-                     MOZART_STR("@MOZART_PROP_OZ_DATE@"));
+registerConstantProp(vm, "oz.version", "@MOZART_PROP_OZ_VERSION@");
+registerConstantProp(vm, "oz.date", "@MOZART_PROP_OZ_DATE@");

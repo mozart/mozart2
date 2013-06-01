@@ -17,9 +17,9 @@ TEST_F(ByteStringTest, Get) {
 
   EXPECT_EQ(1, StringLike(b).stringCharAt(vm, zero));
 
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringCharAt(vm, two));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringCharAt(vm, minusOne));
 
   EXPECT_EQ(0xf3, StringLike(b).stringCharAt(vm, one));
@@ -71,11 +71,11 @@ TEST_F(ByteStringTest, Slice) {
 
   UnstableNode result;
 
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringSlice(vm, minusOne, zero));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringSlice(vm, five, six));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringSlice(vm, three, two));
 
   result = StringLike(b).stringSlice(vm, two, four);
@@ -100,9 +100,9 @@ TEST_F(ByteStringTest, StrChr) {
 
   UnstableNode begin, end;
 
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringSearch(vm, minusOne, char2, begin, end));
-  EXPECT_RAISE(MOZART_STR("indexOutOfBounds"),
+  EXPECT_RAISE("indexOutOfBounds",
                StringLike(b).stringSearch(vm, six, char2, begin, end));
 
   StringLike(b).stringSearch(vm, zero, char2, begin, end);
@@ -122,9 +122,9 @@ TEST_F(ByteStringTest, StrChr) {
     EXPECT_TRUE(patternmatching::matches(vm, *node, false));
   }
 
-  EXPECT_RAISE(MOZART_STR("error"), // type error
+  EXPECT_RAISE("error", // type error
                StringLike(b).stringSearch(vm, zero, minusOne, begin, end));
-  EXPECT_RAISE(MOZART_STR("error"), // type error
+  EXPECT_RAISE("error", // type error
                StringLike(b).stringSearch(vm, zero, char256, begin, end));
 }
 

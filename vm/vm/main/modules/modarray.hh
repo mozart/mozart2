@@ -46,12 +46,12 @@ public:
     New(): Builtin("new") {}
 
     static void call(VM vm, In low, In high, In initValue, Out result) {
-      auto intLow = getArgument<nativeint>(vm, low, MOZART_STR("integer"));
-      auto intHigh = getArgument<nativeint>(vm, high, MOZART_STR("integer"));
+      auto intLow = getArgument<nativeint>(vm, low, "integer");
+      auto intHigh = getArgument<nativeint>(vm, high, "integer");
 
       nativeint width = intHigh - intLow + 1;
       if (width < 0)
-        raise(vm, MOZART_STR("negativeArraySize"));
+        raise(vm, "negativeArraySize");
 
       result = Array::build(vm, (size_t) width, intLow, initValue);
     }

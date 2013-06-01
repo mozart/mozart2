@@ -61,7 +61,7 @@ void IntermediateState::reset(VM vm) {
 }
 
 template <typename... Args>
-bool IntermediateState::fetch(VM vm, const nchar* identity, Args... args) {
+bool IntermediateState::fetch(VM vm, const char* identity, Args... args) {
   auto iter = _last + 1;
   if (iter == _list.end()) {
     return false;
@@ -74,7 +74,7 @@ bool IntermediateState::fetch(VM vm, const nchar* identity, Args... args) {
 }
 
 template <typename... Args>
-void IntermediateState::store(VM vm, const nchar* identity, Args&&... args) {
+void IntermediateState::store(VM vm, const char* identity, Args&&... args) {
   _list.push_back_new(vm, vm,
                       buildTuple(vm, identity, std::forward<Args>(args)...));
   ++_last;
@@ -82,7 +82,7 @@ void IntermediateState::store(VM vm, const nchar* identity, Args&&... args) {
 
 template <typename... Args>
 void IntermediateState::resetAndStore(VM vm, CheckPoint checkPoint,
-                                      const nchar* identity, Args&&... args) {
+                                      const char* identity, Args&&... args) {
   reset(vm, checkPoint);
   store(vm, identity, std::forward<Args>(args)...);
 }

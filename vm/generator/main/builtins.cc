@@ -340,9 +340,9 @@ void ModuleDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
 
   code << "\nclass " << cppName << ": public BuiltinModule {\n";
   code << "public:\n";
-  code << "  " << cppName << "(VM vm): BuiltinModule(vm, MOZART_STR(";
+  code << "  " << cppName << "(VM vm): BuiltinModule(vm, ";
   nameExpr->printPretty(code, nullptr, context->getPrintingPolicy());
-  code << ")) {\n";
+  code << ") {\n";
 
   for (auto iter = builtins.begin(); iter != builtins.end(); ++iter) {
     code << "    instance" << iter->cppName << ".setModuleName(";
@@ -355,15 +355,15 @@ void ModuleDef::makeBuiltinDefsOutput(llvm::raw_fd_ostream& header,
 
   size_t i = 0;
   for (auto iter = builtins.begin(); iter != builtins.end(); ++iter, ++i) {
-    code << "    fields[" << i << "].feature = build(vm, MOZART_STR(";
+    code << "    fields[" << i << "].feature = build(vm, ";
     iter->nameExpr->printPretty(code, nullptr, context->getPrintingPolicy());
-    code << "));\n";
+    code << ");\n";
 
     code << "    fields[" << i << "].value = build(vm, instance"
          << iter->cppName << ");\n";
   }
 
-  code << "    UnstableNode label = build(vm, MOZART_STR(\"export\"));\n";
+  code << "    UnstableNode label = build(vm, \"export\");\n";
   code << "    UnstableNode module = buildRecordDynamic(vm, label, "
        << builtins.size() << ", fields);\n";
   code << "    initModule(vm, std::move(module));\n";

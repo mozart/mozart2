@@ -287,13 +287,13 @@ public:
     static void call(VM vm, In value, Out result) {
       if (value.isTransient()) {
         if (value.is<ReadOnly>() || value.is<ReadOnlyVariable>())
-          result = Atom::build(vm, MOZART_STR("future"));
+          result = Atom::build(vm, "future");
         else if (value.is<FailedValue>())
-          result = Atom::build(vm, MOZART_STR("failed"));
+          result = Atom::build(vm, "failed");
         else
-          result = Atom::build(vm, MOZART_STR("free"));
+          result = Atom::build(vm, "free");
       } else {
-        result = buildTuple(vm, MOZART_STR("det"), OptVar::build(vm));
+        result = buildTuple(vm, "det", OptVar::build(vm));
       }
     }
   };
@@ -434,7 +434,7 @@ private:
     catHelperBase(vm, value,
       fDotAssignable, fCellLike,
       [] (VM vm, RichNode value) {
-        raiseTypeError(vm, MOZART_STR("Cell or A#I or D#F"), value);
+        raiseTypeError(vm, "Cell or A#I or D#F", value);
       }
     );
   }

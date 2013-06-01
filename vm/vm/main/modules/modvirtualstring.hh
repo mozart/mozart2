@@ -66,7 +66,7 @@ public:
       }
 
       {
-        std::vector<nchar> buffer;
+        std::vector<char> buffer;
         ozVSGet(vm, value, bufSize, buffer);
         result = String::build(vm, newLString(vm, buffer));
       }
@@ -87,7 +87,7 @@ public:
       }
 
       {
-        std::vector<nchar> buffer;
+        std::vector<char> buffer;
         ozVSGet(vm, value, bufSize, buffer);
 
         OzListBuilder builder(vm);
@@ -115,7 +115,7 @@ public:
       }
 
       {
-        std::vector<nchar> buffer;
+        std::vector<char> buffer;
         ozVSGet(vm, value, bufSize, buffer);
         result = Atom::build(vm, buffer.size(), buffer.data());
       }
@@ -155,7 +155,7 @@ public:
       }
 
       if (!success)
-        raiseKernelError(vm, MOZART_STR("stringNoFloat"), value);
+        raiseKernelError(vm, "stringNoFloat", value);
 
       result = build(vm, doubleResult);
     }

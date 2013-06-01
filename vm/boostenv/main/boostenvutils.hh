@@ -81,7 +81,7 @@ void BaseSocketConnection<T, P>::startAsyncWrite(
           statusNode, bytes_transferred);
       } else {
         self->_environment.raiseAndReleaseAsyncIOFeedbackNode(
-          statusNode, MOZART_STR("socketOrPipe"), MOZART_STR("write"), error.value());
+          statusNode, "socketOrPipe", "write", error.value());
       }
     });
   };
@@ -105,10 +105,10 @@ void BaseSocketConnection<T, P>::readHandler(
                          std::move(head));
 
       self->_environment.bindAndReleaseAsyncIOFeedbackNode(
-        statusNode, MOZART_STR("succeeded"), bytes_transferred, std::move(head));
+        statusNode, "succeeded", bytes_transferred, std::move(head));
     } else {
       self->_environment.raiseAndReleaseAsyncIOFeedbackNode(
-        statusNode, MOZART_STR("socketOrPipe"), MOZART_STR("read"), error.value());
+        statusNode, "socketOrPipe", "read", error.value());
     }
 
     _environment.releaseAsyncIONode(tailNode);

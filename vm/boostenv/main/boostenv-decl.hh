@@ -181,29 +181,23 @@ private:
 // Utilities //
 ///////////////
 
-inline
-atom_t systemStrToAtom(VM vm, const char* str);
-
-inline
-atom_t systemStrToAtom(VM vm, const std::string& str);
-
 template <typename T>
 inline
-void MOZART_NORETURN raiseOSError(VM vm, const nchar* function,
+void MOZART_NORETURN raiseOSError(VM vm, const char* function,
                                   nativeint errnum, T&& message);
 
 inline
-void MOZART_NORETURN raiseOSError(VM vm, const nchar* function, int errnum);
+void MOZART_NORETURN raiseOSError(VM vm, const char* function, int errnum);
 
 inline
-void MOZART_NORETURN raiseLastOSError(VM vm, const nchar* function);
+void MOZART_NORETURN raiseLastOSError(VM vm, const char* function);
 
 inline
-void MOZART_NORETURN raiseOSError(VM vm, const nchar* function,
+void MOZART_NORETURN raiseOSError(VM vm, const char* function,
                                   boost::system::error_code& ec);
 
 inline
-void MOZART_NORETURN raiseOSError(VM vm, const nchar* function,
+void MOZART_NORETURN raiseOSError(VM vm, const char* function,
                                   const boost::system::system_error& error);
 
 } }

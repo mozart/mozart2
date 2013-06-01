@@ -462,7 +462,7 @@ UnstableNode Dictionary::dictGet(RichNode self, VM vm, RichNode feature) {
   if (dict.lookup(vm, feature, value)) {
     return { vm, *value };
   } else {
-    raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
+    raise(vm, "dictKeyNotFound", self, feature);
   }
 }
 
@@ -480,7 +480,7 @@ UnstableNode Dictionary::dictCondGet(VM vm, RichNode feature,
 
 void Dictionary::dictPut(VM vm, RichNode feature, RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
+    return raise(vm, "globalState", "dictionary");
 
   requireFeature(vm, feature);
 
@@ -493,7 +493,7 @@ void Dictionary::dictPut(VM vm, RichNode feature, RichNode newValue) {
 UnstableNode Dictionary::dictExchange(RichNode self, VM vm, RichNode feature,
                                       RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
+    raise(vm, "globalState", "dictionary");
 
   requireFeature(vm, feature);
 
@@ -503,7 +503,7 @@ UnstableNode Dictionary::dictExchange(RichNode self, VM vm, RichNode feature,
     value->copy(vm, newValue);
     return oldValue;
   } else {
-    raise(vm, MOZART_STR("dictKeyNotFound"), self, feature);
+    raise(vm, "dictKeyNotFound", self, feature);
   }
 }
 
@@ -511,7 +511,7 @@ UnstableNode Dictionary::dictCondExchange(VM vm, RichNode feature,
                                           RichNode defaultValue,
                                           RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
+    raise(vm, "globalState", "dictionary");
 
   requireFeature(vm, feature);
 
@@ -528,7 +528,7 @@ UnstableNode Dictionary::dictCondExchange(VM vm, RichNode feature,
 
 void Dictionary::dictRemove(VM vm, RichNode feature) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
+    return raise(vm, "globalState", "dictionary");
 
   requireFeature(vm, feature);
 
@@ -537,7 +537,7 @@ void Dictionary::dictRemove(VM vm, RichNode feature) {
 
 void Dictionary::dictRemoveAll(VM vm) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), MOZART_STR("dictionary"));
+    return raise(vm, "globalState", "dictionary");
 
   dict.removeAll(vm);
 }

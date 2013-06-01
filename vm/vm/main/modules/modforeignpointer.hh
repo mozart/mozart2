@@ -64,7 +64,7 @@ public:
       } else if (value.isTransient()) {
         waitFor(vm, value);
       } else {
-        raiseTypeError(vm, MOZART_STR("ForeignPointer"), value);
+        raiseTypeError(vm, "ForeignPointer", value);
       }
     }
   };

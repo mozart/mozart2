@@ -47,19 +47,19 @@ atom_t PrimitiveTypeToExpectedAtom<T>::result(VM vm) {
 }
 
 atom_t PrimitiveTypeToExpectedAtom<internal::intIfDifferentFromNativeInt>::result(VM vm) {
-  return vm->getAtom(MOZART_STR("integer"));
+  return vm->getAtom("integer");
 }
 
 atom_t PrimitiveTypeToExpectedAtom<size_t>::result(VM vm) {
-  return vm->getAtom(MOZART_STR("positive integer"));
+  return vm->getAtom("positive integer");
 }
 
 atom_t PrimitiveTypeToExpectedAtom<UUID>::result(VM vm) {
-  return vm->getAtom(MOZART_STR("UUID aka VBS of length 16"));
+  return vm->getAtom("UUID aka VBS of length 16");
 }
 
 template <class T>
-T getArgument(VM vm, RichNode argValue, const nchar* expectedType) {
+T getArgument(VM vm, RichNode argValue, const char* expectedType) {
   using namespace patternmatching;
 
   T result;
@@ -122,7 +122,7 @@ RichNode getArgument(VM vm, RichNode argValue) {
  */
 
 template <class T>
-T* getPointerArgument(VM vm, RichNode argValue, const nchar* expectedType) {
+T* getPointerArgument(VM vm, RichNode argValue, const char* expectedType) {
   return getArgument<std::shared_ptr<T>>(vm, argValue, expectedType).get();
 }
 
@@ -230,7 +230,7 @@ auto ozListForEachNoRaise(VM vm, RichNode list, const F& f)
 
 template <class F>
 auto ozListForEach(VM vm, RichNode list, const F& f,
-                   const nchar* expectedType)
+                   const char* expectedType)
     -> typename std::enable_if<function_traits<F>::arity == 1, void>::type {
 
   if (!internal::ozListForEachNoRaise(vm, list, f))
@@ -239,7 +239,7 @@ auto ozListForEach(VM vm, RichNode list, const F& f,
 
 template <class F>
 auto ozListForEach(VM vm, RichNode list, const F& f,
-                   const nchar* expectedType)
+                   const char* expectedType)
     -> typename std::enable_if<function_traits<F>::arity == 2, void>::type {
 
   if (!internal::ozListForEachNoRaise(vm, list, f))
@@ -262,7 +262,7 @@ size_t ozListLength(VM vm, RichNode list) {
     } else if (matches(vm, list, vm->coreatoms.nil)) {
       return result;
     } else {
-      raiseTypeError(vm, MOZART_STR("list"), list);
+      raiseTypeError(vm, "list", list);
     }
   }
 }
@@ -279,7 +279,7 @@ constexpr size_t getIntToStrBufferSize() {
   return std::numeric_limits<nativeint>::digits10 + 3;
 }
 
-using IntToStrBuffer = nchar[getIntToStrBufferSize()];
+using IntToStrBuffer = char[getIntToStrBufferSize()];
 
 inline
 size_t intToStrBuffer(IntToStrBuffer buffer, nativeint value) {
@@ -296,7 +296,7 @@ constexpr size_t getFloatToStrBufferSize() {
   return 32;
 }
 
-using FloatToStrBuffer = nchar[getFloatToStrBufferSize()];
+using FloatToStrBuffer = char[getFloatToStrBufferSize()];
 
 inline
 size_t floatToStrBuffer(FloatToStrBuffer buffer, double value) {
@@ -381,7 +381,7 @@ nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs) {
     nativeint result = 0;
     bool ok = ozListForEachNoRaise(vm, vs,
       [vm, &result] (char32_t c) {
-        result += (sizeof(char32_t) / sizeof(nchar));
+        result += (sizeof(char32_t) / sizeof(char));
       }
     );
     if (ok)
@@ -400,7 +400,7 @@ nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs) {
 }
 
 inline
-bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<nchar>& output) {
+bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<char>& output) {
   using namespace internal;
   using namespace patternmatching;
 
@@ -431,7 +431,7 @@ bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<nchar>& output) {
   } else if (matchesCons(vm, vs, wildcard(), wildcard())) {
     return ozListForEachNoRaise(vm, vs,
       [vm, &output] (char32_t c) {
-        nchar buffer[4];
+        char buffer[4];
         nativeint length = toUTF(c, buffer);
         std::copy_n(buffer, length, std::back_inserter(output));
       }
@@ -544,7 +544,7 @@ size_t ozVSLengthForBuffer(VM vm, RichNode vs) {
   if (result >= 0)
     return (size_t) result;
   else
-    raiseTypeError(vm, MOZART_STR("VirtualString"), vs);
+    raiseTypeError(vm, "VirtualString", vs);
 }
 
 /**
@@ -552,9 +552,9 @@ size_t ozVSLengthForBuffer(VM vm, RichNode vs) {
  * If ozVSLengthForBuffer() has been called before for the same vs, this
  * function is guaranteed not to throw any Mozart exception.
  */
-void ozVSGet(VM vm, RichNode vs, std::vector<nchar>& output) {
+void ozVSGet(VM vm, RichNode vs, std::vector<char>& output) {
   if (!ozVSGetNoRaise(vm, vs, output))
-    raiseTypeError(vm, MOZART_STR("VirtualString"), vs);
+    raiseTypeError(vm, "VirtualString", vs);
 }
 
 /**
@@ -563,7 +563,7 @@ void ozVSGet(VM vm, RichNode vs, std::vector<nchar>& output) {
  * function, it is guaranteed not to throw any Mozart exception.
  * @param bufSize Size of the buffer returned by ozVSLengthForBuffer()
  */
-void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<nchar>& output) {
+void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<char>& output) {
   output.reserve(bufSize);
   ozVSGet(vm, vs, output);
 }
@@ -576,10 +576,10 @@ void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<nchar>& output) {
  */
 template <typename C>
 void ozVSGet(VM vm, RichNode vs, size_t bufSize, std::vector<C>& output) {
-  static_assert(!std::is_same<C, nchar>::value,
+  static_assert(!std::is_same<C, char>::value,
                 "The overload above should have been selected instead.");
 
-  std::vector<nchar> output0;
+  std::vector<char> output0;
   output0.reserve(bufSize);
   ozVSGet(vm, vs, output0);
 
@@ -647,7 +647,7 @@ size_t ozVSLength(VM vm, RichNode vs) {
 
   nativeint result;
   {
-    std::vector<nchar> buffer;
+    std::vector<char> buffer;
     ozVSGet(vm, vs, bufSize, buffer);
     result = codePointCount(makeLString(buffer.data(), buffer.size()));
   }
@@ -673,7 +673,7 @@ size_t ozVBSLengthForBuffer(VM vm, RichNode vbs) {
   if (result >= 0)
     return (size_t) result;
   else
-    raiseTypeError(vm, MOZART_STR("VirtualByteString"), vbs);
+    raiseTypeError(vm, "VirtualByteString", vbs);
 }
 
 /**
@@ -684,7 +684,7 @@ size_t ozVBSLengthForBuffer(VM vm, RichNode vbs) {
 template <typename C, typename>
 void ozVBSGet(VM vm, RichNode vbs, std::vector<C>& output) {
   if (!ozVBSGetNoRaise(vm, vbs, output))
-    raiseTypeError(vm, MOZART_STR("VirtualByteString"), vbs);
+    raiseTypeError(vm, "VirtualByteString", vbs);
 }
 
 /**
@@ -728,7 +728,7 @@ void sendToReadOnlyStream(VM vm, UnstableNode& stream, T&& value) {
 
 /** Protect a non-idempotent step from being executing twice */
 template <typename Step>
-auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+auto protectNonIdempotentStep(VM vm, const char* identity, const Step& step)
     -> typename std::enable_if<!std::is_void<decltype(step())>::value,
                                decltype(step())>::type {
   assert(vm->isIntermediateStateAvailable());
@@ -747,7 +747,7 @@ auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
 
 /** Protect a non-idempotent step from being executing twice */
 template <typename Step>
-auto protectNonIdempotentStep(VM vm, const nchar* identity, const Step& step)
+auto protectNonIdempotentStep(VM vm, const char* identity, const Step& step)
     -> typename std::enable_if<std::is_void<decltype(step())>::value,
                                void>::type {
   assert(vm->isIntermediateStateAvailable());

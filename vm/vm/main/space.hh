@@ -378,7 +378,7 @@ void Space::notifyThreadTerminated() {
     return;
 
   assert(cascadedRunnableThreadCount > 0);
-  if (--cascadedRunnableThreadCount)
+  if (--cascadedRunnableThreadCount == 0)
     getParent()->decRunnableThreadCount();
 
   checkStability();

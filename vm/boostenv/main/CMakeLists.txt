@@ -20,7 +20,7 @@ else()
   set(CXX_STD_OPT -std=c++0x)
 endif()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   set(MOZART_GENERATOR_FLAGS "-I/usr/lib/c++/v1")
 endif()

@@ -61,8 +61,12 @@ It is much easier to install than LLVM/clang with libc++ support.
 
 * Install gcc 4.7 with `brew tap homebrew/versions` and `brew install gcc47`
 
-You need an adapted formula to compile boost with C++11 support for older versions of OS X: [TODO].
+You need an adapted formula to compile boost with C++11 support for older versions of OS X.
+Unfortunately the current (2013-06-01) Homebrew Formula restricts C++11 support to Lion or later.
+So download [this formula](https://gist.github.com/eregon/5690812) and replace `/usr/local/Library/Formula/boost.rb`
+(I might add a Homebrew Tap later).
 
+* Unlink boost if already installed and linked: `brew unlink boost`
 * You can now install the boost libraries: `brew install boost --with-c++11`
 
 
@@ -74,25 +78,19 @@ You need an adapted formula to compile boost with C++11 support for older versio
     $ cd llvm/tools
     $ curl -O http://llvm.org/releases/3.2/clang-3.2.src.tar.gz
     $ tar xvfz clang-3.2.src.tar.gz && mv clang-3.2.src clang && rm clang-3.2.src.tar.gz
-    $ cd ../../ && mkdir build-llvm && cd build-llvm
 ```
 
 You need to patch clang to include the C++11 headers of libstdc++:
-
-[TODO] .patch
-
-In `src/llvm/tools/clang/lib/Frontend/InitHeaderSearch.cpp`, around line 358, add between:
-
-  `case llvm::Triple::x86_64:`
-AND
-  `AddGnuCPlusPlusIncludePaths("/usr/include/c++/4.2.1", "i686-apple-darwin10", "", "x86_64", triple);`
+Ensure you are in `src/llvm/tools/clang`, and
 
 ```
-    AddGnuCPlusPlusIncludePaths("/usr/local/Cellar/gcc47/4.7.3/gcc/include/c++/4.7.3",
-                                  "x86_64-apple-darwin10.8.0", "", "", triple);
+    $ curl https://gist.github.com/eregon/5690821/raw/9f69de4c16fb130ca2006dffcd4b80068b9e954c/0001-add-Homebrew-GCC-4.7-path.patch | patch -p1
 ```
 
+Now you can compile LLVM and Clang:
+
 ```
+    $ cd ../.. && mkdir build-llvm && cd build-llvm
     $ CC=gcc-4.7 CXX=g++-4.7 cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD:STRING=X86 ../llvm
     $ make -j `sysctl -n hw.ncpu`
 ```

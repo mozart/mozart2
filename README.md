@@ -5,28 +5,23 @@ This repository contains the upcoming version 2 of the system.
 The [Website](http://www.mozart-oz.org/) currently refers to the last stable
 version, which is 1.4.0.
 
-This is a meta-repository that aggregates all the repositories of Mozart as
-submodules:
-
-* [Virtual Machine](https://github.com/mozart/mozart2-vm)
-* [Bootcompiler](https://github.com/mozart/mozart2-bootcompiler)
-* [Standard library](https://github.com/mozart/mozart2-library)
-* [Compiler](https://github.com/mozart/mozart2-compiler)
-* [OPI](https://github.com/mozart/mozart2-opi)
-
-The purpose of this meta-repository is to link together commits of these
-subprojects that are globally coherent, and provide a unified, automated build
-process.
+The status of Mozart 2 is currently _alpha quality_. It is not ready for
+production, but it can be used for experimenting, testing, and obviously, for
+contributing.
 
 # Downloads
 
-The [Downloads](https://github.com/mozart/mozart2/downloads) page on GitHub
-features binary packages of the current state of development of Mozart 2.
+Binary packages for Linux, Mac OS and Windows are built from time to time and
+made available on
+[SourceForge](http://sourceforge.net/projects/mozart-oz/files/).
 
-These downloads must be considered as having _alpha quality_. They are
-certainly not ready for production, and only remotely ready for experimentation.
+The binary distribution requires that you have installed Tcl/Tk 8.5 on your
+system.
 
 # Build instructions
+
+This main Readme is shamefully biased towards Linux. Side-along Readmes are
+available [for Mac OS](README.MacOS.md) and [for Windows](README.Windows.md).
 
 ## Requirements
 
@@ -34,16 +29,15 @@ In order to build Mozart 2, you need the following tools on your computer:
 
 *   git and Subversion to grab the source code
 *   java >= 1.6.0
-*   gcc >= 4.7.1 on Windows and Linux; or clang >= 3.1 on Mac OS
+*   gcc >= 4.7.1 on Windows, Linux and Mac OS < 10.8;
+    or clang >= 3.1 on Mac OS >= 10.8
 *   cmake >= 2.8.6
-*   development version of Boost >= 1.49.0
+*   Boost >= 1.49.0 (with development files)
+*   Tcl/Tk 8.5 or 8.6 (with development files)
 *   emacs
 
-On Linux and Mac OS, use your favorite package manager to grab these tools.
-
-On Windows, we recommend that you use the
-[MinGW distro](http://nuwen.net/mingw.html) of nuwen.net, which is enabled
-for C++11 and Boost.
+On Linux, use your favorite package manager to grab these tools. Refer to the
+specialized Readmes for recommendations on Mac OS and Windows.
 
 ## Suggested directory layout
 
@@ -67,33 +61,33 @@ Throughout the following instructions, we will assume this layout.
 
 ## Obtaining GTest and LLVM
 
-Mozart2 uses GTest and LLVM as subprojects. If you do not want to mess with
-these, you can choose to skip this section, and let the automatic build
-process fetch them and build them for you.
+Mozart2 uses GTest and LLVM as subprojects, which you have to download and
+build prior to building Mozart 2.
 
-However, if you intend to have at least 2 builds of Mozart (which is likely:
-the debug build and the release build), it is better to compile them yourself
-once, and then use this only installation in all your builds of Mozart.
+**Not recommended.** If you do not want to mess with these, you can choose to skip
+this section, and let the automatic build process fetch them and build them for
+you. Use this "feature" at your own risk, because none of us tests this
+anymore, and we may decide to remove support for it at some point.
 
-To build yourself, simply follow the steps below.
-
-First download all the sources. Both projects use Subversion. If you use
-Windows, use the trunk version of LLVM instead.
+First download all the sources. Both projects use Subversion.
 
 ```
 projects$ cd externals
 externals$ svn co http://googletest.googlecode.com/svn/trunk gtest
 [...]
-externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_31/final llvm
+externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_32/final llvm
 [...]
 externals$ cd llvm/tools/
-tools$ svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_31/final clang
+tools$ svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_32/final clang
 [...]
 tools$ cd ../../..
 projects$
 ```
 
-Next, build the projects:
+Next, build the projects. Except on Windows (where parallel make does not
+work, it seems), we suggest you use the `-jN` option of `make`, specifying
+how many tasks make can run in parallel. Building LLVM is quite long, and this
+can significantly speed up the process.
 
 ```
 projects$ cd builds
@@ -101,14 +95,14 @@ builds$ mkdir gtest-debug
 builds$ cd gtest-debug
 gtest-debug$ cmake -DCMAKE_BUILD_TYPE=Debug ../../externals/gtest
 [...]
-gtest-debug$ make -j7 # adapt to your number of CPUs
+gtest-debug$ make # (optionally with -jN for a given N)
 [...]
 gtest-debug$ cd ..
 builds$ mkdir llvm-release
 builds$ cd llvm-release
 llvm-release$ cmake -DCMAKE_BUILD_TYPE=Release ../../externals/llvm
 [...]
-llvm-release$ make -j7
+llvm-release$ make # (optionally with -jN for a given N)
 [...]
 llvm-release$
 ```
@@ -133,9 +127,9 @@ The build process of Mozart is ruled by cmake. You must first configure your
 build environment:
 
 ```
-builds$ mkdir mozart2-debug
-builds$ cd mozart2-debug
-mozart2-debug$ cmake -DCMAKE_BUILD_TYPE=Debug [OtherOptions...] ../../mozart2
+builds$ mkdir mozart2-release
+builds$ cd mozart2-release
+mozart2-release$ cmake -DCMAKE_BUILD_TYPE=Release [OtherOptions...] ../../mozart2
 ```
 
 The options must be given with the form `-DOPTION=Value`. The table below
@@ -150,6 +144,11 @@ lists the options you need.
       <td>CMAKE_BUILD_TYPE</td>
       <td>Debug or Release</td>
       <td>Always</td>
+    </tr>
+    <tr>
+      <td>CMAKE_INSTALL_PREFIX</td>
+      <td>Where `make install` should install</td>
+      <td>-</td>
     </tr>
     <tr>
       <td>CMAKE_CXX_COMPILER</td>
@@ -184,8 +183,18 @@ lists the options you need.
   </tbody>
 </table>
 
-To effectively build Mozart, use `make`:
+To effectively build Mozart, use `make`.
+
+The same recommandation about using `-jN` holds. Building Mozart 2 is _very_
+long (especially when done from scratch). But beware, each task can be very
+demanding in terms of RAM. If you run out of RAM, decrease N.
 
 ```
-mozart2-debug$ make -j7
+mozart2-release$ make # (optionally with -jN for a given N)
+```
+
+Of course you can install with
+
+```
+mozart2-release$ make install
 ```

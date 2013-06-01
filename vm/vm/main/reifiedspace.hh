@@ -159,7 +159,7 @@ UnstableNode ReifiedSpace::mergeSpace(RichNode self, VM vm) {
 
   if (space->getParent() != currentSpace) {
     // TODO This is not an error, but I don't know what to do with it yet
-    raise(vm, MOZART_STR("spaceMergeNotImplemented"));
+    raise(vm, "spaceMergeNotImplemented");
   }
 
   // Update status var
@@ -200,9 +200,9 @@ void ReifiedSpace::commitSpace(RichNode self, VM vm, RichNode value) {
     if (commitResult < 0)
       raise(vm, vm->coreatoms.spaceAltRange, self, left, -commitResult);
   } else if (matchesSharp(vm, value, capture(left), capture(right))) {
-    raise(vm, MOZART_STR("notImplemented"), MOZART_STR("commitRange"));
+    raise(vm, "notImplemented", "commitRange");
   } else {
-    raiseTypeError(vm, MOZART_STR("int or range"), value);
+    raiseTypeError(vm, "int or range", value);
   }
 }
 

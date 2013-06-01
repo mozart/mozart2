@@ -65,7 +65,7 @@
  *       show(value);
  *     } else {
  *       // value does not match any of the patterns, usually it's a type error
- *       return raiseTypeError(vm, MOZART_STR("int or 42-pair"), value);
+ *       return raiseTypeError(vm, "int or 42-pair", value);
  *     }
  *   }
  *
@@ -104,7 +104,7 @@
  *     } else if (matches(vm, value, capture(intValue))) {
  *       cout << intValue << endl;
  *     } else {
- *       return raiseTypeError(vm, MOZART_STR("int or 42-pair"), value);
+ *       return raiseTypeError(vm, "int or 42-pair", value);
  *     }
  *   }
  *
@@ -486,13 +486,13 @@ struct Matcher<unit_t> {
 };
 
 template <>
-struct Matcher<const nchar*> {
-  static bool matches(VM vm, RichNode value, const nchar* pattern) {
+struct Matcher<const char*> {
+  static bool matches(VM vm, RichNode value, const char* pattern) {
     if (value.is<Atom>()) {
       size_t length = value.as<Atom>().value().length();
-      const nchar* valueContents = value.as<Atom>().value().contents();
+      const char* valueContents = value.as<Atom>().value().contents();
 
-      return std::char_traits<nchar>::compare(
+      return std::char_traits<char>::compare(
         valueContents, pattern, length) == 0;
     } else {
       internal::waitForIfTransient(vm, value);

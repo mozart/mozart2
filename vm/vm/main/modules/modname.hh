@@ -65,7 +65,7 @@ public:
     NewUnique(): Builtin("newUnique") {}
 
     static void call(VM vm, In atom, Out result) {
-      auto atomValue = getArgument<atom_t>(vm, atom, MOZART_STR("Atom"));
+      auto atomValue = getArgument<atom_t>(vm, atom, "Atom");
       result = UniqueName::build(vm, unique_name_t(atomValue));
     }
   };

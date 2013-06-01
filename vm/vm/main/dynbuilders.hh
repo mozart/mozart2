@@ -39,7 +39,7 @@ namespace mozart {
 
 void requireLiteral(VM vm, RichNode label) {
   if (!Literal(label).isLiteral(vm))
-    raiseTypeError(vm, MOZART_STR("literal"), label);
+    raiseTypeError(vm, "literal", label);
 }
 
 namespace internal {

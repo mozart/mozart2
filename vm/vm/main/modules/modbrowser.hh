@@ -78,7 +78,7 @@ private:
       else if (value.isTransient())
         waitFor(vm, value);
       else
-        raiseTypeError(vm, MOZART_STR("Chunk"), value);
+        raiseTypeError(vm, "Chunk", value);
   }
 
 public:
@@ -141,11 +141,11 @@ public:
 
       Dottable dotDebugData(debugData);
       file = dotDebugData.condSelect(
-        vm, MOZART_STR("file"), MOZART_STR("procedure"));
+        vm, "file", "procedure");
       line = dotDebugData.condSelect(
-        vm, MOZART_STR("line"), MOZART_STR("-"));
+        vm, "line", "-");
       column = dotDebugData.condSelect(
-        vm, MOZART_STR("column"), MOZART_STR("-"));
+        vm, "column", "-");
     }
   };
 

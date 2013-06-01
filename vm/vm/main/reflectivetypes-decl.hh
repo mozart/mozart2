@@ -43,7 +43,7 @@ namespace mozart {
 class ReflectiveEntity: public DataType<ReflectiveEntity> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("reflective"));
+    return vm->getAtom("reflective");
   }
 
   inline
@@ -57,7 +57,7 @@ public:
 
   template <typename Label, typename... Args>
   inline
-  bool reflectiveCall(VM vm, const nchar* identity,
+  bool reflectiveCall(VM vm, const char* identity,
                       Label&& label, Args&&... args);
 
 public:

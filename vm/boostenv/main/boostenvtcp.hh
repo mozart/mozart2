@@ -58,7 +58,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
         } else {
           _environment.postVMEvent([=] () {
             _environment.raiseAndReleaseAsyncIOFeedbackNode(
-              statusNode, MOZART_STR("socket"), MOZART_STR("connect"), error.value());
+              statusNode, "socket", "connect", error.value());
           });
         }
       };
@@ -67,7 +67,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
     } else {
       _environment.postVMEvent([=] () {
         _environment.raiseAndReleaseAsyncIOFeedbackNode(
-          statusNode, MOZART_STR("socket"), MOZART_STR("resolve"), error.value());
+          statusNode, "socket", "resolve", error.value());
       });
     }
   };

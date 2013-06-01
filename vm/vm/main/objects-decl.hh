@@ -50,7 +50,7 @@ private:
   static const ByteCode dispatchByteCode[9];
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("object"));
+    return vm->getAtom("object");
   }
 
   inline

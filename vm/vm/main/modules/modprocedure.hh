@@ -66,7 +66,7 @@ public:
 
     static void call(VM vm, In procedure, In args) {
       RichNode terminationVar = protectNonIdempotentStep(
-        vm, MOZART_STR("::mozart::builtins::ModProcedure::Apply"),
+        vm, "::mozart::builtins::ModProcedure::Apply",
         [=] () -> RichNode {
           size_t argc = ozListLength(vm, args);
           auto arguments = vm->newStaticArray<RichNode>(argc);
@@ -75,7 +75,7 @@ public:
             [&arguments] (RichNode arg, size_t i) {
               arguments[i] = arg;
             },
-            MOZART_STR("list"));
+            "list");
 
           auto thr = new Thread(vm, vm->getCurrentSpace(),
                                 procedure, argc, arguments);

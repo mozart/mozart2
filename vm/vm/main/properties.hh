@@ -37,18 +37,18 @@ namespace mozart {
 // PropertyRegistry //
 //////////////////////
 
-UnstableNode* PropertyRegistry::registerInternal(VM vm, const nchar* property) {
+UnstableNode* PropertyRegistry::registerInternal(VM vm, const char* property) {
   UnstableNode key = build(vm, property);
   UnstableNode* descriptor;
   if (_registry->lookupOrCreate(vm, key, descriptor)) {
-    raiseKernelError(vm, MOZART_STR("registerProperty"), key);
+    raiseKernelError(vm, "registerProperty", key);
   } else {
     return descriptor;
   }
 }
 
 template <class T>
-void PropertyRegistry::registerValueProp(VM vm, const nchar* property,
+void PropertyRegistry::registerValueProp(VM vm, const char* property,
                                          T&& value) {
   auto descriptor = registerInternal(vm, property);
   *descriptor = buildTuple(vm, vm->coreatoms.sharp,
@@ -56,14 +56,14 @@ void PropertyRegistry::registerValueProp(VM vm, const nchar* property,
 }
 
 template <class T>
-void PropertyRegistry::registerConstantProp(VM vm, const nchar* property,
+void PropertyRegistry::registerConstantProp(VM vm, const char* property,
                                             T&& value) {
   auto descriptor = registerInternal(vm, property);
   *descriptor = buildTuple(vm, vm->coreatoms.sharp,
                            true, std::forward<T>(value));
 }
 
-void PropertyRegistry::registerProp(VM vm, const nchar* property,
+void PropertyRegistry::registerProp(VM vm, const char* property,
                                     const PropertyRecord::Getter& getter,
                                     const PropertyRecord::Setter& setter) {
   auto descriptor = registerInternal(vm, property);
@@ -73,7 +73,7 @@ void PropertyRegistry::registerProp(VM vm, const nchar* property,
 
 template <class T>
 void PropertyRegistry::registerReadWriteProp(
-  VM vm, const nchar* property, const std::function<T(VM)>& getter,
+  VM vm, const char* property, const std::function<T(VM)>& getter,
   const std::function<void(VM, T)>& setter) {
 
   registerProp(
@@ -88,7 +88,7 @@ void PropertyRegistry::registerReadWriteProp(
 
 template <class T>
 void PropertyRegistry::registerReadOnlyProp(
-  VM vm, const nchar* property, const std::function<T(VM)>& getter) {
+  VM vm, const char* property, const std::function<T(VM)>& getter) {
 
   registerProp(
     vm, property,
@@ -100,7 +100,7 @@ void PropertyRegistry::registerReadOnlyProp(
 
 template <class T>
 void PropertyRegistry::registerWriteOnlyProp(
-  VM vm, const nchar* property, const std::function<void(VM, T)>& setter) {
+  VM vm, const char* property, const std::function<void(VM, T)>& setter) {
 
   registerProp(
     vm, property,
@@ -111,7 +111,7 @@ void PropertyRegistry::registerWriteOnlyProp(
 }
 
 template <class T>
-void PropertyRegistry::registerReadWriteProp(VM vm, const nchar* property,
+void PropertyRegistry::registerReadWriteProp(VM vm, const char* property,
                                              T& variable) {
   registerProp(
     vm, property,
@@ -124,7 +124,7 @@ void PropertyRegistry::registerReadWriteProp(VM vm, const nchar* property,
 }
 
 template <class T>
-void PropertyRegistry::registerReadOnlyProp(VM vm, const nchar* property,
+void PropertyRegistry::registerReadOnlyProp(VM vm, const char* property,
                                             T& variable) {
   registerProp(
     vm, property,
@@ -183,7 +183,7 @@ bool PropertyRegistry::put(VM vm, RichNode property, RichNode value,
       return true;
     } else {
       raiseError(vm, vm->coreatoms.system,
-                 MOZART_STR("putProperty"), property);
+                 "putProperty", property);
     }
   } else {
     std::cerr << repr(vm, descriptor) << "\n";
@@ -208,8 +208,7 @@ UnstableNode PropertyRegistry::getSystemProp(VM vm, RichNode property,
   if (record.getter) {
     return record.getter(vm);
   } else {
-    raiseError(vm, vm->coreatoms.system,
-               MOZART_STR("getProperty"), property);
+    raiseError(vm, vm->coreatoms.system, "getProperty", property);
   }
 }
 
@@ -221,8 +220,7 @@ void PropertyRegistry::putSystemProp(VM vm, RichNode property,
   if (record.setter) {
     record.setter(vm, value);
   } else {
-    raiseError(vm, vm->coreatoms.system,
-               MOZART_STR("putProperty"), property);
+    raiseError(vm, vm->coreatoms.system, "putProperty", property);
   }
 }
 

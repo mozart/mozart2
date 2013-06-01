@@ -41,7 +41,7 @@ class ReifiedGNode: public DataType<ReifiedGNode>,
   StoredAs<GlobalNode*>, WithValueBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("gNode"));
+    return vm->getAtom("gNode");
   }
 
   explicit ReifiedGNode(GlobalNode* value): _value(value) {}

@@ -69,13 +69,13 @@ public:
       if (weakRef.is<WeakReference>()) {
         StableNode* underlying = weakRef.as<WeakReference>().getUnderlying();
         if (underlying == nullptr)
-          result = build(vm, MOZART_STR("none"));
+          result = build(vm, "none");
         else
-          result = buildTuple(vm, MOZART_STR("some"), *underlying);
+          result = buildTuple(vm, "some", *underlying);
       } else if (weakRef.isTransient()) {
         waitFor(vm, weakRef);
       } else {
-        raiseTypeError(vm, MOZART_STR("WeakReference"), weakRef);
+        raiseTypeError(vm, "WeakReference", weakRef);
       }
     }
   };

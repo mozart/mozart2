@@ -47,7 +47,7 @@ class Array: public DataType<Array>, public WithHome,
   StoredWithArrayOf<UnstableNode> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("array"));
+    return vm->getAtom("array");
   }
 
   inline

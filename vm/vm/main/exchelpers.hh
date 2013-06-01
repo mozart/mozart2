@@ -69,7 +69,7 @@ void raiseKernelError(VM vm, Args&&... args) {
 
 template <class Expected, class Actual>
 void raiseTypeError(VM vm, Expected&& expected, Actual&& actual) {
-  raiseKernelError(vm, MOZART_STR("type"),
+  raiseKernelError(vm, "type",
                    unit,
                    buildList(vm, std::forward<Actual>(actual)),
                    std::forward<Expected>(expected),
@@ -79,7 +79,7 @@ void raiseTypeError(VM vm, Expected&& expected, Actual&& actual) {
 
 void raiseIllegalArity(VM vm, RichNode target, size_t actualArgCount,
                        RichNode actualArgs[]) {
-  raiseKernelError(vm, MOZART_STR("arity"),
+  raiseKernelError(vm, "arity",
                    target,
                    buildListDynamic(vm, actualArgCount, actualArgs));
 }

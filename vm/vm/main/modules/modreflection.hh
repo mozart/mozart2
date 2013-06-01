@@ -67,7 +67,7 @@ public:
       if (variable.is<ReflectiveVariable>())
         variable.as<ReflectiveVariable>().reflectiveBind(vm, value);
       else
-        raiseTypeError(vm, MOZART_STR("ReflectiveVariable"), variable);
+        raiseTypeError(vm, "ReflectiveVariable", variable);
     }
   };
 
@@ -79,10 +79,10 @@ public:
       auto behavior = entity.type().getStructuralBehavior();
 
       switch (behavior) {
-        case sbValue: result = build(vm, MOZART_STR("value")); break;
-        case sbStructural: result = build(vm, MOZART_STR("structural")); break;
-        case sbTokenEq: result = build(vm, MOZART_STR("token")); break;
-        case sbVariable: result = build(vm, MOZART_STR("variable")); break;
+        case sbValue: result = build(vm, "value"); break;
+        case sbStructural: result = build(vm, "structural"); break;
+        case sbTokenEq: result = build(vm, "token"); break;
+        case sbVariable: result = build(vm, "variable"); break;
         default: assert(false);
       }
     }
@@ -98,7 +98,7 @@ public:
       if ((behavior == sbTokenEq) || (behavior == sbVariable)) {
         entity.become(vm, value);
       } else {
-        raiseTypeError(vm, MOZART_STR("Token or Variable entity"), entity);
+        raiseTypeError(vm, "Token or Variable entity", entity);
       }
     }
   };

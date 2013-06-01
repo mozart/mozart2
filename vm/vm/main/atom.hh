@@ -53,7 +53,7 @@ int Atom::compareFeatures(VM vm, RichNode right) {
 }
 
 int Atom::compare(VM vm, RichNode right) {
-  auto rightAtomValue = getArgument<atom_t>(vm, right, MOZART_STR("atom"));
+  auto rightAtomValue = getArgument<atom_t>(vm, right, "atom");
   return value().compare(rightAtomValue);
 }
 

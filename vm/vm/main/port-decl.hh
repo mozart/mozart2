@@ -40,7 +40,7 @@ namespace mozart {
 class Port: public DataType<Port>, public WithHome {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("port"));
+    return vm->getAtom("port");
   }
 
   inline

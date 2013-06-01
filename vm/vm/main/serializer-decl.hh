@@ -95,7 +95,7 @@ private:
 class Serializer: public DataType<Serializer> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom(MOZART_STR("serializer"));
+    return vm->getAtom("serializer");
   }
 
   inline

@@ -133,7 +133,7 @@ UnstableNode Object::attrGet(RichNode self, VM vm, RichNode attribute) {
 
 void Object::attrPut(RichNode self, VM vm, RichNode attribute, RichNode value) {
   if (!isHomedInCurrentSpace(vm))
-    return raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
+    return raise(vm, "globalState", "object");
 
   getElements(getAttrOffset(self, vm, attribute)).copy(vm, value);
 }
@@ -141,7 +141,7 @@ void Object::attrPut(RichNode self, VM vm, RichNode attribute, RichNode value) {
 UnstableNode Object::attrExchange(RichNode self, VM vm, RichNode attribute,
                                   RichNode newValue) {
   if (!isHomedInCurrentSpace(vm))
-    raise(vm, MOZART_STR("globalState"), MOZART_STR("object"));
+    raise(vm, "globalState", "object");
 
   auto& element = getElements(getAttrOffset(self, vm, attribute));
 
@@ -155,7 +155,7 @@ size_t Object::getAttrOffset(RichNode self, VM vm, RichNode attribute) {
   if (RichNode(_attrArity).as<Arity>().lookupFeature(vm, attribute, result)) {
     return result;
   } else {
-    raiseError(vm, MOZART_STR("object"), MOZART_STR("@"), self, attribute);
+    raiseError(vm, "object", "@", self, attribute);
   }
 }
 
@@ -172,7 +172,7 @@ void Object::getCallInfo(
     auto ooFallback = mozart::build(vm, vm->coreatoms.ooFallback);
     auto fallback = Dottable(_clazz).dot(vm, ooFallback);
 
-    auto apply = mozart::build(vm, MOZART_STR("apply"));
+    auto apply = mozart::build(vm, "apply");
     auto fallbackApply = Dottable(fallback).dot(vm, apply);
 
     _Gs[0].init(vm, self);
@@ -189,7 +189,7 @@ void Object::getCallInfo(
 }
 
 void Object::getDebugInfo(VM vm, atom_t& printName, UnstableNode& debugData) {
-  printName = vm->getAtom(MOZART_STR("<Object>"));
+  printName = vm->getAtom("<Object>");
   debugData = mozart::build(vm, unit);
 }
 

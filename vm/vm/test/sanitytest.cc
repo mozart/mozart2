@@ -20,9 +20,9 @@ TEST_F(MozartTest, Copyable_Sanity) {
 }
 
 TEST_F(MozartTest, ExpectRaise_Sanity) {
-  EXPECT_RAISE(MOZART_STR("foo"), raise(vm, MOZART_STR("foo"), 2));
+  EXPECT_RAISE("foo", raise(vm, "foo", 2));
   EXPECT_NONFATAL_FAILURE(
-    EXPECT_RAISE(MOZART_STR("null"), (void) (0)), "");
+    EXPECT_RAISE("null", (void) (0)), "");
   /*EXPECT_NONFATAL_FAILURE(
-    EXPECT_RAISE(MOZART_STR("null"), raise(vm, MOZART_STR("foo"), 2)), "");*/
+    EXPECT_RAISE("null", raise(vm, "foo", 2)), "");*/
 }

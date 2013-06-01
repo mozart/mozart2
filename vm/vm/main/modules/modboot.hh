@@ -59,8 +59,8 @@ public:
     GetNative(): Builtin("getNative") {}
 
     static void call(VM vm, In name, Out result) {
-      raiseError(vm, MOZART_STR("notImplemented"),
-                 MOZART_STR("Boot.getNative"));
+      raiseError(vm, "notImplemented",
+                 "Boot.getNative");
     }
   };
 };

@@ -58,7 +58,7 @@ public:
 
     static void call(VM vm, In value) {
       return raise(vm, buildRecord(
-        vm, buildArity(vm, MOZART_STR("error"), 1, MOZART_STR("debug")),
+        vm, buildArity(vm, "error", 1, "debug"),
         value, unit));
     }
   };

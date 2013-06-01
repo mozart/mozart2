@@ -52,9 +52,7 @@ enum UnicodeErrorReason : nativeint {
   truncated = -5,    // the data is truncated such that an incomplete code unit exists.
   indexOutOfBounds = -6, // index out-of-bounds.
 
-  invalidUTFNative = // an invalid UTF sequence (based on nchar) is provided
-    std::is_same<nchar, char16_t>::value ? invalidUTF16 :
-    std::is_same<nchar, char>::value ? invalidUTF8 : outOfRange
+  invalidUTFNative = invalidUTF8
 };
 
 namespace mut { // mut = mutable (which is a keyword in C++.)

@@ -579,17 +579,49 @@ define
    %% Set up a non-stub BURL
 
    local
+      HexDigitToValue = o(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7 &8:8 &9:9
+                          &A:10 &B:11 &C:12 &D:13 &E:14 &F:15
+                          &a:10 &b:11 &c:12 &d:13 &e:14 &f:15)
+
+      fun {DecodeURLChars Xs}
+         case Xs
+         of &%|A|B|Xr then
+            AVal = {CondSelect HexDigitToValue A 0}
+            BVal = {CondSelect HexDigitToValue B 0}
+         in
+            (AVal*16 + BVal) | {DecodeURLChars Xr}
+
+         [] X|Xr then
+            X | {DecodeURLChars Xr}
+         [] nil then
+            nil
+         end
+      end
+
+      fun {DecodeURL URL}
+         {Coders.decode {DecodeURLChars {VirtualString.toString URL}} [utf8]}
+      end
+
+      fun {URLToFilename URL}
+         case {VirtualString.toString {DecodeURL URL}}
+         of &f|&i|&l|&e|&:|Filename then Filename
+         [] Filename then Filename
+         end
+      end
+
       fun {BURL_localize URL}
+         Filename = {URLToFilename URL}
+      in
          try
-            {Fclose {Fopen URL "rb"}}
-            old(URL)
+            {Fclose {Fopen Filename "rb"}}
+            old(Filename)
          catch system(os(os _ _ Msg) ...) then
             raise system(url(localize Msg URL) debug:unit) end
          end
       end
 
       fun {BURL_open URL}
-         {CompatOpen URL ['O_RDONLY'] nil}
+         {CompatOpen {URLToFilename URL} ['O_RDONLY'] nil}
       end
    in
       {Boot_Reflection.become BURL.localize BURL_localize}

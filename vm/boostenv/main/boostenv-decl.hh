@@ -181,12 +181,6 @@ private:
 // Utilities //
 ///////////////
 
-inline
-atom_t systemStrToAtom(VM vm, const char* str);
-
-inline
-atom_t systemStrToAtom(VM vm, const std::string& str);
-
 template <typename T>
 inline
 void MOZART_NORETURN raiseOSError(VM vm, const char* function,

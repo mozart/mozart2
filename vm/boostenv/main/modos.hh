@@ -79,10 +79,8 @@ public:
         ok = bootLoader && bootLoader(vm, urlString, result);
       }
 
-      if (!ok) {
-        raiseOSError(vm, "bootURLLoad", 1,
-                     "panic: cannot open boot URL");
-      }
+      if (!ok)
+        raiseOSError(vm, "bootURLLoad", 1, "panic: cannot open boot URL");
     }
   };
 
@@ -126,6 +124,7 @@ public:
     GetEnv(): Builtin("getEnv") {}
 
     static void call(VM vm, In var, Out result) {
+      // TODO Unicode on Windows!!!
       size_t bufSize = ozVSLengthForBuffer(vm, var);
       char* value;
 
@@ -138,7 +137,7 @@ public:
       if (value == nullptr)
         result = build(vm, false);
       else
-        result = build(vm, systemStrToAtom(vm, value));
+        result = build(vm, vm->getAtom(value));
     }
   };
 
@@ -147,6 +146,7 @@ public:
     PutEnv(): Builtin("putEnv") {}
 
     static void call(VM vm, In var, In value) {
+      // TODO Unicode on Windows!!!
       size_t varBufSize = ozVSLengthForBuffer(vm, var);
       size_t valueBufSize = ozVSLengthForBuffer(vm, value);
 
@@ -165,10 +165,8 @@ public:
 #endif
       }
 
-      if (!succeeded) {
-        raiseOSError(vm, "putenv", 0,
-                     "OS.putEnv failed.");
-      }
+      if (!succeeded)
+        raiseOSError(vm, "putenv", 0, "OS.putEnv failed.");
     }
   };
 
@@ -208,13 +206,10 @@ private:
   };
 
   static WrappedFile* getFileArgument(VM vm, RichNode arg) {
-    auto wrappedFile = getPointerArgument<WrappedFile>(vm, arg,
-                                                       "file");
+    auto wrappedFile = getPointerArgument<WrappedFile>(vm, arg, "file");
 
-    if (wrappedFile->isClosed()) {
-      raiseSystem(vm, "os", "os",
-                  "close", 9, "Bad filedescriptor");
-    }
+    if (wrappedFile->isClosed())
+      raiseOSError(vm, "close", 9, "Bad filedescriptor");
 
     return wrappedFile;
   }
@@ -275,12 +270,10 @@ public:
     Tmpnam(): Builtin("tmpnam") {}
 
     static void call(VM vm, Out result) {
-      std::string nativeStr =
+      // TODO Windows
+      std::string filename =
         std::string("/tmp/temp-") + vm->genUUID().toString();
-      auto nresult = toUTF<char>(makeLString(nativeStr.c_str(),
-                                              nativeStr.size()));
-
-      result = Atom::build(vm, nresult.length, nresult.string);
+      result = build(vm, vm->getAtom(filename));
     }
   };
 
@@ -289,6 +282,7 @@ public:
     Fopen(): Builtin("fopen") {}
 
     static void call(VM vm, In fileName, In mode, Out result) {
+      // TODO Unicode on Windows!!!
       size_t fileNameBufSize = ozVSLengthForBuffer(vm, fileName);
       size_t modeBufSize = ozVSLengthForBuffer(vm, mode);
 
@@ -452,13 +446,11 @@ public:
 
 private:
   static TCPAcceptor* getTCPAcceptorArg(VM vm, In acceptor) {
-    return getPointerArgument<TCPAcceptor>(vm, acceptor,
-                                           "TCP acceptor");
+    return getPointerArgument<TCPAcceptor>(vm, acceptor, "TCP acceptor");
   }
 
   static TCPConnection* getTCPConnectionArg(VM vm, In connection) {
-    return getPointerArgument<TCPConnection>(vm, connection,
-                                             "TCP connection");
+    return getPointerArgument<TCPConnection>(vm, connection, "TCP connection");
   }
 
 public:
@@ -469,13 +461,11 @@ public:
     static void call(VM vm, In ipVersion, In port, Out result) {
       using boost::asio::ip::tcp;
 
-      auto intIPVersion = getArgument<nativeint>(vm, ipVersion,
-                                                 "4 or 6");
+      auto intIPVersion = getArgument<nativeint>(vm, ipVersion, "4 or 6");
       if ((intIPVersion != 4) && (intIPVersion != 6))
         raiseTypeError(vm, "4 or 6", ipVersion);
 
-      auto intPort = getArgument<nativeint>(vm, port,
-                                            "valid port number");
+      auto intPort = getArgument<nativeint>(vm, port, "valid port number");
       if ((intPort <= 0) ||
           (intPort > std::numeric_limits<unsigned short>::max()))
         raiseTypeError(vm, "valid port number", port);
@@ -517,7 +507,7 @@ public:
       auto tcpAcceptor = getTCPAcceptorArg(vm, acceptor);
 
       auto error = tcpAcceptor->cancel();
-      if (!error)
+      if (error)
         raiseOSError(vm, "cancel", error);
     }
   };
@@ -725,6 +715,8 @@ public:
 
     static void call(VM vm, In inExecutable, In inArgv, In inDoKill,
                      Out outPid) {
+      // TODO Unicode on Windows!!!
+
       // Extract arguments
 
       auto doKill = getArgument<bool>(vm, inDoKill);
@@ -899,6 +891,8 @@ public:
 
     static void call(VM vm, In inExecutable, In inArgv,
                      Out outPid, Out outStatus) {
+      // TODO Windows
+
       // Extract arguments
 
       mut::LString<char> executable = nullptr;
@@ -907,8 +901,7 @@ public:
       parseExecutableAndArgv(vm, inExecutable, inArgv, executable, argc, argv);
 
 #ifdef MOZART_WINDOWS
-      raiseError(vm, "notImplemented",
-                 "OS.pipe on Windows");
+      raiseError(vm, "notImplemented", "OS.pipe on Windows");
 #if 0
       std::stringstream scmdline;
       for (size_t i = 0; i < argc; i++) {
@@ -937,8 +930,7 @@ public:
 
         if (!CreatePipe(&rh0, &wh0Tmp, &sa1, 0)  ||
             !CreatePipe(&rh1Tmp, &wh1, &sa2, 0)) {
-          raiseOSError(vm, "CreatePipe", 0,
-                       "Cannot create pipe.");
+          raiseOSError(vm, "CreatePipe", 0, "Cannot create pipe.");
         }
 
         /* The child must only inherit one side of each pipe.
@@ -952,8 +944,7 @@ public:
             !DuplicateHandle(GetCurrentProcess(), rh1Tmp,
                              GetCurrentProcess(), &rh1, 0,
                              false, DUPLICATE_SAME_ACCESS)) {
-          raiseOSError(vm, "DuplicateHandle", 0,
-                       "Cannot duplicate handle.");
+          raiseOSError(vm, "DuplicateHandle", 0, "Cannot duplicate handle.");
         }
         CloseHandle(wh0Tmp);
         CloseHandle(rh1Tmp);
@@ -964,8 +955,7 @@ public:
       if (!DuplicateHandle(GetCurrentProcess(), wh1,
                            GetCurrentProcess(), &wh2, 0,
                            true, DUPLICATE_SAME_ACCESS)) {
-        raiseOSError(vm, "DuplicateHandle", 0,
-                     "Cannot duplicate handle.");
+        raiseOSError(vm, "DuplicateHandle", 0, "Cannot duplicate handle.");
       }
 
       STARTUPINFO si;
@@ -980,8 +970,7 @@ public:
       if (!CreateProcess(nullptr, const_cast<char*>(cmdline.c_str()),
                          nullptr, nullptr, true, 0,
                          nullptr, nullptr, &si, &pinf)) {
-        raiseOSError(vm, "CreateProcess", 0,
-                     "Cannot create process.");
+        raiseOSError(vm, "CreateProcess", 0, "Cannot create process.");
       }
 
       nativeint pid = pinf.dwProcessId;
@@ -1160,8 +1149,7 @@ public:
     PipeConnectionRead(): Builtin("pipeConnectionRead") {}
 
     static void call(VM vm, In connection, In count, In tail, Out status) {
-      raiseError(vm, "notImplemented",
-                 "Pipes on Windows");
+      raiseError(vm, "notImplemented", "Pipes on Windows");
     }
   };
 
@@ -1170,8 +1158,7 @@ public:
     PipeConnectionWrite(): Builtin("pipeConnectionWrite") {}
 
     static void call(VM vm, In connection, In data, Out status) {
-      raiseError(vm, "notImplemented",
-                 "Pipes on Windows");
+      raiseError(vm, "notImplemented", "Pipes on Windows");
     }
   };
 
@@ -1180,8 +1167,7 @@ public:
     PipeConnectionShutdown(): Builtin("pipeConnectionShutdown") {}
 
     static void call(VM vm, In connection, In what) {
-      raiseError(vm, "notImplemented",
-                 "Pipes on Windows");
+      raiseError(vm, "notImplemented", "Pipes on Windows");
     }
   };
 
@@ -1190,8 +1176,7 @@ public:
     PipeConnectionClose(): Builtin("pipeConnectionClose") {}
 
     static void call(VM vm, In connection) {
-      raiseError(vm, "notImplemented",
-                 "Pipes on Windows");
+      raiseError(vm, "notImplemented", "Pipes on Windows");
     }
   };
 #endif // BOOST_ASIO_HAS_LOCAL_SOCKETS

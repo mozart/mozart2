@@ -59,29 +59,18 @@ BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
 }
 
 void BoostBasedVM::setApplicationURL(char const* url) {
-  VM vm = this->vm;
-
-  auto property = build(vm, "application.url");
-
-  auto decodedURL = toUTF<char>(makeLString(url));
-  auto ozURL = build(vm, vm->getAtom(decodedURL.length, decodedURL.string));
-
-  vm->getPropertyRegistry().put(vm, property, ozURL);
+  // TODO Check that url is a valid UTF-8 string?
+  vm->getPropertyRegistry().put(vm, "application.url", url);
 }
 
 void BoostBasedVM::setApplicationArgs(int argc, char const* const* argv) {
-  VM vm = this->vm;
+  // TODO Check that argv[i] are valid UTF-8 strings?
   OzListBuilder args(vm);
-
   for (int i = 0; i < argc; i++) {
-    auto decodedArg = toUTF<char>(makeLString(argv[i]));
-    args.push_back(vm, vm->getAtom(decodedArg.length, decodedArg.string));
+    args.push_back(vm, argv[i]);
   }
 
-  auto property = build(vm, "application.args");
-  auto ozArgs = args.get(vm);
-
-  vm->getPropertyRegistry().put(vm, property, ozArgs);
+  vm->getPropertyRegistry().put(vm, "application.args", args.get(vm));
 }
 
 void BoostBasedVM::run() {

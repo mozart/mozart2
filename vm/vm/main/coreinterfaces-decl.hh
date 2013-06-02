@@ -318,6 +318,90 @@ struct Interface<Numeric>:
   UnstableNode mod(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "Integer", self);
   }
+
+  UnstableNode pow(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+  }
+
+  UnstableNode abs(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Numeric"), self);
+  }
+
+  UnstableNode acos(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode acosh(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode asin(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode asinh(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode atan(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode atanh(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode atan2(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode ceil(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode cos(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode cosh(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode exp(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode floor(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode log(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode round(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode sin(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode sinh(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode sqrt(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode tan(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
+
+  UnstableNode tanh(RichNode self, VM vm) {
+    raiseTypeError(vm, MOZART_STR("Float"), self);
+  }
 };
 
 class BaseDottable;

@@ -68,6 +68,186 @@ public:
       result = build(vm, (nativeint) floatValue);
     }
   };
+
+  class Acos: public Builtin<Acos> {
+  public:
+    Acos(): Builtin("acos") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).acos(vm));
+    }
+  };
+
+  class Acosh: public Builtin<Acosh> {
+  public:
+    Acosh(): Builtin("acosh") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).acosh(vm));
+    }
+  };
+
+  class Asin: public Builtin<Asin> {
+  public:
+    Asin(): Builtin("asin") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).asin(vm));
+    }
+  };
+
+  class Asinh: public Builtin<Asinh> {
+  public:
+    Asinh(): Builtin("asinh") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).asinh(vm));
+    }
+  };
+
+  class Atan: public Builtin<Atan> {
+  public:
+    Atan(): Builtin("atan") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).atan(vm));
+    }
+  };
+
+  class Atanh: public Builtin<Atanh> {
+  public:
+    Atanh(): Builtin("atanh") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).atanh(vm));
+    }
+  };
+
+  class Atan2: public Builtin<Atan2> {
+  public:
+    Atan2(): Builtin("atan2") {}
+
+    static void call(VM vm, In left, In right, Out result) {
+      result = Numeric(left).atan2(vm, right);
+    }
+  };
+
+  class Ceil: public Builtin<Ceil> {
+  public:
+    Ceil(): Builtin("ceil") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).ceil(vm));
+    }
+  };
+
+  class Cos: public Builtin<Cos> {
+  public:
+    Cos(): Builtin("cos") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).cos(vm));
+    }
+  };
+
+  class Cosh: public Builtin<Cosh> {
+  public:
+    Cosh(): Builtin("cosh") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).cosh(vm));
+    }
+  };
+
+  class Exp: public Builtin<Exp> {
+  public:
+    Exp(): Builtin("exp") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).exp(vm));
+    }
+  };
+
+  class Floor: public Builtin<Floor> {
+  public:
+    Floor(): Builtin("floor") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).floor(vm));
+    }
+  };
+
+  class Log: public Builtin<Log> {
+  public:
+    Log(): Builtin("log") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).log(vm));
+    }
+  };
+
+  class Mod: public Builtin<Mod> {
+  public:
+    Mod(): Builtin("mod") {}
+
+    static void call(VM vm, In left, In right, Out result) {
+      result = Numeric(left).mod(vm, right);
+    }
+  };
+
+  class Round: public Builtin<Round> {
+  public:
+    Round(): Builtin("round") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).round(vm));
+    }
+  };
+
+  class Sin: public Builtin<Sin> {
+  public:
+    Sin(): Builtin("sin") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).sin(vm));
+    }
+  };
+
+  class Sinh: public Builtin<Sinh> {
+  public:
+    Sinh(): Builtin("sinh") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).sinh(vm));
+    }
+  };
+
+  class Sqrt: public Builtin<Sqrt> {
+  public:
+    Sqrt(): Builtin("sqrt") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).sqrt(vm));
+    }
+  };
+
+  class Tan: public Builtin<Tan> {
+  public:
+    Tan(): Builtin("tan") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).tan(vm));
+    }
+  };
+
+  class Tanh: public Builtin<Tanh> {
+  public:
+    Tanh(): Builtin("tanh") {}
+
+    static void call(VM vm, In value, Out result) {
+      result = build(vm, Numeric(value).tanh(vm));
+    }
+  };
 };
 
 }

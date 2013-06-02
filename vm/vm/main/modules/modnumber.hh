@@ -85,6 +85,24 @@ public:
       result = Numeric(left).multiply(vm, right);
     }
   };
+  
+  class Pow: public Builtin<Pow> {   
+  public:
+    Pow(): Builtin("pow") {}
+    
+    static void call(VM vm, In left, In right, Out result) {
+      result = Numeric(left).pow(vm, right);      
+    }
+  };
+  
+  class Abs: public Builtin<Abs> {
+  public:
+    Abs(): Builtin("abs") {}
+    
+    static void call(VM vm, In operand, Out result) {
+      result = Numeric(operand).abs(vm);
+    }
+  };  
 };
 
 }

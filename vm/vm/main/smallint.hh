@@ -148,16 +148,15 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
   }
 }
 
-UnstableNode SmallInt::divide(RichNode self, VM vm, RichNode right) {
-  return Interface<Numeric>().divide(self, vm, right);
-}
-
 UnstableNode SmallInt::div(VM vm, RichNode right) {
   return divValue(vm, getArgument<nativeint>(vm, right));
 }
 
 UnstableNode SmallInt::divValue(VM vm, nativeint b) {
   nativeint a = value();
+  if (b==0) {
+    raiseKernelError(vm, MOZART_STR("Integer division: Division by zero"));
+  }
 
   // Detecting overflow
   if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
@@ -184,6 +183,125 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
     // Overflow - TODO: create a BigInt
     return SmallInt::build(vm, 0);
   }
+}
+
+UnstableNode SmallInt::pow(VM vm, RichNode right) {
+  return powValue(vm, getArgument<nativeint>(vm, right));
+}
+
+UnstableNode SmallInt::powValue(VM vm, nativeint b) {
+  nativeint a = value();
+  // Negative powers disallowed
+  if (b < 0) {
+    raiseKernelError(vm, MOZART_STR("Integer power: Negative indices disallowed"));
+  }
+
+  nativeint product = 1;
+  for (int i=0; i<b; i++) {
+    if (!testMultiplyOverflow(product, a)) {
+      // No overflow
+      product *= a;
+    } else {
+    // Overflow - TODO: create a BigInt
+      product = 0;
+      break;
+    }
+  }
+  return SmallInt::build(vm, product);
+}
+
+UnstableNode SmallInt::abs(VM vm) {
+  nativeint a = value();
+  // Detecting overflow - platform dependent (2's complement)
+  if (a != std::numeric_limits<nativeint>::min()) {
+    // No overflow
+    return SmallInt::build(vm, a >= 0 ? a : -a);
+  } else {
+    // Overflow - TODO: create a BigInt
+    return SmallInt::build(vm, 0);
+  }  
+}
+
+// Float module functions - will return a type error via Numeric interface 
+
+UnstableNode SmallInt::divide(RichNode self, VM vm, RichNode right) {
+  return Interface<Numeric>().divide(self, vm, right);
+}
+
+UnstableNode SmallInt::acos(RichNode self, VM vm) {
+  return Interface<Numeric>().acos(self, vm);
+}
+
+UnstableNode SmallInt::acosh(RichNode self, VM vm) {
+  return Interface<Numeric>().acosh(self, vm);
+}
+
+UnstableNode SmallInt::asin(RichNode self, VM vm) {
+  return Interface<Numeric>().asin(self, vm);
+}
+
+UnstableNode SmallInt::asinh(RichNode self, VM vm) {
+  return Interface<Numeric>().asinh(self, vm);
+}
+
+UnstableNode SmallInt::atan(RichNode self, VM vm) {
+  return Interface<Numeric>().atan(self, vm);
+}
+
+UnstableNode SmallInt::atanh(RichNode self, VM vm) {
+  return Interface<Numeric>().atanh(self, vm);
+}
+
+UnstableNode SmallInt::atan2(RichNode self, VM vm, RichNode right) {
+  return Interface<Numeric>().atan2(self, vm, right);
+}
+
+UnstableNode SmallInt::ceil(RichNode self, VM vm) {
+  return Interface<Numeric>().ceil(self, vm);
+}
+
+UnstableNode SmallInt::cos(RichNode self, VM vm) {
+  return Interface<Numeric>().cos(self, vm);
+}
+
+UnstableNode SmallInt::cosh(RichNode self, VM vm) {
+  return Interface<Numeric>().cosh(self, vm);
+}
+
+UnstableNode SmallInt::exp(RichNode self, VM vm) {
+  return Interface<Numeric>().exp(self, vm);
+}
+
+UnstableNode SmallInt::floor(RichNode self, VM vm) {
+  return Interface<Numeric>().floor(self, vm);
+}
+
+UnstableNode SmallInt::log(RichNode self, VM vm) {
+  return Interface<Numeric>().log(self, vm);
+}
+
+UnstableNode SmallInt::round(RichNode self, VM vm) {
+  return Interface<Numeric>().round(self, vm);
+}
+
+UnstableNode SmallInt::sin(RichNode self, VM vm) {
+  return Interface<Numeric>().sin(self, vm);
+}
+
+UnstableNode SmallInt::sinh(RichNode self, VM vm) {
+  return Interface<Numeric>().sinh(self, vm);
+}
+
+UnstableNode SmallInt::sqrt(RichNode self, VM vm) {
+  return Interface<Numeric>().sqrt(self, vm);
+}
+
+UnstableNode SmallInt::tan(RichNode self, VM vm) {
+  return Interface<Numeric>().tan(self, vm);
+}
+
+UnstableNode SmallInt::tanh(RichNode self, VM vm) {
+  return Interface<Numeric>().tanh(self, vm);
 }
 
 }

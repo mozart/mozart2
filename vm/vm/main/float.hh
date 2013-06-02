@@ -27,6 +27,7 @@
 
 #include <tuple>
 #include <memory>
+#include <cmath>
 #include "mozartcore.hh"
 
 #ifndef MOZART_GENERATOR
@@ -96,8 +97,105 @@ UnstableNode Float::div(RichNode self, VM vm, RichNode right) {
   return Interface<Numeric>().div(self, vm, right);
 }
 
-UnstableNode Float::mod(RichNode self, VM vm, RichNode right) {
-  return Interface<Numeric>().mod(self, vm, right);
+UnstableNode Float::abs(VM vm) {
+  double a = value();  
+  return Float::build(vm, a >=0 ? a : -a);
+}
+
+UnstableNode Float::acos(VM vm) {
+  return Float::build(vm, std::acos(value()));
+}
+
+UnstableNode Float::acosh(VM vm) {
+  return Float::build(vm, std::acosh(value()));
+}
+
+UnstableNode Float::asin(VM vm) {
+  return Float::build(vm, std::asin(value()));
+}
+
+UnstableNode Float::asinh(VM vm) {
+  return Float::build(vm, std::asinh(value()));
+}
+
+UnstableNode Float::atan(VM vm) {
+  return Float::build(vm, std::atan(value()));
+}
+
+UnstableNode Float::atanh(VM vm) {
+  return Float::build(vm, std::atanh(value()));
+}
+
+UnstableNode Float::atan2(VM vm, RichNode right) {
+  return atan2Value(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::atan2Value(VM vm, double b) {
+  return Float::build(vm, std::atan2(value(),b));
+}
+
+UnstableNode Float::ceil(VM vm) {
+  return Float::build(vm, std::ceil(value()));
+}
+
+UnstableNode Float::cos(VM vm) {
+  return Float::build(vm, std::cos(value()));
+}
+
+UnstableNode Float::cosh(VM vm) {
+  return Float::build(vm, std::cosh(value()));
+}
+
+UnstableNode Float::exp(VM vm) {
+  return Float::build(vm, std::exp(value()));
+}
+
+UnstableNode Float::floor(VM vm) {
+  return Float::build(vm, std::floor(value()));
+}
+
+UnstableNode Float::log(VM vm) {
+  return Float::build(vm, std::log(value()));
+}
+
+UnstableNode Float::mod(VM vm, RichNode right) {
+  return modValue(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::modValue(VM vm, double b) {
+  return Float::build(vm, std::fmod(value(),b));
+}
+
+UnstableNode Float::pow(VM vm, RichNode right) {
+  return powValue(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::powValue(VM vm, double b) {
+  return Float::build(vm, std::pow(value(),b));
+}
+
+UnstableNode Float::round(VM vm) {
+  return Float::build(vm, std::round(value()));
+}
+
+UnstableNode Float::sin(VM vm) {
+  return Float::build(vm, std::sin(value()));
+}
+
+UnstableNode Float::sinh(VM vm) {
+  return Float::build(vm, std::sinh(value()));
+}
+
+UnstableNode Float::sqrt(VM vm) {
+  return Float::build(vm, std::sqrt(value()));
+}
+
+UnstableNode Float::tan(VM vm) {
+  return Float::build(vm, std::tan(value()));
+}
+
+UnstableNode Float::tanh(VM vm) {
+  return Float::build(vm, std::tanh(value()));
 }
 
 }

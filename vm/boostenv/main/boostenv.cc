@@ -34,8 +34,63 @@ namespace mozart { namespace boostenv {
 //////////////////
 
 namespace {
+  /* TODO It might be worth, someday, to investigate how we can lift this
+   * decoding to the Oz level.
+   * It should somewhere in Resolve.oz and/or URL.oz.
+   * But at the same time, not forgetting that this function implements
+   * bootURLLoad (not a hypothetical bootFileLoad)!
+   *
+   * In fact it is already a duplicate of the logic in OS.oz.
+   */
+
+  inline
+  char hexDigitToValue(char digit) {
+    // Don't care to give meaningful results if the digit is not valid
+    if (digit <= '9')
+      return digit - '0';
+    else if (digit <= 'Z')
+      return digit - ('A'-10);
+    else
+      return digit - ('a'-10);
+  }
+
+  inline
+  std::string decodeURL(const std::string& encoded) {
+    // Fast path when there is nothing to do
+    if (encoded.find('%') == std::string::npos)
+      return encoded;
+
+    // Relevant reminder: Unicode URLs are UTF-8 encoded then %-escaped
+
+    std::string decoded;
+    decoded.reserve(encoded.size());
+
+    for (size_t i = 0; i < encoded.size(); ++i) {
+      char c = encoded[i];
+      if (c == '%' && (i+2 < encoded.size())) {
+        char v1 = hexDigitToValue(encoded[++i]);
+        char v2 = hexDigitToValue(encoded[++i]);
+        decoded.push_back((v1 << 4) | v2);
+      } else {
+        decoded.push_back(c);
+      }
+    }
+
+    return decoded;
+  }
+
+  inline
+  std::string decodedURLToFilename(const std::string& url) {
+    // Not sure this is the right test (why not // ?), but it was so in Mozart 1
+    if (url.substr(0, 5) == "file:")
+      return url.substr(5);
+    else
+      return url;
+  }
+
   bool defaultBootLoader(VM vm, const std::string& url, UnstableNode& result) {
-    std::ifstream input(url, std::ios::binary);
+    std::string filename = decodedURLToFilename(decodeURL(url));
+    std::ifstream input(filename, std::ios::binary);
     if (!input.is_open())
       return false;
     result = bootUnpickle(vm, input);

@@ -46,6 +46,7 @@ end
 
 Float = float(is:              IsFloat
               '/':             Boot_Float.'/'
+              'mod':           Boot_Float.'mod'
               exp:             Exp
               log:             Log
               sqrt:            Sqrt

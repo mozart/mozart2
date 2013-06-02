@@ -186,6 +186,15 @@ public:
     }
   };
 
+  class Mod: public Builtin<Mod> {
+  public:
+    Mod(): Builtin("mod") {}
+
+    static void call(VM vm, In left, In right, Out result) {
+      result = Numeric(left).mod(vm, right);
+    }
+  };
+
   class Round: public Builtin<Round> {
   public:
     Round(): Builtin("round") {}

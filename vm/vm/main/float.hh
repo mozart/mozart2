@@ -89,16 +89,12 @@ UnstableNode Float::divide(VM vm, RichNode right) {
   return divideValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::divideValue(VM vm, double b) { 
+UnstableNode Float::divideValue(VM vm, double b) {
   return Float::build(vm, value() / b);
 }
 
 UnstableNode Float::div(RichNode self, VM vm, RichNode right) {
   return Interface<Numeric>().div(self, vm, right);
-}
-
-UnstableNode Float::mod(RichNode self, VM vm, RichNode right) {
-  return Interface<Numeric>().mod(self, vm, right);
 }
 
 UnstableNode Float::abs(VM vm) {
@@ -160,6 +156,14 @@ UnstableNode Float::floor(VM vm) {
 
 UnstableNode Float::log(VM vm) {
   return Float::build(vm, std::log(value()));
+}
+
+UnstableNode Float::mod(VM vm, RichNode right) {
+  return modValue(vm, getArgument<double>(vm, right));
+}
+
+UnstableNode Float::modValue(VM vm, double b) {
+  return Float::build(vm, std::fmod(value(),b));
 }
 
 UnstableNode Float::pow(VM vm, RichNode right) {

@@ -109,7 +109,10 @@ public:
   UnstableNode div(RichNode self, VM vm, RichNode right);
 
   inline
-  UnstableNode mod(RichNode self, VM vm, RichNode right);
+  UnstableNode mod(VM vm, RichNode right);
+
+  inline
+  UnstableNode modValue(VM vm, double b);
 
   inline
   UnstableNode pow(VM vm, RichNode right);

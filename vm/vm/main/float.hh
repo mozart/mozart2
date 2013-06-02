@@ -89,7 +89,7 @@ UnstableNode Float::divide(VM vm, RichNode right) {
   return divideValue(vm, getArgument<double>(vm, right));
 }
 
-UnstableNode Float::divideValue(VM vm, double b) {
+UnstableNode Float::divideValue(VM vm, double b) { 
   return Float::build(vm, value() / b);
 }
 

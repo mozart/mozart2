@@ -26,6 +26,7 @@
 #define __SMALLINT_H
 
 #include "mozartcore.hh"
+#include "exchelpers-decl.hh"
 
 #include <string>
 #include <limits>

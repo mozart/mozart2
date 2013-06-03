@@ -106,6 +106,9 @@ public:
   UnstableNode divide(RichNode self, VM vm, RichNode right);
 
   inline
+  UnstableNode fmod(RichNode self, VM vm, RichNode right);
+
+  inline
   UnstableNode div(VM vm, RichNode right);
 
   inline
@@ -116,6 +119,72 @@ public:
 
   inline
   UnstableNode modValue(VM vm, nativeint b);
+
+  inline
+  UnstableNode pow(VM vm, RichNode right);
+
+  inline
+  UnstableNode powValue(VM vm, nativeint b);
+
+  inline
+  UnstableNode abs(VM vm);
+
+  inline
+  UnstableNode acos(RichNode self, VM vm);
+
+  inline
+  UnstableNode acosh(RichNode self, VM vm);
+
+  inline
+  UnstableNode asin(RichNode self, VM vm);
+
+  inline
+  UnstableNode asinh(RichNode self, VM vm);
+
+  inline
+  UnstableNode atan(RichNode self, VM vm);
+
+  inline
+  UnstableNode atanh(RichNode self, VM vm);
+
+  inline
+  UnstableNode atan2(RichNode self, VM vm, RichNode right);
+
+  inline
+  UnstableNode ceil(RichNode self, VM vm);
+
+  inline
+  UnstableNode cos(RichNode self, VM vm);
+
+  inline
+  UnstableNode cosh(RichNode self, VM vm);
+
+  inline
+  UnstableNode exp(RichNode self, VM vm);
+
+  inline
+  UnstableNode floor(RichNode self, VM vm);
+
+  inline
+  UnstableNode log(RichNode self, VM vm);
+
+  inline
+  UnstableNode round(RichNode self, VM vm);
+
+  inline
+  UnstableNode sin(RichNode self, VM vm);
+
+  inline
+  UnstableNode sinh(RichNode self, VM vm);
+
+  inline
+  UnstableNode sqrt(RichNode self, VM vm);
+
+  inline
+  UnstableNode tan(RichNode self, VM vm);
+
+  inline
+  UnstableNode tanh(RichNode self, VM vm);
 
 public:
   // Miscellaneous

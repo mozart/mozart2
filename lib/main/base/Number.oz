@@ -24,36 +24,12 @@
 
 
 %%
-%% Global
-%%
-
-/*
-local
-   FloatPow = Boot_Float.fPow
-   fun {IntPow X N A}
-      if N==0 then A
-      elseif N mod 2==0 then {IntPow X*X (N div 2) A}
-      else {IntPow X (N-1) A*X}
-      end
-   end
-in
-   fun {Pow X Y}
-      case ({IsInt X} andthen {IsInt Y}) of true then
-         if Y>0 then {IntPow X Y 1} else Y=0 1 end
-      elsecase ({IsFloat X} andthen {IsFloat Y}) of true then {FloatPow X Y}
-      end
-   end
-end
-*/
-
-
-%%
 %% Module
 %%
-Number = number(is:  IsNumber
-                '+': Boot_Number.'+'
-                '-': Boot_Number.'-'
-                '*': Boot_Number.'*'
-                '~': Boot_Number.'~')
-                %pow: Pow
-                %abs: Abs)
+Number = number(is:    IsNumber
+                '+':   Boot_Number.'+'
+                '-':   Boot_Number.'-'
+                '*':   Boot_Number.'*'
+                '~':   Boot_Number.'~'
+                'pow': Boot_Number.'pow'
+                'abs': Boot_Number.'abs')

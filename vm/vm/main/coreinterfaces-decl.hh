@@ -311,12 +311,100 @@ struct Interface<Numeric>:
     raiseTypeError(vm, "Float", self);
   }
 
+  UnstableNode fmod(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
+  }
+
   UnstableNode div(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "Integer", self);
   }
 
   UnstableNode mod(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "Integer", self);
+  }
+
+  UnstableNode pow(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Numeric", self);
+  }
+
+  UnstableNode abs(RichNode self, VM vm) {
+    raiseTypeError(vm, "Numeric", self);
+  }
+
+  UnstableNode acos(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode acosh(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode asin(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode asinh(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode atan(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode atanh(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode atan2(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode ceil(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode cos(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode cosh(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode exp(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode floor(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode log(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode round(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode sin(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode sinh(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode sqrt(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode tan(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode tanh(RichNode self, VM vm) {
+    raiseTypeError(vm, "Float", self);
   }
 };
 

@@ -73,6 +73,9 @@ export
    tcpConnectionShutdown: TCPConnectionShutdown
    tcpConnectionClose: TCPConnectionClose
 
+   GetHostByName
+   UName
+
    % Process management
    SpawnProcess
    SpawnProcessAndPipe
@@ -80,6 +83,8 @@ export
    PipeConnectionWrite
    PipeConnectionShutdown
    PipeConnectionClose
+
+   GetPID
 
    % Compatibility
    open: CompatOpen
@@ -189,6 +194,9 @@ define
    TCPConnectionShutdown = Boot_OS.tcpConnectionShutdown
    TCPConnectionClose = Boot_OS.tcpConnectionClose
 
+   GetHostByName = Boot_OS.getHostByName
+   UName = Boot_OS.uName
+
    %% Process management
 
    SpawnProcess = Boot_OS.exec
@@ -208,6 +216,7 @@ define
 
    PipeConnectionShutdown = Boot_OS.pipeConnectionShutdown
    PipeConnectionClose = Boot_OS.pipeConnectionClose
+   GetPID = Boot_OS.getPID
 
    %% POSIX-like file descriptor management
 

@@ -1203,33 +1203,37 @@ public:
       // gethostbyname(3) is deprecated. Emulate getaddrinfo(3) instead?
       typedef boost::asio::ip::tcp tcp;
 
-      size_t nameBufLength = ozVSLengthForBuffer(vm, name);
-      std::string nameString;
-      ozVSGet(vm, name, nameBufLength, nameString);
-
-      auto& environment = BoostBasedVM::forVM(vm);
-      tcp::resolver resolver (environment.io_service);
-      tcp::resolver::query query (nameString, "0");
       boost::system::error_code ec;
-      auto it = resolver.resolve(query, ec);
-      if (ec) {
-        raiseOSError(vm, "getHostByName", ec);
+
+      {
+        size_t nameBufLength = ozVSLengthForBuffer(vm, name);
+        std::string nameString;
+        ozVSGet(vm, name, nameBufLength, nameString);
+
+        auto& environment = BoostBasedVM::forVM(vm);
+        tcp::resolver resolver (environment.io_service);
+        tcp::resolver::query query (nameString, "0");
+        auto it = resolver.resolve(query, ec);
+        if (!ec) {
+          OzListBuilder addrListBuilder (vm);
+
+          decltype(it) end;
+          while (it != end) {
+            auto addr = it->endpoint().address().to_string();
+            auto addrString = String::build(vm, newLString(vm, addr));
+            addrListBuilder.push_back(vm, addrString);
+            ++ it;
+          }
+
+          auto arity = buildArity(vm, "hostent", "addrList", "aliases", "name");
+          res = buildRecord(vm, std::move(arity), addrListBuilder.get(vm),
+                                                  vm->coreatoms.nil,
+                                                  name);
+          return;
+        }
       }
 
-      OzListBuilder addrListBuilder (vm);
-
-      decltype(it) end;
-      while (it != end) {
-        auto addr = it->endpoint().address().to_string();
-        auto addrString = String::build(vm, newLString(vm, addr));
-        addrListBuilder.push_back(vm, addrString);
-        ++ it;
-      }
-
-      auto arity = buildArity(vm, "hostent", "addrList", "aliases", "name");
-      res = buildRecord(vm, std::move(arity), addrListBuilder.get(vm),
-                                              vm->coreatoms.nil,
-                                              name);
+      raiseOSError(vm, "getHostByName", ec);
     }
   };
 

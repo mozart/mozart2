@@ -382,6 +382,7 @@ define
          mode: unit
          bindPort: unit
          backLog: unit
+         connector: unit
 
          acceptor: unit
 
@@ -422,7 +423,8 @@ define
          true = @mode == init
          Connection = {TCPConnect Host Port}
       in
-         {New CompatTCPConnectionClass init(Connection desc:?Desc) _}
+         connector := {New CompatTCPConnectionClass init(Connection desc:?Desc)}
+         mode := connected
       end
 
       meth getSockName(?Port)
@@ -434,9 +436,27 @@ define
 
          if @mode == acceptor then
             {TCPAcceptorClose @acceptor}
+         elseif @mode == connected then
+            {@connector close}
          end
 
          mode := closed
+      end
+
+      meth send(Msg Flags ?Len)
+         true = @mode == connected
+         % what about the flags?
+         {@connector write(Msg ?Len)}
+      end
+
+      meth read(Max ?Head Tail ?Count)
+         true = @mode == connected
+         {@connector read(Max ?Head Tail ?Count)}
+      end
+
+      meth write(Msg ?Len)
+         true = @mode == connected
+         {@connector write(Msg ?Len)}
       end
    end
 
@@ -496,7 +516,7 @@ define
    end
 
    proc {CompatConnect Sock Host Port}
-      {{DescGet Sock} connect(Host Port)}
+      {{DescGet Sock} connect(Host Port _)}
    end
 
    proc {CompatShutDown Sock How}

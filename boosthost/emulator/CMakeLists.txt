@@ -54,7 +54,7 @@ target_link_libraries(ozemulator mozartvmboost mozartvm ${Boost_LIBRARIES})
 if(NOT WIN32)
   target_link_libraries(ozemulator pthread)
   if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(rt)
+    target_link_libraries(ozemulator rt)
   endif()
 
   # Install

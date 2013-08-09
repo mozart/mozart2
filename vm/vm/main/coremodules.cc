@@ -73,4 +73,9 @@ void registerCoreModules(VM vm) {
   registerBuiltinModWeakReference(vm);
 }
 
+// Workaround a problem which LString.slice() is a undefined symbol in this file.
+namespace mut {
+  template struct LString<unsigned char>;
+}
+
 } // namespace mozart

@@ -59,6 +59,15 @@ public:
     }
   };
 
+  class IsReflectiveVariable : public Builtin<IsReflectiveVariable> {
+  public:
+    IsReflectiveVariable(): Builtin("isReflectiveVariable") {}
+
+    static void call(VM vm, In variable, Out result) {
+      result = build(vm, variable.is<ReflectiveVariable>());
+    }
+  };
+
   class BindReflectiveVariable: public Builtin<BindReflectiveVariable> {
   public:
     BindReflectiveVariable(): Builtin("bindReflectiveVariable") {}

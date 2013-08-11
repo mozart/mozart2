@@ -268,6 +268,21 @@ StableNode* RichNode::destOf(Node* node) {
   return node->access<Reference>().dest();
 }
 
+UnstableNode RichNode::becomeExchange(VM vm, RichNode value) {
+  // Move the *entire* content of the node to a new, unrelated unstable node.
+  // FIXME there should be a method without using memcpy...
+  UnstableNode result;
+  if (isStable()) {
+    auto stableRef = new (vm) StableNode;
+    memcpy(stableRef, &asStable(), sizeof(*stableRef));
+    result.init(vm, *stableRef);
+  } else {
+    memcpy(&result, &asUnstable(), sizeof(result));
+  }
+  become(vm, value);
+  return result;
+}
+
 ////////////////
 // GlobalNode //
 ////////////////

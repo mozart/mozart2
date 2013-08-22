@@ -158,6 +158,10 @@ void VirtualMachine::initialize() {
 }
 
 void VirtualMachine::doGC() {
+  // Update stats (1)
+  getPropertyRegistry().stats.totalUsedMemory +=
+    getMemoryManager().getAllocatedOutsideFreeList();
+
   auto cleanupList = acquireCleanupList();
   gc.doGC();
   doCleanup(cleanupList);
@@ -174,6 +178,9 @@ void VirtualMachine::doGC() {
                               ReadOnlyVariable::build(this),
                               /* forceWriteConstantProp = */ true);
   }
+
+  // Update stats (2)
+  getPropertyRegistry().stats.activeMemory = getMemoryManager().getAllocated();
 }
 
 void VirtualMachine::beforeGR(GR gr) {

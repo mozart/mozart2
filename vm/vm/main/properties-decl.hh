@@ -166,7 +166,21 @@ public:
     nativeint errorsDepth;
     nativeint errorsWidth;
     nativeint errorsThread;
+
+    // Garbage collection, aka memory management - most are ignored, actually
+    size_t gcThreshold;
+    size_t minimalHeapSize;
+    size_t maximalHeapSize;
+    size_t desiredFreeMemPercentageAfterGC;
+    size_t gcThresholdTolerance;
+    bool autoGC;
   } config;
+
+  struct {
+    // Memory usage statistics
+    size_t activeMemory;
+    size_t totalUsedMemory;
+  } stats;
 };
 
 }

@@ -32,15 +32,10 @@ namespace mozart {
 
 const size_t MegaBytes = 1024*1024;
 
-const size_t MAX_MEMORY = 768 * MegaBytes;
-
 class MemoryManager {
 public:
   MemoryManager(size_t maxMemory) :
     _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(maxMemory) {}
-
-  MemoryManager() :
-    _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(MAX_MEMORY) {}
 
   ~MemoryManager() {
     if (_baseBlock != nullptr)

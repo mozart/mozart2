@@ -59,7 +59,9 @@ void PropertyRegistry::initConfig(VM vm) {
   config.gcThresholdTolerance = 20; // percent
   config.autoGC = true;
 
-  config.gcThreshold = config.maximalHeapSize - 10 * MegaBytes; // TODO
+  config.gcThreshold = std::max<nativeint>(
+    ((nativeint) config.maximalHeapSize) * 95 / 100,
+    ((nativeint) config.maximalHeapSize) - 10 * MegaBytes); // TODO
 
   // Memory usage statistics
 

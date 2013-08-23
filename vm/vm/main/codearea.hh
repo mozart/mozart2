@@ -100,7 +100,7 @@ void CodeArea::printReprToStream(VM vm, std::ostream& out,
 UnstableNode CodeArea::serialize(VM vm, SE se) {
   UnstableNode codeAtom = mozart::build(vm, "code");
   UnstableNode block = buildTupleDynamic(
-    vm, codeAtom, _size, _codeBlock,
+    vm, codeAtom, _size / sizeof(ByteCode), _codeBlock,
     [=](ByteCode b) {
       return mozart::build(vm, (nativeint) b);
     });

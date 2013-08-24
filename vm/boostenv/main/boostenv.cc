@@ -98,7 +98,8 @@ namespace {
   }
 }
 
-BoostBasedVM::BoostBasedVM(): virtualMachine(*this), vm(&virtualMachine),
+BoostBasedVM::BoostBasedVM(size_t maxMemory):
+  virtualMachine(*this, maxMemory), vm(&virtualMachine),
   _asyncIONodeCount(0),
   uuidGenerator(random_generator),
   preemptionTimer(io_service), alarmTimer(io_service) {

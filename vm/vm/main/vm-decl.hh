@@ -124,7 +124,7 @@ private:
   };
 public:
   inline
-  VirtualMachine(VirtualMachineEnvironment& environment);
+  VirtualMachine(VirtualMachineEnvironment& environment, size_t maxMemory);
 
   VirtualMachine(const VirtualMachine& src) = delete;
 

@@ -49,8 +49,10 @@ void BuiltinModule::initModule(VM vm, T&& module) {
 
 void registerCoreModules(VM vm);
 
-VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment):
-  rootGlobalNode(nullptr), environment(environment), gc(this), sc(this),
+VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
+                               size_t maxMemory):
+  rootGlobalNode(nullptr), environment(environment),
+  memoryManager(maxMemory), secondMemoryManager(maxMemory), gc(this), sc(this),
   _preemptRequestedNot(ATOMIC_FLAG_INIT),
   _exitRunRequestedNot(ATOMIC_FLAG_INIT),
   _gcRequestedNot(ATOMIC_FLAG_INIT),
@@ -158,6 +160,10 @@ void VirtualMachine::initialize() {
 }
 
 void VirtualMachine::doGC() {
+  // Update stats (1)
+  getPropertyRegistry().stats.totalUsedMemory +=
+    getMemoryManager().getAllocatedOutsideFreeList();
+
   auto cleanupList = acquireCleanupList();
   gc.doGC();
   doCleanup(cleanupList);
@@ -174,6 +180,9 @@ void VirtualMachine::doGC() {
                               ReadOnlyVariable::build(this),
                               /* forceWriteConstantProp = */ true);
   }
+
+  // Update stats (2)
+  getPropertyRegistry().stats.activeMemory = getMemoryManager().getAllocated();
 }
 
 void VirtualMachine::beforeGR(GR gr) {

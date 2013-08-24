@@ -50,6 +50,23 @@ void PropertyRegistry::initConfig(VM vm) {
   config.errorsDepth = 10;
   config.errorsWidth = 20;
   config.errorsThread = 40;
+
+  // Garbage collection, aka memory management
+
+  config.minimalHeapSize = 1 * MegaBytes;
+  config.maximalHeapSize = vm->getMemoryManager().getMaxMemory(); // TODO
+  config.desiredFreeMemPercentageAfterGC = 75; // percent
+  config.gcThresholdTolerance = 20; // percent
+  config.autoGC = true;
+
+  config.gcThreshold = std::max<nativeint>(
+    ((nativeint) config.maximalHeapSize) * 95 / 100,
+    ((nativeint) config.maximalHeapSize) - 10 * MegaBytes); // TODO
+
+  // Memory usage statistics
+
+  stats.activeMemory = 0;
+  stats.totalUsedMemory = 0;
 }
 
 void PropertyRegistry::registerPredefined(VM vm) {
@@ -81,10 +98,42 @@ void PropertyRegistry::registerPredefined(VM vm) {
   registerReadWriteProp(vm, "errors.width", config.errorsWidth);
   registerReadWriteProp(vm, "errors.thread", config.errorsThread);
 
-  // Garbage collection
+  // Garbage collection, aka memory management
 
-  registerConstantProp(vm, "gc.watcher",
-                       ReadOnlyVariable::build(vm));
+  registerConstantProp(vm, "gc.watcher", ReadOnlyVariable::build(vm));
+
+  registerReadOnlyProp<nativeint>(vm, "gc.size",
+    [] (VM vm) -> nativeint {
+      return vm->getMemoryManager().getAllocated();
+    });
+
+  registerReadOnlyProp(vm, "gc.threshold", config.gcThreshold);
+  registerReadOnlyProp(vm, "gc.active", stats.activeMemory);
+
+  registerReadWriteProp(vm, "gc.min", config.minimalHeapSize);
+  registerReadWriteProp(vm, "gc.max", config.maximalHeapSize);
+  registerReadWriteProp(vm, "gc.free", config.desiredFreeMemPercentageAfterGC);
+  registerReadWriteProp(vm, "gc.tolerance", config.gcThresholdTolerance);
+  registerReadWriteProp(vm, "gc.on", config.autoGC);
+
+  registerValueProp(vm, "gc.codeCycles", 1); // compatibility, ignored
+
+  // Memory usage statistics - most are irrelevant in Mozart 2
+
+  registerReadOnlyProp<nativeint>(vm, "memory.freelist",
+    [] (VM vm) -> nativeint {
+      return vm->getMemoryManager().getAllocatedInFreeList();
+    });
+
+  registerReadOnlyProp<nativeint>(vm, "memory.heap",
+    [] (VM vm) -> nativeint {
+      return vm->getMemoryManager().getAllocatedOutsideFreeList() +
+        vm->getPropertyRegistry().stats.totalUsedMemory;
+    });
+
+  registerConstantProp(vm, "memory.atoms", 0);
+  registerConstantProp(vm, "memory.names", 0);
+  registerConstantProp(vm, "memory.code", 0);
 
   // Limits
 

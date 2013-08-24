@@ -32,16 +32,10 @@ namespace mozart {
 
 const size_t MegaBytes = 1024*1024;
 
-const size_t MAX_MEMORY = 768 * MegaBytes;
-const size_t MemoryRoom = 10 * MegaBytes;
-
 class MemoryManager {
 public:
   MemoryManager(size_t maxMemory) :
     _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(maxMemory) {}
-
-  MemoryManager() :
-    _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(MAX_MEMORY) {}
 
   ~MemoryManager() {
     if (_baseBlock != nullptr)
@@ -70,7 +64,12 @@ public:
 
     for (size_t i = 0; i < MaxBuckets; i++)
       freeListBuckets[i] = nullptr;
+
+    stats.allocatedInFreeList = 0;
   }
+
+public:
+  // Memory requests and releases
 
   void* getMemory(size_t size) {
     if (_allocated + size > _maxMemory) {
@@ -96,7 +95,9 @@ public:
         freeListBuckets[bucket] = *static_cast<void**>(list);
         return list;
       } else {
-        return getMemory(bucket * AllocGranularity);
+        size_t chunkSize = bucket * AllocGranularity;
+        stats.allocatedInFreeList += chunkSize;
+        return getMemory(chunkSize);
       }
     } else {
       // Big block - for now use regular malloc/free
@@ -121,19 +122,34 @@ public:
     }
   }
 
-  size_t getAllocated() {
-    return _allocated;
-  }
-
-  bool isGCRequired() {
-    return (_allocated + MemoryRoom > _maxMemory);
-  }
 private:
   size_t bucketFor(size_t size) {
     return (size + (AllocGranularity-1)) / AllocGranularity;
   }
 
   void* getMoreMemory(size_t size);
+
+public:
+  // Query statistics and properties
+
+  size_t getMaxMemory() {
+    return _maxMemory;
+  }
+
+  size_t getAllocated() {
+    return _allocated;
+  }
+
+  size_t getAllocatedInFreeList() {
+    return stats.allocatedInFreeList;
+  }
+
+  size_t getAllocatedOutsideFreeList() {
+    return getAllocated() - getAllocatedInFreeList();
+  }
+
+private:
+  // Fields
 
   static const size_t AllocGranularity = 2 * sizeof(char*);
   static const size_t MaxBuckets = 64 + 1;
@@ -145,6 +161,10 @@ private:
   size_t _allocated;
 
   void* freeListBuckets[MaxBuckets];
+
+  struct {
+    size_t allocatedInFreeList;
+  } stats;
 };
 
 }

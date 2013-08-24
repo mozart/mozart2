@@ -53,7 +53,7 @@ private:
                                         UnstableNode& result)>;
 
 public:
-  BoostBasedVM();
+  BoostBasedVM(size_t maxMemory);
 
   static BoostBasedVM& forVM(VM vm) {
     return static_cast<BoostBasedVM&>(vm->getEnvironment());

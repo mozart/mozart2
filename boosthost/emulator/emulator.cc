@@ -161,6 +161,7 @@ int main(int argc, char** argv) {
   fs::path ozHome, initFunctorPath, baseFunctorPath;
   std::string ozSearchPath, ozSearchLoad, appURL;
   std::vector<std::string> appArgs;
+  size_t maxMemoryMega = 768;
   bool appGUI;
 
   // DEFINE OPTIONS
@@ -179,6 +180,8 @@ int main(int argc, char** argv) {
       "search path")
     ("search-load", po::value<std::string>(&ozSearchLoad),
       "search load")
+    ("max-memory", po::value<size_t>(&maxMemoryMega),
+      "maximum memory, i.e. heap size (in MB)")
     ("gui", "GUI mode");
 
   po::options_description hidden("Hidden options");
@@ -273,7 +276,7 @@ int main(int argc, char** argv) {
 
   // SET UP THE VM AND RUN
 
-  boostenv::BoostBasedVM boostBasedVM;
+  boostenv::BoostBasedVM boostBasedVM(maxMemoryMega * MegaBytes);
   VM vm = boostBasedVM.vm;
 
   // Set some properties

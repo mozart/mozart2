@@ -34,7 +34,10 @@ namespace mozart {
 //////////////////////
 
 bool GarbageCollector::isGCRequired() {
-  return vm->getMemoryManager().isGCRequired();
+  return
+    (vm->getMemoryManager().getAllocated() >=
+      vm->getPropertyRegistry().config.gcThreshold) &&
+    vm->getPropertyRegistry().config.autoGC;
 }
 
 }

@@ -66,6 +66,8 @@ prepare
                   18:uniquename
                   19:name
                   20:namedname
+
+                  21:unicodeString
                  )
 
    AtomToID = {RecordMapFeatVal IDToAtom fun {$ ID#Atom} Atom#ID end}
@@ -371,6 +373,8 @@ define
               uniquename:proc {$ _ K} {WriteAtom K.1} end
               name:proc {$ A _} {WriteUUIDOf A} end
               namedname:proc {$ A K} {WriteUUIDOf A} {WriteAtom K.1} end
+
+              unicodeString:proc {$ A _} {WriteStr A} end
              )
 
       ActualSer = {RecordMapFeatVal Ser fun {$ F#V} AtomToID.F#V end}
@@ -751,6 +755,8 @@ define
                 uniquename:fun {$} {BootName.newUnique {ReadAtom}} end
                 name:ReadNameValue
                 namedname:ReadNamedNameValue
+
+                unicodeString:fun {$} {VirtualString.toCompactString {ReadStr}} end
                )
 
       ActualDeser = {RecordMapFeatVal Deser fun {$ F#V} AtomToID.F#V end}

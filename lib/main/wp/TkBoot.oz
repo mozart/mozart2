@@ -120,7 +120,7 @@ define
            [] b then {FoldR Tcl.1 fun {$ Tcl V}
                                      {FormatTk Tcl}#' '#V
                                   end ''}
-           [] c then '#'#{Hex Tcl.1}#{Hex Tcl.2}#{Hex Tcl.3}
+           [] c then "#"#{Hex Tcl.1}#{Hex Tcl.2}#{Hex Tcl.3}
            [] v then Tcl.1
            [] s then '"'#{RecordToV Tcl {Arity Tcl}}#'"'
            [] l then '['#{RecordToV Tcl {Arity Tcl}}#']'

@@ -105,7 +105,10 @@ void ReflectiveVariable::reflectiveBind(RichNode self, VM vm, RichNode src) {
 }
 
 void ReflectiveVariable::bindReadOnly(VM vm, RichNode src) {
-  bind(vm, src);
+  ozcalls::internal::doReflectiveCall(
+    vm, "mozart::ReflectiveVariable::bindReadOnly", _stream,
+    "bindReadOnly", src
+  );
 }
 
 }

@@ -67,7 +67,7 @@ struct Interface<DataflowVariable>:
 class BindableReadOnly;
 template<>
 struct Interface<BindableReadOnly>:
-  ImplementedBy<ReadOnlyVariable>, NoAutoWait, NoAutoReflectiveCalls {
+  ImplementedBy<ReadOnlyVariable, ReflectiveVariable>, NoAutoWait, NoAutoReflectiveCalls {
 
   void bindReadOnly(RichNode self, VM vm, RichNode src) {
     raiseTypeError(vm, "ReadOnlyVariable", self);

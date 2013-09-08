@@ -104,6 +104,10 @@ void ReflectiveVariable::reflectiveBind(RichNode self, VM vm, RichNode src) {
   doBind(self, vm, src);
 }
 
+void ReflectiveVariable::bindReadOnly(VM vm, RichNode src) {
+  bind(vm, src);
+}
+
 }
 
 #endif // MOZART_GENERATOR

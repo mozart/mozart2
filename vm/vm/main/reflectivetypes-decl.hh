@@ -108,6 +108,12 @@ public:
   inline
   void reflectiveBind(RichNode self, VM vm, RichNode src);
 
+
+public:
+  // BindableReadOnly interface
+  inline
+  void bindReadOnly(VM vm, RichNode src);
+
 public:
   // Miscellaneous
 

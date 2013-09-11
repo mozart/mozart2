@@ -41,6 +41,7 @@
 #  include <unistd.h>
 #  include <sys/time.h>
 #  include <sys/resource.h>
+#  include <sys/utsname.h>
 #endif
 
 #ifndef MOZART_GENERATOR
@@ -1180,6 +1181,91 @@ public:
     }
   };
 #endif // BOOST_ASIO_HAS_LOCAL_SOCKETS
+
+  class GetPID: public Builtin<GetPID> {
+  public:
+    GetPID(): Builtin("getPID") {}
+
+    static void call(VM vm, Out pid) {
+#ifdef MOZART_WINDOWS
+      pid = build(vm, GetCurrentProcessId());
+#else
+      pid = build(vm, getpid());
+#endif
+    }
+  };
+
+  class GetHostByName: public Builtin<GetHostByName> {
+  public:
+    GetHostByName(): Builtin("getHostByName") {}
+
+    static void call(VM vm, In name, Out res) {
+      // gethostbyname(3) is deprecated. Emulate getaddrinfo(3) instead?
+      typedef boost::asio::ip::tcp tcp;
+
+      boost::system::error_code ec;
+
+      {
+        size_t nameBufLength = ozVSLengthForBuffer(vm, name);
+        std::string nameString;
+        ozVSGet(vm, name, nameBufLength, nameString);
+
+        auto& environment = BoostBasedVM::forVM(vm);
+        tcp::resolver resolver (environment.io_service);
+        tcp::resolver::query query (nameString, "0");
+        auto it = resolver.resolve(query, ec);
+        if (!ec) {
+          OzListBuilder addrListBuilder (vm);
+
+          decltype(it) end;
+          while (it != end) {
+            auto addr = it->endpoint().address().to_string();
+            auto addrString = String::build(vm, newLString(vm, addr));
+            addrListBuilder.push_back(vm, addrString);
+            ++ it;
+          }
+
+          auto arity = buildArity(vm, "hostent", "addrList", "aliases", "name");
+          res = buildRecord(vm, std::move(arity), addrListBuilder.get(vm),
+                                                  vm->coreatoms.nil,
+                                                  name);
+          return;
+        }
+      }
+
+      raiseOSError(vm, "getHostByName", ec);
+    }
+  };
+
+  class UName: public Builtin<UName> {
+    static UnstableNode buildString(VM vm, const char* value) {
+      return String::build(vm, newLString(vm, value));
+    }
+
+  public:
+    UName(): Builtin("uName") {}
+
+    static void call(VM vm, Out res) {
+#ifdef MOZART_WINDOWS
+      // TODO: Implement uname(2) on Windows. Perhaps we can take some ideas
+      //       from http://hg.python.org/cpython/file/3.3/Lib/platform.py#l1043.
+      raiseError(vm, "notImplemented", "OS.uName on Windows");
+#else
+      struct utsname result;
+      if (uname(&result) != 0) {
+        raiseLastOSError(vm, "uname");
+      }
+
+      auto arity = buildArity(vm, "utsname", "machine", "nodename", "release",
+                                             "sysname", "version");
+      res = buildRecord(vm, std::move(arity), buildString(vm, result.machine),
+                                              buildString(vm, result.nodename),
+                                              buildString(vm, result.release),
+                                              buildString(vm, result.sysname),
+                                              buildString(vm, result.version));
+#endif
+    }
+  };
 };
 
 }

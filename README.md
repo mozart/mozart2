@@ -13,8 +13,12 @@ Binary packages for Linux, Mac OS and Windows are built from time to time and
 made available on
 [SourceForge](http://sourceforge.net/projects/mozart-oz/files/).
 
+Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs. 
+
 The binary distribution requires that you have installed Tcl/Tk 8.5 on your
 system.
+
+
 
 # Build instructions
 

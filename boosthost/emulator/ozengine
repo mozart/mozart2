@@ -8,7 +8,7 @@ cmd=`basename "$howcalled"`
 if test -z "${OZHOME}"
 then
   dir=`dirname "$howcalled"`
-  OZHOME=`(cd "$dir"; cd ..; /bin/pwd)`
+  OZHOME=`(cd "$dir"; cd ..; pwd)`
 fi
 export OZHOME
 

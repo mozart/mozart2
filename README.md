@@ -133,6 +133,11 @@ builds$ mkdir mozart2-release
 builds$ cd mozart2-release
 mozart2-release$ cmake -DCMAKE_BUILD_TYPE=Release [OtherOptions...] ../../mozart2
 ```
+On distros like Arch Linux and Nixos, Boost static libraries have been removed.
+Please add `-DMOZART_BOOST_USE_STATIC_LIBS=OFF` to your cmake command.
+
+Here is a complete Nixos example cmake command to build Mozart2:
+`cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=~/.nix-profile/include/llvm -DLLVM_BUILD_DIR=~/.nix-profile/ -DCLANG_BUILD_DIR=~/.nix-profile/include -DCLANG_SRC_DIR=~/.nix-profile/ -DMOZART_BOOST_USE_STATIC_LIBS=OFF -DBOOST_INCLUDEDIR=~/.nix-profile/include -DBOOST_LIBRARYDIR=~/.nix-profile/lib -DMOZART_GENERATOR_FLAGS="-I/home/stewart/.nix-profile/include/c++/4.7.3;-I/home/stewart/.nix-profile/include/c++/4.7.3/x86_64-unknown-linux-gnu;-I/home/stewart/.nix-profile/include" -DCMAKE_INSTALL_PREFIX=~/oz ../../mozart2`
 
 The options must be given with the form `-DOPTION=Value`. The table below
 lists the options you need.

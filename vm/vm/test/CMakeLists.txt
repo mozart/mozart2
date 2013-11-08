@@ -10,9 +10,18 @@ if(MINGW)
          CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  include_directories(/usr/lib/c++/v1)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if(IS_DIRECTORY "/Library/Developer/CommandLineTools/usr/lib/c++/v1/")
+    # Mavericks
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    include_directories(/Library/Developer/CommandLineTools/usr/lib/c++/v1/)
+  elseif(IS_DIRECTORY "/usr/lib/c++/v1")
+    # Mountain Lion
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    include_directories(/usr/lib/c++/v1)
+  else()
+    # Prior to Mountain Lion?
+  endif()
 endif()
 
 # GTest libraries

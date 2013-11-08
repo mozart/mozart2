@@ -1,7 +1,10 @@
 if("${LLVM_SRC_DIR}" STREQUAL "${DEFAULT_LLVM_SRC_DIR}" AND
    NOT EXISTS "${LLVM_BUILD_DIR}/bin/clang++")
 
-  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
+  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND 
+     (IS_DIRECTORY "/usr/lib/c++/v1" OR
+      IS_DIRECTORY "/Library/Developer/CommandLineTools/usr/lib/c++/v1/"
+     ))
     set(LLVM_CMAKE_EXTRA_ARGS "-DCMAKE_CXX_FLAGS=-stdlib=libc++")
   endif()
 

@@ -1,7 +1,10 @@
 if("${GTEST_SRC_DIR}" STREQUAL "${DEFAULT_GTEST_SRC_DIR}" AND
    NOT EXISTS "${GTEST_BUILD_DIR}/libgtest.a")
 
-  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
+  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND 
+     (IS_DIRECTORY "/usr/lib/c++/v1" OR 
+      IS_DIRECTORY "/Library/Developer/CommandLineTools/usr/lib/c++/v1/"
+     ))
     set(GTEST_CMAKE_EXTRA_ARGS "-DCMAKE_CXX_FLAGS=-stdlib=libc++")
   endif()
 
@@ -15,6 +18,7 @@ if("${GTEST_SRC_DIR}" STREQUAL "${DEFAULT_GTEST_SRC_DIR}" AND
 
   ExternalProject_Add(gtest
     SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk
+    SVN_REVISION -r "662"
     CMAKE_ARGS ${GTEST_CMAKE_ARGS}
     INSTALL_COMMAND ""
     TEST_COMMAND ""

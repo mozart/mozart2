@@ -55,8 +55,8 @@ public:
 
       auto& stream = boolToStdErr ? std::cerr : std::cout;
       stream << repr(vm, value,
-                     boolToStdErr ? config.errorsDepth : config.errorsWidth,
-                     boolToStdErr ? config.printDepth : config.printWidth);
+                     boolToStdErr ? config.errorsDepth : config.printDepth,
+                     boolToStdErr ? config.errorsWidth : config.printWidth);
       if (boolNewLine)
         stream << std::endl;
     }

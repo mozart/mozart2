@@ -2,18 +2,21 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   if(IS_DIRECTORY "/Library/Developer/CommandLineTools/usr/lib/c++/v1/")
+    message(STATUS "@@@@ should be on Mavericks")
     # Mavericks
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     set(MOZART_GENERATOR_FLAGS
         "-I/Library/Developer/CommandLineTools/usr/lib/c++/v1/")
     include_directories(/Library/Developer/CommandLineTools/usr/lib/c++/v1/)
   elseif(IS_DIRECTORY "/usr/lib/c++/v1")
+    message(STATUS "@@@@ should be on ML")
     # Mountain Lion
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     set(MOZART_GENERATOR_FLAGS "-I/usr/lib/c++/v1")
     include_directories(/usr/lib/c++/v1)
   else()
     # Prior to Mountain Lion?
+    message(STATUS "@@@@ have no idea which darwin")
   endif()
 endif()
 

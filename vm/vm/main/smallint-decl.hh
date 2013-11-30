@@ -190,7 +190,17 @@ public:
   // Miscellaneous
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    out << value();
+    if (value() >= 0) {
+      out << value();
+    } else if (value() == std::numeric_limits<nativeint>::min()) {
+      std::ostringstream ss;
+      ss << value();
+      std::string s(ss.str());
+      s[0] = '~';
+      out << s;
+    } else {
+      out << '~' << -value();
+    }
   }
 
 private:

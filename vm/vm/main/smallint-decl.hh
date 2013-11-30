@@ -190,7 +190,11 @@ public:
   // Miscellaneous
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    out << value();
+    if (value() < 0) {
+      out << '~' << -value();
+    } else {
+      out << value();
+    }
   }
 
 private:

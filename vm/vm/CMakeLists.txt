@@ -15,6 +15,7 @@ if("${GTEST_SRC_DIR}" STREQUAL "${DEFAULT_GTEST_SRC_DIR}" AND
 
   ExternalProject_Add(gtest
     SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk
+    SVN_REVISION -r "662"
     CMAKE_ARGS ${GTEST_CMAKE_ARGS}
     INSTALL_COMMAND ""
     TEST_COMMAND ""

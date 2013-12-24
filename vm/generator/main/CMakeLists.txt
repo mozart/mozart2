@@ -5,10 +5,6 @@ add_definitions(-D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS)
 
 set(CMAKE_CXX_FLAGS "-Wall -Wno-enum-compare -Wno-strict-aliasing -std=gnu++0x ${CMAKE_CXX_FLAGS}")
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-
 # Depending on the platform and version of clang, the clang library will
 # be named libclang or liblibclang. Now we detect that.
 find_library(CLANG_LIBRARY

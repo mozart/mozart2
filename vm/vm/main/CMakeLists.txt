@@ -1,9 +1,7 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
-  set(MOZART_GENERATOR_FLAGS "-I/usr/lib/c++/v1")
-  include_directories(/usr/lib/c++/v1)
-endif()
+separate_arguments(SPLIT_CXX_FLAGS UNIX_COMMAND "${CMAKE_CXX_FLAGS}")
+set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" "${SPLIT_CXX_FLAGS}")
 
 # properties-config.cc
 

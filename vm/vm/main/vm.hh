@@ -47,6 +47,10 @@ void BuiltinModule::initModule(VM vm, T&& module) {
 // VirtualMachine //
 ////////////////////
 
+UnstableNode VirtualMachineEnvironment::newBigInt(VM vm, nativeint value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
+}
+
 void registerCoreModules(VM vm);
 
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
@@ -142,6 +146,10 @@ void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
     ++iter;
 
   _alarms.insert_before_new(this, iter, expiration, wakeable);
+}
+
+UnstableNode VirtualMachine::newBigInt(nativeint value) {
+  return environment.newBigInt(this, value);
 }
 
 template <typename T>

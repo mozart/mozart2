@@ -101,6 +101,9 @@ public:
 
   virtual UUID genUUID() = 0;
 
+  inline
+  virtual UnstableNode newBigInt(VM vm, nativeint value);
+
   virtual void gCollect(GC gc) {
   }
 private:
@@ -241,6 +244,11 @@ public:
 
   inline
   void setAlarm(std::int64_t delay, StableNode* wakeable);
+
+public:
+  inline
+  UnstableNode newBigInt(nativeint value);
+
 public:
   CoreAtoms coreatoms;
 

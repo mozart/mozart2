@@ -243,4 +243,8 @@ std::uint64_t BoostBasedVM::bytes2uint64(const std::uint8_t* bytes) {
     ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
 }
 
+UnstableNode BoostBasedVM::newBigInt(VM vm, nativeint value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the Boost VM environment without implementation"); // TODO
+}
+
 } }

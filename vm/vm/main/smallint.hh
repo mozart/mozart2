@@ -75,7 +75,7 @@ UnstableNode SmallInt::opposite(VM vm) {
     return SmallInt::build(vm, -value());
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 
@@ -93,7 +93,7 @@ UnstableNode SmallInt::add(VM vm, nativeint b) {
     return SmallInt::build(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 
@@ -111,7 +111,7 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
     return SmallInt::build(vm, c);
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 
@@ -144,7 +144,7 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
     return SmallInt::build(vm, a * b);
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 
@@ -164,7 +164,7 @@ UnstableNode SmallInt::divValue(VM vm, nativeint b) {
     return SmallInt::build(vm, a / b);
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 
@@ -181,7 +181,7 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
     return SmallInt::build(vm, a % b);
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 
@@ -204,8 +204,7 @@ UnstableNode SmallInt::powValue(VM vm, nativeint b) {
       product *= a;
     } else {
       // Overflow - TODO: create a BigInt
-      product = 0;
-      break;
+      return vm->newBigInt(0);
     }
   }
   return SmallInt::build(vm, product);
@@ -219,7 +218,7 @@ UnstableNode SmallInt::abs(VM vm) {
     return SmallInt::build(vm, a >= 0 ? a : -a);
   } else {
     // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    return vm->newBigInt(0);
   }
 }
 

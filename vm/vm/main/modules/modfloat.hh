@@ -55,7 +55,7 @@ public:
     Divide(): Builtin("/") {}
 
     static void call(VM vm, In left, In right, Out result) {
-      result = Numeric(left).divide(vm, right);
+      result = FloatLike(left).divide(vm, right);
     }
   };
 
@@ -84,7 +84,7 @@ public:
     Acos(): Builtin("acos") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).acos(vm));
+      result = build(vm, FloatLike(value).acos(vm));
     }
   };
 
@@ -93,7 +93,7 @@ public:
     Acosh(): Builtin("acosh") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).acosh(vm));
+      result = build(vm, FloatLike(value).acosh(vm));
     }
   };
 
@@ -102,7 +102,7 @@ public:
     Asin(): Builtin("asin") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).asin(vm));
+      result = build(vm, FloatLike(value).asin(vm));
     }
   };
 
@@ -111,7 +111,7 @@ public:
     Asinh(): Builtin("asinh") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).asinh(vm));
+      result = build(vm, FloatLike(value).asinh(vm));
     }
   };
 
@@ -120,7 +120,7 @@ public:
     Atan(): Builtin("atan") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).atan(vm));
+      result = build(vm, FloatLike(value).atan(vm));
     }
   };
 
@@ -129,7 +129,7 @@ public:
     Atanh(): Builtin("atanh") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).atanh(vm));
+      result = build(vm, FloatLike(value).atanh(vm));
     }
   };
 
@@ -138,7 +138,7 @@ public:
     Atan2(): Builtin("atan2") {}
 
     static void call(VM vm, In left, In right, Out result) {
-      result = Numeric(left).atan2(vm, right);
+      result = FloatLike(left).atan2(vm, right);
     }
   };
 
@@ -147,7 +147,7 @@ public:
     Ceil(): Builtin("ceil") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).ceil(vm));
+      result = build(vm, FloatLike(value).ceil(vm));
     }
   };
 
@@ -156,7 +156,7 @@ public:
     Cos(): Builtin("cos") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).cos(vm));
+      result = build(vm, FloatLike(value).cos(vm));
     }
   };
 
@@ -165,7 +165,7 @@ public:
     Cosh(): Builtin("cosh") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).cosh(vm));
+      result = build(vm, FloatLike(value).cosh(vm));
     }
   };
 
@@ -174,7 +174,7 @@ public:
     Exp(): Builtin("exp") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).exp(vm));
+      result = build(vm, FloatLike(value).exp(vm));
     }
   };
 
@@ -183,7 +183,7 @@ public:
     Floor(): Builtin("floor") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).floor(vm));
+      result = build(vm, FloatLike(value).floor(vm));
     }
   };
 
@@ -192,7 +192,7 @@ public:
     Log(): Builtin("log") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).log(vm));
+      result = build(vm, FloatLike(value).log(vm));
     }
   };
 
@@ -201,7 +201,7 @@ public:
     FMod(): Builtin("fMod") {}
 
     static void call(VM vm, In left, In right, Out result) {
-      result = Numeric(left).fmod(vm, right);
+      result = FloatLike(left).fmod(vm, right);
     }
   };
 
@@ -210,7 +210,7 @@ public:
     Round(): Builtin("round") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).round(vm));
+      result = build(vm, FloatLike(value).round(vm));
     }
   };
 
@@ -219,7 +219,7 @@ public:
     Sin(): Builtin("sin") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).sin(vm));
+      result = build(vm, FloatLike(value).sin(vm));
     }
   };
 
@@ -228,7 +228,7 @@ public:
     Sinh(): Builtin("sinh") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).sinh(vm));
+      result = build(vm, FloatLike(value).sinh(vm));
     }
   };
 
@@ -237,7 +237,7 @@ public:
     Sqrt(): Builtin("sqrt") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).sqrt(vm));
+      result = build(vm, FloatLike(value).sqrt(vm));
     }
   };
 
@@ -246,7 +246,7 @@ public:
     Tan(): Builtin("tan") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).tan(vm));
+      result = build(vm, FloatLike(value).tan(vm));
     }
   };
 
@@ -255,7 +255,7 @@ public:
     Tanh(): Builtin("tanh") {}
 
     static void call(VM vm, In value, Out result) {
-      result = build(vm, Numeric(value).tanh(vm));
+      result = build(vm, FloatLike(value).tanh(vm));
     }
   };
 };

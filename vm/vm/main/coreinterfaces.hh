@@ -56,6 +56,7 @@ namespace mozart {
 #include "CodeAreaProvider-interf.hh"
 #include "WithPrintName-interf.hh"
 #include "Numeric-interf.hh"
+#include "FloatLike-interf.hh"
 #include "BaseDottable-interf.hh"
 #include "DotAssignable-interf.hh"
 #include "RecordLike-interf.hh"

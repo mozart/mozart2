@@ -307,14 +307,6 @@ struct Interface<Numeric>:
     raiseTypeError(vm, "Numeric", self);
   }
 
-  UnstableNode divide(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, "Float", self);
-  }
-
-  UnstableNode fmod(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, "Float", self);
-  }
-
   UnstableNode div(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "Integer", self);
   }
@@ -329,6 +321,20 @@ struct Interface<Numeric>:
 
   UnstableNode abs(RichNode self, VM vm) {
     raiseTypeError(vm, "Numeric", self);
+  }
+};
+
+class FloatLike;
+template<>
+struct Interface<FloatLike>:
+  ImplementedBy<Float> {
+
+  UnstableNode divide(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode fmod(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
   }
 
   UnstableNode acos(RichNode self, VM vm) {

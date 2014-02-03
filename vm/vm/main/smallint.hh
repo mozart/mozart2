@@ -185,31 +185,6 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
   }
 }
 
-UnstableNode SmallInt::pow(VM vm, RichNode right) {
-  return powValue(vm, getArgument<nativeint>(vm, right));
-}
-
-UnstableNode SmallInt::powValue(VM vm, nativeint b) {
-  nativeint a = value();
-
-  // Negative powers disallowed
-  if (b < 0) {
-    raiseKernelError(vm, "Integer power: Negative indices disallowed");
-  }
-
-  nativeint product = 1;
-  for (int i = 0; i < b; i++) {
-    if (!testMultiplyOverflow(product, a)) {
-      // No overflow
-      product *= a;
-    } else {
-      // Overflow - TODO: create a BigInt
-      return vm->newBigInt(0);
-    }
-  }
-  return SmallInt::build(vm, product);
-}
-
 UnstableNode SmallInt::abs(VM vm) {
   nativeint a = value();
   // Detecting overflow - platform dependent (2's complement)

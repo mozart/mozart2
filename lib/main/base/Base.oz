@@ -203,8 +203,8 @@ prepare
    %% Number
    %%
    IsNumber = Boot_Number.is
-   Pow      = Boot_Number.pow
    Abs      = Boot_Number.abs
+   Pow      % Defined in Number.oz
 
    %%
    %% Tuple

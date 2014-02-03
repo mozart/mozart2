@@ -115,12 +115,6 @@ public:
   UnstableNode modValue(VM vm, nativeint b);
 
   inline
-  UnstableNode pow(VM vm, RichNode right);
-
-  inline
-  UnstableNode powValue(VM vm, nativeint b);
-
-  inline
   UnstableNode abs(VM vm);
 
 public:

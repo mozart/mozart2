@@ -315,10 +315,6 @@ struct Interface<Numeric>:
     raiseTypeError(vm, "Integer", self);
   }
 
-  UnstableNode pow(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, "Numeric", self);
-  }
-
   UnstableNode abs(RichNode self, VM vm) {
     raiseTypeError(vm, "Numeric", self);
   }
@@ -330,6 +326,10 @@ struct Interface<FloatLike>:
   ImplementedBy<Float> {
 
   UnstableNode divide(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode pow(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "Float", self);
   }
 

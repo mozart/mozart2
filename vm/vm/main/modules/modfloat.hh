@@ -59,6 +59,15 @@ public:
     }
   };
 
+  class Pow: public Builtin<Pow> {
+  public:
+    Pow(): Builtin("pow") {}
+
+    static void call(VM vm, In left, In right, Out result) {
+      result = FloatLike(left).pow(vm, right);
+    }
+  };
+
   class ToInt: public Builtin<ToInt> {
   public:
     ToInt(): Builtin("toInt") {}

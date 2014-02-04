@@ -113,7 +113,7 @@ private:
 
 public:
   inline
-  virtual UnstableNode newBigInt(VM vm, nativeint value);
+  UnstableNode newBigInt(VM vm, nativeint value);
 
 // Management of nodes used by asynchronous operations for feedback
 

@@ -22,41 +22,77 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_COREDATATYPES_DECL_H
-#define MOZART_COREDATATYPES_DECL_H
+#ifndef __BIGINT_DECL_H
+#define __BIGINT_DECL_H
 
 #include "mozartcore-decl.hh"
+#include "bigintimplem-decl.hh"
 
-#include "datatypeshelpers-decl.hh"
+namespace mozart {
 
-#include "reference-decl.hh"
-#include "grtypes-decl.hh"
-#include "patmattypes-decl.hh"
+#ifndef MOZART_GENERATOR
+#include "BigInt-implem-decl.hh"
+#endif
 
-#include "array-decl.hh"
-#include "atom-decl.hh"
-#include "boolean-decl.hh"
-#include "bigint-decl.hh"
-#include "bytestring-decl.hh"
-#include "callables-decl.hh"
-#include "cell-decl.hh"
-#include "codearea-decl.hh"
-#include "dictionary-decl.hh"
-#include "float-decl.hh"
-#include "foreignpointer-decl.hh"
-#include "names-decl.hh"
-#include "objects-decl.hh"
-#include "port-decl.hh"
-#include "records-decl.hh"
-#include "reflectivetypes-decl.hh"
-#include "reifiedgnode-decl.hh"
-#include "reifiedspace-decl.hh"
-#include "reifiedthread-decl.hh"
-#include "serializer-decl.hh"
-#include "smallint-decl.hh"
-#include "string-decl.hh"
-#include "unit-decl.hh"
-#include "variables-decl.hh"
-#include "weakrefs-decl.hh"
+class BigInt: public DataType<BigInt>, WithValueBehavior {
+public:
+  BigInt(VM vm, const std::shared_ptr<BigIntImplem>& p): _value(p) {}
 
-#endif // MOZART_COREDATATYPES_DECL_H
+  BigInt(VM vm, GR gr, BigInt& from): _value(std::move(from._value)) {}
+
+public:
+  std::shared_ptr<BigIntImplem> value() { return _value; }
+
+  inline
+  bool equals(VM vm, RichNode right);
+
+public:
+  // Numeric inteface
+
+  bool isNumber(VM vm) {
+    return true;
+  }
+
+  bool isInt(VM vm) {
+    return true;
+  }
+
+  bool isFloat(VM vm) {
+    return false;
+  }
+
+  inline
+  UnstableNode opposite(VM vm);
+
+  inline
+  UnstableNode add(VM vm, RichNode right);
+
+  inline
+  UnstableNode add(VM vm, nativeint b);
+
+  inline
+  UnstableNode subtract(VM vm, RichNode right);
+
+  inline
+  UnstableNode multiply(VM vm, RichNode right);
+
+  inline
+  UnstableNode div(VM vm, RichNode right);
+
+  inline
+  UnstableNode mod(VM vm, RichNode right);
+
+  inline
+  UnstableNode abs(VM vm);
+
+private:
+  std::shared_ptr<BigIntImplem> _value;
+};
+
+#ifndef MOZART_GENERATOR
+#include "BigInt-implem-decl-after.hh"
+#endif
+
+}
+
+#endif // __BIGINT_DECL_H

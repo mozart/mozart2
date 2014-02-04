@@ -273,7 +273,7 @@ struct Interface<WithPrintName>:
 class Numeric;
 template<>
 struct Interface<Numeric>:
-  ImplementedBy<SmallInt, Float> {
+  ImplementedBy<SmallInt, BigInt, Float> {
 
   bool isNumber(RichNode self, VM vm) {
     return false;

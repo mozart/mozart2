@@ -42,6 +42,7 @@
 #include "vmallocatedlist-decl.hh"
 
 #include "atomtable.hh"
+#include "bigintimplem-decl.hh"
 #include "coreatoms-decl.hh"
 #include "properties-decl.hh"
 
@@ -103,6 +104,9 @@ public:
 
   inline
   virtual UnstableNode newBigInt(VM vm, nativeint value);
+
+  inline
+  virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
 
   virtual void gCollect(GC gc) {
   }
@@ -248,6 +252,9 @@ public:
 public:
   inline
   UnstableNode newBigInt(nativeint value);
+
+  inline
+  std::shared_ptr<BigIntImplem> newBigIntImplem(nativeint value);
 
 public:
   CoreAtoms coreatoms;

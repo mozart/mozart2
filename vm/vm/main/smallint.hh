@@ -116,7 +116,14 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::multiply(VM vm, RichNode right) {
-  return multiplyValue(vm, getArgument<nativeint>(vm, right));
+  if (right.is<SmallInt>()) {
+    return multiplyValue(vm, right.as<SmallInt>().value());
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).multiply(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
@@ -143,8 +150,9 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a * b);
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).multiply(vm, right);
   }
 }
 

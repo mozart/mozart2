@@ -85,6 +85,13 @@ public:
   inline
   UnstableNode abs(VM vm);
 
+public:
+  // Miscellaneous
+
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    value()->printReprToStream(vm, out, depth, width);
+  }
+
 private:
   std::shared_ptr<BigIntImplem> _value;
 };

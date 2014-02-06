@@ -27,12 +27,31 @@
 
 #include "boostenv-decl.hh"
 
+#define USE_GMP 0
+
+#if USE_GMP
+#include <boost/multiprecision/gmp.hpp>
+#else
+#include <boost/multiprecision/cpp_int.hpp>
+#endif
+
 namespace mozart { namespace boostenv {
+
+#if USE_GMP
+typedef boost::multiprecision::mpz_int mp_int;
+#else
+typedef boost::multiprecision::cpp_int mp_int;
+#endif
 
 class BoostBigInt : public BigIntImplem {
 public:
   inline
   BoostBigInt(nativeint value);
+
+  inline
+  BoostBigInt(mp_int value);
+
+  mp_int value() { return _value; }
 
   inline
   std::shared_ptr<BigIntImplem> operator-();
@@ -58,9 +77,15 @@ public:
   inline
   int compare(std::shared_ptr<BigIntImplem> b);
 
+  inline
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width);
+
 public:
   inline
   static std::shared_ptr<BigIntImplem> make_shared_ptr(BoostBigInt *bigInt);
+
+private:
+  mp_int _value;
 };
 
 } }

@@ -364,8 +364,14 @@ int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) {
       if (*aa == *bb)
         continue;
 
+      // These comparisons produce warnings as some versions of Clang
+      // believe they are tautological (when C instantiated to char).
+      // But the is_same<C, char16_t> above means C is char16_t here.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
       bool aIsSurrogate = 0xd800 <= *aa && *aa < 0xe000;
       bool bIsSurrogate = 0xd800 <= *bb && *bb < 0xe000;
+#pragma clang diagnostic pop
 
       if (aIsSurrogate == bIsSurrogate) {
         return *aa < *bb ? -1 : 1;

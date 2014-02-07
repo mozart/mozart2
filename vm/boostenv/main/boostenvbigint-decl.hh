@@ -82,7 +82,10 @@ public:
 
 public:
   inline
-  static std::shared_ptr<BigIntImplem> make_shared_ptr(BoostBigInt *bigInt);
+  static std::shared_ptr<BigIntImplem> make_shared_ptr(nativeint value);
+
+  inline
+  static std::shared_ptr<BigIntImplem> make_shared_ptr(const mp_int& value);
 
 private:
   mp_int _value;

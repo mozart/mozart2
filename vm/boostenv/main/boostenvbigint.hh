@@ -46,31 +46,31 @@ BoostBigInt::BoostBigInt(mp_int value) {
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator-() {
-  return make_shared_ptr(this); // TODO
+  return make_shared_ptr(value()); // TODO
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator+(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(this); // TODO
+  return make_shared_ptr(value()); // TODO
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator+(nativeint b) {
-  return make_shared_ptr(this); // TODO
+  return make_shared_ptr(value()); // TODO
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator-(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(this); // TODO
+  return make_shared_ptr(value()); // TODO
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator*(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(new BoostBigInt(value() * std::static_pointer_cast<BoostBigInt>(b)->value()));
+  return make_shared_ptr(value() * std::static_pointer_cast<BoostBigInt>(b)->value());
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator/(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(this); // TODO
+  return make_shared_ptr(value()); // TODO
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator%(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(this); // TODO
+  return make_shared_ptr(value()); // TODO
 }
 
 int BoostBigInt::compare(std::shared_ptr<BigIntImplem> b) {
@@ -81,8 +81,12 @@ void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int wid
   out << value();
 }
 
-std::shared_ptr<BigIntImplem> BoostBigInt::make_shared_ptr(BoostBigInt *bigInt) {
-  return std::static_pointer_cast<BigIntImplem>(std::make_shared<BoostBigInt>(*bigInt));
+std::shared_ptr<BigIntImplem> BoostBigInt::make_shared_ptr(nativeint value) {
+  return std::static_pointer_cast<BigIntImplem>(std::make_shared<BoostBigInt>(value));
+}
+
+std::shared_ptr<BigIntImplem> BoostBigInt::make_shared_ptr(const mp_int& value) {
+  return std::static_pointer_cast<BigIntImplem>(std::make_shared<BoostBigInt>(value));
 }
 
 } }

@@ -248,7 +248,7 @@ UnstableNode BoostBasedVM::newBigInt(VM vm, nativeint value) {
 }
 
 std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, nativeint value) {
-  return BoostBigInt::make_shared_ptr(new BoostBigInt(value));
+  return BoostBigInt::make_shared_ptr(value);
 }
 
 } }

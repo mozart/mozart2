@@ -81,11 +81,10 @@ public:
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 public:
-  inline
-  static std::shared_ptr<BigIntImplem> make_shared_ptr(nativeint value);
-
-  inline
-  static std::shared_ptr<BigIntImplem> make_shared_ptr(const mp_int& value);
+  template<class T>
+  static std::shared_ptr<BigIntImplem> make_shared_ptr(const T& value) {
+    return std::static_pointer_cast<BigIntImplem>(std::make_shared<BoostBigInt>(value));
+  }
 
 private:
   mp_int _value;

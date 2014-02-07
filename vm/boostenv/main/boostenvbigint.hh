@@ -81,14 +81,6 @@ void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int wid
   out << value();
 }
 
-std::shared_ptr<BigIntImplem> BoostBigInt::make_shared_ptr(nativeint value) {
-  return std::static_pointer_cast<BigIntImplem>(std::make_shared<BoostBigInt>(value));
-}
-
-std::shared_ptr<BigIntImplem> BoostBigInt::make_shared_ptr(const mp_int& value) {
-  return std::static_pointer_cast<BigIntImplem>(std::make_shared<BoostBigInt>(value));
-}
-
 } }
 
 #endif

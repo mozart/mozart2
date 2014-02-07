@@ -41,7 +41,7 @@ BoostBigInt::BoostBigInt(nativeint value) {
   _value = value;
 }
 
-BoostBigInt::BoostBigInt(mp_int value) {
+BoostBigInt::BoostBigInt(const mp_int& value) {
   _value = value;
 }
 

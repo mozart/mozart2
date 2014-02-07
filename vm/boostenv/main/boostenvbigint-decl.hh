@@ -49,7 +49,7 @@ public:
   BoostBigInt(nativeint value);
 
   inline
-  BoostBigInt(mp_int value);
+  BoostBigInt(const mp_int& value);
 
   mp_int value() { return _value; }
 

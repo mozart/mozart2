@@ -18,7 +18,7 @@ add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
 
   # First pass: generate data types and interfaces
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/mozart.ast
     -DMOZART_GENERATOR
@@ -29,7 +29,7 @@ add_custom_command(
     ${CMAKE_CURRENT_BINARY_DIR}/
 
   # Second pass: generate builtin information
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x -femit-ast
+  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/coremodules.astbi
     -I ${CMAKE_CURRENT_BINARY_DIR}

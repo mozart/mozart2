@@ -37,6 +37,10 @@ namespace mozart {
 
 #include "BigInt-implem.hh"
 
+bool BigInt::equals(VM vm, RichNode right) {
+  return value()->compare(right.as<BigInt>().value()) == 0;
+}
+
 UnstableNode BigInt::opposite(VM vm) {
   return BigInt::build(vm, -(*value()));
 }

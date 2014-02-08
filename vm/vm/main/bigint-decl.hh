@@ -92,6 +92,10 @@ public:
     value()->printReprToStream(vm, out, depth, width);
   }
 
+public:
+  inline
+  static UnstableNode shrink(VM vm, const std::shared_ptr<BigIntImplem>& p);
+
 private:
   std::shared_ptr<BigIntImplem> _value;
 };

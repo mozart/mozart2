@@ -81,6 +81,10 @@ int BoostBigInt::compare(std::shared_ptr<BigIntImplem> b) {
   return value().compare(cast(b)->value());
 }
 
+nativeint BoostBigInt::nativeintValue() {
+  return value().convert_to<nativeint>();
+}
+
 void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
   out << value();
 }

@@ -81,6 +81,9 @@ public:
   int compare(std::shared_ptr<BigIntImplem> b);
 
   inline
+  nativeint nativeintValue();
+
+  inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 public:

@@ -42,6 +42,8 @@ public:
   virtual int compare(nativeint b) = 0;
   virtual int compare(std::shared_ptr<BigIntImplem> b) = 0;
 
+  virtual nativeint nativeintValue() = 0;
+
   virtual void printReprToStream(VM vm, std::ostream& out, int depth, int width) = 0;
 };
 

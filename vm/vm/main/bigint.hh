@@ -42,21 +42,21 @@ bool BigInt::equals(VM vm, RichNode right) {
 }
 
 UnstableNode BigInt::opposite(VM vm) {
-  return BigInt::build(vm, -(*value()));
+  return shrink(vm, -(*value()));
 }
 
 UnstableNode BigInt::add(VM vm, RichNode right) {
   if (right.is<SmallInt>()) {
     return add(vm, right.as<SmallInt>().value());
   } else if (right.is<BigInt>()) {
-    return BigInt::build(vm, *value() + right.as<BigInt>().value());
+    return shrink(vm, *value() + right.as<BigInt>().value());
   } else {
     raiseTypeError(vm, "Integer", right);
   }
 }
 
 UnstableNode BigInt::add(VM vm, nativeint b) {
-  return BigInt::build(vm, *value() + b);
+  return shrink(vm, *value() + b);
 }
 
 UnstableNode BigInt::subtract(VM vm, RichNode right) {
@@ -68,7 +68,7 @@ UnstableNode BigInt::subtract(VM vm, RichNode right) {
   } else {
     raiseTypeError(vm, "Integer", right);
   }
-  return BigInt::build(vm, *value() - b);
+  return shrink(vm, *value() - b);
 }
 
 UnstableNode BigInt::multiply(VM vm, RichNode right) {
@@ -80,7 +80,7 @@ UnstableNode BigInt::multiply(VM vm, RichNode right) {
   } else {
     raiseTypeError(vm, "Integer", right);
   }
-  return BigInt::build(vm, *value() * b);
+  return shrink(vm, *value() * b);
 }
 
 UnstableNode BigInt::div(VM vm, RichNode right) {
@@ -96,7 +96,7 @@ UnstableNode BigInt::div(VM vm, RichNode right) {
   } else {
     raiseTypeError(vm, "Integer", right);
   }
-  return BigInt::build(vm, *value() / b);
+  return shrink(vm, *value() / b);
 }
 
 UnstableNode BigInt::mod(VM vm, RichNode right) {
@@ -108,14 +108,23 @@ UnstableNode BigInt::mod(VM vm, RichNode right) {
   } else {
     raiseTypeError(vm, "Integer", right);
   }
-  return BigInt::build(vm, *value() % b);
+  return shrink(vm, *value() % b);
 }
 
 UnstableNode BigInt::abs(VM vm) {
   if (value()->compare(0) < 0) {
     return opposite(vm);
   } else {
-    return BigInt::build(vm, value()); // TODO: optimize
+    return shrink(vm, value()); // TODO: optimize
+  }
+}
+
+UnstableNode BigInt::shrink(VM vm, const std::shared_ptr<BigIntImplem>& n) {
+  if (n->compare(std::numeric_limits<nativeint>::max()) <= 0 &&
+      n->compare(std::numeric_limits<nativeint>::min()) >= 0) {
+    return SmallInt::build(vm, n->nativeintValue());
+  } else {
+    return BigInt::build(vm, n);
   }
 }
 

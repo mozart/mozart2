@@ -116,6 +116,10 @@ template <class C>
 inline int compareByCodePoint(const BaseLString<C>& a,
                               const BaseLString<C>& b);
 
+template <>
+inline int compareByCodePoint<char16_t>(const BaseLString<char16_t>& a,
+                                        const BaseLString<char16_t>& b);
+
 template <class C>
 inline int compareByCodePoint(const C* a, const BaseLString<C>& b) {
   return compareByCodePoint(makeLString(a), b);

@@ -73,6 +73,10 @@ std::shared_ptr<BigIntImplem> BoostBigInt::operator%(std::shared_ptr<BigIntImple
   return make_shared_ptr(value() % cast(b)->value());
 }
 
+int BoostBigInt::compare(nativeint b) {
+  return value().compare(b);
+}
+
 int BoostBigInt::compare(std::shared_ptr<BigIntImplem> b) {
   return value().compare(cast(b)->value());
 }

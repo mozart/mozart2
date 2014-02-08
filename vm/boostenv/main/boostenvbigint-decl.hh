@@ -75,6 +75,9 @@ public:
   std::shared_ptr<BigIntImplem> operator%(std::shared_ptr<BigIntImplem> b);
 
   inline
+  int compare(nativeint b);
+
+  inline
   int compare(std::shared_ptr<BigIntImplem> b);
 
   inline

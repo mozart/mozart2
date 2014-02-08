@@ -112,11 +112,10 @@ UnstableNode BigInt::mod(VM vm, RichNode right) {
 }
 
 UnstableNode BigInt::abs(VM vm) {
-  std::shared_ptr<BigIntImplem> zero = vm->newBigIntImplem(0);
-  if (value()->compare(zero) < 0) {
+  if (value()->compare(0) < 0) {
     return opposite(vm);
   } else {
-    return BigInt::build(vm, value());
+    return BigInt::build(vm, value()); // TODO: optimize
   }
 }
 

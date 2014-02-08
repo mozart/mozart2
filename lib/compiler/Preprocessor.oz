@@ -117,6 +117,15 @@ define
             % Get out of one file
             {Preprocess NewIn NewBaseURL NewStack Offset PrevPos Defines LastNoSuccess}
          end
+      [] tkParseError(_) then
+         ctx(valid:true
+             first:First
+             cache:{NewDictionary}
+             offset:Offset
+             posbegin:Pos.1
+             posend:PrevPos
+             lastNoSuccess:LastNoSuccess
+             rest:{MakeEOFContext tkEof(Defines) Offset+1 Pos.2 Pos.2 LastNoSuccess})
       [] tkPreprocessorDirective('define' Var) then
          {Preprocess Rest BaseURL FileStack Offset PrevPos
                      {AdjoinAt Defines Var true} LastNoSuccess}

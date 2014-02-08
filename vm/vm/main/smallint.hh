@@ -80,7 +80,14 @@ UnstableNode SmallInt::opposite(VM vm) {
 }
 
 UnstableNode SmallInt::add(VM vm, RichNode right) {
-  return add(vm, getArgument<nativeint>(vm, right));
+  if (right.is<SmallInt>()) {
+    return add(vm, right.as<SmallInt>().value());
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).add(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::add(VM vm, nativeint b) {
@@ -92,8 +99,9 @@ UnstableNode SmallInt::add(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).add(vm, right);
   }
 }
 

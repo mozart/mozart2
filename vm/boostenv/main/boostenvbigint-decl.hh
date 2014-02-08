@@ -87,6 +87,11 @@ public:
   }
 
 private:
+  static std::shared_ptr<BoostBigInt> cast(std::shared_ptr<BigIntImplem> b) {
+    return std::static_pointer_cast<BoostBigInt>(b);
+  }
+
+private:
   mp_int _value;
 };
 

@@ -50,7 +50,7 @@ std::shared_ptr<BigIntImplem> BoostBigInt::operator-() {
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator+(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(value() + std::static_pointer_cast<BoostBigInt>(b)->value());
+  return make_shared_ptr(value() + cast(b)->value());
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator+(nativeint b) {
@@ -62,7 +62,7 @@ std::shared_ptr<BigIntImplem> BoostBigInt::operator-(std::shared_ptr<BigIntImple
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator*(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(value() * std::static_pointer_cast<BoostBigInt>(b)->value());
+  return make_shared_ptr(value() * cast(b)->value());
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator/(std::shared_ptr<BigIntImplem> b) {

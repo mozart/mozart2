@@ -340,6 +340,7 @@ ContainedLString<std::vector<To>> toUTF(const BaseLString<From>& input) {
   return UTFConvertor<To, From>::call(input);
 }
 
+// UTF-8 and UTF-32 can be sorted directly.
 template <class C>
 int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) {
   if (a.string == b.string) {
@@ -348,36 +349,35 @@ int compareByCodePoint(const BaseLString<C>& a, const BaseLString<C>& b) {
 
   size_t minLength = std::min(a.length, b.length);
 
-  // UTF-8 and UTF-32 can be sorted directly.
-  if (!std::is_same<C, char16_t>::value) {
-    int compareRes = std::char_traits<C>::compare(a.string, b.string,
-                                                  minLength);
-    if (compareRes != 0)
-      return compareRes;
+  int compareRes = std::char_traits<C>::compare(a.string, b.string, minLength);
+  if (compareRes != 0)
+    return compareRes;
+
+  return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
+}
+
+// UTF-16 need be compared manually, because a surrogate pair rank higher
+// than 0xe000, but the value in a string is lower.
+template <>
+int compareByCodePoint<char16_t>(const BaseLString<char16_t>& a, const BaseLString<char16_t>& b) {
+  if (a.string == b.string) {
+    return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
   }
 
-  // UTF-16 need be compared manually, because a surrogate pair rank higher
-  // than 0xe000, but the value in a string is lower.
-  else {
-    auto aa = a.string, bb = b.string;
-    for (; minLength; --minLength, ++aa, ++bb) {
-      if (*aa == *bb)
-        continue;
+  size_t minLength = std::min(a.length, b.length);
 
-      // These comparisons produce warnings as some versions of Clang
-      // believe they are tautological (when C instantiated to char).
-      // But the is_same<C, char16_t> above means C is char16_t here.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
-      bool aIsSurrogate = 0xd800 <= *aa && *aa < 0xe000;
-      bool bIsSurrogate = 0xd800 <= *bb && *bb < 0xe000;
-#pragma clang diagnostic pop
+  auto aa = a.string, bb = b.string;
+  for (; minLength; --minLength, ++aa, ++bb) {
+    if (*aa == *bb)
+      continue;
 
-      if (aIsSurrogate == bIsSurrogate) {
-        return *aa < *bb ? -1 : 1;
-      } else {
-        return aIsSurrogate ? 1 : -1;
-      }
+    bool aIsSurrogate = 0xd800 <= *aa && *aa < 0xe000;
+    bool bIsSurrogate = 0xd800 <= *bb && *bb < 0xe000;
+
+    if (aIsSurrogate == bIsSurrogate) {
+      return *aa < *bb ? -1 : 1;
+    } else {
+      return aIsSurrogate ? 1 : -1;
     }
   }
 

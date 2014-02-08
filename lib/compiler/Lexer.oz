@@ -101,9 +101,9 @@ define
       whitespaceItem:  alt(simpleSpace comment)
       simpleSpace:     alt(&\t &\v &\f & )
       newLine:         alt(&\r &\n)
-      comment:         alt(&? blockComment [&% star([nla(newLine) wc])])
+      comment:         alt(&? blockComment [&% star([nla(alt(newLine EofCh)) wc])])
       blockComment:    ["/*" star(alt(
-                                     [nla("/*") nla("*/") wc]
+                                     [nla("/*") nla("*/") nla(EofCh) wc]
                                      blockComment
                                      )) "*/"]
 
@@ -276,15 +276,15 @@ define
          &\\ &' &" &` &&
       ))
       variableChar: alt(
-         seq2(nla(alt(&` &\\ 0)) wc)
+         seq2(nla(alt(&` &\\ 0 EofCh)) wc)
          pseudoChar
       )
       atomChar: alt(
-         seq2(nla(alt(&' &\\ 0)) wc)
+         seq2(nla(alt(&' &\\ 0 EofCh)) wc)
          pseudoChar
       )
       stringChar: alt(
-         seq2(nla(alt(&" &\\ 0)) wc)
+         seq2(nla(alt(&" &\\ 0 EofCh)) wc)
          pseudoChar
       )
    )
@@ -347,6 +347,9 @@ define
 
       [] tkEof then
          Result = reader(tkEof CtxIn.pos#CtxOut.pos true Result)
+         
+      [] tkParseError(_) then
+         Result = reader(Token CtxIn.pos#CtxOut.pos true Result)
 
       else
          NextResult

@@ -46,7 +46,7 @@ BoostBigInt::BoostBigInt(const mp_int& value) {
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator-() {
-  return make_shared_ptr(value()); // TODO
+  return make_shared_ptr(-value());
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator+(std::shared_ptr<BigIntImplem> b) {
@@ -58,7 +58,7 @@ std::shared_ptr<BigIntImplem> BoostBigInt::operator+(nativeint b) {
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator-(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(value()); // TODO
+  return make_shared_ptr(value() - cast(b)->value());
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator*(std::shared_ptr<BigIntImplem> b) {
@@ -66,15 +66,15 @@ std::shared_ptr<BigIntImplem> BoostBigInt::operator*(std::shared_ptr<BigIntImple
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator/(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(value()); // TODO
+  return make_shared_ptr(value() / cast(b)->value());
 }
 
 std::shared_ptr<BigIntImplem> BoostBigInt::operator%(std::shared_ptr<BigIntImplem> b) {
-  return make_shared_ptr(value()); // TODO
+  return make_shared_ptr(value() % cast(b)->value());
 }
 
 int BoostBigInt::compare(std::shared_ptr<BigIntImplem> b) {
-  return 0; // TODO
+  return value().compare(cast(b)->value());
 }
 
 void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int width) {

@@ -86,7 +86,11 @@ UnstableNode BigInt::multiply(VM vm, RichNode right) {
 UnstableNode BigInt::div(VM vm, RichNode right) {
   std::shared_ptr<BigIntImplem> b;
   if (right.is<SmallInt>()) {
-    b = vm->newBigIntImplem(right.as<SmallInt>().value());
+    nativeint divisor = right.as<SmallInt>().value();
+    if (divisor == 0) {
+      raiseKernelError(vm, "Integer division: Division by zero");
+    }
+    b = vm->newBigIntImplem(divisor);
   } else if (right.is<BigInt>()) {
     b = right.as<BigInt>().value();
   } else {

@@ -74,8 +74,8 @@ UnstableNode SmallInt::opposite(VM vm) {
     // No overflow
     return SmallInt::build(vm, -value());
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode big = vm->newBigInt(std::numeric_limits<nativeint>::min());
+    return Numeric(big).opposite(vm);
   }
 }
 
@@ -106,7 +106,14 @@ UnstableNode SmallInt::add(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::subtract(VM vm, RichNode right) {
-  return subtractValue(vm, getArgument<nativeint>(vm, right));
+  if (right.is<SmallInt>()) {
+    return subtractValue(vm, right.as<SmallInt>().value());
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).subtract(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
@@ -118,8 +125,9 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).subtract(vm, right);
   }
 }
 
@@ -165,7 +173,14 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::div(VM vm, RichNode right) {
-  return divValue(vm, getArgument<nativeint>(vm, right));
+  if (right.is<SmallInt>()) {
+    return divValue(vm, right.as<SmallInt>().value());
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).div(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::divValue(VM vm, nativeint b) {
@@ -179,13 +194,21 @@ UnstableNode SmallInt::divValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a / b);
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).div(vm, right);
   }
 }
 
 UnstableNode SmallInt::mod(VM vm, RichNode right) {
-  return modValue(vm, getArgument<nativeint>(vm, right));
+  if (right.is<SmallInt>()) {
+    return modValue(vm, right.as<SmallInt>().value());
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).mod(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::modValue(VM vm, nativeint b) {
@@ -196,8 +219,9 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a % b);
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).mod(vm, right);
   }
 }
 
@@ -208,8 +232,8 @@ UnstableNode SmallInt::abs(VM vm) {
     // No overflow
     return SmallInt::build(vm, a >= 0 ? a : -a);
   } else {
-    // Overflow - TODO: create a BigInt
-    return vm->newBigInt(0);
+    UnstableNode big = vm->newBigInt(std::numeric_limits<nativeint>::min());
+    return Numeric(big).opposite(vm);
   }
 }
 

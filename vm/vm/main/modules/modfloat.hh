@@ -65,7 +65,17 @@ public:
 
     static void call(VM vm, In value, Out result) {
       auto floatValue = getArgument<double>(vm, value);
-      result = build(vm, (nativeint) floatValue);
+      nativeint intValue = static_cast<nativeint>(floatValue);
+      double err = floatValue - static_cast<double>(intValue);
+      if (err > 0.5)
+        intValue++;
+      else if (err < -0.5)
+        intValue--;
+      else if (err == 0.5)
+        intValue += intValue & 1;
+      else if (err == -0.5)
+        intValue -= intValue & 1;
+      result = build(vm, intValue);
     }
   };
 

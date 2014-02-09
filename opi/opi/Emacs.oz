@@ -33,12 +33,14 @@ export
    getOPI:    GetOPI
    condSend:  CondSend
    interface: CompilerInterfaceEmacs
+   attentionPrefix: MSG_ERROR
 define
    TimeoutToConfigBar = 200
    TimeoutToUpdateBar = TimeoutToConfigBar
 
+   MSG_ERROR = [17]
+
    local
-      MSG_ERROR = [17]
 
       class TextSocket from Open.socket Open.text
          prop final

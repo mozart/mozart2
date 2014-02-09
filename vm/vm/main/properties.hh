@@ -233,6 +233,8 @@ void PropertyRegistry::gCollect(GC gc) {
 
   gc->copyStableRef(config.defaultExceptionHandler,
                     config.defaultExceptionHandler);
+  gc->copyStableRef(config.errorPrefix,
+                    config.errorPrefix);
 }
 
 }

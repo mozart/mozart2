@@ -34,7 +34,7 @@ import
    OS(getEnv)
    Open(file)
    Compiler(engine)
-   Emacs(interface)
+   Emacs(interface attentionPrefix)
    OPIEnv(full)
 export
    compiler: OPICompiler
@@ -54,6 +54,7 @@ define
    end
 
    {Property.put 'oz.standalone' false}
+   {Property.put 'errors.prefix' Emacs.attentionPrefix}
 
    OPICompiler = {New Compiler.engine init()}
    {OPICompiler enqueue(mergeEnv(OPIEnv.full))}

@@ -43,8 +43,8 @@ void PropertyRegistry::initConfig(VM vm) {
 
   // Errors
 
-  config.defaultExceptionHandler = new (vm) StableNode;
-  config.defaultExceptionHandler->init(vm, buildNil(vm));
+  config.defaultExceptionHandler = new (vm) StableNode(vm, buildNil(vm));
+  config.errorPrefix = new (vm) StableNode(vm, buildNil(vm));
 
   config.errorsDebug = true;
   config.errorsDepth = 10;
@@ -90,6 +90,15 @@ void PropertyRegistry::registerPredefined(VM vm) {
     },
     [this] (VM vm, RichNode value) {
       config.defaultExceptionHandler = value.getStableRef(vm);
+    }
+  );
+
+  registerProp(vm, "errors.prefix",
+    [this] (VM vm) -> UnstableNode {
+      return { vm, *config.errorPrefix };
+    },
+    [this] (VM vm, RichNode value) {
+      config.errorPrefix = value.getStableRef(vm);
     }
   );
 

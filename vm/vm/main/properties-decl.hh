@@ -162,6 +162,7 @@ public:
 
     // Errors
     StableNode* defaultExceptionHandler;
+    StableNode* errorPrefix;
     bool errorsDebug;
     nativeint errorsDepth;
     nativeint errorsWidth;

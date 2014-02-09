@@ -117,6 +117,15 @@ public:
         ozVSGet(vm, value, valueBufSize, valueStr);
 
         auto& stream = boolToStdErr ? std::cerr : std::cout;
+
+        if (boolToStdErr) {
+          StableNode* prefix = vm->getPropertyRegistry().config.errorPrefix;
+          size_t prefixBufSize = ozVSLengthForBuffer(vm, *prefix);
+          std::string prefixStr;
+          ozVSGet(vm, *prefix, prefixBufSize, prefixStr);
+          stream << prefixStr;
+        }
+        
         stream << valueStr;
         if (boolNewLine)
           stream << std::endl;

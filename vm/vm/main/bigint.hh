@@ -63,33 +63,11 @@ UnstableNode BigInt::add(VM vm, nativeint b) {
 }
 
 UnstableNode BigInt::subtract(VM vm, RichNode right) {
-  using namespace mozart::patternmatching;
-
-  std::shared_ptr<BigIntImplem> b;
-  nativeint smallInt;
-  if (matches(vm, right, capture(smallInt))) {
-    b = vm->newBigIntImplem(smallInt);
-  } else if (right.is<BigInt>()) {
-    b = right.as<BigInt>().value();
-  } else {
-    raiseTypeError(vm, "Integer", right);
-  }
-  return shrink(vm, *value() - b);
+  return shrink(vm, *value() - coerce(vm, right));
 }
 
 UnstableNode BigInt::multiply(VM vm, RichNode right) {
-  using namespace mozart::patternmatching;
-
-  std::shared_ptr<BigIntImplem> b;
-  nativeint smallInt;
-  if (matches(vm, right, capture(smallInt))) {
-    b = vm->newBigIntImplem(smallInt);
-  } else if (right.is<BigInt>()) {
-    b = right.as<BigInt>().value();
-  } else {
-    raiseTypeError(vm, "Integer", right);
-  }
-  return shrink(vm, *value() * b);
+  return shrink(vm, *value() * coerce(vm, right));
 }
 
 UnstableNode BigInt::div(VM vm, RichNode right) {
@@ -111,18 +89,7 @@ UnstableNode BigInt::div(VM vm, RichNode right) {
 }
 
 UnstableNode BigInt::mod(VM vm, RichNode right) {
-  using namespace mozart::patternmatching;
-
-  std::shared_ptr<BigIntImplem> b;
-  nativeint smallInt;
-  if (matches(vm, right, capture(smallInt))) {
-    b = vm->newBigIntImplem(smallInt);
-  } else if (right.is<BigInt>()) {
-    b = right.as<BigInt>().value();
-  } else {
-    raiseTypeError(vm, "Integer", right);
-  }
-  return shrink(vm, *value() % b);
+  return shrink(vm, *value() % coerce(vm, right));
 }
 
 UnstableNode BigInt::abs(VM vm) {
@@ -139,6 +106,19 @@ UnstableNode BigInt::shrink(VM vm, const std::shared_ptr<BigIntImplem>& n) {
     return SmallInt::build(vm, n->nativeintValue());
   } else {
     return BigInt::build(vm, n);
+  }
+}
+
+std::shared_ptr<BigIntImplem> BigInt::coerce(VM vm, RichNode value) {
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, value, capture(smallInt))) {
+    return vm->newBigIntImplem(smallInt);
+  } else if (value.is<BigInt>()) {
+    return value.as<BigInt>().value();
+  } else {
+    raiseTypeError(vm, "Integer", value);
   }
 }
 

@@ -96,6 +96,9 @@ private:
   inline
   static UnstableNode shrink(VM vm, const std::shared_ptr<BigIntImplem>& p);
 
+  inline
+  static std::shared_ptr<BigIntImplem> coerce(VM vm, RichNode value);
+
 private:
   std::shared_ptr<BigIntImplem> _value;
 };

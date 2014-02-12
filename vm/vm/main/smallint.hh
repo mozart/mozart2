@@ -80,8 +80,11 @@ UnstableNode SmallInt::opposite(VM vm) {
 }
 
 UnstableNode SmallInt::add(VM vm, RichNode right) {
-  if (right.is<SmallInt>()) {
-    return add(vm, right.as<SmallInt>().value());
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return add(vm, smallInt);
   } else if (right.is<BigInt>()) {
     UnstableNode big = vm->newBigInt(value());
     return Numeric(big).add(vm, right);
@@ -106,8 +109,11 @@ UnstableNode SmallInt::add(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::subtract(VM vm, RichNode right) {
-  if (right.is<SmallInt>()) {
-    return subtractValue(vm, right.as<SmallInt>().value());
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return subtractValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
     UnstableNode big = vm->newBigInt(value());
     return Numeric(big).subtract(vm, right);
@@ -132,8 +138,11 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::multiply(VM vm, RichNode right) {
-  if (right.is<SmallInt>()) {
-    return multiplyValue(vm, right.as<SmallInt>().value());
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return multiplyValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
     UnstableNode big = vm->newBigInt(value());
     return Numeric(big).multiply(vm, right);
@@ -173,8 +182,11 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::div(VM vm, RichNode right) {
-  if (right.is<SmallInt>()) {
-    return divValue(vm, right.as<SmallInt>().value());
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return divValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
     UnstableNode big = vm->newBigInt(value());
     return Numeric(big).div(vm, right);
@@ -201,8 +213,11 @@ UnstableNode SmallInt::divValue(VM vm, nativeint b) {
 }
 
 UnstableNode SmallInt::mod(VM vm, RichNode right) {
-  if (right.is<SmallInt>()) {
-    return modValue(vm, right.as<SmallInt>().value());
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return modValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
     UnstableNode big = vm->newBigInt(value());
     return Numeric(big).mod(vm, right);

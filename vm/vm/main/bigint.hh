@@ -46,8 +46,11 @@ UnstableNode BigInt::opposite(VM vm) {
 }
 
 UnstableNode BigInt::add(VM vm, RichNode right) {
-  if (right.is<SmallInt>()) {
-    return add(vm, right.as<SmallInt>().value());
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return add(vm, smallInt);
   } else if (right.is<BigInt>()) {
     return shrink(vm, *value() + right.as<BigInt>().value());
   } else {
@@ -60,9 +63,12 @@ UnstableNode BigInt::add(VM vm, nativeint b) {
 }
 
 UnstableNode BigInt::subtract(VM vm, RichNode right) {
+  using namespace mozart::patternmatching;
+
   std::shared_ptr<BigIntImplem> b;
-  if (right.is<SmallInt>()) {
-    b = vm->newBigIntImplem(right.as<SmallInt>().value());
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    b = vm->newBigIntImplem(smallInt);
   } else if (right.is<BigInt>()) {
     b = right.as<BigInt>().value();
   } else {
@@ -72,9 +78,12 @@ UnstableNode BigInt::subtract(VM vm, RichNode right) {
 }
 
 UnstableNode BigInt::multiply(VM vm, RichNode right) {
+  using namespace mozart::patternmatching;
+
   std::shared_ptr<BigIntImplem> b;
-  if (right.is<SmallInt>()) {
-    b = vm->newBigIntImplem(right.as<SmallInt>().value());
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    b = vm->newBigIntImplem(smallInt);
   } else if (right.is<BigInt>()) {
     b = right.as<BigInt>().value();
   } else {
@@ -84,9 +93,11 @@ UnstableNode BigInt::multiply(VM vm, RichNode right) {
 }
 
 UnstableNode BigInt::div(VM vm, RichNode right) {
+  using namespace mozart::patternmatching;
+
   std::shared_ptr<BigIntImplem> b;
-  if (right.is<SmallInt>()) {
-    nativeint divisor = right.as<SmallInt>().value();
+  nativeint divisor;
+  if (matches(vm, right, capture(divisor))) {
     if (divisor == 0) {
       raiseKernelError(vm, "Integer division: Division by zero");
     }
@@ -100,9 +111,12 @@ UnstableNode BigInt::div(VM vm, RichNode right) {
 }
 
 UnstableNode BigInt::mod(VM vm, RichNode right) {
+  using namespace mozart::patternmatching;
+
   std::shared_ptr<BigIntImplem> b;
-  if (right.is<SmallInt>()) {
-    b = vm->newBigIntImplem(right.as<SmallInt>().value());
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    b = vm->newBigIntImplem(smallInt);
   } else if (right.is<BigInt>()) {
     b = right.as<BigInt>().value();
   } else {

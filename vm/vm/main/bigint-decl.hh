@@ -36,6 +36,10 @@ namespace mozart {
 
 class BigInt: public DataType<BigInt>, WithValueBehavior {
 public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom("int");
+  }
+
   BigInt(VM vm, const std::shared_ptr<BigIntImplem>& p): _value(p) {}
 
   BigInt(VM vm, GR gr, BigInt& from): _value(std::move(from._value)) {}
@@ -45,6 +49,15 @@ public:
 
   inline
   bool equals(VM vm, RichNode right);
+
+  inline
+  int compareFeatures(VM vm, RichNode right);
+
+public:
+  // Comparable interface
+
+  inline
+  int compare(VM vm, RichNode right);
 
 public:
   // Numeric inteface

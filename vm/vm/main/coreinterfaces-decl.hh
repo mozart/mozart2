@@ -77,7 +77,7 @@ struct Interface<BindableReadOnly>:
 class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
-  ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
+  ImplementedBy<SmallInt, BigInt, Atom, Boolean, Float, BuiltinProcedure,
                 ReifiedThread, Unit, String, ByteString, UniqueName,
                 PatMatCapture>,
   NoAutoReflectiveCalls {
@@ -117,7 +117,7 @@ struct Interface<StructuralEquatable>:
 class Comparable;
 template<>
 struct Interface<Comparable>:
-  ImplementedBy<SmallInt, Atom, Float, String, ByteString> {
+  ImplementedBy<SmallInt, BigInt, Atom, Float, String, ByteString> {
 
   int compare(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "comparable", self);

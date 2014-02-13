@@ -41,6 +41,27 @@ bool BigInt::equals(VM vm, RichNode right) {
   return value()->compare(right.as<BigInt>().value()) == 0;
 }
 
+int BigInt::compareFeatures(VM vm, RichNode right) {
+  return value()->compare(right.as<BigInt>().value());
+}
+
+// Comparable ------------------------------------------------------------------
+
+int BigInt::compare(VM vm, RichNode right) {
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return value()->compare(smallInt);
+  } else if (right.is<BigInt>()) {
+    return value()->compare(right.as<BigInt>().value());
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
+}
+
+// Numeric ---------------------------------------------------------------------
+
 UnstableNode BigInt::opposite(VM vm) {
   return shrink(vm, -(*value()));
 }

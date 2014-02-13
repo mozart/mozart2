@@ -62,8 +62,17 @@ int SmallInt::compareFeatures(VM vm, RichNode right) {
 // Comparable ------------------------------------------------------------------
 
 int SmallInt::compare(VM vm, RichNode right) {
-  auto rightIntValue = getArgument<nativeint>(vm, right);
-  return (value() == rightIntValue) ? 0 : (value() < rightIntValue) ? -1 : 1;
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return (value() == smallInt) ? 0 : (value() < smallInt) ? -1 : 1;
+  } else if (right.is<BigInt>()) {
+    UnstableNode self = SmallInt::build(vm, value());
+    return -Comparable(right).compare(vm, self);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 // Numeric ---------------------------------------------------------------------

@@ -37,14 +37,6 @@ namespace mozart { namespace boostenv {
 // BoostBigInt //
 /////////////////
 
-BoostBigInt::BoostBigInt(nativeint value) {
-  _value = value;
-}
-
-BoostBigInt::BoostBigInt(const mp_int& value) {
-  _value = value;
-}
-
 std::shared_ptr<BigIntImplem> BoostBigInt::operator-() {
   return make_shared_ptr(-value());
 }
@@ -83,6 +75,10 @@ int BoostBigInt::compare(std::shared_ptr<BigIntImplem> b) {
 
 nativeint BoostBigInt::nativeintValue() {
   return value().convert_to<nativeint>();
+}
+
+double BoostBigInt::doubleValue() {
+  return value().convert_to<double>();
 }
 
 void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int width) {

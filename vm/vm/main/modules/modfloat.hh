@@ -75,16 +75,30 @@ public:
     static void call(VM vm, In value, Out result) {
       auto floatValue = getArgument<double>(vm, value);
       nativeint intValue = static_cast<nativeint>(floatValue);
-      double err = floatValue - static_cast<double>(intValue);
-      if (err > 0.5)
-        intValue++;
-      else if (err < -0.5)
-        intValue--;
-      else if (err == 0.5)
-        intValue += intValue & 1;
-      else if (err == -0.5)
-        intValue -= intValue & 1;
-      result = build(vm, intValue);
+      double err;
+
+      // Simple overflow check of double -> nativeint conversion
+      if (intValue == std::numeric_limits<nativeint>::min() ||
+          intValue == std::numeric_limits<nativeint>::max()) {
+        result = vm->newBigInt(floatValue);
+        err = floatValue - static_cast<RichNode>(result).as<BigInt>().doubleValue();
+      } else {
+        err = floatValue - static_cast<double>(intValue);
+        result = SmallInt::build(vm, intValue);
+      }
+
+      // bankers' rounding
+      if (err > 0.5) {
+        result = Numeric(result).add(vm, 1);
+      } else if (err < -0.5) {
+        result = Numeric(result).add(vm, -1);
+      } else if (err == 0.5 || err == -0.5) {
+        UnstableNode two = SmallInt::build(vm, 2);
+        UnstableNode mod = Numeric(result).mod(vm, two);
+        if (static_cast<RichNode>(mod).as<SmallInt>().value() != 0) {
+          result = Numeric(result).add(vm, mod);
+        }
+      }
     }
   };
 

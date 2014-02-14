@@ -101,6 +101,10 @@ public:
 public:
   // Miscellaneous
 
+  double doubleValue() {
+    return value()->doubleValue();
+  }
+
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     value()->printReprToStream(vm, out, depth, width);
   }

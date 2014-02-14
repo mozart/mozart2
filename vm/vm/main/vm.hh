@@ -51,6 +51,10 @@ UnstableNode VirtualMachineEnvironment::newBigInt(VM vm, nativeint value) {
   raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
 }
 
+UnstableNode VirtualMachineEnvironment::newBigInt(VM vm, double value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
+}
+
 std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, nativeint value) {
   raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
 }
@@ -153,6 +157,10 @@ void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
 }
 
 UnstableNode VirtualMachine::newBigInt(nativeint value) {
+  return environment.newBigInt(this, value);
+}
+
+UnstableNode VirtualMachine::newBigInt(double value) {
   return environment.newBigInt(this, value);
 }
 

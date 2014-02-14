@@ -46,10 +46,13 @@ typedef boost::multiprecision::cpp_int mp_int;
 class BoostBigInt : public BigIntImplem {
 public:
   inline
-  BoostBigInt(nativeint value);
+  BoostBigInt(nativeint value) : _value(value) {};
 
   inline
-  BoostBigInt(const mp_int& value);
+  BoostBigInt(double value) : _value(value) {};
+
+  inline
+  BoostBigInt(const mp_int& value) : _value(value) {};
 
   mp_int value() { return _value; }
 
@@ -82,6 +85,9 @@ public:
 
   inline
   nativeint nativeintValue();
+
+  inline
+  double doubleValue();
 
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);

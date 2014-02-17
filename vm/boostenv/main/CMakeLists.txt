@@ -40,7 +40,7 @@ add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
 
   # First pass: generate data types and interfaces
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}" -femit-ast
+  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
@@ -52,7 +52,7 @@ add_custom_command(
     ${CMAKE_CURRENT_BINARY_DIR}/
 
   # Second pass: generate builtin information
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}" -femit-ast
+  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.astbi
     -I ${CMAKE_CURRENT_BINARY_DIR}

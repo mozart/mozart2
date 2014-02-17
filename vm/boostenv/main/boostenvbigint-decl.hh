@@ -90,6 +90,9 @@ public:
   double doubleValue();
 
   inline
+  std::string str();
+
+  inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
 public:

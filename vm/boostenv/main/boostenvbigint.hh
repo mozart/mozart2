@@ -81,6 +81,10 @@ double BoostBigInt::doubleValue() {
   return value().convert_to<double>();
 }
 
+std::string BoostBigInt::str() {
+  return value().str();
+}
+
 void BoostBigInt::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
   out << value();
 }

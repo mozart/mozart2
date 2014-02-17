@@ -392,6 +392,9 @@ nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs) {
     return vs.as<String>().value().length;
   } else if (matches(vm, vs, capture(intValue))) {
     return getIntToStrBufferSize();
+  } else if (vs.is<BigInt>()) {
+    // TODO: optimize (could be based on msb() in Boost >= 1.55.0)
+    return vs.as<BigInt>().str().size();
   } else if (matches(vm, vs, capture(floatValue))) {
     return getFloatToStrBufferSize();
   } else {
@@ -444,6 +447,10 @@ bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<char>& output) {
     IntToStrBuffer buffer;
     auto length = intToStrBuffer(buffer, intValue);
     std::copy_n(buffer, length, std::back_inserter(output));
+    return true;
+  } else if (vs.is<BigInt>()) {
+    std::string buffer = vs.as<BigInt>().str();
+    std::copy(buffer.begin(), buffer.end(), std::back_inserter(output));
     return true;
   } else if (matches(vm, vs, capture(floatValue))) {
     FloatToStrBuffer buffer;

@@ -45,6 +45,7 @@ public:
   virtual nativeint nativeintValue() = 0;
   virtual double doubleValue() = 0;
 
+  virtual std::string str() = 0;
   virtual void printReprToStream(VM vm, std::ostream& out, int depth, int width) = 0;
 };
 

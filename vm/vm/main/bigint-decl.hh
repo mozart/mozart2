@@ -105,6 +105,10 @@ public:
     return value()->doubleValue();
   }
 
+  std::string str() {
+    return value()->str();
+  }
+
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     value()->printReprToStream(vm, out, depth, width);
   }

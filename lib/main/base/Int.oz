@@ -49,7 +49,7 @@ end
 
 fun {IntToString I}
    if {IsInt I} then
-      {VirtualString.toString I}
+      {VirtualString.toString {Value.toVirtualString I 0 0}}
    else
       {Exception.raiseError kernel(type 'Int.toString' [I] 'Integer' 1)}
       unit

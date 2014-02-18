@@ -136,7 +136,7 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
   nativeint c = a - b;
 
   // Detecting overflow - platform dependent (2's complement)
-  if ((((a ^ c) & (-b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+  if (((~(a ^ ~b) & (a ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
@@ -173,7 +173,8 @@ bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
     return false;
 
   // Slow test (because of the division)
-  return (b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb);
+  return (a == std::numeric_limits<nativeint>::min()) ||
+         ((b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb));
 }
 
 UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {

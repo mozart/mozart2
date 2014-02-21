@@ -36,6 +36,8 @@ namespace mozart {
 
 class BigInt: public DataType<BigInt>, WithValueBehavior {
 public:
+  static constexpr UUID uuid = "{00000000-0000-9e00-0000-000000000002}";
+
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom("int");
   }

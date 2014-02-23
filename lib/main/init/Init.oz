@@ -336,8 +336,11 @@ define
       end
 \endif
 
-      %% Link the real OS module, which should set up a proper BURL
+      %% Link the real OS module, which should set up a proper BURL.localize and BURL.open
       {Wait {RM link(url:'x-oz://system/OS.ozf' $)}}
+
+      %% Link the real Pickle module, which should set up a proper BURL.load
+      {RM link(url:'x-oz://system/Pickle.ozf' $)}.magicBaseFromInit = Base
 
       %% Link root functor (i.e. application)
       {Wait {RM link(url:{GET 'application.url'} $)}}

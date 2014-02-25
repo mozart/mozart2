@@ -25,6 +25,13 @@ find_package(Boost COMPONENTS
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
+# GMP (optional)
+include(FindGMP)
+if(GMP_FOUND)
+  include_directories(${GMP_INCLUDE_DIR})
+  add_definitions(-DUSE_GMP)
+endif()
+
 if(MINGW)
   # Work around a bug in MinGW
   string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x "
@@ -44,6 +51,10 @@ include_directories("${MOZART_DIR}/vm/boostenv/main"
 # Compile the executable
 add_executable(ozemulator emulator.cc)
 target_link_libraries(ozemulator mozartvmboost mozartvm ${Boost_LIBRARIES})
+
+if(GMP_FOUND)
+  target_link_libraries(ozemulator ${GMP_LIBRARY})
+endif()
 
 # Here it starts to differ wildly on Windows
 if(NOT WIN32)

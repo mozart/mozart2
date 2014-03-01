@@ -2,7 +2,7 @@
 
 ## Required software
 
-In order to build the system on MacOS you need at least the 10.8 version of the operating system. This is very important because the C++ compiler shipped with earlier version will fail.
+In order to build the system on MacOS you need at least the 10.8 version of the operating system. This is very important because the C++ compiler shipped with earlier version will fail (there are no proper C++0x headers and limited libc++ support).
 
 Download and install the following tools:
 
@@ -12,8 +12,8 @@ Download and install the following tools:
 
 ### Installing dependencies
 
-*  Install CMake if you do not have it already: `brew install cake` 
-*  Install the boost libraries: `brew install boost --with-c++11`.
+*  Install CMake if you do not have it already: `brew install cmake`
+*  Install the boost libraries: `brew install boost --with-c++11` (compare the version with the one in [README.md](README.md#requirements)).
 *  Install *llvm* and *clang*. You need to keep note of the directory containing the sources and the one containing the built files. You can use: 
 
 ```
@@ -29,7 +29,7 @@ Download and install the following tools:
             -DCMAKE_BUILD_TYPE=Release   ../llvm
     $ make     
 ```      
-We will refer to LLVM_SOURCES and to LLVM_BUILD whenever we refer to the sources directory of llvm and the build directory reap.
+We will refer to `LLVM_SOURCES` and to `LLVM_BUILD` whenever we refer to the sources directory of llvm and the build directory reap.
 
 ## Building
 With all the dependencies installed you can do:
@@ -40,9 +40,9 @@ With all the dependencies installed you can do:
     $ cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
             -DLLVM_SRC_DIR=LLVM_SOURCES -DLLVM_BUILD_DIR=LLVM_BUILD \
             -DCMAKE_BUILD_TYPE=Release ../mozart2/
-    $ make
+    $ make -j `sysctl -n hw.ncpu`
     $ make install
 ``` 
 
 ## Common problems
-If you already have any of the dependencies installed chances are that they were linked against *libstdc++* and this will produce errors during the build process. That is mostly the case if you already had a boost distribution installed. In that case please reinstall them or build them in another place and **be sure** that during the build process the *right* ones are chosen.
+If you already have any of the dependencies installed chances are that they were linked against *libstdc++* and this will produce errors during the build process. That is mostly the case if you already had a Boost distribution installed. In that case please reinstall them or build them in another place and **be sure** that during the build process the *right* ones are chosen.

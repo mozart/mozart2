@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __STRING_H
-#define __STRING_H
+#ifndef MOZART_STRING_H
+#define MOZART_STRING_H
 
 #include <string>
 #include "mozartcore.hh"
@@ -243,4 +243,4 @@ void String::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __STRING_H
+#endif // MOZART_STRING_H

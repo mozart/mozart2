@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __PORT_H
-#define __PORT_H
+#ifndef MOZART_PORT_H
+#define MOZART_PORT_H
 
 #include "mozartcore.hh"
 
@@ -68,4 +68,4 @@ UnstableNode Port::sendReceive(VM vm, RichNode value) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __PORT_H
+#endif // MOZART_PORT_H

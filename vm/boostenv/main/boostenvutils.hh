@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENVUTILS_H
-#define __BOOSTENVUTILS_H
+#ifndef MOZART_BOOSTENVUTILS_H
+#define MOZART_BOOSTENVUTILS_H
 
 #include "boostenvutils-decl.hh"
 
@@ -119,4 +119,4 @@ void BaseSocketConnection<T, P>::readHandler(
 
 #endif
 
-#endif // __BOOSTENVUTILS_H
+#endif // MOZART_BOOSTENVUTILS_H

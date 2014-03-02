@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REIFIEDTHREAD_H
-#define __REIFIEDTHREAD_H
+#ifndef MOZART_REIFIEDTHREAD_H
+#define MOZART_REIFIEDTHREAD_H
 
 #include "mozartcore.hh"
 
@@ -70,4 +70,4 @@ void ReifiedThread::injectException(VM vm, RichNode exception) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __REIFIEDTHREAD_H
+#endif // MOZART_REIFIEDTHREAD_H

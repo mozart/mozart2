@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GRTYPES_H
-#define __GRTYPES_H
+#ifndef MOZART_GRTYPES_H
+#define MOZART_GRTYPES_H
 
 #include "mozartcore.hh"
 
@@ -87,4 +87,4 @@ void GRedToUnstableBase::sClone(SC sc, RichNode from, UnstableNode& to) const {
 
 #endif // MOZART_GENERATOR
 
-#endif // __GRTYPES_H
+#endif // MOZART_GRTYPES_H

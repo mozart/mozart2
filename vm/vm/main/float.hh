@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_FLOAT_H
-#define __MOZART_FLOAT_H
+#ifndef MOZART_FLOAT_H
+#define MOZART_FLOAT_H
 
 #include <tuple>
 #include <memory>
@@ -206,4 +206,4 @@ UnstableNode Float::tanh(VM vm) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __MOZART_FLOAT_H
+#endif // MOZART_FLOAT_H

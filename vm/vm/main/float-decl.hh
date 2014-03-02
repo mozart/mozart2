@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __FLOAT_DECL_H
-#define __FLOAT_DECL_H
+#ifndef MOZART_FLOAT_DECL_H
+#define MOZART_FLOAT_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -206,4 +206,4 @@ private:
 
 }
 
-#endif // __FLOAT_DECL_H
+#endif // MOZART_FLOAT_DECL_H

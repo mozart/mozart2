@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __DATATYPESHELPERS_H
-#define __DATATYPESHELPERS_H
+#ifndef MOZART_DATATYPESHELPERS_H
+#define MOZART_DATATYPESHELPERS_H
 
 #include "mozartcore.hh"
 
@@ -130,4 +130,4 @@ bool IntegerDottableHelper<T>::lookupFeature(VM vm, nativeint feature,
 
 #endif // MOZART_GENERATOR
 
-#endif // __DATATYPESHELPERS_H
+#endif // MOZART_DATATYPESHELPERS_H

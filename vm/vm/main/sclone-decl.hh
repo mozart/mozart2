@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SCLONE_DECL_H
-#define __SCLONE_DECL_H
+#ifndef MOZART_SCLONE_DECL_H
+#define MOZART_SCLONE_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -60,4 +60,4 @@ private:
 
 }
 
-#endif // __SCLONE_DECL_H
+#endif // MOZART_SCLONE_DECL_H

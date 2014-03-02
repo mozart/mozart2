@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BUILTINS_H
-#define __BUILTINS_H
+#ifndef MOZART_BUILTINS_H
+#define MOZART_BUILTINS_H
 
 #include "mozartcore.hh"
 
@@ -139,4 +139,4 @@ void BaseBuiltin::buildCodeBlock(VM vm, RichNode self) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __BUILTINS_H
+#endif // MOZART_BUILTINS_H

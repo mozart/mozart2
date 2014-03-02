@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __RECORDS_H
-#define __RECORDS_H
+#ifndef MOZART_RECORDS_H
+#define MOZART_RECORDS_H
 
 #include "mozartcore.hh"
 
@@ -617,4 +617,4 @@ UnstableNode Chunk::serialize(VM vm, SE se) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __RECORDS_H
+#endif // MOZART_RECORDS_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OZCALLS_DECL_H
-#define __OZCALLS_DECL_H
+#ifndef MOZART_OZCALLS_DECL_H
+#define MOZART_OZCALLS_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -79,4 +79,4 @@ namespace internal {
 
 } // namespace mozart
 
-#endif // __OZCALLS_DECL_H
+#endif // MOZART_OZCALLS_DECL_H

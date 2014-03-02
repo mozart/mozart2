@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ATOM_H
-#define __ATOM_H
+#ifndef MOZART_ATOM_H
+#define MOZART_ATOM_H
 
 #include "mozartcore.hh"
 
@@ -65,4 +65,4 @@ void Atom::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __ATOM_H
+#endif // MOZART_ATOM_H

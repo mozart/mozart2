@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_H
-#define __BOOLEAN_H
+#ifndef MOZART_BOOLEAN_H
+#define MOZART_BOOLEAN_H
 
 #include "mozartcore.hh"
 
@@ -62,4 +62,4 @@ UnstableNode Boolean::serialize(VM vm, SE se) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __BOOLEAN_H
+#endif // MOZART_BOOLEAN_H

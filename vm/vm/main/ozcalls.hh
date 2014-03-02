@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OZCALLS_H
-#define __OZCALLS_H
+#ifndef MOZART_OZCALLS_H
+#define MOZART_OZCALLS_H
 
 #include "mozartcore.hh"
 #include "emulate.hh"
@@ -408,4 +408,4 @@ bool doReflectiveCall(VM vm, const char* identity, UnstableNode& stream,
 
 #endif
 
-#endif // __OZCALLS_H
+#endif // MOZART_OZCALLS_H

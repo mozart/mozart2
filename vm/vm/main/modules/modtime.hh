@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODTIME_H
-#define __MODTIME_H
+#ifndef MOZART_MODTIME_H
+#define MOZART_MODTIME_H
 
 #include "../mozartcore.hh"
 
@@ -73,4 +73,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODTIME_H
+#endif // MOZART_MODTIME_H

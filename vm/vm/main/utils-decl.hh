@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __UTILS_DECL_H
-#define __UTILS_DECL_H
+#ifndef MOZART_UTILS_DECL_H
+#define MOZART_UTILS_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -254,4 +254,4 @@ auto protectNonIdempotentStep(VM vm, const char* identity, const Step& step)
 
 }
 
-#endif // __UTILS_DECL_H
+#endif // MOZART_UTILS_DECL_H

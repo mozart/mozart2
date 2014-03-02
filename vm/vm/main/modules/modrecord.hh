@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODRECORD_H
-#define __MODRECORD_H
+#ifndef MOZART_MODRECORD_H
+#define MOZART_MODRECORD_H
 
 #include "../mozartcore.hh"
 
@@ -245,4 +245,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODRECORD_H
+#endif // MOZART_MODRECORD_H

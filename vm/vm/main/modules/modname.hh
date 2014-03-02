@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODNAME_H
-#define __MODNAME_H
+#ifndef MOZART_MODNAME_H
+#define MOZART_MODNAME_H
 
 #include "../mozartcore.hh"
 
@@ -107,4 +107,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODNAME_H
+#endif // MOZART_MODNAME_H

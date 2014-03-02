@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODCHUNK_H
-#define __MODCHUNK_H
+#ifndef MOZART_MODCHUNK_H
+#define MOZART_MODCHUNK_H
 
 #include "../mozartcore.hh"
 
@@ -70,4 +70,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODCHUNK_H
+#endif // MOZART_MODCHUNK_H

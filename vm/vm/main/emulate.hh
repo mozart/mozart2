@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EMULATE_H
-#define __EMULATE_H
+#ifndef MOZART_EMULATE_H
+#define MOZART_EMULATE_H
 
 #include "mozartcore.hh"
 
@@ -323,4 +323,4 @@ private:
 
 }
 
-#endif // __EMULATE_H
+#endif // MOZART_EMULATE_H

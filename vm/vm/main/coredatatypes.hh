@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREDATATYPES_H
-#define __COREDATATYPES_H
+#ifndef MOZART_COREDATATYPES_H
+#define MOZART_COREDATATYPES_H
 
 #include "mozartcore.hh"
 
@@ -58,4 +58,4 @@
 #include "variables.hh"
 #include "weakrefs.hh"
 
-#endif // __COREDATATYPES_H
+#endif // MOZART_COREDATATYPES_H

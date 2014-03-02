@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __DATATYPE_H
-#define __DATATYPE_H
+#ifndef MOZART_DATATYPE_H
+#define MOZART_DATATYPE_H
 
 #include "mozartcore.hh"
 
@@ -47,4 +47,4 @@ bool WithHome::isHomedInCurrentSpace(VM vm) {
 
 }
 
-#endif // __DATATYPE_H
+#endif // MOZART_DATATYPE_H

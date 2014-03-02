@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __RUNNABLE_H
-#define __RUNNABLE_H
+#ifndef MOZART_RUNNABLE_H
+#define MOZART_RUNNABLE_H
 
 #include "mozartcore.hh"
 
@@ -218,4 +218,4 @@ void Runnable::dispose() {
 
 #endif // MOZART_GENERATOR
 
-#endif // __RUNNABLE_H
+#endif // MOZART_RUNNABLE_H

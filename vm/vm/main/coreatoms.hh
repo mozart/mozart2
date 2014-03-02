@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREATOMS_H
-#define __COREATOMS_H
+#ifndef MOZART_COREATOMS_H
+#define MOZART_COREATOMS_H
 
 #include "mozartcore.hh"
 
@@ -78,4 +78,4 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
 
 }
 
-#endif // __COREATOMS_H
+#endif // MOZART_COREATOMS_H

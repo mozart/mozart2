@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OBJECTS_H
-#define __OBJECTS_H
+#ifndef MOZART_OBJECTS_H
+#define MOZART_OBJECTS_H
 
 #include "mozartcore.hh"
 
@@ -197,4 +197,4 @@ void Object::getDebugInfo(VM vm, atom_t& printName, UnstableNode& debugData) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __OBJECTS_H
+#endif // MOZART_OBJECTS_H

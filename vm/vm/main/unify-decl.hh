@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __UNIFY_DECL_H
-#define __UNIFY_DECL_H
+#ifndef MOZART_UNIFY_DECL_H
+#define MOZART_UNIFY_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -96,4 +96,4 @@ private:
 
 }
 
-#endif // __UNIFY_DECL_H
+#endif // MOZART_UNIFY_DECL_H

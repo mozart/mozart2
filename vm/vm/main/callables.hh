@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CALLABLES_H
-#define __CALLABLES_H
+#ifndef MOZART_CALLABLES_H
+#define MOZART_CALLABLES_H
 
 #include "mozartcore.hh"
 
@@ -205,4 +205,4 @@ void Abstraction::fillCodeAreaCache(VM vm) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __CALLABLES_H
+#endif // MOZART_CALLABLES_H

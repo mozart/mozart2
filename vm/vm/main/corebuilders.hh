@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREBUILDERS_H
-#define __COREBUILDERS_H
+#ifndef MOZART_COREBUILDERS_H
+#define MOZART_COREBUILDERS_H
 
 #include "mozartcore-decl.hh"
 
@@ -340,4 +340,4 @@ UnstableNode buildPatMatOpenRecord(VM vm, AT&& arity, Args&&... args) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __COREBUILDERS_H
+#endif // MOZART_COREBUILDERS_H

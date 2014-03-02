@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENV_H
-#define __BOOSTENV_H
+#ifndef MOZART_BOOSTENV_H
+#define MOZART_BOOSTENV_H
 
 #include "boostenv-decl.hh"
 
@@ -124,4 +124,4 @@ namespace mozart { namespace boostenv { namespace builtins {
 } } }
 #endif
 
-#endif // __BOOSTENV_H
+#endif // MOZART_BOOSTENV_H

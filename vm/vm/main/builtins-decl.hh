@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BUILTINS_DECL_H
-#define __BUILTINS_DECL_H
+#ifndef MOZART_BUILTINS_DECL_H
+#define MOZART_BUILTINS_DECL_H
 
 #include "mozartcore-decl.hh"
 #include "opcodes.hh"
@@ -373,4 +373,4 @@ struct InlineAs {
 
 }
 
-#endif // __BUILTINS_DECL_H
+#endif // MOZART_BUILTINS_DECL_H

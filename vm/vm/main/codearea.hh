@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CODEAREA_H
-#define __CODEAREA_H
+#ifndef MOZART_CODEAREA_H
+#define MOZART_CODEAREA_H
 
 #include "mozartcore.hh"
 
@@ -138,4 +138,4 @@ void CodeArea::setUUID(RichNode self, VM vm, const UUID& uuid) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __CODEAREA_H
+#endif // MOZART_CODEAREA_H

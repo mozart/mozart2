@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OPCODES_H
-#define __OPCODES_H
+#ifndef MOZART_OPCODES_H
+#define MOZART_OPCODES_H
 
 namespace mozart {
 
@@ -200,4 +200,4 @@ const OpCode OpInlineGetClass = 0x90;
 
 }
 
-#endif // __OPCODES_H
+#endif // MOZART_OPCODES_H

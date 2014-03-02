@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REFLECTIVETYPES_H
-#define __REFLECTIVETYPES_H
+#ifndef MOZART_REFLECTIVETYPES_H
+#define MOZART_REFLECTIVETYPES_H
 
 #include "mozartcore.hh"
 
@@ -115,4 +115,4 @@ void ReflectiveVariable::bindReadOnly(VM vm, RichNode src) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __REFLECTIVETYPES_H
+#endif // MOZART_REFLECTIVETYPES_H

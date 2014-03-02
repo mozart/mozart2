@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GCOLLECT_H
-#define __GCOLLECT_H
+#ifndef MOZART_GCOLLECT_H
+#define MOZART_GCOLLECT_H
 
 #include "mozartcore.hh"
 
@@ -42,4 +42,4 @@ bool GarbageCollector::isGCRequired() {
 
 }
 
-#endif // __GCOLLECT_H
+#endif // MOZART_GCOLLECT_H

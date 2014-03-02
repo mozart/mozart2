@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CODEAREA_DECL_H
-#define __CODEAREA_DECL_H
+#ifndef MOZART_CODEAREA_DECL_H
+#define MOZART_CODEAREA_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -116,4 +116,4 @@ private:
 
 }
 
-#endif // __CODEAREA_DECL_H
+#endif // MOZART_CODEAREA_DECL_H

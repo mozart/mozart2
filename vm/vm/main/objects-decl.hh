@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OBJECTS_DECL_H
-#define __OBJECTS_DECL_H
+#ifndef MOZART_OBJECTS_DECL_H
+#define MOZART_OBJECTS_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -163,4 +163,4 @@ private:
 
 }
 
-#endif // __OBJECTS_DECL_H
+#endif // MOZART_OBJECTS_DECL_H

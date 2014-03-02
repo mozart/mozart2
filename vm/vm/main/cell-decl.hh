@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CELL_DECL_H
-#define __CELL_DECL_H
+#ifndef MOZART_CELL_DECL_H
+#define MOZART_CELL_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -83,4 +83,4 @@ private:
 
 }
 
-#endif // __CELL_DECL_H
+#endif // MOZART_CELL_DECL_H

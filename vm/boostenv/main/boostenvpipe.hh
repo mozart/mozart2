@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENVPIPE_H
-#define __BOOSTENVPIPE_H
+#ifndef MOZART_BOOSTENVPIPE_H
+#define MOZART_BOOSTENVPIPE_H
 
 #include "boostenvpipe-decl.hh"
 
@@ -49,4 +49,4 @@ PipeConnection::PipeConnection(BoostBasedVM& environment):
 
 #endif
 
-#endif // __BOOSTENVPIPE_H
+#endif // MOZART_BOOSTENVPIPE_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REIFIEDSPACE_H
-#define __REIFIEDSPACE_H
+#ifndef MOZART_REIFIEDSPACE_H
+#define MOZART_REIFIEDSPACE_H
 
 #include "mozartcore.hh"
 
@@ -299,4 +299,4 @@ void MergedSpace::killSpace(VM vm) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __REIFIEDSPACE_H
+#endif // MOZART_REIFIEDSPACE_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __DICTIONARY_H
-#define __DICTIONARY_H
+#ifndef MOZART_DICTIONARY_H
+#define MOZART_DICTIONARY_H
 
 #include "mozartcore.hh"
 
@@ -581,4 +581,4 @@ void Dictionary::printReprToStream(VM vm, std::ostream& out,
 
 #endif // MOZART_GENERATOR
 
-#endif // __DICTIONARY_H
+#endif // MOZART_DICTIONARY_H

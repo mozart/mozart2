@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MEMMANAGER_H
-#define __MEMMANAGER_H
+#ifndef MOZART_MEMMANAGER_H
+#define MOZART_MEMMANAGER_H
 
 #include <cstdlib>
 #include <algorithm>
@@ -169,4 +169,4 @@ private:
 
 }
 
-#endif // __MEMMANAGER_H
+#endif // MOZART_MEMMANAGER_H

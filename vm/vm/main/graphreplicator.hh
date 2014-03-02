@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __GRAPHREPLICATOR_H
-#define __GRAPHREPLICATOR_H
+#ifndef MOZART_GRAPHREPLICATOR_H
+#define MOZART_GRAPHREPLICATOR_H
 
 #include "mozartcore.hh"
 
@@ -190,4 +190,4 @@ void GraphReplicator::processStableRefInternal(StableNode*& ref) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __GRAPHREPLICATOR_H
+#endif // MOZART_GRAPHREPLICATOR_H

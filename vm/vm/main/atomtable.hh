@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ATOMTABLE_H
-#define __ATOMTABLE_H
+#ifndef MOZART_ATOMTABLE_H
+#define MOZART_ATOMTABLE_H
 
 #include "core-forward-decl.hh"
 
@@ -352,4 +352,4 @@ private:
 
 }
 
-#endif // __ATOMTABLE_H
+#endif // MOZART_ATOMTABLE_H

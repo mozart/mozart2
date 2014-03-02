@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODARRAY_H
-#define __MODARRAY_H
+#ifndef MOZART_MODARRAY_H
+#define MOZART_MODARRAY_H
 
 #include "../mozartcore.hh"
 
@@ -118,4 +118,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODARRAY_H
+#endif // MOZART_MODARRAY_H

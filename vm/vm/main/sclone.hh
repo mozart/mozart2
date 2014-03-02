@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SCLONE_H
-#define __SCLONE_H
+#ifndef MOZART_SCLONE_H
+#define MOZART_SCLONE_H
 
 #include "mozartcore.hh"
 
@@ -35,4 +35,4 @@ namespace mozart {
 
 }
 
-#endif // __SCLONE_H
+#endif // MOZART_SCLONE_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODCODERS_H
-#define __MODCODERS_H
+#ifndef MOZART_MODCODERS_H
+#define MOZART_MODCODERS_H
 
 #include "../mozartcore.hh"
 
@@ -147,4 +147,4 @@ public:
 
 #endif
 
-#endif // __MODCODERS_H
+#endif // MOZART_MODCODERS_H

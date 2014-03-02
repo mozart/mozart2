@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENVTCP_H
-#define __BOOSTENVTCP_H
+#ifndef MOZART_BOOSTENVTCP_H
+#define MOZART_BOOSTENVTCP_H
 
 #include "boostenvtcp-decl.hh"
 
@@ -123,4 +123,4 @@ boost::system::error_code TCPAcceptor::close() {
 
 #endif
 
-#endif // __BOOSTENVTCP_H
+#endif // MOZART_BOOSTENVTCP_H

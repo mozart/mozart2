@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __UUID_DECL_H
-#define __UUID_DECL_H
+#ifndef MOZART_UUID_DECL_H
+#define MOZART_UUID_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -200,4 +200,4 @@ std::ostream& operator<<(std::ostream& out, const UUID& uuid) {
 
 }
 
-#endif // __UUID_DECL_H
+#endif // MOZART_UUID_DECL_H

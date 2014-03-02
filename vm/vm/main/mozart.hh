@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZART_H
-#define __MOZART_H
+#ifndef MOZART_MOZART_H
+#define MOZART_MOZART_H
 
 #include "mozartcore.hh"
 
@@ -62,4 +62,4 @@ namespace mozart { namespace builtins {
 } }
 #endif
 
-#endif // __MOZART_H
+#endif // MOZART_MOZART_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __PORT_DECL_H
-#define __PORT_DECL_H
+#ifndef MOZART_PORT_DECL_H
+#define MOZART_PORT_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -79,4 +79,4 @@ private:
 
 }
 
-#endif // __PORT_DECL_H
+#endif // MOZART_PORT_DECL_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CODERS_DECL_H
-#define __CODERS_DECL_H
+#ifndef MOZART_CODERS_DECL_H
+#define MOZART_CODERS_DECL_H
 
 #include "core-forward-decl.hh"
 #include "lstring-decl.hh"
@@ -107,4 +107,4 @@ auto decodeGeneric(const BaseLString<unsigned char>& input,
 
 }
 
-#endif // __CODERS_DECL_H
+#endif // MOZART_CODERS_DECL_H

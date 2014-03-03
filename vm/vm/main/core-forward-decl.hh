@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CORE_FORWARD_DECL_H
-#define __CORE_FORWARD_DECL_H
+#ifndef MOZART_CORE_FORWARD_DECL_H
+#define MOZART_CORE_FORWARD_DECL_H
 
-#ifndef __MOZART_H
+#ifndef MOZART_MOZART_H
 #ifndef MOZART_GENERATOR
 #error Illegal inclusion chain. You must include "mozart.hh".
 #endif
@@ -216,4 +216,4 @@ void* operator new (size_t size, mozart::VM vm);
 inline
 void* operator new[] (size_t size, mozart::VM vm);
 
-#endif // __CORE_FORWARD_DECL_H
+#endif // MOZART_CORE_FORWARD_DECL_H

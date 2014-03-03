@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OPTIONAL_DECL_H
-#define __OPTIONAL_DECL_H
+#ifndef MOZART_OPTIONAL_DECL_H
+#define MOZART_OPTIONAL_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -161,4 +161,4 @@ nullable<T&> nullable<T*>::operator*() {
 
 }
 
-#endif // __OPTIONAL_DECL_H
+#endif // MOZART_OPTIONAL_DECL_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MEMMANLIST_H
-#define __MEMMANLIST_H
+#ifndef MOZART_MEMMANLIST_H
+#define MOZART_MEMMANLIST_H
 
 #include "memmanager.hh"
 
@@ -360,4 +360,4 @@ private:
 
 }
 
-#endif // __MEMMANLIST_H
+#endif // MOZART_MEMMANLIST_H

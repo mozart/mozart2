@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOSTENV_DECL_H
-#define __BOOSTENV_DECL_H
+#ifndef MOZART_BOOSTENV_DECL_H
+#define MOZART_BOOSTENV_DECL_H
 
 #include <mozart.hh>
 
@@ -202,4 +202,4 @@ void MOZART_NORETURN raiseOSError(VM vm, const char* function,
 
 } }
 
-#endif // __BOOSTENV_DECL_H
+#endif // MOZART_BOOSTENV_DECL_H

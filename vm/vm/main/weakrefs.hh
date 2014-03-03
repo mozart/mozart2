@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __WEAKREFS_H
-#define __WEAKREFS_H
+#ifndef MOZART_WEAKREFS_H
+#define MOZART_WEAKREFS_H
 
 #include "mozartcore.hh"
 
@@ -45,4 +45,4 @@ void WeakReference::create(StableNode*& self, VM vm, GR gr, WeakReference from) 
 
 #endif // MOZART_GENERATOR
 
-#endif // __WEAKREFS_H
+#endif // MOZART_WEAKREFS_H

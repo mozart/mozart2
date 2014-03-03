@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ATOM_DECL_H
-#define __ATOM_DECL_H
+#ifndef MOZART_ATOM_DECL_H
+#define MOZART_ATOM_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -112,4 +112,4 @@ private:
 
 }
 
-#endif // __ATOM_DECL_H
+#endif // MOZART_ATOM_DECL_H

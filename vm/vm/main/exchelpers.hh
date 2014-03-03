@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EXCHELPERS_H
-#define __EXCHELPERS_H
+#ifndef MOZART_EXCHELPERS_H
+#define MOZART_EXCHELPERS_H
 
 #include "mozartcore.hh"
 
@@ -121,4 +121,4 @@ void raiseIndexOutOfBounds(VM vm, Args&&... args) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __EXCHELPERS_H
+#endif // MOZART_EXCHELPERS_H

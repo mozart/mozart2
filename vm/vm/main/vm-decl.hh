@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_DECL_H
-#define __VM_DECL_H
+#ifndef MOZART_VM_DECL_H
+#define MOZART_VM_DECL_H
 
 #include <cstdlib>
 #include <forward_list>
@@ -390,4 +390,4 @@ private:
 
 }
 
-#endif // __VM_DECL_H
+#endif // MOZART_VM_DECL_H

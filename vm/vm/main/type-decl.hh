@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_DECL_H
-#define __TYPE_DECL_H
+#ifndef MOZART_TYPE_DECL_H
+#define MOZART_TYPE_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -86,4 +86,4 @@ bool operator!=(const Type& lhs, const Type& rhs) {
 
 }
 
-#endif // __TYPE_DECL_H
+#endif // MOZART_TYPE_DECL_H

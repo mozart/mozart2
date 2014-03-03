@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REIFIEDGNODE_H
-#define __REIFIEDGNODE_H
+#ifndef MOZART_REIFIEDGNODE_H
+#define MOZART_REIFIEDGNODE_H
 
 #include "mozartcore.hh"
 
@@ -49,4 +49,4 @@ bool ReifiedGNode::equals(VM vm, RichNode right) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __REIFIEDGNODE_H
+#endif // MOZART_REIFIEDGNODE_H

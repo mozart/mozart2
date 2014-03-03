@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREMODULES_H
-#define __COREMODULES_H
+#ifndef MOZART_COREMODULES_H
+#define MOZART_COREMODULES_H
 
 #include "mozart.hh"
 
@@ -63,4 +63,4 @@
 #include "modules/modvirtualstring.hh"
 #include "modules/modweakref.hh"
 
-#endif // __COREMODULES_H
+#endif // MOZART_COREMODULES_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODPROCEDURE_H
-#define __MODPROCEDURE_H
+#ifndef MOZART_MODPROCEDURE_H
+#define MOZART_MODPROCEDURE_H
 
 #include "../mozartcore.hh"
 #include "../emulate.hh"
@@ -98,4 +98,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODPROCEDURE_H
+#endif // MOZART_MODPROCEDURE_H

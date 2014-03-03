@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EXCEPTIONS_H
-#define __EXCEPTIONS_H
+#ifndef MOZART_EXCEPTIONS_H
+#define MOZART_EXCEPTIONS_H
 
 #include "mozartcore.hh"
 
@@ -55,4 +55,4 @@ void MOZART_NORETURN raise(VM vm, RichNode exception) {
 
 }
 
-#endif // __EXCEPTIONS_H
+#endif // MOZART_EXCEPTIONS_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __DYNBUILDERS_H
-#define __DYNBUILDERS_H
+#ifndef MOZART_DYNBUILDERS_H
+#define MOZART_DYNBUILDERS_H
 
 #include "mozartcore.hh"
 
@@ -223,4 +223,4 @@ UnstableNode buildRecordDynamic(VM vm, RichNode label, size_t width,
 
 #endif // MOZART_GENERATOR
 
-#endif // __DYNBUILDERS_H
+#endif // MOZART_DYNBUILDERS_H

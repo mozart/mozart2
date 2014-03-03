@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __REFERENCE_H
-#define __REFERENCE_H
+#ifndef MOZART_REFERENCE_H
+#define MOZART_REFERENCE_H
 
 #include "mozartcore.hh"
 
@@ -41,4 +41,4 @@ namespace mozart {
 
 #endif // MOZART_GENERATOR
 
-#endif // __REFERENCE_H
+#endif // MOZART_REFERENCE_H

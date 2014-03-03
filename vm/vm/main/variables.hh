@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VARIABLES_H
-#define __VARIABLES_H
+#ifndef MOZART_VARIABLES_H
+#define MOZART_VARIABLES_H
 
 #include "mozartcore.hh"
 
@@ -317,4 +317,4 @@ void FailedValue::bind(VM vm, RichNode src) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __VARIABLES_H
+#endif // MOZART_VARIABLES_H

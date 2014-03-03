@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __UNIT_H
-#define __UNIT_H
+#ifndef MOZART_UNIT_H
+#define MOZART_UNIT_H
 
 #include "mozartcore.hh"
 
@@ -56,4 +56,4 @@ UnstableNode Unit::serialize(VM vm, SE se) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __UNIT_H
+#endif // MOZART_UNIT_H

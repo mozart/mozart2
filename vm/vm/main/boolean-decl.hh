@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOLEAN_DECL_H
-#define __BOOLEAN_DECL_H
+#ifndef MOZART_BOOLEAN_DECL_H
+#define MOZART_BOOLEAN_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -96,4 +96,4 @@ private:
 
 }
 
-#endif // __BOOLEAN_DECL_H
+#endif // MOZART_BOOLEAN_DECL_H

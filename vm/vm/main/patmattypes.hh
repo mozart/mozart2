@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __PATMATTYPES_H
-#define __PATMATTYPES_H
+#ifndef MOZART_PATMATTYPES_H
+#define MOZART_PATMATTYPES_H
 
 #include "mozartcore.hh"
 
@@ -185,4 +185,4 @@ UnstableNode PatMatOpenRecord::serialize(VM vm, SE se) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __PATMATTYPES_H
+#endif // MOZART_PATMATTYPES_H

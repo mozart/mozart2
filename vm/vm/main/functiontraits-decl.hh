@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __FUNCTIONTRAITS_DECL_H
-#define __FUNCTIONTRAITS_DECL_H
+#ifndef MOZART_FUNCTIONTRAITS_DECL_H
+#define MOZART_FUNCTIONTRAITS_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -185,4 +185,4 @@ struct function_traits<const volatile T&&> : public function_traits<T> {};
 
 }
 
-#endif // __FUNCTIONTRAITS_DECL_H
+#endif // MOZART_FUNCTIONTRAITS_DECL_H

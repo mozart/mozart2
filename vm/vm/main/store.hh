@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __STORE_H
-#define __STORE_H
+#ifndef MOZART_STORE_H
+#define MOZART_STORE_H
 
 #include "mozartcore.hh"
 
@@ -312,4 +312,4 @@ bool GlobalNode::get(VM vm, UUID uuid, GlobalNode*& to) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __STORE_H
+#endif // MOZART_STORE_H

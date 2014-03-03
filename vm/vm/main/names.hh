@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __NAMES_H
-#define __NAMES_H
+#ifndef MOZART_NAMES_H
+#define MOZART_NAMES_H
 
 #include "mozartcore.hh"
 
@@ -165,4 +165,4 @@ void UniqueName::printReprToStream(VM vm, std::ostream& out,
 
 #endif // MOZART_GENERATOR
 
-#endif // __NAMES_H
+#endif // MOZART_NAMES_H

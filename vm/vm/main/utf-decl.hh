@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __UTF_DECL_H
-#define __UTF_DECL_H
+#ifndef MOZART_UTF_DECL_H
+#define MOZART_UTF_DECL_H
 
 #include <vector>
 
@@ -183,4 +183,4 @@ inline LString<C> sliceByCodePointsFrom(const LString<C>& input,
 
 }
 
-#endif // __UTF_DECL_H
+#endif // MOZART_UTF_DECL_H

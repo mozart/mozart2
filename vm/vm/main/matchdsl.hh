@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MATCHDSL_H
-#define __MATCHDSL_H
+#ifndef MOZART_MATCHDSL_H
+#define MOZART_MATCHDSL_H
 
 #include "mozartcore-decl.hh"
 
@@ -722,4 +722,4 @@ bool matchesVariadicSharp(VM vm, RichNode value,
 
 #endif // MOZART_GENERATOR
 
-#endif // __MATCHDSL_H
+#endif // MOZART_MATCHDSL_H

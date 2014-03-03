@@ -1,5 +1,5 @@
-#ifndef __TESTUTILS_HH
-#define __TESTUTILS_HH
+#ifndef MOZART_TESTUTILS_HH
+#define MOZART_TESTUTILS_HH
 
 #include "mozart.hh"
 #include <gtest/gtest.h>

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BYTESTRING_H
-#define __BYTESTRING_H
+#ifndef MOZART_BYTESTRING_H
+#define MOZART_BYTESTRING_H
 
 #include <string>
 #include "mozartcore.hh"
@@ -203,4 +203,4 @@ void ByteString::printReprToStream(VM vm, std::ostream& out,
 
 #endif // MOZART_GENERATOR
 
-#endif // __BYTESTRING_H
+#endif // MOZART_BYTESTRING_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __BOOTUNPICKLER_DECL_H
-#define __BOOTUNPICKLER_DECL_H
+#ifndef MOZART_BOOTUNPICKLER_DECL_H
+#define MOZART_BOOTUNPICKLER_DECL_H
 
 #include "mozartcore.hh"
 
@@ -35,4 +35,4 @@ UnstableNode bootUnpickle(VM vm, std::istream& input);
 
 }
 
-#endif // __BOOTUNPICKLER_DECL_H
+#endif // MOZART_BOOTUNPICKLER_DECL_H

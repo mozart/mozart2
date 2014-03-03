@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ARRAYS_H
-#define __ARRAYS_H
+#ifndef MOZART_ARRAYS_H
+#define MOZART_ARRAYS_H
 
 #include <cstdlib>
 #include <cassert>
@@ -117,4 +117,4 @@ public:
 
 }
 
-#endif // __ARRAYS_H
+#endif // MOZART_ARRAYS_H

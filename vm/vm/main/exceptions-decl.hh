@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EXCEPTIONS_DECL_H
-#define __EXCEPTIONS_DECL_H
+#ifndef MOZART_EXCEPTIONS_DECL_H
+#define MOZART_EXCEPTIONS_DECL_H
 
 #include <setjmp.h>
 
@@ -143,4 +143,4 @@ void MOZART_NORETURN raise(VM vm, RichNode exception);
     return __Mozart_exc_value; \
   } while (false)
 
-#endif // __EXCEPTIONS_DECL_H
+#endif // MOZART_EXCEPTIONS_DECL_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODATOM_H
-#define __MODATOM_H
+#ifndef MOZART_MODATOM_H
+#define MOZART_MODATOM_H
 
 #include "../mozartcore.hh"
 
@@ -57,4 +57,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODATOM_H
+#endif // MOZART_MODATOM_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPEINFO_DECL_H
-#define __TYPEINFO_DECL_H
+#ifndef MOZART_TYPEINFO_DECL_H
+#define MOZART_TYPEINFO_DECL_H
 
 #include <string>
 #include <ostream>
@@ -208,4 +208,4 @@ std::ostream& operator<<(std::ostream& out, const repr& nodeRepr) {
 
 }
 
-#endif // __TYPEINFO_DECL_H
+#endif // MOZART_TYPEINFO_DECL_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ARRAY_DECL_H
-#define __ARRAY_DECL_H
+#ifndef MOZART_ARRAY_DECL_H
+#define MOZART_ARRAY_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -148,4 +148,4 @@ private:
 
 }
 
-#endif // __ARRAY_DECL_H
+#endif // MOZART_ARRAY_DECL_H

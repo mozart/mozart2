@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREINTERFACES_H
-#define __COREINTERFACES_H
+#ifndef MOZART_COREINTERFACES_H
+#define MOZART_COREINTERFACES_H
 
 #include <type_traits>
 
@@ -215,4 +215,4 @@ struct Dottable: public BaseDottable {
 
 }
 
-#endif // __COREINTERFACES_H
+#endif // MOZART_COREINTERFACES_H

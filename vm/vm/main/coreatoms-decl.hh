@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __COREATOMS_DECL_H
-#define __COREATOMS_DECL_H
+#ifndef MOZART_COREATOMS_DECL_H
+#define MOZART_COREATOMS_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -90,4 +90,4 @@ struct CoreAtoms {
 
 }
 
-#endif // __COREATOMS_DECL_H
+#endif // MOZART_COREATOMS_DECL_H

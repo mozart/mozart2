@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SPACE_H
-#define __SPACE_H
+#ifndef MOZART_SPACE_H
+#define MOZART_SPACE_H
 
 #include "mozartcore.hh"
 
@@ -601,4 +601,4 @@ void Space::createPropagateThreadOnceAndSuspendItOnVar(
 
 #endif // MOZART_GENERATOR
 
-#endif // __SPACE_H
+#endif // MOZART_SPACE_H

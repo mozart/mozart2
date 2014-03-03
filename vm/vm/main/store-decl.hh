@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __STORE_DECL_H
-#define __STORE_DECL_H
+#ifndef MOZART_STORE_DECL_H
+#define MOZART_STORE_DECL_H
 
 #include "core-forward-decl.hh"
 #include "type-decl.hh"
@@ -453,4 +453,4 @@ private:
 
 }
 
-#endif // __STORE_DECL_H
+#endif // MOZART_STORE_DECL_H

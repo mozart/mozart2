@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __PROPERTIES_H
-#define __PROPERTIES_H
+#ifndef MOZART_PROPERTIES_H
+#define MOZART_PROPERTIES_H
 
 #include "mozartcore.hh"
 
@@ -241,4 +241,4 @@ void PropertyRegistry::gCollect(GC gc) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __PROPERTIES_H
+#endif // MOZART_PROPERTIES_H

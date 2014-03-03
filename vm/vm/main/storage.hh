@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __STORAGE_H
-#define __STORAGE_H
+#ifndef MOZART_STORAGE_H
+#define MOZART_STORAGE_H
 
 #include "mozartcore.hh"
 
@@ -49,4 +49,4 @@ ImplAndCleanupListNode<T>::ImplAndCleanupListNode(VM vm, Args&&... args):
 
 #endif // MOZART_GENERATOR
 
-#endif // __STORAGE_H
+#endif // MOZART_STORAGE_H

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __UNIFY_H
-#define __UNIFY_H
+#ifndef MOZART_UNIFY_H
+#define MOZART_UNIFY_H
 
 #include "mozartcore.hh"
 
@@ -138,4 +138,4 @@ bool patternMatch(VM vm, RichNode value, RichNode pattern,
 
 }
 
-#endif // __UNIFY_H
+#endif // MOZART_UNIFY_H

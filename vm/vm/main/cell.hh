@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __CELL_H
-#define __CELL_H
+#ifndef MOZART_CELL_H
+#define MOZART_CELL_H
 
 #include "mozartcore.hh"
 
@@ -67,4 +67,4 @@ void Cell::assign(VM vm, RichNode newValue) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __CELL_H
+#endif // MOZART_CELL_H

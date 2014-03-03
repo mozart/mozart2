@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __VM_H
-#define __VM_H
+#ifndef MOZART_VM_H
+#define MOZART_VM_H
 
 #include "mozartcore.hh"
 
@@ -301,4 +301,4 @@ void* operator new[] (size_t size, mozart::VM vm) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __VM_H
+#endif // MOZART_VM_H

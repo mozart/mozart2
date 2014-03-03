@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODWEAKREF_H
-#define __MODWEAKREF_H
+#ifndef MOZART_MODWEAKREF_H
+#define MOZART_MODWEAKREF_H
 
 #include "../mozartcore.hh"
 
@@ -87,4 +87,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODWEAKREF_H
+#endif // MOZART_MODWEAKREF_H

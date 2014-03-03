@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MOZARTCORE_DECL_H
-#define __MOZARTCORE_DECL_H
+#ifndef MOZART_MOZARTCORE_DECL_H
+#define MOZART_MOZARTCORE_DECL_H
 
 #include "core-forward-decl.hh"
 
@@ -48,4 +48,4 @@
 #include "functiontraits-decl.hh"
 #include "vm-decl.hh"
 
-#endif // __MOZARTCORE_DECL_H
+#endif // MOZART_MOZARTCORE_DECL_H

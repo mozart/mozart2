@@ -36,8 +36,8 @@
 // char*
 
 
-#ifndef __MEMWORD_H
-#define __MEMWORD_H
+#ifndef MOZART_MEMWORD_H
+#define MOZART_MEMWORD_H
 
 #include "core-forward-decl.hh"
 
@@ -193,4 +193,4 @@ static_assert(MemWord::requiresExternalMemory<VMCleanupListNode>(), "MemWord bug
 
 }
 
-#endif // __MEMWORD_H
+#endif // MOZART_MEMWORD_H

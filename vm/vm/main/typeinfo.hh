@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPEINFO_H
-#define __TYPEINFO_H
+#ifndef MOZART_TYPEINFO_H
+#define MOZART_TYPEINFO_H
 
 #include "mozartcore.hh"
 
@@ -77,4 +77,4 @@ void repr::init(VM vm, T&& value) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __TYPEINFO_H
+#endif // MOZART_TYPEINFO_H

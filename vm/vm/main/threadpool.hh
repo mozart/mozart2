@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __THREADPOOL_H
-#define __THREADPOOL_H
+#ifndef MOZART_THREADPOOL_H
+#define MOZART_THREADPOOL_H
 
 #include "mozartcore.hh"
 
@@ -88,4 +88,4 @@ Runnable* ThreadPool::popNext(ThreadPriority priority) {
 
 }
 
-#endif // __THREADPOOL_H
+#endif // MOZART_THREADPOOL_H

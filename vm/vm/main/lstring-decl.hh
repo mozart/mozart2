@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __LSTRING_DECL_H
-#define __LSTRING_DECL_H
+#ifndef MOZART_LSTRING_DECL_H
+#define MOZART_LSTRING_DECL_H
 
 #include <utility>
 #include <string>
@@ -245,4 +245,4 @@ inline LString<C> concatLString(VM vm, const LString<C>& a, const LString<C>& b)
 
 }
 
-#endif // __LSTRING_DECL_H
+#endif // MOZART_LSTRING_DECL_H

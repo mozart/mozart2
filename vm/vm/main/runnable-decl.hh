@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __RUNNABLE_DECL_H
-#define __RUNNABLE_DECL_H
+#ifndef MOZART_RUNNABLE_DECL_H
+#define MOZART_RUNNABLE_DECL_H
 
 #include "core-forward-decl.hh"
 #include "store-decl.hh"
@@ -266,4 +266,4 @@ private:
 
 }
 
-#endif // __RUNNABLE_DECL_H
+#endif // MOZART_RUNNABLE_DECL_H

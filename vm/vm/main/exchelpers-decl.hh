@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __EXCHELPERS_DECL_H
-#define __EXCHELPERS_DECL_H
+#ifndef MOZART_EXCHELPERS_DECL_H
+#define MOZART_EXCHELPERS_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -66,4 +66,4 @@ void MOZART_NORETURN raiseIndexOutOfBounds(VM vm, Args&&... args);
 
 }
 
-#endif // __EXCHELPERS_DECL_H
+#endif // MOZART_EXCHELPERS_DECL_H

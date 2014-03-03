@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SMALLINT_DECL_H
-#define __SMALLINT_DECL_H
+#ifndef MOZART_SMALLINT_DECL_H
+#define MOZART_SMALLINT_DECL_H
 
 #include "mozartcore-decl.hh"
 
@@ -216,4 +216,4 @@ private:
 
 }
 
-#endif // __SMALLINT_DECL_H
+#endif // MOZART_SMALLINT_DECL_H

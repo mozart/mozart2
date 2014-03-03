@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SMALLINT_H
-#define __SMALLINT_H
+#ifndef MOZART_SMALLINT_H
+#define MOZART_SMALLINT_H
 
 #include "mozartcore.hh"
 
@@ -313,4 +313,4 @@ UnstableNode SmallInt::tanh(RichNode self, VM vm) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __SMALLINT_H
+#endif // MOZART_SMALLINT_H

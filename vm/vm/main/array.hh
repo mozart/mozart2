@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __ARRAY_H
-#define __ARRAY_H
+#ifndef MOZART_ARRAY_H
+#define MOZART_ARRAY_H
 
 #include "mozartcore.hh"
 
@@ -108,4 +108,4 @@ void Array::printReprToStream(VM vm, std::ostream& out, int depth, int width) {
 
 #endif // MOZART_GENERATOR
 
-#endif // __ARRAY_H
+#endif // MOZART_ARRAY_H

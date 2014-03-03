@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __MODTHREAD_H
-#define __MODTHREAD_H
+#ifndef MOZART_MODTHREAD_H
+#define MOZART_MODTHREAD_H
 
 #include "../mozartcore.hh"
 
@@ -140,4 +140,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // __MODTHREAD_H
+#endif // MOZART_MODTHREAD_H

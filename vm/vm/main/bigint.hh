@@ -122,8 +122,7 @@ UnstableNode BigInt::abs(VM vm) {
 }
 
 UnstableNode BigInt::shrink(VM vm, const std::shared_ptr<BigIntImplem>& n) {
-  if (n->compare(std::numeric_limits<nativeint>::max()) <= 0 &&
-      n->compare(std::numeric_limits<nativeint>::min()) >= 0) {
+  if (n->compare(SmallInt::max) <= 0 && n->compare(SmallInt::min) >= 0) {
     return SmallInt::build(vm, n->nativeintValue());
   } else {
     return BigInt::build(vm, n);

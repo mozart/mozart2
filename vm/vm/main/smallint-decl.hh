@@ -38,6 +38,9 @@ class SmallInt: public DataType<SmallInt>, StoredAs<nativeint>,
 public:
   static constexpr UUID uuid = "{00000000-0000-4f00-0000-000000000001}";
 
+  static constexpr nativeint min = std::numeric_limits<nativeint>::min();
+  static constexpr nativeint max = std::numeric_limits<nativeint>::max();
+
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom("int");
   }
@@ -123,7 +126,7 @@ public:
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
     if (value() >= 0) {
       out << value();
-    } else if (value() == std::numeric_limits<nativeint>::min()) {
+    } else if (value() == min) {
       std::ostringstream ss;
       ss << value();
       std::string s(ss.str());

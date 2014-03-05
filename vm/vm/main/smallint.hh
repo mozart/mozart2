@@ -79,11 +79,11 @@ int SmallInt::compare(VM vm, RichNode right) {
 
 UnstableNode SmallInt::opposite(VM vm) {
   // Detecting overflow - platform dependent (2's complement)
-  if (value() != std::numeric_limits<nativeint>::min()) {
+  if (value() != min) {
     // No overflow
     return SmallInt::build(vm, -value());
   } else {
-    UnstableNode big = vm->newBigInt(std::numeric_limits<nativeint>::min());
+    UnstableNode big = vm->newBigInt(min);
     return Numeric(big).opposite(vm);
   }
 }
@@ -173,8 +173,8 @@ bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
     return false;
 
   // Slow test (because of the division)
-  return (a == std::numeric_limits<nativeint>::min()) ||
-         ((b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb));
+  return (a == min) ||
+         ((b != 0) && (absa >= max / absb));
 }
 
 UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
@@ -212,7 +212,7 @@ UnstableNode SmallInt::divValue(VM vm, nativeint b) {
   }
 
   // Detecting overflow
-  if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
+  if ((a != min) || (b != -1)) {
     // No overflow
     return SmallInt::build(vm, a / b);
   } else {
@@ -240,7 +240,7 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
   nativeint a = value();
 
   // Detecting overflow
-  if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
+  if ((a != min) || (b != -1)) {
     // No overflow
     return SmallInt::build(vm, a % b);
   } else {
@@ -253,11 +253,11 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
 UnstableNode SmallInt::abs(VM vm) {
   nativeint a = value();
   // Detecting overflow - platform dependent (2's complement)
-  if (a != std::numeric_limits<nativeint>::min()) {
+  if (a != min) {
     // No overflow
     return SmallInt::build(vm, a >= 0 ? a : -a);
   } else {
-    UnstableNode big = vm->newBigInt(std::numeric_limits<nativeint>::min());
+    UnstableNode big = vm->newBigInt(min);
     return Numeric(big).opposite(vm);
   }
 }

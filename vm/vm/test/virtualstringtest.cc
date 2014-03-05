@@ -57,9 +57,9 @@ protected:
                                -4,
                                -5);
 
-    testNodes[25] = SmallInt::build(vm, std::numeric_limits<nativeint>::min());
+    testNodes[25] = SmallInt::build(vm, SmallInt::min);
 
-    auto s = intToString(std::numeric_limits<nativeint>::min());
+    auto s = intToString(SmallInt::min);
     std::copy(s.cbegin(), s.cend(), std::back_inserter(minStr));
   }
 

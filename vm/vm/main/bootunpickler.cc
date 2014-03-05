@@ -96,8 +96,7 @@ private:
     long long intResult = std::strtoll(str.c_str(), &end, 10);
     assert(*end == '\0' && "bad integer string");
     nativeint value = (nativeint) intResult;
-    if (value == std::numeric_limits<nativeint>::min() ||
-        value == std::numeric_limits<nativeint>::max()) { // Overflow
+    if (value == SmallInt::min || value == SmallInt::max) { // Overflow
       return vm->newBigInt(str);
     } else {
       return build(vm, value);

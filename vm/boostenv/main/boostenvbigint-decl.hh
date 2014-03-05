@@ -50,6 +50,9 @@ public:
   BoostBigInt(double value) : _value(value) {};
 
   inline
+  BoostBigInt(const std::string& value) : _value(value) {};
+
+  inline
   BoostBigInt(const mp_int& value) : _value(value) {};
 
   mp_int value() { return _value; }

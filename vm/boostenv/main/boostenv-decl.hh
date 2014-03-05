@@ -119,6 +119,9 @@ public:
   UnstableNode newBigInt(VM vm, double value);
 
   inline
+  UnstableNode newBigInt(VM vm, const std::string& value);
+
+  inline
   std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
 
 // Management of nodes used by asynchronous operations for feedback

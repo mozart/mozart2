@@ -109,6 +109,9 @@ public:
   virtual UnstableNode newBigInt(VM vm, double value);
 
   inline
+  virtual UnstableNode newBigInt(VM vm, const std::string& value);
+
+  inline
   virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
 
   virtual void gCollect(GC gc) {
@@ -258,6 +261,9 @@ public:
 
   inline
   UnstableNode newBigInt(double value);
+
+  inline
+  UnstableNode newBigInt(const std::string& value);
 
   inline
   std::shared_ptr<BigIntImplem> newBigIntImplem(nativeint value);

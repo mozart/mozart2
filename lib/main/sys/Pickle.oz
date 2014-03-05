@@ -88,16 +88,11 @@ export
    WriteValueToSink
    ReadValueFromSource
 
-   MagicBaseFromInit
-
 import
    OS
    Open
-   BURL at 'x-oz://boot/URL'
 
 define
-
-   MagicBaseFromInit
 
    % HeaderMagic = [0x56 0xb4 0x8c 0x48]
 
@@ -207,10 +202,8 @@ define
    end
 
    fun {LoadWithHeader URL}
-      {LoadWithHeaderFromFile {New Open.file init(url:URL flags:[read])}}
-   end
-
-   fun {LoadWithHeaderFromFile File}
+      File = {New Open.file init(url:URL flags:[read])}
+   in
       try
          Source = {New OpenSource init(File)}
          Header Value
@@ -789,18 +782,4 @@ define
       Nodes.ResultIndex
    end
 
-   fun {BURL_load URL}
-      % See Init's BootURLLoad
-      TempResult = {LoadWithHeaderFromFile {New Open.file init(name:URL flags:[read])}}.2
-   in
-      if {IsProcedure TempResult} then
-         {TempResult MagicBaseFromInit}
-      else
-         TempResult
-      end
-   end
-
-   %% Replace the boot unpickler by the real one
-   {Wait Open}
-   {BootReflection.become BURL.load BURL_load}
 end

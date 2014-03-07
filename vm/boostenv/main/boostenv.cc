@@ -114,21 +114,6 @@ BoostBasedVM::BoostBasedVM(size_t maxMemory):
   setBootLoader(&defaultBootLoader);
 }
 
-void BoostBasedVM::setApplicationURL(char const* url) {
-  // TODO Check that url is a valid UTF-8 string?
-  vm->getPropertyRegistry().put(vm, "application.url", url);
-}
-
-void BoostBasedVM::setApplicationArgs(int argc, char const* const* argv) {
-  // TODO Check that argv[i] are valid UTF-8 strings?
-  OzListBuilder args(vm);
-  for (int i = 0; i < argc; i++) {
-    args.push_back(vm, argv[i]);
-  }
-
-  vm->getPropertyRegistry().put(vm, "application.args", args.get(vm));
-}
-
 void BoostBasedVM::run() {
   constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
   constexpr auto recInvokeAgainNow   = VirtualMachine::recInvokeAgainNow;

@@ -70,10 +70,6 @@ public:
     _bootLoader = loader;
   }
 
-  void setApplicationURL(char const* url);
-
-  void setApplicationArgs(int argc, char const* const* argv);
-
 // Run and preemption
 
 public:

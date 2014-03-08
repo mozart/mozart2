@@ -67,7 +67,7 @@ public:
   // Comparable interface
 
   inline
-  int compare(VM vm, RichNode right);
+  int compare(RichNode self, VM vm, RichNode right);
 
 public:
   // Numeric inteface

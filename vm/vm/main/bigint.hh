@@ -113,11 +113,11 @@ UnstableNode BigInt::mod(VM vm, RichNode right) {
   return shrink(vm, *value() % coerce(vm, right));
 }
 
-UnstableNode BigInt::abs(VM vm) {
+UnstableNode BigInt::abs(RichNode self, VM vm) {
   if (value()->compare(0) < 0) {
     return opposite(vm);
   } else {
-    return shrink(vm, value()); // TODO: optimize
+    return { vm, self };
   }
 }
 

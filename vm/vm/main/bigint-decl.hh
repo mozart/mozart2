@@ -98,7 +98,7 @@ public:
   UnstableNode mod(VM vm, RichNode right);
 
   inline
-  UnstableNode abs(VM vm);
+  UnstableNode abs(RichNode self, VM vm);
 
 public:
   // Miscellaneous

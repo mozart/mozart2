@@ -43,16 +43,9 @@ typedef boost::multiprecision::cpp_int mp_int;
 
 class BoostBigInt : public BigIntImplem {
 public:
-  inline
   BoostBigInt(nativeint value) : _value(value) {};
-
-  inline
   BoostBigInt(double value) : _value(value) {};
-
-  inline
   BoostBigInt(const std::string& value) : _value(value) {};
-
-  inline
   BoostBigInt(const mp_int& value) : _value(value) {};
 
   BoostBigInt(const BoostBigInt& src) = delete; // prevent copy

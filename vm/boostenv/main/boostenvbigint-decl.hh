@@ -55,6 +55,8 @@ public:
   inline
   BoostBigInt(const mp_int& value) : _value(value) {};
 
+  BoostBigInt(const BoostBigInt& src) = delete; // prevent copy
+
   mp_int value() { return _value; }
 
   inline

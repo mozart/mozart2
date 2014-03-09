@@ -109,6 +109,21 @@ private:
   inline
   static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
 
+// BigInt
+
+public:
+  inline
+  UnstableNode newBigInt(VM vm, nativeint value);
+
+  inline
+  UnstableNode newBigInt(VM vm, double value);
+
+  inline
+  UnstableNode newBigInt(VM vm, const std::string& value);
+
+  inline
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
+
 // Management of nodes used by asynchronous operations for feedback
 
 public:

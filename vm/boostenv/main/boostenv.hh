@@ -30,6 +30,7 @@
 #include "boostenvutils.hh"
 #include "boostenvtcp.hh"
 #include "boostenvpipe.hh"
+#include "boostenvbigint.hh"
 
 #ifndef MOZART_GENERATOR
 

@@ -34,7 +34,7 @@ In order to build Mozart 2, you need the following tools on your computer:
 *   gcc >= 4.7.1 on Windows, Linux and Mac OS < 10.8;
     or clang >= 3.1 on Mac OS >= 10.8
 *   cmake >= 2.8.6
-*   Boost >= 1.49.0 (with development files)
+*   Boost >= 1.53.0 (with development files)
 *   Tcl/Tk 8.5 or 8.6 (with development files)
 *   emacs
 

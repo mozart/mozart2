@@ -8,6 +8,14 @@ include_directories(${Boost_INCLUDE_DIRS})
 separate_arguments(SPLIT_CXX_FLAGS UNIX_COMMAND "${CMAKE_CXX_FLAGS}")
 set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" "${SPLIT_CXX_FLAGS}")
 
+# GMP (optional)
+include(FindGMP)
+if(GMP_FOUND)
+  include_directories(${GMP_INCLUDE_DIR})
+  add_definitions(-DUSE_GMP)
+  set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" -DUSE_GMP)
+endif()
+
 if(WIN32)
   # Boost requires this
   add_definitions(-D_WIN32_WINNT=0x0501)

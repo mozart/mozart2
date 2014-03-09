@@ -22,40 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_SMALLINT_DECL_H
-#define MOZART_SMALLINT_DECL_H
+#ifndef __BIGINT_DECL_H
+#define __BIGINT_DECL_H
 
 #include "mozartcore-decl.hh"
+#include "bigintimplem-decl.hh"
 
 namespace mozart {
 
 #ifndef MOZART_GENERATOR
-#include "SmallInt-implem-decl.hh"
+#include "BigInt-implem-decl.hh"
 #endif
 
-class SmallInt: public DataType<SmallInt>, StoredAs<nativeint>,
-  WithValueBehavior {
+class BigInt: public DataType<BigInt>, WithValueBehavior {
 public:
-  static constexpr UUID uuid = "{00000000-0000-4f00-0000-000000000001}";
-
-  static constexpr nativeint min = std::numeric_limits<nativeint>::min();
-  static constexpr nativeint max = std::numeric_limits<nativeint>::max();
+  static constexpr UUID uuid = "{00000000-0000-9e00-0000-000000000002}";
 
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom("int");
   }
 
-  explicit SmallInt(nativeint value) : _value(value) {}
+  BigInt(VM vm, const std::shared_ptr<BigIntImplem>& p): _value(p) {}
 
-  static void create(nativeint& self, VM vm, nativeint value) {
-    self = value;
-  }
-
-  inline
-  static void create(nativeint& self, VM vm, GR gr, SmallInt from);
+  BigInt(VM vm, GR gr, BigInt& from): _value(std::move(from._value)) {}
 
 public:
-  nativeint value() const { return _value; }
+  std::shared_ptr<BigIntImplem> value() { return _value; }
 
   inline
   bool equals(VM vm, RichNode right);
@@ -67,7 +59,7 @@ public:
   // Comparable interface
 
   inline
-  int compare(RichNode self, VM vm, RichNode right);
+  int compare(VM vm, RichNode right);
 
 public:
   // Numeric inteface
@@ -97,57 +89,47 @@ public:
   UnstableNode subtract(VM vm, RichNode right);
 
   inline
-  UnstableNode subtractValue(VM vm, nativeint b);
-
-  inline
   UnstableNode multiply(VM vm, RichNode right);
-
-  inline
-  UnstableNode multiplyValue(VM vm, nativeint b);
 
   inline
   UnstableNode div(VM vm, RichNode right);
 
   inline
-  UnstableNode divValue(VM vm, nativeint b);
-
-  inline
   UnstableNode mod(VM vm, RichNode right);
 
   inline
-  UnstableNode modValue(VM vm, nativeint b);
-
-  inline
-  UnstableNode abs(VM vm);
+  UnstableNode abs(RichNode self, VM vm);
 
 public:
   // Miscellaneous
 
+  double doubleValue() {
+    return value()->doubleValue();
+  }
+
+  std::string str() {
+    return value()->str();
+  }
+
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    if (value() >= 0) {
-      out << value();
-    } else if (value() == min) {
-      std::ostringstream ss;
-      ss << value();
-      std::string s(ss.str());
-      s[0] = '~';
-      out << s;
-    } else {
-      out << '~' << -value();
-    }
+    value()->printReprToStream(vm, out, depth, width);
   }
 
 private:
   inline
-  bool testMultiplyOverflow(nativeint a, nativeint b);
+  static UnstableNode shrink(VM vm, const std::shared_ptr<BigIntImplem>& p);
 
-  const nativeint _value;
+  inline
+  static std::shared_ptr<BigIntImplem> coerce(VM vm, RichNode value);
+
+private:
+  std::shared_ptr<BigIntImplem> _value;
 };
 
 #ifndef MOZART_GENERATOR
-#include "SmallInt-implem-decl-after.hh"
+#include "BigInt-implem-decl-after.hh"
 #endif
 
 }
 
-#endif // MOZART_SMALLINT_DECL_H
+#endif // __BIGINT_DECL_H

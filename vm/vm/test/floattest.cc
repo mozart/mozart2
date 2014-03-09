@@ -64,7 +64,7 @@ TEST_F(FloatTest, Divide) {
 
       UnstableNode rightNode = Float::build(vm, right);
 
-      UnstableNode resultNode = Numeric(leftNode).divide(vm, rightNode);
+      UnstableNode resultNode = FloatLike(leftNode).divide(vm, rightNode);
       EXPECT_EQ_FLOAT(left / right, resultNode);
     }
   }

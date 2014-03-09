@@ -190,10 +190,18 @@ public:
   // Miscellaneous
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    if (value() < 0) {
-      out << '~' << -value();
-    } else {
+    if (value() >= 0.0) {
       out << value();
+    } else {
+      std::ostringstream ss;
+      ss << value();
+      std::string s(ss.str());
+      s[0] = '~';
+      // We also want to replace the ~ before the exponent
+      size_t pos = s.find('-');
+      if (pos != std::string::npos)
+        s[pos] = '~';
+      out << s;
     }
   }
 private:

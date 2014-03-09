@@ -36,6 +36,7 @@
 #include "array.hh"
 #include "atom.hh"
 #include "boolean.hh"
+#include "bigint.hh"
 #include "bytestring.hh"
 #include "callables.hh"
 #include "cell.hh"

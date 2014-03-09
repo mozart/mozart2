@@ -32,6 +32,7 @@ constexpr size_t UUID::byte_count;
 // Definitions of the uuid's of data types
 constexpr UUID Atom::uuid;
 constexpr UUID Boolean::uuid;
+constexpr UUID BigInt::uuid;
 constexpr UUID ByteString::uuid;
 constexpr UUID GlobalName::uuid;
 constexpr UUID NamedName::uuid;

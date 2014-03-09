@@ -47,6 +47,22 @@ void BuiltinModule::initModule(VM vm, T&& module) {
 // VirtualMachine //
 ////////////////////
 
+UnstableNode VirtualMachineEnvironment::newBigInt(VM vm, nativeint value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
+}
+
+UnstableNode VirtualMachineEnvironment::newBigInt(VM vm, double value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
+}
+
+UnstableNode VirtualMachineEnvironment::newBigInt(VM vm, const std::string& value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
+}
+
+std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, nativeint value) {
+  raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
+}
+
 void registerCoreModules(VM vm);
 
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
@@ -142,6 +158,22 @@ void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
     ++iter;
 
   _alarms.insert_before_new(this, iter, expiration, wakeable);
+}
+
+UnstableNode VirtualMachine::newBigInt(nativeint value) {
+  return environment.newBigInt(this, value);
+}
+
+UnstableNode VirtualMachine::newBigInt(double value) {
+  return environment.newBigInt(this, value);
+}
+
+UnstableNode VirtualMachine::newBigInt(const std::string& value) {
+  return environment.newBigInt(this, value);
+}
+
+std::shared_ptr<BigIntImplem> VirtualMachine::newBigIntImplem(nativeint value) {
+  return environment.newBigIntImplem(this, value);
 }
 
 template <typename T>

@@ -42,6 +42,7 @@
 #include "vmallocatedlist-decl.hh"
 
 #include "atomtable.hh"
+#include "bigintimplem-decl.hh"
 #include "coreatoms-decl.hh"
 #include "properties-decl.hh"
 
@@ -100,6 +101,18 @@ public:
   }
 
   virtual UUID genUUID() = 0;
+
+  inline
+  virtual UnstableNode newBigInt(VM vm, nativeint value);
+
+  inline
+  virtual UnstableNode newBigInt(VM vm, double value);
+
+  inline
+  virtual UnstableNode newBigInt(VM vm, const std::string& value);
+
+  inline
+  virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
 
   virtual void gCollect(GC gc) {
   }
@@ -241,6 +254,20 @@ public:
 
   inline
   void setAlarm(std::int64_t delay, StableNode* wakeable);
+
+public:
+  inline
+  UnstableNode newBigInt(nativeint value);
+
+  inline
+  UnstableNode newBigInt(double value);
+
+  inline
+  UnstableNode newBigInt(const std::string& value);
+
+  inline
+  std::shared_ptr<BigIntImplem> newBigIntImplem(nativeint value);
+
 public:
   CoreAtoms coreatoms;
 

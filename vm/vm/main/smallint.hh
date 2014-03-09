@@ -61,26 +61,44 @@ int SmallInt::compareFeatures(VM vm, RichNode right) {
 
 // Comparable ------------------------------------------------------------------
 
-int SmallInt::compare(VM vm, RichNode right) {
-  auto rightIntValue = getArgument<nativeint>(vm, right);
-  return (value() == rightIntValue) ? 0 : (value() < rightIntValue) ? -1 : 1;
+int SmallInt::compare(RichNode self, VM vm, RichNode right) {
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return (value() == smallInt) ? 0 : (value() < smallInt) ? -1 : 1;
+  } else if (right.is<BigInt>()) {
+    return -Comparable(right).compare(vm, self);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 // Numeric ---------------------------------------------------------------------
 
 UnstableNode SmallInt::opposite(VM vm) {
   // Detecting overflow - platform dependent (2's complement)
-  if (value() != std::numeric_limits<nativeint>::min()) {
+  if (value() != min) {
     // No overflow
     return SmallInt::build(vm, -value());
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode big = vm->newBigInt(min);
+    return Numeric(big).opposite(vm);
   }
 }
 
 UnstableNode SmallInt::add(VM vm, RichNode right) {
-  return add(vm, getArgument<nativeint>(vm, right));
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return add(vm, smallInt);
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).add(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::add(VM vm, nativeint b) {
@@ -92,13 +110,24 @@ UnstableNode SmallInt::add(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).add(vm, right);
   }
 }
 
 UnstableNode SmallInt::subtract(VM vm, RichNode right) {
-  return subtractValue(vm, getArgument<nativeint>(vm, right));
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return subtractValue(vm, smallInt);
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).subtract(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
@@ -106,17 +135,28 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
   nativeint c = a - b;
 
   // Detecting overflow - platform dependent (2's complement)
-  if ((((a ^ c) & (-b ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
+  if (((~(a ^ ~b) & (a ^ c)) >> std::numeric_limits<nativeint>::digits) == 0) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).subtract(vm, right);
   }
 }
 
 UnstableNode SmallInt::multiply(VM vm, RichNode right) {
-  return multiplyValue(vm, getArgument<nativeint>(vm, right));
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return multiplyValue(vm, smallInt);
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).multiply(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
@@ -132,7 +172,8 @@ bool SmallInt::testMultiplyOverflow(nativeint a, nativeint b) {
     return false;
 
   // Slow test (because of the division)
-  return (b != 0) && (absa >= std::numeric_limits<nativeint>::max() / absb);
+  return (a == min) ||
+         ((b != 0) && (absa >= max / absb));
 }
 
 UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
@@ -143,13 +184,24 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a * b);
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).multiply(vm, right);
   }
 }
 
 UnstableNode SmallInt::div(VM vm, RichNode right) {
-  return divValue(vm, getArgument<nativeint>(vm, right));
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return divValue(vm, smallInt);
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).div(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::divValue(VM vm, nativeint b) {
@@ -159,154 +211,54 @@ UnstableNode SmallInt::divValue(VM vm, nativeint b) {
   }
 
   // Detecting overflow
-  if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
+  if ((a != min) || (b != -1)) {
     // No overflow
     return SmallInt::build(vm, a / b);
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).div(vm, right);
   }
 }
 
 UnstableNode SmallInt::mod(VM vm, RichNode right) {
-  return modValue(vm, getArgument<nativeint>(vm, right));
+  using namespace mozart::patternmatching;
+
+  nativeint smallInt;
+  if (matches(vm, right, capture(smallInt))) {
+    return modValue(vm, smallInt);
+  } else if (right.is<BigInt>()) {
+    UnstableNode big = vm->newBigInt(value());
+    return Numeric(big).mod(vm, right);
+  } else {
+    raiseTypeError(vm, "Integer", right);
+  }
 }
 
 UnstableNode SmallInt::modValue(VM vm, nativeint b) {
   nativeint a = value();
 
   // Detecting overflow
-  if ((a != std::numeric_limits<nativeint>::min()) || (b != -1)) {
+  if ((a != min) || (b != -1)) {
     // No overflow
     return SmallInt::build(vm, a % b);
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode left = vm->newBigInt(a);
+    UnstableNode right = SmallInt::build(vm, b);
+    return Numeric(left).mod(vm, right);
   }
-}
-
-UnstableNode SmallInt::pow(VM vm, RichNode right) {
-  return powValue(vm, getArgument<nativeint>(vm, right));
-}
-
-UnstableNode SmallInt::powValue(VM vm, nativeint b) {
-  nativeint a = value();
-
-  // Negative powers disallowed
-  if (b < 0) {
-    raiseKernelError(vm, "Integer power: Negative indices disallowed");
-  }
-
-  nativeint product = 1;
-  for (int i = 0; i < b; i++) {
-    if (!testMultiplyOverflow(product, a)) {
-      // No overflow
-      product *= a;
-    } else {
-      // Overflow - TODO: create a BigInt
-      product = 0;
-      break;
-    }
-  }
-  return SmallInt::build(vm, product);
 }
 
 UnstableNode SmallInt::abs(VM vm) {
   nativeint a = value();
   // Detecting overflow - platform dependent (2's complement)
-  if (a != std::numeric_limits<nativeint>::min()) {
+  if (a != min) {
     // No overflow
     return SmallInt::build(vm, a >= 0 ? a : -a);
   } else {
-    // Overflow - TODO: create a BigInt
-    return SmallInt::build(vm, 0);
+    UnstableNode big = vm->newBigInt(min);
+    return Numeric(big).opposite(vm);
   }
-}
-
-// Float module functions - will return a type error via Numeric interface
-
-UnstableNode SmallInt::divide(RichNode self, VM vm, RichNode right) {
-  return Interface<Numeric>().divide(self, vm, right);
-}
-
-UnstableNode SmallInt::fmod(RichNode self, VM vm, RichNode right) {
-  return Interface<Numeric>().fmod(self, vm, right);
-}
-
-UnstableNode SmallInt::acos(RichNode self, VM vm) {
-  return Interface<Numeric>().acos(self, vm);
-}
-
-UnstableNode SmallInt::acosh(RichNode self, VM vm) {
-  return Interface<Numeric>().acosh(self, vm);
-}
-
-UnstableNode SmallInt::asin(RichNode self, VM vm) {
-  return Interface<Numeric>().asin(self, vm);
-}
-
-UnstableNode SmallInt::asinh(RichNode self, VM vm) {
-  return Interface<Numeric>().asinh(self, vm);
-}
-
-UnstableNode SmallInt::atan(RichNode self, VM vm) {
-  return Interface<Numeric>().atan(self, vm);
-}
-
-UnstableNode SmallInt::atanh(RichNode self, VM vm) {
-  return Interface<Numeric>().atanh(self, vm);
-}
-
-UnstableNode SmallInt::atan2(RichNode self, VM vm, RichNode right) {
-  return Interface<Numeric>().atan2(self, vm, right);
-}
-
-UnstableNode SmallInt::ceil(RichNode self, VM vm) {
-  return Interface<Numeric>().ceil(self, vm);
-}
-
-UnstableNode SmallInt::cos(RichNode self, VM vm) {
-  return Interface<Numeric>().cos(self, vm);
-}
-
-UnstableNode SmallInt::cosh(RichNode self, VM vm) {
-  return Interface<Numeric>().cosh(self, vm);
-}
-
-UnstableNode SmallInt::exp(RichNode self, VM vm) {
-  return Interface<Numeric>().exp(self, vm);
-}
-
-UnstableNode SmallInt::floor(RichNode self, VM vm) {
-  return Interface<Numeric>().floor(self, vm);
-}
-
-UnstableNode SmallInt::log(RichNode self, VM vm) {
-  return Interface<Numeric>().log(self, vm);
-}
-
-UnstableNode SmallInt::round(RichNode self, VM vm) {
-  return Interface<Numeric>().round(self, vm);
-}
-
-UnstableNode SmallInt::sin(RichNode self, VM vm) {
-  return Interface<Numeric>().sin(self, vm);
-}
-
-UnstableNode SmallInt::sinh(RichNode self, VM vm) {
-  return Interface<Numeric>().sinh(self, vm);
-}
-
-UnstableNode SmallInt::sqrt(RichNode self, VM vm) {
-  return Interface<Numeric>().sqrt(self, vm);
-}
-
-UnstableNode SmallInt::tan(RichNode self, VM vm) {
-  return Interface<Numeric>().tan(self, vm);
-}
-
-UnstableNode SmallInt::tanh(RichNode self, VM vm) {
-  return Interface<Numeric>().tanh(self, vm);
 }
 
 }

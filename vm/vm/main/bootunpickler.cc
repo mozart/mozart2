@@ -95,7 +95,12 @@ private:
     char* end = nullptr;
     long long intResult = std::strtoll(str.c_str(), &end, 10);
     assert(*end == '\0' && "bad integer string");
-    return build(vm, (nativeint) intResult);
+    nativeint value = (nativeint) intResult;
+    if (value == SmallInt::min || value == SmallInt::max) { // Overflow
+      return vm->newBigInt(str);
+    } else {
+      return build(vm, value);
+    }
   }
 
   UnstableNode readFloatValue() {

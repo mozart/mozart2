@@ -243,4 +243,20 @@ std::uint64_t BoostBasedVM::bytes2uint64(const std::uint8_t* bytes) {
     ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
 }
 
+UnstableNode BoostBasedVM::newBigInt(VM vm, nativeint value) {
+  return BigInt::build(vm, newBigIntImplem(vm, value));
+}
+
+UnstableNode BoostBasedVM::newBigInt(VM vm, double value) {
+  return BigInt::build(vm, BoostBigInt::make_shared_ptr(value));
+}
+
+UnstableNode BoostBasedVM::newBigInt(VM vm, const std::string& value) {
+  return BigInt::build(vm, BoostBigInt::make_shared_ptr(value));
+}
+
+std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, nativeint value) {
+  return BoostBigInt::make_shared_ptr(value);
+}
+
 } }

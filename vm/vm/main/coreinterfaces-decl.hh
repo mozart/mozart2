@@ -77,7 +77,7 @@ struct Interface<BindableReadOnly>:
 class ValueEquatable;
 template<>
 struct Interface<ValueEquatable>:
-  ImplementedBy<SmallInt, Atom, Boolean, Float, BuiltinProcedure,
+  ImplementedBy<SmallInt, BigInt, Atom, Boolean, Float, BuiltinProcedure,
                 ReifiedThread, Unit, String, ByteString, UniqueName,
                 PatMatCapture>,
   NoAutoReflectiveCalls {
@@ -117,7 +117,7 @@ struct Interface<StructuralEquatable>:
 class Comparable;
 template<>
 struct Interface<Comparable>:
-  ImplementedBy<SmallInt, Atom, Float, String, ByteString> {
+  ImplementedBy<SmallInt, BigInt, Atom, Float, String, ByteString> {
 
   int compare(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "comparable", self);
@@ -273,7 +273,7 @@ struct Interface<WithPrintName>:
 class Numeric;
 template<>
 struct Interface<Numeric>:
-  ImplementedBy<SmallInt, Float> {
+  ImplementedBy<SmallInt, BigInt, Float> {
 
   bool isNumber(RichNode self, VM vm) {
     return false;
@@ -307,14 +307,6 @@ struct Interface<Numeric>:
     raiseTypeError(vm, "Numeric", self);
   }
 
-  UnstableNode divide(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, "Float", self);
-  }
-
-  UnstableNode fmod(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, "Float", self);
-  }
-
   UnstableNode div(RichNode self, VM vm, RichNode right) {
     raiseTypeError(vm, "Integer", self);
   }
@@ -323,12 +315,26 @@ struct Interface<Numeric>:
     raiseTypeError(vm, "Integer", self);
   }
 
-  UnstableNode pow(RichNode self, VM vm, RichNode right) {
-    raiseTypeError(vm, "Numeric", self);
-  }
-
   UnstableNode abs(RichNode self, VM vm) {
     raiseTypeError(vm, "Numeric", self);
+  }
+};
+
+class FloatLike;
+template<>
+struct Interface<FloatLike>:
+  ImplementedBy<Float> {
+
+  UnstableNode divide(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode pow(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
+  }
+
+  UnstableNode fmod(RichNode self, VM vm, RichNode right) {
+    raiseTypeError(vm, "Float", self);
   }
 
   UnstableNode acos(RichNode self, VM vm) {

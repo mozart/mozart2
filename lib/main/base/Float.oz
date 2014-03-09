@@ -37,7 +37,7 @@ end
 
 fun {FloatToString F}
    if {IsFloat F} then
-      {VirtualString.toString F}
+      {VirtualString.toString {Value.toVirtualString F 0 0}}
    else
       {Exception.raiseError kernel(type 'Float.toString' [F] 'Float' 1)}
       unit

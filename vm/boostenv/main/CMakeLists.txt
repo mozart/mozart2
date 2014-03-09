@@ -5,6 +5,9 @@ find_package(Boost COMPONENTS random system thread filesystem chrono REQUIRED)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
+separate_arguments(SPLIT_CXX_FLAGS UNIX_COMMAND "${CMAKE_CXX_FLAGS}")
+set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" "${SPLIT_CXX_FLAGS}")
+
 if(WIN32)
   # Boost requires this
   add_definitions(-D_WIN32_WINNT=0x0501)
@@ -18,11 +21,6 @@ if(MINGW)
   set(CXX_STD_OPT -std=gnu++0x)
 else()
   set(CXX_STD_OPT -std=c++0x)
-endif()
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  set(MOZART_GENERATOR_FLAGS "-I/usr/lib/c++/v1")
 endif()
 
 # Mozart VM library

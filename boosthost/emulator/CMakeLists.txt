@@ -42,11 +42,6 @@ include_directories("${MOZART_DIR}/vm/boostenv/main"
 
 
 # Compile the executable
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND IS_DIRECTORY "/usr/lib/c++/v1")
-  include_directories(/usr/lib/c++/v1)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-
 add_executable(ozemulator emulator.cc)
 target_link_libraries(ozemulator mozartvmboost mozartvm ${Boost_LIBRARIES})
 

@@ -78,7 +78,7 @@ public:
       double err;
 
       // Simple overflow check of double -> nativeint conversion
-      if (intValue == SmallInt::min || intValue == SmallInt::max) {
+      if (intValue == SmallInt::min() || intValue == SmallInt::max()) {
         result = vm->newBigInt(floatValue);
         err = floatValue - static_cast<RichNode>(result).as<BigInt>().doubleValue();
       } else {

@@ -146,10 +146,8 @@ void PropertyRegistry::registerPredefined(VM vm) {
 
   // Limits
 
-  registerConstantProp(vm, "limits.int.min",
-                       std::numeric_limits<nativeint>::min());
-  registerConstantProp(vm, "limits.int.max",
-                       std::numeric_limits<nativeint>::max());
+  registerConstantProp(vm, "limits.int.min", SmallInt::min());
+  registerConstantProp(vm, "limits.int.max", SmallInt::max());
   registerConstantProp(vm, "limits.bytecode.xregisters",
                        std::numeric_limits<ByteCode>::max());
 

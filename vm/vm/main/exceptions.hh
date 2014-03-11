@@ -31,8 +31,14 @@ namespace mozart {
 
 inline
 void MOZART_NORETURN fail(VM vm) {
+  UnstableNode info = Unit::build(vm);
+  fail(vm, info);
+}
+
+inline
+void MOZART_NORETURN fail(VM vm, RichNode info) {
   vm->getGlobalExceptionMechanism().throwException(
-    ExceptionKind::ekFail);
+    ExceptionKind::ekFail, info.getStableRef(vm));
 }
 
 inline

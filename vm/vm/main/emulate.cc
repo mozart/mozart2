@@ -1128,7 +1128,7 @@ void Thread::run() {
 
     switch (kind) {
       case ExceptionKind::ekFail: {
-        applyFail(vm,
+        applyFail(vm, *node,
                   abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
         break;
       }
@@ -1362,7 +1362,7 @@ void Thread::patternMatch(VM vm, RichNode value, RichNode patterns,
   advancePC(2);
 }
 
-void Thread::applyFail(VM vm,
+void Thread::applyFail(VM vm, RichNode info,
                        StableNode*& abstraction,
                        ProgramCounter& PC, size_t& yregCount,
                        XRegArray* xregs,
@@ -1372,9 +1372,10 @@ void Thread::applyFail(VM vm,
   if (!vm->isOnTopLevel()) {
     vm->getCurrentSpace()->fail(vm);
   } else {
-    UnstableNode error = buildRecord(
-      vm, buildArity(vm, vm->coreatoms.failure, vm->coreatoms.debug),
-      unit);
+    UnstableNode debug = buildRecord(vm,
+      buildArity(vm, "d", "info", "stack"), info, unit);
+    UnstableNode error = buildRecord(vm,
+      buildArity(vm, vm->coreatoms.failure, vm->coreatoms.debug), debug);
 
     applyRaise(vm, error,
                abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
@@ -1470,7 +1471,12 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
   if (!arity.lookupFeature(vm, debugAtom, debugFeatureIndex))
     return build(vm, exception);
 
-  if (!RichNode(*srcRecord.getElement(debugFeatureIndex)).is<Unit>())
+  RichNode atDebug = RichNode(*srcRecord.getElement(debugFeatureIndex));
+  UnstableNode infoAtom = build(vm, "info");
+
+  UnstableNode info = build(vm, unit);
+  if (!(atDebug.is<Unit>() || (atDebug.is<Record>() &&
+        atDebug.as<Record>().lookupFeature(vm, infoAtom, info))))
     return build(vm, exception);
 
   size_t width = srcRecord.getWidth();
@@ -1482,7 +1488,7 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
       UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
       UnstableNode debugField = buildRecord(
         vm, buildArity(vm, "d", "info", "stack"),
-        unit, std::move(stackTrace));
+        info, std::move(stackTrace));
       destRecord.getElement(i)->init(vm, std::move(debugField));
     } else {
       destRecord.getElement(i)->init(vm, *srcRecord.getElement(i));

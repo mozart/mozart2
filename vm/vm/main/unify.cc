@@ -86,8 +86,10 @@ private:
 
 void fullUnify(VM vm, RichNode left, RichNode right) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkUnify);
-  if (!walk.run(vm, left, right))
-    fail(vm);
+  if (!walk.run(vm, left, right)) {
+    UnstableNode info = buildList(vm, buildTuple(vm, "eq", left, right));
+    fail(vm, info);
+  }
 }
 
 bool fullEquals(VM vm, RichNode left, RichNode right) {

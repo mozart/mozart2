@@ -61,7 +61,7 @@ public:
   }
 
   void MOZART_NORETURN throwException(ExceptionKind kind,
-                                      StableNode* dataNode = nullptr) {
+                                      StableNode* dataNode) {
     _exceptionKind = kind;
     _dataNode = dataNode;
     rethrow();
@@ -101,6 +101,9 @@ private:
 
 inline
 void MOZART_NORETURN fail(VM vm);
+
+inline
+void MOZART_NORETURN fail(VM vm, RichNode info);
 
 inline
 void MOZART_NORETURN waitFor(VM vm, RichNode waitee);

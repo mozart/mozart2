@@ -287,7 +287,7 @@ private:
                     StaticArray<StableNode>& kregs,
                     bool& preempted);
 
-  void applyFail(VM vm,
+  void applyFail(VM vm, RichNode info,
                  StableNode*& abstraction,
                  ProgramCounter& PC, size_t& yregCount,
                  XRegArray* xregs,

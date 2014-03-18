@@ -342,7 +342,7 @@ int main(int argc, char** argv) {
       ozcalls::asyncOzCall(vm, applyProc, importParam, *baseEnv);
     }
 
-    boostBasedVM.run();
+    boostBasedVM.run(vm);
   }
 
   // Load the Init functor
@@ -367,7 +367,7 @@ int main(int argc, char** argv) {
       }
 
       ozcalls::asyncOzCall(vm, initValue, *baseEnv, *initFunctor);
-      boostBasedVM.run();
+      boostBasedVM.run(vm);
     } else {
       // Assume it is already the Init functor
       DataflowVariable(*initFunctor).bind(vm, initValue);
@@ -389,6 +389,6 @@ int main(int argc, char** argv) {
     baseEnv.reset();
     initFunctor.reset();
 
-    boostBasedVM.run();
+    boostBasedVM.run(vm);
   }
 }

@@ -37,7 +37,8 @@ BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
   virtualMachine(environment, maxMemory), vm(&virtualMachine),
   env(environment), _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
-  alarmTimer(environment.io_service) {
+  alarmTimer(environment.io_service),
+  _work(nullptr), _thread(boost::bind(&BoostVM::runLoop, this)) {
 
   builtins::biref::registerBuiltinModOS(vm);
 
@@ -46,6 +47,27 @@ BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
   random_generator.seed(generator);
 };
 
+void BoostVM::start() {
+  _work = new boost::asio::io_service::work(env.io_service);
+  _conditionWorkToDoInVM.notify_one();
+}
+
+void BoostVM::runLoop() {
+  while (true) {
+    {
+      boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
+      while (_work == nullptr) {
+        _conditionWorkToDoInVM.wait(lock);
+      }
+    }
+
+    run();
+
+    // Tear down
+    delete _work;
+    _work = nullptr;
+  }
+}
 
 void BoostVM::run() {
   constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
@@ -209,21 +231,15 @@ BoostVM& BoostBasedVM::addVM(size_t maxMemory) {
   return vms.front();
 }
 
-void BoostBasedVM::run() {
-  // Prevent the ASIO run thread from exiting by giving it some "work" to do
-  auto work = new boost::asio::io_service::work(io_service);
+void BoostBasedVM::run(VM vm) {
+  boostVMFor(vm).start();
 
-  // Now start the ASIO run thread
-  boost::thread asioRunThread(boost::bind(
-    &boost::asio::io_service::run, &io_service));
+  runIO();
+}
 
-  for (BoostVM& boostVM : vms) {
-    boostVM.run();
-  }
-
-  // Tear down
-  delete work;
-  asioRunThread.join();
+void BoostBasedVM::runIO() {
+  // This will end when all VMs are done.
+  io_service.run();
 
   // Get ready for a later call to run()
   io_service.reset();

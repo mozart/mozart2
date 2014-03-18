@@ -54,6 +54,8 @@ public:
 
 // Run and preemption
 public:
+  void start();
+  void runLoop();
   void run();
 private:
   void onPreemptionTimerExpire(const boost::system::error_code& error);
@@ -113,6 +115,11 @@ private:
 // IO-driven events that must work with the VM store
 private:
   std::queue<std::function<void()> > _vmEventsCallbacks;
+
+// Running thread management
+private:
+  boost::asio::io_service::work* _work;
+  boost::thread _thread;
 };
 
 //////////////////
@@ -152,7 +159,8 @@ public:
 // Run and preemption
 
 public:
-  void run();
+  void run(VM vm);
+  void runIO();
 
 // Time
 

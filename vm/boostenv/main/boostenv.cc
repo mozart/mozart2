@@ -34,7 +34,7 @@ namespace mozart { namespace boostenv {
 /////////////
 
 BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
-  virtualMachine(environment, maxMemory), vm(&virtualMachine),
+  VirtualMachine(environment, maxMemory), vm(this),
   env(environment), _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
@@ -232,7 +232,7 @@ BoostVM& BoostBasedVM::addVM(size_t maxMemory) {
 }
 
 void BoostBasedVM::run(VM vm) {
-  boostVMFor(vm).start();
+  BoostVM::forVM(vm).start();
 
   runIO();
 }

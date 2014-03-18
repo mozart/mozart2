@@ -45,12 +45,13 @@ namespace mozart { namespace boostenv {
 
 class BoostBasedVM;
 
-class BoostVM {
+class BoostVM : VirtualMachine {
 public:
   BoostVM(BoostBasedVM& environment, size_t maxMemory);
 
-  inline
-  static BoostVM& forVM(VM vm);
+  static BoostVM& forVM(VM vm) {
+    return *static_cast<BoostVM*>(vm);
+  }
 
 // Run and preemption
 public:
@@ -85,9 +86,6 @@ public:
 public:
   inline
   void postVMEvent(std::function<void()> callback);
-
-private:
-  VirtualMachine virtualMachine;
 
 public:
   VM vm;
@@ -140,10 +138,6 @@ public:
   BoostBasedVM();
 
   BoostVM& addVM(size_t maxMemory);
-
-  BoostVM& boostVMFor(VM vm) {
-    return vms.front(); // FIXME
-  }
 
 // Configuration
 

@@ -40,10 +40,6 @@ namespace mozart { namespace boostenv {
 // BoostVM //
 /////////////
 
-BoostVM& BoostVM::forVM(VM vm) {
-  return BoostBasedVM::forVM(vm).boostVMFor(vm);
-}
-
 ProtectedNode BoostVM::allocAsyncIONode(StableNode* node) {
   _asyncIONodeCount++;
   return vm->protect(*node);

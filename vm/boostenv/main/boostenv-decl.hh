@@ -43,6 +43,78 @@
 
 namespace mozart { namespace boostenv {
 
+class BoostBasedVM;
+
+class BoostVM {
+public:
+  BoostVM(BoostBasedVM& environment, size_t maxMemory);
+
+  inline
+  static BoostVM& forVM(VM vm);
+
+// Run and preemption
+public:
+  void run();
+private:
+  void onPreemptionTimerExpire(const boost::system::error_code& error);
+
+// Management of nodes used by asynchronous operations for feedback
+public:
+  inline
+  ProtectedNode allocAsyncIONode(StableNode* node);
+
+  inline
+  void releaseAsyncIONode(const ProtectedNode& node);
+
+  inline
+  ProtectedNode createAsyncIOFeedbackNode(UnstableNode& readOnly);
+
+  template <class LT, class... Args>
+  inline
+  void bindAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
+                                         LT&& label, Args&&... args);
+
+  template <class LT, class... Args>
+  inline
+  void raiseAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
+                                          LT&& label, Args&&... args);
+
+// Notification from asynchronous work
+public:
+  inline
+  void postVMEvent(std::function<void()> callback);
+
+private:
+  VirtualMachine virtualMachine;
+
+public:
+  VM vm;
+  BoostBasedVM& env;
+
+// Random number generation
+public:
+  typedef boost::random::mt19937 random_generator_t;
+  random_generator_t random_generator;
+
+// Number of asynchronous IO nodes - used for termination detection
+private:
+  size_t _asyncIONodeCount;
+
+// Synchronization condition variable telling there is work to do in the VM
+private:
+  boost::condition_variable _conditionWorkToDoInVM;
+  boost::mutex _conditionWorkToDoInVMMutex;
+
+// Preemption and alarms
+private:
+  boost::asio::deadline_timer preemptionTimer;
+  boost::asio::deadline_timer alarmTimer;
+
+// IO-driven events that must work with the VM store
+private:
+  std::queue<std::function<void()> > _vmEventsCallbacks;
+};
+
 //////////////////
 // BoostBasedVM //
 //////////////////
@@ -53,10 +125,17 @@ private:
                                         UnstableNode& result)>;
 
 public:
-  BoostBasedVM(size_t maxMemory);
-
   static BoostBasedVM& forVM(VM vm) {
     return static_cast<BoostBasedVM&>(vm->getEnvironment());
+  }
+
+public:
+  BoostBasedVM();
+
+  BoostVM& addVM(size_t maxMemory);
+
+  BoostVM& boostVMFor(VM vm) {
+    return vms.front(); // FIXME
   }
 
 // Configuration
@@ -74,8 +153,6 @@ public:
 
 public:
   void run();
-private:
-  void onPreemptionTimerExpire(const boost::system::error_code& error);
 
 // Time
 
@@ -117,72 +194,19 @@ public:
   inline
   std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value);
 
-// Management of nodes used by asynchronous operations for feedback
-
-public:
-  inline
-  ProtectedNode allocAsyncIONode(StableNode* node);
-
-  inline
-  void releaseAsyncIONode(const ProtectedNode& node);
-
-  inline
-  ProtectedNode createAsyncIOFeedbackNode(UnstableNode& readOnly);
-
-  template <class LT, class... Args>
-  inline
-  void bindAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
-                                         LT&& label, Args&&... args);
-
-  template <class LT, class... Args>
-  inline
-  void raiseAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
-                                          LT&& label, Args&&... args);
-
-// Notification from asynchronous work
-
-public:
-  inline
-  void postVMEvent(std::function<void()> callback);
-
-// Reference to the virtual machine
 private:
-  VirtualMachine virtualMachine;
-public:
-  const VM vm;
+  std::forward_list<BoostVM> vms;
 
 // Bootstrap
 private:
   BootLoader _bootLoader;
 
-// Number of asynchronous IO nodes - used for termination detection
-private:
-  size_t _asyncIONodeCount;
-
-// Random number generation
-public:
-  typedef boost::random::mt19937 random_generator_t;
-  random_generator_t random_generator;
 private:
   boost::uuids::random_generator uuidGenerator;
 
 // ASIO service
 public:
   boost::asio::io_service io_service;
-
-// Synchronization condition variable telling there is work to do in the VM
-private:
-  boost::condition_variable _conditionWorkToDoInVM;
-  boost::mutex _conditionWorkToDoInVMMutex;
-
-// Preemption and alarms
-private:
-  boost::asio::deadline_timer preemptionTimer;
-  boost::asio::deadline_timer alarmTimer;
-
-// IO-driven events that must work with the VM store
-private:
-  std::queue<std::function<void()> > _vmEventsCallbacks;
 };
 
 ///////////////

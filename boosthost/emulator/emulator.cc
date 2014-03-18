@@ -276,8 +276,8 @@ int main(int argc, char** argv) {
 
   // SET UP THE VM AND RUN
 
-  boostenv::BoostBasedVM boostBasedVM(maxMemoryMega * MegaBytes);
-  VM vm = boostBasedVM.vm;
+  boostenv::BoostBasedVM boostBasedVM;
+  VM vm = boostBasedVM.addVM(maxMemoryMega * MegaBytes).vm;
 
   // Set some properties
   {

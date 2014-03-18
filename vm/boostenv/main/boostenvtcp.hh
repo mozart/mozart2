@@ -37,8 +37,8 @@ namespace mozart { namespace boostenv {
 // TCPConnection //
 ///////////////////
 
-TCPConnection::TCPConnection(BoostBasedVM& environment):
-  BaseSocketConnection(environment), _resolver(environment.io_service) {
+TCPConnection::TCPConnection(BoostVM& boostVM):
+  BaseSocketConnection(boostVM), _resolver(boostVM.env.io_service) {
 }
 
 void TCPConnection::startAsyncConnect(std::string host, std::string service,
@@ -51,13 +51,13 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
       auto connectHandler = [=] (const boost::system::error_code& error,
                                  protocol::resolver::iterator selected_endpoint) {
         if (!error) {
-          _environment.postVMEvent([=] () {
-            _environment.bindAndReleaseAsyncIOFeedbackNode(
-              statusNode, build(_environment.vm, self));
+          boostVM.postVMEvent([=] () {
+            boostVM.bindAndReleaseAsyncIOFeedbackNode(
+              statusNode, build(boostVM.vm, self));
           });
         } else {
-          _environment.postVMEvent([=] () {
-            _environment.raiseAndReleaseAsyncIOFeedbackNode(
+          boostVM.postVMEvent([=] () {
+            boostVM.raiseAndReleaseAsyncIOFeedbackNode(
               statusNode, "socket", "connect", error.value());
           });
         }
@@ -65,8 +65,8 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
 
       boost::asio::async_connect(socket(), endpoints, connectHandler);
     } else {
-      _environment.postVMEvent([=] () {
-        _environment.raiseAndReleaseAsyncIOFeedbackNode(
+      boostVM.postVMEvent([=] () {
+        boostVM.raiseAndReleaseAsyncIOFeedbackNode(
           statusNode, "socket", "resolve", error.value());
       });
     }
@@ -80,23 +80,23 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
 // TCPAcceptor //
 /////////////////
 
-TCPAcceptor::TCPAcceptor(BoostBasedVM& environment,
+TCPAcceptor::TCPAcceptor(BoostVM& boostVM,
                          const tcp::endpoint& endpoint):
-  _environment(environment), _acceptor(environment.io_service, endpoint) {
+  boostVM(boostVM), _acceptor(boostVM.env.io_service, endpoint) {
 }
 
 void TCPAcceptor::startAsyncAccept(const ProtectedNode& connectionNode) {
-  TCPConnection::pointer connection = TCPConnection::create(_environment);
+  TCPConnection::pointer connection = TCPConnection::create(boostVM);
 
   auto handler = [=] (const boost::system::error_code& error) {
     if (!error) {
-      _environment.postVMEvent([=] () {
-        _environment.bindAndReleaseAsyncIOFeedbackNode(
-          connectionNode, build(_environment.vm, connection));
+      boostVM.postVMEvent([=] () {
+        boostVM.bindAndReleaseAsyncIOFeedbackNode(
+          connectionNode, build(boostVM.vm, connection));
       });
     } else if (error == boost::asio::error::operation_aborted) {
-      _environment.postVMEvent([=] () {
-        _environment.releaseAsyncIONode(connectionNode);
+      boostVM.postVMEvent([=] () {
+        boostVM.releaseAsyncIONode(connectionNode);
       });
     } else {
       // Try again

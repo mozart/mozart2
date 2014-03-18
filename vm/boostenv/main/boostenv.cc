@@ -29,6 +29,107 @@
 
 namespace mozart { namespace boostenv {
 
+/////////////
+// BoostVM //
+/////////////
+
+BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
+  virtualMachine(environment, maxMemory), vm(&virtualMachine),
+  env(environment), _asyncIONodeCount(0),
+  preemptionTimer(environment.io_service),
+  alarmTimer(environment.io_service) {
+
+  builtins::biref::registerBuiltinModOS(vm);
+
+  // Initialize the pseudo random number generator with a really random seed
+  boost::random::random_device generator;
+  random_generator.seed(generator);
+};
+
+
+void BoostVM::run() {
+  constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
+  constexpr auto recInvokeAgainNow   = VirtualMachine::recInvokeAgainNow;
+  constexpr auto recInvokeAgainLater = VirtualMachine::recInvokeAgainLater;
+
+  // The main loop that handles all interactions with the VM
+  while (true) {
+    // Make sure the VM knows the reference time before starting
+    vm->setReferenceTime(env.getReferenceTime());
+
+    // Setup the preemption timer
+    preemptionTimer.expires_from_now(boost::posix_time::millisec(1));
+    preemptionTimer.async_wait(boost::bind(
+      &BoostVM::onPreemptionTimerExpire,
+      this, boost::asio::placeholders::error));
+
+    // Run the VM
+    auto nextInvokePair = vm->run();
+    auto nextInvoke = nextInvokePair.first;
+
+    // Stop the preemption timer
+    preemptionTimer.cancel();
+
+    {
+      // Acquire the lock that grants me access to
+      // _conditionWorkToDoInVM and _vmEventsCallbacks
+      boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
+
+      // Is there anything left to do?
+      if ((nextInvoke == recNeverInvokeAgain) &&
+          (_asyncIONodeCount == 0) && _vmEventsCallbacks.empty()) {
+        // Totally finished, nothing can ever wake me again
+        break;
+      }
+
+      // Handle asynchronous events coming from I/O, e.g.
+      while (!_vmEventsCallbacks.empty()) {
+        _vmEventsCallbacks.front()();
+        _vmEventsCallbacks.pop();
+
+        // That could have created work for the VM
+        nextInvoke = recInvokeAgainNow;
+      }
+
+      // Unless asked to invoke again now, setup the wait
+      if (nextInvoke != recInvokeAgainNow) {
+        // Setup the alarm time, if asked by the VM
+        if (nextInvoke == recInvokeAgainLater) {
+          alarmTimer.expires_at(
+            BoostBasedVM::referenceTimeToPTime(nextInvokePair.second));
+          alarmTimer.async_wait([this] (const boost::system::error_code& err) {
+            if (!err) {
+              boost::lock_guard<boost::mutex> lock(_conditionWorkToDoInVMMutex);
+              _conditionWorkToDoInVM.notify_all();
+            }
+          });
+        }
+
+        _conditionWorkToDoInVM.wait(lock);
+      }
+    }
+
+    // Cancel the alarm timer, in case it was not it that woke me
+    alarmTimer.cancel();
+  }
+}
+
+void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
+  if (error != boost::asio::error::operation_aborted) {
+    // Preemption
+    vm->setReferenceTime(env.getReferenceTime());
+    vm->requestPreempt();
+
+    // Reschedule
+    preemptionTimer.expires_at(
+      preemptionTimer.expires_at() + boost::posix_time::millisec(1));
+    preemptionTimer.async_wait(boost::bind(
+      &BoostVM::onPreemptionTimerExpire,
+      this, boost::asio::placeholders::error));
+  }
+}
+
+
 //////////////////
 // BoostBasedVM //
 //////////////////
@@ -98,27 +199,17 @@ namespace {
   }
 }
 
-BoostBasedVM::BoostBasedVM(size_t maxMemory):
-  virtualMachine(*this, maxMemory), vm(&virtualMachine),
-  _asyncIONodeCount(0),
-  uuidGenerator(random_generator),
-  preemptionTimer(io_service), alarmTimer(io_service) {
-
-  builtins::biref::registerBuiltinModOS(vm);
-
-  // Initialize the pseudo random number generator with a really random seed
-  boost::random::random_device generator;
-  random_generator.seed(generator);
-
+BoostBasedVM::BoostBasedVM() {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-void BoostBasedVM::run() {
-  constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
-  constexpr auto recInvokeAgainNow   = VirtualMachine::recInvokeAgainNow;
-  constexpr auto recInvokeAgainLater = VirtualMachine::recInvokeAgainLater;
+BoostVM& BoostBasedVM::addVM(size_t maxMemory) {
+  vms.emplace_front(*this, maxMemory);
+  return vms.front();
+}
 
+void BoostBasedVM::run() {
   // Prevent the ASIO run thread from exiting by giving it some "work" to do
   auto work = new boost::asio::io_service::work(io_service);
 
@@ -126,64 +217,8 @@ void BoostBasedVM::run() {
   boost::thread asioRunThread(boost::bind(
     &boost::asio::io_service::run, &io_service));
 
-  // The main loop that handles all interactions with the VM
-  while (true) {
-    // Make sure the VM knows the reference time before starting
-    vm->setReferenceTime(getReferenceTime());
-
-    // Setup the preemption timer
-    preemptionTimer.expires_from_now(boost::posix_time::millisec(1));
-    preemptionTimer.async_wait(boost::bind(
-      &BoostBasedVM::onPreemptionTimerExpire,
-      this, boost::asio::placeholders::error));
-
-    // Run the VM
-    auto nextInvokePair = vm->run();
-    auto nextInvoke = nextInvokePair.first;
-
-    // Stop the preemption timer
-    preemptionTimer.cancel();
-
-    {
-      // Acquire the lock that grants me access to
-      // _conditionWorkToDoInVM and _vmEventsCallbacks
-      boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
-
-      // Is there anything left to do?
-      if ((nextInvoke == recNeverInvokeAgain) &&
-          (_asyncIONodeCount == 0) && _vmEventsCallbacks.empty()) {
-        // Totally finished, nothing can ever wake me again
-        break;
-      }
-
-      // Handle asynchronous events coming from I/O, e.g.
-      while (!_vmEventsCallbacks.empty()) {
-        _vmEventsCallbacks.front()();
-        _vmEventsCallbacks.pop();
-
-        // That could have created work for the VM
-        nextInvoke = recInvokeAgainNow;
-      }
-
-      // Unless asked to invoke again now, setup the wait
-      if (nextInvoke != recInvokeAgainNow) {
-        // Setup the alarm time, if asked by the VM
-        if (nextInvoke == recInvokeAgainLater) {
-          alarmTimer.expires_at(referenceTimeToPTime(nextInvokePair.second));
-          alarmTimer.async_wait([this] (const boost::system::error_code& err) {
-            if (!err) {
-              boost::lock_guard<boost::mutex> lock(_conditionWorkToDoInVMMutex);
-              _conditionWorkToDoInVM.notify_all();
-            }
-          });
-        }
-
-        _conditionWorkToDoInVM.wait(lock);
-      }
-    }
-
-    // Cancel the alarm timer, in case it was not it that woke me
-    alarmTimer.cancel();
+  for (BoostVM& boostVM : vms) {
+    boostVM.run();
   }
 
   // Tear down
@@ -194,24 +229,8 @@ void BoostBasedVM::run() {
   io_service.reset();
 }
 
-void BoostBasedVM::onPreemptionTimerExpire(
-  const boost::system::error_code& error) {
-
-  if (error != boost::asio::error::operation_aborted) {
-    // Preemption
-    vm->setReferenceTime(getReferenceTime());
-    vm->requestPreempt();
-
-    // Reschedule
-    preemptionTimer.expires_at(
-      preemptionTimer.expires_at() + boost::posix_time::millisec(1));
-    preemptionTimer.async_wait(boost::bind(
-      &BoostBasedVM::onPreemptionTimerExpire,
-      this, boost::asio::placeholders::error));
-  }
-}
-
 UUID BoostBasedVM::genUUID() {
+  // FIXME: use the random_generator of a VM (need a VM arg)
   boost::uuids::uuid uuid = uuidGenerator();
 
   std::uint64_t data0 = bytes2uint64(uuid.data);

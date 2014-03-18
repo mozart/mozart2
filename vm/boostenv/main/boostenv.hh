@@ -36,21 +36,25 @@
 
 namespace mozart { namespace boostenv {
 
-//////////////////
-// BoostBasedVM //
-//////////////////
+/////////////
+// BoostVM //
+/////////////
 
-ProtectedNode BoostBasedVM::allocAsyncIONode(StableNode* node) {
+BoostVM& BoostVM::forVM(VM vm) {
+  return BoostBasedVM::forVM(vm).boostVMFor(vm);
+}
+
+ProtectedNode BoostVM::allocAsyncIONode(StableNode* node) {
   _asyncIONodeCount++;
   return vm->protect(*node);
 }
 
-void BoostBasedVM::releaseAsyncIONode(const ProtectedNode& node) {
+void BoostVM::releaseAsyncIONode(const ProtectedNode& node) {
   assert(_asyncIONodeCount > 0);
   _asyncIONodeCount--;
 }
 
-ProtectedNode BoostBasedVM::createAsyncIOFeedbackNode(UnstableNode& readOnly) {
+ProtectedNode BoostVM::createAsyncIOFeedbackNode(UnstableNode& readOnly) {
   StableNode* stable = new (vm) StableNode;
   stable->init(vm, Variable::build(vm));
 
@@ -60,7 +64,7 @@ ProtectedNode BoostBasedVM::createAsyncIOFeedbackNode(UnstableNode& readOnly) {
 }
 
 template <class LT, class... Args>
-void BoostBasedVM::bindAndReleaseAsyncIOFeedbackNode(
+void BoostVM::bindAndReleaseAsyncIOFeedbackNode(
   const ProtectedNode& ref, LT&& label, Args&&... args) {
 
   UnstableNode rhs = buildTuple(vm, std::forward<LT>(label),
@@ -70,7 +74,7 @@ void BoostBasedVM::bindAndReleaseAsyncIOFeedbackNode(
 }
 
 template <class LT, class... Args>
-void BoostBasedVM::raiseAndReleaseAsyncIOFeedbackNode(
+void BoostVM::raiseAndReleaseAsyncIOFeedbackNode(
   const ProtectedNode& ref, LT&& label, Args&&... args) {
 
   UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
@@ -79,7 +83,7 @@ void BoostBasedVM::raiseAndReleaseAsyncIOFeedbackNode(
     ref, FailedValue::build(vm, RichNode(exception).getStableRef(vm)));
 }
 
-void BoostBasedVM::postVMEvent(std::function<void()> callback) {
+void BoostVM::postVMEvent(std::function<void()> callback) {
   {
     boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
     _vmEventsCallbacks.push(callback);

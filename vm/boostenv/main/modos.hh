@@ -92,7 +92,7 @@ public:
     Rand(): Builtin("rand") {}
 
     static void call(VM vm, Out result) {
-      result = build(vm, (nativeint) BoostBasedVM::forVM(vm).random_generator());
+      result = build(vm, (nativeint) BoostVM::forVM(vm).random_generator());
     }
   };
 
@@ -103,8 +103,8 @@ public:
     static void call(VM vm, In seed) {
       auto intSeed = getArgument<nativeint>(vm, seed);
 
-      BoostBasedVM::forVM(vm).random_generator.seed(
-        (BoostBasedVM::random_generator_t::result_type) intSeed);
+      BoostVM::forVM(vm).random_generator.seed(
+        (BoostVM::random_generator_t::result_type) intSeed);
     }
   };
 
@@ -113,8 +113,8 @@ public:
     RandLimits(): Builtin("randLimits") {}
 
     static void call(VM vm, Out min, Out max) {
-      min = build(vm, (nativeint) BoostBasedVM::random_generator_t::min());
-      max = build(vm, (nativeint) BoostBasedVM::random_generator_t::max());
+      min = build(vm, (nativeint) BoostVM::random_generator_t::min());
+      max = build(vm, (nativeint) BoostVM::random_generator_t::max());
     }
   };
 
@@ -478,7 +478,7 @@ public:
         endpoint = tcp::endpoint(tcp::v6(), intPort);
 
       try {
-        auto acceptor = TCPAcceptor::create(BoostBasedVM::forVM(vm), endpoint);
+        auto acceptor = TCPAcceptor::create(BoostVM::forVM(vm), endpoint);
         result = build(vm, acceptor);
       } catch (const boost::system::system_error& error) {
         raiseOSError(vm, "tcpAcceptorCreate", error);
@@ -494,7 +494,7 @@ public:
       auto tcpAcceptor = getTCPAcceptorArg(vm, acceptor);
 
       auto connectionNode =
-        BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(result);
+        BoostVM::forVM(vm).createAsyncIOFeedbackNode(result);
 
       tcpAcceptor->startAsyncAccept(connectionNode);
     }
@@ -539,10 +539,10 @@ public:
         ozVSGet(vm, host, hostBufSize, strHost);
         ozVSGet(vm, service, serviceBufSize, strService);
 
-        auto tcpConnection = TCPConnection::create(BoostBasedVM::forVM(vm));
+        auto tcpConnection = TCPConnection::create(BoostVM::forVM(vm));
 
         auto statusNode =
-          BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(status);
+          BoostVM::forVM(vm).createAsyncIOFeedbackNode(status);
 
         tcpConnection->startAsyncConnect(strHost, strService, statusNode);
       }
@@ -568,10 +568,10 @@ private:
     size_t size = (size_t) intCount;
     connection->getReadData().resize(size);
 
-    auto& env = BoostBasedVM::forVM(vm);
+    auto& boostVM = BoostVM::forVM(vm);
 
-    auto tailNode = env.allocAsyncIONode(tail.getStableRef(vm));
-    auto statusNode = env.createAsyncIOFeedbackNode(status);
+    auto tailNode = boostVM.allocAsyncIONode(tail.getStableRef(vm));
+    auto statusNode = boostVM.createAsyncIOFeedbackNode(status);
 
     connection->startAsyncReadSome(tailNode, statusNode);
   }
@@ -593,7 +593,7 @@ private:
     ozVBSGet(vm, data, bufSize, connection->getWriteData());
 
     auto statusNode =
-      BoostBasedVM::forVM(vm).createAsyncIOFeedbackNode(status);
+      BoostVM::forVM(vm).createAsyncIOFeedbackNode(status);
 
     connection->startAsyncWrite(statusNode);
   }
@@ -1001,8 +1001,8 @@ public:
 
 #else  /* !MOZART_WINDOWS */
 
-      auto& environment = BoostBasedVM::forVM(vm);
-      auto pipeConnection = PipeConnection::create(environment);
+      auto& boostVM = BoostVM::forVM(vm);
+      auto pipeConnection = PipeConnection::create(boostVM);
 
       // Build the Oz value now so that it is registered for GC
       auto ozPipe = build(vm, pipeConnection);
@@ -1012,7 +1012,7 @@ public:
 
       {
         boost::asio::local::stream_protocol::socket childSocket(
-          environment.io_service);
+          boostVM.env.io_service);
         boost::asio::local::connect_pair(mySocket, childSocket, ec);
 
         if (!ec) {

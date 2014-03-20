@@ -75,15 +75,17 @@ public:
     static void call(VM vm, In value, Out result) {
       auto floatValue = getArgument<double>(vm, value);
       nativeint intValue = static_cast<nativeint>(floatValue);
+      result = SmallInt::build(vm, intValue);
+      UnstableNode big;
       double err;
 
-      // Simple overflow check of double -> nativeint conversion
-      if (intValue == SmallInt::min() || intValue == SmallInt::max()) {
-        result = vm->newBigInt(floatValue);
-        err = floatValue - static_cast<RichNode>(result).as<BigInt>().doubleValue();
+      if ((intValue == SmallInt::min() || intValue == SmallInt::max()) &&
+          Comparable(big = vm->newBigInt(floatValue)).compare(vm, result) != 0) {
+        // Overflow
+        result = std::move(big);
+        err = floatValue - RichNode(result).as<BigInt>().doubleValue();
       } else {
         err = floatValue - static_cast<double>(intValue);
-        result = SmallInt::build(vm, intValue);
       }
 
       // bankers' rounding
@@ -94,7 +96,7 @@ public:
       } else if (err == 0.5 || err == -0.5) {
         UnstableNode two = SmallInt::build(vm, 2);
         UnstableNode mod = Numeric(result).mod(vm, two);
-        if (static_cast<RichNode>(mod).as<SmallInt>().value() != 0) {
+        if (RichNode(mod).as<SmallInt>().value() != 0) {
           result = Numeric(result).add(vm, mod);
         }
       }

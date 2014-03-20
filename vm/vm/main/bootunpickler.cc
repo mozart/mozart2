@@ -93,10 +93,12 @@ private:
   UnstableNode readIntValue() {
     std::string str = readString();
     char* end = nullptr;
+    errno = 0; // reset errno since we need to know if strtoll() overflowed
     long long intResult = std::strtoll(str.c_str(), &end, 10);
     assert(*end == '\0' && "bad integer string");
     nativeint value = (nativeint) intResult;
-    if (value == SmallInt::min() || value == SmallInt::max()) { // Overflow
+    if ((value == SmallInt::min() || value == SmallInt::max()) &&
+        errno == ERANGE) { // Overflow
       return vm->newBigInt(str);
     } else {
       return build(vm, value);

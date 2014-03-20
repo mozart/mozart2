@@ -62,8 +62,13 @@ UnstableNode build(VM vm, internal::intIfDifferentFromNativeInt value) {
 
 inline
 UnstableNode build(VM vm, internal::int64IfDifferentFromNativeInt value) {
-  // TODO Use BigInt if necessary
-  return SmallInt::build(vm, (nativeint) value);
+  if (std::is_same<internal::int64IfDifferentFromNativeInt, nativeint>::value) {
+    return SmallInt::build(vm, (nativeint) value);
+  } else {
+    std::ostringstream ss;
+    ss << value;
+    return vm->newBigInt(ss.str());
+  }
 }
 
 template <typename T>

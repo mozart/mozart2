@@ -1,0 +1,20 @@
+language: cpp
+
+compiler:
+  - clang
+  - gcc
+
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.net#mozart-hackers"
+
+before_install:
+  - if [ "$CC" = "gcc" ]; then export CXX=g++; fi
+  - if [ "$CC" = "clang" ]; then export CXX=clang++; fi
+
+install:
+  - echo Build here
+
+script:
+  - echo Tests run here

@@ -221,14 +221,15 @@ namespace {
   }
 }
 
-BoostBasedVM::BoostBasedVM() {
+BoostBasedVM::BoostBasedVM(const std::function<int(VM)>& bootVM) :
+  _bootVM(bootVM) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-BoostVM& BoostBasedVM::addVM(size_t maxMemory) {
+int BoostBasedVM::addVM(size_t maxMemory) {
   vms.emplace_front(*this, maxMemory);
-  return vms.front();
+  return _bootVM(vms.front().vm);
 }
 
 void BoostBasedVM::run(VM vm) {

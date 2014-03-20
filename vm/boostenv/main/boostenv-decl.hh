@@ -135,9 +135,9 @@ public:
   }
 
 public:
-  BoostBasedVM();
+  BoostBasedVM(const std::function<int(VM)>& _bootVM);
 
-  BoostVM& addVM(size_t maxMemory);
+  int addVM(size_t maxMemory);
 
 // Configuration
 
@@ -202,6 +202,7 @@ private:
 // Bootstrap
 private:
   BootLoader _bootLoader;
+  std::function<int(VM)> _bootVM;
 
 private:
   boost::uuids::random_generator uuidGenerator;

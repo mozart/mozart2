@@ -10,11 +10,34 @@ notifications:
       - "irc.freenode.net#mozart-hackers"
 
 before_install:
+  - mkdir externals
+  - cd externals 
+  - svn co http://googletest.googlecode.com/svn/trunk gtest
+  - svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_34/final llvm
+  - cd llvm/tools/
+  - svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_34/final clang
+  - cd ../../..
+  - mkdir builds
+  - cd builds
+  - mkdir gtest-debug
+  - cd gtest-debug
+  - cmake -DCMAKE_BUILD_TYPE=Debug ../../externals/gtest
+  - make
+  - cd ..
+  - mkdir llvm
+  - cd llvm
+  - cmake -DCMAKE_BUILD_TYPE=Release ../../externals/llvm
+  - make
+  - cd ../../..
+  - git clone https://github.com/mozart/mozart2.git
   - if [ "$CC" = "gcc" ]; then export CXX=g++; fi
   - if [ "$CC" = "clang" ]; then export CXX=clang++; fi
 
 install:
-  - echo Build here
+  - cd builds
+  - mkdir mozart2
+  - cd mozart2
+  - cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=../../externals/llvm -DLLVM_BUILD_DIR=../llvm ../../mozart2
 
 script:
   - echo Tests run here

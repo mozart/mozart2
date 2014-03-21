@@ -55,10 +55,9 @@ public:
 
 // Run and preemption
 public:
-  void start();
-  void runLoop();
   void run();
 private:
+  void start();
   void onPreemptionTimerExpire(const boost::system::error_code& error);
 
 // Management of nodes used by asynchronous operations for feedback
@@ -137,7 +136,7 @@ public:
 public:
   BoostBasedVM(const std::function<int(VM)>& _bootVM);
 
-  int addVM(size_t maxMemory);
+  void addVM(size_t maxMemory);
 
 // Configuration
 
@@ -153,7 +152,6 @@ public:
 // Run and preemption
 
 public:
-  void run(VM vm);
   void runIO();
 
 // Time
@@ -202,7 +200,9 @@ private:
 // Bootstrap
 private:
   BootLoader _bootLoader;
-  std::function<int(VM)> _bootVM;
+
+public:
+  std::function<int(VM)> bootVM;
 
 private:
   boost::uuids::random_generator uuidGenerator;

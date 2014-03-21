@@ -276,6 +276,7 @@ int main(int argc, char** argv) {
 
   // SET UP THE VM AND RUN
   boostenv::BoostBasedVM boostBasedVM([=] (VM vm) {
+    boostenv::BoostVM& boostVM = boostenv::BoostVM::forVM(vm);
     // Set some properties
     {
       auto& properties = vm->getPropertyRegistry();
@@ -341,7 +342,7 @@ int main(int argc, char** argv) {
         ozcalls::asyncOzCall(vm, applyProc, importParam, *baseEnv);
       }
 
-      boostBasedVM.run(vm);
+      boostVM.run();
     }
 
     // Load the Init functor
@@ -366,7 +367,7 @@ int main(int argc, char** argv) {
         }
 
         ozcalls::asyncOzCall(vm, initValue, *baseEnv, *initFunctor);
-        boostBasedVM.run(vm);
+        boostVM.run();
       } else {
         // Assume it is already the Init functor
         DataflowVariable(*initFunctor).bind(vm, initValue);
@@ -388,11 +389,12 @@ int main(int argc, char** argv) {
       baseEnv.reset();
       initFunctor.reset();
 
-      boostBasedVM.run(vm);
+      boostVM.run();
     }
 
     return 0;
   });
 
-  return boostBasedVM.addVM(maxMemoryMega * MegaBytes);
+  boostBasedVM.addVM(maxMemoryMega * MegaBytes);
+  boostBasedVM.runIO();
 }

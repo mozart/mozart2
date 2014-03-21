@@ -38,35 +38,22 @@ BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
   env(environment), _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
-  _work(nullptr), _thread(boost::bind(&BoostVM::runLoop, this)) {
+  // Make sure the IO thread will wait for us
+  _work(new boost::asio::io_service::work(environment.io_service)) {
 
   builtins::biref::registerBuiltinModOS(vm);
 
   // Initialize the pseudo random number generator with a really random seed
   boost::random::random_device generator;
   random_generator.seed(generator);
+
+  // Finally start the VM thread, which will initialize and run the VM
+  _thread = boost::thread(&BoostVM::start, this);
 };
 
 void BoostVM::start() {
-  _work = new boost::asio::io_service::work(env.io_service);
-  _conditionWorkToDoInVM.notify_one();
-}
-
-void BoostVM::runLoop() {
-  while (true) {
-    {
-      boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
-      while (_work == nullptr) {
-        _conditionWorkToDoInVM.wait(lock);
-      }
-    }
-
-    run();
-
-    // Tear down
-    delete _work;
-    _work = nullptr;
-  }
+  env.bootVM(vm);
+  delete _work;
 }
 
 void BoostVM::run() {
@@ -222,28 +209,18 @@ namespace {
 }
 
 BoostBasedVM::BoostBasedVM(const std::function<int(VM)>& bootVM) :
-  _bootVM(bootVM) {
+  bootVM(bootVM) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-int BoostBasedVM::addVM(size_t maxMemory) {
+void BoostBasedVM::addVM(size_t maxMemory) {
   vms.emplace_front(*this, maxMemory);
-  return _bootVM(vms.front().vm);
-}
-
-void BoostBasedVM::run(VM vm) {
-  BoostVM::forVM(vm).start();
-
-  runIO();
 }
 
 void BoostBasedVM::runIO() {
   // This will end when all VMs are done.
   io_service.run();
-
-  // Get ready for a later call to run()
-  io_service.reset();
 }
 
 UUID BoostBasedVM::genUUID() {

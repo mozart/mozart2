@@ -33,9 +33,10 @@ namespace mozart { namespace boostenv {
 // BoostVM //
 /////////////
 
-BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
+BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory,
+                 const std::string& appURL) :
   VirtualMachine(environment, maxMemory), vm(this),
-  env(environment), _asyncIONodeCount(0),
+  env(environment), appURL(appURL), _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
   // Make sure the IO thread will wait for us
@@ -52,7 +53,7 @@ BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory) :
 };
 
 void BoostVM::start() {
-  env.bootVM(vm);
+  env.vmStarter(vm, appURL);
   delete _work;
 }
 
@@ -208,14 +209,14 @@ namespace {
   }
 }
 
-BoostBasedVM::BoostBasedVM(const std::function<int(VM)>& bootVM) :
-  bootVM(bootVM) {
+BoostBasedVM::BoostBasedVM(const VMStarter& vmStarter) :
+  vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-void BoostBasedVM::addVM(size_t maxMemory) {
-  vms.emplace_front(*this, maxMemory);
+void BoostBasedVM::addVM(size_t maxMemory, const std::string& appURL) {
+  vms.emplace_front(*this, maxMemory, appURL);
 }
 
 void BoostBasedVM::runIO() {

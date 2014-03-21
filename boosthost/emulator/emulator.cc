@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
   appGUI = varMap.count("gui") != 0;
 
   // SET UP THE VM AND RUN
-  boostenv::BoostBasedVM boostBasedVM([=] (VM vm) {
+  boostenv::BoostBasedVM boostBasedVM([=] (VM vm, const std::string& applicationURL) {
     boostenv::BoostVM& boostVM = boostenv::BoostVM::forVM(vm);
     // Set some properties
     {
@@ -296,7 +296,7 @@ int main(int argc, char** argv) {
         properties.registerValueProp(
           vm, "oz.search.load", vm->getAtom(ozSearchLoad));
 
-      auto decodedURL = toUTF<char>(makeLString(appURL.c_str()));
+      auto decodedURL = toUTF<char>(makeLString(applicationURL.c_str()));
       auto appURLAtom = vm->getAtom(decodedURL.length, decodedURL.string);
       properties.registerValueProp(
         vm, "application.url", appURLAtom);
@@ -395,6 +395,6 @@ int main(int argc, char** argv) {
     return 0;
   });
 
-  boostBasedVM.addVM(maxMemoryMega * MegaBytes);
+  boostBasedVM.addVM(maxMemoryMega * MegaBytes, appURL);
   boostBasedVM.runIO();
 }

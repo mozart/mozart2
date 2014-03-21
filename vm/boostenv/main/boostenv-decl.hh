@@ -47,7 +47,8 @@ class BoostBasedVM;
 
 class BoostVM : VirtualMachine {
 public:
-  BoostVM(BoostBasedVM& environment, size_t maxMemory);
+  BoostVM(BoostBasedVM& environment, size_t maxMemory,
+          const std::string& appURL);
 
   static BoostVM& forVM(VM vm) {
     return *static_cast<BoostVM*>(vm);
@@ -89,6 +90,7 @@ public:
 public:
   VM vm;
   BoostBasedVM& env;
+  std::string appURL;
 
 // Random number generation
 public:
@@ -127,6 +129,7 @@ class BoostBasedVM: public VirtualMachineEnvironment {
 private:
   using BootLoader = std::function<bool(VM vm, const std::string& url,
                                         UnstableNode& result)>;
+  using VMStarter = std::function<int(VM vm, const std::string& url)>;
 
 public:
   static BoostBasedVM& forVM(VM vm) {
@@ -134,9 +137,9 @@ public:
   }
 
 public:
-  BoostBasedVM(const std::function<int(VM)>& _bootVM);
+  BoostBasedVM(const VMStarter& vmStarter);
 
-  void addVM(size_t maxMemory);
+  void addVM(size_t maxMemory, const std::string& appURL);
 
 // Configuration
 
@@ -202,7 +205,7 @@ private:
   BootLoader _bootLoader;
 
 public:
-  std::function<int(VM)> bootVM;
+  VMStarter vmStarter;
 
 private:
   boost::uuids::random_generator uuidGenerator;

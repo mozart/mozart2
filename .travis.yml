@@ -1,43 +1,35 @@
 language: cpp
-
 compiler:
-  - clang
   - gcc
-
-notifications:
-  irc:
-    channels:
-      - "irc.freenode.net#mozart-hackers"
-
 before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libboost1.48-all-dev tk8.5-dev emacs23-nox
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+before_script:
   - mkdir externals
-  - cd externals 
-  - svn co http://googletest.googlecode.com/svn/trunk gtest
-  - svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_34/final llvm
+  - cd externals
+  - svn co --quiet http://googletest.googlecode.com/svn/trunk gtest
+  - svn co --quiet http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_33/final llvm
   - cd llvm/tools/
-  - svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_34/final clang
+  - svn co --quiet http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_33/final clang
   - cd ../../..
   - mkdir builds
   - cd builds
   - mkdir gtest-debug
   - cd gtest-debug
   - cmake -DCMAKE_BUILD_TYPE=Debug ../../externals/gtest
-  - make
+  - make -j3
   - cd ..
-  - mkdir llvm
-  - cd llvm
+  - mkdir llvm-release
+  - cd llvm-release
   - cmake -DCMAKE_BUILD_TYPE=Release ../../externals/llvm
-  - make
-  - cd ../../..
-  - git clone https://github.com/mozart/mozart2.git
-  - if [ "$CC" = "gcc" ]; then export CXX=g++; fi
-  - if [ "$CC" = "clang" ]; then export CXX=clang++; fi
-
-install:
-  - cd builds
-  - mkdir mozart2
-  - cd mozart2
-  - cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=../../externals/llvm -DLLVM_BUILD_DIR=../llvm ../../mozart2
-
+  - make -j3
+  - cd ../..
 script:
-  - echo Tests run here
+  - cd builds
+  - mkdir mozart2-release
+  - cd mozart2-release
+  - cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=../../externals/llvm -DLLVM_BUILD_DIR=../llvm-release ../..
+  - make -j3

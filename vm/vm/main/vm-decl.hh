@@ -100,7 +100,7 @@ public:
     return false;
   }
 
-  virtual UUID genUUID() = 0;
+  virtual UUID genUUID(VM vm) = 0;
 
   inline
   virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);

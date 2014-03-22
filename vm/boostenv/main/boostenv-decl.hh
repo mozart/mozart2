@@ -61,6 +61,13 @@ private:
   void start();
   void onPreemptionTimerExpire(const boost::system::error_code& error);
 
+// UUID generation
+public:
+  UUID genUUID();
+private:
+  inline
+  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
+
 // Management of nodes used by asynchronous operations for feedback
 public:
   inline
@@ -96,6 +103,8 @@ public:
 public:
   typedef boost::random::mt19937 random_generator_t;
   random_generator_t random_generator;
+private:
+  boost::uuids::random_generator uuidGenerator;
 
 // Number of asynchronous IO nodes - used for termination detection
 private:
@@ -180,10 +189,9 @@ public:
 // UUID generation
 
 public:
-  UUID genUUID();
-private:
-  inline
-  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
+  UUID genUUID(VM vm) {
+    return BoostVM::forVM(vm).genUUID();
+  }
 
 // BigInt
 
@@ -206,9 +214,6 @@ private:
 
 public:
   VMStarter vmStarter;
-
-private:
-  boost::uuids::random_generator uuidGenerator;
 
 // ASIO service
 public:

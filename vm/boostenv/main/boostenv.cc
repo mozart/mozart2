@@ -36,11 +36,14 @@ namespace mozart { namespace boostenv {
 BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory,
                  const std::string& appURL) :
   VirtualMachine(environment, maxMemory), vm(this),
-  env(environment), appURL(appURL), _asyncIONodeCount(0),
+  env(environment), appURL(appURL),
+  uuidGenerator(random_generator),
+  _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
-  alarmTimer(environment.io_service),
+  alarmTimer(environment.io_service) {
+
   // Make sure the IO thread will wait for us
-  _work(new boost::asio::io_service::work(environment.io_service)) {
+  _work = new boost::asio::io_service::work(environment.io_service);
 
   builtins::biref::registerBuiltinModOS(vm);
 
@@ -139,6 +142,22 @@ void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
   }
 }
 
+UUID BoostVM::genUUID() {
+  boost::uuids::uuid uuid = uuidGenerator();
+
+  std::uint64_t data0 = bytes2uint64(uuid.data);
+  std::uint64_t data1 = bytes2uint64(uuid.data+8);
+
+  return UUID(data0, data1);
+}
+
+std::uint64_t BoostVM::bytes2uint64(const std::uint8_t* bytes) {
+  return
+    ((std::uint64_t) bytes[0] << 56) + ((std::uint64_t) bytes[1] << 48) +
+    ((std::uint64_t) bytes[2] << 40) + ((std::uint64_t) bytes[3] << 32) +
+    ((std::uint64_t) bytes[4] << 24) + ((std::uint64_t) bytes[5] << 16) +
+    ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
+}
 
 //////////////////
 // BoostBasedVM //
@@ -222,24 +241,6 @@ void BoostBasedVM::addVM(size_t maxMemory, const std::string& appURL) {
 void BoostBasedVM::runIO() {
   // This will end when all VMs are done.
   io_service.run();
-}
-
-UUID BoostBasedVM::genUUID() {
-  // FIXME: use the random_generator of a VM (need a VM arg)
-  boost::uuids::uuid uuid = uuidGenerator();
-
-  std::uint64_t data0 = bytes2uint64(uuid.data);
-  std::uint64_t data1 = bytes2uint64(uuid.data+8);
-
-  return UUID(data0, data1);
-}
-
-std::uint64_t BoostBasedVM::bytes2uint64(const std::uint8_t* bytes) {
-  return
-    ((std::uint64_t) bytes[0] << 56) + ((std::uint64_t) bytes[1] << 48) +
-    ((std::uint64_t) bytes[2] << 40) + ((std::uint64_t) bytes[3] << 32) +
-    ((std::uint64_t) bytes[4] << 24) + ((std::uint64_t) bytes[5] << 16) +
-    ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
 }
 
 std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, nativeint value) {

@@ -143,7 +143,7 @@ UnstableNode VirtualMachine::findBuiltin(T&& moduleName, U&& builtinName) {
 }
 
 UUID VirtualMachine::genUUID() {
-  return environment.genUUID();
+  return environment.genUUID(this);
 }
 
 void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {

@@ -62,7 +62,8 @@ UnstableNode build(VM vm, internal::intIfDifferentFromNativeInt value) {
 
 inline
 UnstableNode build(VM vm, internal::int64IfDifferentFromNativeInt value) {
-  if (std::is_same<internal::int64IfDifferentFromNativeInt, nativeint>::value) {
+  if (std::is_same<internal::int64IfDifferentFromNativeInt, nativeint>::value ||
+      (SmallInt::min() <= value && value <= SmallInt::max())) {
     return SmallInt::build(vm, (nativeint) value);
   } else {
     std::ostringstream ss;

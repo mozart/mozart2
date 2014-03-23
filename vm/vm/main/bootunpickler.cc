@@ -99,9 +99,9 @@ private:
     nativeint value = (nativeint) intResult;
     if ((value == SmallInt::min() || value == SmallInt::max()) &&
         errno == ERANGE) { // Overflow
-      return vm->newBigInt(str);
+      return BigInt::build(vm, str);
     } else {
-      return build(vm, value);
+      return SmallInt::build(vm, value);
     }
   }
 

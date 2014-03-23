@@ -80,7 +80,7 @@ public:
       double err;
 
       if ((intValue == SmallInt::min() || intValue == SmallInt::max()) &&
-          Comparable(big = vm->newBigInt(floatValue)).compare(vm, result) != 0) {
+          Comparable(big = BigInt::build(vm, floatValue)).compare(vm, result) != 0) {
         // Overflow
         result = std::move(big);
         err = floatValue - RichNode(result).as<BigInt>().doubleValue();

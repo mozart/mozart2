@@ -42,6 +42,10 @@ public:
     return vm->getAtom("int");
   }
 
+  template <class T>
+  BigInt(VM vm, T value):
+    _value(vm->getEnvironment().newBigIntImplem(vm, value)) {}
+
   BigInt(VM vm, const std::shared_ptr<BigIntImplem>& p): _value(p) {}
 
   BigInt(VM vm, GR gr, BigInt& from): _value(std::move(from._value)) {}

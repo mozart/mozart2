@@ -82,7 +82,7 @@ UnstableNode SmallInt::opposite(VM vm) {
     // No overflow
     return SmallInt::build(vm, -value());
   } else {
-    UnstableNode big = vm->newBigInt(min());
+    UnstableNode big = BigInt::build(vm, min());
     return Numeric(big).opposite(vm);
   }
 }
@@ -94,7 +94,7 @@ UnstableNode SmallInt::add(VM vm, RichNode right) {
   if (matches(vm, right, capture(smallInt))) {
     return add(vm, smallInt);
   } else if (right.is<BigInt>()) {
-    UnstableNode big = vm->newBigInt(value());
+    UnstableNode big = BigInt::build(vm, value());
     return Numeric(big).add(vm, right);
   } else {
     raiseTypeError(vm, "Integer", right);
@@ -110,7 +110,7 @@ UnstableNode SmallInt::add(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
-    UnstableNode left = vm->newBigInt(a);
+    UnstableNode left = BigInt::build(vm, a);
     UnstableNode right = SmallInt::build(vm, b);
     return Numeric(left).add(vm, right);
   }
@@ -123,7 +123,7 @@ UnstableNode SmallInt::subtract(VM vm, RichNode right) {
   if (matches(vm, right, capture(smallInt))) {
     return subtractValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
-    UnstableNode big = vm->newBigInt(value());
+    UnstableNode big = BigInt::build(vm, value());
     return Numeric(big).subtract(vm, right);
   } else {
     raiseTypeError(vm, "Integer", right);
@@ -139,7 +139,7 @@ UnstableNode SmallInt::subtractValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, c);
   } else {
-    UnstableNode left = vm->newBigInt(a);
+    UnstableNode left = BigInt::build(vm, a);
     UnstableNode right = SmallInt::build(vm, b);
     return Numeric(left).subtract(vm, right);
   }
@@ -152,7 +152,7 @@ UnstableNode SmallInt::multiply(VM vm, RichNode right) {
   if (matches(vm, right, capture(smallInt))) {
     return multiplyValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
-    UnstableNode big = vm->newBigInt(value());
+    UnstableNode big = BigInt::build(vm, value());
     return Numeric(big).multiply(vm, right);
   } else {
     raiseTypeError(vm, "Integer", right);
@@ -184,7 +184,7 @@ UnstableNode SmallInt::multiplyValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a * b);
   } else {
-    UnstableNode left = vm->newBigInt(a);
+    UnstableNode left = BigInt::build(vm, a);
     UnstableNode right = SmallInt::build(vm, b);
     return Numeric(left).multiply(vm, right);
   }
@@ -197,7 +197,7 @@ UnstableNode SmallInt::div(VM vm, RichNode right) {
   if (matches(vm, right, capture(smallInt))) {
     return divValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
-    UnstableNode big = vm->newBigInt(value());
+    UnstableNode big = BigInt::build(vm, value());
     return Numeric(big).div(vm, right);
   } else {
     raiseTypeError(vm, "Integer", right);
@@ -215,7 +215,7 @@ UnstableNode SmallInt::divValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a / b);
   } else {
-    UnstableNode left = vm->newBigInt(a);
+    UnstableNode left = BigInt::build(vm, a);
     UnstableNode right = SmallInt::build(vm, b);
     return Numeric(left).div(vm, right);
   }
@@ -228,7 +228,7 @@ UnstableNode SmallInt::mod(VM vm, RichNode right) {
   if (matches(vm, right, capture(smallInt))) {
     return modValue(vm, smallInt);
   } else if (right.is<BigInt>()) {
-    UnstableNode big = vm->newBigInt(value());
+    UnstableNode big = BigInt::build(vm, value());
     return Numeric(big).mod(vm, right);
   } else {
     raiseTypeError(vm, "Integer", right);
@@ -243,7 +243,7 @@ UnstableNode SmallInt::modValue(VM vm, nativeint b) {
     // No overflow
     return SmallInt::build(vm, a % b);
   } else {
-    UnstableNode left = vm->newBigInt(a);
+    UnstableNode left = BigInt::build(vm, a);
     UnstableNode right = SmallInt::build(vm, b);
     return Numeric(left).mod(vm, right);
   }
@@ -256,7 +256,7 @@ UnstableNode SmallInt::abs(VM vm) {
     // No overflow
     return SmallInt::build(vm, a >= 0 ? a : -a);
   } else {
-    UnstableNode big = vm->newBigInt(min());
+    UnstableNode big = BigInt::build(vm, min());
     return Numeric(big).opposite(vm);
   }
 }

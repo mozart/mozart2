@@ -68,7 +68,7 @@ UnstableNode build(VM vm, internal::int64IfDifferentFromNativeInt value) {
   } else {
     std::ostringstream ss;
     ss << value;
-    return vm->newBigInt(ss.str());
+    return BigInt::build(vm, ss.str());
   }
 }
 

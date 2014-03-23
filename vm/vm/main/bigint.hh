@@ -100,7 +100,7 @@ UnstableNode BigInt::div(VM vm, RichNode right) {
     if (divisor == 0) {
       raiseKernelError(vm, "Integer division: Division by zero");
     }
-    b = vm->newBigIntImplem(divisor);
+    b = vm->getEnvironment().newBigIntImplem(vm, divisor);
   } else if (right.is<BigInt>()) {
     b = right.as<BigInt>().value();
   } else {
@@ -134,7 +134,7 @@ std::shared_ptr<BigIntImplem> BigInt::coerce(VM vm, RichNode value) {
 
   nativeint smallInt;
   if (matches(vm, value, capture(smallInt))) {
-    return vm->newBigIntImplem(smallInt);
+    return vm->getEnvironment().newBigIntImplem(vm, smallInt);
   } else if (value.is<BigInt>()) {
     return value.as<BigInt>().value();
   } else {

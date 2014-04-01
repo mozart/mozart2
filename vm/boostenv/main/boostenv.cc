@@ -46,6 +46,7 @@ BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory,
   _work = new boost::asio::io_service::work(environment.io_service);
 
   builtins::biref::registerBuiltinModOS(vm);
+  builtins::biref::registerBuiltinModVM(vm);
 
   // Initialize the pseudo random number generator with a really random seed
   boost::random::random_device generator;

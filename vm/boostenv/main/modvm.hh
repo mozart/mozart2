@@ -22,13 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_BOOSTENVMODULES_H
-#define MOZART_BOOSTENVMODULES_H
+#ifndef MOZART_MODVMBOOST_H
+#define MOZART_MODVMBOOST_H
 
-#include "mozart.hh"
-#include "boostenv.hh"
+#include <mozart.hh>
 
-#include "modos.hh"
-#include "modvm.hh"
+#include "boostenv-decl.hh"
 
-#endif // MOZART_BOOSTENVMODULES_H
+#ifndef MOZART_GENERATOR
+
+namespace mozart { namespace boostenv {
+
+namespace builtins {
+
+using namespace ::mozart::builtins;
+
+///////////////
+// VM module //
+///////////////
+
+class ModVM: public Module {
+public:
+  ModVM(): Module("VM") {}
+
+  class Current: public Builtin<Current> {
+  public:
+    Current(): Builtin("current") {}
+
+    static void call(VM vm, Out result) {
+      result = SmallInt::build(vm, (nativeint) vm); // TODO
+    }
+  };
+
+  class New: public Builtin<New> {
+  public:
+    New(): Builtin("new") {}
+
+    static void call(VM vm, In appURL, Out result) {
+      std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
+      BoostBasedVM::forVM(vm).addVM(64 * MegaBytes, appURLstr);
+      result = SmallInt::build(vm, 0); // TODO
+    }
+  };
+};
+
+}
+
+} }
+
+#endif // MOZART_GENERATOR
+
+#endif // MOZART_MODVMBOOST_H

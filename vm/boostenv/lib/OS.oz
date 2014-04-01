@@ -42,9 +42,6 @@ export
    Srand
    RandLimits
 
-   % VM
-   NewVM
-
    % Environment
    GetEnv
    PutEnv
@@ -125,9 +122,6 @@ define
    Rand = Boot_OS.rand
    Srand = Boot_OS.srand
    RandLimits = Boot_OS.randLimits
-
-   % VM
-   NewVM = Boot_OS.newVM
 
    % Environment
 

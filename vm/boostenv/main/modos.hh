@@ -85,17 +85,6 @@ public:
     }
   };
 
-  // VM
-  class NewVM: public Builtin<NewVM> {
-  public:
-    NewVM(): Builtin("newVM") {}
-
-    static void call(VM vm, In appURL) {
-      std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
-      BoostBasedVM::forVM(vm).addVM(64 * MegaBytes, appURLstr);
-    }
-  };
-
   // Random number generation
 
   class Rand: public Builtin<Rand> {

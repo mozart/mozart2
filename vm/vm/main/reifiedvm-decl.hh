@@ -22,55 +22,75 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_MODVMBOOST_H
-#define MOZART_MODVMBOOST_H
+#ifndef MOZART_REIFIEDVM_DECL_H
+#define MOZART_REIFIEDVM_DECL_H
 
-#include <mozart.hh>
+#include "mozartcore-decl.hh"
 
-#include "boostenv-decl.hh"
+namespace mozart {
+
+///////////////
+// ReifiedVM //
+///////////////
 
 #ifndef MOZART_GENERATOR
+#include "ReifiedVM-implem-decl.hh"
+#endif
 
-namespace mozart { namespace boostenv {
-
-namespace builtins {
-
-using namespace ::mozart::builtins;
-
-///////////////
-// VM module //
-///////////////
-
-class ModVM: public Module {
+class ReifiedVM: public DataType<ReifiedVM>,
+  StoredAs<VM>, WithValueBehavior {
 public:
-  ModVM(): Module("VM") {}
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom("vm");
+  }
 
-  class Current: public Builtin<Current> {
-  public:
-    Current(): Builtin("current") {}
+  explicit ReifiedVM(VM target): _vm(target) {}
 
-    static void call(VM vm, Out result) {
-      result = ReifiedVM::build(vm, vm);
-    }
-  };
+  static void create(VM& self, VM vm, VM target) {
+    self = target;
+  }
 
-  class New: public Builtin<New> {
-  public:
-    New(): Builtin("new") {}
+  static void create(VM& self, VM vm, GR gr, ReifiedVM from) {
+    self = from._vm;
+  }
 
-    static void call(VM vm, In appURL, Out result) {
-      std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
-      size_t maxMemory = 64 * MegaBytes;
-      BoostVM& newVM = BoostBasedVM::forVM(vm).addVM(maxMemory, appURLstr);
-      result = ReifiedVM::build(vm, newVM.vm);
-    }
-  };
+public:
+  VM value() {
+    return _vm;
+  }
+
+public:
+  inline
+  bool equals(VM vm, RichNode right);
+
+public:
+  // PortLike interface
+
+  bool isPort(VM vm) {
+    return true;
+  }
+
+  inline
+  void send(VM vm, RichNode value);
+
+  inline
+  UnstableNode sendReceive(VM vm, RichNode value);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    out << "<ReifiedVM @ " << _vm << ">";
+  }
+
+private:
+  VM _vm;
 };
+
+#ifndef MOZART_GENERATOR
+#include "ReifiedVM-implem-decl-after.hh"
+#endif
 
 }
 
-} }
-
-#endif // MOZART_GENERATOR
-
-#endif // MOZART_MODVMBOOST_H
+#endif // MOZART_REIFIEDVM_DECL_H

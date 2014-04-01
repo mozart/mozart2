@@ -22,55 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_MODVMBOOST_H
-#define MOZART_MODVMBOOST_H
+#ifndef MOZART_REIFIEDVM_H
+#define MOZART_REIFIEDVM_H
 
-#include <mozart.hh>
-
-#include "boostenv-decl.hh"
+#include "mozartcore.hh"
 
 #ifndef MOZART_GENERATOR
 
-namespace mozart { namespace boostenv {
-
-namespace builtins {
-
-using namespace ::mozart::builtins;
+namespace mozart {
 
 ///////////////
-// VM module //
+// ReifiedVM //
 ///////////////
 
-class ModVM: public Module {
-public:
-  ModVM(): Module("VM") {}
+#include "ReifiedVM-implem.hh"
 
-  class Current: public Builtin<Current> {
-  public:
-    Current(): Builtin("current") {}
+bool ReifiedVM::equals(VM vm, RichNode right) {
+  return value() == right.as<ReifiedVM>().value();
+}
 
-    static void call(VM vm, Out result) {
-      result = ReifiedVM::build(vm, vm);
-    }
-  };
+void ReifiedVM::send(VM vm, RichNode value) {
+  // TODO
+}
 
-  class New: public Builtin<New> {
-  public:
-    New(): Builtin("new") {}
-
-    static void call(VM vm, In appURL, Out result) {
-      std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
-      size_t maxMemory = 64 * MegaBytes;
-      BoostVM& newVM = BoostBasedVM::forVM(vm).addVM(maxMemory, appURLstr);
-      result = ReifiedVM::build(vm, newVM.vm);
-    }
-  };
-};
+UnstableNode ReifiedVM::sendReceive(VM vm, RichNode value) {
+  raiseError(vm, "VMPort.sendReceive is not implemented. Send back an ack instead.");
+}
 
 }
 
-} }
-
 #endif // MOZART_GENERATOR
 
-#endif // MOZART_MODVMBOOST_H
+#endif // MOZART_REIFIEDVM_H

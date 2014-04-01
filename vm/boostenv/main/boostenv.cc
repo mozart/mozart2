@@ -235,8 +235,9 @@ BoostBasedVM::BoostBasedVM(const VMStarter& vmStarter) :
   setBootLoader(&defaultBootLoader);
 }
 
-void BoostBasedVM::addVM(size_t maxMemory, const std::string& appURL) {
+BoostVM& BoostBasedVM::addVM(size_t maxMemory, const std::string& appURL) {
   vms.emplace_front(*this, maxMemory, appURL);
+  return vms.front();
 }
 
 void BoostBasedVM::runIO() {

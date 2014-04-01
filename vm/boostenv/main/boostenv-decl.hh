@@ -148,7 +148,7 @@ public:
 public:
   BoostBasedVM(const VMStarter& vmStarter);
 
-  void addVM(size_t maxMemory, const std::string& appURL);
+  BoostVM& addVM(size_t maxMemory, const std::string& appURL);
 
 // Configuration
 

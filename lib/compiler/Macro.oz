@@ -217,6 +217,12 @@ define
       [] fMacro(_ _) then true
       [] fDotAssign(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
       [] fColonEquals(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
+      [] fListComprehension(_ _ _ _) then false
+      [] fForComprehensionLevel(_ _ _) then false
+      [] forExpression(_ _) then false
+      [] fBuffer(_ _) then  false
+      [] forRecord(_ _ _ _) then false
+      [] fRecordComprehension(_ _ _ _ _ _) then false
       %TODO [] fFOR(_ _ _) then ...
       %TODO [] fWhile(_ _ _) then ...
       end

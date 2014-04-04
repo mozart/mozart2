@@ -81,7 +81,7 @@ define
          [pB elem(fun {$ Tok} case Tok of tkAtom(V) then some(V) else false end end) pE] #
          fun {$ [P1 C P2]}
             fAtom(C {MkPos P1 P2})
-         end
+	 end
 
       variable:
          [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE] #
@@ -182,7 +182,7 @@ define
       lvl6:alt(
               [lvl7 pB '|' pE lvl6]#fun{$ [S1 P1 _ P2 S2]}fRecord(fAtom('|' {MkPos P1 P2}) [S1 S2])end
               lvl7
-              )
+	      )
       lvl7:alt(
               [lvl8 pla([pB '#' pE]) plus(seq2('#' lvl8))]#fun{$ [S1 [P1 _ P2] Sr]}fRecord(fAtom('#' {MkPos P1 P2}) S1|Sr)end
               lvl8
@@ -225,7 +225,7 @@ define
                   [pB 'proc' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
                                                                                  fProc(As.1 As.2 S Fs {MkPos P1 P2})
                                                                               end
-                  [pB 'fun' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
+		  [pB 'fun' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
                                                                                 fFun(As.1 As.2 S Fs {MkPos P1 P2})
                                                                              end
                   [pB '{' plus(lvl0) '}' pE]#fun{$ [P1 _ As _ P2]}fApply(As.1 As.2 {MkPos P1 P2}) end
@@ -258,7 +258,21 @@ define
                   [alt(atomL variableL) '(' star(subtree) opt(['...']) ')']#fun{$ [L _ Ts D _]}
                                                                                LL=if D==nil then fRecord else fOpenRecord end in
                                                                                LL(L Ts)
-                                                                            end
+									    end
+		  [pB '[' plus(forExpression) forComprehension opt(seq2('body' phrase) unit) ']' pE]
+		  #fun{$ [P1 _ S1 FC BD _ P2]}fListComprehension(S1 FC BD {MkPos P1 P2}) end
+		  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) ']' pE]
+		  #fun{$ [P1 _ S _ F L1 _ L2 IF OF _ P2]}
+		      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
+		      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
+		      end
+		   end
+		  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 'of' lvl0 'if' lvl0 ']' pE]
+		  #fun{$ [P1 _ S _ F L1 _ L2 _ OF _ IF _ P2]}
+		      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
+		      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
+		      end
+		   end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
                   [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end
@@ -268,7 +282,34 @@ define
                   float
                   feature
                   escVar
-                  )
+		  )
+      forExpression:alt(
+		       [feature ':' atom ':' lvl0]#fun{$ [F _ A _ L]}forFeature(A fColon(F L))end
+		       [subtree opt(seq2('if' lvl0) unit)]#fun{$ [S1 S2]}forExpression(S1 S2)end
+		       )
+      forComprehension:plus([pB 'for' plus(forListDecl) opt(seq2('if' lvl0) unit) pE])#fun{$ Ss}
+										{FoldR Ss fun{$ Xn Y}
+											     case Xn
+											     of [P1 _ FD CD P2] then
+												fForComprehensionLevel(FD CD {MkPos P1 P2})|Y
+											     [] nil then
+												Y
+											     end
+											  end nil}
+										   end
+      forListDecl:alt(
+		     [lvl0 'in' forListGen]#fun{$ [A _ S]}forPattern(A S)end
+		     [lvl0 ':' lvl0 'in' lvl0 opt(seq2('of' lvl0)unit)]#fun{$ [F _ A _ R OF]}forRecord(F A R OF)end
+		     [lvl0 'from' lvl0]#fun{$ [A _ S]}forFrom(A S)end
+		     atom#fun{$ A}forFlag(A)end
+		     )
+      forListGen:alt(
+		    [lvl0 '..' lvl0 opt(seq2(';' lvl0) unit)]#fun{$ [S1 _ S2 S3]}forGeneratorInt(S1 S2 S3)end
+		    ['(' forGenC ')']#fun{$ [_ S _]}S end
+		    forGenC
+		    [lvl0 ':' lvl0]#fun{$ [S1 _ S2]}forGeneratorList(fBuffer(S1 S2))end
+		    lvl0#fun{$ S}forGeneratorList(S)end
+		    )
       forDecl:alt(
                  [lvl0 'in' forGen]#fun{$ [A _ S]}forPattern(A S)end
                  [lvl0 'from' lvl0]#fun{$ [A _ S]}forFrom(A S)end

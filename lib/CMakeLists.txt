@@ -41,9 +41,9 @@ set(SYS_FUNCTORS
 set(COMPILER_FUNCTORS_0
     "Annotate.oz" "Assembler.oz" "BackquoteMacro.oz" "Builtins.oz"
     "CodeEmitter.oz" "CodeGen.oz" "CodeStore.oz" "Compiler.oz" "Core.oz"
-    "ForLoop.oz" "GroundZip.oz" "Lexer.oz" "Macro.oz" "NewAssembler.oz"
-    "Parser.oz" "PEG.oz" "Preprocessor.oz" "PrintName.oz" "StaticAnalysis.oz"
-    "Unnester.oz" "WhileLoop.oz"
+    "ForLoop.oz" "GroundZip.oz" "Lexer.oz" "ListComprehension.oz" "Macro.oz" "NewAssembler.oz"
+    "Parser.oz" "PEG.oz" "Preprocessor.oz" "PrintName.oz" "RecordComprehension.oz"
+    "StaticAnalysis.oz" "Unnester.oz" "WhileLoop.oz"
     )
 
 set(COMPILER_FUNCTORS "${MOZART_LIB_DIR}/ozbatch/Compile.oz")

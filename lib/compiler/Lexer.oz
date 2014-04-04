@@ -40,14 +40,14 @@ define
    EofCh = &\032
 
    OzKeywords = [
-      'andthen' 'at' 'attr' 'case' 'catch' 'choice'
+      'andthen' 'at' 'attr' 'body' 'case' 'catch' 'choice'
       'class' 'cond' 'declare' 'define' 'dis' 'do'
       'div' 'else' 'elsecase' 'elseif' 'elseof' 'end'
       'export' 'fail' 'feat' 'finally' 'from' 'for'
       'fun' 'functor' 'if' 'import' 'in' 'local'
       'lock' 'meth' 'mod' 'not' 'of' 'or' 'orelse'
       'prepare' 'proc' 'prop' 'raise' 'require'
-      'self' 'skip' 'then' 'thread' 'try'
+      'self' 'skip' 'then' 'thread' 'through' 'try'
    ]
 
    OzKeywordTokens0 = {Record.make kw OzKeywords}
@@ -347,7 +347,7 @@ define
 
       [] tkEof then
          Result = reader(tkEof CtxIn.pos#CtxOut.pos true Result)
-         
+
       [] tkParseError(_) then
          Result = reader(Token CtxIn.pos#CtxOut.pos true Result)
 

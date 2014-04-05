@@ -44,11 +44,11 @@ define
 
    KeywordsAndSymbols = {Append Lexer.ozKeywords Lexer.ozSymbols}
    RulesL = {Map KeywordsAndSymbols
-                 fun {$ KwSym}
-                    KwSym #
-                    ([pB elem(KwSym) pE] #
-                     fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
-                 end}
+             fun {$ KwSym}
+                KwSym #
+                ([pB elem(KwSym) pE] #
+                 fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
+             end}
 
    Rules =
    g(
@@ -65,79 +65,79 @@ define
       %% tokens %%
       string:
          [pB elem(fun {$ Tok} case Tok of tkString(V) then some(V) else false end end) pE] #
-         fun {$ [P1 L P2]}
-            {FoldR L fun {$ C S}
-                        fRecord(fAtom('|' P1) [fInt(C P1) S])
-                     end fAtom(nil P2)}
-         end
+      fun {$ [P1 L P2]}
+         {FoldR L fun {$ C S}
+                     fRecord(fAtom('|' P1) [fInt(C P1) S])
+                  end fAtom(nil P2)}
+      end
 
       character:
          [pB elem(fun {$ Tok} case Tok of tkCharacter(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fInt(C {MkPos P1 P2})
-         end
+      fun {$ [P1 C P2]}
+         fInt(C {MkPos P1 P2})
+      end
 
       atom:
          [pB elem(fun {$ Tok} case Tok of tkAtom(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fAtom(C {MkPos P1 P2})
-	 end
+      fun {$ [P1 C P2]}
+         fAtom(C {MkPos P1 P2})
+      end
 
       variable:
          [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fVar(C {MkPos P1 P2})
-         end
+      fun {$ [P1 C P2]}
+         fVar(C {MkPos P1 P2})
+      end
 
       atomL:
          [pB elem(fun {$ Tok} case Tok of tkAtomLabel(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fAtom(C {MkPos P1 P2})
-         end
+      fun {$ [P1 C P2]}
+         fAtom(C {MkPos P1 P2})
+      end
 
       variableL:
          [pB elem(fun {$ Tok} case Tok of tkVariableLabel(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fVar(C {MkPos P1 P2})
-         end
+      fun {$ [P1 C P2]}
+         fVar(C {MkPos P1 P2})
+      end
 
       integer:
          [pB elem(fun {$ Tok} case Tok of tkInteger(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fInt(C {MkPos P1 P2})
-         end
+      fun {$ [P1 C P2]}
+         fInt(C {MkPos P1 P2})
+      end
 
       float:
          [pB elem(fun {$ Tok} case Tok of tkFloat(V) then some(V) else false end end) pE] #
-         fun {$ [P1 C P2]}
-            fFloat(C {MkPos P1 P2})
-         end
+      fun {$ [P1 C P2]}
+         fFloat(C {MkPos P1 P2})
+      end
 
       %% top-level %%
       input: [star(compilationUnit) eof]
       compilationUnit: alt(cuDirective cuDeclare phrase)
       cuDirective: alt(
-         [pB elem(fun {$ Tok} case Tok of tkDirSwitch(Ss) then some(Ss) else false end end) pE] #
-         fun {$ [P1 Ss P2]}
-            Pos = {MkPos P1 P2}
-         in
-            dirSwitch({Map Ss fun {$ Sw} L = {Label Sw} in L(Sw.1 Pos) end})
-         end
+                      [pB elem(fun {$ Tok} case Tok of tkDirSwitch(Ss) then some(Ss) else false end end) pE] #
+                      fun {$ [P1 Ss P2]}
+                         Pos = {MkPos P1 P2}
+                      in
+                         dirSwitch({Map Ss fun {$ Sw} L = {Label Sw} in L(Sw.1 Pos) end})
+                      end
 
-         elem(tkPreprocessorDirective('showSwitches')) # dirShowSwitches
-         elem(tkPreprocessorDirective('pushSwitches')) # dirPushSwitches
-         elem(tkPreprocessorDirective('popSwitches')) # dirPopSwitches
-         elem(tkPreprocessorDirective('localSwitches')) # dirLocalSwitches
-      )
+                      elem(tkPreprocessorDirective('showSwitches')) # dirShowSwitches
+                      elem(tkPreprocessorDirective('pushSwitches')) # dirPushSwitches
+                      elem(tkPreprocessorDirective('popSwitches')) # dirPopSwitches
+                      elem(tkPreprocessorDirective('localSwitches')) # dirLocalSwitches
+                      )
       eof: elem(fun {$ Tok} case Tok of tkEof(Defs) then some(Defs) else false end end)
 
       cuDeclare: alt(
-         [pB 'declare' phrase 'in' phrase pE] #
-         fun {$ [P1 _ S1 _ S2 P2]} fDeclare(S1 S2 {MkPos P1 P2}) end
+                    [pB 'declare' phrase 'in' phrase pE] #
+                    fun {$ [P1 _ S1 _ S2 P2]} fDeclare(S1 S2 {MkPos P1 P2}) end
 
-         [pB 'declare' phrase pE] #
-         fun{$ [P1 _ S1 P2]} fDeclare(S1 fSkip(P2) {MkPos P1 P2}) end
-      )
+                    [pB 'declare' phrase pE] #
+                    fun{$ [P1 _ S1 P2]} fDeclare(S1 fSkip(P2) {MkPos P1 P2}) end
+                    )
 
       %% expressions & statements %%
       phrase:alt(
@@ -182,7 +182,7 @@ define
       lvl6:alt(
               [lvl7 pB '|' pE lvl6]#fun{$ [S1 P1 _ P2 S2]}fRecord(fAtom('|' {MkPos P1 P2}) [S1 S2])end
               lvl7
-	      )
+              )
       lvl7:alt(
               [lvl8 pla([pB '#' pE]) plus(seq2('#' lvl8))]#fun{$ [S1 [P1 _ P2] Sr]}fRecord(fAtom('#' {MkPos P1 P2}) S1|Sr)end
               lvl8
@@ -225,7 +225,7 @@ define
                   [pB 'proc' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
                                                                                  fProc(As.1 As.2 S Fs {MkPos P1 P2})
                                                                               end
-		  [pB 'fun' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
+                  [pB 'fun' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
                                                                                 fFun(As.1 As.2 S Fs {MkPos P1 P2})
                                                                              end
                   [pB '{' plus(lvl0) '}' pE]#fun{$ [P1 _ As _ P2]}fApply(As.1 As.2 {MkPos P1 P2}) end
@@ -244,8 +244,8 @@ define
                   [pB 'choice' sep(inPhrase '[]')'end' pE]#fun{$ [P1 _ Ss _ P2]}fChoice(Ss {MkPos P1 P2})end
                   [pB 'raise' inPhrase 'end' pE]#fun{$ [P1 _ S _ P2]}fRaise(S {MkPos P1 P2})end
                   [pB 'class' exprOrImplDollar star(classDescr) star(method) 'end' pE]#fun{$ [P1 _ S Ds Ms _ P2]}
-                                                                                                            fClass(S Ds Ms {MkPos P1 P2})
-                                                                                                         end
+                                                                                          fClass(S Ds Ms {MkPos P1 P2})
+                                                                                       end
                   [pB 'functor' exprOrImplDollar star(funcDescr) 'end' pE]#fun{$ [P1 _ S Ds _ P2]}
                                                                               fFunctor(S Ds {MkPos P1 P2})
                                                                            end
@@ -258,21 +258,21 @@ define
                   [alt(atomL variableL) '(' star(subtree) opt(['...']) ')']#fun{$ [L _ Ts D _]}
                                                                                LL=if D==nil then fRecord else fOpenRecord end in
                                                                                LL(L Ts)
-									    end
-		  [pB '[' plus(forExpression) forComprehension opt(seq2('body' phrase) unit) ']' pE]
-		  #fun{$ [P1 _ S1 FC BD _ P2]}fListComprehension(S1 FC BD {MkPos P1 P2}) end
-		  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) ']' pE]
-		  #fun{$ [P1 _ S _ F L1 _ L2 IF OF _ P2]}
-		      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
-		      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
-		      end
-		   end
-		  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 'of' lvl0 'if' lvl0 ']' pE]
-		  #fun{$ [P1 _ S _ F L1 _ L2 _ OF _ IF _ P2]}
-		      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
-		      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
-		      end
-		   end
+                                                                            end
+                  [pB '[' plus(forExpression) forComprehension opt(seq2('body' phrase) unit) ']' pE]
+                  #fun{$ [P1 _ S1 FC BD _ P2]}fListComprehension(S1 FC BD {MkPos P1 P2}) end
+                  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) ']' pE]
+                  #fun{$ [P1 _ S _ F L1 _ L2 IF OF _ P2]}
+                      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
+                      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
+                      end
+                   end
+                  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 'of' lvl0 'if' lvl0 ']' pE]
+                  #fun{$ [P1 _ S _ F L1 _ L2 _ OF _ IF _ P2]}
+                      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
+                      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
+                      end
+                   end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
                   [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end
@@ -282,34 +282,33 @@ define
                   float
                   feature
                   escVar
-		  )
+                  )
       forExpression:alt(
-		       [feature ':' atom ':' lvl0]#fun{$ [F _ A _ L]}forFeature(A fColon(F L))end
-		       [subtree opt(seq2('if' lvl0) unit)]#fun{$ [S1 S2]}forExpression(S1 S2)end
-		       )
+                       [feature ':' atom ':' lvl0]#fun{$ [F _ A _ L]}forFeature(A fColon(F L))end
+                       [subtree opt(seq2('if' lvl0) unit)]#fun{$ [S1 S2]}forExpression(S1 S2)end
+                       )
       forComprehension:plus([pB 'for' plus(forListDecl) opt(seq2('if' lvl0) unit) pE])#fun{$ Ss}
-										{FoldR Ss fun{$ Xn Y}
-											     case Xn
-											     of [P1 _ FD CD P2] then
-												fForComprehensionLevel(FD CD {MkPos P1 P2})|Y
-											     [] nil then
-												Y
-											     end
-											  end nil}
-										   end
+                                                                                          {FoldR Ss fun{$ Xn Y}
+                                                                                                       case Xn
+                                                                                                       of [P1 _ FD CD P2] then
+                                                                                                          fForComprehensionLevel(FD CD {MkPos P1 P2})|Y
+                                                                                                       [] nil then Y
+                                                                                                       end
+                                                                                                    end nil}
+                                                                                       end
       forListDecl:alt(
-		     [lvl0 'in' forListGen]#fun{$ [A _ S]}forPattern(A S)end
-		     [lvl0 ':' lvl0 'in' lvl0 opt(seq2('of' lvl0)unit)]#fun{$ [F _ A _ R OF]}forRecord(F A R OF)end
-		     [lvl0 'from' lvl0]#fun{$ [A _ S]}forFrom(A S)end
-		     atom#fun{$ A}forFlag(A)end
-		     )
+                     [lvl0 'in' forListGen]#fun{$ [A _ S]}forPattern(A S)end
+                     [lvl0 ':' lvl0 'in' lvl0 opt(seq2('of' lvl0)unit)]#fun{$ [F _ A _ R OF]}forRecord(F A R OF)end
+                     [lvl0 'from' lvl0]#fun{$ [A _ S]}forFrom(A S)end
+                     atom#fun{$ A}forFlag(A)end
+                     )
       forListGen:alt(
-		    [lvl0 '..' lvl0 opt(seq2(';' lvl0) unit)]#fun{$ [S1 _ S2 S3]}forGeneratorInt(S1 S2 S3)end
-		    ['(' forGenC ')']#fun{$ [_ S _]}S end
-		    forGenC
-		    [lvl0 ':' lvl0]#fun{$ [S1 _ S2]}forGeneratorList(fBuffer(S1 S2))end
-		    lvl0#fun{$ S}forGeneratorList(S)end
-		    )
+                    [lvl0 '..' lvl0 opt(seq2(';' lvl0) unit)]#fun{$ [S1 _ S2 S3]}forGeneratorInt(S1 S2 S3)end
+                    ['(' forGenC ')']#fun{$ [_ S _]}S end
+                    forGenC
+                    [lvl0 ':' lvl0]#fun{$ [S1 _ S2]}forGeneratorList(fBuffer(S1 S2))end
+                    lvl0#fun{$ S}forGeneratorList(S)end
+                    )
       forDecl:alt(
                  [lvl0 'in' forGen]#fun{$ [A _ S]}forPattern(A S)end
                  [lvl0 'from' lvl0]#fun{$ [A _ S]}forFrom(A S)end
@@ -336,7 +335,7 @@ define
                    [pB 'import' plus(importDecl) pE]#fun{$ [P1 _ Ds P2]}fImport(Ds {MkPos P1 P2})end
                    [pB 'define' phrase alt(seq2('in' phrase) pE#fun{$ P}fSkip(P)end) pE]#fun{$ [P1 _ D S P2]}
                                                                                             fDefine(D S {MkPos P1 P2})
-                                                                                          end
+                                                                                         end
                    [pB 'require' plus(importDecl) pE]#fun{$ [P1 _ Ds P2]}fRequire(Ds {MkPos P1 P2})end
                    [pB 'prepare' phrase alt(seq2('in' phrase) pE#fun{$ P}fSkip(P)end) pE]#fun{$ [P1 _ D S P2]}
                                                                                              fPrepare(D S {MkPos P1 P2})
@@ -347,7 +346,7 @@ define
                      [variableL '(' plus(alt([alt(integer atom) ':' variable]#fun{$ [F _ V]}V#F end
                                              integer atom
                                             )) ')' optAt]#fun{$ [V _ Fs _ A]}fImportItem(V Fs A)end
-                     )
+                    )
       optAt:opt(seq2('at' atom)#fun{$ A}fImportAt(A)end fNoImportAt)
       exportDecl:alt([alt(atom integer) ':' variable]#fun{$ [F _ V]}fColon(F V)end
                      variable)#fun{$ I}fExportItem(I)end

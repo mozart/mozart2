@@ -1187,8 +1187,8 @@ define
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
          [] fMacro(_ _) then
-	    Unnester, UnnestStatement({MacroExpand FS unit} $)
-	 [] fFOR(_ _ _) then
+            Unnester, UnnestStatement({MacroExpand FS unit} $)
+         [] fFOR(_ _ _) then
             Unnester, UnnestStatement({ForLoop.compile FS} $)
          [] fWhile(_ _ _) then
             Unnester, UnnestStatement({WhileLoop.compile FS} $)
@@ -1633,11 +1633,11 @@ define
             FS = fChoice({Map FEs fun {$ FE} fEq(NewFV FE C) end} C)
             Unnester, UnnestStatement(FS $)
          [] fMacro(_ _) then
-	    Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
-	 [] fListComprehension(_ _ _ _) then
-	    Unnester, UnnestExpression({ListComprehension.compile FE} ToGV $)
-   	 [] fRecordComprehension(_ _ _ _ _ _) then
-   	    Unnester, UnnestExpression({RecordComprehension.compile FE} ToGV $)
+            Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
+         [] fListComprehension(_ _ _ _) then
+            Unnester, UnnestExpression({ListComprehension.compile FE} ToGV $)
+         [] fRecordComprehension(_ _ _ _ _ _) then
+            Unnester, UnnestExpression({RecordComprehension.compile FE} ToGV $)
          [] fFOR(_ _ _) then
             Unnester, UnnestExpression({ForLoop.compile FE} ToGV $)
          [] fDotAssign(Left Right C) then FApply in

@@ -16,4 +16,5 @@ All the *.oz* files are test files except *Tester.oz* which is a functor used by
 ### More complex tests to run in Mozart2
 ---
 The directory *Applications* contains small examples.
+
 The directory *Concurrency* contains concurrent examples.

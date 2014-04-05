@@ -47,6 +47,10 @@ define
                %% [[row[i] for row in matrix] for i in range(4)]
                [[{Nth Row I} for Row in Matrix] for I in 1..4]
                #[[1 5 9] [2 6 10] [3 7 11] [4 8 12]]
+
+               %% [a for a in (1,2,3)]
+               [A for _:A in tuple(1 2 3)]
+               #[1 2 3]
               ]
    in
       {Tester.test Tests}

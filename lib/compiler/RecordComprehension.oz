@@ -197,12 +197,11 @@ define
       end
       %% return the whole body of Level
       %% Fields : the list of features
-      %% Ari    : the arity
       %% Rec    : the record
       %% Result : the result
       %% For1   : the fVar of the first for loop
       %% For2   : the fVar of the second for loop
-      fun {LevelLocal Fields Ari Rec Result For1 For2}
+      fun {LevelLocal Fields Rec Result For1 For2}
          fun {Aux Fs}
             case Fs
             of nil then CallFor2|nil
@@ -217,13 +216,15 @@ define
             end
          end
          Lbl = {MakeVar 'Lbl'}
+         Ari = {MakeVar 'Ari'}
          AriFull = {MakeVar 'AriFull'}
          AriBool = {MakeVar 'AriBool'}
-         Decl = fEq(Lbl fApply(fVar('Label' unit) [Rec] unit) unit)
+         DeclLbl = fEq(Lbl fApply(fVar('Label' unit) [Rec] unit) unit)
+         DeclAri = fEq(Ari fApply(fVar('Arity' unit) [Rec] unit) unit)
          CallFor1 = fApply(For1 [Ari Rec AriFull AriBool] unit)
-         CallFor2 = fApply(For2 [AriFull Rec Result AriBool] unit)
+         CallFor2 = fApply(For2 [Rec AriFull AriBool Result] unit)
       in
-         fLocal(fAnd(Decl fAnd(AriFull AriBool))
+         fLocal(fAnd(DeclLbl fAnd(DeclAri fAnd(AriFull AriBool)))
                 {DeclareAll CallFor1|{Aux Fields}}
                 unit)
       end
@@ -354,25 +355,25 @@ define
             %% the name of the function of the for2
             Name = {MakeVar 'For2'}
             %% arguments of the level
-            AriArg = {MakeVar 'Ari'}
             RecArg = {MakeVar 'Rec'}
-            Result = {MakeVar 'Result'}
+            AriFull = {MakeVar 'AriFull'}
             AriBool = {MakeVar 'AriBool'}
+            Result = {MakeVar 'Result'}
          in
             {Push 'For2'
              fProc(
                 %% name
                 Name
                 %% arguments
-                [AriArg RecArg Result AriBool]
+                [RecArg AriFull AriBool Result]
                 %% body
                 fBoolCase(%% condition
-                          fOpApply('\\=' [AriArg fAtom(nil unit)] unit)
+                          fOpApply('\\=' [AriFull fAtom(nil unit)] unit)
                           %% true
                           local
                              Feat#Ranger = {GetFeatRanger}
                              TrueLocal = fLocal(%% decl
-                                                fAnd(fEq(Feat fOpApply('.' [AriArg fInt(1 unit)] unit) unit)
+                                                fAnd(fEq(Feat fOpApply('.' [AriFull fInt(1 unit)] unit) unit)
                                                      fEq(Ranger fOpApply('.' [RecArg Feat] unit) unit))
                                                 %% body
                                                 fBoolCase(%% condition
@@ -384,10 +385,7 @@ define
                                                              end
                                                           end
                                                           %% true: call Level
-                                                          fApply(Father [fRecord(
-                                                                            fAtom('#' unit)
-                                                                            [fApply(fVar('Arity' unit) [Ranger] unit)
-                                                                             Ranger])
+                                                          fApply(Father [Ranger
                                                                          {MakeCallBackRecord Result Feat Fields}]
                                                                  unit)
                                                           %% false: assign to expression
@@ -402,10 +400,13 @@ define
                                        %% true
                                        fAnd(TrueLocal
                                             fApply(Name
-                                                   [fOpApply('.' [AriArg fInt(2 unit)] unit) RecArg Result fOpApply('.' [AriBool fInt(2 unit)] unit)]
+                                                   [RecArg fOpApply('.' [AriFull fInt(2 unit)] unit)
+                                                    fOpApply('.' [AriBool fInt(2 unit)] unit) Result]
                                                    unit))
                                        %% false
-                                       fApply(Name [AriArg RecArg Result fOpApply('.' [AriBool fInt(2 unit)] unit)] unit)
+                                       fApply(Name
+                                              [RecArg AriFull fOpApply('.' [AriBool fInt(2 unit)] unit) Result]
+                                              unit)
                                        %% position
                                        unit)
                           end
@@ -428,7 +429,6 @@ define
             %% result
             Result = {MakeVar 'Result'}
             %% arguments of the level
-            AriArg = {MakeVar 'Ari'}
             RecArg = {MakeVar 'Rec'}
             %% the procedure for the first for loop
             For1 = {For1Generator}
@@ -440,9 +440,9 @@ define
                 %% name
                 Name
                 %% arguments
-                [fRecord(fAtom('#' unit) [AriArg RecArg]) Result]
+                [RecArg Result]
                 %% body
-                {LevelLocal Fields AriArg RecArg Result For1 For2}
+                {LevelLocal Fields RecArg Result For1 For2}
                 %% flags
                 nil
                 %% position
@@ -463,19 +463,15 @@ define
                              local
                                 NextsRecord
                                 NextsToDecl = {CreateNexts Outputs Fields NextsRecord}
-                                Rec = {MakeVar 'Record'}
-                                Decl = fEq(Rec RECORD unit)
-                                Initiator = fRecord(fAtom('#' unit) [fApply(fVar('Arity' unit) [Rec] unit) Rec])
-                                Apply = if ReturnOneRecord then
-                                           fApply(Level
-                                                  [Initiator fRecord(fAtom('#' unit) [fColon(fInt(1 unit) Result)])]
-                                                  unit)
-                                        else
-                                           fApply(Level
-                                                  [Initiator fRecord(fAtom('#' unit) NextsRecord)]
-                                                  unit)
-                                        end
-                                Body = fLocal(Decl Apply unit)
+                                Body = if ReturnOneRecord then
+                                          fApply(Level
+                                                 [RECORD fRecord(fAtom('#' unit) [fColon(fInt(1 unit) Result)])]
+                                                 unit)
+                                       else
+                                          fApply(Level
+                                                 [RECORD fRecord(fAtom('#' unit) NextsRecord)]
+                                                 unit)
+                                       end
                              in
                                 if ReturnOneRecord then
                                    Body

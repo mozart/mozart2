@@ -34,7 +34,7 @@ import
 export
    Current
    New
-   Stream
+   GetStream
 
 define
    proc {ReflectiveVM VM S}
@@ -71,5 +71,5 @@ define
       {NewReflectiveVM VM}
    end
 
-   Stream = Boot_VM.stream
+   GetStream = Boot_VM.getStream
 end

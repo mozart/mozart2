@@ -66,9 +66,9 @@ public:
     }
   };
 
-  class Stream: public Builtin<Stream> {
+  class GetStream: public Builtin<GetStream> {
   public:
-    Stream(): Builtin("stream") {}
+    GetStream(): Builtin("getStream") {}
 
     static void call(VM vm, Out result) {
       BoostVM::forVM(vm).getStream(result);

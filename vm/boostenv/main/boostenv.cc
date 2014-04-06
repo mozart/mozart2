@@ -52,6 +52,9 @@ BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory,
   boost::random::random_device generator;
   random_generator.seed(generator);
 
+  _stream = ReadOnlyVariable::build(vm);
+  _headOfStream.copy(vm, _stream);
+
   // Finally start the VM thread, which will initialize and run the VM
   _thread = boost::thread(&BoostVM::start, this);
 };
@@ -160,6 +163,24 @@ std::uint64_t BoostVM::bytes2uint64(const std::uint8_t* bytes) {
     ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
 }
 
+void BoostVM::getStream(UnstableNode &stream) {
+  if (RichNode(_headOfStream).is<Unit>()) {
+    raiseError(vm, "VM.stream can only be called once, otherwise it would leak");
+  } else {
+    stream.copy(vm, _headOfStream);
+    _headOfStream = build(vm, unit);
+  }
+}
+
+void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
+  std::string str(buffer->begin(), buffer->end());
+  std::istringstream input(str);
+  UnstableNode unpickled = bootUnpickle(vm, input);
+  delete buffer;
+
+  sendToReadOnlyStream(vm, _stream, RichNode(unpickled));
+}
+
 //////////////////
 // BoostBasedVM //
 //////////////////
@@ -255,6 +276,17 @@ std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, double value)
 
 std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, const std::string& value) {
   return BoostBigInt::make_shared_ptr(value);
+}
+
+void BoostBasedVM::sendToVMPort(VM vm, VM to, RichNode vbs) {
+  size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
+  // allocates the vector in a neutral zone: the heap
+  std::vector<unsigned char> *buffer = new std::vector<unsigned char>();
+  ozVBSGet(vm, vbs, bufSize, *buffer);
+
+  BoostVM::forVM(to).postVMEvent([=] () {
+    BoostVM::forVM(to).receiveOnVMPort(buffer);
+  });
 }
 
 } }

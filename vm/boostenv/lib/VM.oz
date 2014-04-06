@@ -26,19 +26,50 @@ functor
 
 require
    Boot_VM at 'x-oz://boot/VM'
+   Reflection at 'x-oz://boot/Reflection'
+
+import
+   Pickle
 
 export
    Current
    New
+   Stream
 
 define
+   proc {ReflectiveVM VM S}
+      Msg#Ack|Tail = S
+   in
+      case Msg
+      of send(V) then
+         VS = {Pickle.pack V}
+      in
+         {Send VM VS}
+         Ack = unit
+      else
+         Ack = false
+      end
+      {ReflectiveVM VM Tail}
+   end
+
+   fun {NewReflectiveVM VM}
+      S
+   in
+      thread {ReflectiveVM VM S} end
+      {Reflection.newReflectiveEntity S}
+   end
 
    fun {Current}
-      {Boot_VM.current}
+      VM = {Boot_VM.current}
+   in
+      {NewReflectiveVM VM}
    end
 
    fun {New AppURL}
-      {Boot_VM.new AppURL}
+      VM = {Boot_VM.new AppURL}
+   in
+      {NewReflectiveVM VM}
    end
 
+   Stream = Boot_VM.stream
 end

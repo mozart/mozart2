@@ -65,6 +65,15 @@ public:
       result = ReifiedVM::build(vm, newVM.vm);
     }
   };
+
+  class Stream: public Builtin<Stream> {
+  public:
+    Stream(): Builtin("stream") {}
+
+    static void call(VM vm, Out result) {
+      BoostVM::forVM(vm).getStream(result);
+    }
+  };
 };
 
 }

@@ -68,6 +68,12 @@ private:
   inline
   static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
 
+// VM Port
+public:
+  void getStream(UnstableNode &stream);
+
+  void receiveOnVMPort(std::vector<unsigned char>* buffer);
+
 // Management of nodes used by asynchronous operations for feedback
 public:
   inline
@@ -99,12 +105,17 @@ public:
   BoostBasedVM& env;
   std::string appURL;
 
-// Random number generation
+// Random number and UUID generation
 public:
   typedef boost::random::mt19937 random_generator_t;
   random_generator_t random_generator;
 private:
   boost::uuids::random_generator uuidGenerator;
+
+// VM stream (for {Send VM})
+private:
+  UnstableNode _headOfStream;
+  UnstableNode _stream;
 
 // Number of asynchronous IO nodes - used for termination detection
 private:
@@ -204,6 +215,10 @@ public:
 
   inline
   std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value);
+
+// VM Port
+public:
+  void sendToVMPort(VM from, VM to, RichNode vbs);
 
 private:
   std::forward_list<BoostVM> vms;

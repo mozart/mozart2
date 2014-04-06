@@ -42,7 +42,7 @@ bool ReifiedVM::equals(VM vm, RichNode right) {
 }
 
 void ReifiedVM::send(VM vm, RichNode value) {
-  // TODO
+  vm->getEnvironment().sendToVMPort(vm, _vm, value);
 }
 
 UnstableNode ReifiedVM::sendReceive(VM vm, RichNode value) {

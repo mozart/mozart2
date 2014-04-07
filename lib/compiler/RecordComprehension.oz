@@ -19,6 +19,9 @@
 %%% WARRANTIES.
 %%%
 
+%% Explanations related to this file are in
+%% https://github.com/francoisfonteyn/thesis/blob/master/Thesis.pdf
+
 functor
 import
    BootName(newNamed:NewNamedName) at 'x-oz://boot/Name'

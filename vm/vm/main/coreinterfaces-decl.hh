@@ -79,7 +79,7 @@ template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, BigInt, Atom, Boolean, Float, BuiltinProcedure,
                 ReifiedThread, Unit, String, ByteString, UniqueName,
-                PatMatCapture>,
+                PatMatCapture, ReifiedVM>,
   NoAutoReflectiveCalls {
 
   /**

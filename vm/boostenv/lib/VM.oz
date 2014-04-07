@@ -26,10 +26,9 @@ functor
 
 require
    Boot_VM at 'x-oz://boot/VM'
-   Reflection at 'x-oz://boot/Reflection'
 
 import
-   Pickle
+   Pickle % used for VM ports
 
 export
    Ncores
@@ -38,41 +37,12 @@ export
    GetStream
 
 define
-   proc {ReflectiveVM VM S}
-      Msg#Ack|Tail = S
-   in
-      case Msg
-      of send(V) then
-         VS = {Pickle.pack V}
-      in
-         {Send VM VS}
-         Ack = unit
-      else
-         Ack = false
-      end
-      {ReflectiveVM VM Tail}
-   end
-
-   fun {NewReflectiveVM VM}
-      S
-   in
-      thread {ReflectiveVM VM S} end
-      {Reflection.newReflectiveEntity S}
-   end
 
    Ncores = Boot_VM.ncores
-
-   fun {Current}
-      VM = {Boot_VM.current}
-   in
-      {NewReflectiveVM VM}
-   end
-
-   fun {New AppURL}
-      VM = {Boot_VM.new AppURL}
-   in
-      {NewReflectiveVM VM}
-   end
-
+   Current = Boot_VM.current
+   New = Boot_VM.new
    GetStream = Boot_VM.getStream
+
+   % Let's load Pickle since we need it for VM Ports
+   {Wait Pickle}
 end

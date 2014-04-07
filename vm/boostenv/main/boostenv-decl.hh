@@ -218,7 +218,7 @@ public:
 
 // VM Port
 public:
-  void sendToVMPort(VM from, VM to, RichNode vbs);
+  void sendToVMPort(VM from, VM to, RichNode value);
 
 private:
   std::forward_list<BoostVM> vms;

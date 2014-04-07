@@ -45,6 +45,18 @@ class ModVM: public Module {
 public:
   ModVM(): Module("VM") {}
 
+  class Ncores: public Builtin<Ncores> {
+  public:
+    Ncores(): Builtin("ncores") {}
+
+    static void call(VM vm, Out result) {
+      unsigned int ncores = boost::thread::hardware_concurrency();
+      if (ncores == 0)
+        raiseError(vm, "Could not detect the number of cores on this platform");
+      result = SmallInt::build(vm, ncores);
+    }
+  };
+
   class Current: public Builtin<Current> {
   public:
     Current(): Builtin("current") {}

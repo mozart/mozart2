@@ -32,6 +32,7 @@ import
    Pickle
 
 export
+   Ncores
    Current
    New
    GetStream
@@ -58,6 +59,8 @@ define
       thread {ReflectiveVM VM S} end
       {Reflection.newReflectiveEntity S}
    end
+
+   Ncores = Boot_VM.ncores
 
    fun {Current}
       VM = {Boot_VM.current}

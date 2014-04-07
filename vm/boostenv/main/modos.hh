@@ -76,7 +76,7 @@ public:
         std::string urlString;
         ozVSGet(vm, url, urlBufSize, urlString);
 
-        auto& bootLoader = BoostBasedVM::forVM(vm).getBootLoader();
+        auto& bootLoader = BoostEnvironment::forVM(vm).getBootLoader();
         ok = bootLoader && bootLoader(vm, urlString, result);
       }
 
@@ -1210,7 +1210,7 @@ public:
         std::string nameString;
         ozVSGet(vm, name, nameBufLength, nameString);
 
-        auto& environment = BoostBasedVM::forVM(vm);
+        auto& environment = BoostEnvironment::forVM(vm);
         tcp::resolver resolver (environment.io_service);
         tcp::resolver::query query (nameString, "0");
         auto it = resolver.resolve(query, ec);

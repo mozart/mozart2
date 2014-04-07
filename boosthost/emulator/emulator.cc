@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
   appGUI = varMap.count("gui") != 0;
 
   // SET UP THE VM AND RUN
-  boostenv::BoostBasedVM boostBasedVM([=] (VM vm, const std::string& applicationURL) {
+  boostenv::BoostEnvironment boostEnv([=] (VM vm, const std::string& applicationURL) {
     boostenv::BoostVM& boostVM = boostenv::BoostVM::forVM(vm);
     // Set some properties
     {
@@ -313,7 +313,7 @@ int main(int argc, char** argv) {
         vm, "application.gui", appGUI);
     }
 
-    boostenv::BoostBasedVM& boostBasedVM = boostenv::BoostBasedVM::forVM(vm);
+    boostenv::BoostEnvironment& boostEnv = boostenv::BoostEnvironment::forVM(vm);
 
     // Some protected nodes
     ProtectedNode baseEnv, initFunctor;
@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
       baseEnv = vm->protect(OptVar::build(vm));
 
       UnstableNode baseValue;
-      auto& bootLoader = boostBasedVM.getBootLoader();
+      auto& bootLoader = boostEnv.getBootLoader();
 
       if (!bootLoader(vm, baseFunctorPath.string(), baseValue)) {
         std::cerr << "panic: could not load Base functor at "
@@ -350,7 +350,7 @@ int main(int argc, char** argv) {
       initFunctor = vm->protect(OptVar::build(vm));
 
       UnstableNode initValue;
-      auto& bootLoader = boostBasedVM.getBootLoader();
+      auto& bootLoader = boostEnv.getBootLoader();
 
       if (!bootLoader(vm, initFunctorPath.string(), initValue)) {
         std::cerr << "panic: could not load Init functor at "
@@ -395,6 +395,6 @@ int main(int argc, char** argv) {
     return 0;
   });
 
-  boostBasedVM.addVM(maxMemoryMega * MegaBytes, appURL);
-  boostBasedVM.runIO();
+  boostEnv.addVM(maxMemoryMega * MegaBytes, appURL);
+  boostEnv.runIO();
 }

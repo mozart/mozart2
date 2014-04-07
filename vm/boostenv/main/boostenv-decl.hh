@@ -43,11 +43,11 @@
 
 namespace mozart { namespace boostenv {
 
-class BoostBasedVM;
+class BoostEnvironment;
 
 class BoostVM : VirtualMachine {
 public:
-  BoostVM(BoostBasedVM& environment, size_t maxMemory,
+  BoostVM(BoostEnvironment& environment, size_t maxMemory,
           const std::string& appURL);
 
   static BoostVM& forVM(VM vm) {
@@ -102,7 +102,7 @@ public:
 
 public:
   VM vm;
-  BoostBasedVM& env;
+  BoostEnvironment& env;
   std::string appURL;
 
 // Random number and UUID generation
@@ -141,23 +141,23 @@ private:
   boost::thread _thread;
 };
 
-//////////////////
-// BoostBasedVM //
-//////////////////
+//////////////////////
+// BoostEnvironment //
+//////////////////////
 
-class BoostBasedVM: public VirtualMachineEnvironment {
+class BoostEnvironment: public VirtualMachineEnvironment {
 private:
   using BootLoader = std::function<bool(VM vm, const std::string& url,
                                         UnstableNode& result)>;
   using VMStarter = std::function<int(VM vm, const std::string& url)>;
 
 public:
-  static BoostBasedVM& forVM(VM vm) {
-    return static_cast<BoostBasedVM&>(vm->getEnvironment());
+  static BoostEnvironment& forVM(VM vm) {
+    return static_cast<BoostEnvironment&>(vm->getEnvironment());
   }
 
 public:
-  BoostBasedVM(const VMStarter& vmStarter);
+  BoostEnvironment(const VMStarter& vmStarter);
 
   BoostVM& addVM(size_t maxMemory, const std::string& appURL);
 

@@ -33,7 +33,7 @@ namespace mozart { namespace boostenv {
 // BoostVM //
 /////////////
 
-BoostVM::BoostVM(BoostBasedVM& environment, size_t maxMemory,
+BoostVM::BoostVM(BoostEnvironment& environment, size_t maxMemory,
                  const std::string& appURL) :
   VirtualMachine(environment, maxMemory), vm(this),
   env(environment), appURL(appURL),
@@ -113,7 +113,7 @@ void BoostVM::run() {
         // Setup the alarm time, if asked by the VM
         if (nextInvoke == recInvokeAgainLater) {
           alarmTimer.expires_at(
-            BoostBasedVM::referenceTimeToPTime(nextInvokePair.second));
+            BoostEnvironment::referenceTimeToPTime(nextInvokePair.second));
           alarmTimer.async_wait([this] (const boost::system::error_code& err) {
             if (!err) {
               boost::lock_guard<boost::mutex> lock(_conditionWorkToDoInVMMutex);
@@ -181,9 +181,9 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, RichNode(unpickled));
 }
 
-//////////////////
-// BoostBasedVM //
-//////////////////
+//////////////////////
+// BoostEnvironment //
+//////////////////////
 
 namespace {
   /* TODO It might be worth, someday, to investigate how we can lift this
@@ -250,35 +250,35 @@ namespace {
   }
 }
 
-BoostBasedVM::BoostBasedVM(const VMStarter& vmStarter) :
+BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
   vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-BoostVM& BoostBasedVM::addVM(size_t maxMemory, const std::string& appURL) {
+BoostVM& BoostEnvironment::addVM(size_t maxMemory, const std::string& appURL) {
   vms.emplace_front(*this, maxMemory, appURL);
   return vms.front();
 }
 
-void BoostBasedVM::runIO() {
+void BoostEnvironment::runIO() {
   // This will end when all VMs are done.
   io_service.run();
 }
 
-std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, nativeint value) {
+std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, nativeint value) {
   return BoostBigInt::make_shared_ptr(value);
 }
 
-std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, double value) {
+std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, double value) {
   return BoostBigInt::make_shared_ptr(value);
 }
 
-std::shared_ptr<BigIntImplem> BoostBasedVM::newBigIntImplem(VM vm, const std::string& value) {
+std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, const std::string& value) {
   return BoostBigInt::make_shared_ptr(value);
 }
 
-void BoostBasedVM::sendToVMPort(VM vm, VM to, RichNode vbs) {
+void BoostEnvironment::sendToVMPort(VM vm, VM to, RichNode vbs) {
   size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
   // allocates the vector in a neutral zone: the heap
   std::vector<unsigned char> *buffer = new std::vector<unsigned char>();

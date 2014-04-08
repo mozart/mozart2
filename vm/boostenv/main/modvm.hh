@@ -86,6 +86,15 @@ public:
       BoostVM::forVM(vm).getStream(result);
     }
   };
+
+  class List: public Builtin<List> {
+  public:
+    List(): Builtin("list") {}
+
+    static void call(VM vm, Out result) {
+      result = BoostEnvironment::forVM(vm).listVMs(vm);
+    }
+  };
 };
 
 }

@@ -261,6 +261,13 @@ BoostVM& BoostEnvironment::addVM(size_t maxMemory, const std::string& appURL) {
   return vms.front();
 }
 
+UnstableNode BoostEnvironment::listVMs(VM vm) {
+  UnstableNode list = buildList(vm);
+  for (BoostVM& boostVM : vms)
+    list = buildCons(vm, ReifiedVM::build(vm, boostVM.vm), list);
+  return list;
+}
+
 void BoostEnvironment::runIO() {
   // This will end when all VMs are done.
   io_service.run();

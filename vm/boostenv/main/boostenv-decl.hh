@@ -161,6 +161,8 @@ public:
 
   BoostVM& addVM(size_t maxMemory, const std::string& appURL);
 
+  UnstableNode listVMs(VM vm);
+
 // Configuration
 
 public:

@@ -87,6 +87,15 @@ public:
     }
   };
 
+  class CloseStream: public Builtin<CloseStream> {
+  public:
+    CloseStream(): Builtin("closeStream") {}
+
+    static void call(VM vm) {
+      BoostVM::forVM(vm).closeStream();
+    }
+  };
+
   class List: public Builtin<List> {
   public:
     List(): Builtin("list") {}

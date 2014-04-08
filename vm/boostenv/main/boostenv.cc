@@ -168,8 +168,15 @@ void BoostVM::getStream(UnstableNode &stream) {
     raiseError(vm, "VM.stream can only be called once, otherwise it would leak");
   } else {
     stream.copy(vm, _headOfStream);
+    _asyncIONodeCount++; // TODO: is this the right way?
     _headOfStream = build(vm, unit);
   }
+}
+
+void BoostVM::closeStream() {
+  UnstableNode nil = buildNil(vm);
+  BindableReadOnly(_stream).bindReadOnly(vm, nil);
+  _asyncIONodeCount--; // TODO: is this the right way?
 }
 
 void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {

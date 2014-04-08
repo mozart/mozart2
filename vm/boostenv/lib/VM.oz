@@ -35,6 +35,7 @@ export
    Current
    New
    GetStream
+   CloseStream
    List
 
 define
@@ -43,6 +44,7 @@ define
    Current = Boot_VM.current
    New = Boot_VM.new
    GetStream = Boot_VM.getStream
+   CloseStream = Boot_VM.closeStream
    List = Boot_VM.list
 
    % Let's load Pickle since we need it for VM Ports

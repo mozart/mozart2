@@ -72,6 +72,8 @@ private:
 public:
   void getStream(UnstableNode &stream);
 
+  void closeStream();
+
   void receiveOnVMPort(std::vector<unsigned char>* buffer);
 
 // Management of nodes used by asynchronous operations for feedback

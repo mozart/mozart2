@@ -44,11 +44,11 @@ define
 
    KeywordsAndSymbols = {Append Lexer.ozKeywords Lexer.ozSymbols}
    RulesL = {Map KeywordsAndSymbols
-             fun {$ KwSym}
-                KwSym #
-                ([pB elem(KwSym) pE] #
-                 fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
-             end}
+               fun {$ KwSym}
+                  KwSym #
+                  ([pB elem(KwSym) pE] #
+                  fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
+               end}
 
    Rules =
    g(
@@ -65,23 +65,23 @@ define
       %% tokens %%
       string:
          [pB elem(fun {$ Tok} case Tok of tkString(V) then some(V) else false end end) pE] #
-      fun {$ [P1 L P2]}
-         {FoldR L fun {$ C S}
-                     fRecord(fAtom('|' P1) [fInt(C P1) S])
-                  end fAtom(nil P2)}
-      end
+         fun {$ [P1 L P2]}
+            {FoldR L fun {$ C S}
+                        fRecord(fAtom('|' P1) [fInt(C P1) S])
+                     end fAtom(nil P2)}
+         end
 
       character:
          [pB elem(fun {$ Tok} case Tok of tkCharacter(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fInt(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fInt(C {MkPos P1 P2})
+         end
 
       atom:
          [pB elem(fun {$ Tok} case Tok of tkAtom(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fAtom(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fAtom(C {MkPos P1 P2})
+         end
 
       variable:
          [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE] #
@@ -97,21 +97,21 @@ define
 
       variableL:
          [pB elem(fun {$ Tok} case Tok of tkVariableLabel(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fVar(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fVar(C {MkPos P1 P2})
+         end
 
       integer:
          [pB elem(fun {$ Tok} case Tok of tkInteger(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fInt(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fInt(C {MkPos P1 P2})
+         end
 
       float:
          [pB elem(fun {$ Tok} case Tok of tkFloat(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fFloat(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fFloat(C {MkPos P1 P2})
+         end
 
       %% top-level %%
       input: [star(compilationUnit) eof]

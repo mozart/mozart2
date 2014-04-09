@@ -347,7 +347,7 @@ define
 
       [] tkEof then
          Result = reader(tkEof CtxIn.pos#CtxOut.pos true Result)
-
+                  
       [] tkParseError(_) then
          Result = reader(Token CtxIn.pos#CtxOut.pos true Result)
 

@@ -244,7 +244,7 @@ define
                   [pB 'choice' sep(inPhrase '[]')'end' pE]#fun{$ [P1 _ Ss _ P2]}fChoice(Ss {MkPos P1 P2})end
                   [pB 'raise' inPhrase 'end' pE]#fun{$ [P1 _ S _ P2]}fRaise(S {MkPos P1 P2})end
                   [pB 'class' exprOrImplDollar star(classDescr) star(method) 'end' pE]#fun{$ [P1 _ S Ds Ms _ P2]}
-                                                                                                           fClass(S Ds Ms {MkPos P1 P2})
+                                                                                                            fClass(S Ds Ms {MkPos P1 P2})
                                                                                                          end
                   [pB 'functor' exprOrImplDollar star(funcDescr) 'end' pE]#fun{$ [P1 _ S Ds _ P2]}
                                                                               fFunctor(S Ds {MkPos P1 P2})
@@ -346,7 +346,7 @@ define
                      [variableL '(' plus(alt([alt(integer atom) ':' variable]#fun{$ [F _ V]}V#F end
                                              integer atom
                                             )) ')' optAt]#fun{$ [V _ Fs _ A]}fImportItem(V Fs A)end
-                    )
+                     )
       optAt:opt(seq2('at' atom)#fun{$ A}fImportAt(A)end fNoImportAt)
       exportDecl:alt([alt(atom integer) ':' variable]#fun{$ [F _ V]}fColon(F V)end
                      variable)#fun{$ I}fExportItem(I)end

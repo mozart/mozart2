@@ -44,11 +44,11 @@ define
 
    KeywordsAndSymbols = {Append Lexer.ozKeywords Lexer.ozSymbols}
    RulesL = {Map KeywordsAndSymbols
-               fun {$ KwSym}
-                  KwSym #
-                  ([pB elem(KwSym) pE] #
-                  fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
-               end}
+                 fun {$ KwSym}
+                    KwSym #
+                    ([pB elem(KwSym) pE] #
+                    fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
+                 end}
 
    Rules =
    g(
@@ -117,18 +117,18 @@ define
       input: [star(compilationUnit) eof]
       compilationUnit: alt(cuDirective cuDeclare phrase)
       cuDirective: alt(
-                      [pB elem(fun {$ Tok} case Tok of tkDirSwitch(Ss) then some(Ss) else false end end) pE] #
-                      fun {$ [P1 Ss P2]}
-                         Pos = {MkPos P1 P2}
-                      in
-                         dirSwitch({Map Ss fun {$ Sw} L = {Label Sw} in L(Sw.1 Pos) end})
-                      end
+         [pB elem(fun {$ Tok} case Tok of tkDirSwitch(Ss) then some(Ss) else false end end) pE] #
+         fun {$ [P1 Ss P2]}
+            Pos = {MkPos P1 P2}
+         in
+            dirSwitch({Map Ss fun {$ Sw} L = {Label Sw} in L(Sw.1 Pos) end})
+         end
 
-                      elem(tkPreprocessorDirective('showSwitches')) # dirShowSwitches
-                      elem(tkPreprocessorDirective('pushSwitches')) # dirPushSwitches
-                      elem(tkPreprocessorDirective('popSwitches')) # dirPopSwitches
-                      elem(tkPreprocessorDirective('localSwitches')) # dirLocalSwitches
-                      )
+         elem(tkPreprocessorDirective('showSwitches')) # dirShowSwitches
+         elem(tkPreprocessorDirective('pushSwitches')) # dirPushSwitches
+         elem(tkPreprocessorDirective('popSwitches')) # dirPopSwitches
+         elem(tkPreprocessorDirective('localSwitches')) # dirLocalSwitches
+      )
       eof: elem(fun {$ Tok} case Tok of tkEof(Defs) then some(Defs) else false end end)
 
       cuDeclare: alt(

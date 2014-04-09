@@ -47,7 +47,7 @@ define
                  fun {$ KwSym}
                     KwSym #
                     ([pB elem(KwSym) pE] #
-                    fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
+                     fun {$ [P1 _ P2]} fKeyword(KwSym {MkPos P1 P2}) end)
                  end}
 
    Rules =
@@ -132,12 +132,12 @@ define
       eof: elem(fun {$ Tok} case Tok of tkEof(Defs) then some(Defs) else false end end)
 
       cuDeclare: alt(
-                    [pB 'declare' phrase 'in' phrase pE] #
-                    fun {$ [P1 _ S1 _ S2 P2]} fDeclare(S1 S2 {MkPos P1 P2}) end
+         [pB 'declare' phrase 'in' phrase pE] #
+         fun {$ [P1 _ S1 _ S2 P2]} fDeclare(S1 S2 {MkPos P1 P2}) end
 
-                    [pB 'declare' phrase pE] #
-                    fun{$ [P1 _ S1 P2]} fDeclare(S1 fSkip(P2) {MkPos P1 P2}) end
-                    )
+         [pB 'declare' phrase pE] #
+         fun{$ [P1 _ S1 P2]} fDeclare(S1 fSkip(P2) {MkPos P1 P2}) end
+      )
 
       %% expressions & statements %%
       phrase:alt(
@@ -244,8 +244,8 @@ define
                   [pB 'choice' sep(inPhrase '[]')'end' pE]#fun{$ [P1 _ Ss _ P2]}fChoice(Ss {MkPos P1 P2})end
                   [pB 'raise' inPhrase 'end' pE]#fun{$ [P1 _ S _ P2]}fRaise(S {MkPos P1 P2})end
                   [pB 'class' exprOrImplDollar star(classDescr) star(method) 'end' pE]#fun{$ [P1 _ S Ds Ms _ P2]}
-                                                                                          fClass(S Ds Ms {MkPos P1 P2})
-                                                                                       end
+                                                                                                           fClass(S Ds Ms {MkPos P1 P2})
+                                                                                                         end
                   [pB 'functor' exprOrImplDollar star(funcDescr) 'end' pE]#fun{$ [P1 _ S Ds _ P2]}
                                                                               fFunctor(S Ds {MkPos P1 P2})
                                                                            end

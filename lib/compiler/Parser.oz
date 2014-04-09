@@ -335,7 +335,7 @@ define
                    [pB 'import' plus(importDecl) pE]#fun{$ [P1 _ Ds P2]}fImport(Ds {MkPos P1 P2})end
                    [pB 'define' phrase alt(seq2('in' phrase) pE#fun{$ P}fSkip(P)end) pE]#fun{$ [P1 _ D S P2]}
                                                                                             fDefine(D S {MkPos P1 P2})
-                                                                                         end
+                                                                                          end
                    [pB 'require' plus(importDecl) pE]#fun{$ [P1 _ Ds P2]}fRequire(Ds {MkPos P1 P2})end
                    [pB 'prepare' phrase alt(seq2('in' phrase) pE#fun{$ P}fSkip(P)end) pE]#fun{$ [P1 _ D S P2]}
                                                                                              fPrepare(D S {MkPos P1 P2})

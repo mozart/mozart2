@@ -85,15 +85,15 @@ define
 
       variable:
          [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fVar(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fVar(C {MkPos P1 P2})
+         end
 
       atomL:
          [pB elem(fun {$ Tok} case Tok of tkAtomLabel(V) then some(V) else false end end) pE] #
-      fun {$ [P1 C P2]}
-         fAtom(C {MkPos P1 P2})
-      end
+         fun {$ [P1 C P2]}
+            fAtom(C {MkPos P1 P2})
+         end
 
       variableL:
          [pB elem(fun {$ Tok} case Tok of tkVariableLabel(V) then some(V) else false end end) pE] #

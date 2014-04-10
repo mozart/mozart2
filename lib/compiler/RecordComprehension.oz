@@ -20,7 +20,9 @@
 %%%
 
 %% Explanations related to this file are in
-%% https://github.com/francoisfonteyn/thesis/blob/master/Thesis.pdf
+%% https://github.com/francoisfonteyn/thesis_public/blob/master/Thesis.pdf
+%% Complete syntax
+%% https://github.com/francoisfonteyn/thesis_public/blob/master/Syntax.pdf
 
 functor
 import

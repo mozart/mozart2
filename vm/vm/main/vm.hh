@@ -43,9 +43,9 @@ void BuiltinModule::initModule(VM vm, T&& module) {
   _module = vm->protect(std::forward<T>(module));
 }
 
-////////////////////
-// VirtualMachine //
-////////////////////
+///////////////////////////////
+// VirtualMachineEnvironment //
+///////////////////////////////
 
 std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, nativeint value) {
   raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
@@ -62,6 +62,10 @@ std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, 
 void VirtualMachineEnvironment::sendToVMPort(VM from, VM to, RichNode value) {
   raiseError(from, "{Send VMPort} not implemented in this environment");
 }
+
+////////////////////
+// VirtualMachine //
+////////////////////
 
 void registerCoreModules(VM vm);
 

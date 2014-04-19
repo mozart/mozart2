@@ -70,6 +70,8 @@ private:
 
 // VM Port
 public:
+  bool streamAsked();
+
   void getStream(UnstableNode &stream);
 
   void closeStream();
@@ -102,6 +104,13 @@ public:
   inline
   void postVMEvent(std::function<void()> callback);
 
+// GC
+public:
+  void gCollect(GC gc) {
+    gc->copyStableRef(_headOfStream, _headOfStream);
+    gc->copyStableRef(_stream, _stream);
+  }
+
 public:
   VM vm;
   BoostEnvironment& env;
@@ -116,8 +125,8 @@ private:
 
 // VM stream (for {Send VM})
 private:
-  UnstableNode _headOfStream;
-  UnstableNode _stream;
+  StableNode* _headOfStream;
+  StableNode* _stream;
 
 // Number of asynchronous IO nodes - used for termination detection
 private:
@@ -223,6 +232,12 @@ public:
 // VM Port
 public:
   void sendToVMPort(VM from, VM to, RichNode value);
+
+// GC
+public:
+  void gCollect(GC gc) {
+    BoostVM::forVM(gc->vm).gCollect(gc);
+  }
 
 private:
   std::forward_list<BoostVM> vms;

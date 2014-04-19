@@ -52,8 +52,8 @@ BoostVM::BoostVM(BoostEnvironment& environment, size_t maxMemory,
   boost::random::random_device generator;
   random_generator.seed(generator);
 
-  _stream = ReadOnlyVariable::build(vm);
-  _headOfStream.copy(vm, _stream);
+  UnstableNode future = ReadOnlyVariable::build(vm);
+  _stream = _headOfStream = RichNode(future).getStableRef(vm);
 
   // Finally start the VM thread, which will initialize and run the VM
   _thread = boost::thread(&BoostVM::start, this);
@@ -163,20 +163,26 @@ std::uint64_t BoostVM::bytes2uint64(const std::uint8_t* bytes) {
     ((std::uint64_t) bytes[6] << 8) + ((std::uint64_t) bytes[7] << 0);
 }
 
+bool BoostVM::streamAsked() {
+  return _headOfStream == nullptr;
+}
+
 void BoostVM::getStream(UnstableNode &stream) {
-  if (RichNode(_headOfStream).is<Unit>()) {
+  if (streamAsked()) {
     raiseError(vm, "VM.stream can only be called once, otherwise it would leak");
   } else {
-    stream.copy(vm, _headOfStream);
-    _asyncIONodeCount++; // TODO: is this the right way?
-    _headOfStream = build(vm, unit);
+    stream.copy(vm, *_headOfStream);
+    _asyncIONodeCount++; // Wait for the VM stream until closeStream()
+    _headOfStream = nullptr;
   }
 }
 
 void BoostVM::closeStream() {
-  UnstableNode nil = buildNil(vm);
-  BindableReadOnly(_stream).bindReadOnly(vm, nil);
-  _asyncIONodeCount--; // TODO: is this the right way?
+  if (streamAsked()) {
+    _asyncIONodeCount--; // We are no more interested in the stream
+    // TODO: prevent other VMs from sending to this stream.
+    // _stream = nullptr;
+  }
 }
 
 void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
@@ -185,7 +191,10 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   UnstableNode unpickled = bootUnpickle(vm, input);
   delete buffer;
 
-  sendToReadOnlyStream(vm, _stream, RichNode(unpickled));
+  // TODO: optimize
+  UnstableNode stream(vm, *_stream);
+  sendToReadOnlyStream(vm, stream, unpickled);
+  _stream = RichNode(stream).getStableRef(vm);
 }
 
 //////////////////////

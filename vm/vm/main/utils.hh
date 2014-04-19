@@ -724,9 +724,19 @@ template <typename T>
 void sendToReadOnlyStream(VM vm, UnstableNode& stream, T&& value) {
   auto newStream = ReadOnlyVariable::build(vm);
   auto cons = buildCons(vm, std::forward<T>(value), newStream);
+
   UnstableNode oldStream = std::move(stream);
   stream = std::move(newStream);
   BindableReadOnly(oldStream).bindReadOnly(vm, cons);
+}
+
+template <typename T>
+void sendToReadOnlyStream(VM vm, StableNode*& stream, T&& value) {
+  auto newStream = ReadOnlyVariable::build(vm);
+  auto cons = buildCons(vm, std::forward<T>(value), newStream);
+
+  BindableReadOnly(*stream).bindReadOnly(vm, cons);
+  stream = RichNode(cons).as<Cons>().getTail();
 }
 
 ///////////////////////////////////////

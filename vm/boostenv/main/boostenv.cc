@@ -191,10 +191,7 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   UnstableNode unpickled = bootUnpickle(vm, input);
   delete buffer;
 
-  // TODO: optimize
-  UnstableNode stream(vm, *_stream);
-  sendToReadOnlyStream(vm, stream, unpickled);
-  _stream = RichNode(stream).getStableRef(vm);
+  sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
 //////////////////////

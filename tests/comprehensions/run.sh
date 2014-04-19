@@ -44,8 +44,7 @@ BG_WHITE="\\033[107m"
 
 # default compile tester
 cOpt=0
-#path=/Applications/Mozart2.app/Contents/Resources/bin
-path=/Users/fou/thesis/Mozart2.app/Contents/Resources/bin
+path=/Applications/Mozart2.app/Contents/Resources/bin
 dir=$(echo "$0"|awk -F "/" '{F=""; for(A=1; A<NF; ++A) {F=F$A"/";} print(F);}')
 
 # test one file

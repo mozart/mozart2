@@ -45,6 +45,9 @@ define
                %% [X || L1 <- LL, X <- L1]
                [X for L1 in LL for X in L1]
                #[1 2 3 4]
+
+               %% [Y || {X, Y} <- LL, X == 1]
+               [Y for [X Y] in LL if X == 1]#[2]
               ]
    in
       {Tester.test Tests}

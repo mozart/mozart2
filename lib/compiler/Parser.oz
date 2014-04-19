@@ -259,15 +259,15 @@ define
                                                                                LL=if D==nil then fRecord else fOpenRecord end in
                                                                                LL(L Ts)
                                                                             end
-                  [pB '[' plus(forExpression) forComprehension opt(seq2('body' phrase) unit) ']' pE]
+                  [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE]
                   #fun{$ [P1 _ S1 FC BD _ P2]}fListComprehension(S1 FC BD {MkPos P1 P2}) end
-                  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) ']' pE]
+                  [pB '(' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'in' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) ')' pE]
                   #fun{$ [P1 _ S _ F L1 _ L2 IF OF _ P2]}
                       if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
                       else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
                       end
                    end
-                  [pB '[' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'through' lvl0 'of' lvl0 'if' lvl0 ']' pE]
+                  [pB '(' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'in' lvl0 'of' lvl0 'if' lvl0 ')' pE]
                   #fun{$ [P1 _ S _ F L1 _ L2 _ OF _ IF _ P2]}
                       if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
                       else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
@@ -306,7 +306,6 @@ define
                     [lvl0 '..' lvl0 opt(seq2(';' lvl0) unit)]#fun{$ [S1 _ S2 S3]}forGeneratorInt(S1 S2 S3)end
                     ['(' forGenC ')']#fun{$ [_ S _]}S end
                     forGenC
-                    [lvl0 ':' lvl0]#fun{$ [S1 _ S2]}forGeneratorList(fBuffer(S1 S2))end
                     lvl0#fun{$ S}forGeneratorList(S)end
                     )
       forDecl:alt(

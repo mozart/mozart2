@@ -72,6 +72,8 @@ private:
 public:
   bool streamAsked();
 
+  bool portClosed();
+
   void getStream(UnstableNode &stream);
 
   void closeStream();

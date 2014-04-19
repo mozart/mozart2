@@ -167,6 +167,10 @@ bool BoostVM::streamAsked() {
   return _headOfStream == nullptr;
 }
 
+bool BoostVM::portClosed() {
+  return _stream == nullptr;
+}
+
 void BoostVM::getStream(UnstableNode &stream) {
   if (streamAsked()) {
     raiseError(vm, "VM.stream can only be called once, otherwise it would leak");
@@ -178,14 +182,20 @@ void BoostVM::getStream(UnstableNode &stream) {
 }
 
 void BoostVM::closeStream() {
-  if (streamAsked()) {
+  if (streamAsked() && !portClosed()) {
     _asyncIONodeCount--; // We are no more interested in the stream
-    // TODO: prevent other VMs from sending to this stream.
-    // _stream = nullptr;
+    UnstableNode nil = buildNil(vm);
+    BindableReadOnly(*_stream).bindReadOnly(vm, nil);
+    _stream = nullptr;
   }
 }
 
 void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
+  if (portClosed()) {
+    delete buffer;
+    return;
+  }
+
   std::string str(buffer->begin(), buffer->end());
   std::istringstream input(str);
   UnstableNode unpickled = bootUnpickle(vm, input);
@@ -299,6 +309,9 @@ std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, const std
 }
 
 void BoostEnvironment::sendToVMPort(VM vm, VM to, RichNode value) {
+  if (BoostVM::forVM(to).portClosed())
+    return;
+
   UnstableNode picklePack;
   if (!vm->getPropertyRegistry().get(vm, "pickle.pack", picklePack))
     raiseError(vm, "Could not find property pickle.pack");

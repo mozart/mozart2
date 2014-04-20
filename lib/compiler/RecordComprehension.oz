@@ -45,7 +45,7 @@ define
    %%================================================
    %%================================================
    %% the actual exported function called by Unnester
-   fun {Compile fRecordComprehension(EXPR_LIST RANGER RECORD FILTER CONDITION COORDS)}
+   fun {Compile fRecordComprehension(EXPR_LIST RANGER RECORD FILTER CONDITION BODY COORDS)}
       %% used to keep track of all the (level) procedures to declare (see DeclareAll)
       %% used to keep trakc of all the bounds of range to declare e.g. Low..High (see DeclareAll)
       DeclarationsDictionary = {Dictionary.new}
@@ -393,8 +393,14 @@ define
                                                           fApply(Father [Ranger
                                                                          {MakeCallBackRecord Result Feat Fields}]
                                                                  unit)
-                                                          %% false: assign to expression
-                                                          {AssignToExpression Result Feat Fields Expressions}
+                                                          %% false: assign to expression and body
+                                                          local
+                                                             Asgns = {AssignToExpression Result Feat Fields Expressions}
+                                                          in
+                                                             if BODY == unit then Asgns
+                                                             else fAnd(BODY Asgns)
+                                                             end
+                                                          end
                                                           %% position
                                                           unit)
                                                 %% position

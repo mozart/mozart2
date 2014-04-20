@@ -1636,7 +1636,7 @@ define
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          [] fListComprehension(_ _ _ _) then
             Unnester, UnnestExpression({ListComprehension.compile FE} ToGV $)
-         [] fRecordComprehension(_ _ _ _ _ _) then
+         [] fRecordComprehension(_ _ _ _ _ _ _) then
             Unnester, UnnestExpression({RecordComprehension.compile FE} ToGV $)
          [] fFOR(_ _ _) then
             Unnester, UnnestExpression({ForLoop.compile FE} ToGV $)

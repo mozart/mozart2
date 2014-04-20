@@ -11,6 +11,7 @@ define
    local
       Rec = rec(c:c b:b 1:a d:d)
       Tree = tree(tree(leaf(1) leaf(2)) leaf(3))
+      Body
       fun {Treat X} case X of rrr(N) then N*2 else X*2 end end
       fun {Bool X} {Label X} \= rrr end
       Tests = [ %% each element is [recordComprehension]#[expectedRecord]
@@ -79,10 +80,14 @@ define
 
                 (A for F:A in Tree if F == 1)
                 #tree(tree(leaf(1)))
+
+                (A for A in Tree do Body = unit)
+                #Tree
                 %% ...to here
               ]
    in
       {Tester.test Tests}
+      if {Not {IsDet Body}} then {Tester.browse 'Body is not working...'} end
       {Application.exit 0}
    end
 end

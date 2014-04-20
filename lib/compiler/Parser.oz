@@ -261,16 +261,16 @@ define
                                                                             end
                   [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE]
                   #fun{$ [P1 _ S1 FC BD _ P2]}fListComprehension(S1 FC BD {MkPos P1 P2}) end
-                  [pB '(' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'in' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) ')' pE]
-                  #fun{$ [P1 _ S _ F L1 _ L2 IF OF _ P2]}
-                      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
-                      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
+                  [pB '(' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'in' lvl0 opt(seq2('if' lvl0) unit) opt(seq2('of' lvl0) unit) opt(seq2('do' phrase) unit) ')' pE]
+                  #fun{$ [P1 _ S _ F L1 _ L2 IF OF DO _ P2]}
+                      if F == unit then fRecordComprehension(S L1 L2 IF OF DO {MkPos P1 P2})
+                      else fRecordComprehension(S fColon(F L1) L2 IF OF DO {MkPos P1 P2})
                       end
                    end
-                  [pB '(' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'in' lvl0 'of' lvl0 'if' lvl0 ')' pE]
-                  #fun{$ [P1 _ S _ F L1 _ L2 _ OF _ IF _ P2]}
-                      if F == unit then fRecordComprehension(S L1 L2 IF OF {MkPos P1 P2})
-                      else fRecordComprehension(S fColon(F L1) L2 IF OF {MkPos P1 P2})
+                  [pB '(' plus(subtree) 'for' opt(seq1(lvl0 ':') unit) lvl0 'in' lvl0 'of' lvl0 'if' lvl0 opt(seq2('do' phrase) unit) ')' pE]
+                  #fun{$ [P1 _ S _ F L1 _ L2 _ OF _ IF DO _ P2]}
+                      if F == unit then fRecordComprehension(S L1 L2 IF OF DO {MkPos P1 P2})
+                      else fRecordComprehension(S fColon(F L1) L2 IF OF DO {MkPos P1 P2})
                       end
                    end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end

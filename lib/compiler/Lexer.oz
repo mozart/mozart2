@@ -40,14 +40,14 @@ define
    EofCh = &\032
 
    OzKeywords = [
-      'andthen' 'at' 'attr' 'body' 'case' 'catch' 'choice'
+      'andthen' 'at' 'attr' 'case' 'catch' 'choice'
       'class' 'cond' 'declare' 'define' 'dis' 'do'
       'div' 'else' 'elsecase' 'elseif' 'elseof' 'end'
       'export' 'fail' 'feat' 'finally' 'from' 'for'
       'fun' 'functor' 'if' 'import' 'in' 'local'
       'lock' 'meth' 'mod' 'not' 'of' 'or' 'orelse'
       'prepare' 'proc' 'prop' 'raise' 'require'
-      'self' 'skip' 'then' 'thread' 'through' 'try'
+      'self' 'skip' 'then' 'thread' 'try'
    ]
 
    OzKeywordTokens0 = {Record.make kw OzKeywords}

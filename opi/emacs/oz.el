@@ -254,7 +254,7 @@ Note that this variable is only checked once when oz.el is loaded."
   (concat
    (oz-make-keywords-for-match
     '("local" "proc" "fun" "case" "if" "cond" "or" "dis" "choice" "not"
-      "thread" "try" "raise" "lock" "for" "body"))
+      "thread" "try" "raise" "lock" "for"))
    "\\|<<"))
 
 (defconst oz-gump-between-pattern
@@ -262,7 +262,7 @@ Note that this variable is only checked once when oz.el is loaded."
 
 (defconst oz-middle-pattern
   (concat (oz-make-keywords-for-match
-           '("in" "through" "then" "else" "of" "elseof" "elsecase" "elseif"
+           '("in" "then" "else" "of" "elseof" "elsecase" "elseif"
              "catch" "finally" "with" "require" "prepare" "import" "export"
              "define" "do"))
           "\\|" "\\[\\]"))
@@ -1342,7 +1342,7 @@ and initial percent signs."
     (require 'font-lock))
 
 (defconst oz-keywords
-  '("declare" "local" "in" "end" "through"
+  '("declare" "local" "in" "end"
     "proc" "fun"
     "functor" "require" "prepare" "import" "export" "define" "at"
     "case" "then" "else" "of" "elseof" "elsecase"
@@ -1352,7 +1352,7 @@ and initial percent signs."
     "div" "mod" "andthen" "orelse"
     "cond" "or" "dis" "choice" "not"
     "thread" "try" "catch" "finally" "raise" "lock"
-    "skip" "fail" "for" "do" "body")
+    "skip" "fail" "for" "do")
   "List of all Oz keywords with identifier syntax.")
 
 (defconst oz-char-matcher

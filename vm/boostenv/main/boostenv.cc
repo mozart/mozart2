@@ -33,10 +33,10 @@ namespace mozart { namespace boostenv {
 // BoostVM //
 /////////////
 
-BoostVM::BoostVM(BoostEnvironment& environment, size_t maxMemory,
-                 const std::string& appURL) :
+BoostVM::BoostVM(BoostEnvironment& environment, nativeint identifier,
+                 size_t maxMemory, const std::string& appURL) :
   VirtualMachine(environment, maxMemory), vm(this),
-  env(environment), appURL(appURL),
+  env(environment), identifier(identifier), appURL(appURL),
   uuidGenerator(random_generator),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
@@ -274,20 +274,20 @@ namespace {
 }
 
 BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
-  vmStarter(vmStarter) {
+  _nextVMIdentifier(1), vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
 BoostVM& BoostEnvironment::addVM(size_t maxMemory, const std::string& appURL) {
-  vms.emplace_front(*this, maxMemory, appURL);
+  vms.emplace_front(*this, _nextVMIdentifier++, maxMemory, appURL);
   return vms.front();
 }
 
 UnstableNode BoostEnvironment::listVMs(VM vm) {
   UnstableNode list = buildList(vm);
   for (BoostVM& boostVM : vms)
-    list = buildCons(vm, VMPort::build(vm, boostVM.vm), list);
+    list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
   return list;
 }
 

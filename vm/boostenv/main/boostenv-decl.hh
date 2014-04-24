@@ -47,8 +47,8 @@ class BoostEnvironment;
 
 class BoostVM : VirtualMachine {
 public:
-  BoostVM(BoostEnvironment& environment, size_t maxMemory,
-          const std::string& appURL);
+  BoostVM(BoostEnvironment& environment, nativeint identifier,
+          size_t maxMemory, const std::string& appURL);
 
   static BoostVM& forVM(VM vm) {
     return *static_cast<BoostVM*>(vm);
@@ -116,6 +116,7 @@ public:
 public:
   VM vm;
   BoostEnvironment& env;
+  nativeint identifier;
   std::string appURL;
 
 // Random number and UUID generation
@@ -243,6 +244,7 @@ public:
 
 private:
   std::forward_list<BoostVM> vms;
+  nativeint _nextVMIdentifier;
 
 // Bootstrap
 private:

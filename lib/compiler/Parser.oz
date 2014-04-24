@@ -283,10 +283,7 @@ define
                   feature
                   escVar
                   )
-      forExpression:alt(
-                       [feature ':' atom ':' lvl0]#fun{$ [F _ A _ L]}forFeature(A fColon(F L))end
-                       [subtree opt(seq2('if' lvl0) unit)]#fun{$ [S1 S2]}forExpression(S1 S2)end
-                       )
+      forExpression:[subtree opt(seq2('if' lvl0) unit)]#fun{$ [S1 S2]}forExpression(S1 S2)end
       forComprehension:plus([pB 'for' plus(forListDecl) opt(seq2('if' lvl0) unit) pE])#fun{$ Ss}
                                                                                           {FoldR Ss fun{$ Xn Y}
                                                                                                        case Xn

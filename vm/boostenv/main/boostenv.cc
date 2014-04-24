@@ -284,6 +284,14 @@ BoostVM& BoostEnvironment::addVM(size_t maxMemory, const std::string& appURL) {
   return vms.front();
 }
 
+BoostVM& BoostEnvironment::getVM(VM vm, nativeint identifier) {
+  for (BoostVM& vm : vms) {
+    if (vm.identifier == identifier)
+      return vm;
+  }
+  raiseError(vm, "Invalid VM identifier: ", identifier);
+}
+
 UnstableNode BoostEnvironment::listVMs(VM vm) {
   UnstableNode list = buildList(vm);
   for (BoostVM& boostVM : vms)

@@ -126,7 +126,7 @@ public:
 private:
   boost::uuids::random_generator uuidGenerator;
 
-// VM stream (for {Send VM})
+// VM stream
 private:
   StableNode* _headOfStream;
   StableNode* _stream;
@@ -174,6 +174,8 @@ public:
   BoostEnvironment(const VMStarter& vmStarter);
 
   BoostVM& addVM(size_t maxMemory, const std::string& appURL);
+
+  BoostVM& getVM(VM vm, nativeint identifier);
 
   UnstableNode listVMs(VM vm);
 

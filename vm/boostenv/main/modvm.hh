@@ -78,6 +78,17 @@ public:
     }
   };
 
+  class GetPort: public Builtin<GetPort> {
+  public:
+    GetPort(): Builtin("getPort") {}
+
+    static void call(VM vm, In identifier, Out result) {
+      nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
+      BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
+      result = VMPort::build(vm, targetVM.vm);
+    }
+  };
+
   class GetStream: public Builtin<GetStream> {
   public:
     GetStream(): Builtin("getStream") {}

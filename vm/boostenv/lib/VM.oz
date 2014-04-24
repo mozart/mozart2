@@ -34,6 +34,7 @@ export
    Ncores
    Current
    New
+   GetPort
    GetStream
    CloseStream
    List
@@ -43,6 +44,7 @@ define
    Ncores = Boot_VM.ncores
    Current = Boot_VM.current
    New = Boot_VM.new
+   GetPort = Boot_VM.getPort
    GetStream = Boot_VM.getStream
    CloseStream = Boot_VM.closeStream
    List = Boot_VM.list

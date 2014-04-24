@@ -11,6 +11,7 @@ define
    local
       Rec = rec(c:c b:b 1:a d:d)
       Tree = tree(tree(leaf(1) leaf(2)) leaf(3))
+      OBTree = obtree(key:1 left:leaf right:obtree(key:2 left:leaf right:leaf))
       Body
       fun {Treat X} case X of rrr(N) then N*2 else X*2 end end
       fun {Bool X} {Label X} \= rrr end
@@ -82,7 +83,10 @@ define
                 #tree(tree(leaf(1)))
 
                 (A for A in Tree do Body = unit)
-                #Tree
+                #(Tree)
+
+                (if F==key then N+1 else N end for F:N in OBTree of F == left orelse F == right)
+                #obtree(key:2 left:leaf right:obtree(key:3 left:leaf right:leaf))
                 %% ...to here
               ]
    in

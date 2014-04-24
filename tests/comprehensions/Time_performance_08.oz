@@ -32,7 +32,7 @@ define
                   Feat = Ari.1
                   Field = Rec.Feat
                in
-                  if {IsRecord Field} then
+                  if {IsRecord Field} andthen {Arity Field} \= nil then
                      {Level {Arity Field}#Field '#'(2:Result.2.Feat 1:Result.1.Feat 3:Result.3.Feat)}
                   else
                      Result.2.Feat = Field + 2
@@ -55,7 +55,7 @@ define
                NextFull
                NextBool
             in
-               AriBool = ({Not {IsRecord Field}} orelse {Label Field} \= r1)|NextBool
+               AriBool = (Field>0)|NextBool
                AriFull = if AriBool.1 then Feat|NextFull else NextFull end
                {For1 Ari.2 Rec NextFull NextBool}
             end

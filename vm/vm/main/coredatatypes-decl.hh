@@ -52,7 +52,6 @@
 #include "reifiedgnode-decl.hh"
 #include "reifiedspace-decl.hh"
 #include "reifiedthread-decl.hh"
-#include "reifiedvm-decl.hh"
 #include "serializer-decl.hh"
 #include "smallint-decl.hh"
 #include "string-decl.hh"

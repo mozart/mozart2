@@ -62,7 +62,7 @@ public:
     Current(): Builtin("current") {}
 
     static void call(VM vm, Out result) {
-      result = ReifiedVM::build(vm, vm);
+      result = VMPort::build(vm, vm);
     }
   };
 
@@ -74,7 +74,7 @@ public:
       std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
       size_t maxMemory = 64 * MegaBytes;
       BoostVM& newVM = BoostEnvironment::forVM(vm).addVM(maxMemory, appURLstr);
-      result = ReifiedVM::build(vm, newVM.vm);
+      result = VMPort::build(vm, newVM.vm);
     }
   };
 

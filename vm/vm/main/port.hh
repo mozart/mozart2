@@ -64,6 +64,24 @@ UnstableNode Port::sendReceive(VM vm, RichNode value) {
   return result;
 }
 
+////////////
+// VMPort //
+////////////
+
+#include "VMPort-implem.hh"
+
+bool VMPort::equals(VM vm, RichNode right) {
+  return value() == right.as<VMPort>().value();
+}
+
+void VMPort::send(VM vm, RichNode value) {
+  vm->getEnvironment().sendToVMPort(vm, _vm, value);
+}
+
+UnstableNode VMPort::sendReceive(VM vm, RichNode value) {
+  raiseError(vm, "VMPort.sendReceive is not implemented. Send back an ack instead.");
+}
+
 }
 
 #endif // MOZART_GENERATOR

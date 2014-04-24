@@ -79,7 +79,7 @@ template<>
 struct Interface<ValueEquatable>:
   ImplementedBy<SmallInt, BigInt, Atom, Boolean, Float, BuiltinProcedure,
                 ReifiedThread, Unit, String, ByteString, UniqueName,
-                PatMatCapture, ReifiedVM>,
+                PatMatCapture, VMPort>,
   NoAutoReflectiveCalls {
 
   /**
@@ -496,7 +496,7 @@ struct Interface<RecordLike>:
 
 class PortLike;
 template<>
-struct Interface<PortLike>: ImplementedBy<Port, ReifiedVM> {
+struct Interface<PortLike>: ImplementedBy<Port, VMPort> {
   bool isPort(RichNode self, VM vm) {
     return false;
   }

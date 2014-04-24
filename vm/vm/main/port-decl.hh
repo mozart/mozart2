@@ -77,6 +77,68 @@ private:
 #include "Port-implem-decl-after.hh"
 #endif
 
+////////////
+// VMPort //
+////////////
+
+#ifndef MOZART_GENERATOR
+#include "VMPort-implem-decl.hh"
+#endif
+
+class VMPort: public DataType<VMPort>,
+  StoredAs<VM>, WithValueBehavior {
+public:
+  static atom_t getTypeAtom(VM vm) {
+    return vm->getAtom("port");
+  }
+
+  explicit VMPort(VM target): _vm(target) {}
+
+  static void create(VM& self, VM vm, VM target) {
+    self = target;
+  }
+
+  static void create(VM& self, VM vm, GR gr, VMPort from) {
+    self = from._vm;
+  }
+
+public:
+  VM value() {
+    return _vm;
+  }
+
+public:
+  inline
+  bool equals(VM vm, RichNode right);
+
+public:
+  // PortLike interface
+
+  bool isPort(VM vm) {
+    return true;
+  }
+
+  inline
+  void send(VM vm, RichNode value);
+
+  inline
+  UnstableNode sendReceive(VM vm, RichNode value);
+
+public:
+  // Miscellaneous
+
+  void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
+    out << "<VMPort>";
+  }
+
+private:
+  VM _vm;
+};
+
+#ifndef MOZART_GENERATOR
+#include "VMPort-implem-decl-after.hh"
+#endif
+
 }
 
 #endif // MOZART_PORT_DECL_H

@@ -287,7 +287,7 @@ BoostVM& BoostEnvironment::addVM(size_t maxMemory, const std::string& appURL) {
 UnstableNode BoostEnvironment::listVMs(VM vm) {
   UnstableNode list = buildList(vm);
   for (BoostVM& boostVM : vms)
-    list = buildCons(vm, ReifiedVM::build(vm, boostVM.vm), list);
+    list = buildCons(vm, VMPort::build(vm, boostVM.vm), list);
   return list;
 }
 

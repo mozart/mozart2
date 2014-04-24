@@ -12,82 +12,33 @@ define
    local
       Browse = Tester.browse
       Pid = {OS.getPID}
-      %% Equivalent
-      proc {FindNext stacks(FeatStack ValueStack) ?Result}
-         local
-            Feat = FeatStack.1
-            Value = ValueStack.1
-            PoppedFeatStack = FeatStack.2
-            PoppedValueStack = ValueStack.2
-         in
-            if {IsRecord Value} andthen {Arity Value} \= nil then
-               {FindNext stacks({Append {Arity Value} PoppedFeatStack} {Append {Record.toList Value} PoppedValueStack}) Result}
-            else
-               Result = Feat#Value#stacks(PoppedFeatStack PoppedValueStack)
-            end
-         end
-      end
-      %% pre level
       proc {PreLevel ?Result}
-         local
-            Next1 Next2 Next3
-         in
-            Result = '#'(2:Next1 1:Next2 3:Next3)
-            local
-               Record1At1 = 10#20
-            in
-               {Level1 stacks({Arity Record1At1} {Record.toList Record1At1}) '#'(2:Next1 1:Next2 3:Next3)}
-            end
-         end
+         {Level1 thread [A for lazy A in 1..Lim] end '#'(1:Result)}
       end
       %% level 1
-      proc {Level1 Stacks1At1 ?Result}
-         if Stacks1At1.1 \= nil then
+      proc {Level1 Range ?Result}
+         if Range \= nil then
             local
-               FA#A#NewStacks1At1 = {FindNext Stacks1At1}
+               A = Range.1
             in
                local
-                  Record1At2 = Rec
+                  Next1
                in
-                  {Level2 stacks({Arity Record1At2} {Record.toList Record1At2}) FA A NewStacks1At1 Result}
+                  Result.1 = if A mod 2 == 0 then A|Next1 else Next1 end
+                  {Level1 Range.2 '#'(1:Next1)}
                end
             end
          else
-            Result.2 = nil
             Result.1 = nil
-            Result.3 = nil
          end
       end
-      %% level 2
-      proc {Level2 Stacks1At2 FA A Stacks1At1 ?Result}
-         if Stacks1At2.1 \= nil then
-            local
-               _#B#NewStacks1At2 = {FindNext Stacks1At2}
-            in
-               local
-                  Next1 Next2 Next3
-               in
-                  Result.2 = if A>10 then (FA#A)|Next1 else Next1 end
-                  Result.1 = B|Next2
-                  Result.3 = A#B|Next3
-                  {Level2 NewStacks1At2 FA A Stacks1At1 '#'(2:Next1 1:Next2 3:Next3)}
-               end
-            end
-         else
-            {Level1 Stacks1At1 Result}
-         end
-      end
-      Lim = 80000
-      Rec = {Record.make label [A for A in 1..Lim]}
-      for I in 1..Lim do
-         Rec.I = I
-      end
+      Lim = 300000
       fun {Measure LC}
          local M1 M2 L in
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [FA#A if A>10 1:B A#B for FA:A in 10#20 for _:B in Rec]
+               L = [A if A mod 2 == 0 for A in thread [A for lazy A in 1..Lim] end]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else
@@ -131,3 +82,4 @@ define
       {Application.exit 0}
    end
 end
+

@@ -13,83 +13,87 @@ define
       Browse = Tester.browse
       Pid = {OS.getPID}
       %% Equivalent
+      proc {FindNext stacks(FeatStack ValueStack) ?Result}
+         local
+            Feat = FeatStack.1
+            Value = ValueStack.1
+            PoppedFeatStack = FeatStack.2
+            PoppedValueStack = ValueStack.2
+         in
+            if {IsRecord Value} andthen {Arity Value} \= nil then
+               {FindNext stacks({Append {Arity Value} PoppedFeatStack} {Append {Record.toList Value} PoppedValueStack}) Result}
+            else
+               Result = Feat#Value#stacks(PoppedFeatStack PoppedValueStack)
+            end
+         end
+      end
       proc {PreLevel ?Result}
          local
-            Next1 Next2 Next3
+            Next1 Next2
          in
-            Result = '#'(2:Next1 1:Next2 3:Next3)
-            local
-               Record = Rec
-            in
-               {Level {Arity Record}#Record '#'(2:Next1 1:Next2 3:Next3)}
-            end
+            Result = '#'(1:Next1 a:Next2)
+            {Level1 1 '#'(1:Next1 a:Next2)}
          end
       end
-      %% for2
-      proc {For2 Ari Rec Result AriBool}
-         if Ari \= nil then
-            if AriBool.1 then
-               local
-                  Feat = Ari.1
-                  Field = Rec.Feat
-               in
-                  if {IsRecord Field} then
-                     {Level {Arity Field}#Field '#'(2:Result.2.Feat 1:Result.1.Feat 3:Result.3.Feat)}
-                  else
-                     Result.2.Feat = Field + 2
-                     Result.1.Feat = Field + 1
-                     Result.3.Feat = Field + 3
-                  end
-               end
-               {For2 Ari.2 Rec Result AriBool.2}
+      %% level 1
+      proc {Level1 A ?Result}
+         if A<CA then
+            if A>4 then
+               {Level2 2*A A Result}
             else
-               {For2 Ari Rec Result AriBool.2}
-            end
-         end
-      end
-      %% for1
-      proc {For1 Ari Rec AriFull AriBool}
-         if Ari \= nil then
-            local
-               Feat = Ari.1
-               Field = Rec.Feat
-               NextFull
-               NextBool
-            in
-               AriBool = ({Not {IsRecord Field}} orelse {Label Field} \= r1)|NextBool
-               AriFull = if AriBool.1 then Feat|NextFull else NextFull end
-               {For1 Ari.2 Rec NextFull NextBool}
+               {Level1 A+1 Result}
             end
          else
-            AriFull = nil
-            AriBool = nil
+            Result.1 = nil
+            Result.a = nil
          end
       end
-      %% level
-      proc {Level Ari#Rec ?Result}
-         local
-            Lbl = {Label Rec}
-            AriFull
-            AriBool
-         in
-            {For1 Ari Rec AriFull AriBool}
-            Result.2 = {Record.make Lbl AriFull}
-            Result.1 = {Record.make Lbl AriFull}
-            Result.3 = {Record.make Lbl AriFull}
-            {For2 AriFull Rec Result AriBool}
+      %% level 2
+      proc {Level2 B A ?Result}
+         if B=<CB then
+            if A+B>5 then
+               local
+                  Rec = 1#2#3#4#5#6#7#8#9#10
+               in
+                  {Level3 stacks({Arity Rec} {Record.toList Rec}) B A Result}
+               end
+            else
+               {Level2 B+2 A Result}
+            end
+         else
+            {Level1 A+1 Result}
          end
       end
-      Lim = 100000
-      Rec = {Record.make label [A for A in 1..Lim]}
-      for I in 1..Lim do
-         Rec.I = I
+      %% level 3
+      proc {Level3 Stacks B A ?Result}
+         if Stacks.1 \= nil then
+            local
+               _#C#NewStacks = {FindNext Stacks}
+            in
+               if C == 3 then
+                  local
+                     Next1 Next2
+                  in
+                     Result.1 = A+B|Next1
+                     Result.a = A|Next2
+                     {Level3 NewStacks B A '#'(1:Next1 a:Next2)}
+                  end
+               else
+                  {Level3 NewStacks B A Result}
+               end
+            end
+         else
+            {Level2 B+2 A Result}
+         end
       end
+      CA = 100
+      CB = 600
       fun {Measure LC}
          local M1 M2 L in
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [2:A+2 1:A+1 3:A+3 for F:A through Rec if F > 0]
+               L = [A+B a:A if A>0 for A in 1 ; A<CA ; A+1 if A>4 for B in 2*A..CB ; 2 if A+B>5 for _:C in 1#2#3#4#5#6#7#8#9#10 if C == 3]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else

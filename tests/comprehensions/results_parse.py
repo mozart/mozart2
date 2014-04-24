@@ -1,7 +1,7 @@
 import sys
 
 def main(filename):
-    result = 'clc;\nclose all;\nclear all;\n\nn = 9;\nSpace = zeros(n,1);\nTime = zeros(n,1);\n\n'
+    result = 'clc;\nclose all;\nclear all;\n\nn = 10;\nSpace = zeros(n,1);\nTime = zeros(n,1);\n\n'
     tmp = ''
     iS = 1
     iT = 1

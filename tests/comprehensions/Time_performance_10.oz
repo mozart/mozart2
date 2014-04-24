@@ -6,20 +6,21 @@
 functor
 import
    Application
-   Tester at 'Tester.ozf'
    OS
+   Tester at 'Tester.ozf'
 define
    local
+      Browse = Tester.browse
       %% Equivalent
-      proc {FindNext stacks(FeatStack ValueStack) ?Result}
+      proc {FindNext stacks(FeatStack ValueStack) Fct ?Result}
          local
             Feat = FeatStack.1
             Value = ValueStack.1
             PoppedFeatStack = FeatStack.2
             PoppedValueStack = ValueStack.2
          in
-            if {IsRecord Value} andthen {Arity Value} \= nil then
-               {FindNext stacks({Append {Arity Value} PoppedFeatStack} {Append {Record.toList Value} PoppedValueStack}) Result}
+            if {IsRecord Value} andthen {Arity Value} \= nil andthen {Fct Feat Value} then
+               {FindNext stacks({Append {Arity Value} PoppedFeatStack} {Append {Record.toList Value} PoppedValueStack}) Fct Result}
             else
                Result = Feat#Value#stacks(PoppedFeatStack PoppedValueStack)
             end
@@ -42,7 +43,7 @@ define
       proc {Level1 Stacks1At1 ?Result}
          if Stacks1At1.1 \= nil then
             local
-               FA#A#NewStacks1At1 = {FindNext Stacks1At1}
+               FA#A#NewStacks1At1 = {FindNext Stacks1At1 Fct}
             in
                local
                   Record1At2 = Rec
@@ -60,7 +61,7 @@ define
       proc {Level2 Stacks1At2 FA A Stacks1At1 ?Result}
          if Stacks1At2.1 \= nil then
             local
-               _#B#NewStacks1At2 = {FindNext Stacks1At2}
+               _#B#NewStacks1At2 = {FindNext Stacks1At2 Fct}
             in
                local
                   Next1 Next2 Next3
@@ -80,16 +81,17 @@ define
       for I in 1..Lim do
          Rec.I = I
       end
+      fun {Fct F V} F > 0 end
       fun {Measure LC}
          local T1 T2 L in
             if LC then
                %% LC
                T1 = {Time.time}
-               L = [FA#A if A>10 1:B A#B for FA:A in 10#20 for _:B in Rec]
+               L = [FA#A if A>10 1:B A#B for FA:A in 10#20 of Fct for _:B in Rec of Fct]
                T2 = {Time.time}
                {Browse {VirtualString.toAtom 'List comprehension took '#T2-T1#' seconds'}}
             else
-               %% EQtime
+               %% Eq
                T1 = {Time.time}
                L = {PreLevel}
                T2 = {Time.time}
@@ -119,7 +121,6 @@ define
       LCnocc = {NewCell 0}
       EQtime = {NewCell 0}
       EQnocc = {NewCell 0}
-      Browse = Tester.browse
    in
       {Browse 'Each technique will be tried 10 times in a random order'}
       for _ in 1..20 do {Apply} end

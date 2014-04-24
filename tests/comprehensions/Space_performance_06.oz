@@ -27,73 +27,67 @@ define
             end
          end
       end
+      %% pre level
       proc {PreLevel ?Result}
          local
-            Next1 Next2
+            Next1 Next2 Next3
          in
-            Result = '#'(1:Next1 a:Next2)
-            {Level1 1 '#'(1:Next1 a:Next2)}
+            Result = '#'(2:Next1 1:Next2 3:Next3)
+            local
+               Record1At1 = 10#20
+            in
+               {Level1 stacks({Arity Record1At1} {Record.toList Record1At1}) '#'(2:Next1 1:Next2 3:Next3)}
+            end
          end
       end
       %% level 1
-      proc {Level1 A ?Result}
-         if A<CA then
-            if A>4 then
-               {Level2 2*A A Result}
-            else
-               {Level1 A+1 Result}
+      proc {Level1 Stacks1At1 ?Result}
+         if Stacks1At1.1 \= nil then
+            local
+               FA#A#NewStacks1At1 = {FindNext Stacks1At1}
+            in
+               local
+                  Record1At2 = Rec
+               in
+                  {Level2 stacks({Arity Record1At2} {Record.toList Record1At2}) FA A NewStacks1At1 Result}
+               end
             end
          else
+            Result.2 = nil
             Result.1 = nil
-            Result.a = nil
+            Result.3 = nil
          end
       end
       %% level 2
-      proc {Level2 B A ?Result}
-         if B=<CB then
-            if A+B>5 then
-               local
-                  Rec = 1#2#3#4#5#6#7#8#9#10
-               in
-                  {Level3 stacks({Arity Rec} {Record.toList Rec}) B A Result}
-               end
-            else
-               {Level2 B+2 A Result}
-            end
-         else
-            {Level1 A+1 Result}
-         end
-      end
-      %% level 3
-      proc {Level3 Stacks B A ?Result}
-         if Stacks.1 \= nil then
+      proc {Level2 Stacks1At2 FA A Stacks1At1 ?Result}
+         if Stacks1At2.1 \= nil then
             local
-               _#C#NewStacks = {FindNext Stacks}
+               _#B#NewStacks1At2 = {FindNext Stacks1At2}
             in
-               if C == 3 then
-                  local
-                     Next1 Next2
-                  in
-                     Result.1 = A+B|Next1
-                     Result.a = A|Next2
-                     {Level3 NewStacks B A '#'(1:Next1 a:Next2)}
-                  end
-               else
-                  {Level3 NewStacks B A Result}
+               local
+                  Next1 Next2 Next3
+               in
+                  Result.2 = if A>10 then (FA#A)|Next1 else Next1 end
+                  Result.1 = B|Next2
+                  Result.3 = A#B|Next3
+                  {Level2 NewStacks1At2 FA A Stacks1At1 '#'(2:Next1 1:Next2 3:Next3)}
                end
             end
          else
-            {Level2 B+2 A Result}
+            {Level1 Stacks1At1 Result}
          end
       end
-      CA = 100
-      CB = 600
+      Lim = 80000
+      Rec = {Record.make label [A for A in 1..Lim]}
+      for I in 1..Lim do
+         Rec.I = I
+      end
       fun {Measure LC}
          local M1 M2 L in
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [A+B a:A if A>0 for A in 1 ; A<CA ; A+1 if A>4 for B in 2*A..CB ; 2 if A+B>5 for _:C in 1#2#3#4#5#6#7#8#9#10 if C == 3]
+               L = [FA#A if A>10 1:B A#B for FA:A in 10#20 for _:B in Rec]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else
@@ -137,4 +131,3 @@ define
       {Application.exit 0}
    end
 end
-

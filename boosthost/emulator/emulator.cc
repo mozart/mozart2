@@ -235,6 +235,11 @@ int main(int argc, char** argv) {
   vmOptions.minimalHeapSize = minMemoryMega * MegaBytes;
   vmOptions.maximalHeapSize = maxMemoryMega * MegaBytes;
 
+  if (!(minMemoryMega >= 1 && minMemoryMega < maxMemoryMega)) {
+    std::cerr << "Invalid heap sizes given" << std::endl;
+    return 1;
+  }
+
   // READ OPTIONS
 
   if (varMap.count("help") != 0) {

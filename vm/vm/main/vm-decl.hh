@@ -194,6 +194,9 @@ public:
     return getPropertyRegistry().config.heapSize;
   }
 
+  inline
+  void adjustHeapSize();
+
   GlobalExceptionMechanism& getGlobalExceptionMechanism() {
     return exceptionMechanism;
   }
@@ -348,9 +351,6 @@ private:
 
   inline
   void doGC();
-
-  inline
-  void adjustHeapSize();
 
   inline
   void beforeGR(GR gr);

@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include "mozart.hh"
+
 #include "memmanager.hh"
 
 #include <new>
@@ -33,15 +35,60 @@ namespace mozart {
 // MemoryManager //
 ///////////////////
 
+void MemoryManager::init() {
+  size_t heapSize = vm->getHeapSize();
+  if (_blockSize != heapSize) {
+    if (OzDebugGC) {
+      std::cerr << "Allocating " << std::setw(9) << heapSize << " bytes" << std::endl;
+    }
+
+    if (_baseBlock != nullptr) {
+      ::free(_baseBlock);
+    }
+
+    _baseBlock = static_cast<char*>(::malloc(heapSize));
+    if (_baseBlock == nullptr) {
+      std::cerr << "FATAL: Failed to allocate " << heapSize << " bytes" << std::endl;
+      throw std::bad_alloc();
+    }
+    _blockSize = heapSize;
+  }
+
+  _nextBlock = _baseBlock;
+  _allocated = 0;
+
+  for (size_t i = 0; i < MaxBuckets; i++)
+    freeListBuckets[i] = nullptr;
+
+  stats.allocatedInFreeList = 0;
+}
+
 void* MemoryManager::getMoreMemory(size_t size) {
-  // TODO  Get more memory a memory manager is running short
+  void *ptr = ::malloc(size);
+  if (ptr == nullptr) {
+    std::cerr << "FATAL: Failed to allocate an additional " << size << " bytes" << std::endl;
+    throw std::bad_alloc();
+  }
+  if (OzDebugGC)
+    std::cerr << "Extra alloc of " << size << " at " << ptr << std::endl;
 
-  std::cerr << "FATAL: Failed to allocate " << size << " bytes" << std::endl;
-  std::cerr << " (already allocated ";
-  std::cerr << (_allocated / MegaBytes) << " MB)" << std::endl;
+  _extraAllocs.push_front(ptr);
+  _extraAllocated += size;
 
-  std::bad_alloc ba;
-  throw ba;
+  // TODO: Should we adjust the heap size here so we do not need to GC twice consecutively?
+  vm->requestGC();
+
+  return ptr;
+}
+
+void MemoryManager::releaseExtraAllocs() {
+  while (!_extraAllocs.empty()) {
+    if (OzDebugGC)
+      std::cerr << "Freeing extra alloc " << _extraAllocs.front() << std::endl;
+    ::free(_extraAllocs.front());
+    _extraAllocs.pop_front();
+  }
+  _extraAllocated = 0;
 }
 
 }

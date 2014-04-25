@@ -72,8 +72,7 @@ void registerCoreModules(VM vm);
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
                                VirtualMachineOptions options):
   rootGlobalNode(nullptr), environment(environment),
-  memoryManager(options.maximalHeapSize),
-  secondMemoryManager(options.maximalHeapSize),
+  memoryManager(this), secondMemoryManager(this),
   _propertyRegistry(options),
   gc(this), sc(this),
   _preemptRequestedNot(ATOMIC_FLAG_INIT),
@@ -207,6 +206,8 @@ void VirtualMachine::doGC() {
   // Update stats (2)
   getPropertyRegistry().stats.activeMemory = getMemoryManager().getAllocated();
   getPropertyRegistry().computeGCThreshold();
+
+  adjustHeapSize();
 }
 
 void VirtualMachine::beforeGR(GR gr) {
@@ -225,11 +226,42 @@ void VirtualMachine::afterGR(GR gr) {
   if (gr->kind() == GraphReplicator::grkGarbageCollection) {
     _topLevelSpace = _topLevelSpaceRef;
     _currentSpace = _topLevelSpace;
+    getSecondMemoryManager().releaseExtraAllocs();
   }
 
   for (auto iter = aliveThreads.begin();
        iter != aliveThreads.end(); ++iter) {
     (*iter)->afterGR();
+  }
+}
+
+void VirtualMachine::adjustHeapSize() {
+  auto& config = getPropertyRegistry().config;
+
+  size_t tolerance = config.gcThresholdTolerance;
+  size_t wishedHeapSize = config.gcThreshold * (100 + tolerance) / 100;
+  size_t newHeapSize = config.heapSize;
+
+  if (wishedHeapSize > newHeapSize) {
+    if (newHeapSize == config.maximalHeapSize)
+      return;
+
+    while (wishedHeapSize > newHeapSize)
+      newHeapSize *= 2;
+
+    newHeapSize = std::min(newHeapSize, config.maximalHeapSize);
+    config.heapSize = newHeapSize;
+    requestGC(); // To use the new heap size
+  } else if (wishedHeapSize < newHeapSize / 2) {
+    if (newHeapSize == config.minimalHeapSize)
+      return;
+
+    while (wishedHeapSize < newHeapSize / 2)
+      newHeapSize /= 2;
+
+    newHeapSize = std::max(newHeapSize, config.minimalHeapSize);
+    config.heapSize = newHeapSize;
+    requestGC(); // To use the new heap size
   }
 }
 

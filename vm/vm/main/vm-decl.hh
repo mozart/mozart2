@@ -190,6 +190,10 @@ public:
     return secondMemoryManager;
   }
 
+  size_t getHeapSize() {
+    return getPropertyRegistry().config.heapSize;
+  }
+
   GlobalExceptionMechanism& getGlobalExceptionMechanism() {
     return exceptionMechanism;
   }
@@ -344,6 +348,9 @@ private:
 
   inline
   void doGC();
+
+  inline
+  void adjustHeapSize();
 
   inline
   void beforeGR(GR gr);

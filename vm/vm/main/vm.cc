@@ -34,7 +34,7 @@ VirtualMachine::run_return_type VirtualMachine::run() {
   while (!(testAndClearExitRunRequested() ||
       (_envUseDynamicPreemption && environment.testDynamicExitRun()))) {
 
-    if (testAndClearGCRequested() || gc.isGCRequired()) {
+    while (testAndClearGCRequested() || gc.isGCRequired()) {
       getTopLevelSpace()->install();
       doGC();
     }

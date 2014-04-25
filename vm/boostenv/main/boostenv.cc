@@ -33,9 +33,11 @@ namespace mozart { namespace boostenv {
 // BoostVM //
 /////////////
 
-BoostVM::BoostVM(BoostEnvironment& environment, nativeint identifier,
-                 size_t maxMemory, const std::string& appURL) :
-  VirtualMachine(environment, maxMemory), vm(this),
+BoostVM::BoostVM(BoostEnvironment& environment,
+                 nativeint identifier,
+                 VirtualMachineOptions options,
+                 const std::string& appURL) :
+  VirtualMachine(environment, options), vm(this),
   env(environment), identifier(identifier), appURL(appURL),
   uuidGenerator(random_generator),
   _asyncIONodeCount(0),
@@ -273,14 +275,15 @@ namespace {
   }
 }
 
-BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
-  _nextVMIdentifier(1), vmStarter(vmStarter) {
+BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
+                                   VirtualMachineOptions options) :
+  _nextVMIdentifier(1), _options(options), vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-BoostVM& BoostEnvironment::addVM(size_t maxMemory, const std::string& appURL) {
-  vms.emplace_front(*this, _nextVMIdentifier++, maxMemory, appURL);
+BoostVM& BoostEnvironment::addVM(const std::string& appURL) {
+  vms.emplace_front(*this, _nextVMIdentifier++, _options, appURL);
   return vms.front();
 }
 

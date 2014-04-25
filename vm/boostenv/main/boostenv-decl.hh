@@ -47,8 +47,10 @@ class BoostEnvironment;
 
 class BoostVM : VirtualMachine {
 public:
-  BoostVM(BoostEnvironment& environment, nativeint identifier,
-          size_t maxMemory, const std::string& appURL);
+  BoostVM(BoostEnvironment& environment,
+          nativeint identifier,
+          VirtualMachineOptions options,
+          const std::string& appURL);
 
   static BoostVM& forVM(VM vm) {
     return *static_cast<BoostVM*>(vm);
@@ -171,9 +173,9 @@ public:
   }
 
 public:
-  BoostEnvironment(const VMStarter& vmStarter);
+  BoostEnvironment(const VMStarter& vmStarter, VirtualMachineOptions options);
 
-  BoostVM& addVM(size_t maxMemory, const std::string& appURL);
+  BoostVM& addVM(const std::string& appURL);
 
   BoostVM& getVM(VM vm, nativeint identifier);
 
@@ -244,9 +246,12 @@ public:
     BoostVM::forVM(gc->vm).gCollect(gc);
   }
 
+// VMs
 private:
   std::forward_list<BoostVM> vms;
   nativeint _nextVMIdentifier;
+
+  VirtualMachineOptions _options;
 
 // Bootstrap
 private:

@@ -178,6 +178,11 @@ private:
   Space* space;
 };
 
+struct VirtualMachineOptions {
+  size_t minimalHeapSize;
+  size_t maximalHeapSize;
+};
+
 typedef std::function<void(VM)> VMCleanupProc;
 
 /** Node of a linked list of things to do on cleanup

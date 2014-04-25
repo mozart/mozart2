@@ -70,9 +70,12 @@ void VirtualMachineEnvironment::sendToVMPort(VM from, VM to, RichNode value) {
 void registerCoreModules(VM vm);
 
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
-                               size_t maxMemory):
+                               VirtualMachineOptions options):
   rootGlobalNode(nullptr), environment(environment),
-  memoryManager(maxMemory), secondMemoryManager(maxMemory), gc(this), sc(this),
+  memoryManager(options.maximalHeapSize),
+  secondMemoryManager(options.maximalHeapSize),
+  _propertyRegistry(options),
+  gc(this), sc(this),
   _preemptRequestedNot(ATOMIC_FLAG_INIT),
   _exitRunRequestedNot(ATOMIC_FLAG_INIT),
   _gcRequestedNot(ATOMIC_FLAG_INIT),
@@ -98,7 +101,7 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
   initialize();
 
   registerCoreModules(this);
-  _propertyRegistry.initialize(this);
+  _propertyRegistry.registerPredefined(this);
 }
 
 VirtualMachine::~VirtualMachine() {
@@ -203,6 +206,7 @@ void VirtualMachine::doGC() {
 
   // Update stats (2)
   getPropertyRegistry().stats.activeMemory = getMemoryManager().getAllocated();
+  getPropertyRegistry().computeGCThreshold();
 }
 
 void VirtualMachine::beforeGR(GR gr) {

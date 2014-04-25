@@ -161,6 +161,7 @@ int main(int argc, char** argv) {
   fs::path ozHome, initFunctorPath, baseFunctorPath;
   std::string ozSearchPath, ozSearchLoad, appURL;
   std::vector<std::string> appArgs;
+  size_t minMemoryMega = 32;
   size_t maxMemoryMega = 768;
   bool appGUI;
 
@@ -180,8 +181,10 @@ int main(int argc, char** argv) {
       "search path")
     ("search-load", po::value<std::string>(&ozSearchLoad),
       "search load")
+    ("min-memory", po::value<size_t>(&minMemoryMega),
+      "minimal heap size in MB")
     ("max-memory", po::value<size_t>(&maxMemoryMega),
-      "maximum memory, i.e. heap size (in MB)")
+      "maximum heap size in MB")
     ("gui", "GUI mode");
 
   po::options_description hidden("Hidden options");
@@ -227,6 +230,10 @@ int main(int argc, char** argv) {
   ozHome = ozHomeStr;
   initFunctorPath = initFunctorPathStr;
   baseFunctorPath = baseFunctorPathStr;
+
+  VirtualMachineOptions vmOptions;
+  vmOptions.minimalHeapSize = minMemoryMega * MegaBytes;
+  vmOptions.maximalHeapSize = maxMemoryMega * MegaBytes;
 
   // READ OPTIONS
 
@@ -393,8 +400,8 @@ int main(int argc, char** argv) {
     }
 
     return 0;
-  });
+  }, vmOptions);
 
-  boostEnv.addVM(maxMemoryMega * MegaBytes, appURL);
+  boostEnv.addVM(appURL);
   boostEnv.runIO();
 }

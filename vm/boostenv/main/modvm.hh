@@ -72,8 +72,7 @@ public:
 
     static void call(VM vm, In appURL, Out result) {
       std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
-      size_t maxMemory = 64 * MegaBytes;
-      BoostVM& newVM = BoostEnvironment::forVM(vm).addVM(maxMemory, appURLstr);
+      BoostVM& newVM = BoostEnvironment::forVM(vm).addVM(appURLstr);
       result = SmallInt::build(vm, newVM.identifier);
     }
   };

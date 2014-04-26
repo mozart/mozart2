@@ -53,6 +53,7 @@ PropertyRegistry::PropertyRegistry(VirtualMachineOptions options) {
   // The initial threshold is such that there are
   // gcThresholdTolerance percent unused above the threshold
   config.gcThreshold = config.heapSize * 100 / (100 + config.gcThresholdTolerance);
+  config.maxGCThreshold = config.maximalHeapSize * 100 / (100 + config.gcThresholdTolerance);
   config.autoGC = true;
 
   // Memory usage statistics

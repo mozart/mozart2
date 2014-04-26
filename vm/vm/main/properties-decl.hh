@@ -143,8 +143,9 @@ public:
   }
 
 public:
-  void computeGCThreshold() {
-    config.gcThreshold = stats.activeMemory * 100 / (100 - config.desiredFreeMemPercentageAfterGC);
+  void computeGCThreshold(size_t activeMemory) {
+    config.gcThreshold = std::min(config.maxGCThreshold,
+      activeMemory * 100 / (100 - config.desiredFreeMemPercentageAfterGC));
   }
 
 private:
@@ -172,6 +173,7 @@ public:
     size_t maximalHeapSize;
     size_t desiredFreeMemPercentageAfterGC;
     size_t gcThreshold;
+    size_t maxGCThreshold;
     size_t gcThresholdTolerance;
     bool autoGC;
   } config;

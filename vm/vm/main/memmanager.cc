@@ -75,12 +75,12 @@ void* MemoryManager::getMoreMemory(size_t size) {
   _extraAllocs.push_front(ptr);
   _extraAllocated += size;
 
-  vm->requestGC();
-
   // Adjust the heap size so we do not need to GC twice
-  vm->getPropertyRegistry().stats.activeMemory += size;
-  vm->getPropertyRegistry().computeGCThreshold();
+  size_t activeMemory = vm->getPropertyRegistry().stats.activeMemory + size;
+  vm->getPropertyRegistry().computeGCThreshold(activeMemory);
   vm->adjustHeapSize();
+
+  vm->requestGC();
 
   return ptr;
 }

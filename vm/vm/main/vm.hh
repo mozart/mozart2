@@ -204,8 +204,9 @@ void VirtualMachine::doGC() {
   }
 
   // Update stats (2)
-  getPropertyRegistry().stats.activeMemory = getMemoryManager().getAllocated();
-  getPropertyRegistry().computeGCThreshold();
+  size_t activeMemory = getMemoryManager().getAllocated();
+  getPropertyRegistry().stats.activeMemory = activeMemory;
+  getPropertyRegistry().computeGCThreshold(activeMemory);
 
   adjustHeapSize();
 }

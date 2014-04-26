@@ -208,6 +208,13 @@ void VirtualMachine::doGC() {
   getPropertyRegistry().stats.activeMemory = activeMemory;
   getPropertyRegistry().computeGCThreshold(activeMemory);
 
+  if (activeMemory > getPropertyRegistry().config.maxGCThreshold) {
+    std::cerr << "FATAL: The active memory (" << activeMemory << ") ";
+    std::cerr << "after a GC is over the maximal heap size threshold: ";
+    std::cerr << getPropertyRegistry().config.maxGCThreshold << std::endl;
+    throw std::bad_alloc();
+  }
+
   adjustHeapSize();
 }
 

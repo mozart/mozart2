@@ -36,9 +36,9 @@ namespace mozart { namespace boostenv {
 BoostVM::BoostVM(BoostEnvironment& environment,
                  nativeint identifier,
                  VirtualMachineOptions options,
-                 const std::string& appURL) :
+                 const std::string& app, bool isURL) :
   VirtualMachine(environment, options), vm(this),
-  env(environment), identifier(identifier), appURL(appURL),
+  env(environment), identifier(identifier),
   uuidGenerator(random_generator),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
@@ -58,11 +58,11 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   _stream = _headOfStream = RichNode(future).getStableRef(vm);
 
   // Finally start the VM thread, which will initialize and run the VM
-  _thread = boost::thread(&BoostVM::start, this);
+  _thread = boost::thread(&BoostVM::start, this, app, isURL);
 };
 
-void BoostVM::start() {
-  env.vmStarter(vm, appURL);
+void BoostVM::start(std::string app, bool isURL) {
+  env.vmStarter(vm, app, isURL);
   delete _work;
 }
 
@@ -282,8 +282,8 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
   setBootLoader(&defaultBootLoader);
 }
 
-BoostVM& BoostEnvironment::addVM(const std::string& appURL) {
-  vms.emplace_front(*this, _nextVMIdentifier++, _options, appURL);
+BoostVM& BoostEnvironment::addVM(const std::string& app, bool isURL) {
+  vms.emplace_front(*this, _nextVMIdentifier++, _options, app, isURL);
   return vms.front();
 }
 

@@ -70,9 +70,23 @@ public:
   public:
     New(): Builtin("new") {}
 
-    static void call(VM vm, In appURL, Out result) {
-      std::string appURLstr(getArgument<atom_t>(vm, appURL).contents());
-      BoostVM& newVM = BoostEnvironment::forVM(vm).addVM(appURLstr);
+    static void call(VM vm, In app, Out result) {
+      using namespace mozart::patternmatching;
+
+      atom_t appURL;
+      std::string appStr;
+      bool isURL = matches(vm, app, capture(appURL));
+
+      if (isURL) {
+        appStr.assign(appURL.contents());
+      } else { // app is a pickled functor
+        size_t bufSize = ozVBSLengthForBuffer(vm, app);
+        std::vector<unsigned char> buffer;
+        ozVBSGet(vm, app, bufSize, buffer);
+        appStr.assign(buffer.begin(), buffer.end());
+      }
+
+      BoostVM& newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL);
       result = SmallInt::build(vm, newVM.identifier);
     }
   };

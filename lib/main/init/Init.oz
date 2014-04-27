@@ -339,7 +339,15 @@ define
       %% Link the real OS module, which should set up a proper BURL.localize and BURL.open
       {Wait {RM link(url:'x-oz://system/OS.ozf' $)}}
 
-      %% Link root functor (i.e. application)
-      {Wait {RM link(url:{GET 'application.url'} $)}}
+      %% Link or apply root functor (i.e. application)
+      local
+         AppFunctor = {GetOrFalse 'application.functor'}
+      in
+         if AppFunctor \= false then
+            {RM apply(AppFunctor)}
+         else
+            {Wait {RM link(url:{GET 'application.url'} $)}}
+         end
+      end
    end
 end

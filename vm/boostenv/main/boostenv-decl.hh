@@ -50,7 +50,7 @@ public:
   BoostVM(BoostEnvironment& environment,
           nativeint identifier,
           VirtualMachineOptions options,
-          const std::string& appURL);
+          const std::string& app, bool isURL);
 
   static BoostVM& forVM(VM vm) {
     return *static_cast<BoostVM*>(vm);
@@ -60,7 +60,7 @@ public:
 public:
   void run();
 private:
-  void start();
+  void start(std::string app, bool isURL);
   void onPreemptionTimerExpire(const boost::system::error_code& error);
 
 // UUID generation
@@ -119,7 +119,6 @@ public:
   VM vm;
   BoostEnvironment& env;
   nativeint identifier;
-  std::string appURL;
 
 // Random number and UUID generation
 public:
@@ -165,7 +164,7 @@ class BoostEnvironment: public VirtualMachineEnvironment {
 private:
   using BootLoader = std::function<bool(VM vm, const std::string& url,
                                         UnstableNode& result)>;
-  using VMStarter = std::function<int(VM vm, const std::string& url)>;
+  using VMStarter = std::function<int(VM vm, const std::string& app, bool isURL)>;
 
 public:
   static BoostEnvironment& forVM(VM vm) {
@@ -175,7 +174,7 @@ public:
 public:
   BoostEnvironment(const VMStarter& vmStarter, VirtualMachineOptions options);
 
-  BoostVM& addVM(const std::string& appURL);
+  BoostVM& addVM(const std::string& app, bool isURL);
 
   BoostVM& getVM(VM vm, nativeint identifier);
 

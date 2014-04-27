@@ -163,8 +163,14 @@ struct LString : BaseLString<C> {
   inline LString(VM vm, nativeint length, const F& initializer);
 
   // Only LString can be safely sliced.
-  inline constexpr const LString slice(nativeint from, nativeint to) const;
-  inline constexpr const LString slice(nativeint from) const;
+  inline constexpr const LString slice(nativeint from, nativeint to) const {
+    return this->isErrorOrEmpty()
+        ? LString<C>(this->error)
+        : LString<C>(this->string + from, to - from);
+  }
+  inline constexpr const LString slice(nativeint from) const {
+    return slice(from, this->length);
+  }
 
   template <nativeint n>
   static constexpr const LString<C>

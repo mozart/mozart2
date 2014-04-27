@@ -128,19 +128,6 @@ LString<C>::LString(VM vm, nativeint length, const F& initializer) {
   this->length = length;
 }
 
-template <class C>
-constexpr const LString<C> LString<C>::slice(nativeint from) const {
-  return slice(from, this->length);
-}
-
-template <class C>
-constexpr const LString<C> LString<C>::slice(nativeint from,
-                                             nativeint to) const {
-  return this->isErrorOrEmpty()
-      ? LString<C>(this->error)
-      : LString<C>(this->string + from, to - from);
-}
-
 }
 
 // ContainedLString ------------------------------------------------------------

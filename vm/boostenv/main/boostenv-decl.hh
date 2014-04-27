@@ -164,7 +164,7 @@ class BoostEnvironment: public VirtualMachineEnvironment {
 private:
   using BootLoader = std::function<bool(VM vm, const std::string& url,
                                         UnstableNode& result)>;
-  using VMStarter = std::function<int(VM vm, const std::string& app, bool isURL)>;
+  using VMStarter = std::function<bool(VM vm, const std::string& app, bool isURL)>;
 
 public:
   static BoostEnvironment& forVM(VM vm) {

@@ -349,7 +349,7 @@ int main(int argc, char** argv) {
       if (!bootLoader(vm, baseFunctorPath.string(), baseValue)) {
         std::cerr << "panic: could not load Base functor at "
                   << baseFunctorPath << std::endl;
-        return 1;
+        return false;
       }
 
       // Create the thread that loads the Base environment
@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
       if (!bootLoader(vm, initFunctorPath.string(), initValue)) {
         std::cerr << "panic: could not load Init functor at "
                   << initFunctorPath << std::endl;
-        return 1;
+        return false;
       }
 
       // Create the thread that loads the Init functor
@@ -384,7 +384,7 @@ int main(int argc, char** argv) {
         if (!useBaseFunctor) {
           std::cerr << "panic: Init.ozf is a procedure, "
                     << "but I have no Base to give to it" << std::endl;
-          return 1;
+          return false;
         }
 
         ozcalls::asyncOzCall(vm, initValue, *baseEnv, *initFunctor);
@@ -413,7 +413,7 @@ int main(int argc, char** argv) {
       boostVM.run();
     }
 
-    return 0;
+    return true;
   }, vmOptions);
 
   boostEnv.addVM(appURL, true);

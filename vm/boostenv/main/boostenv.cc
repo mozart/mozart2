@@ -62,7 +62,8 @@ BoostVM::BoostVM(BoostEnvironment& environment,
 };
 
 void BoostVM::start(std::string app, bool isURL) {
-  env.vmStarter(vm, app, isURL);
+  if (!env.vmStarter(vm, app, isURL))
+    std::cerr << "Could not start VM." << std::endl;
   delete _work;
 }
 

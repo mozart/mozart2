@@ -165,7 +165,8 @@ public:
     Exit(): Builtin("exit") {}
 
     static void call(VM vm, In exitCode) {
-      std::exit(getArgument<nativeint>(vm, exitCode, "Integer"));
+      auto intExitCode = getArgument<nativeint>(vm, exitCode, "Integer");
+      vm->getEnvironment().killVM(vm, intExitCode);
     }
   };
 };

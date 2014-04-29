@@ -100,6 +100,10 @@ public:
     return false;
   }
 
+  virtual void killVM(VM vm, nativeint exitCode) {
+    std::exit(exitCode);
+  }
+
   virtual UUID genUUID(VM vm) = 0;
 
   inline

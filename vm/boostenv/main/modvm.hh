@@ -128,6 +128,17 @@ public:
       result = BoostEnvironment::forVM(vm).listVMs(vm);
     }
   };
+
+  class Kill: public Builtin<Kill> {
+  public:
+    Kill(): Builtin("kill") {}
+
+    static void call(VM vm, In identifier) {
+      nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
+      BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
+      BoostEnvironment::forVM(targetVM.vm).killVM(targetVM.vm, 0);
+    }
+  };
 };
 
 }

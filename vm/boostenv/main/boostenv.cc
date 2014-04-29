@@ -42,7 +42,8 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   uuidGenerator(random_generator),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
-  alarmTimer(environment.io_service) {
+  alarmTimer(environment.io_service),
+  _terminated(false) {
 
   // Make sure the IO thread will wait for us
   _work = new boost::asio::io_service::work(environment.io_service);
@@ -96,8 +97,8 @@ void BoostVM::run() {
       boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
 
       // Is there anything left to do?
-      if ((nextInvoke == recNeverInvokeAgain) &&
-          (_asyncIONodeCount == 0) && _vmEventsCallbacks.empty()) {
+      if (!isRunning() || ((nextInvoke == recNeverInvokeAgain) &&
+          (_asyncIONodeCount == 0) && _vmEventsCallbacks.empty())) {
         // Totally finished, nothing can ever wake me again
         break;
       }
@@ -132,6 +133,8 @@ void BoostVM::run() {
     // Cancel the alarm timer, in case it was not it that woke me
     alarmTimer.cancel();
   }
+
+  _terminated.store(true, std::memory_order_release);
 }
 
 void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
@@ -298,8 +301,10 @@ BoostVM& BoostEnvironment::getVM(VM vm, nativeint identifier) {
 
 UnstableNode BoostEnvironment::listVMs(VM vm) {
   UnstableNode list = buildList(vm);
-  for (BoostVM& boostVM : vms)
-    list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
+  for (BoostVM& boostVM : vms) {
+    if (boostVM.isRunning())
+      list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
+  }
   return list;
 }
 

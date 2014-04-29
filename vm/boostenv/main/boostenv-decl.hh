@@ -115,6 +115,18 @@ public:
     gc->copyStableRef(_stream, _stream);
   }
 
+// Termination
+public:
+  bool isRunning() {
+    return !_terminated.load(std::memory_order_acquire);
+  }
+
+  void requestTermination() {
+    _terminated.store(true, std::memory_order_release);
+    vm->requestExitRun();
+    _conditionWorkToDoInVM.notify_all();
+  }
+
 public:
   VM vm;
   BoostEnvironment& env;
@@ -154,6 +166,7 @@ private:
 private:
   boost::asio::io_service::work* _work;
   boost::thread _thread;
+  std::atomic_bool _terminated;
 };
 
 //////////////////////
@@ -195,6 +208,10 @@ public:
 
 public:
   void runIO();
+
+  void killVM(VM vm, nativeint exitCode) {
+    BoostVM::forVM(vm).requestTermination();
+  }
 
 // Time
 

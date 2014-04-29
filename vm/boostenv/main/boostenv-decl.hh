@@ -122,9 +122,10 @@ public:
   }
 
   void requestTermination() {
-    _terminated.store(true, std::memory_order_release);
-    vm->requestExitRun();
-    _conditionWorkToDoInVM.notify_all();
+    postVMEvent([this] {
+      closeStream();
+      _terminated.store(true, std::memory_order_release);
+    });
   }
 
 public:

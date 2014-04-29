@@ -281,13 +281,15 @@ namespace {
 
 BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
                                    VirtualMachineOptions options) :
-  _nextVMIdentifier(1), _options(options), vmStarter(vmStarter) {
+  _nextVMIdentifier(1), _aliveVMs(0),
+  _options(options), vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
 BoostVM& BoostEnvironment::addVM(const std::string& app, bool isURL) {
   vms.emplace_front(*this, _nextVMIdentifier++, _options, app, isURL);
+  _aliveVMs++;
   return vms.front();
 }
 
@@ -306,6 +308,16 @@ UnstableNode BoostEnvironment::listVMs(VM vm) {
       list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
   }
   return list;
+}
+
+void BoostEnvironment::killVM(VM vm, nativeint exitCode) {
+  if (BoostVM::forVM(vm).isRunning()) {
+    _aliveVMs--;
+    BoostVM::forVM(vm).requestTermination();
+    if (_aliveVMs == 0) { // killing the last VM
+      std::exit(exitCode);
+    }
+  }
 }
 
 void BoostEnvironment::runIO() {

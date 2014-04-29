@@ -193,6 +193,8 @@ public:
 
   UnstableNode listVMs(VM vm);
 
+  void killVM(VM vm, nativeint exitCode);
+
 // Configuration
 
 public:
@@ -208,10 +210,6 @@ public:
 
 public:
   void runIO();
-
-  void killVM(VM vm, nativeint exitCode) {
-    BoostVM::forVM(vm).requestTermination();
-  }
 
 // Time
 
@@ -266,6 +264,7 @@ public:
 private:
   std::forward_list<BoostVM> vms;
   nativeint _nextVMIdentifier;
+  std::atomic_int _aliveVMs;
 
   VirtualMachineOptions _options;
 

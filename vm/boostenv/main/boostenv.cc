@@ -210,6 +210,17 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
+bool BoostVM::isRunning() {
+  return !_terminated.load(std::memory_order_acquire);
+}
+
+void BoostVM::requestTermination() {
+  postVMEvent([this] {
+    closeStream();
+    _terminated.store(true, std::memory_order_release);
+  });
+}
+
 //////////////////////
 // BoostEnvironment //
 //////////////////////

@@ -82,6 +82,12 @@ public:
 
   void receiveOnVMPort(std::vector<unsigned char>* buffer);
 
+// Termination
+public:
+  bool isRunning();
+
+  void requestTermination();
+
 // Management of nodes used by asynchronous operations for feedback
 public:
   inline
@@ -113,19 +119,6 @@ public:
   void gCollect(GC gc) {
     gc->copyStableRef(_headOfStream, _headOfStream);
     gc->copyStableRef(_stream, _stream);
-  }
-
-// Termination
-public:
-  bool isRunning() {
-    return !_terminated.load(std::memory_order_acquire);
-  }
-
-  void requestTermination() {
-    postVMEvent([this] {
-      closeStream();
-      _terminated.store(true, std::memory_order_release);
-    });
   }
 
 public:

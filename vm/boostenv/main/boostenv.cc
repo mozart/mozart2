@@ -134,7 +134,7 @@ void BoostVM::run() {
     alarmTimer.cancel();
   }
 
-  _terminated.store(true, std::memory_order_release);
+  terminate();
 }
 
 void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
@@ -215,10 +215,12 @@ bool BoostVM::isRunning() {
 }
 
 void BoostVM::requestTermination() {
-  postVMEvent([this] {
-    closeStream();
-    _terminated.store(true, std::memory_order_release);
-  });
+  postVMEvent([this] { this->terminate(); });
+}
+
+void BoostVM::terminate() {
+  closeStream();
+  _terminated.store(true, std::memory_order_release);
 }
 
 //////////////////////

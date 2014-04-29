@@ -88,6 +88,9 @@ public:
 
   void requestTermination();
 
+private:
+  void terminate();
+
 // Management of nodes used by asynchronous operations for feedback
 public:
   inline

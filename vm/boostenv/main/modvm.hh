@@ -139,6 +139,17 @@ public:
       BoostEnvironment::forVM(targetVM.vm).killVM(targetVM.vm, 0);
     }
   };
+
+  class Monitor: public Builtin<Monitor> {
+  public:
+    Monitor(): Builtin("monitor") {}
+
+    static void call(VM vm, In identifier) {
+      nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
+      BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
+      targetVM.addMonitor(BoostVM::forVM(vm));
+    }
+  };
 };
 
 }

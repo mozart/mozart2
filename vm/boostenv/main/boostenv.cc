@@ -196,6 +196,11 @@ void BoostVM::closeStream() {
   }
 }
 
+void BoostVM::receiveOnVMPort(UnstableNode value) {
+  if (!portClosed())
+    sendToReadOnlyStream(vm, _stream, value);
+}
+
 void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   if (portClosed()) {
     delete buffer;
@@ -210,6 +215,11 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
+void BoostVM::addMonitor(BoostVM& monitor) {
+  std::lock_guard<std::mutex> lock(_monitorsMutex);
+  _monitors.push_back(monitor.vm);
+}
+
 bool BoostVM::isRunning() {
   return !_terminated.load(std::memory_order_acquire);
 }
@@ -218,9 +228,22 @@ void BoostVM::requestTermination() {
   postVMEvent([this] { this->terminate(); });
 }
 
+void BoostVM::tellMonitors() {
+  std::lock_guard<std::mutex> lock(_monitorsMutex);
+  nativeint deadVM = this->identifier;
+  for (VM vm : _monitors) {
+    BoostVM::forVM(vm).postVMEvent([=] () {
+      BoostVM::forVM(vm).receiveOnVMPort(buildTuple(vm, "terminated", deadVM));
+    });
+  }
+}
+
 void BoostVM::terminate() {
+  if (_terminated.load(std::memory_order_acquire))
+    return;
   closeStream();
   _terminated.store(true, std::memory_order_release);
+  tellMonitors();
 }
 
 //////////////////////

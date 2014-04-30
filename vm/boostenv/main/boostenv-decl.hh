@@ -81,7 +81,11 @@ public:
 
   void closeStream();
 
+  void receiveOnVMPort(UnstableNode value);
+
   void receiveOnVMPort(std::vector<unsigned char>* buffer);
+
+  void addMonitor(BoostVM& monitor);
 
 // Termination
 public:
@@ -90,6 +94,8 @@ public:
   void requestTermination();
 
 private:
+  void tellMonitors();
+
   void terminate();
 
 // Management of nodes used by asynchronous operations for feedback
@@ -159,6 +165,11 @@ private:
 // IO-driven events that must work with the VM store
 private:
   std::queue<std::function<void()> > _vmEventsCallbacks;
+
+// Monitors
+private:
+  std::vector<VM> _monitors;
+  std::mutex _monitorsMutex;
 
 // Running thread management
 private:

@@ -39,6 +39,7 @@ export
    CloseStream
    List
    Kill
+   Monitor
 
 define
 
@@ -56,6 +57,7 @@ define
    CloseStream = Boot_VM.closeStream
    List = Boot_VM.list
    Kill = Boot_VM.kill
+   Monitor = Boot_VM.monitor
 
    % Let's load Pickle since we need it for VM Ports
    {Wait Pickle}

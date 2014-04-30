@@ -34,7 +34,7 @@ define
 
                 (1 for _ in r(1 2 rr(3 rrr(4)) 5))
                 #r(1 1 rr(1 rrr(1)) 1)
-        
+
                 (1 for A in r(1 2 rr(3 rrr(4)) 5) of {Bool A})
                 #r(1 1 rr(1 1) 1)
 
@@ -62,14 +62,14 @@ define
                 #rec(a:yes c:yes rec:rec(b:yes))
 
                 (F#A for F:A in [1 2 3])
-                #[1#1 1#2 1#3]
+                #(1#1|1#2|1#3|2#nil)
 
                 (F#A for F:A in [1 2 3] of 1 == 0)
                 #'|'(1#1 2#[2 3])
 
                 (A for A in Tree)
                 #Tree
-        
+
                 (A+1 for A in Tree)
                 #tree(tree(leaf(2) leaf(3)) leaf(4))
 

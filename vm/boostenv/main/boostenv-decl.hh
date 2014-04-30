@@ -260,7 +260,7 @@ public:
 // VMs
 private:
   std::forward_list<BoostVM> vms;
-  nativeint _nextVMIdentifier;
+  std::atomic_int _nextVMIdentifier;
   std::atomic_int _aliveVMs;
 
   VirtualMachineOptions _options;

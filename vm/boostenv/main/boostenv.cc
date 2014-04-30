@@ -301,20 +301,25 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
 }
 
 BoostVM& BoostEnvironment::addVM(const std::string& app, bool isURL) {
+  std::lock_guard<std::mutex> lock(_vmsMutex);
   vms.emplace_front(*this, _nextVMIdentifier++, _options, app, isURL);
   _aliveVMs++;
   return vms.front();
 }
 
 BoostVM& BoostEnvironment::getVM(VM vm, nativeint identifier) {
-  for (BoostVM& vm : vms) {
-    if (vm.identifier == identifier)
-      return vm;
+  {
+    std::lock_guard<std::mutex> lock(_vmsMutex);
+    for (BoostVM& vm : vms) {
+      if (vm.identifier == identifier)
+        return vm;
+    }
   }
   raiseError(vm, "Invalid VM identifier: ", identifier);
 }
 
 UnstableNode BoostEnvironment::listVMs(VM vm) {
+  std::lock_guard<std::mutex> lock(_vmsMutex);
   UnstableNode list = buildList(vm);
   for (BoostVM& boostVM : vms) {
     if (boostVM.isRunning())

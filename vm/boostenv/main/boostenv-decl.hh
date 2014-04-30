@@ -31,6 +31,7 @@
 #include <cstdio>
 #include <cerrno>
 #include <forward_list>
+#include <mutex>
 
 #include <boost/thread.hpp>
 
@@ -260,7 +261,8 @@ public:
 // VMs
 private:
   std::forward_list<BoostVM> vms;
-  std::atomic_int _nextVMIdentifier;
+  std::mutex _vmsMutex;
+  nativeint _nextVMIdentifier;
   std::atomic_int _aliveVMs;
 
   VirtualMachineOptions _options;

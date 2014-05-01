@@ -214,17 +214,17 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
-void BoostVM::addMonitor(BoostVM& monitor) {
-  std::lock_guard<std::mutex> lock(_monitorsMutex);
-  _monitors.push_back(monitor.vm);
-}
-
 bool BoostVM::isRunning() {
   return !_terminated.load(std::memory_order_acquire);
 }
 
 void BoostVM::requestTermination() {
   postVMEvent([this] { this->terminate(); });
+}
+
+void BoostVM::addMonitor(BoostVM& monitor) {
+  boost::lock_guard<std::mutex> lock(_monitorsMutex);
+  _monitors.push_back(monitor.vm);
 }
 
 void BoostVM::tellMonitors() {

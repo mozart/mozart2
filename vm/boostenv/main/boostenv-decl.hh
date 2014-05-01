@@ -85,13 +85,13 @@ public:
 
   void receiveOnVMPort(std::vector<unsigned char>* buffer);
 
-  void addMonitor(BoostVM& monitor);
-
 // Termination
 public:
   bool isRunning();
 
   void requestTermination();
+
+  void addMonitor(BoostVM& monitor);
 
 private:
   void tellMonitors();

@@ -353,9 +353,8 @@ UnstableNode BoostEnvironment::listVMs(VM vm) {
 
 void BoostEnvironment::killVM(VM vm, nativeint exitCode) {
   if (BoostVM::forVM(vm).isRunning()) {
-    _aliveVMs--;
     BoostVM::forVM(vm).requestTermination();
-    if (_aliveVMs == 0) { // killing the last VM
+    if (--_aliveVMs == 0) { // killing the last VM
       std::exit(exitCode);
     }
   }

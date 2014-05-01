@@ -239,11 +239,11 @@ void BoostVM::tellMonitors() {
 }
 
 void BoostVM::terminate() {
-  if (_terminated.load(std::memory_order_acquire))
-    return;
-  closeStream();
-  _terminated.store(true, std::memory_order_release);
-  tellMonitors();
+  if (!_terminated.load(std::memory_order_acquire)) {
+    _terminated.store(true, std::memory_order_release);
+    closeStream();
+    tellMonitors();
+  }
 }
 
 //////////////////////

@@ -65,7 +65,6 @@ BoostVM::BoostVM(BoostEnvironment& environment,
 void BoostVM::start(std::string app, bool isURL) {
   if (!env.vmStarter(vm, app, isURL))
     std::cerr << "Could not start VM." << std::endl;
-  delete _work;
 }
 
 void BoostVM::run() {
@@ -243,6 +242,7 @@ void BoostVM::terminate() {
     _terminated.store(true, std::memory_order_release);
     closeStream();
     tellMonitors();
+    delete _work;
   }
 }
 

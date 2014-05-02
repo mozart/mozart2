@@ -176,6 +176,21 @@ void PropertyRegistry::registerPredefined(VM vm) {
   registerConstantProp(vm, "time.gc", 0);
   registerValueProp(vm, "time.detailed", false);
 
+  // FD
+
+  registerConstantProp(vm, "fd.variables", 0);
+  registerConstantProp(vm, "fd.propagators", 0);
+  registerConstantProp(vm, "fd.invoked", 0);
+  registerValueProp(vm, "fd.threshold", 0);
+
+  // Spaces
+
+  registerConstantProp(vm, "spaces.created", 0);
+  registerConstantProp(vm, "spaces.cloned", 0);
+  registerConstantProp(vm, "spaces.committed", 0);
+  registerConstantProp(vm, "spaces.failed", 0);
+  registerConstantProp(vm, "spaces.succeeded", 0);
+
   // Easy access to Oz procedures
   registerValueProp(vm, "pickle.pack", unit);
 

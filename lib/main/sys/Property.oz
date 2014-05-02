@@ -132,6 +132,8 @@ define
 
    {RegisterAggregate 'errors' [handler debug 'thread' width depth]}
 
+   {RegisterAggregate 'fd' [variables propagators invoked threshold]}
+
    {RegisterAggregate 'gc' [size threshold active min free tolerance on codeCycles]}
 
    {RegisterAggregate 'limits' ['int.min' 'int.max' 'bytecode.xregisters']}
@@ -143,6 +145,8 @@ define
    {RegisterAggregate 'print' [width depth]}
 
    {RegisterAggregate 'priorities' [high medium]}
+
+   {RegisterAggregate 'spaces' [created cloned committed failed succeeded]}
 
    {RegisterAggregate 'threads' [created runnable min]}
 

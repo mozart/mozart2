@@ -24,6 +24,7 @@
 
 #include "boostenv.hh"
 
+#include <exception>
 #include <fstream>
 #include <boost/random/random_device.hpp>
 
@@ -63,8 +64,16 @@ BoostVM::BoostVM(BoostEnvironment& environment,
 };
 
 void BoostVM::start(std::string app, bool isURL) {
-  if (!env.vmStarter(vm, app, isURL))
-    std::cerr << "Could not start VM." << std::endl;
+  try {
+    if (!env.vmStarter(vm, app, isURL)) {
+      std::cerr << "Could not start VM." << std::endl;
+    }
+  } catch (std::exception& e) {
+    std::cerr << "Terminated VM " << identifier;
+    std::cerr << " because a C++ exception was uncaught:" << std::endl;
+    std::cerr << e.what() << std::endl;
+  }
+  terminate();
 }
 
 void BoostVM::run() {
@@ -132,8 +141,6 @@ void BoostVM::run() {
     // Cancel the alarm timer, in case it was not it that woke me
     alarmTimer.cancel();
   }
-
-  terminate();
 }
 
 void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
@@ -242,6 +249,8 @@ void BoostVM::terminate() {
     _terminated.store(true, std::memory_order_release);
     closeStream();
     tellMonitors();
+    preemptionTimer.cancel();
+    alarmTimer.cancel();
     delete _work;
   }
 }

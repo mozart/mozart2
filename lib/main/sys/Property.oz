@@ -52,7 +52,7 @@ define
    end
 
    proc {RegisterAggregate Prop Fields}
-      Desc
+      Desc = {Record.make Prop Fields}
       fun {Getter}
          {Record.map Desc Get}
       end
@@ -63,7 +63,6 @@ define
           end}
       end
    in
-      Desc = {MakeRecord Lab Fs}
       for F in Fields do
          Desc.F = {VirtualString.toAtom Prop#'.'#F}
       end
@@ -138,5 +137,15 @@ define
    {RegisterAggregate 'application' [args url gui]}
 
    {RegisterAggregate 'platform' [name os arch]}
+
+   {RegisterAggregate 'gc' [size threshold active min free tolerance on codeCycles]}
+
+   {RegisterAggregate 'messages' [gc idle]}
+
+   {RegisterAggregate 'priorities' [high medium]}
+
+   {RegisterAggregate 'threads' [created runnable min]}
+
+   {RegisterAggregate 'time' [user system total run idle copy propagate gc detailed]}
 
 end

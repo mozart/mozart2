@@ -128,19 +128,19 @@ define
 
    % Some aggregate properties
 
-   {RegisterAggregate 'print' [width depth]}
+   {RegisterAggregate 'application' [args url gui]}
 
    {RegisterAggregate 'errors' [handler debug 'thread' width depth]}
 
+   {RegisterAggregate 'gc' [size threshold active min free tolerance on codeCycles]}
+
    {RegisterAggregate 'limits' ['int.min' 'int.max' 'bytecode.xregisters']}
 
-   {RegisterAggregate 'application' [args url gui]}
+   {RegisterAggregate 'messages' [gc idle]}
 
    {RegisterAggregate 'platform' [name os arch]}
 
-   {RegisterAggregate 'gc' [size threshold active min free tolerance on codeCycles]}
-
-   {RegisterAggregate 'messages' [gc idle]}
+   {RegisterAggregate 'print' [width depth]}
 
    {RegisterAggregate 'priorities' [high medium]}
 

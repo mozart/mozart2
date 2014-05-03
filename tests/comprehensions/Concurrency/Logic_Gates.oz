@@ -33,4 +33,4 @@ Input2
 {Browse 'All in one'}
 {Browse {AllGates Input1 Input2}}
 %% feed inputs
-thread Input1#Input2 = [{OS.rand} mod 2 {OS.rand} mod 2 for lazy A in 0 ; A<20 ;A+1 body {Delay 1000}] end
+thread Input1#Input2 = [{OS.rand} mod 2 {OS.rand} mod 2 for lazy A in 0 ; A<20 ;A+1 do {Delay 1000}] end

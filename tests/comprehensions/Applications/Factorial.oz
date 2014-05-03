@@ -3,17 +3,10 @@
 %%     Francois Fonteyn, 2014
 %%
 
-declare
-fun  {FactLC N}
-   R L
-in
-   L = [c:collect:C for A in N ; A >= 0 ; A-1 do
-                       if A == N then {C 1} end
-                       if A == 0 then R = {Nth L.c N-A+1}
-                       else {C {Nth L.c N-A+1}*A}
-                       end]
-   R
-end
-for I in 0..10 do
-   {Browse {VirtualString.toAtom "Fact("#I#") = "#{FactLC I}}}
+local N Fs Vs in
+   N = 10 % compute factorials from 0 to 10
+   '#'(factOf:Fs value:Vs) = [value:A factOf:I for I in 0..N A in 1 ; A*(I+1)]
+   for F in Fs V in Vs do
+      {Browse {VirtualString.toAtom "Fact("#F#") = "#V}}
+   end
 end

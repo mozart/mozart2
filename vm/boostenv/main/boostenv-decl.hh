@@ -135,8 +135,9 @@ public:
 
 // VM Port
 public:
-  void sendToVMPort(VM from, VM to, RichNode value) {
-    BoostVM::forVM(from).sendToVMPort(BoostVM::forVM(to), value);
+  void sendToVMPort(VM from, nativeint to, RichNode value) {
+    BoostVM& target = getVM(from, to);
+    BoostVM::forVM(from).sendToVMPort(target, value);
   }
 
 // GC

@@ -86,25 +86,25 @@ private:
 #endif
 
 class VMPort: public DataType<VMPort>,
-  StoredAs<VM>, WithValueBehavior {
+  StoredAs<nativeint>, WithValueBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
     return vm->getAtom("port");
   }
 
-  explicit VMPort(VM target): _vm(target) {}
+  explicit VMPort(nativeint targetVM): _identifier(targetVM) {}
 
-  static void create(VM& self, VM vm, VM target) {
+  static void create(nativeint& self, VM vm, nativeint target) {
     self = target;
   }
 
-  static void create(VM& self, VM vm, GR gr, VMPort from) {
-    self = from._vm;
+  static void create(nativeint& self, VM vm, GR gr, VMPort from) {
+    self = from._identifier;
   }
 
 public:
-  VM value() {
-    return _vm;
+  nativeint value() {
+    return _identifier;
   }
 
 public:
@@ -132,7 +132,7 @@ public:
   }
 
 private:
-  VM _vm;
+  nativeint _identifier;
 };
 
 #ifndef MOZART_GENERATOR

@@ -97,8 +97,8 @@ public:
 
     static void call(VM vm, In identifier, Out result) {
       nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
-      BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
-      result = VMPort::build(vm, targetVM.vm);
+      BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
+      result = VMPort::build(vm, intIdentifier);
     }
   };
 

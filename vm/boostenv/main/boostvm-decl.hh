@@ -27,6 +27,7 @@
 
 #include <mozart.hh>
 
+#include <atomic>
 #include <mutex>
 
 #include <boost/thread.hpp>
@@ -144,6 +145,7 @@ private:
 private:
   StableNode* _headOfStream;
   StableNode* _stream;
+  std::atomic_bool _portClosed;
 
 // Number of asynchronous IO nodes - used for termination detection
 private:

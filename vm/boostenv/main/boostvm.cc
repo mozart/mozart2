@@ -41,6 +41,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   VirtualMachine(environment, options), vm(this),
   env(environment), identifier(identifier),
   uuidGenerator(random_generator),
+  _portClosed(false),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
@@ -188,7 +189,7 @@ bool BoostVM::streamAsked() {
 }
 
 bool BoostVM::portClosed() {
-  return _stream == nullptr;
+  return _portClosed;
 }
 
 void BoostVM::getStream(UnstableNode &stream) {
@@ -209,17 +210,18 @@ void BoostVM::closeStream() {
       _asyncIONodeCount--; // We are no more interested in the stream
     UnstableNode nil = buildNil(vm);
     BindableReadOnly(*_stream).bindReadOnly(vm, nil);
-    _stream = nullptr;
+    _portClosed = true;
   }
 }
 
 void BoostVM::sendToVMPort(VMIdentifier to, RichNode value) {
+  // If the target VM has closed its port or terminated,
+  // we do not need to pickle value
   bool portClosed = true;
   env.findVM(to, [&portClosed] (BoostVM& targetVM) {
     portClosed = targetVM.portClosed();
   });
-
-  if (portClosed) // TODO: this should be made thread-safe
+  if (portClosed)
     return;
 
   UnstableNode picklePack;

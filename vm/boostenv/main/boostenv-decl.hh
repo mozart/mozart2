@@ -39,6 +39,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "boostvm-decl.hh"
+#include "boostenvbigint-decl.hh"
 
 namespace mozart { namespace boostenv {
 
@@ -120,19 +121,23 @@ public:
 // BigInt
 
 public:
-  inline
-  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value) {
+    return BoostBigInt::make_shared_ptr(value);
+  }
 
-  inline
-  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, double value);
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, double value) {
+    return BoostBigInt::make_shared_ptr(value);
+  }
 
-  inline
-  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value);
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value) {
+    return BoostBigInt::make_shared_ptr(value);
+  }
 
 // VM Port
 public:
-  inline
-  void sendToVMPort(VM from, VM to, RichNode value);
+  void sendToVMPort(VM from, VM to, RichNode value) {
+    BoostVM::forVM(from).sendToVMPort(BoostVM::forVM(to), value);
+  }
 
 // GC
 public:

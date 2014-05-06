@@ -159,22 +159,6 @@ void BoostEnvironment::runIO() {
   io_service.run();
 }
 
-std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, nativeint value) {
-  return BoostBigInt::make_shared_ptr(value);
-}
-
-std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, double value) {
-  return BoostBigInt::make_shared_ptr(value);
-}
-
-std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, const std::string& value) {
-  return BoostBigInt::make_shared_ptr(value);
-}
-
-void BoostEnvironment::sendToVMPort(VM vm, VM to, RichNode value) {
-  BoostVM::forVM(vm).sendToVMPort(BoostVM::forVM(to), value);
-}
-
 ///////////////
 // Utilities //
 ///////////////

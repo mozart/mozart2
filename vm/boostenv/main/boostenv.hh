@@ -172,25 +172,7 @@ std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, const std
 }
 
 void BoostEnvironment::sendToVMPort(VM vm, VM to, RichNode value) {
-  if (BoostVM::forVM(to).portClosed())
-    return;
-
-  UnstableNode picklePack;
-  if (!vm->getPropertyRegistry().get(vm, "pickle.pack", picklePack))
-    raiseError(vm, "Could not find property pickle.pack");
-
-  UnstableNode vbs;
-  ozcalls::ozCall(vm, "mozart::boostenv::BoostEnvironment::sendToVMPort",
-    picklePack, value, ozcalls::out(vbs));
-
-  size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
-  // allocates the vector in a neutral zone: the heap
-  std::vector<unsigned char> *buffer = new std::vector<unsigned char>();
-  ozVBSGet(vm, vbs, bufSize, *buffer);
-
-  BoostVM::forVM(to).postVMEvent([=] () {
-    BoostVM::forVM(to).receiveOnVMPort(buffer);
-  });
+  BoostVM::forVM(vm).sendToVMPort(BoostVM::forVM(to), value);
 }
 
 ///////////////

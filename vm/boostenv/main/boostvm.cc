@@ -201,6 +201,28 @@ void BoostVM::closeStream() {
   }
 }
 
+void BoostVM::sendToVMPort(BoostVM& to, RichNode value) {
+  if (to.portClosed()) // TODO: this should be made thread-safe
+    return;
+
+  UnstableNode picklePack;
+  if (!vm->getPropertyRegistry().get(vm, "pickle.pack", picklePack))
+    raiseError(vm, "Could not find property pickle.pack");
+
+  UnstableNode vbs;
+  ozcalls::ozCall(vm, "mozart::boostenv::BoostEnvironment::sendToVMPort",
+    picklePack, value, ozcalls::out(vbs));
+
+  size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
+  // allocates the vector in a neutral zone: the heap
+  std::vector<unsigned char> *buffer = new std::vector<unsigned char>();
+  ozVBSGet(vm, vbs, bufSize, *buffer);
+
+  to.postVMEvent([buffer,&to] () {
+    to.receiveOnVMPort(buffer);
+  });
+}
+
 void BoostVM::receiveOnVMPort(UnstableNode value) {
   if (!portClosed())
     sendToReadOnlyStream(vm, _stream, value);

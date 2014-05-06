@@ -78,6 +78,8 @@ public:
 
   void closeStream();
 
+  void sendToVMPort(BoostVM& to, RichNode value);
+
   void receiveOnVMPort(UnstableNode value);
 
   void receiveOnVMPort(std::vector<unsigned char>* buffer);

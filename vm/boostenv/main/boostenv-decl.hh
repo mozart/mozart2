@@ -66,7 +66,7 @@ public:
   BoostVM& addVM(const std::string& app, bool isURL);
 
   inline
-  BoostVM& getVM(VM vm, nativeint identifier);
+  BoostVM& getVM(VM vm, VMIdentifier identifier);
 
   inline
   UnstableNode listVMs(VM vm);
@@ -135,7 +135,7 @@ public:
 
 // VM Port
 public:
-  void sendToVMPort(VM from, nativeint to, RichNode value) {
+  void sendToVMPort(VM from, VMIdentifier to, RichNode value) {
     BoostVM& target = getVM(from, to);
     BoostVM::forVM(from).sendToVMPort(target, value);
   }
@@ -150,7 +150,7 @@ public:
 private:
   std::forward_list<BoostVM> vms;
   std::mutex _vmsMutex;
-  nativeint _nextVMIdentifier;
+  VMIdentifier _nextVMIdentifier;
   std::atomic_int _aliveVMs;
 
   VirtualMachineOptions _options;

@@ -59,7 +59,7 @@ std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, 
   raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
 }
 
-void VirtualMachineEnvironment::sendToVMPort(VM from, nativeint to, RichNode value) {
+void VirtualMachineEnvironment::sendToVMPort(VM from, VMIdentifier to, RichNode value) {
   raiseError(from, "{Send VMPort} not implemented in this environment");
 }
 

@@ -34,7 +34,7 @@ namespace mozart { namespace boostenv {
 /////////////
 
 BoostVM::BoostVM(BoostEnvironment& environment,
-                 nativeint identifier,
+                 VMIdentifier identifier,
                  VirtualMachineOptions options,
                  const std::string& app, bool isURL) :
   VirtualMachine(environment, options), vm(this),
@@ -259,7 +259,7 @@ void BoostVM::addMonitor(BoostVM& monitor) {
 
 void BoostVM::tellMonitors() {
   std::lock_guard<std::mutex> lock(_monitorsMutex);
-  nativeint deadVM = this->identifier;
+  VMIdentifier deadVM = this->identifier;
   for (VM vm : _monitors) {
     BoostVM::forVM(vm).postVMEvent([=] () {
       BoostVM::forVM(vm).receiveOnVMPort(buildTuple(vm, "terminated", deadVM));

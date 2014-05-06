@@ -47,7 +47,7 @@ class BoostEnvironment;
 class BoostVM : VirtualMachine {
 public:
   BoostVM(BoostEnvironment& environment,
-          nativeint identifier,
+          VMIdentifier identifier,
           VirtualMachineOptions options,
           const std::string& app, bool isURL);
 
@@ -133,7 +133,7 @@ public:
 public:
   VM vm;
   BoostEnvironment& env;
-  nativeint identifier;
+  VMIdentifier identifier;
 
 // Random number and UUID generation
 public:

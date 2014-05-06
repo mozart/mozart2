@@ -124,7 +124,7 @@ BoostVM& BoostEnvironment::addVM(const std::string& app, bool isURL) {
   return vms.front();
 }
 
-BoostVM& BoostEnvironment::getVM(VM vm, nativeint identifier) {
+BoostVM& BoostEnvironment::getVM(VM vm, VMIdentifier identifier) {
   {
     std::lock_guard<std::mutex> lock(_vmsMutex);
     for (BoostVM& vm : vms) {

@@ -96,7 +96,7 @@ public:
     GetPort(): Builtin("getPort") {}
 
     static void call(VM vm, In identifier, Out result) {
-      nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
+      VMIdentifier intIdentifier = getArgument<VMIdentifier>(vm, identifier);
       BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
       result = VMPort::build(vm, intIdentifier);
     }
@@ -134,7 +134,7 @@ public:
     Kill(): Builtin("kill") {}
 
     static void call(VM vm, In identifier) {
-      nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
+      VMIdentifier intIdentifier = getArgument<VMIdentifier>(vm, identifier);
       BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
       BoostEnvironment::forVM(targetVM.vm).killVM(targetVM.vm, 0);
     }
@@ -145,7 +145,7 @@ public:
     Monitor(): Builtin("monitor") {}
 
     static void call(VM vm, In identifier) {
-      nativeint intIdentifier = getArgument<nativeint>(vm, identifier);
+      VMIdentifier intIdentifier = getArgument<VMIdentifier>(vm, identifier);
       BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
       targetVM.addMonitor(BoostVM::forVM(vm));
     }

@@ -183,6 +183,8 @@ struct VirtualMachineOptions {
   size_t maximalHeapSize;
 };
 
+typedef nativeint VMIdentifier;
+
 typedef std::function<void(VM)> VMCleanupProc;
 
 /** Node of a linked list of things to do on cleanup

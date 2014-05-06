@@ -183,12 +183,14 @@ bool BoostVM::portClosed() {
 }
 
 void BoostVM::getStream(UnstableNode &stream) {
-  if (streamAsked()) {
-    raiseError(vm, "VM.stream can only be called once, otherwise it would leak");
-  } else {
+  if (!streamAsked()) {
+    // Get the beginning of the stream as if the call was done at VM creation
     stream.copy(vm, *_headOfStream);
     _asyncIONodeCount++; // Wait for the VM stream until closeStream()
     _headOfStream = nullptr;
+  } else {
+    // Get the tail of the stream
+    stream.copy(vm, *_stream);
   }
 }
 

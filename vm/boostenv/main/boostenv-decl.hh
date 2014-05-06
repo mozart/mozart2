@@ -150,7 +150,7 @@ public:
 private:
   std::forward_list<BoostVM> vms;
   std::mutex _vmsMutex;
-  VMIdentifier _nextVMIdentifier;
+  VMIdentifier _nextVMIdentifier; // protected by _vmsMutex
   std::atomic_int _aliveVMs;
 
   VirtualMachineOptions _options;

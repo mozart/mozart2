@@ -25,8 +25,12 @@
 #ifndef MOZART_BOOSTENV_H
 #define MOZART_BOOSTENV_H
 
+#include <exception>
+#include <fstream>
+
 #include "boostenv-decl.hh"
 
+#include "boostvm.hh"
 #include "boostenvutils.hh"
 #include "boostenvtcp.hh"
 #include "boostenvpipe.hh"
@@ -36,57 +40,157 @@
 
 namespace mozart { namespace boostenv {
 
-/////////////
-// BoostVM //
-/////////////
+//////////////////////
+// BoostEnvironment //
+//////////////////////
 
-ProtectedNode BoostVM::allocAsyncIONode(StableNode* node) {
-  _asyncIONodeCount++;
-  return vm->protect(*node);
-}
+namespace {
+  /* TODO It might be worth, someday, to investigate how we can lift this
+   * decoding to the Oz level.
+   * It should somewhere in Resolve.oz and/or URL.oz.
+   * But at the same time, not forgetting that this function implements
+   * bootURLLoad (not a hypothetical bootFileLoad)!
+   *
+   * In fact it is already a duplicate of the logic in OS.oz.
+   */
 
-void BoostVM::releaseAsyncIONode(const ProtectedNode& node) {
-  assert(_asyncIONodeCount > 0);
-  _asyncIONodeCount--;
-}
-
-ProtectedNode BoostVM::createAsyncIOFeedbackNode(UnstableNode& readOnly) {
-  StableNode* stable = new (vm) StableNode;
-  stable->init(vm, Variable::build(vm));
-
-  readOnly = ReadOnly::newReadOnly(vm, *stable);
-
-  return allocAsyncIONode(stable);
-}
-
-template <class LT, class... Args>
-void BoostVM::bindAndReleaseAsyncIOFeedbackNode(
-  const ProtectedNode& ref, LT&& label, Args&&... args) {
-
-  UnstableNode rhs = buildTuple(vm, std::forward<LT>(label),
-                                std::forward<Args>(args)...);
-  DataflowVariable(*ref).bind(vm, rhs);
-  releaseAsyncIONode(ref);
-}
-
-template <class LT, class... Args>
-void BoostVM::raiseAndReleaseAsyncIOFeedbackNode(
-  const ProtectedNode& ref, LT&& label, Args&&... args) {
-
-  UnstableNode exception = buildTuple(vm, std::forward<LT>(label),
-                                      std::forward<Args>(args)...);
-  bindAndReleaseAsyncIOFeedbackNode(
-    ref, FailedValue::build(vm, RichNode(exception).getStableRef(vm)));
-}
-
-void BoostVM::postVMEvent(std::function<void()> callback) {
-  {
-    boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
-    _vmEventsCallbacks.push(callback);
+  inline
+  char hexDigitToValue(char digit) {
+    // Don't care to give meaningful results if the digit is not valid
+    if (digit <= '9')
+      return digit - '0';
+    else if (digit <= 'Z')
+      return digit - ('A'-10);
+    else
+      return digit - ('a'-10);
   }
 
-  vm->requestExitRun();
-  _conditionWorkToDoInVM.notify_all();
+  inline
+  std::string decodeURL(const std::string& encoded) {
+    // Fast path when there is nothing to do
+    if (encoded.find('%') == std::string::npos)
+      return encoded;
+
+    // Relevant reminder: Unicode URLs are UTF-8 encoded then %-escaped
+
+    std::string decoded;
+    decoded.reserve(encoded.size());
+
+    for (size_t i = 0; i < encoded.size(); ++i) {
+      char c = encoded[i];
+      if (c == '%' && (i+2 < encoded.size())) {
+        char v1 = hexDigitToValue(encoded[++i]);
+        char v2 = hexDigitToValue(encoded[++i]);
+        decoded.push_back((v1 << 4) | v2);
+      } else {
+        decoded.push_back(c);
+      }
+    }
+
+    return decoded;
+  }
+
+  inline
+  std::string decodedURLToFilename(const std::string& url) {
+    // Not sure this is the right test (why not // ?), but it was so in Mozart 1
+    if (url.substr(0, 5) == "file:")
+      return url.substr(5);
+    else
+      return url;
+  }
+
+  bool defaultBootLoader(VM vm, const std::string& url, UnstableNode& result) {
+    std::string filename = decodedURLToFilename(decodeURL(url));
+    std::ifstream input(filename, std::ios::binary);
+    if (!input.is_open())
+      return false;
+    result = bootUnpickle(vm, input);
+    return true;
+  }
+}
+
+BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
+                                   VirtualMachineOptions options) :
+  _nextVMIdentifier(1), _aliveVMs(0),
+  _options(options), vmStarter(vmStarter) {
+  // Set up a default boot loader
+  setBootLoader(&defaultBootLoader);
+}
+
+BoostVM& BoostEnvironment::addVM(const std::string& app, bool isURL) {
+  std::lock_guard<std::mutex> lock(_vmsMutex);
+  vms.emplace_front(*this, _nextVMIdentifier++, _options, app, isURL);
+  _aliveVMs++;
+  return vms.front();
+}
+
+BoostVM& BoostEnvironment::getVM(VM vm, nativeint identifier) {
+  {
+    std::lock_guard<std::mutex> lock(_vmsMutex);
+    for (BoostVM& vm : vms) {
+      if (vm.identifier == identifier)
+        return vm;
+    }
+  }
+  raiseError(vm, "Invalid VM identifier: ", identifier);
+}
+
+UnstableNode BoostEnvironment::listVMs(VM vm) {
+  std::lock_guard<std::mutex> lock(_vmsMutex);
+  UnstableNode list = buildList(vm);
+  for (BoostVM& boostVM : vms) {
+    if (boostVM.isRunning())
+      list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
+  }
+  return list;
+}
+
+void BoostEnvironment::killVM(VM vm, nativeint exitCode) {
+  if (BoostVM::forVM(vm).isRunning()) {
+    BoostVM::forVM(vm).requestTermination();
+    if (--_aliveVMs == 0) { // killing the last VM
+      std::exit(exitCode);
+    }
+  }
+}
+
+void BoostEnvironment::runIO() {
+  // This will end when all VMs are done.
+  io_service.run();
+}
+
+std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, nativeint value) {
+  return BoostBigInt::make_shared_ptr(value);
+}
+
+std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, double value) {
+  return BoostBigInt::make_shared_ptr(value);
+}
+
+std::shared_ptr<BigIntImplem> BoostEnvironment::newBigIntImplem(VM vm, const std::string& value) {
+  return BoostBigInt::make_shared_ptr(value);
+}
+
+void BoostEnvironment::sendToVMPort(VM vm, VM to, RichNode value) {
+  if (BoostVM::forVM(to).portClosed())
+    return;
+
+  UnstableNode picklePack;
+  if (!vm->getPropertyRegistry().get(vm, "pickle.pack", picklePack))
+    raiseError(vm, "Could not find property pickle.pack");
+
+  UnstableNode vbs;
+  ozcalls::ozCall(vm, "mozart::boostenv::BoostEnvironment::sendToVMPort",
+    picklePack, value, ozcalls::out(vbs));
+
+  size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
+  // allocates the vector in a neutral zone: the heap
+  std::vector<unsigned char> *buffer = new std::vector<unsigned char>();
+  ozVBSGet(vm, vbs, bufSize, *buffer);
+
+  BoostVM::forVM(to).postVMEvent([=] () {
+    BoostVM::forVM(to).receiveOnVMPort(buffer);
+  });
 }
 
 ///////////////
@@ -117,12 +221,6 @@ void raiseOSError(VM vm, const char* function,
 
 } }
 
-#endif
-
-#if !defined(MOZART_GENERATOR) && !defined(MOZART_BUILTIN_GENERATOR)
-namespace mozart { namespace boostenv { namespace builtins {
-#include "boostenvbuiltins.hh"
-} } }
 #endif
 
 #endif // MOZART_BOOSTENV_H

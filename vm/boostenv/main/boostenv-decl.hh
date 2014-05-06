@@ -35,148 +35,12 @@
 
 #include <boost/thread.hpp>
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/random_generator.hpp>
-
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/bind.hpp>
+
+#include "boostvm-decl.hh"
 
 namespace mozart { namespace boostenv {
-
-class BoostEnvironment;
-
-class BoostVM : VirtualMachine {
-public:
-  BoostVM(BoostEnvironment& environment,
-          nativeint identifier,
-          VirtualMachineOptions options,
-          const std::string& app, bool isURL);
-
-  static BoostVM& forVM(VM vm) {
-    return *static_cast<BoostVM*>(vm);
-  }
-
-// Run and preemption
-public:
-  void run();
-private:
-  void start(std::string app, bool isURL);
-  void onPreemptionTimerExpire(const boost::system::error_code& error);
-
-// UUID generation
-public:
-  UUID genUUID();
-private:
-  inline
-  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
-
-// VM Port
-public:
-  bool streamAsked();
-
-  bool portClosed();
-
-  void getStream(UnstableNode &stream);
-
-  void closeStream();
-
-  void receiveOnVMPort(UnstableNode value);
-
-  void receiveOnVMPort(std::vector<unsigned char>* buffer);
-
-// Termination
-public:
-  bool isRunning();
-
-  void requestTermination();
-
-  void addMonitor(BoostVM& monitor);
-
-private:
-  void tellMonitors();
-
-  void terminate();
-
-// Management of nodes used by asynchronous operations for feedback
-public:
-  inline
-  ProtectedNode allocAsyncIONode(StableNode* node);
-
-  inline
-  void releaseAsyncIONode(const ProtectedNode& node);
-
-  inline
-  ProtectedNode createAsyncIOFeedbackNode(UnstableNode& readOnly);
-
-  template <class LT, class... Args>
-  inline
-  void bindAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
-                                         LT&& label, Args&&... args);
-
-  template <class LT, class... Args>
-  inline
-  void raiseAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
-                                          LT&& label, Args&&... args);
-
-// Notification from asynchronous work
-public:
-  inline
-  void postVMEvent(std::function<void()> callback);
-
-// GC
-public:
-  void gCollect(GC gc) {
-    gc->copyStableRef(_headOfStream, _headOfStream);
-    gc->copyStableRef(_stream, _stream);
-  }
-
-public:
-  VM vm;
-  BoostEnvironment& env;
-  nativeint identifier;
-
-// Random number and UUID generation
-public:
-  typedef boost::random::mt19937 random_generator_t;
-  random_generator_t random_generator;
-private:
-  boost::uuids::random_generator uuidGenerator;
-
-// VM stream
-private:
-  StableNode* _headOfStream;
-  StableNode* _stream;
-
-// Number of asynchronous IO nodes - used for termination detection
-private:
-  size_t _asyncIONodeCount;
-
-// Synchronization condition variable telling there is work to do in the VM
-private:
-  boost::condition_variable _conditionWorkToDoInVM;
-  boost::mutex _conditionWorkToDoInVMMutex;
-
-// Preemption and alarms
-private:
-  boost::asio::deadline_timer preemptionTimer;
-  boost::asio::deadline_timer alarmTimer;
-
-// IO-driven events that must work with the VM store
-private:
-  std::queue<std::function<void()> > _vmEventsCallbacks;
-
-// Monitors
-private:
-  std::vector<VM> _monitors;
-  std::mutex _monitorsMutex;
-
-// Running thread management
-private:
-  boost::asio::io_service::work* _work;
-  boost::thread _thread;
-  std::atomic_bool _terminated;
-};
 
 //////////////////////
 // BoostEnvironment //
@@ -194,14 +58,19 @@ public:
   }
 
 public:
+  inline
   BoostEnvironment(const VMStarter& vmStarter, VirtualMachineOptions options);
 
+  inline
   BoostVM& addVM(const std::string& app, bool isURL);
 
+  inline
   BoostVM& getVM(VM vm, nativeint identifier);
 
+  inline
   UnstableNode listVMs(VM vm);
 
+  inline
   void killVM(VM vm, nativeint exitCode);
 
 // Configuration
@@ -218,6 +87,7 @@ public:
 // Run and preemption
 
 public:
+  inline
   void runIO();
 
 // Time
@@ -261,6 +131,7 @@ public:
 
 // VM Port
 public:
+  inline
   void sendToVMPort(VM from, VM to, RichNode value);
 
 // GC

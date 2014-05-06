@@ -87,5 +87,5 @@ add_custom_target(genboostsources
 
 # Boost environment library
 
-add_library(mozartvmboost boostenv.cc boostenvmodules.cc)
+add_library(mozartvmboost boostvm.cc boostenvmodules.cc)
 add_dependencies(mozartvmboost genboostsources)

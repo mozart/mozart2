@@ -25,6 +25,7 @@
 #include "boostenv.hh"
 
 #include <exception>
+#include <boost/bind.hpp>
 #include <boost/random/random_device.hpp>
 
 namespace mozart { namespace boostenv {
@@ -43,7 +44,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
-  _terminated(false) {
+  _terminationRequested(false) {
 
   // Make sure the IO thread will wait for us
   _work = new boost::asio::io_service::work(environment.io_service);
@@ -59,7 +60,8 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   _stream = _headOfStream = RichNode(future).getStableRef(vm);
 
   // Finally start the VM thread, which will initialize and run the VM
-  _thread = boost::thread(&BoostVM::start, this, app, isURL);
+  boost::thread thread(&BoostVM::start, this, app, isURL);
+  thread.detach();
 };
 
 void BoostVM::start(std::string app, bool isURL) {
@@ -68,6 +70,10 @@ void BoostVM::start(std::string app, bool isURL) {
       std::cerr << "Could not start VM." << std::endl;
     }
   } catch (std::exception& e) {
+    // Ensure to stop the timers as we might have quitted run() brutally
+    preemptionTimer.cancel();
+    alarmTimer.cancel();
+
     std::cerr << "Terminated VM " << identifier;
     std::cerr << " because a C++ exception was uncaught:" << std::endl;
     std::cerr << e.what() << std::endl;
@@ -104,7 +110,7 @@ void BoostVM::run() {
       boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
 
       // Is there anything left to do?
-      if (!isRunning() || ((nextInvoke == recNeverInvokeAgain) &&
+      if (((nextInvoke == recNeverInvokeAgain) &&
           (_asyncIONodeCount == 0) && _vmEventsCallbacks.empty())) {
         // Totally finished, nothing can ever wake me again
         break;
@@ -114,6 +120,9 @@ void BoostVM::run() {
       while (!_vmEventsCallbacks.empty()) {
         _vmEventsCallbacks.front()();
         _vmEventsCallbacks.pop();
+
+        if (_terminationRequested)
+          return; // Safe point to exit run()
 
         // That could have created work for the VM
         nextInvoke = recInvokeAgainNow;
@@ -195,16 +204,22 @@ void BoostVM::getStream(UnstableNode &stream) {
 }
 
 void BoostVM::closeStream() {
-  if (streamAsked() && !portClosed()) {
-    _asyncIONodeCount--; // We are no more interested in the stream
+  if (!portClosed()) {
+    if (streamAsked())
+      _asyncIONodeCount--; // We are no more interested in the stream
     UnstableNode nil = buildNil(vm);
     BindableReadOnly(*_stream).bindReadOnly(vm, nil);
     _stream = nullptr;
   }
 }
 
-void BoostVM::sendToVMPort(BoostVM& to, RichNode value) {
-  if (to.portClosed()) // TODO: this should be made thread-safe
+void BoostVM::sendToVMPort(VMIdentifier to, RichNode value) {
+  bool portClosed = true;
+  env.findVM(to, [&portClosed] (BoostVM& targetVM) {
+    portClosed = targetVM.portClosed();
+  });
+
+  if (portClosed) // TODO: this should be made thread-safe
     return;
 
   UnstableNode picklePack;
@@ -220,9 +235,13 @@ void BoostVM::sendToVMPort(BoostVM& to, RichNode value) {
   std::vector<unsigned char> *buffer = new std::vector<unsigned char>();
   ozVBSGet(vm, vbs, bufSize, *buffer);
 
-  to.postVMEvent([buffer,&to] () {
-    to.receiveOnVMPort(buffer);
+  bool found = env.findVM(to, [buffer] (BoostVM& targetVM) {
+    targetVM.postVMEvent([buffer,&targetVM] () {
+      targetVM.receiveOnVMPort(buffer);
+    });
   });
+  if (!found)
+    delete buffer;
 }
 
 void BoostVM::receiveOnVMPort(UnstableNode value) {
@@ -244,38 +263,34 @@ void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
-bool BoostVM::isRunning() {
-  return !_terminated.load(std::memory_order_acquire);
-}
-
 void BoostVM::requestTermination() {
-  postVMEvent([this] { this->terminate(); });
+  postVMEvent([this] {
+    _terminationRequested = true;
+  });
 }
 
-void BoostVM::addMonitor(BoostVM& monitor) {
+void BoostVM::addMonitor(VMIdentifier monitor) {
   boost::lock_guard<std::mutex> lock(_monitorsMutex);
-  _monitors.push_back(monitor.vm);
+  _monitors.push_back(monitor);
 }
 
 void BoostVM::tellMonitors() {
   std::lock_guard<std::mutex> lock(_monitorsMutex);
   VMIdentifier deadVM = this->identifier;
-  for (VM vm : _monitors) {
-    BoostVM::forVM(vm).postVMEvent([=] () {
-      BoostVM::forVM(vm).receiveOnVMPort(buildTuple(vm, "terminated", deadVM));
+  for (VMIdentifier identifier : _monitors) {
+    env.findVM(identifier, [=] (BoostVM& monitor) {
+      monitor.postVMEvent([&monitor,deadVM] () {
+        monitor.receiveOnVMPort(buildTuple(monitor.vm, "terminated", deadVM));
+      });
     });
   }
 }
 
 void BoostVM::terminate() {
-  if (!_terminated.load(std::memory_order_acquire)) {
-    _terminated.store(true, std::memory_order_release);
-    closeStream();
-    tellMonitors();
-    preemptionTimer.cancel();
-    alarmTimer.cancel();
-    delete _work;
-  }
+  closeStream();
+  tellMonitors();
+
+  env.removeTerminatedVM(identifier, _work);
 }
 
 } }

@@ -86,8 +86,8 @@ public:
         appStr.assign(buffer.begin(), buffer.end());
       }
 
-      BoostVM& newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL);
-      result = SmallInt::build(vm, newVM.identifier);
+      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL);
+      result = SmallInt::build(vm, newVM);
     }
   };
 
@@ -95,10 +95,11 @@ public:
   public:
     GetPort(): Builtin("getPort") {}
 
-    static void call(VM vm, In identifier, Out result) {
-      VMIdentifier intIdentifier = getArgument<VMIdentifier>(vm, identifier);
-      BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
-      result = VMPort::build(vm, intIdentifier);
+    static void call(VM vm, In vmIdentifier, Out result) {
+      auto& env = BoostEnvironment::forVM(vm);
+      VMIdentifier identifier = env.checkValidIdentifier(vm, vmIdentifier);
+
+      result = VMPort::build(vm, identifier);
     }
   };
 
@@ -133,10 +134,11 @@ public:
   public:
     Kill(): Builtin("kill") {}
 
-    static void call(VM vm, In identifier) {
-      VMIdentifier intIdentifier = getArgument<VMIdentifier>(vm, identifier);
-      BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
-      BoostEnvironment::forVM(targetVM.vm).killVM(targetVM.vm, 0);
+    static void call(VM vm, In vmIdentifier) {
+      auto& env = BoostEnvironment::forVM(vm);
+      VMIdentifier identifier = env.checkValidIdentifier(vm, vmIdentifier);
+
+      env.killVM(identifier, 0);
     }
   };
 
@@ -144,10 +146,20 @@ public:
   public:
     Monitor(): Builtin("monitor") {}
 
-    static void call(VM vm, In identifier) {
-      VMIdentifier intIdentifier = getArgument<VMIdentifier>(vm, identifier);
-      BoostVM& targetVM = BoostEnvironment::forVM(vm).getVM(vm, intIdentifier);
-      targetVM.addMonitor(BoostVM::forVM(vm));
+    static void call(VM vm, In vmIdentifier) {
+      auto& env = BoostEnvironment::forVM(vm);
+      VMIdentifier identifier = env.checkValidIdentifier(vm, vmIdentifier);
+      VMIdentifier monitor = BoostVM::forVM(vm).identifier;
+
+      if (identifier == monitor)
+        raiseError(vm, "Cannot monitor itself");
+
+      bool found = env.findVM(identifier, [monitor] (BoostVM& monitoredVM) {
+        monitoredVM.addMonitor(monitor);
+      });
+      if (!found) {
+        BoostVM::forVM(vm).receiveOnVMPort(buildTuple(vm, "terminated", identifier));
+      }
     }
   };
 };

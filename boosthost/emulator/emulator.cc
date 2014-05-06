@@ -417,5 +417,5 @@ int main(int argc, char** argv) {
   }, vmOptions);
 
   boostEnv.addVM(appURL, true);
-  boostEnv.runIO();
+  return boostEnv.runIO();
 }

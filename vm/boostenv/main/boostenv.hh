@@ -111,52 +111,86 @@ namespace {
 
 BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
                                    VirtualMachineOptions options) :
-  _nextVMIdentifier(1), _aliveVMs(0),
+  _nextVMIdentifier(1), _exitCode(0),
   _options(options), vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-BoostVM& BoostEnvironment::addVM(const std::string& app, bool isURL) {
+VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
   vms.emplace_front(*this, _nextVMIdentifier++, _options, app, isURL);
-  _aliveVMs++;
-  return vms.front();
+  return vms.front().identifier;
 }
 
-BoostVM& BoostEnvironment::getVM(VM vm, VMIdentifier identifier) {
+VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier) {
+  VMIdentifier identifier = getArgument<VMIdentifier>(vm, vmIdentifier);
   {
     std::lock_guard<std::mutex> lock(_vmsMutex);
-    for (BoostVM& vm : vms) {
-      if (vm.identifier == identifier)
-        return vm;
+    if (identifier > 0 && identifier < _nextVMIdentifier)
+      return identifier;
+  }
+  raiseError(vm, "Invalid VM identifier: ", vmIdentifier);
+}
+
+/* Calls onSuccess if a VM with the given identifier is found.
+   The _vmsMutex is hold during the call, so it is safe to assume that
+   the BoostVM will not be terminated during the call.
+   Returns whether it found the VM represented by identifier. */
+bool BoostEnvironment::findVM(VMIdentifier identifier,
+                              std::function<void(BoostVM& boostVM)> onSuccess) {
+  std::lock_guard<std::mutex> lock(_vmsMutex);
+  for (BoostVM& vm : vms) {
+    if (vm.identifier == identifier) {
+      onSuccess(vm);
+      return true;
     }
   }
-  raiseError(vm, "Invalid VM identifier: ", identifier);
+  return false;
 }
 
 UnstableNode BoostEnvironment::listVMs(VM vm) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
   UnstableNode list = buildList(vm);
-  for (BoostVM& boostVM : vms) {
-    if (boostVM.isRunning())
-      list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
-  }
+  for (BoostVM& boostVM : vms)
+    list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
   return list;
 }
 
-void BoostEnvironment::killVM(VM vm, nativeint exitCode) {
-  if (BoostVM::forVM(vm).isRunning()) {
-    BoostVM::forVM(vm).requestTermination();
-    if (--_aliveVMs == 0) { // killing the last VM
-      std::exit(exitCode);
-    }
-  }
+void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode) {
+  findVM(identifier, [this,exitCode] (BoostVM& targetVM) {
+    _exitCode = exitCode;
+    targetVM.requestTermination();
+  });
 }
 
-void BoostEnvironment::runIO() {
+void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
+                                          boost::asio::io_service::work* work) {
+  std::lock_guard<std::mutex> lock(_vmsMutex);
+
+  // Warning: the BoostVM is calling its own destructor with remove_if().
+  // We also need VirtualMachine destructor to do its cleanup before dying.
+  vms.remove_if([=] (const BoostVM& vm) {
+    return vm.identifier == identifier;
+  });
+
+  // Tell the IO thread it does not need to wait anymore for us
+  delete work;
+  // Here the VM thread ends.
+}
+
+void BoostEnvironment::sendToVMPort(VM from, VMIdentifier to, RichNode value) {
+  BoostVM::forVM(from).sendToVMPort(to, value);
+}
+
+int BoostEnvironment::runIO() {
   // This will end when all VMs are done.
   io_service.run();
+
+  {
+    std::lock_guard<std::mutex> lock(_vmsMutex);
+    return _exitCode;
+  }
 }
 
 ///////////////

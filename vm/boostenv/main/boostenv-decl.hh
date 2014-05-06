@@ -63,16 +63,28 @@ public:
   BoostEnvironment(const VMStarter& vmStarter, VirtualMachineOptions options);
 
   inline
-  BoostVM& addVM(const std::string& app, bool isURL);
+  VMIdentifier addVM(const std::string& app, bool isURL);
 
   inline
-  BoostVM& getVM(VM vm, VMIdentifier identifier);
+  VMIdentifier checkValidIdentifier(VM vm, RichNode identifier);
+
+  inline
+  bool findVM(VMIdentifier identifier,
+              std::function<void(BoostVM& boostVM)> onSuccess);
 
   inline
   UnstableNode listVMs(VM vm);
 
+  void killVM(VM vm, nativeint exitCode) {
+    killVM(BoostVM::forVM(vm).identifier, exitCode);
+  }
+
   inline
-  void killVM(VM vm, nativeint exitCode);
+  void killVM(VMIdentifier identifier, nativeint exitCode);
+
+  inline
+  void removeTerminatedVM(VMIdentifier identifier,
+                          boost::asio::io_service::work* work);
 
 // Configuration
 
@@ -89,7 +101,7 @@ public:
 
 public:
   inline
-  void runIO();
+  int runIO();
 
 // Time
 
@@ -135,10 +147,8 @@ public:
 
 // VM Port
 public:
-  void sendToVMPort(VM from, VMIdentifier to, RichNode value) {
-    BoostVM& target = getVM(from, to);
-    BoostVM::forVM(from).sendToVMPort(target, value);
-  }
+  inline
+  void sendToVMPort(VM from, VMIdentifier to, RichNode value);
 
 // GC
 public:
@@ -149,9 +159,9 @@ public:
 // VMs
 private:
   std::forward_list<BoostVM> vms;
-  std::mutex _vmsMutex;
-  VMIdentifier _nextVMIdentifier; // protected by _vmsMutex
-  std::atomic_int _aliveVMs;
+  VMIdentifier _nextVMIdentifier;
+  nativeint _exitCode;
+  std::mutex _vmsMutex; // protects vms, _nextVMIdentifier and _exitCode
 
   VirtualMachineOptions _options;
 

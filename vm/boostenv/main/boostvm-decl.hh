@@ -78,7 +78,7 @@ public:
 
   void closeStream();
 
-  void sendToVMPort(BoostVM& to, RichNode value);
+  void sendToVMPort(VMIdentifier to, RichNode value);
 
   void receiveOnVMPort(UnstableNode value);
 
@@ -86,11 +86,9 @@ public:
 
 // Termination
 public:
-  bool isRunning();
-
   void requestTermination();
 
-  void addMonitor(BoostVM& monitor);
+  void addMonitor(VMIdentifier monitor);
 
 private:
   void tellMonitors();
@@ -167,14 +165,13 @@ private:
 
 // Monitors
 private:
-  std::vector<VM> _monitors;
+  std::vector<VMIdentifier> _monitors;
   std::mutex _monitorsMutex;
 
 // Running thread management
 private:
+  bool _terminationRequested;
   boost::asio::io_service::work* _work;
-  boost::thread _thread;
-  std::atomic_bool _terminated;
 };
 
 } }

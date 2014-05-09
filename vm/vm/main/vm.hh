@@ -277,7 +277,7 @@ void VirtualMachine::startGC(GC gc) {
   VMAllocatedList<AlarmRecord> alarms = std::move(_alarms);
 
   // Swap spaces
-  memoryManager.swapWith(secondMemoryManager);
+  memoryManager.swap(secondMemoryManager);
   memoryManager.init();
 
   // Forget lists of things

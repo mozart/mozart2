@@ -45,19 +45,6 @@ public:
       ::free(_baseBlock);
   }
 
-  void swapWith(MemoryManager& other) {
-    std::swap(_nextBlock, other._nextBlock);
-    std::swap(_baseBlock, other._baseBlock);
-    std::swap(_blockSize, other._blockSize);
-    std::swap(_allocated, other._allocated);
-    std::swap(_extraAllocs, other._extraAllocs);
-    std::swap(_extraAllocated, other._extraAllocated);
-    std::swap(stats, other.stats);
-
-    for (size_t i = 0; i < MaxBuckets; i++)
-      std::swap(freeListBuckets[i], other.freeListBuckets[i]);
-  }
-
   void init();
 
 public:
@@ -140,6 +127,19 @@ public:
 
   size_t getAllocatedOutsideFreeList() {
     return getAllocated() - getAllocatedInFreeList();
+  }
+
+public:
+  void swap(MemoryManager& other) {
+    assert(vm == other.vm);
+    std::swap(_nextBlock, other._nextBlock);
+    std::swap(_baseBlock, other._baseBlock);
+    std::swap(_blockSize, other._blockSize);
+    std::swap(_allocated, other._allocated);
+    std::swap(freeListBuckets, other.freeListBuckets);
+    std::swap(_extraAllocs, other._extraAllocs);
+    std::swap(_extraAllocated, other._extraAllocated);
+    std::swap(stats, other.stats);
   }
 
 private:

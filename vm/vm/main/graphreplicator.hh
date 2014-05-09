@@ -36,7 +36,10 @@ namespace mozart {
 /////////////////////
 
 GraphReplicator::GraphReplicator(VM vm, Kind kind):
-  vm(vm), _kind(kind), secondMM(vm->getSecondMemoryManager()) {
+  GraphReplicator(vm, vm->getMemoryManager(), kind) {}
+
+GraphReplicator::GraphReplicator(VM vm, MemoryManager& sourceMM, Kind kind):
+  vm(vm), sourceMM(sourceMM), _kind(kind) {
 
   todos.stableNodes = nullptr;
   todos.unstableNodes = nullptr;
@@ -44,12 +47,12 @@ GraphReplicator::GraphReplicator(VM vm, Kind kind):
 
 void GraphReplicator::copySpace(SpaceRef& to, SpaceRef from) {
   to = from;
-  todos.spaces.push_front(secondMM, &to);
+  todos.spaces.push_front(sourceMM, &to);
 }
 
 void GraphReplicator::copyThread(Runnable*& to, Runnable* from) {
   to = from;
-  todos.threads.push_front(secondMM, &to);
+  todos.threads.push_front(sourceMM, &to);
 }
 
 void GraphReplicator::copyStableNode(StableNode& to, StableNode& from) {
@@ -66,15 +69,15 @@ void GraphReplicator::copyUnstableNode(UnstableNode& to, UnstableNode& from) {
 
 void GraphReplicator::copyStableRef(StableNode*& to, StableNode* from) {
   to = from;
-  todos.stableRefs.push_front(secondMM, &to);
+  todos.stableRefs.push_front(sourceMM, &to);
 }
 
 void GraphReplicator::copyWeakStableRef(StableNode*& to, StableNode* from) {
   to = from;
   if (kind() == grkGarbageCollection)
-    todos.weakStableRefs.push_front(secondMM, &to);
+    todos.weakStableRefs.push_front(sourceMM, &to);
   else
-    todos.stableRefs.push_front(secondMM, &to);
+    todos.stableRefs.push_front(sourceMM, &to);
 }
 
 void GraphReplicator::copyStableNodes(StaticArray<StableNode> to,
@@ -120,10 +123,10 @@ void GraphReplicator::runCopyLoop() {
 
     if (!todos.spaces.empty()) {
       processSpaceInternal<Self>(
-        *todos.spaces.pop_front(secondMM));
+        *todos.spaces.pop_front(sourceMM));
     } else if (!todos.threads.empty()) {
       processThreadInternal<Self>(
-        *todos.threads.pop_front(secondMM));
+        *todos.threads.pop_front(sourceMM));
     } else if (todos.stableNodes != nullptr) {
       processNodeInternal<Self, StableNode, GRedToStable>(
         todos.stableNodes);
@@ -132,14 +135,14 @@ void GraphReplicator::runCopyLoop() {
         todos.unstableNodes);
     } else {
       processStableRefInternal<Self>(
-        *todos.stableRefs.pop_front(secondMM));
+        *todos.stableRefs.pop_front(sourceMM));
     }
   }
 
   if (kind() == grkGarbageCollection) {
     while (!todos.weakStableRefs.empty()) {
       processStableRefInternal<Self, /* weak = */ true>(
-        *todos.weakStableRefs.pop_front(secondMM));
+        *todos.weakStableRefs.pop_front(sourceMM));
     }
   }
 }

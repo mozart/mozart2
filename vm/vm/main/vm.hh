@@ -184,7 +184,7 @@ void VirtualMachine::initialize() {
 void VirtualMachine::doGC() {
   // Update stats (1)
   getPropertyRegistry().stats.totalUsedMemory +=
-    getMemoryManager().getAllocatedOutsideFreeList();
+    memoryManager.getAllocatedOutsideFreeList();
 
   auto cleanupList = acquireCleanupList();
   gc.doGC();
@@ -204,7 +204,7 @@ void VirtualMachine::doGC() {
   }
 
   // Update stats (2)
-  size_t activeMemory = getMemoryManager().getAllocated();
+  size_t activeMemory = memoryManager.getAllocated();
   getPropertyRegistry().stats.activeMemory = activeMemory;
   getPropertyRegistry().computeGCThreshold(activeMemory);
 
@@ -234,7 +234,7 @@ void VirtualMachine::afterGR(GR gr) {
   if (gr->kind() == GraphReplicator::grkGarbageCollection) {
     _topLevelSpace = _topLevelSpaceRef;
     _currentSpace = _topLevelSpace;
-    getSecondMemoryManager().releaseExtraAllocs();
+    secondMemoryManager.releaseExtraAllocs();
   }
 
   for (auto iter = aliveThreads.begin();
@@ -277,8 +277,8 @@ void VirtualMachine::startGC(GC gc) {
   VMAllocatedList<AlarmRecord> alarms = std::move(_alarms);
 
   // Swap spaces
-  getMemoryManager().swapWith(getSecondMemoryManager());
-  getMemoryManager().init();
+  memoryManager.swapWith(secondMemoryManager);
+  memoryManager.init();
 
   // Forget lists of things
   atomTable = AtomTable();

@@ -44,8 +44,8 @@ const bool OzDebugGC = false;
 
 class GarbageCollector: public GraphReplicator {
 public:
-  GarbageCollector(VM vm):
-    GraphReplicator(vm, GraphReplicator::grkGarbageCollection) {}
+  inline
+  GarbageCollector(VM vm);
 
   inline
   bool isGCRequired();

@@ -37,9 +37,6 @@ Space* SpaceCloner::doCloneSpace(Space* space) {
   // Before GR
   vm->beforeGR(this);
 
-  // Initialize the MM
-  getSecondMM().init();
-
   // Root of SC is the given space
   SpaceRef spaceRef = space;
   SpaceRef copy;
@@ -51,19 +48,19 @@ Space* SpaceCloner::doCloneSpace(Space* space) {
   // Restore spaces
   while (!spaceBackups.empty()) {
     spaceBackups.front()->restoreAfterGR();
-    spaceBackups.remove_front(getSecondMM());
+    spaceBackups.remove_front(sourceMM);
   }
 
   // Restore threads
   while (!threadBackups.empty()) {
     threadBackups.front()->restoreAfterGR();
-    threadBackups.remove_front(getSecondMM());
+    threadBackups.remove_front(sourceMM);
   }
 
   // Restore nodes
   while (!nodeBackups.empty()) {
     nodeBackups.front().restore();
-    nodeBackups.remove_front(getSecondMM());
+    nodeBackups.remove_front(sourceMM);
   }
 
   // After GR
@@ -81,14 +78,14 @@ void SpaceCloner::processSpace(SpaceRef& to, SpaceRef from) {
   to = copy;
 
   if (copy != space)
-    spaceBackups.push_back(getSecondMM(), space);
+    spaceBackups.push_back(sourceMM, space);
 }
 
 void SpaceCloner::processThread(Runnable*& to, Runnable* from) {
   to = from->sCloneOuter(this);
 
   if (to != from)
-    threadBackups.push_back(getSecondMM(), from);
+    threadBackups.push_back(sourceMM, from);
 }
 
 template <class NodeType, class GCedType>
@@ -97,7 +94,7 @@ void SpaceCloner::processNode(NodeType*& to, RichNode from) {
 
   if ((from.type() != GRedToStable::type()) &&
       (from.type() != GRedToUnstable::type())) {
-    nodeBackups.push_front(getSecondMM(), from.makeBackup());
+    nodeBackups.push_front(sourceMM, from.makeBackup());
     from.reinit(vm, GCedType::build(vm, to));
   }
 }

@@ -190,10 +190,6 @@ public:
     return memoryManager;
   }
 
-  MemoryManager& getSecondMemoryManager() {
-    return secondMemoryManager;
-  }
-
   size_t getHeapSize() {
     return getPropertyRegistry().config.heapSize;
   }

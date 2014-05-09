@@ -214,7 +214,7 @@ void BoostVM::closeStream() {
   }
 }
 
-void BoostVM::sendToVMPort(VMIdentifier to, RichNode value) {
+void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   // If the target VM has closed its port or terminated,
   // we do not need to pickle value
   bool portClosed = true;
@@ -229,7 +229,7 @@ void BoostVM::sendToVMPort(VMIdentifier to, RichNode value) {
     raiseError(vm, "Could not find property pickle.pack");
 
   UnstableNode vbs;
-  ozcalls::ozCall(vm, "mozart::boostenv::BoostEnvironment::sendToVMPort",
+  ozcalls::ozCall(vm, "mozart::boostenv::BoostVM::sendOnVMPort",
     picklePack, value, ozcalls::out(vbs));
 
   size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
@@ -239,19 +239,19 @@ void BoostVM::sendToVMPort(VMIdentifier to, RichNode value) {
 
   bool found = env.findVM(to, [buffer] (BoostVM& targetVM) {
     targetVM.postVMEvent([buffer,&targetVM] () {
-      targetVM.receiveOnVMPort(buffer);
+      targetVM.receiveOnVMStream(buffer);
     });
   });
   if (!found)
     delete buffer;
 }
 
-void BoostVM::receiveOnVMPort(UnstableNode value) {
+void BoostVM::receiveOnVMStream(UnstableNode value) {
   if (!portClosed())
     sendToReadOnlyStream(vm, _stream, value);
 }
 
-void BoostVM::receiveOnVMPort(std::vector<unsigned char>* buffer) {
+void BoostVM::receiveOnVMStream(std::vector<unsigned char>* buffer) {
   if (portClosed()) {
     delete buffer;
     return;
@@ -282,7 +282,7 @@ void BoostVM::tellMonitors() {
   for (VMIdentifier identifier : _monitors) {
     env.findVM(identifier, [=] (BoostVM& monitor) {
       monitor.postVMEvent([&monitor,deadVM] () {
-        monitor.receiveOnVMPort(buildTuple(monitor.vm, "terminated", deadVM));
+        monitor.receiveOnVMStream(buildTuple(monitor.vm, "terminated", deadVM));
       });
     });
   }

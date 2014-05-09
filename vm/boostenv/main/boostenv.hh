@@ -179,8 +179,8 @@ void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
   // Here the VM thread ends.
 }
 
-void BoostEnvironment::sendToVMPort(VM from, VMIdentifier to, RichNode value) {
-  BoostVM::forVM(from).sendToVMPort(to, value);
+void BoostEnvironment::sendOnVMPort(VM from, VMIdentifier to, RichNode value) {
+  BoostVM::forVM(from).sendOnVMPort(to, value);
 }
 
 int BoostEnvironment::runIO() {

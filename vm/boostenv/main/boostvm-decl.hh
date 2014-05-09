@@ -79,11 +79,11 @@ public:
 
   void closeStream();
 
-  void sendToVMPort(VMIdentifier to, RichNode value);
+  void sendOnVMPort(VMIdentifier to, RichNode value);
 
-  void receiveOnVMPort(UnstableNode value);
+  void receiveOnVMStream(UnstableNode value);
 
-  void receiveOnVMPort(std::vector<unsigned char>* buffer);
+  void receiveOnVMStream(std::vector<unsigned char>* buffer);
 
 // Termination
 public:

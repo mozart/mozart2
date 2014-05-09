@@ -75,7 +75,7 @@ bool VMPort::equals(VM vm, RichNode right) {
 }
 
 void VMPort::send(VM vm, RichNode value) {
-  vm->getEnvironment().sendToVMPort(vm, _identifier, value);
+  vm->getEnvironment().sendOnVMPort(vm, _identifier, value);
 }
 
 UnstableNode VMPort::sendReceive(VM vm, RichNode value) {

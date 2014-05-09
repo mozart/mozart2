@@ -148,7 +148,7 @@ public:
 // VM Port
 public:
   inline
-  void sendToVMPort(VM from, VMIdentifier to, RichNode value);
+  void sendOnVMPort(VM from, VMIdentifier to, RichNode value);
 
 // GC
 public:

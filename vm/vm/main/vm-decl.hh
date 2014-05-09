@@ -116,7 +116,7 @@ public:
   virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value);
 
   inline
-  virtual void sendToVMPort(VM from, VMIdentifier to, RichNode value);
+  virtual void sendOnVMPort(VM from, VMIdentifier to, RichNode value);
 
   virtual void gCollect(GC gc) {
   }

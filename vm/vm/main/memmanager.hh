@@ -52,6 +52,7 @@ public:
     std::swap(_allocated, other._allocated);
     std::swap(_extraAllocs, other._extraAllocs);
     std::swap(_extraAllocated, other._extraAllocated);
+    std::swap(stats, other.stats);
 
     for (size_t i = 0; i < MaxBuckets; i++)
       std::swap(freeListBuckets[i], other.freeListBuckets[i]);

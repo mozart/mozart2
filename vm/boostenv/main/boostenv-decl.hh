@@ -157,6 +157,9 @@ public:
 // GC
 
 public:
+  inline
+  void withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC);
+
   void gCollect(GC gc) {
     BoostVM::forVM(gc->vm).gCollect(gc);
   }
@@ -167,6 +170,7 @@ private:
   VMIdentifier _nextVMIdentifier;
   nativeint _exitCode;
   std::mutex _vmsMutex; // protects vms, _nextVMIdentifier and _exitCode
+  std::mutex _gcMutex;
 
   VirtualMachineOptions _options;
 

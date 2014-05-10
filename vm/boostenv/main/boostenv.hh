@@ -193,6 +193,13 @@ int BoostEnvironment::runIO() {
   }
 }
 
+void BoostEnvironment::withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC) {
+  // Disallow concurrent GCs, so only one has access to the second MemoryManager
+  // at a time and we have a much lower maximal memory footprint.
+  std::lock_guard<std::mutex> lock(_gcMutex);
+  doGC(_secondMemoryManager);
+}
+
 ///////////////
 // Utilities //
 ///////////////

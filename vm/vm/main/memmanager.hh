@@ -37,8 +37,9 @@ const size_t MegaBytes = 1024*1024;
 
 class MemoryManager {
 public:
-  MemoryManager(VM vm) :
-    vm(vm), _nextBlock(nullptr), _baseBlock(nullptr), _blockSize(0), _extraAllocated(0) {}
+  MemoryManager(VM vm) : vm(vm),
+    _nextBlock(nullptr), _baseBlock(nullptr), _blockSize(0),
+    _allocated(0), _allocatedInFreeList(0), _allocatedInExtra(0) {}
 
   ~MemoryManager() {
     if (_baseBlock != nullptr)
@@ -75,7 +76,7 @@ public:
         return list;
       } else {
         size_t chunkSize = bucket * AllocGranularity;
-        stats.allocatedInFreeList += chunkSize;
+        _allocatedInFreeList += chunkSize;
         return getMemory(chunkSize);
       }
     } else {
@@ -118,11 +119,11 @@ public:
   }
 
   size_t getAllocated() {
-    return _allocated + _extraAllocated;
+    return _allocated + _allocatedInExtra;
   }
 
   size_t getAllocatedInFreeList() {
-    return stats.allocatedInFreeList;
+    return _allocatedInFreeList;
   }
 
   size_t getAllocatedOutsideFreeList() {
@@ -137,9 +138,9 @@ public:
     std::swap(_blockSize, other._blockSize);
     std::swap(_allocated, other._allocated);
     std::swap(freeListBuckets, other.freeListBuckets);
+    std::swap(_allocatedInFreeList, other._allocatedInFreeList);
     std::swap(_extraAllocs, other._extraAllocs);
-    std::swap(_extraAllocated, other._extraAllocated);
-    std::swap(stats, other.stats);
+    std::swap(_allocatedInExtra, other._allocatedInExtra);
   }
 
 private:
@@ -156,13 +157,10 @@ private:
   size_t _allocated; // in _baseBlock
 
   void* freeListBuckets[MaxBuckets];
+  size_t _allocatedInFreeList;
 
   std::forward_list<void*> _extraAllocs;
-  size_t _extraAllocated; // So it can be reset to 0 after releaseExtraAllocs()
-
-  struct {
-    size_t allocatedInFreeList;
-  } stats;
+  size_t _allocatedInExtra; // So it can be reset to 0 after releaseExtraAllocs()
 };
 
 }

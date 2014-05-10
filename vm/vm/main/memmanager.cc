@@ -59,8 +59,7 @@ void MemoryManager::init() {
 
   for (size_t i = 0; i < MaxBuckets; i++)
     freeListBuckets[i] = nullptr;
-
-  stats.allocatedInFreeList = 0;
+  _allocatedInFreeList = 0;
 }
 
 void* MemoryManager::getMoreMemory(size_t size) {
@@ -73,7 +72,7 @@ void* MemoryManager::getMoreMemory(size_t size) {
     std::cerr << "Extra alloc of " << size << " at " << ptr << std::endl;
 
   _extraAllocs.push_front(ptr);
-  _extraAllocated += size;
+  _allocatedInExtra += size;
 
   // Adjust the heap size so we do not need to GC twice
   size_t activeMemory = vm->getPropertyRegistry().stats.activeMemory + size;
@@ -92,7 +91,7 @@ void MemoryManager::releaseExtraAllocs() {
     ::free(_extraAllocs.front());
     _extraAllocs.pop_front();
   }
-  _extraAllocated = 0;
+  _allocatedInExtra = 0;
 }
 
 }

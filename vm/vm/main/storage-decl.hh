@@ -227,7 +227,7 @@ public:
   // Limitation of the current implementation
   static_assert(
     is_trivially_destructible<T>::value && is_trivially_destructible<E>::value,
-    "The types T and E in T: StoredWithArrayOfAs<U> must be trivially destructible.");
+    "The types T and E in T: StoredWithArrayOf<E> must be trivially destructible.");
 
   template<class... Args>
   static void init(Type& type, MemWord& value, VM vm,

@@ -42,8 +42,7 @@ public:
     _allocated(0), _allocatedInFreeList(0), _allocatedInExtra(0) {}
 
   ~MemoryManager() {
-    if (_baseBlock != nullptr)
-      ::free(_baseBlock);
+    ::free(_baseBlock);
   }
 
   void init(VM vm);

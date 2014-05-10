@@ -44,9 +44,7 @@ void MemoryManager::init(VM vm) {
       std::cerr << "Allocating " << std::setw(9) << heapSize << " bytes" << std::endl;
     }
 
-    if (_baseBlock != nullptr) {
-      ::free(_baseBlock);
-    }
+    ::free(_baseBlock);
 
     _baseBlock = static_cast<char*>(::malloc(heapSize));
     if (_baseBlock == nullptr) {

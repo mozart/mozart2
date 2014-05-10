@@ -35,7 +35,9 @@ namespace mozart {
 // MemoryManager //
 ///////////////////
 
-void MemoryManager::init() {
+void MemoryManager::init(VM vm) {
+  this->vm = vm;
+
   size_t heapSize = vm->getHeapSize();
   if (_blockSize != heapSize) {
     if (OzDebugGC) {

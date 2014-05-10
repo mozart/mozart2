@@ -72,15 +72,14 @@ void registerCoreModules(VM vm);
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
                                VirtualMachineOptions options):
   rootGlobalNode(nullptr), environment(environment),
-  memoryManager(this), secondMemoryManager(this),
   _propertyRegistry(options),
-  gc(this), sc(this),
+  gc(this, environment.getSecondMemoryManagerRef()), sc(this),
   _preemptRequestedNot(ATOMIC_FLAG_INIT),
   _exitRunRequestedNot(ATOMIC_FLAG_INIT),
   _gcRequestedNot(ATOMIC_FLAG_INIT),
   _referenceTime(0) {
 
-  memoryManager.init();
+  memoryManager.init(this);
 
   _topLevelSpace = new (this) Space(this);
   _currentSpace = _topLevelSpace;
@@ -186,9 +185,12 @@ void VirtualMachine::doGC() {
   getPropertyRegistry().stats.totalUsedMemory +=
     memoryManager.getAllocatedOutsideFreeList();
 
-  auto cleanupList = acquireCleanupList();
-  gc.doGC();
-  doCleanup(cleanupList);
+  environment.withSecondMemoryManager([this] (MemoryManager& secondMemoryManager) {
+    auto cleanupList = acquireCleanupList();
+    gc.doGC(secondMemoryManager);
+    doCleanup(cleanupList);
+    secondMemoryManager.releaseExtraAllocs();
+  });
 
   // Handle the GC watcher
   UnstableNode watcher;
@@ -234,7 +236,6 @@ void VirtualMachine::afterGR(GR gr) {
   if (gr->kind() == GraphReplicator::grkGarbageCollection) {
     _topLevelSpace = _topLevelSpaceRef;
     _currentSpace = _topLevelSpace;
-    secondMemoryManager.releaseExtraAllocs();
   }
 
   for (auto iter = aliveThreads.begin();
@@ -273,12 +274,12 @@ void VirtualMachine::adjustHeapSize() {
   }
 }
 
-void VirtualMachine::startGC(GC gc) {
+void VirtualMachine::startGC(GC gc, MemoryManager& secondMemoryManager) {
   VMAllocatedList<AlarmRecord> alarms = std::move(_alarms);
 
   // Swap spaces
   memoryManager.swap(secondMemoryManager);
-  memoryManager.init();
+  memoryManager.init(this);
 
   // Forget lists of things
   atomTable = AtomTable();

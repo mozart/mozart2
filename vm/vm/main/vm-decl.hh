@@ -100,6 +100,16 @@ public:
     return false;
   }
 
+  // Must only be used for initialization
+  MemoryManager& getSecondMemoryManagerRef() {
+    return _secondMemoryManager;
+  }
+
+  virtual void withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC) {
+    // Nothing to do as we rely on the single VM assumption
+    doGC(_secondMemoryManager);
+  }
+
   virtual void killVM(VM vm, nativeint exitCode) {
     std::exit(exitCode);
   }
@@ -120,6 +130,9 @@ public:
 
   virtual void gCollect(GC gc) {
   }
+
+protected:
+  MemoryManager _secondMemoryManager;
 private:
   bool _useDynamicPreemption;
 };
@@ -359,7 +372,7 @@ private:
   void afterGR(GR gr);
 
   inline
-  void startGC(GC gc);
+  void startGC(GC gc, MemoryManager& secondMemoryManager);
 
   inline
   void gcProtectedNodes(GC gc);
@@ -381,7 +394,6 @@ private:
   VirtualMachineEnvironment& environment;
 
   MemoryManager memoryManager;
-  MemoryManager secondMemoryManager;
 
   GlobalExceptionMechanism exceptionMechanism;
 

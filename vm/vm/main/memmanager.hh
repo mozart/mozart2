@@ -37,7 +37,7 @@ const size_t MegaBytes = 1024*1024;
 
 class MemoryManager {
 public:
-  MemoryManager(VM vm) : vm(vm),
+  MemoryManager() : vm(nullptr),
     _nextBlock(nullptr), _baseBlock(nullptr), _blockSize(0),
     _allocated(0), _allocatedInFreeList(0), _allocatedInExtra(0) {}
 
@@ -46,7 +46,7 @@ public:
       ::free(_baseBlock);
   }
 
-  void init();
+  void init(VM vm);
 
 public:
   // Memory requests and releases
@@ -132,7 +132,7 @@ public:
 
 public:
   void swap(MemoryManager& other) {
-    assert(vm == other.vm);
+    std::swap(vm, other.vm);
     std::swap(_nextBlock, other._nextBlock);
     std::swap(_baseBlock, other._baseBlock);
     std::swap(_blockSize, other._blockSize);

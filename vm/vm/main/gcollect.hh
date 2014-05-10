@@ -33,10 +33,6 @@ namespace mozart {
 // GarbageCollector //
 //////////////////////
 
-GarbageCollector::GarbageCollector(VM vm):
-  GraphReplicator(vm, vm->secondMemoryManager,
-                  GraphReplicator::grkGarbageCollection) {}
-
 bool GarbageCollector::isGCRequired() {
   return
     (vm->getMemoryManager().getAllocated() >=

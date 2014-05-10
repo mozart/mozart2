@@ -62,6 +62,9 @@ public:
   inline
   BoostEnvironment(const VMStarter& vmStarter, VirtualMachineOptions options);
 
+// VM Management
+
+public:
   inline
   VMIdentifier addVM(const std::string& app, bool isURL);
 
@@ -146,11 +149,13 @@ public:
   }
 
 // VM Port
+
 public:
   inline
   void sendOnVMPort(VM from, VMIdentifier to, RichNode value);
 
 // GC
+
 public:
   void gCollect(GC gc) {
     BoostVM::forVM(gc->vm).gCollect(gc);
@@ -168,7 +173,6 @@ private:
 // Bootstrap
 private:
   BootLoader _bootLoader;
-
 public:
   VMStarter vmStarter;
 

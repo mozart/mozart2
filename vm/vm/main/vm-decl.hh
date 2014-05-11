@@ -100,13 +100,14 @@ public:
     return false;
   }
 
+// The following methods assume a single VM per process
+public:
   // Must only be used for initialization
   MemoryManager& getSecondMemoryManagerRef() {
     return _secondMemoryManager;
   }
 
   virtual void withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC) {
-    // Nothing to do as we rely on the single VM assumption
     doGC(_secondMemoryManager);
   }
 
@@ -114,6 +115,8 @@ public:
     std::exit(exitCode);
   }
 
+// Miscellaneous
+public:
   virtual UUID genUUID(VM vm) = 0;
 
   inline

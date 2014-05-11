@@ -12,7 +12,7 @@ fun {Fun X} 2*X end
 {Browse {Record.map L Fun}} % rec(2 6 a:4)
 % comprehension Map
 fun {MapRC R Fct}
-   [{Fct X} for F:X through R]
-   % we could also do [2*X for X in L]
+   ({Fct X} for X in R)
+   % we could also do (2*X for X in L)
 end
-{Browse {MapRC L Fun}}      % rec(2 6 a:4)
+{Browse {MapRC L Fun}}

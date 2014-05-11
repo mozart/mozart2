@@ -12,10 +12,5 @@ in
    {Browse 'Ys2 '#Ys2}
    thread Xs = [A for lazy A in 10..25 do {Delay 1000}] end
    thread Ys1#Ys2 = [2*A if A mod 2 == 1 3*A if A mod 2 == 0 for A in Xs] end
-   % thread Ys1#Ys2 = [1:collect:C1 2:collect:C2 for A in Xs do
-   %                                                if A mod 2 == 1 then {C1 2*A}
-   %                                                else {C2 3*A}
-   %                                                end]
-   % end
 end
 

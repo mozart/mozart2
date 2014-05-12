@@ -180,7 +180,7 @@ in
         )
 
       Error(registerFormatter)
-      ZlibIO(compressedFile:CompressedFile) at 'x-oz://system/ZlibIO.ozf'
+      % ZlibIO(compressedFile:CompressedFile) at 'x-oz://system/ZlibIO.ozf' % Not yet implemented in Mozart 2
 
       Resolve(open)
 
@@ -190,7 +190,7 @@ in
       socket: Socket
       pipe:   Pipe
       html:   Html
-      compressedFile: CompressedFile
+      % compressedFile: CompressedFile % See above
 
    define
 

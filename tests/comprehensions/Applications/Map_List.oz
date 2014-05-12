@@ -12,7 +12,7 @@ fun {Fun X} 2*X end
 {Browse {Map L Fun}}   % [2 4 6]
 % comprehension Map
 fun {MapLC L Fct}
-   [{Fct X} for X in L]
-   % we could also do [2*X for X in L]
+   [{Fct X} suchthat X in L]
+   % we could also do [2*X suchthat X in L]
 end
 {Browse {MapLC L Fun}} % [2 4 6]

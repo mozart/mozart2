@@ -91,7 +91,7 @@ define
             if LC then
                %% LC
                T1 = {Time.time}
-               L = [A+B a:A if A>0 for A in 1 ; A<CA ; A+1 if A>4 for B in 2*A..CB ; 2 if A+B>5 for _:C in 1#2#3#4#5#6#7#8#9#10 if C == 3]
+               L = [A+B a:A if A>0 suchthat A in 1 ; A<CA ; A+1 if A>4 suchthat B in 2*A..CB ; 2 if A+B>5 suchthat _:C in 1#2#3#4#5#6#7#8#9#10 if C == 3]
                T2 = {Time.time}
                {Browse {VirtualString.toAtom 'List comprehension took '#T2-T1#' seconds'}}
             else

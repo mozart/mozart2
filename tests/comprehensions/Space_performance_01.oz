@@ -38,13 +38,13 @@ define
             Result.1 = nil
          end
       end
-      LL = [A for A in 1..500000]
+      LL = [A suchthat A in 1..500000]
       fun {Measure LC}
          local M1 M2 L in
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [A for A in LL]
+               L = [A suchthat A in LL]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else

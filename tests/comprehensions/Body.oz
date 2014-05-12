@@ -11,36 +11,36 @@ define
    local
       C = {NewCell _}
       Tests = [ %% each element is [listComprehension]#[expectedList]
-                %% add tests form here...
-                [@C for A in 1..2 do C:=A]
+                %% add tests from here...
+                [@C suchthat A in 1..2 do C:=A]
                 #[1 2]
 
-                [@C for A in 1..2 do C:=A C:=@C*A]
+                [@C suchthat A in 1..2 do C:=A C:=@C*A]
                 #[1 4]
 
-                [@C for A in 1..2 if A > 1 do C:=A]
+                [@C suchthat A in 1..2 if A > 1 do C:=A]
                 #[2]
 
-                [@C if @C > 1 for A in 1..2 do C:=A]
+                [@C if @C > 1 suchthat A in 1..2 do C:=A]
                 #[2]
 
-                [@C-1 for A in 1..2 do C:=A+1]
+                [@C-1 suchthat A in 1..2 do C:=A+1]
                 #[1 2]
 
-                [@C for _ in 1..1 A from fun{$} 1 end do C:=A]
+                [@C suchthat _ in 1..1 A from fun{$} 1 end do C:=A]
                 #[1]
 
-                [@C for _:A in r(r(r(1) r(2))) do C:=A]
+                [@C suchthat _:A in r(r(r(1) r(2))) do C:=A]
                 #[1 2]
 
-                [@C for A in 1..2 for B in 1..2 do C:=A+B]
+                [@C suchthat A in 1..2 suchthat B in 1..2 do C:=A+B]
                 #[2 3 3 4]
               ]
-      L1 = thread [@C for lazy A in 1..2 do C:=A] end
-      L2 = thread [@C for lazy A in 1..2 do C:=A C:=@C*A] end
-      L3 = thread [@C for lazy A in 1..2 if A > 1 do C:=A] end
-      L4 = thread [@C if @C > 1 for lazy A in 1..2 do C:=A] end
-      L5 = thread [@C for lazy A in 1..2 for B in 1..2 do C:=A+B] end
+      L1 = thread [@C suchthat lazy A in 1..2 do C:=A] end
+      L2 = thread [@C suchthat lazy A in 1..2 do C:=A C:=@C*A] end
+      L3 = thread [@C suchthat lazy A in 1..2 if A > 1 do C:=A] end
+      L4 = thread [@C if @C > 1 suchthat lazy A in 1..2 do C:=A] end
+      L5 = thread [@C suchthat lazy A in 1..2 suchthat B in 1..2 do C:=A+B] end
       TestsLazy = [ %%
                     L1#[1 2]#1
                     L2#[1 4]#1

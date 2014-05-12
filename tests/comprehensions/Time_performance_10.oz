@@ -77,7 +77,7 @@ define
          end
       end
       Lim = 1500000
-      Rec = {Record.make label [A for A in 1..Lim]}
+      Rec = {Record.make label [A suchthat A in 1..Lim]}
       for I in 1..Lim do
          Rec.I = I
       end
@@ -87,7 +87,7 @@ define
             if LC then
                %% LC
                T1 = {Time.time}
-               L = [FA#A if A>10 1:B A#B for FA:A in 10#20 of Fct for _:B in Rec of Fct]
+               L = [FA#A if A>10 1:B A#B suchthat FA:A in 10#20 of Fct suchthat _:B in Rec of Fct]
                T2 = {Time.time}
                {Browse {VirtualString.toAtom 'List comprehension took '#T2-T1#' seconds'}}
             else

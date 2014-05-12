@@ -221,7 +221,6 @@ define
       [] fForComprehensionLevel(_ _ _) then false
       [] forExpression(_ _) then false
       [] forRecord(_ _ _ _) then false
-      [] fRecordComprehension(_ _ _ _ _ _ _) then false
       %TODO [] fFOR(_ _ _) then ...
       %TODO [] fWhile(_ _ _) then ...
       end

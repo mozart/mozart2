@@ -78,7 +78,7 @@ define
          end
       end
       Lim = 80000
-      Rec = {Record.make label [A for A in 1..Lim]}
+      Rec = {Record.make label [A suchthat A in 1..Lim]}
       for I in 1..Lim do
          Rec.I = I
       end
@@ -87,7 +87,7 @@ define
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [FA#A if A>10 1:B A#B for FA:A in 10#20 for _:B in Rec]
+               L = [FA#A if A>10 1:B A#B suchthat FA:A in 10#20 suchthat _:B in Rec]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else

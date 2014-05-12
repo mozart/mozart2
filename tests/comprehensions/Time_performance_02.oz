@@ -40,7 +40,7 @@ define
             if LC then
                %% LC
                T1 = {Time.time}
-               L = [a:A b:B for A in 1..HA B in 1..HB]
+               L = [a:A b:B suchthat A in 1..HA B in 1..HB]
                T2 = {Time.time}
                {Browse {VirtualString.toAtom 'List comprehension took '#T2-T1#' seconds'}}
             else

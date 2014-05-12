@@ -43,7 +43,7 @@ define
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [A for A from Fun B in 1..H if B > 0]
+               L = [A suchthat A from Fun B in 1..H if B > 0]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else

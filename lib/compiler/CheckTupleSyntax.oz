@@ -122,7 +122,6 @@ local
       [] fForComprehensionLevel(RG CD C) then {ForDecl RG} {Phrase CD} {Coord C}
       [] forExpression(E C) then {Phrase E} {Phrase C}
       [] forRecord(F A R Fc) then {Phrase F} {Phrase A} {Phrase R} {Phrase Fc}
-      [] fRecordComprehension(S A R F Cd Do C) then {Phrase S} {Phrase A} {Phrase R} {Phrase F} {Phrase Cd} {Phrase Do} {Coord C}
       else {FDExpression X}
       end
    end

@@ -47,7 +47,7 @@ define
       'fun' 'functor' 'if' 'import' 'in' 'local'
       'lock' 'meth' 'mod' 'not' 'of' 'or' 'orelse'
       'prepare' 'proc' 'prop' 'raise' 'require'
-      'self' 'skip' 'then' 'thread' 'try'
+      'self' 'skip' 'suchthat' 'then' 'thread' 'try'
    ]
 
    OzKeywordTokens0 = {Record.make kw OzKeywords}

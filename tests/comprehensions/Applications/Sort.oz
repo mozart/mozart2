@@ -9,7 +9,7 @@ fun {Sort L}
    case L
    of nil then nil
    [] H|T then Split in
-      Split = [smaller:X if X<H greaterOrEqual:X if X>=H for X in T]
+      Split = [smaller:X if X<H greaterOrEqual:X if X>=H suchthat X in T]
       {Append {Sort Split.smaller} H|{Sort Split.greaterOrEqual}}
    end
 end

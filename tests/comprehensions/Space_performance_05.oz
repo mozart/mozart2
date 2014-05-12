@@ -13,7 +13,7 @@ define
       Browse = Tester.browse
       Pid = {OS.getPID}
       proc {PreLevel ?Result}
-         {Level1 thread [A for lazy A in 1..Lim] end '#'(1:Result)}
+         {Level1 thread [A suchthat lazy A in 1..Lim] end '#'(1:Result)}
       end
       %% level 1
       proc {Level1 Range ?Result}
@@ -38,7 +38,7 @@ define
             if LC then
                %% LC
                M1 = {Tester.memory Pid} div 1000000
-               L = [A if A mod 2 == 0 for A in thread [A for lazy A in 1..Lim] end]
+               L = [A if A mod 2 == 0 suchthat A in thread [A suchthat lazy A in 1..Lim] end]
                M2 = {Tester.memory Pid} div 1000000
                {Browse {VirtualString.toAtom 'List comprehension added '#M2-M1#' extra MB'}}
             else

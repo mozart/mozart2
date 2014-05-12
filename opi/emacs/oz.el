@@ -254,7 +254,7 @@ Note that this variable is only checked once when oz.el is loaded."
   (concat
    (oz-make-keywords-for-match
     '("local" "proc" "fun" "case" "if" "cond" "or" "dis" "choice" "not"
-      "thread" "try" "raise" "lock" "for"))
+      "thread" "try" "raise" "lock" "for" "suchthat"))
    "\\|<<"))
 
 (defconst oz-gump-between-pattern
@@ -1352,7 +1352,7 @@ and initial percent signs."
     "div" "mod" "andthen" "orelse"
     "cond" "or" "dis" "choice" "not"
     "thread" "try" "catch" "finally" "raise" "lock"
-    "skip" "fail" "for" "do")
+    "skip" "fail" "for" "do" "suchthat")
   "List of all Oz keywords with identifier syntax.")
 
 (defconst oz-char-matcher

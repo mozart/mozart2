@@ -36,13 +36,13 @@ define
             Result.1 = nil
          end
       end
-      LL = [A for A in 1..20000000]
+      LL = [A suchthat A in 1..20000000]
       fun {Measure LC}
          local T1 T2 L in
             if LC then
                %% LC
                T1 = {Time.time}
-               L = [A if A < 3 for A in LL]
+               L = [A if A < 3 suchthat A in LL]
                T2 = {Time.time}
                {Browse {VirtualString.toAtom 'List comprehension took '#T2-T1#' seconds'}}
             else

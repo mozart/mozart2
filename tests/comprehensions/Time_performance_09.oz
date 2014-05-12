@@ -35,7 +35,7 @@ define
             if LC then
                %% LC
                T1 = {Time.time}
-               L = [@C2 for A in 1..Lim do C2 := A]
+               L = [@C2 suchthat A in 1..Lim do C2 := A]
                T2 = {Time.time}
                {Browse {VirtualString.toAtom 'List comprehension took '#T2-T1#' seconds'}}
             else

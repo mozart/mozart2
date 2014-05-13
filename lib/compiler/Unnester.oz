@@ -58,7 +58,6 @@ import
    Macro(macroExpand:MacroExpand)
    ForLoop(compile)
    ListComprehension(compile)
-   RecordComprehension(compile)
    WhileLoop(compile)
 export
    MakeExpressionQuery

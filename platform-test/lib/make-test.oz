@@ -47,7 +47,8 @@ local
       import
          Property
          System
-         Debug at 'x-oz://boot/Debug'
+         % for Debug.procedureCoord, see compute-tests.oz
+         % Debug at 'x-oz://boot/Debug'
          Module
          Space
          OS(getPID)
@@ -462,7 +463,7 @@ in
 
       local
          Engine = {MakeTestEngine Keys Tests}
-         OZPATH = {OS.getEnv 'OZPATH'}
+         % OZPATH = {OS.getEnv 'OZPATH'} % See below
       in
          {Pickle.saveWithHeader
           functor
@@ -473,7 +474,8 @@ in
           define
              ModMan = {New Module.manager init}
              Args = {Application.getCmdArgs TestOptions}
-             {OS.putEnv 'OZPATH' {OS.getEnv 'OZPATH'}#OZPATH}
+             % TODO: OZPATH is currently not set in Mozart 2
+             % {OS.putEnv 'OZPATH' {OS.getEnv 'OZPATH'}#OZPATH}
              {Application.exit {{ModMan apply(url:'' Engine $)}.run
                                 Args}}
           end

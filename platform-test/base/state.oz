@@ -24,8 +24,6 @@
 
 functor
 
-import
-
 export Return
 
 define

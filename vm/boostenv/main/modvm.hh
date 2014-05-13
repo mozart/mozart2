@@ -52,7 +52,7 @@ public:
     static void call(VM vm, Out result) {
       unsigned int ncores = boost::thread::hardware_concurrency();
       if (ncores == 0)
-        raiseError(vm, "Could not detect the number of cores on this platform");
+        raiseSystem(vm, buildTuple(vm, "vm", "cannotDetectNumberOfCores"));
       result = SmallInt::build(vm, ncores);
     }
   };
@@ -152,7 +152,7 @@ public:
       VMIdentifier monitor = BoostVM::forVM(vm).identifier;
 
       if (identifier == monitor)
-        raiseError(vm, "Cannot monitor itself");
+        raiseError(vm, buildTuple(vm, "vm", "cannotMonitorItself"));
 
       bool found = env.findVM(identifier, [monitor] (BoostVM& monitoredVM) {
         monitoredVM.addMonitor(monitor);

@@ -130,7 +130,7 @@ VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier
     if (identifier > 0 && identifier < _nextVMIdentifier)
       return identifier;
   }
-  raiseError(vm, "Invalid VM identifier: ", vmIdentifier);
+  raiseError(vm, buildTuple(vm, "vm", "invalidVMIdent"));
 }
 
 /* Calls onSuccess if a VM with the given identifier is found.

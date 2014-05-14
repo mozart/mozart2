@@ -3,5 +3,4 @@
 *.swo
 *.o
 *.a
-tests/comprehensions/*.txt
 

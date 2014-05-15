@@ -2,15 +2,16 @@ include(CTest)
 # base folder
 set(BASE_FUNCTORS
     "conversion.oz" "float.oz"
-    #"int.oz" "record.oz" "type.oz"
-    "exception.oz"
+    #"int.oz" "record.oz"
+    "exception.oz" "type.oz"
     #"guards.oz" "byneed.oz" "future.oz"
     #"misc.oz" "instruction.oz" "compiler.oz" "except.oz"
     "dictionary.oz" "ofs.oz"
     #"pickles.oz" "thread.oz" "unix.oz"
-    #"weakdictionary.oz" "weakdictionaryGC.oz"
+    "weakdictionary.oz"
+    #"weakdictionaryGC.oz"
     #"finalize.oz" "gc.oz"
-    #"state.oz"
+    "state.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/base")
 foreach(FUNCTOR ${BASE_FUNCTORS})

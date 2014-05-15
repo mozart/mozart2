@@ -50,10 +50,8 @@ PropertyRegistry::PropertyRegistry(VirtualMachineOptions options) {
   config.heapSize = config.minimalHeapSize;
   config.desiredFreeMemPercentageAfterGC = 75; // percent
   config.gcThresholdTolerance = 10; // percent
-  // The initial threshold is such that there are
-  // gcThresholdTolerance percent unused above the threshold
-  config.gcThreshold = config.heapSize * 100 / (100 + config.gcThresholdTolerance);
-  config.maxGCThreshold = config.maximalHeapSize * 100 / (100 + config.gcThresholdTolerance);
+  computeInitialGCThreshold();
+  computeMaxGCThreshold();
   config.autoGC = true;
 
   // Memory usage statistics
@@ -119,8 +117,26 @@ void PropertyRegistry::registerPredefined(VM vm) {
   registerReadOnlyProp(vm, "gc.threshold", config.gcThreshold);
   registerReadOnlyProp(vm, "gc.heapsize", config.heapSize);
 
-  registerReadWriteProp(vm, "gc.min", config.minimalHeapSize);
-  registerReadWriteProp(vm, "gc.max", config.maximalHeapSize);
+  registerReadWriteProp<nativeint>(vm, "gc.min",
+    [this] (VM vm) {
+      return config.minimalHeapSize;
+    },
+    [this] (VM vm, nativeint value) {
+      if (value > 0 && value < config.maximalHeapSize)
+        config.minimalHeapSize = value;
+    }
+  );
+  registerReadWriteProp<nativeint>(vm, "gc.max",
+    [this] (VM vm) {
+      return config.maximalHeapSize;
+    },
+    [this] (VM vm, nativeint value) {
+      if (value > config.minimalHeapSize) {
+        config.maximalHeapSize = value;
+        computeMaxGCThreshold();
+      }
+    }
+  );
   registerReadWriteProp(vm, "gc.free", config.desiredFreeMemPercentageAfterGC);
   registerReadWriteProp(vm, "gc.tolerance", config.gcThresholdTolerance);
   registerReadWriteProp(vm, "gc.on", config.autoGC);

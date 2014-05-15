@@ -149,6 +149,19 @@ public:
   }
 
 private:
+  void computeInitialGCThreshold() {
+    // We want the heap to be gcThresholdTolerance % above the threshold
+    size_t tolerance = config.gcThresholdTolerance;
+    config.gcThreshold = config.heapSize * 100 / (100 + tolerance);
+  }
+
+  void computeMaxGCThreshold() {
+    size_t tolerance = config.gcThresholdTolerance;
+    config.maxGCThreshold = config.maximalHeapSize * 100 / (100 + tolerance);
+    config.gcThreshold = std::min(config.maxGCThreshold, config.gcThreshold);
+  }
+
+private:
   NodeDictionary* _registry;
 
   std::vector<PropertyRecord> _records;

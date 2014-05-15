@@ -51,7 +51,10 @@ define
 
          isString(proc {$}
                      {IsString a false}
+                     {IsString [10 0] true}
                      {IsString [10 2378] true}
+                     {IsString [10 1114111] true}
+                     {IsString [10 1114112] false}
                      {IsString [a b c] false}
                      {IsString "test" true}
                      {IsString nil true}

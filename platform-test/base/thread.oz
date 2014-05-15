@@ -27,30 +27,27 @@ export
 
 define
    Return=
-   'thread'([resumeThis(proc {$}
-                           {Thread.resume {Thread.this}}
-                        end
-                        keys:['thread' 'resume' fixedBug])
-             termLock(entailed(proc {$}
-                                  ID L={NewLock}
-                                  S A
-                               in
-                                  thread
-                                     lock L then S=unit {Wait A} end
-                                  end
-                                  thread
-                                     ID={Thread.this}
-                                     lock L then skip end
-                                  end
-                                  {Wait ID}
-                                  %% Kill thread
-                                  {Thread.terminate ID}
-                                  A=1
-                                  lock L then skip end
-                               end)
+   'thread'([
+             termLock1(proc {$}
+                          ID L={NewLock}
+                          S A
+                       in
+                          thread
+                             lock L then S=unit {Wait A} end
+                          end
+                          thread
+                             ID={Thread.this}
+                             lock L then skip end
+                          end
+                          {Wait ID}
+                          %% Kill thread
+                          {Thread.terminate ID}
+                          A=1
+                          lock L then skip end
+                       end
                       keys: ['thread' 'lock' 'injectExcpetion' 'raise'])
              termLock2(proc {$}
-                          % As reported in bug 595
+                          %% As reported in bug 595
                           L={NewLock} DeathAgony=100 T1 T2
                           proc {TryLock N}
                              try

@@ -51,7 +51,8 @@ define
       end
    end
 
-   proc {RegisterAggregate Prop Desc}
+   proc {RegisterAggregate Prop Fields}
+      Desc = {Record.make Prop Fields}
       fun {Getter}
          {Record.map Desc Get}
       end
@@ -62,6 +63,9 @@ define
           end}
       end
    in
+      for F in Fields do
+         Desc.F = {VirtualString.toAtom Prop#'.'#F}
+      end
       {Register Prop Getter Setter}
    end
 
@@ -124,30 +128,28 @@ define
 
    % Some aggregate properties
 
-   {RegisterAggregate 'print'
-    print(width:'print.width'
-          depth:'print.depth')}
+   {RegisterAggregate 'application' [args url gui]}
 
-   {RegisterAggregate 'errors'
-    errors(handler:'errors.handler'
-           debug:'errors.debug'
-           'thread':'errors.thread'
-           width:'errors.width'
-           depth:'errors.depth')}
+   {RegisterAggregate 'errors' [handler debug 'thread' width depth]}
 
-   {RegisterAggregate 'limits'
-    limits('int.min':'limits.int.min'
-           'int.max':'limits.int.max'
-           'bytecode.xregisters':'limits.bytecode.xregisters')}
+   {RegisterAggregate 'fd' [variables propagators invoked threshold]}
 
-   {RegisterAggregate 'application'
-    application('args':'application.args'
-                'url':'application.url'
-                'gui':'application.gui')}
+   {RegisterAggregate 'gc' [size threshold active min free tolerance on codeCycles]}
 
-   {RegisterAggregate 'platform'
-    platform('name':'platform.name'
-             'os':'platform.os'
-             'arch':'platform.arch')}
+   {RegisterAggregate 'limits' ['int.min' 'int.max' 'bytecode.xregisters']}
+
+   {RegisterAggregate 'messages' [gc idle]}
+
+   {RegisterAggregate 'platform' [name os arch]}
+
+   {RegisterAggregate 'print' [width depth]}
+
+   {RegisterAggregate 'priorities' [high medium]}
+
+   {RegisterAggregate 'spaces' [created cloned committed failed succeeded]}
+
+   {RegisterAggregate 'threads' [created runnable min]}
+
+   {RegisterAggregate 'time' [user system total run idle copy propagate gc detailed]}
 
 end

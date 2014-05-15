@@ -2,13 +2,15 @@ include(CTest)
 # base folder
 set(BASE_FUNCTORS
     "conversion.oz" "float.oz"
-    # "int.oz" "record.oz"
-    "type.oz" "exception.oz" "guards.oz" "byneed.oz" "future.oz" "misc.oz"
-    "instruction.oz" "compiler.oz" "except.oz" "dictionary.oz" "ofs.oz"
-    "pickles.oz" "thread.oz" "unix.oz"
-    # "weakdictionary.oz" "weakdictionaryGC.oz"
-    "finalize.oz" "gc.oz"
-    # "state.oz"
+    #"int.oz" "record.oz" "type.oz"
+    "exception.oz"
+    #"guards.oz" "byneed.oz" "future.oz"
+    #"misc.oz" "instruction.oz" "compiler.oz" "except.oz"
+    "dictionary.oz" "ofs.oz"
+    #"pickles.oz" "thread.oz" "unix.oz"
+    #"weakdictionary.oz" "weakdictionaryGC.oz"
+    #"finalize.oz" "gc.oz"
+    #"state.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/base")
 foreach(FUNCTOR ${BASE_FUNCTORS})
@@ -16,8 +18,11 @@ foreach(FUNCTOR ${BASE_FUNCTORS})
 endforeach()
 # bench folder
 set(BENCH_FUNCTORS
-    "bridge.oz" "compiler.oz" "diff.oz" "fd.oz" "knights.oz" "nrev.oz"
-    "port.oz" "rec.oz" "tak.oz")
+    #"bridge.oz"
+    "compiler.oz" "diff.oz"
+    #"fd.oz" "knights.oz" "nrev.oz"
+    "port.oz" "rec.oz" "tak.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bench")
 foreach(FUNCTOR ${BENCH_FUNCTORS})
   set(BENCH_FUNCTORS_OZ ${BENCH_FUNCTORS_OZ} "/bench/${FUNCTOR}")
@@ -25,46 +30,53 @@ endforeach()
 # dp folder
 set(DP_FUNCTORS
     #"basicfault.oz"
-    "caching.oz" "cellAndLock.oz" "cell.oz" "credit_circle.oz"
+    #"caching.oz" "cellAndLock.oz" "cell.oz" "credit_circle.oz"
     #"credit.oz"
-    "equality.oz" "fault_state.oz" "huge.oz" "init_settings.oz"
-    "maxi.oz" "mini.oz" "objectAndLock.oz" "object.oz" "object_proc_port.oz"
-    "parallel-search.oz" "port.oz" "table.oz"
+    #"equality.oz" "fault_state.oz" "huge.oz" "init_settings.oz"
+    #"maxi.oz" "mini.oz" "objectAndLock.oz" "object.oz" "object_proc_port.oz"
+    #"parallel-search.oz" "port.oz" "table.oz"
     #"template.oz"
-    "TestMisc.oz" "url.oz" "variable2.oz" "variable.oz")
+    #"TestMisc.oz"
+    "url.oz"
+    #"variable2.oz" "variable.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dp")
 foreach(FUNCTOR ${DP_FUNCTORS})
   set(DP_FUNCTORS_OZ ${DP_FUNCTORS_OZ} "/dp/${FUNCTOR}")
 endforeach()
 # dp-bench folder
 set(DP_BENCH_FUNCTORS
-    "Client.oz" "copy.oz" "Manager.oz" "run.oz" "speed.oz")
+    "Client.oz"
+    #"copy.oz" "Manager.oz" "run.oz" "speed.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dp-bench")
 foreach(FUNCTOR ${DP_BENCH_FUNCTORS})
   set(DP_BENCH_FUNCTORS_OZ ${DP_BENCH_FUNCTORS_OZ} "/dp-bench/${FUNCTOR}")
 endforeach()
 # fd folder
 set(FD_FUNCTORS
-    "alpha.oz" "binpacking.oz" "boundsdistinct.oz" "bridge.oz" "bridge_noterm.oz"
-    "buildhouse.oz" "cars.oz" "change.oz" "coins.oz" "college.oz"
-    "color.oz" "conference.oz" "configuration.oz"
+    #"alpha.oz" "binpacking.oz" "boundsdistinct.oz" "bridge.oz" "bridge_noterm.oz"
+    #"buildhouse.oz" "cars.oz" "change.oz" "coins.oz" "college.oz"
+    #"color.oz" "conference.oz" "configuration.oz"
     # "constrdisj.oz" "diagnosis.oz"
-    "distribute.oz" "divmod.oz" "donald.oz" "dsum.oz" "equations.oz"
-    "family.oz" "filter.oz" "fraction.oz" "grocery.oz" "guards.oz" "houses.oz"
-    "hubert.oz" "kalotan.oz" "knights.oz" "magicsequence.oz" "magicsquare.oz"
-    "mapcoloring.oz" "misc1.oz" "misc2.oz" "money.oz" "multiply.oz"
-    "pel.oz" "permutation.oz" "photo.oz" "pigeon.oz" "pythagoras.oz"
-    "queens.oz" "safe.oz" "schur.oz" "srat.oz" "students.oz" "sumabs.oz"
-    "tiling.oz" "train.oz" "warehouse.oz" "watlasm.oz" "zebra.oz")
+    #"distribute.oz" "divmod.oz" "donald.oz" "dsum.oz" "equations.oz"
+    #"family.oz" "filter.oz" "fraction.oz" "grocery.oz" "guards.oz" "houses.oz"
+    #"hubert.oz" "kalotan.oz" "knights.oz" "magicsequence.oz" "magicsquare.oz"
+    #"mapcoloring.oz" "misc1.oz" "misc2.oz" "money.oz" "multiply.oz"
+    #"pel.oz" "permutation.oz" "photo.oz" "pigeon.oz" "pythagoras.oz"
+    #"queens.oz" "safe.oz" "schur.oz" "srat.oz" "students.oz" "sumabs.oz"
+    #"tiling.oz" "train.oz" "warehouse.oz" "watlasm.oz" "zebra.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fd")
 foreach(FUNCTOR ${FD_FUNCTORS})
   set(FD_FUNCTORS_OZ ${FD_FUNCTORS_OZ} "/fd/${FUNCTOR}")
 endforeach()
 # fs folder
 set(FS_FUNCTORS
-    "crew.oz" "denys.oz" "golf.oz" "golf-reified.oz" "hamming.oz" "knapsack.oz"
+    #"crew.oz" "denys.oz" "golf.oz" "golf-reified.oz" "hamming.oz" "knapsack.oz"
     #"manuel_constr.oz"
-    "manuel.oz" "misc.oz" "steiner.oz")
+    #"manuel.oz" "misc.oz" "steiner.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fs")
 foreach(FUNCTOR ${FS_FUNCTORS})
   set(FS_FUNCTORS_OZ ${FS_FUNCTORS_OZ} "/fs/${FUNCTOR}")
@@ -80,19 +92,20 @@ endforeach()
 # lib folder
 set(LIB_FUNCTORS
     # "compute-tests.oz" "engine.oz"
-    "failed.oz" "help-bench.oz"
-    "help-string.oz"
+    #"failed.oz" "help-bench.oz"
+    #"help-string.oz"
     # "make-bench.oz"
-    "passed.oz")
+    #"passed.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 foreach(FUNCTOR ${LIB_FUNCTORS})
   set(LIB_FUNCTORS_OZ ${LIB_FUNCTORS_OZ} "/lib/${FUNCTOR}")
 endforeach()
 # scheduling folder
 set(SCHEDULING_FUNCTORS
-    "abz6.oz"
+    #"abz6.oz"
     #"compilers.oz" "enum.oz" "greedy.oz" "local.oz" "localUtils.oz" "order.oz"
-    "product.oz"
+    #"product.oz"
     #"resourceConstraints.oz" "resourceEnumeration.oz" "search.oz" "shuffle.oz" "swaps.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/scheduling")
@@ -101,7 +114,8 @@ foreach(FUNCTOR ${SCHEDULING_FUNCTORS})
 endforeach()
 # space folder
 set(SPACE_FUNCTORS
-    "basic.oz" "lp.oz" "queens.oz" "sit-check.oz")
+    #"basic.oz" "lp.oz" "queens.oz" "sit-check.oz"
+)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/space")
 foreach(FUNCTOR ${SPACE_FUNCTORS})
   set(SPACE_FUNCTORS_OZ ${SPACE_FUNCTORS_OZ} "/space/${FUNCTOR}")

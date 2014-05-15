@@ -11,18 +11,22 @@ define
 		  {VM.ncores} > 0 = true
 	       end
 	       keys:[mvm])
+
 	current(proc {$}
 		   {VM.current} = 1
 		end
 		keys:[mvm ident])
+
 	list(proc {$}
 		{VM.list} = [1]
 	     end
 	     keys:[mvm])
+
 	getStream(proc {$}
 		     {IsDet {VM.getStream}} = false
 		  end
 		  keys:[mvm stream])
+
 	getPort(proc {$}
 		   P={VM.getPort {VM.current}}
 		   S={VM.getStream}
@@ -45,6 +49,7 @@ define
 		   end
 		end
 		keys:[mvm stream])
+
 	new(proc {$}
 	       Master={VM.current}
 	       functor F
@@ -61,6 +66,7 @@ define
 	       S.1 = 2
 	    end
 	    keys:[mvm new stream])
+
 	monitor(proc {$}
 		   functor F
 		   define
@@ -93,6 +99,7 @@ define
 		   end
 		end
 		keys:[mvm new stream monitor])
+
 	kill(proc {$}
 		functor Sleeping
 		define
@@ -121,6 +128,7 @@ define
 		end
 	     end
 	     keys:[mvm new stream monitor kill])
+
 	autokill(proc {$}
 		    functor Suicide
 		    import
@@ -139,6 +147,7 @@ define
 		    S.1 = terminated(AutoKill)
 		 end
 		 keys:[mvm new stream monitor kill])
+
 	getPortOfKilledVM(proc {$}
 			     % It is ok to get the port of a dead VM
 			     P={VM.getPort 5}
@@ -147,6 +156,7 @@ define
 			     {Send P ignored}
 			  end
 			  keys:[mvm stream])
+
 	'Application.exit'(proc {$}
 			      functor F
 			      import
@@ -162,6 +172,7 @@ define
 			      S.1 = terminated(Other)
 			   end
 			   keys:[mvm new monitor kill])
+
 	gc(proc {$}
 	      FirstVM=7
 	      NVMs=4
@@ -200,6 +211,7 @@ define
 	      {Sort {List.take S 4} Value.'<'} = 1|{List.number FirstVM FirstVM+NVMs-2 1}
 	   end
 	   keys:[mvm new stream gc])
+
 	maxMemoryInherited(proc {$}
 			      Master={VM.current}
 			      Max={Property.get 'gc.max'}
@@ -220,6 +232,7 @@ define
 			      {Property.put 'gc.max' Max} % restore
 			   end
 			   keys:[mvm gc])
+
 	% teardown
 	closeStream(proc {$}
 		       {VM.closeStream}

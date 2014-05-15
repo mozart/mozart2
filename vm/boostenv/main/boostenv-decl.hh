@@ -60,13 +60,14 @@ public:
 
 public:
   inline
-  BoostEnvironment(const VMStarter& vmStarter, VirtualMachineOptions options);
+  BoostEnvironment(const VMStarter& vmStarter);
 
 // VM Management
 
 public:
   inline
-  VMIdentifier addVM(const std::string& app, bool isURL);
+  VMIdentifier addVM(const std::string& app, bool isURL,
+                     VirtualMachineOptions options);
 
   inline
   VMIdentifier checkValidIdentifier(VM vm, RichNode identifier);
@@ -171,8 +172,6 @@ private:
   nativeint _exitCode;
   std::mutex _vmsMutex; // protects vms, _nextVMIdentifier and _exitCode
   std::mutex _gcMutex;
-
-  VirtualMachineOptions _options;
 
 // Bootstrap
 private:

@@ -2,6 +2,7 @@ functor
 import
    VM
    Module
+   Property
 export
    Return
 define
@@ -199,6 +200,26 @@ define
 	      {Sort {List.take S 4} Value.'<'} = 1|{List.number FirstVM FirstVM+NVMs-2 1}
 	   end
 	   keys:[mvm new stream gc])
+	maxMemoryInherited(proc {$}
+			      Master={VM.current}
+			      Max={Property.get 'gc.max'}
+			      NewMax=Max div 2
+			      functor F
+			      import
+				 VM Property
+			      define
+				 {Send {VM.getPort Master} {Property.get 'gc.max'}}
+			      end
+			      S={VM.getStream}
+			   in
+			      {VM.new F _} % inherit
+			      S.1 = Max
+			      {Property.put 'gc.max' NewMax}
+			      {VM.new F _}
+			      S.2.1 = NewMax
+			      {Property.put 'gc.max' Max} % restore
+			   end
+			   keys:[mvm gc])
 	% teardown
 	closeStream(proc {$}
 		       {VM.closeStream}

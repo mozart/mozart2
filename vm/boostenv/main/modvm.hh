@@ -86,7 +86,13 @@ public:
         appStr.assign(buffer.begin(), buffer.end());
       }
 
-      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL);
+      // inherit memory settings
+      auto& config = vm->getPropertyRegistry().config;
+      VirtualMachineOptions options;
+      options.minimalHeapSize = config.minimalHeapSize;
+      options.maximalHeapSize = config.maximalHeapSize;
+
+      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL, options);
       result = SmallInt::build(vm, newVM);
     }
   };

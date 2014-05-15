@@ -109,17 +109,17 @@ namespace {
   }
 }
 
-BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter,
-                                   VirtualMachineOptions options) :
+BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
   _nextVMIdentifier(1), _exitCode(0),
-  _options(options), vmStarter(vmStarter) {
+  vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
 }
 
-VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL) {
+VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL,
+                                     VirtualMachineOptions options) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
-  vms.emplace_front(*this, _nextVMIdentifier++, _options, app, isURL);
+  vms.emplace_front(*this, _nextVMIdentifier++, options, app, isURL);
   return vms.front().identifier;
 }
 

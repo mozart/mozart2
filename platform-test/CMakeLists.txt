@@ -92,7 +92,7 @@ endforeach()
 set(LISTC_FUNCTORS
     "1_Level_1_Layer.oz" "1_Level_N_Layer.oz" "Body.oz"
     "Erlang.oz" "From.oz" "Haskell.oz" "Labeled_output.oz"
-    "Lazy.oz" "Miscellaneous.oz" "Multi_output.oz"
+    "Lazy.oz" "Miscellaneous.oz" "Multi_Output.oz"
     "N_Level_1_Layer.oz" "N_Level_N_Layer.oz"
     "Output_condition.oz" "Python.oz" "Record_generators.oz"
 )

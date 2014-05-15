@@ -25,6 +25,7 @@
 #ifndef MOZART_BOOSTENV_H
 #define MOZART_BOOSTENV_H
 
+#include <csignal>
 #include <exception>
 #include <fstream>
 
@@ -114,6 +115,11 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
   vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
+
+  // Ignore SIGPIPE ourselves since Boost does not always do it
+#ifdef SIGPIPE
+  std::signal(SIGPIPE, SIG_IGN);
+#endif
 }
 
 VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL,

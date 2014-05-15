@@ -69,8 +69,10 @@ in
     in
        {Adjoin
         {Adjoin o(script: S)
-         {Debug.procedureCoord
-          if {IsProcedure S} then S else S.1 end}}
+         % {Debug.procedureCoord
+         %  if {IsProcedure S} then S else S.1 end}}
+         % TODO: Not yet implemented in Mozart 2, fake it:
+         o(file:'' line:1 column:1)}
         T}
     end}
 end

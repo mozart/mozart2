@@ -88,18 +88,6 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 foreach(FUNCTOR ${LIB_FUNCTORS})
   set(LIB_FUNCTORS_OZ ${LIB_FUNCTORS_OZ} "/lib/${FUNCTOR}")
 endforeach()
-# list-comprehensions folder
-set(LISTC_FUNCTORS
-    "1_Level_1_Layer.oz" "1_Level_N_Layer.oz" "Body.oz"
-    "Erlang.oz" "From.oz" "Haskell.oz" "Labeled_output.oz"
-    "Lazy.oz" "Miscellaneous.oz" "Multi_Output.oz"
-    "N_Level_1_Layer.oz" "N_Level_N_Layer.oz"
-    "Output_condition.oz" "Python.oz" "Record_generators.oz"
-)
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/list-comprehensions")
-foreach(FUNCTOR ${LISTC_FUNCTORS})
-  set(LISTC_FUNCTORS_OZ ${LISTC_FUNCTORS_OZ} "/list-comprehensions/${FUNCTOR}")
-endforeach()
 # scheduling folder
 set(SCHEDULING_FUNCTORS
     "abz6.oz"

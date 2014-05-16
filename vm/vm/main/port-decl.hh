@@ -128,7 +128,7 @@ public:
   // Miscellaneous
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    out << "<VMPort>";
+    out << "<Port>";
   }
 
 private:

@@ -34,6 +34,8 @@ define
 		   {Send P hello}
 		   S.1 = hello
 
+		   {Value.toVirtualString P 1 100} = '<Port>'
+
 		   try
 		      {VM.getPort 12345 _}
 		      fail

@@ -81,10 +81,10 @@ define
 		   Other = 3
 		   {VM.list} = [1 Other]
 		   {VM.monitor Other}
-		   S.1 = terminated(Other)
+		   S.1 = terminated(Other reason:normal)
 
 		   {VM.monitor OldDeadVM} % already dead
-		   S.2.1 = terminated(OldDeadVM)
+		   S.2.1 = terminated(OldDeadVM reason:unknown)
 
 		   try
 		      {VM.monitor {VM.current}}
@@ -115,10 +115,10 @@ define
 		{VM.monitor Sleeper}
 		
 		{VM.kill Sleeper}
-		S.1 = terminated(Sleeper)
+		S.1 = terminated(Sleeper reason:kill)
 
 		{VM.monitor Sleeper} % already killed, message sent immediately
-		S.2.1 = terminated(Sleeper)
+		S.2.1 = terminated(Sleeper reason:unknown)
 
 		{VM.kill Sleeper} % no-op
 
@@ -146,7 +146,7 @@ define
 
 		    {VM.monitor AutoKill}
 
-		    S.1 = terminated(AutoKill)
+		    S.1 = terminated(AutoKill reason:kill)
 		 end
 		 keys:[mvm new stream monitor kill])
 
@@ -171,7 +171,7 @@ define
 			   in
 			      Other = 6
 			      {VM.monitor Other}
-			      S.1 = terminated(Other)
+			      S.1 = terminated(Other reason:kill)
 			   end
 			   keys:[mvm new monitor kill])
 
@@ -234,6 +234,27 @@ define
 			      {Property.put 'gc.max' Max} % restore
 			   end
 			   keys:[mvm gc])
+
+	outOfMemory(proc {$}
+		       functor F
+		       import
+			  Property
+			  VM
+		       define
+			  {VM.getStream}.1 = unit
+			  {Property.put 'gc.min' 1}
+			  {Property.put 'gc.max' 2}
+			  {Wait {MakeTuple big 1000}} % should be out of memory
+			  {VM.closeStream}
+		       end
+		       Other={VM.new F}
+		       S={VM.getStream}
+		    in
+		       {VM.monitor Other}
+		       {Send {VM.getPort Other} unit}
+		       S.1 = terminated(Other reason:outOfMemory)
+		    end
+		    keys:[mvm new gc kill])
 
 	% teardown
 	closeStream(proc {$}

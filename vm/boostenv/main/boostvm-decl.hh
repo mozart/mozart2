@@ -89,6 +89,8 @@ public:
 public:
   void requestTermination();
 
+  UnstableNode buildTerminationRecord(VMIdentifier deadVM, std::string reason);
+
   void addMonitor(VMIdentifier monitor);
 
 private:
@@ -173,6 +175,7 @@ private:
 // Running thread management
 private:
   bool _terminationRequested;
+  std::string _terminationReason;
   boost::asio::io_service::work* _work;
 };
 

@@ -164,7 +164,8 @@ public:
         monitoredVM.addMonitor(monitor);
       });
       if (!found) {
-        BoostVM::forVM(vm).receiveOnVMStream(buildTuple(vm, "terminated", identifier));
+        BoostVM::forVM(vm).receiveOnVMStream(
+          BoostVM::forVM(vm).buildTerminationRecord(identifier, "unknown"));
       }
     }
   };

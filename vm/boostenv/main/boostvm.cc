@@ -45,7 +45,8 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
-  _terminationRequested(false) {
+  _terminationRequested(false),
+  _terminationReason("normal") {
 
   // Make sure the IO thread will wait for us
   _work = new boost::asio::io_service::work(environment.io_service);
@@ -70,11 +71,11 @@ void BoostVM::start(std::string app, bool isURL) {
     if (!env.vmStarter(vm, app, isURL)) {
       std::cerr << "Could not start VM." << std::endl;
     }
+  } catch (std::bad_alloc& ba) {
+    _terminationReason = "outOfMemory";
+    std::cerr << "Terminated VM " << identifier << std::endl;
   } catch (std::exception& e) {
-    // Ensure to stop the timers as we might have quitted run() brutally
-    preemptionTimer.cancel();
-    alarmTimer.cancel();
-
+    _terminationReason = "abnormal";
     std::cerr << "Terminated VM " << identifier;
     std::cerr << " because a C++ exception was uncaught:" << std::endl;
     std::cerr << e.what() << std::endl;
@@ -266,9 +267,16 @@ void BoostVM::receiveOnVMStream(std::vector<unsigned char>* buffer) {
 }
 
 void BoostVM::requestTermination() {
+  _terminationReason = "kill";
   postVMEvent([this] {
     _terminationRequested = true;
   });
+}
+
+UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, std::string reason) {
+  return buildRecord(vm,
+    buildArity(vm, "terminated", 1, "reason"),
+               deadVM, vm->getAtom(reason));
 }
 
 void BoostVM::addMonitor(VMIdentifier monitor) {
@@ -279,16 +287,22 @@ void BoostVM::addMonitor(VMIdentifier monitor) {
 void BoostVM::tellMonitors() {
   std::lock_guard<std::mutex> lock(_monitorsMutex);
   VMIdentifier deadVM = this->identifier;
+  std::string reason = this->_terminationReason;
   for (VMIdentifier identifier : _monitors) {
     env.findVM(identifier, [=] (BoostVM& monitor) {
-      monitor.postVMEvent([&monitor,deadVM] () {
-        monitor.receiveOnVMStream(buildTuple(monitor.vm, "terminated", deadVM));
+      monitor.postVMEvent([&monitor,deadVM,reason] () {
+        monitor.receiveOnVMStream(
+          monitor.buildTerminationRecord(deadVM, reason));
       });
     });
   }
 }
 
 void BoostVM::terminate() {
+  // Ensure to stop the timers as we might have quitted run() brutally
+  preemptionTimer.cancel();
+  alarmTimer.cancel();
+
   closeStream();
   tellMonitors();
 

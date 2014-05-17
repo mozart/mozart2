@@ -59,7 +59,7 @@ set(FD_FUNCTORS
     #"alpha.oz" "binpacking.oz" "boundsdistinct.oz" "bridge.oz" "bridge_noterm.oz"
     #"buildhouse.oz" "cars.oz" "change.oz" "coins.oz" "college.oz"
     #"color.oz" "conference.oz" "configuration.oz"
-    # "constrdisj.oz" "diagnosis.oz"
+    #"constrdisj.oz" "diagnosis.oz"
     #"distribute.oz" "divmod.oz" "donald.oz" "dsum.oz" "equations.oz"
     #"family.oz" "filter.oz" "fraction.oz" "grocery.oz" "guards.oz" "houses.oz"
     #"hubert.oz" "kalotan.oz" "knights.oz" "magicsequence.oz" "magicsquare.oz"
@@ -92,10 +92,10 @@ foreach(FUNCTOR ${INTERACTIVE_FUNCTORS})
 endforeach()
 # lib folder
 set(LIB_FUNCTORS
-    # "compute-tests.oz" "engine.oz"
+    #"compute-tests.oz" "engine.oz"
     #"failed.oz" "help-bench.oz"
     #"help-string.oz"
-    # "make-bench.oz"
+    #"make-bench.oz"
     #"passed.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")

@@ -280,7 +280,7 @@ define
                                                                                             end
       forListDecl:alt(
                      [lvl0 'in' forListGen]#fun{$ [A _ S]}forPattern(A S)end
-                     [lvl0 ':' lvl0 'in' lvl0 opt(seq2('of' lvl0)unit)]#fun{$ [F _ A _ R OF]}forRecord(F A R OF)end
+                     [lvl0 ':' lvl0 'in' lvl0]#fun{$ [F _ A _ R]}forRecord(F A R)end
                      [lvl0 'from' lvl0]#fun{$ [A _ S]}forFrom(A S)end
                      atom#fun{$ A}forFlag(A)end
                      )

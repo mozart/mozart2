@@ -92,6 +92,19 @@ prepare
       end
    end
 
+   proc {RecordWaitNeededFirst Rec}
+      NeededWatch
+   in
+      {Record.forAll Rec
+       proc {$ Val}
+          thread
+             {WaitNeeded Val}
+             NeededWatch = unit
+          end
+       end}
+      {Wait NeededWatch}
+   end
+
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
                      dotAssign: BootValue.dotAssign
@@ -140,6 +153,7 @@ prepare
 
                      %% Record
                      'Record.width': Record.width
+                     'Record.waitNeededFirst': RecordWaitNeededFirst
                      'Record.test': BootRecord_test
                      'Record.testLabel': BootRecord.testLabel
                      'Record.testFeature': BootRecord.testFeature

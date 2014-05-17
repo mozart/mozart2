@@ -92,7 +92,7 @@ fun {CoordinatesOf P}
    [] fListComprehension(_ _ _ C) then C
    [] fForComprehensionLevel(_ _ C) then C
    [] forExpression(E _) then {CoordinatesOf E}
-   [] forRecord(F _ _ _) then {CoordinatesOf F}
+   [] forRecord(F _ _) then {CoordinatesOf F}
    end
 end
 

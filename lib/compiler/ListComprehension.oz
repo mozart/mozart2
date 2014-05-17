@@ -34,9 +34,6 @@ import
 export
    Compile
 
-prepare
-   skip
-
 define
    %% create a new variable named Name
    fun {MakeVar Name}

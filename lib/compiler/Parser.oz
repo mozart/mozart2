@@ -259,8 +259,9 @@ define
                                                                                LL=if D==nil then fRecord else fOpenRecord end in
                                                                                LL(L Ts)
                                                                             end
-                  [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE]
-                  #fun{$ [P1 _ S1 FC BD _ P2]}fListComprehension(S1 FC BD {MkPos P1 P2}) end
+                  [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE]#fun{$ [P1 _ S1 FC BD _ P2]}
+                                                                                                      fListComprehension(S1 FC BD {MkPos P1 P2})
+                                                                                                   end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
                   [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end
@@ -273,13 +274,9 @@ define
                   )
       forExpression:[subtree opt(seq2('if' lvl0) unit)]#fun{$ [S1 S2]}forExpression(S1 S2)end
       forComprehension:plus([pB 'suchthat' plus(forListDecl) opt(seq2('if' lvl0) unit) pE])#fun{$ Ss}
-                                                                                               {FoldR Ss fun{$ Xn Y}
-                                                                                                            case Xn
-                                                                                                            of [P1 _ FD CD P2] then
-                                                                                                               fForComprehensionLevel(FD CD {MkPos P1 P2})|Y
-                                                                                                            [] nil then Y
-                                                                                                            end
-                                                                                                         end nil}
+                                                                                               {Map Ss fun{$ [P1 _ FD CD P2]}
+                                                                                                          fForComprehensionLevel(FD CD {MkPos P1 P2})
+                                                                                                       end}
                                                                                             end
       forListDecl:alt(
                      [lvl0 'in' forListGen]#fun{$ [A _ S]}forPattern(A S)end

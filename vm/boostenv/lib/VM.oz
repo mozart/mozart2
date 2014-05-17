@@ -35,6 +35,7 @@ export
    Current
    New
    GetPort
+   IdentForPort
    GetStream
    CloseStream
    List
@@ -53,6 +54,7 @@ define
       end
    end
    GetPort = Boot_VM.getPort
+   IdentForPort = Boot_VM.identForPort
    GetStream = Boot_VM.getStream
    CloseStream = Boot_VM.closeStream
    List = Boot_VM.list

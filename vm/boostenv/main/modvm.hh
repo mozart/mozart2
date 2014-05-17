@@ -109,6 +109,18 @@ public:
     }
   };
 
+  class IdentForPort: public Builtin<IdentForPort> {
+  public:
+    IdentForPort(): Builtin("identForPort") {}
+
+    static void call(VM vm, In vmPort, Out result) {
+      if (!vmPort.is<VMPort>())
+        raiseTypeError(vm, "VMPort", vmPort);
+
+      result = SmallInt::build(vm, vmPort.as<VMPort>().value());
+    }
+  };
+
   class GetStream: public Builtin<GetStream> {
   public:
     GetStream(): Builtin("getStream") {}

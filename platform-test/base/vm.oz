@@ -52,6 +52,20 @@ define
 		end
 		keys:[mvm stream])
 
+	identForPort(proc {$}
+			{VM.identForPort {VM.getPort {VM.current}}} = {VM.current}
+
+			try
+			   NotAVMPort={NewPort _}
+			in
+			   {VM.identForPort NotAVMPort _}
+			   fail
+			catch error(kernel(type ...)...) then
+			   skip
+			end
+		     end
+		     keys:[mvm port])
+
 	new(proc {$}
 	       Master={VM.current}
 	       functor F
@@ -151,11 +165,13 @@ define
 		 keys:[mvm new stream monitor kill])
 
 	getPortOfKilledVM(proc {$}
+			     DeadVM=5
 			     % It is ok to get the port of a dead VM
-			     P={VM.getPort 5}
+			     P={VM.getPort DeadVM}
 			  in
 			     % But {Send P} becomes no-op
 			     {Send P ignored}
+			     {VM.identForPort P} = DeadVM
 			  end
 			  keys:[mvm stream])
 

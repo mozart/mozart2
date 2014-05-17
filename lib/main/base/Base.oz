@@ -133,7 +133,7 @@ prepare
    IsPort   = Boot_Port.is
    NewPort  = Boot_Port.new
    Send     = Boot_Port.send
-   SendRecv = Boot_Port.sendReceive
+   SendRecv = Boot_Port.sendRecv
 
    %%
    %% Atom

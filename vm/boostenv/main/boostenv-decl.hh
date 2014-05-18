@@ -88,7 +88,7 @@ public:
               const std::string& reason);
 
   inline
-  void removeTerminatedVM(VMIdentifier identifier,
+  void removeTerminatedVM(VMIdentifier identifier, nativeint exitCode,
                           boost::asio::io_service::work* work);
 
 // Configuration

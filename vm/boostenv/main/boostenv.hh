@@ -166,12 +166,12 @@ UnstableNode BoostEnvironment::listVMs(VM vm) {
 void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
                               const std::string& reason) {
   findVM(identifier, [this,exitCode,reason] (BoostVM& targetVM) {
-    _exitCode = exitCode;
-    targetVM.requestTermination(reason);
+    targetVM.requestTermination(exitCode, reason);
   });
 }
 
 void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
+                                          nativeint exitCode,
                                           boost::asio::io_service::work* work) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
 
@@ -180,6 +180,8 @@ void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
   vms.remove_if([=] (const BoostVM& vm) {
     return vm.identifier == identifier;
   });
+
+  _exitCode = exitCode; // exitCode of last living VM wins
 
   // Tell the IO thread it does not need to wait anymore for us
   delete work;

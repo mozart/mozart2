@@ -87,7 +87,7 @@ public:
 
 // Termination
 public:
-  void requestTermination(const std::string& reason);
+  void requestTermination(nativeint exitCode, const std::string& reason);
 
   UnstableNode buildTerminationRecord(VMIdentifier deadVM, std::string reason);
 
@@ -172,10 +172,14 @@ private:
   std::vector<VMIdentifier> _monitors;
   std::mutex _monitorsMutex;
 
-// Running thread management
+// Termination
 private:
   bool _terminationRequested;
+  nativeint _terminationStatus;
   std::string _terminationReason;
+
+// Running thread management
+private:
   boost::asio::io_service::work* _work;
 };
 

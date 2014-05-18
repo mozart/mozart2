@@ -46,6 +46,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
   _terminationRequested(false),
+  _terminationStatus(0),
   _terminationReason("normal") {
 
   // Make sure the IO thread will wait for us
@@ -266,8 +267,9 @@ void BoostVM::receiveOnVMStream(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
-void BoostVM::requestTermination(const std::string& reason) {
-  postVMEvent([this,reason] {
+void BoostVM::requestTermination(nativeint exitCode, const std::string& reason) {
+  postVMEvent([this,exitCode,reason] {
+    _terminationStatus = exitCode;
     _terminationReason = reason;
     _terminationRequested = true;
   });
@@ -306,7 +308,7 @@ void BoostVM::terminate() {
   closeStream();
   tellMonitors();
 
-  env.removeTerminatedVM(identifier, _work);
+  env.removeTerminatedVM(identifier, _terminationStatus, _work);
 }
 
 } }

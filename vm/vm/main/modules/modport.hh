@@ -70,7 +70,7 @@ public:
 
   class SendReceive: public Builtin<SendReceive> {
   public:
-    SendReceive(): Builtin("sendReceive") {}
+    SendReceive(): Builtin("sendRecv") {}
 
     static void call(VM vm, In port, In value, Out reply) {
       reply = PortLike(port).sendReceive(vm, value);

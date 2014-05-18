@@ -51,14 +51,6 @@ define
    fun {MakeVarIndexIndex Name1 Index1 Name2 Index2}
       fVar({NewNamedName {VirtualString.toAtom Name1#Index1#Name2#Index2}} unit)
    end
-   %% returns Coord with its label set to pos --> pos(...same as what was in Coord...)
-   %% if Coord == unit then pos end
-   fun {CoordNoDebug Coord}
-      case {Label Coord}
-      of pos then Coord
-      else {Adjoin Coord pos}
-      end
-   end
    %%==================================================
    %%==================================================
    %% the actual exported function called by Unnester
@@ -585,8 +577,6 @@ define
                                       end
                                    end
                                 end
-            Procedure
-         in
             Procedure =
             fProc(
                %% name
@@ -634,7 +624,7 @@ define
                                                     unit)
                                           else
                                              %%==========================
-                                              %% lazy with several outputs
+                                             %% lazy with several outputs
                                              fOpApplyStatement('Record.waitNeededFirst' [ResultVar] unit)
                                           end
                                           BodyStat
@@ -649,7 +639,8 @@ define
                %% flags
                nil
                %% position
-               unit)
+               COORDS)
+         in
             {PutDeclIndex 'Level' Index Procedure}
             NameVar
          end %% end of LevelGenerator
@@ -685,7 +676,7 @@ define
                              %% flags
                              nil
                              %% position
-                             unit)
+                             COORDS)
          }
          %% return name
          NameVar
@@ -702,10 +693,10 @@ define
          fLocal(
             %% all the declarations (levels and bounds)
             {DeclareAllDico}
-            %% return the resulting list-s
-            fApply(PreLevelVar nil unit)
-            %% no position
-            unit)
+            %% return the resulting list(s)
+            fApply(PreLevelVar nil COORDS)
+            %% LC position
+            COORDS)
          %% list comprehension tag
          listComprehension
          %% keep position of list comprehension

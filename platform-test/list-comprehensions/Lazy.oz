@@ -37,9 +37,15 @@ define
          end
          fun {Fun} 1 end
          C = {NewCell _}
+         CC = {NewCell _}
       in
          C := thread [A suchthat lazy A in 1..3] end {Delay 50}
          if {LazyAssert @C [1 2 3] 1} then C := 1 else C := 0 end @C = 1
+
+         C := thread [A A+1 suchthat lazy A in 1..3] end {Delay 50}
+         CC := @C.1
+         if {LazyAssert @C.2 [2 3 4] 1} then C := 1 else C := 0 end @C = 1
+         @CC = [1 2 3]
 
          C := thread [A+B suchthat lazy A in 1..2 suchthat B in [1 2 3]] end {Delay 50}
          if {LazyAssert @C [2 3 4 3 4 5] 3} then C := 1 else C := 0 end @C = 1

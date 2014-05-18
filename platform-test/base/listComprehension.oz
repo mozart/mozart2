@@ -5,6 +5,9 @@
 
 functor
 
+import
+   System(showInfo:Info)
+
 export
    Return
 

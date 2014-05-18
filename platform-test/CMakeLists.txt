@@ -6,7 +6,7 @@ set(BASE_FUNCTORS
     "exception.oz" "type.oz"
     #"guards.oz" "byneed.oz" "future.oz"
     #"misc.oz" "instruction.oz" "compiler.oz" "except.oz"
-    "dictionary.oz" "ofs.oz"
+    "dictionary.oz" "ofs.oz" "listComprehension.oz"
     #"pickles.oz" "unix.oz"
     "weakdictionary.oz" "thread.oz"
     #"weakdictionaryGC.oz"
@@ -102,18 +102,6 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 foreach(FUNCTOR ${LIB_FUNCTORS})
   set(LIB_FUNCTORS_OZ ${LIB_FUNCTORS_OZ} "/lib/${FUNCTOR}")
 endforeach()
-# list-comprehensions folder
-set(LISTC_FUNCTORS
-    "1_Level_1_Layer.oz" "1_Level_N_Layer.oz" "Body.oz"
-    "Erlang.oz" "From.oz" "Haskell.oz" "Labeled_output.oz"
-    "Lazy.oz" "Miscellaneous.oz" "Multi_Output.oz"
-    "N_Level_1_Layer.oz" "N_Level_N_Layer.oz"
-    "Output_condition.oz" "Python.oz" "Record_generators.oz"
-)
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/list-comprehensions")
-foreach(FUNCTOR ${LISTC_FUNCTORS})
-  set(LISTC_FUNCTORS_OZ ${LISTC_FUNCTORS_OZ} "/list-comprehensions/${FUNCTOR}")
-endforeach()
 # scheduling folder
 set(SCHEDULING_FUNCTORS
     #"abz6.oz"
@@ -144,9 +132,8 @@ endforeach()
 set(TEST_FUNCTORS ${BASE_FUNCTORS_OZ} ${BENCH_FUNCTORS_OZ}
     ${DP_FUNCTORS_OZ} ${DP_BENCH_FUNCTORS_OZ}
     ${FD_FUNCTORS_OZ} ${FS_FUNCTORS_OZ} ${INTERACTIVE_FUNCTORS_OZ}
-    ${LIB_FUNCTORS_OZ} ${LISTC_FUNCTORS_OZ}
-    ${SCHEDULING_FUNCTORS_OZ} ${SPACE_FUNCTORS_OZ}
-    ${UNIFY_FUNCTORS_OZ})
+    ${LIB_FUNCTORS_OZ} ${SCHEDULING_FUNCTORS_OZ}
+    ${SPACE_FUNCTORS_OZ} ${UNIFY_FUNCTORS_OZ})
 set(TEST_FUNCTORS_OZF "")
 set(TEST_FUNCTORS_WITH_LIB ${TEST_FUNCTORS} ${LIB_FUNCTORS_OZ})
 foreach(FUNCTOR ${TEST_FUNCTORS_WITH_LIB})

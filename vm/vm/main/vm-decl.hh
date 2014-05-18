@@ -111,7 +111,7 @@ public:
     doGC(_secondMemoryManager);
   }
 
-  virtual void killVM(VM vm, nativeint exitCode) {
+  virtual void killVM(VM vm, nativeint exitCode, const std::string& reason) {
     std::exit(exitCode);
   }
 

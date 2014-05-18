@@ -266,9 +266,9 @@ void BoostVM::receiveOnVMStream(std::vector<unsigned char>* buffer) {
   sendToReadOnlyStream(vm, _stream, unpickled);
 }
 
-void BoostVM::requestTermination() {
-  _terminationReason = "kill";
-  postVMEvent([this] {
+void BoostVM::requestTermination(const std::string& reason) {
+  postVMEvent([this,reason] {
+    _terminationReason = reason;
     _terminationRequested = true;
   });
 }

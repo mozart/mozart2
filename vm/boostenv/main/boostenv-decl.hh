@@ -79,12 +79,13 @@ public:
   inline
   UnstableNode listVMs(VM vm);
 
-  void killVM(VM vm, nativeint exitCode) {
-    killVM(BoostVM::forVM(vm).identifier, exitCode);
+  void killVM(VM vm, nativeint exitCode, const std::string& reason) {
+    killVM(BoostVM::forVM(vm).identifier, exitCode, reason);
   }
 
   inline
-  void killVM(VMIdentifier identifier, nativeint exitCode);
+  void killVM(VMIdentifier identifier, nativeint exitCode,
+              const std::string& reason);
 
   inline
   void removeTerminatedVM(VMIdentifier identifier,

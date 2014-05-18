@@ -272,6 +272,23 @@ define
 		    end
 		    keys:[mvm new gc kill])
 
+	exception(proc {$}
+		     functor Fail
+		     import
+			VM
+		     define
+			{VM.getStream}.1 = unit
+			fail
+		     end
+		     Other={VM.new Fail}
+		     S={VM.getStream}
+		  in
+		     {VM.monitor Other}
+		     {Send {VM.getPort Other} unit}
+		     S.1 = terminated(Other reason:exception)
+		  end
+		  keys:[mvm kill])
+
 	% teardown
 	closeStream(proc {$}
 		       {VM.closeStream}

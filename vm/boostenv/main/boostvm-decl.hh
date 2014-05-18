@@ -87,7 +87,7 @@ public:
 
 // Termination
 public:
-  void requestTermination();
+  void requestTermination(const std::string& reason);
 
   UnstableNode buildTerminationRecord(VMIdentifier deadVM, std::string reason);
 

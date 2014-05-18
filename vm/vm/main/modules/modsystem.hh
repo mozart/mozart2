@@ -164,9 +164,10 @@ public:
   public:
     Exit(): Builtin("exit") {}
 
-    static void call(VM vm, In exitCode) {
+    static void call(VM vm, In exitCode, In reason) {
       auto intExitCode = getArgument<nativeint>(vm, exitCode, "Integer");
-      vm->getEnvironment().killVM(vm, intExitCode);
+      auto atomReason = getArgument<atom_t>(vm, reason);
+      vm->getEnvironment().killVM(vm, intExitCode, atomReason.contents());
     }
   };
 };

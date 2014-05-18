@@ -73,7 +73,7 @@ prepare
       Error(printException)
    define
       proc {ExitError}
-         {BootSystem.exit 1}
+         {BootSystem.exit 1 'exception'}
       end
 
       proc {ErrorHandler Exc}
@@ -89,7 +89,7 @@ prepare
                {System.showError
                 '*** error while reporting error ***\noriginal exception:'}
                {System.show Exc}
-               {BootSystem.exit 1}
+               {ExitError}
             end
             %% terminate local computation
             if {System.onToplevel} then

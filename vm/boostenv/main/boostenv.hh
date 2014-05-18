@@ -163,10 +163,11 @@ UnstableNode BoostEnvironment::listVMs(VM vm) {
   return list;
 }
 
-void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode) {
-  findVM(identifier, [this,exitCode] (BoostVM& targetVM) {
+void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
+                              const std::string& reason) {
+  findVM(identifier, [this,exitCode,reason] (BoostVM& targetVM) {
     _exitCode = exitCode;
-    targetVM.requestTermination();
+    targetVM.requestTermination(reason);
   });
 }
 

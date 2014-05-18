@@ -156,7 +156,7 @@ public:
       auto& env = BoostEnvironment::forVM(vm);
       VMIdentifier identifier = env.checkValidIdentifier(vm, vmIdentifier);
 
-      env.killVM(identifier, 0);
+      env.killVM(identifier, 0, "kill");
     }
   };
 

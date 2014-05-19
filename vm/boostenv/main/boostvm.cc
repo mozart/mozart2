@@ -301,11 +301,14 @@ void BoostVM::tellMonitors() {
 }
 
 void BoostVM::terminate() {
-  // Ensure to stop the timers as we might have quitted run() brutally
+  // Warning: we should only access BoostVM members here and do
+  // not interact with the VM as we might have quitted run() brutally.
+
+  // Ensure the timers are stopped
   preemptionTimer.cancel();
   alarmTimer.cancel();
 
-  closeStream();
+  _portClosed = true; // close VM port
   tellMonitors();
 
   env.removeTerminatedVM(identifier, _terminationStatus, _work);

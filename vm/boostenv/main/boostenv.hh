@@ -181,7 +181,8 @@ void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
     return vm.identifier == identifier;
   });
 
-  _exitCode = exitCode; // exitCode of last living VM wins
+  if (identifier == 1) // only the exitCode of the initial VM is considered
+    _exitCode = exitCode;
 
   // Tell the IO thread it does not need to wait anymore for us
   delete work;

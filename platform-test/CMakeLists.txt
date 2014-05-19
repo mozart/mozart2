@@ -8,10 +8,9 @@ set(BASE_FUNCTORS
     #"misc.oz" "instruction.oz" "compiler.oz" "except.oz"
     "dictionary.oz" "ofs.oz"
     #"pickles.oz" "unix.oz"
-    "weakdictionary.oz" "thread.oz"
-    #"weakdictionaryGC.oz"
+    #"weakdictionary.oz" "weakdictionaryGC.oz"
     #"finalize.oz" "gc.oz"
-    "state.oz"
+    "state.oz" "thread.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/base")
 foreach(FUNCTOR ${BASE_FUNCTORS})

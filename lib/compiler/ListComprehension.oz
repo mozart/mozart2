@@ -168,23 +168,6 @@ define
       %% returns [fVar('Next1' unit) ... fVar('NextN' unit)]
       %% NextsRecord is bound to the same list but with
       %%    each element put inside a fColon with its feature
-      fun {CreateNexts Outputs Fields ?NextsRecord}
-         fun {Aux I Fs Acc1 Acc2}
-            if I == 0 then
-               NextsRecord = Acc2
-               Acc1
-            else Var in
-               Var = {MakeVarIndex 'Next' I}
-               {Aux I-1 Fs.2 Var|Acc1 fColon(Fs.1 Var)|Acc2}
-            end
-         end
-      in
-         {Aux Outputs Fields nil nil}
-      end
-      %% creates a list with all the outputs
-      %% returns [fVar('Next1' unit) ... fVar('NextN' unit)]
-      %% NextsRecord is bound to the same list but with
-      %%    each element put inside a fColon with its feature
       fun {CreateNextsForLastLevel Fields ?NextsRecord}
          fun {Aux I Fs Acc1 Acc2}
             case Fs
@@ -662,23 +645,27 @@ define
                              [ResultVar]
                              %% body
                              local
-                                NextsRecord
-                                NextsToDecl = {CreateNexts Outputs Fields ?NextsRecord}
                                 Decls
                                 Initiators = {NextLevelInitiators FOR_COMPREHENSION_LIST 0 ?Decls}
                                 ResultArg = if ReturnList then
                                                [fRecord(fAtom('#' unit) [fColon(fInt(1 unit) ResultVar)])]
                                             else
-                                               [fRecord(fAtom('#' unit) NextsRecord)]
+                                               [ResultVar]
                                             end
                                 ApplyStat = fApply(Level1 {List.append Initiators ResultArg} unit)
                                 BodyStat = {LocalsIn Decls ApplyStat}
                              in
                                 if ReturnList then
                                    BodyStat
-                                else
-                                   {LocalsIn NextsToDecl fAnd(fEq(ResultVar fRecord(fAtom('#' unit) NextsRecord) unit)
-                                                              BodyStat)}
+                                else RecordMake in
+                                   RecordMake = fEq(ResultVar
+                                                    fApply(fOpApply('.'
+                                                                    [fVar('Record' unit) fAtom('make' unit)]
+                                                                    unit)
+                                                           [fAtom('#' unit) Fields]
+                                                           unit)
+                                                    unit)
+                                   fAnd(RecordMake BodyStat)
                                 end
                              end
                              %% flags

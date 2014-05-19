@@ -278,7 +278,7 @@ define
 			VM
 		     define
 			{VM.getStream}.1 = unit
-			fail
+			raise error(expectedError) end
 		     end
 		     Other={VM.new Fail}
 		     S={VM.getStream}

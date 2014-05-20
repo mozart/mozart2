@@ -51,6 +51,10 @@ define
    fun {MakeVarIndexIndex Name1 Index1 Name2 Index2}
       fVar({NewNamedName {VirtualString.toAtom Name1#Index1#Name2#Index2}} unit)
    end
+   NIL = fAtom(nil unit)
+   HASH = fAtom('#' unit)
+   INT1 = fInt(1 unit)
+   INT2 = fInt(2 unit)
    %%==================================================
    %%==================================================
    %% the actual exported function called by Unnester
@@ -94,6 +98,21 @@ define
          else
             fLocal({List2fAnds Decls} Body unit)
          end
+      end
+      %% transforms a non-empty list: [e1 ... e2]
+      %% into an AST list: fRecord(...)
+      fun {LogicList2ASTList Fields}
+         proc {Aux Fs Next}
+            case Fs
+            of H|nil then
+               Next = fRecord(fAtom('|' unit) [H NIL])
+            [] H|T then N in
+               Next = fRecord(fAtom('|' unit) [H N])
+               {Aux T N}
+            end
+         end
+      in
+         {Aux Fields}
       end
       %% --> assigns 3 lists in the same order
       %% - Fields:        the fields features
@@ -232,16 +251,17 @@ define
       %% RangesDeeper         : all the ranges to declare in signature of deeper levels. Assigned at next instruction
       %% RangeListDecl        : the declarations needed before testing the condition given by user
       %% NewExtraArgsForLists : returns all the ranges of this level generated as list
-      %% RangesDeclCallNext   : all the ranges to call (with transformation for next iteration included) of this level
+      %% RangesDeclCallNext   : all the ranges to call this level
       %% RangesConditionList  : the list of all conditions to fullfill to keep iterating this level
       %% --> for   I1 in R1   A in 1..2   I2 in R3   B in 1;B+1   C in 1..3   lazy
-      %% returns              : [fVar(C unit)  fVar(B unit)  fVar(Range3At1 unit)  fVar(A unit)  fVar(Range1At1 unit)]
+      %% returns              : [fVar(C unit)  fVar(B unit)  fVar(Range3At1 unit)  fVar(A unit)
+      %%                        fVar(Range1At1 unit)]
       %% Lazy                 : true
       %% RangesDeeper         : [fVar(C unit)  fVar(B unit)  fVar(I3 unit)  fVar(A unit)  fVar(I1 unit)]
       %% RangeListDecl        : fAnd(fEq(fVar(I2 pos) fVar(Range3AtX.1 unit) unit)
       %%                             fEq(fVar(I1 pos) fVar(Range1AtX.1 unit) unit))
       %% NewExtraArgsForLists : [fVar(Range3AtX unit) fVar(Range1AtX unit)]
-      %% RangesDeclCallNext   : [fOpApply('+'  [fVar('C' pos) fInt(1 unit)] unit)  ...]
+      %% RangesDeclCallNext   : [fOpApply('+'  [fVar('C' pos) INT1] unit)  ...]
       %% RangesConditionList  : [fOpApply('=<' [fVar('C' pos) fInt(3 unit)] unit)  ...}
       fun {MakeRanges RangesList Index Result
            ?Lazy ?RangesDeeper ?RangeListDecl ?NewExtraArgsForLists ?RangesDeclCallNext ?RangesConditionList}
@@ -272,13 +292,13 @@ define
                      %% create new variable to deal with list traversal (recursively)
                      Var = {MakeVarIndexIndex 'Range' I 'At' Index}
                      Cond = fOpApply('\\='
-                                     [Var fAtom(nil unit)]
+                                     [Var NIL]
                                      unit)
                      Dcl = fEq(V
-                               fOpApply('.' [Var fInt(1 unit)] unit)
+                               fOpApply('.' [Var INT1] unit)
                                unit)
                      Call = fOpApply('.'
-                                     [Var fInt(2 unit)]
+                                     [Var INT2]
                                      unit)
                      {Aux T Var|Acc V|AccD IsLazy I+1 Dcl|ListDecl Var|ExtraArgs Call|CallItself Cond|Conditions}
                   [] forGeneratorInt(_ Hi St) then Call Cond Var in % Ints style
@@ -289,7 +309,7 @@ define
                         Var = V
                      end
                      Call = fOpApply('+'
-                                     [Var if St == unit then fInt(1 unit) else St end]
+                                     [Var if St == unit then INT1 else St end]
                                      unit)
                      Cond = fOpApply('=<' [Var Hi] unit)
                      {Aux T Var|Acc Var|AccD IsLazy I+1 ListDecl ExtraArgs Call|CallItself Cond|Conditions}
@@ -313,24 +333,24 @@ define
                         NewListDecl = fEq(V
                                           fOpApply('.'
                                                    [RecordVar
-                                                    fOpApply('.' [ArityVar fInt(1 unit)] unit)]
+                                                    fOpApply('.' [ArityVar INT1] unit)]
                                                    unit)
                                           unit)|ListDecl
                         NewDeeper = V|AccD
                      end
                   else
                      if {Label V} == fWildcard then
-                        NewListDecl = fEq(F fOpApply('.' [ArityVar fInt(1 unit)] unit) unit)|ListDecl
+                        NewListDecl = fEq(F fOpApply('.' [ArityVar INT1] unit) unit)|ListDecl
                         NewDeeper = F|AccD
                      else
-                        NewListDecl = fEq(F fOpApply('.' [ArityVar fInt(1 unit)] unit) unit)
+                        NewListDecl = fEq(F fOpApply('.' [ArityVar INT1] unit) unit)
                                       |fEq(V fOpApply('.' [RecordVar F] unit) unit)|ListDecl
                         NewDeeper = F|V|AccD
                      end
                   end
                   Call = fRecord(fAtom(record unit)
-                                 [fOpApply('.' [ArityVar fInt(2 unit)] unit) RecordVar])
-                  Cond = fOpApply('\\=' [ArityVar fAtom(nil unit)] unit)
+                                 [fOpApply('.' [ArityVar INT2] unit) RecordVar])
+                  Cond = fOpApply('\\=' [ArityVar NIL] unit)
                   {Aux T BRec|Acc NewDeeper IsLazy I+1 NewListDecl BRec|ExtraArgs Call|CallItself Cond|Conditions}
                [] forFrom(V F) then Call in % from function
                   Call = fApply(F nil unit)
@@ -354,7 +374,7 @@ define
          {Aux RangesList nil nil false 1 nil nil nil nil}
       end
       %% creates the call to make for the next iteration on this level
-      %% RangesDeclCallNext   : all the ranges to call (with transformation for next iteration included) of this level
+      %% RangesDeclCallNext   : all the ranges to call  this level
       %% PreviousIds          : previous ids to put in call
       %% Name                 : name of the current level
       %% OldExtraArgsForLists : all the ranges of previous level generated as list
@@ -363,16 +383,18 @@ define
       %% > {Level2 B+1 A} at level 2
       %% ----> for A in R1 for B in R2
       %% > {Level1 Range1At1.2} at level 1 (Old = nil, New = [fVar('Range1At1' unit)])
-      %% > {Level2 Range1At2.2 A Range1At1} at level 2 (Old = [fVar('Range1At1' unit)], New = [fVar('Range1At2' unit)])
-      fun {MakeNextCallItself RangesDeclCallNext PreviousIds Name OldExtraArgsForLists Result}
-         fApply(Name
-                {List.append RangesDeclCallNext {List.append PreviousIds {List.append OldExtraArgsForLists [Result]}}}
+      %% > {Level2 Range1At2.2 A Range1At1} at level 2 (Old = [fVar('Range1At1' unit)],
+      %%                                                New = [fVar('Range1At2' unit)])
+      fun {MakeNextCallItself RangesDeclCallNext PreviousIds NameVar OldExtraArgsForLists ResultVar}
+         fApply(NameVar
+                {List.append RangesDeclCallNext
+                 {List.append PreviousIds {List.append OldExtraArgsForLists [ResultVar]}}}
                 unit)
       end
       %% RangesDeeper         : all the ranges to call
       %% PreviousIds          : previous ids to put in call
       %% {LevelX {NextLevelInitiators Levels} RangesDeeper PreviousIds ExtraArgsForLists}
-      fun {MakeNextLevelCall RangesDeeper Levels NextLevelName PreviousIds ExtraArgsForLists Result Index}
+      fun {MakeNextLevelCall RangesDeeper Levels NextLevelName PreviousIds ExtraArgsForLists ResultVar Index}
          local
             Decls
             NextInitiators = {NextLevelInitiators Levels Index Decls}
@@ -383,48 +405,26 @@ define
                        {List.append NextInitiators
                         {List.append RangesDeeper
                          {List.append PreviousIds
-                          {List.append ExtraArgsForLists [Result]}}}}
+                          {List.append ExtraArgsForLists [ResultVar]}}}}
                        %% position
                        unit)
          in
             {LocalsIn Decls Apply}
          end
       end
-      %% a big condition which is conjonction (andthen)
+      %% returns a big condition which is conjunction (andthen)
       %% of all the conditions that each range requires
       %% --> for   I1 in R1   A in 1..2   I2 in R3   B in 1;B<5;B+1   C in 1..3
       %% gives
       %% Range1\=nil andthen A=<2 andthen Range3\=nil andthen B<5 andthen C=<3
       fun {MakeRangesCondition RangesConditionList}
-         local
-            proc {Aux Xs A}
-               case Xs
-               of H|nil then
-                  A = H
-               [] H|T then
-                  case H
-                  of fAtom(true _) then
-                     {Aux T A}
-                  else B in
-                     A = fAndThen(H B unit)
-                     {Aux T B}
-                  end
-               end
-            end
-         in
-            case RangesConditionList
-            of nil then
-               fAtom(true unit)
-            [] H|nil then
-               H
-            [] H|T then
-               case H
-               of fAtom(true _) then {MakeRangesCondition T}
-               else Next And in
-                  And = fAndThen(H Next unit)
-                  {Aux T Next}
-                  And
-               end
+         case RangesConditionList
+         of nil   then fAtom(true unit)
+         [] H|nil then H
+         [] H|T   then
+            case H
+            of fAtom(true _) then {MakeRangesCondition T}
+            else fAndThen(H {MakeRangesCondition T} unit)
             end
          end
       end
@@ -506,11 +506,11 @@ define
                                    %%     Next}
                                    %% end
                                    local
-                                      NextsRecord
                                       NextLastVar = {MakeVar 'Next'}
+                                      NextsRecord
                                       NextVars = {CreateNextsForLastLevel Fields ?NextsRecord}
-                                      NextAssignTrue  = fEq(NextLastVar fRecord(fAtom('#' unit) NextsRecord) unit)
-                                      NextAssignFalse = fEq(NextLastVar ResultVar                            unit)
+                                      NextAssignTrue  = fEq(NextLastVar fRecord(HASH NextsRecord) unit)
+                                      NextAssignFalse = fEq(NextLastVar ResultVar                 unit)
                                       NextCall = {MakeNextCallItself RangesDeclCallNext PreviousIds NameVar
                                                   OldExtraArgsForLists NextLastVar}
                                       Assigns = {Map4 Fields Expressions Conditions {Reverse NextVars}
@@ -590,7 +590,7 @@ define
                                            {List2fAnds {Map Fields
                                                         fun{$ F}
                                                            fEq(fOpApply('.' [ResultVar F] unit)
-                                                               fAtom(nil unit)
+                                                               NIL
                                                                 unit)
                                                         end}}
                                         else
@@ -635,7 +635,7 @@ define
          end %% end of LevelGenerator
          NameVar = {MakeVar 'PreLevel'}
          ResultVar = {MakeVar 'Result'}
-         Level1  = {LevelGenerator FOR_COMPREHENSION_LIST.1 1 FOR_COMPREHENSION_LIST.2 nil unit nil}
+         Level1Var  = {LevelGenerator FOR_COMPREHENSION_LIST.1 1 FOR_COMPREHENSION_LIST.2 nil unit nil}
       in
          %% put PreLevel in dico at key 'PreLevel'
          {PutDecl 'PreLevel' fProc(
@@ -648,11 +648,11 @@ define
                                 Decls
                                 Initiators = {NextLevelInitiators FOR_COMPREHENSION_LIST 0 ?Decls}
                                 ResultArg = if ReturnList then
-                                               [fRecord(fAtom('#' unit) [fColon(fInt(1 unit) ResultVar)])]
+                                               [fRecord(HASH [fColon(INT1 ResultVar)])]
                                             else
                                                [ResultVar]
                                             end
-                                ApplyStat = fApply(Level1 {List.append Initiators ResultArg} unit)
+                                ApplyStat = fApply(Level1Var {List.append Initiators ResultArg} unit)
                                 BodyStat = {LocalsIn Decls ApplyStat}
                              in
                                 if ReturnList then
@@ -662,7 +662,7 @@ define
                                                     fApply(fOpApply('.'
                                                                     [fVar('Record' unit) fAtom('make' unit)]
                                                                     unit)
-                                                           [fAtom('#' unit) Fields]
+                                                           [HASH {LogicList2ASTList Fields}]
                                                            unit)
                                                     unit)
                                    fAnd(RecordMake BodyStat)

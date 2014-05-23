@@ -125,8 +125,8 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
 VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL,
                                      VirtualMachineOptions options) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
-  vms.emplace_front(*this, _nextVMIdentifier++, options, app, isURL);
-  return vms.front().identifier;
+  _vms.emplace_front(*this, _nextVMIdentifier++, options, app, isURL);
+  return _vms.front().identifier;
 }
 
 VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier) {
@@ -145,7 +145,7 @@ VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier
 bool BoostEnvironment::findVM(VMIdentifier identifier,
                               std::function<void(BoostVM& boostVM)> onSuccess) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
-  for (BoostVM& vm : vms) {
+  for (BoostVM& vm : _vms) {
     if (vm.identifier == identifier) {
       onSuccess(vm);
       return true;
@@ -157,7 +157,7 @@ bool BoostEnvironment::findVM(VMIdentifier identifier,
 UnstableNode BoostEnvironment::listVMs(VM vm) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
   UnstableNode list = buildList(vm);
-  for (BoostVM& boostVM : vms)
+  for (BoostVM& boostVM : _vms)
     list = buildCons(vm, SmallInt::build(vm, boostVM.identifier), list);
   return list;
 }
@@ -176,7 +176,7 @@ void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
 
   // Warning: the BoostVM is calling its own destructor with remove_if().
   // We also need VirtualMachine destructor to do its cleanup before dying.
-  vms.remove_if([=] (const BoostVM& vm) {
+  _vms.remove_if([=] (const BoostVM& vm) {
     return vm.identifier == identifier;
   });
 

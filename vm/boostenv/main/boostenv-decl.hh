@@ -168,7 +168,7 @@ public:
 
 // VMs
 private:
-  std::forward_list<BoostVM> vms;
+  std::forward_list<BoostVM> _vms;
   std::mutex _vmsMutex;
   std::atomic_int _nextVMIdentifier;
   std::atomic_int _exitCode;

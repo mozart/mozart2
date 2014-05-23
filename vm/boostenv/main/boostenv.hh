@@ -131,12 +131,11 @@ VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL,
 
 VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier) {
   VMIdentifier identifier = getArgument<VMIdentifier>(vm, vmIdentifier);
-  {
-    std::lock_guard<std::mutex> lock(_vmsMutex);
-    if (identifier > 0 && identifier < _nextVMIdentifier)
-      return identifier;
+  if (identifier > 0 && identifier < _nextVMIdentifier) {
+    return identifier;
+  } else {
+    raiseError(vm, buildTuple(vm, "vm", "invalidVMIdent"));
   }
-  raiseError(vm, buildTuple(vm, "vm", "invalidVMIdent"));
 }
 
 /* Calls onSuccess if a VM with the given identifier is found.
@@ -197,10 +196,7 @@ int BoostEnvironment::runIO() {
   // This will end when all VMs are done.
   io_service.run();
 
-  {
-    std::lock_guard<std::mutex> lock(_vmsMutex);
-    return _exitCode;
-  }
+  return _exitCode;
 }
 
 void BoostEnvironment::withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC) {

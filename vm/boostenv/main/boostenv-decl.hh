@@ -169,9 +169,9 @@ public:
 // VMs
 private:
   std::forward_list<BoostVM> vms;
-  VMIdentifier _nextVMIdentifier;
-  nativeint _exitCode;
-  std::mutex _vmsMutex; // protects vms, _nextVMIdentifier and _exitCode
+  std::mutex _vmsMutex;
+  std::atomic_int _nextVMIdentifier;
+  std::atomic_int _exitCode;
   std::mutex _gcMutex;
 
 // Bootstrap

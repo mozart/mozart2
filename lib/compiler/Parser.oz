@@ -1,4 +1,4 @@
-%%% Copyright © 2013, Université catholique de Louvain
+%%% Copyright © 2013-2014, Université catholique de Louvain
 %%% All rights reserved.
 %%%
 %%% Redistribution and use in source and binary forms, with or without

@@ -50,7 +50,7 @@ public:
   BoostVM(BoostEnvironment& environment,
           VMIdentifier identifier,
           VirtualMachineOptions options,
-          const std::string& app, bool isURL);
+          std::unique_ptr<std::string>&& app, bool isURL);
 
   static BoostVM& forVM(VM vm) {
     return *static_cast<BoostVM*>(vm);
@@ -60,7 +60,7 @@ public:
 public:
   void run();
 private:
-  void start(const std::string& app, bool isURL);
+  void start(std::string* app, bool isURL);
   void onPreemptionTimerExpire(const boost::system::error_code& error);
 
 // UUID generation

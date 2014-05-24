@@ -51,7 +51,7 @@ class BoostEnvironment: public VirtualMachineEnvironment {
 private:
   using BootLoader = std::function<bool(VM vm, const std::string& url,
                                         UnstableNode& result)>;
-  using VMStarter = std::function<bool(VM vm, const std::string& app, bool isURL)>;
+  using VMStarter = std::function<bool(VM vm, std::unique_ptr<std::string> app, bool isURL)>;
 
   static const VMIdentifier InitialVMIdentifier = 1;
 
@@ -68,7 +68,7 @@ public:
 
 public:
   inline
-  VMIdentifier addVM(const std::string& app, bool isURL,
+  VMIdentifier addVM(std::unique_ptr<std::string>&& app, bool isURL,
                      VirtualMachineOptions options);
 
   inline

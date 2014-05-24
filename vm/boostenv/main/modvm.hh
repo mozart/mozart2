@@ -74,16 +74,16 @@ public:
       using namespace mozart::patternmatching;
 
       atom_t appURL;
-      std::string appStr;
+      std::unique_ptr<std::string> appStr(new std::string());
       bool isURL = matches(vm, app, capture(appURL));
 
       if (isURL) {
-        appStr.assign(appURL.contents());
+        appStr->assign(appURL.contents());
       } else { // app is a pickled functor
         size_t bufSize = ozVBSLengthForBuffer(vm, app);
         std::vector<unsigned char> buffer;
         ozVBSGet(vm, app, bufSize, buffer);
-        appStr.assign(buffer.begin(), buffer.end());
+        appStr->assign(buffer.begin(), buffer.end());
       }
 
       // inherit memory settings
@@ -92,7 +92,7 @@ public:
       options.minimalHeapSize = config.minimalHeapSize;
       options.maximalHeapSize = config.maximalHeapSize;
 
-      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL, options);
+      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(std::move(appStr), isURL, options);
       result = build(vm, newVM);
     }
   };

@@ -287,7 +287,7 @@ int main(int argc, char** argv) {
   appGUI = varMap.count("gui") != 0;
 
   // SET UP THE VM AND RUN
-  boostenv::BoostEnvironment boostEnv([=] (VM vm, const std::string& app, bool isURL) {
+  boostenv::BoostEnvironment boostEnv([=] (VM vm, std::unique_ptr<std::string> app, bool isURL) {
     boostenv::BoostVM& boostVM = boostenv::BoostVM::forVM(vm);
     // Set some properties
     {
@@ -309,7 +309,7 @@ int main(int argc, char** argv) {
           vm, "oz.search.load", vm->getAtom(ozSearchLoad));
 
       if (isURL) {
-        auto decodedURL = toUTF<char>(makeLString(app.c_str()));
+        auto decodedURL = toUTF<char>(makeLString(app->c_str()));
         auto appURL = vm->getAtom(decodedURL.length, decodedURL.string);
         properties.registerValueProp(vm, "application.url", appURL);
       } else {
@@ -317,10 +317,11 @@ int main(int argc, char** argv) {
         auto fakeURL = vm->getAtom("<VM.new functor>");
         properties.registerValueProp(vm, "application.url", fakeURL);
 
-        std::istringstream input(app);
+        std::istringstream input(*app);
         UnstableNode functor = bootUnpickle(vm, input);
         properties.registerValueProp(vm, "application.functor", functor);
       }
+      app.reset(); // Release the memory hold by the potentially big app string
 
       OzListBuilder argsBuilder(vm);
       for (auto& arg: appArgs) {
@@ -416,6 +417,7 @@ int main(int argc, char** argv) {
     return true;
   });
 
-  boostEnv.addVM(appURL, true, vmOptions);
+  std::unique_ptr<std::string> app(new std::string(appURL));
+  boostEnv.addVM(std::move(app), true, vmOptions);
   return boostEnv.runIO();
 }

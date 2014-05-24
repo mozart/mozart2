@@ -123,10 +123,10 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
 #endif
 }
 
-VMIdentifier BoostEnvironment::addVM(const std::string& app, bool isURL,
+VMIdentifier BoostEnvironment::addVM(std::unique_ptr<std::string>&& app, bool isURL,
                                      VirtualMachineOptions options) {
   std::lock_guard<std::mutex> lock(_vmsMutex);
-  _vms.emplace_front(*this, _nextVMIdentifier++, options, app, isURL);
+  _vms.emplace_front(*this, _nextVMIdentifier++, options, std::move(app), isURL);
   return _vms.front().identifier;
 }
 

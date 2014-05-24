@@ -37,7 +37,7 @@ namespace mozart { namespace boostenv {
 BoostVM::BoostVM(BoostEnvironment& environment,
                  VMIdentifier identifier,
                  VirtualMachineOptions options,
-                 const std::string& app, bool isURL) :
+                 std::unique_ptr<std::string>&& app, bool isURL) :
   VirtualMachine(environment, options), vm(this),
   env(environment), identifier(identifier),
   uuidGenerator(random_generator),
@@ -62,13 +62,14 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   _stream = _headOfStream = new (vm) StableNode(vm, ReadOnlyVariable::build(vm));
 
   // Finally start the VM thread, which will initialize and run the VM
-  boost::thread thread(&BoostVM::start, this, app, isURL);
+  // We need to use a raw pointer here as we cannot pass a rvalue reference
+  boost::thread thread(&BoostVM::start, this, app.release(), isURL);
   thread.detach();
 };
 
-void BoostVM::start(const std::string& app, bool isURL) {
+void BoostVM::start(std::string* app, bool isURL) {
   try {
-    if (!env.vmStarter(vm, app, isURL)) {
+    if (!env.vmStarter(vm, std::unique_ptr<std::string>(app), isURL)) {
       std::cerr << "Could not start VM." << std::endl;
     }
   } catch (std::bad_alloc& ba) {

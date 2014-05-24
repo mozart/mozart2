@@ -114,10 +114,13 @@ public:
     IdentForPort(): Builtin("identForPort") {}
 
     static void call(VM vm, In vmPort, Out result) {
-      if (!vmPort.is<VMPort>())
+      if (vmPort.is<VMPort>()) {
+        result = build(vm, vmPort.as<VMPort>().value());
+      } else if (vmPort.isTransient()) {
+        waitFor(vm, vmPort);
+      } else {
         raiseTypeError(vm, "VMPort", vmPort);
-
-      result = build(vm, vmPort.as<VMPort>().value());
+      }
     }
   };
 

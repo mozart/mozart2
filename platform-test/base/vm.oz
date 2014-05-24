@@ -53,7 +53,12 @@ define
 		keys:[mvm stream])
 
 	identForPort(proc {$}
+			FuturePort={fun lazy {$} {VM.getPort {VM.current}} end}
+		     in
 			{VM.identForPort {VM.getPort {VM.current}}} = {VM.current}
+
+			{IsDet FuturePort} = false
+			{VM.identForPort FuturePort} = {VM.current}
 
 			try
 			   NotAVMPort={NewPort _}

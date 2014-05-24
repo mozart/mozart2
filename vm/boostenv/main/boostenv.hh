@@ -45,7 +45,7 @@ namespace mozart { namespace boostenv {
 // BoostEnvironment //
 //////////////////////
 
-namespace {
+namespace internal {
   /* TODO It might be worth, someday, to investigate how we can lift this
    * decoding to the Oz level.
    * It should somewhere in Resolve.oz and/or URL.oz.
@@ -100,6 +100,7 @@ namespace {
       return url;
   }
 
+  inline
   bool defaultBootLoader(VM vm, const std::string& url, UnstableNode& result) {
     std::string filename = decodedURLToFilename(decodeURL(url));
     std::ifstream input(filename, std::ios::binary);
@@ -114,7 +115,7 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
   _nextVMIdentifier(InitialVMIdentifier), _exitCode(0),
   vmStarter(vmStarter) {
   // Set up a default boot loader
-  setBootLoader(&defaultBootLoader);
+  setBootLoader(&internal::defaultBootLoader);
 
   // Ignore SIGPIPE ourselves since Boost does not always do it
 #ifdef SIGPIPE

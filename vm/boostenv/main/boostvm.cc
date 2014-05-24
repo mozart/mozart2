@@ -59,8 +59,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   boost::random::random_device generator;
   random_generator.seed(generator);
 
-  UnstableNode future = ReadOnlyVariable::build(vm);
-  _stream = _headOfStream = RichNode(future).getStableRef(vm);
+  _stream = _headOfStream = new (vm) StableNode(vm, ReadOnlyVariable::build(vm));
 
   // Finally start the VM thread, which will initialize and run the VM
   boost::thread thread(&BoostVM::start, this, app, isURL);

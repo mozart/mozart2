@@ -60,7 +60,7 @@ public:
 public:
   void run();
 private:
-  void start(std::string app, bool isURL);
+  void start(const std::string& app, bool isURL);
   void onPreemptionTimerExpire(const boost::system::error_code& error);
 
 // UUID generation

@@ -67,7 +67,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   thread.detach();
 };
 
-void BoostVM::start(std::string app, bool isURL) {
+void BoostVM::start(const std::string& app, bool isURL) {
   try {
     if (!env.vmStarter(vm, app, isURL)) {
       std::cerr << "Could not start VM." << std::endl;

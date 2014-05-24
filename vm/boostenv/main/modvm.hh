@@ -50,10 +50,10 @@ public:
     Ncores(): Builtin("ncores") {}
 
     static void call(VM vm, Out result) {
-      unsigned int ncores = boost::thread::hardware_concurrency();
+      nativeint ncores = boost::thread::hardware_concurrency();
       if (ncores == 0)
         raiseSystem(vm, buildTuple(vm, "vm", "cannotDetectNumberOfCores"));
-      result = SmallInt::build(vm, ncores);
+      result = build(vm, ncores);
     }
   };
 
@@ -62,7 +62,7 @@ public:
     Current(): Builtin("current") {}
 
     static void call(VM vm, Out result) {
-      result = SmallInt::build(vm, BoostVM::forVM(vm).identifier);
+      result = build(vm, BoostVM::forVM(vm).identifier);
     }
   };
 
@@ -93,7 +93,7 @@ public:
       options.maximalHeapSize = config.maximalHeapSize;
 
       VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(appStr, isURL, options);
-      result = SmallInt::build(vm, newVM);
+      result = build(vm, newVM);
     }
   };
 
@@ -117,7 +117,7 @@ public:
       if (!vmPort.is<VMPort>())
         raiseTypeError(vm, "VMPort", vmPort);
 
-      result = SmallInt::build(vm, vmPort.as<VMPort>().value());
+      result = build(vm, vmPort.as<VMPort>().value());
     }
   };
 

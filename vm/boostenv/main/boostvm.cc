@@ -277,7 +277,7 @@ void BoostVM::requestTermination(nativeint exitCode, const std::string& reason) 
   });
 }
 
-UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, std::string reason) {
+UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, const std::string& reason) {
   return buildRecord(vm,
     buildArity(vm, "terminated", 1, "reason"),
                deadVM, vm->getAtom(reason));

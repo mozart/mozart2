@@ -87,9 +87,11 @@ public:
 
 // Termination
 public:
-  void requestTermination(nativeint exitCode, const std::string& reason);
+  void requestTermination(nativeint exitCode,
+                          const std::string& reason);
 
-  UnstableNode buildTerminationRecord(VMIdentifier deadVM, std::string reason);
+  UnstableNode buildTerminationRecord(VMIdentifier deadVM,
+                                      const std::string& reason);
 
   void addMonitor(VMIdentifier monitor);
 

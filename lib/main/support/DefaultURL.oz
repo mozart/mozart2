@@ -67,6 +67,7 @@ prepare
                    'Compiler' 'Macro'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
                    'DefaultURL' 'ObjectSupport'
+                   'VM'
 \ifdef DENYS_EVENTS
                    'Timer' 'Perdio'
 \endif

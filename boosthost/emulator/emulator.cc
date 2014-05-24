@@ -161,6 +161,7 @@ int main(int argc, char** argv) {
   fs::path ozHome, initFunctorPath, baseFunctorPath;
   std::string ozSearchPath, ozSearchLoad, appURL;
   std::vector<std::string> appArgs;
+  size_t minMemoryMega = 32;
   size_t maxMemoryMega = 768;
   bool appGUI;
 
@@ -180,8 +181,10 @@ int main(int argc, char** argv) {
       "search path")
     ("search-load", po::value<std::string>(&ozSearchLoad),
       "search load")
+    ("min-memory", po::value<size_t>(&minMemoryMega),
+      "minimal heap size in MB")
     ("max-memory", po::value<size_t>(&maxMemoryMega),
-      "maximum memory, i.e. heap size (in MB)")
+      "maximum heap size in MB")
     ("gui", "GUI mode");
 
   po::options_description hidden("Hidden options");
@@ -227,6 +230,15 @@ int main(int argc, char** argv) {
   ozHome = ozHomeStr;
   initFunctorPath = initFunctorPathStr;
   baseFunctorPath = baseFunctorPathStr;
+
+  VirtualMachineOptions vmOptions;
+  vmOptions.minimalHeapSize = minMemoryMega * MegaBytes;
+  vmOptions.maximalHeapSize = maxMemoryMega * MegaBytes;
+
+  if (!(minMemoryMega >= 1 && minMemoryMega < maxMemoryMega)) {
+    std::cerr << "Invalid heap sizes given" << std::endl;
+    return 1;
+  }
 
   // READ OPTIONS
 
@@ -275,120 +287,137 @@ int main(int argc, char** argv) {
   appGUI = varMap.count("gui") != 0;
 
   // SET UP THE VM AND RUN
+  boostenv::BoostEnvironment boostEnv([=] (VM vm, std::unique_ptr<std::string> app, bool isURL) {
+    boostenv::BoostVM& boostVM = boostenv::BoostVM::forVM(vm);
+    // Set some properties
+    {
+      auto& properties = vm->getPropertyRegistry();
 
-  boostenv::BoostBasedVM boostBasedVM(maxMemoryMega * MegaBytes);
-  VM vm = boostBasedVM.vm;
-
-  // Set some properties
-  {
-    auto& properties = vm->getPropertyRegistry();
-
-    atom_t ozHomeAtom = pathToAtom(vm, ozHome);
-    properties.registerValueProp(
-      vm, "oz.home", ozHomeAtom);
-    properties.registerValueProp(
-      vm, "oz.emulator.home", ozHomeAtom);
-    properties.registerValueProp(
-      vm, "oz.configure.home", ozHomeAtom);
-
-    if (varMap.count("search-path") != 0)
+      atom_t ozHomeAtom = pathToAtom(vm, ozHome);
       properties.registerValueProp(
-        vm, "oz.search.path", vm->getAtom(ozSearchPath));
-    if (varMap.count("search-load") != 0)
+        vm, "oz.home", ozHomeAtom);
       properties.registerValueProp(
-        vm, "oz.search.load", vm->getAtom(ozSearchLoad));
+        vm, "oz.emulator.home", ozHomeAtom);
+      properties.registerValueProp(
+        vm, "oz.configure.home", ozHomeAtom);
 
-    auto decodedURL = toUTF<char>(makeLString(appURL.c_str()));
-    auto appURLAtom = vm->getAtom(decodedURL.length, decodedURL.string);
-    properties.registerValueProp(
-      vm, "application.url", appURLAtom);
+      if (varMap.count("search-path") != 0)
+        properties.registerValueProp(
+          vm, "oz.search.path", vm->getAtom(ozSearchPath));
+      if (varMap.count("search-load") != 0)
+        properties.registerValueProp(
+          vm, "oz.search.load", vm->getAtom(ozSearchLoad));
 
-    OzListBuilder argsBuilder(vm);
-    for (auto& arg: appArgs) {
-      auto decodedArg = toUTF<char>(makeLString(arg.c_str()));
-      argsBuilder.push_back(vm, vm->getAtom(decodedArg.length, decodedArg.string));
-    }
-    properties.registerValueProp(
-      vm, "application.args", argsBuilder.get(vm));
+      if (isURL) {
+        auto decodedURL = toUTF<char>(makeLString(app->c_str()));
+        auto appURL = vm->getAtom(decodedURL.length, decodedURL.string);
+        properties.registerValueProp(vm, "application.url", appURL);
+      } else {
+        // Set application.url for compatibility
+        auto fakeURL = vm->getAtom("<VM.new functor>");
+        properties.registerValueProp(vm, "application.url", fakeURL);
 
-    properties.registerValueProp(
-      vm, "application.gui", appGUI);
-  }
+        std::istringstream input(*app);
+        UnstableNode functor = bootUnpickle(vm, input);
+        properties.registerValueProp(vm, "application.functor", functor);
+      }
+      app.reset(); // Release the memory hold by the potentially big app string
 
-  // Some protected nodes
-  ProtectedNode baseEnv, initFunctor;
+      OzListBuilder argsBuilder(vm);
+      for (auto& arg: appArgs) {
+        auto decodedArg = toUTF<char>(makeLString(arg.c_str()));
+        argsBuilder.push_back(vm, vm->getAtom(decodedArg.length, decodedArg.string));
+      }
+      properties.registerValueProp(
+        vm, "application.args", argsBuilder.get(vm));
 
-  // Load the Base environment if required
-  if (useBaseFunctor) {
-    baseEnv = vm->protect(OptVar::build(vm));
-
-    UnstableNode baseValue;
-    auto& bootLoader = boostBasedVM.getBootLoader();
-
-    if (!bootLoader(vm, baseFunctorPath.string(), baseValue)) {
-      std::cerr << "panic: could not load Base functor at "
-                << baseFunctorPath << std::endl;
-      return 1;
-    }
-
-    // Create the thread that loads the Base environment
-    if (Callable(baseValue).isProcedure(vm)) {
-      ozcalls::asyncOzCall(vm, baseValue, *baseEnv);
-    } else {
-      // Assume it is a functor that does not import anything
-      UnstableNode applyAtom = build(vm, "apply");
-      UnstableNode applyProc = Dottable(baseValue).dot(vm, applyAtom);
-      UnstableNode importParam = build(vm, "import");
-      ozcalls::asyncOzCall(vm, applyProc, importParam, *baseEnv);
+      properties.registerValueProp(
+        vm, "application.gui", appGUI);
     }
 
-    boostBasedVM.run();
-  }
+    boostenv::BoostEnvironment& boostEnv = boostenv::BoostEnvironment::forVM(vm);
 
-  // Load the Init functor
-  {
-    initFunctor = vm->protect(OptVar::build(vm));
+    // Some protected nodes
+    ProtectedNode baseEnv, initFunctor;
 
-    UnstableNode initValue;
-    auto& bootLoader = boostBasedVM.getBootLoader();
+    // Load the Base environment if required
+    if (useBaseFunctor) {
+      baseEnv = vm->protect(OptVar::build(vm));
 
-    if (!bootLoader(vm, initFunctorPath.string(), initValue)) {
-      std::cerr << "panic: could not load Init functor at "
-                << initFunctorPath << std::endl;
-      return 1;
-    }
+      UnstableNode baseValue;
+      auto& bootLoader = boostEnv.getBootLoader();
 
-    // Create the thread that loads the Init functor
-    if (Callable(initValue).isProcedure(vm)) {
-      if (!useBaseFunctor) {
-        std::cerr << "panic: Init.ozf is a procedure, "
-                  << "but I have no Base to give to it" << std::endl;
-        return 1;
+      if (!bootLoader(vm, baseFunctorPath.string(), baseValue)) {
+        std::cerr << "panic: could not load Base functor at "
+                  << baseFunctorPath << std::endl;
+        return false;
       }
 
-      ozcalls::asyncOzCall(vm, initValue, *baseEnv, *initFunctor);
-      boostBasedVM.run();
-    } else {
-      // Assume it is already the Init functor
-      DataflowVariable(*initFunctor).bind(vm, initValue);
+      // Create the thread that loads the Base environment
+      if (Callable(baseValue).isProcedure(vm)) {
+        ozcalls::asyncOzCall(vm, baseValue, *baseEnv);
+      } else {
+        // Assume it is a functor that does not import anything
+        UnstableNode applyAtom = build(vm, "apply");
+        UnstableNode applyProc = Dottable(baseValue).dot(vm, applyAtom);
+        UnstableNode importParam = build(vm, "import");
+        ozcalls::asyncOzCall(vm, applyProc, importParam, *baseEnv);
+      }
+
+      boostVM.run();
     }
-  }
 
-  // Apply the Init functor
-  {
-    auto ApplyAtom = build(vm, "apply");
-    auto ApplyProc = Dottable(*initFunctor).dot(vm, ApplyAtom);
+    // Load the Init functor
+    {
+      initFunctor = vm->protect(OptVar::build(vm));
 
-    auto BootModule = vm->findBuiltinModule("Boot");
-    auto ImportRecord = buildRecord(
-      vm, buildArity(vm, "import", "Boot"),
-      BootModule);
+      UnstableNode initValue;
+      auto& bootLoader = boostEnv.getBootLoader();
 
-    ozcalls::asyncOzCall(vm, ApplyProc, ImportRecord, OptVar::build(vm));
+      if (!bootLoader(vm, initFunctorPath.string(), initValue)) {
+        std::cerr << "panic: could not load Init functor at "
+                  << initFunctorPath << std::endl;
+        return false;
+      }
 
-    baseEnv.reset();
-    initFunctor.reset();
+      // Create the thread that loads the Init functor
+      if (Callable(initValue).isProcedure(vm)) {
+        if (!useBaseFunctor) {
+          std::cerr << "panic: Init.ozf is a procedure, "
+                    << "but I have no Base to give to it" << std::endl;
+          return false;
+        }
 
-    boostBasedVM.run();
-  }
+        ozcalls::asyncOzCall(vm, initValue, *baseEnv, *initFunctor);
+        boostVM.run();
+      } else {
+        // Assume it is already the Init functor
+        DataflowVariable(*initFunctor).bind(vm, initValue);
+      }
+    }
+
+    // Apply the Init functor
+    {
+      auto ApplyAtom = build(vm, "apply");
+      auto ApplyProc = Dottable(*initFunctor).dot(vm, ApplyAtom);
+
+      auto BootModule = vm->findBuiltinModule("Boot");
+      auto ImportRecord = buildRecord(
+        vm, buildArity(vm, "import", "Boot"),
+        BootModule);
+
+      ozcalls::asyncOzCall(vm, ApplyProc, ImportRecord, OptVar::build(vm));
+
+      baseEnv.reset();
+      initFunctor.reset();
+
+      boostVM.run();
+    }
+
+    return true;
+  });
+
+  std::unique_ptr<std::string> app(new std::string(appURL));
+  boostEnv.addVM(std::move(app), true, vmOptions);
+  return boostEnv.runIO();
 }

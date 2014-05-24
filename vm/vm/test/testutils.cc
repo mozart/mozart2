@@ -33,7 +33,7 @@ namespace {
       }
     }
 
-    mozart::UUID genUUID() {
+    mozart::UUID genUUID(mozart::VM vm) {
       std::uint64_t data0 = (rand64() & ~0xf000) | 0x4000;
       std::uint64_t data1 =
         (rand64() & ~((std::uint64_t) 0xf << 60)) | ((std::uint64_t) 0x8 << 60);

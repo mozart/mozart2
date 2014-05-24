@@ -55,7 +55,8 @@ set(OTHER_LIBRARY_FUNCTORS
     "${MOZART_LIB_DIR}/wp/TkBoot.oz"
     "${MOZART_LIB_DIR}/wp/Tk.oz"
     "${MOZART_LIB_DIR}/wp/TkTools.oz"
-    "${MOZART_LIB_DIR}/wp/Tix.oz")
+    "${MOZART_LIB_DIR}/wp/Tix.oz"
+    "${MOZART_DIR}/vm/boostenv/lib/VM.oz")
 
 # ---------------------------------------------------------------------------- #
 # Stage 0: boot-compile the functors used by the compiler                      #

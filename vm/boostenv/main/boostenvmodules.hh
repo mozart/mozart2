@@ -29,5 +29,6 @@
 #include "boostenv.hh"
 
 #include "modos.hh"
+#include "modvm.hh"
 
 #endif // MOZART_BOOSTENVMODULES_H

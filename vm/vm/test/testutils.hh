@@ -11,7 +11,7 @@ namespace mozart {
 class MozartTest : public ::testing::Test {
 protected:
   MozartTest() : environment(makeTestEnvironment()),
-                 virtualMachine(*environment, 10 * MegaBytes),
+                 virtualMachine(*environment, { 10 * MegaBytes, 20 * MegaBytes }),
                  vm(&virtualMachine) {}
 
   virtual void SetUp() {

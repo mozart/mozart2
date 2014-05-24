@@ -91,6 +91,7 @@ export
 import
    OS
    Open
+   Property
 
 define
 
@@ -782,4 +783,6 @@ define
       Nodes.ResultIndex
    end
 
+   % register Pickle.pack to ease access from C++ code
+   {Property.put 'pickle.pack' Pack}
 end

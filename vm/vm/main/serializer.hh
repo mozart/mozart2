@@ -35,12 +35,11 @@ namespace mozart {
 // SerializationCallback //
 ///////////////////////////
 
-SerializationCallback::SerializationCallback(VM vm):
-  secondMM(vm->getSecondMemoryManager()) {}
+SerializationCallback::SerializationCallback(VM vm): vm(vm) {}
 
 void SerializationCallback::copy(RichNode to, RichNode from) {
-  todoFrom.push_back(secondMM, from);
-  todoTo.push_back(secondMM, to);
+  todoFrom.push_back(vm, from);
+  todoTo.push_back(vm, to);
 }
 
 ////////////////

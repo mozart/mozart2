@@ -35,7 +35,7 @@
 
 namespace mozart { namespace boostenv {
 
-class BoostBasedVM;
+class BoostVM;
 
 //////////////////////////
 // BaseSocketConnection //
@@ -49,13 +49,13 @@ public:
 public:
   typedef std::shared_ptr<T> pointer;
 
-  static pointer create(BoostBasedVM& environment) {
-    return std::make_shared<T>(environment);
+  static pointer create(BoostVM& boostVM) {
+    return std::make_shared<T>(boostVM);
   }
 
 public:
   inline
-  BaseSocketConnection(BoostBasedVM& environment);
+  BaseSocketConnection(BoostVM& boostVM);
 
 public:
   typename protocol::socket& socket() {
@@ -89,7 +89,7 @@ protected:
                    const ProtectedNode& statusNode);
 
 protected:
-  BoostBasedVM& _environment;
+  BoostVM& boostVM;
   typename protocol::socket _socket;
 
   std::vector<char> _readData;

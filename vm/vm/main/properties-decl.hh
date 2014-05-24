@@ -57,7 +57,7 @@ struct PropertyRecord {
 
 class PropertyRegistry {
 public:
-  PropertyRegistry() {}
+  PropertyRegistry(VirtualMachineOptions options);
 
 private:
   inline
@@ -135,18 +135,30 @@ private:
   inline
   void gCollect(GC gc);
 
-  void initialize(VM vm);
-
-private:
-  inline
-  void initConfig(VM vm);
-
-  inline
   void registerPredefined(VM vm);
 
 public:
   StableNode* getDefaultExceptionHandler() {
     return config.defaultExceptionHandler;
+  }
+
+public:
+  void computeGCThreshold(size_t activeMemory) {
+    config.gcThreshold = std::min(config.maxGCThreshold,
+      activeMemory * 100 / (100 - config.desiredFreeMemPercentageAfterGC));
+  }
+
+private:
+  void computeInitialGCThreshold() {
+    // We want the heap to be gcThresholdTolerance % above the threshold
+    size_t tolerance = config.gcThresholdTolerance;
+    config.gcThreshold = config.heapSize * 100 / (100 + tolerance);
+  }
+
+  void computeMaxGCThreshold() {
+    size_t tolerance = config.gcThresholdTolerance;
+    config.maxGCThreshold = config.maximalHeapSize * 100 / (100 + tolerance);
+    config.gcThreshold = std::min(config.maxGCThreshold, config.gcThreshold);
   }
 
 private:
@@ -169,10 +181,12 @@ public:
     nativeint errorsThread;
 
     // Garbage collection, aka memory management - most are ignored, actually
-    size_t gcThreshold;
+    size_t heapSize;
     size_t minimalHeapSize;
     size_t maximalHeapSize;
     size_t desiredFreeMemPercentageAfterGC;
+    size_t gcThreshold;
+    size_t maxGCThreshold;
     size_t gcThresholdTolerance;
     bool autoGC;
   } config;

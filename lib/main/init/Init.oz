@@ -73,7 +73,7 @@ prepare
       Error(printException)
    define
       proc {ExitError}
-         {BootSystem.exit 1}
+         {BootSystem.exit 1 'exception'}
       end
 
       proc {ErrorHandler Exc}
@@ -89,7 +89,7 @@ prepare
                {System.showError
                 '*** error while reporting error ***\noriginal exception:'}
                {System.show Exc}
-               {BootSystem.exit 1}
+               {ExitError}
             end
             %% terminate local computation
             if {System.onToplevel} then
@@ -339,7 +339,15 @@ define
       %% Link the real OS module, which should set up a proper BURL.localize and BURL.open
       {Wait {RM link(url:'x-oz://system/OS.ozf' $)}}
 
-      %% Link root functor (i.e. application)
-      {Wait {RM link(url:{GET 'application.url'} $)}}
+      %% Link or apply root functor (i.e. application)
+      local
+         AppFunctor = {GetOrFalse 'application.functor'}
+      in
+         if AppFunctor \= false then
+            {RM apply(AppFunctor)}
+         else
+            {Wait {RM link(url:{GET 'application.url'} $)}}
+         end
+      end
    end
 end

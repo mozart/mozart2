@@ -214,6 +214,11 @@ public:
     _params = StaticArray<ParamInfo>(new ParamInfo[arity], arity);
   }
 
+  ~BaseBuiltin() {
+    delete _params;
+    delete _codeBlock;
+  }
+
   const std::string& getModuleName() {
     return _moduleName;
   }

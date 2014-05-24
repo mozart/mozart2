@@ -100,7 +100,24 @@ public:
     return false;
   }
 
-  virtual UUID genUUID() = 0;
+// The following methods assume a single VM per process
+public:
+  // Must only be used for initialization
+  MemoryManager& getSecondMemoryManagerRef() {
+    return _secondMemoryManager;
+  }
+
+  virtual void withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC) {
+    doGC(_secondMemoryManager);
+  }
+
+  virtual void killVM(VM vm, nativeint exitCode, const std::string& reason) {
+    std::exit(exitCode);
+  }
+
+// Miscellaneous
+public:
+  virtual UUID genUUID(VM vm) = 0;
 
   inline
   virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
@@ -111,8 +128,14 @@ public:
   inline
   virtual std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value);
 
+  inline
+  virtual void sendOnVMPort(VM from, VMIdentifier to, RichNode value);
+
   virtual void gCollect(GC gc) {
   }
+
+protected:
+  MemoryManager _secondMemoryManager;
 private:
   bool _useDynamicPreemption;
 };
@@ -134,7 +157,8 @@ private:
   };
 public:
   inline
-  VirtualMachine(VirtualMachineEnvironment& environment, size_t maxMemory);
+  VirtualMachine(VirtualMachineEnvironment& environment,
+                 VirtualMachineOptions options);
 
   VirtualMachine(const VirtualMachine& src) = delete;
 
@@ -182,9 +206,12 @@ public:
     return memoryManager;
   }
 
-  MemoryManager& getSecondMemoryManager() {
-    return secondMemoryManager;
+  size_t getHeapSize() {
+    return getPropertyRegistry().config.heapSize;
   }
+
+  inline
+  void adjustHeapSize();
 
   GlobalExceptionMechanism& getGlobalExceptionMechanism() {
     return exceptionMechanism;
@@ -348,7 +375,7 @@ private:
   void afterGR(GR gr);
 
   inline
-  void startGC(GC gc);
+  void startGC(GC gc, MemoryManager& secondMemoryManager);
 
   inline
   void gcProtectedNodes(GC gc);
@@ -370,7 +397,6 @@ private:
   VirtualMachineEnvironment& environment;
 
   MemoryManager memoryManager;
-  MemoryManager secondMemoryManager;
 
   GlobalExceptionMechanism exceptionMechanism;
 

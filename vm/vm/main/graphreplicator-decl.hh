@@ -48,6 +48,9 @@ public:
   inline
   GraphReplicator(VM vm, Kind kind);
 
+  inline
+  GraphReplicator(VM vm, MemoryManager& sourceMM, Kind kind);
+
   Kind kind() {
     return _kind;
   }
@@ -89,9 +92,6 @@ protected:
   template <class Self>
   void runCopyLoop();
 
-  MemoryManager& getSecondMM() {
-    return secondMM;
-  }
 private:
   template <class Self>
   inline
@@ -110,10 +110,10 @@ private:
   void processStableRefInternal(StableNode*& ref);
 public:
   VM vm;
+protected:
+  MemoryManager& sourceMM;
 private:
   Kind _kind;
-
-  MemoryManager& secondMM;
 
   struct {
     MemManagedList<SpaceRef*> spaces;

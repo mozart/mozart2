@@ -236,6 +236,10 @@ template <typename T>
 inline
 void sendToReadOnlyStream(VM vm, UnstableNode& stream, T&& value);
 
+template <typename T>
+inline
+void sendToReadOnlyStream(VM vm, StableNode*& stream, T&& value);
+
 ///////////////////////////////////////
 // Dealing with non-idempotent steps //
 ///////////////////////////////////////

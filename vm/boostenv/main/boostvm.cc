@@ -238,7 +238,7 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
 
   size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
   // allocates the vector in a neutral zone: the heap
-  std::vector<unsigned char> *buffer = new std::vector<unsigned char>();
+  std::vector<unsigned char>* buffer = new std::vector<unsigned char>();
   ozVBSGet(vm, vbs, bufSize, *buffer);
 
   bool found = env.findVM(to, [buffer] (BoostVM& targetVM) {

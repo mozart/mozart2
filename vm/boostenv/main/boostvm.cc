@@ -35,6 +35,7 @@ namespace mozart { namespace boostenv {
 /////////////
 
 BoostVM::BoostVM(BoostEnvironment& environment,
+                 VMIdentifier parent,
                  VMIdentifier identifier,
                  VirtualMachineOptions options,
                  std::unique_ptr<std::string>&& app, bool isURL) :
@@ -51,6 +52,9 @@ BoostVM::BoostVM(BoostEnvironment& environment,
 
   // Make sure the IO thread will wait for us
   _work = new boost::asio::io_service::work(environment.io_service);
+
+  if (identifier != parent)
+    addMonitor(parent);
 
   builtins::biref::registerBuiltinModOS(vm);
   builtins::biref::registerBuiltinModVM(vm);

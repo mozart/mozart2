@@ -417,7 +417,6 @@ int main(int argc, char** argv) {
     return true;
   });
 
-  std::unique_ptr<std::string> app(new std::string(appURL));
-  boostEnv.addVM(std::move(app), true, vmOptions);
+  boostEnv.addInitialVM(appURL, vmOptions);
   return boostEnv.runIO();
 }

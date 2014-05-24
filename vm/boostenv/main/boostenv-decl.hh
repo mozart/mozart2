@@ -68,8 +68,15 @@ public:
 
 public:
   inline
-  VMIdentifier addVM(std::unique_ptr<std::string>&& app, bool isURL,
+  VMIdentifier addVM(VMIdentifier parent,
+                     std::unique_ptr<std::string>&& app, bool isURL,
                      VirtualMachineOptions options);
+
+  VMIdentifier addInitialVM(const std::string& appURL,
+                            VirtualMachineOptions options) {
+    std::unique_ptr<std::string> app(new std::string(appURL));
+    return addVM(InitialVMIdentifier, std::move(app), true, options);
+  }
 
   inline
   VMIdentifier checkValidIdentifier(VM vm, RichNode identifier);

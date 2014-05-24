@@ -73,6 +73,7 @@ public:
     static void call(VM vm, In app, Out result) {
       using namespace mozart::patternmatching;
 
+      VMIdentifier parent = BoostVM::forVM(vm).identifier;
       atom_t appURL;
       std::unique_ptr<std::string> appStr(new std::string());
       bool isURL = matches(vm, app, capture(appURL));
@@ -92,7 +93,8 @@ public:
       options.minimalHeapSize = config.minimalHeapSize;
       options.maximalHeapSize = config.maximalHeapSize;
 
-      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(std::move(appStr), isURL, options);
+      VMIdentifier newVM = BoostEnvironment::forVM(vm).addVM(
+        parent, std::move(appStr), isURL, options);
       result = build(vm, newVM);
     }
   };

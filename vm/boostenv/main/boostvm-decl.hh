@@ -75,7 +75,7 @@ public:
 
   bool portClosed();
 
-  void getStream(UnstableNode &stream);
+  UnstableNode getStream();
 
   void closeStream();
 

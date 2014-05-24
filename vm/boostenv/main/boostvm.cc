@@ -194,7 +194,8 @@ bool BoostVM::portClosed() {
   return _portClosed;
 }
 
-void BoostVM::getStream(UnstableNode &stream) {
+UnstableNode BoostVM::getStream() {
+  UnstableNode stream;
   if (!streamAsked()) {
     // Get the beginning of the stream as if the call was done at VM creation
     stream.copy(vm, *_headOfStream);
@@ -204,6 +205,7 @@ void BoostVM::getStream(UnstableNode &stream) {
     // Get the tail of the stream
     stream.copy(vm, *_stream);
   }
+  return stream;
 }
 
 void BoostVM::closeStream() {

@@ -126,7 +126,7 @@ public:
     GetStream(): Builtin("getStream") {}
 
     static void call(VM vm, Out result) {
-      BoostVM::forVM(vm).getStream(result);
+      result = BoostVM::forVM(vm).getStream();
     }
   };
 

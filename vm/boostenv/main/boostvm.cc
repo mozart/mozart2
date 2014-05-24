@@ -64,6 +64,11 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   // Finally start the VM thread, which will initialize and run the VM
   // We need to use a raw pointer here as we cannot pass a rvalue reference
   boost::thread thread(&BoostVM::start, this, app.release(), isURL);
+  // The thread will ultimately delete the BoostVM and all its members.
+  // Therefore, we cannot store the boost::thread instance inside the BoostVM
+  // because deleting a not joinable (not finished) instance calls std::terminate().
+  // So we let the thread handle live on its own and we need not to call
+  // join() as the IO thread and _work are responsible for waiting correctly.
   thread.detach();
 };
 

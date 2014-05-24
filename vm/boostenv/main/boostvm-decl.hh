@@ -96,7 +96,7 @@ public:
   void addMonitor(VMIdentifier monitor);
 
 private:
-  void tellMonitors();
+  void notifyMonitors();
 
   void terminate();
 

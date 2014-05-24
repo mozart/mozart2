@@ -288,7 +288,7 @@ void BoostVM::addMonitor(VMIdentifier monitor) {
   _monitors.push_back(monitor);
 }
 
-void BoostVM::tellMonitors() {
+void BoostVM::notifyMonitors() {
   std::lock_guard<std::mutex> lock(_monitorsMutex);
   VMIdentifier deadVM = this->identifier;
   std::string reason = this->_terminationReason;
@@ -311,7 +311,7 @@ void BoostVM::terminate() {
   alarmTimer.cancel();
 
   _portClosed = true; // close VM port
-  tellMonitors();
+  notifyMonitors();
 
   env.removeTerminatedVM(identifier, _terminationStatus, _work);
 }

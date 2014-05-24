@@ -53,6 +53,8 @@ private:
                                         UnstableNode& result)>;
   using VMStarter = std::function<bool(VM vm, const std::string& app, bool isURL)>;
 
+  static const VMIdentifier InitialVMIdentifier = 1;
+
 public:
   static BoostEnvironment& forVM(VM vm) {
     return static_cast<BoostEnvironment&>(vm->getEnvironment());

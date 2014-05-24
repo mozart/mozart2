@@ -111,7 +111,7 @@ namespace {
 }
 
 BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
-  _nextVMIdentifier(1), _exitCode(0),
+  _nextVMIdentifier(InitialVMIdentifier), _exitCode(0),
   vmStarter(vmStarter) {
   // Set up a default boot loader
   setBootLoader(&defaultBootLoader);
@@ -180,7 +180,7 @@ void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
     return vm.identifier == identifier;
   });
 
-  if (identifier == 1) // only the exitCode of the initial VM is considered
+  if (identifier == InitialVMIdentifier) // only the exitCode of the initial VM is considered
     _exitCode = exitCode;
 
   // Tell the IO thread it does not need to wait anymore for us

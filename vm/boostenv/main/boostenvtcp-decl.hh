@@ -62,6 +62,7 @@ public:
   typedef std::shared_ptr<TCPAcceptor> pointer;
 
   static pointer create(BoostVM& boostVM, const tcp::endpoint& endpoint) {
+    // Cannot use make_shared as constructor is private
     return pointer(new TCPAcceptor(boostVM, endpoint));
   }
 

@@ -95,15 +95,13 @@ define
 		   end
 		   Other={VM.new F}
 		   S={VM.getStream}
-		   OldDeadVM=2
 		in
-		   Other = 3
 		   {VM.list} = [1 Other]
 		   {VM.monitor Other}
 		   S.1 = terminated(Other reason:normal)
 
-		   {VM.monitor OldDeadVM} % already dead
-		   S.2.1 = terminated(OldDeadVM reason:unknown)
+		   {VM.monitor Other} % already dead
+		   S.2.1 = terminated(Other reason:unknown)
 
 		   try
 		      {VM.monitor {VM.current}}
@@ -130,14 +128,12 @@ define
 		S={VM.getStream}
 		Sleeper={VM.new Sleeping}
 	     in
-		Sleeper = 4
+		{VM.list} = [1 Sleeper]
 		{VM.monitor Sleeper}
 		
 		{VM.kill Sleeper}
 		S.1 = terminated(Sleeper reason:kill)
-
-		{VM.monitor Sleeper} % already killed, message sent immediately
-		S.2.1 = terminated(Sleeper reason:unknown)
+		{VM.list} = [1]
 
 		{VM.kill Sleeper} % no-op
 
@@ -159,10 +155,8 @@ define
 		       raise unreachable end
 		    end
 		    S={VM.getStream}
-		    AutoKill = {VM.new Suicide}
+		    AutoKill={VM.new Suicide}
 		 in
-		    AutoKill = 5
-
 		    {VM.monitor AutoKill}
 
 		    S.1 = terminated(AutoKill reason:kill)
@@ -170,15 +164,25 @@ define
 		 keys:[mvm new stream monitor kill])
 
 	getPortOfKilledVM(proc {$}
-			     DeadVM=5
+			     functor Skip
+			     define
+				skip
+			     end
+			     DeadVM={VM.new Skip}
+			     P
+			     S={VM.getStream}
+			  in
+			     {VM.monitor DeadVM}
+			     S.1 = terminated(DeadVM reason:normal)
+
 			     % It is ok to get the port of a dead VM
 			     P={VM.getPort DeadVM}
-			  in
+
 			     % But {Send P} becomes no-op
 			     {Send P ignored}
 			     {VM.identForPort P} = DeadVM
 			  end
-			  keys:[mvm stream])
+			  keys:[mvm new stream])
 
 	'Application.exit'(proc {$}
 			      functor F
@@ -190,14 +194,12 @@ define
 			      S={VM.getStream}
 			      Other={VM.new F}
 			   in
-			      Other = 6
 			      {VM.monitor Other}
 			      S.1 = terminated(Other reason:kill)
 			   end
 			   keys:[mvm new monitor kill])
 
 	gc(proc {$}
-	      FirstVM=7
 	      NVMs=4
 	      NGCs=4
 	      KB=1024
@@ -223,15 +225,10 @@ define
 		 {Send {VM.getPort Master} {VM.current}}
 	      end
 	      S={VM.getStream}
-	      VMs={MakeTuple vms NVMs}
-	      VMs.1={VM.current}
+	      VMs={VM.current}|{Map {List.number 2 NVMs 1} fun {$ _} {VM.new F} end}
 	   in
-	      for I in 2..NVMs do
-		 VMs.I={VM.new F}
-		 VMs.I = FirstVM+I-2
-	      end
 	      thread {Module.apply [F] _} end
-	      {Sort {List.take S 4} Value.'<'} = 1|{List.number FirstVM FirstVM+NVMs-2 1}
+	      {Sort {List.take S NVMs} Value.'<'} = {Sort VMs Value.'<'}
 	   end
 	   keys:[mvm new stream gc])
 

@@ -81,7 +81,7 @@ public:
 
   void sendOnVMPort(VMIdentifier to, RichNode value);
 
-  void receiveOnVMStream(UnstableNode value);
+  void receiveOnVMStream(RichNode value);
 
   void receiveOnVMStream(std::vector<unsigned char>* buffer);
 

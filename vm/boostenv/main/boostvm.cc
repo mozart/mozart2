@@ -249,7 +249,7 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
     delete buffer;
 }
 
-void BoostVM::receiveOnVMStream(UnstableNode value) {
+void BoostVM::receiveOnVMStream(RichNode value) {
   if (!portClosed())
     sendToReadOnlyStream(vm, _stream, value);
 }
@@ -294,8 +294,8 @@ void BoostVM::notifyMonitors() {
   for (VMIdentifier identifier : _monitors) {
     env.findVM(identifier, [=] (BoostVM& monitor) {
       monitor.postVMEvent([&monitor, deadVM, reason] () {
-        monitor.receiveOnVMStream(
-          monitor.buildTerminationRecord(deadVM, reason));
+        UnstableNode notification = monitor.buildTerminationRecord(deadVM, reason);
+        monitor.receiveOnVMStream(notification);
       });
     });
   }

@@ -176,8 +176,9 @@ public:
         monitoredVM.addMonitor(monitor);
       });
       if (!found) {
-        BoostVM::forVM(vm).receiveOnVMStream(
-          BoostVM::forVM(vm).buildTerminationRecord(identifier, "unknown"));
+        UnstableNode notification =
+          BoostVM::forVM(vm).buildTerminationRecord(identifier, "unknown");
+        BoostVM::forVM(vm).receiveOnVMStream(notification);
       }
     }
   };

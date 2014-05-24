@@ -268,7 +268,7 @@ void BoostVM::receiveOnVMStream(std::vector<unsigned char>* buffer) {
 }
 
 void BoostVM::requestTermination(nativeint exitCode, const std::string& reason) {
-  postVMEvent([this,exitCode,reason] {
+  postVMEvent([this, exitCode, reason] {
     _terminationStatus = exitCode;
     _terminationReason = reason;
     _terminationRequested = true;
@@ -292,7 +292,7 @@ void BoostVM::tellMonitors() {
   std::string reason = this->_terminationReason;
   for (VMIdentifier identifier : _monitors) {
     env.findVM(identifier, [=] (BoostVM& monitor) {
-      monitor.postVMEvent([&monitor,deadVM,reason] () {
+      monitor.postVMEvent([&monitor, deadVM, reason] () {
         monitor.receiveOnVMStream(
           monitor.buildTerminationRecord(deadVM, reason));
       });

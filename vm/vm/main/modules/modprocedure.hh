@@ -65,6 +65,7 @@ public:
     Apply(): Builtin("apply") {}
 
     static void call(VM vm, In procedure, In args) {
+      // We cannot use ozCall() as the number of arguments is dynamic at runtime
       RichNode terminationVar = protectNonIdempotentStep(
         vm, "::mozart::builtins::ModProcedure::Apply",
         [=] () -> RichNode {
@@ -77,8 +78,8 @@ public:
             },
             "list");
 
-          auto thr = new Thread(vm, vm->getCurrentSpace(),
-                                procedure, argc, arguments);
+          auto thr = new (vm) Thread(vm, vm->getCurrentSpace(),
+                                     procedure, argc, arguments);
 
           vm->deleteStaticArray<RichNode>(arguments, argc);
 

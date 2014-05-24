@@ -112,7 +112,7 @@ LString<C>::LString(VM vm, const BaseLString<C>& other) {
     this->string = nullptr;
     this->error = other.error;
   } else {
-    C* buffer = new C[other.length];
+    C* buffer = new (vm) C[other.length];
     memcpy(buffer, other.string, other.bytesCount());
     this->string = buffer;
     this->length = other.length;
@@ -122,7 +122,7 @@ LString<C>::LString(VM vm, const BaseLString<C>& other) {
 template <class C>
 template <class F>
 LString<C>::LString(VM vm, nativeint length, const F& initializer) {
-  C* buffer = new C[length];
+  C* buffer = new (vm) C[length];
   initializer(buffer);
   this->string = buffer;
   this->length = length;

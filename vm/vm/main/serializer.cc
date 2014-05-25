@@ -31,9 +31,9 @@ namespace mozart {
 UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
   SerializationCallback cb(vm);
   using namespace patternmatching;
-  MemManagedList<NodeBackup> nodeBackups;
+  VMAllocatedList<NodeBackup> nodeBackups;
   nativeint count = 0;
-  cb.secondMM.init();
+
   while (true) {
     RichNode head, tail, v, n;
     if (matchesCons(vm, todo, capture(head), capture(tail))) {
@@ -57,7 +57,7 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
     RichNode r;
     if (matchesSharp(vm, d, capture(n), capture(v), wildcard(), capture(next))) {
       r = v;
-      nodeBackups.push_front(cb.secondMM, r.makeBackup());
+      nodeBackups.push_front(vm, r.makeBackup());
       r.reinit(vm, Serialized::build(vm, n));
       count = count<n ? n : count;
       d = next;
@@ -68,8 +68,8 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
     }
   }
   while (!cb.todoFrom.empty()) {
-    RichNode from=cb.todoFrom.pop_front(cb.secondMM);
-    RichNode to=cb.todoTo.pop_front(cb.secondMM);
+    RichNode from=cb.todoFrom.pop_front(vm);
+    RichNode to=cb.todoTo.pop_front(vm);
     if (from.is<Serialized>()) {
       UnstableNode n = mozart::build(vm, from.as<Serialized>().n());
       DataflowVariable(to).bind(vm, n);
@@ -79,7 +79,7 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
                       from,
                       from.type()->serialize(vm, &cb, from),
                       std::move(done));
-      nodeBackups.push_front(cb.secondMM, from.makeBackup());
+      nodeBackups.push_front(vm, from.makeBackup());
       from.reinit(vm, Serialized::build(vm, count));
       UnstableNode n = mozart::build(vm, count);
       DataflowVariable(to).bind(vm, n);
@@ -87,7 +87,7 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
   }
   while (!nodeBackups.empty()) {
     nodeBackups.front().restore();
-    nodeBackups.remove_front(cb.secondMM);
+    nodeBackups.remove_front(vm);
   }
   return UnstableNode(vm, done);
 }

@@ -44,13 +44,13 @@ const bool OzDebugGC = false;
 
 class GarbageCollector: public GraphReplicator {
 public:
-  GarbageCollector(VM vm):
-    GraphReplicator(vm, GraphReplicator::grkGarbageCollection) {}
+  GarbageCollector(VM vm, MemoryManager& sourceMM):
+    GraphReplicator(vm, sourceMM, GraphReplicator::grkGarbageCollection) {}
 
   inline
   bool isGCRequired();
 
-  void doGC();
+  void doGC(MemoryManager& secondMM);
 private:
   friend class GraphReplicator;
 

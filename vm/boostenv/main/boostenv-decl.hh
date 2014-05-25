@@ -31,33 +31,67 @@
 #include <cstdio>
 #include <cerrno>
 #include <forward_list>
+#include <mutex>
 
 #include <boost/thread.hpp>
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/random_generator.hpp>
-
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/bind.hpp>
+
+#include "boostvm-decl.hh"
+#include "boostenvbigint-decl.hh"
 
 namespace mozart { namespace boostenv {
 
-//////////////////
-// BoostBasedVM //
-//////////////////
+//////////////////////
+// BoostEnvironment //
+//////////////////////
 
-class BoostBasedVM: public VirtualMachineEnvironment {
+class BoostEnvironment: public VirtualMachineEnvironment {
 private:
   using BootLoader = std::function<bool(VM vm, const std::string& url,
                                         UnstableNode& result)>;
+  using VMStarter = std::function<bool(VM vm, std::unique_ptr<std::string> app, bool isURL)>;
+
+  static const VMIdentifier InitialVMIdentifier = 1;
 
 public:
-  BoostBasedVM(size_t maxMemory);
-
-  static BoostBasedVM& forVM(VM vm) {
-    return static_cast<BoostBasedVM&>(vm->getEnvironment());
+  static BoostEnvironment& forVM(VM vm) {
+    return static_cast<BoostEnvironment&>(vm->getEnvironment());
   }
+
+public:
+  inline
+  BoostEnvironment(const VMStarter& vmStarter);
+
+// VM Management
+
+public:
+  inline
+  VMIdentifier addVM(std::unique_ptr<std::string>&& app, bool isURL,
+                     VirtualMachineOptions options);
+
+  inline
+  VMIdentifier checkValidIdentifier(VM vm, RichNode identifier);
+
+  inline
+  bool findVM(VMIdentifier identifier,
+              std::function<void(BoostVM& boostVM)> onSuccess);
+
+  inline
+  UnstableNode listVMs(VM vm);
+
+  void killVM(VM vm, nativeint exitCode, const std::string& reason) {
+    killVM(BoostVM::forVM(vm).identifier, exitCode, reason);
+  }
+
+  inline
+  void killVM(VMIdentifier identifier, nativeint exitCode,
+              const std::string& reason);
+
+  inline
+  void removeTerminatedVM(VMIdentifier identifier, nativeint exitCode,
+                          boost::asio::io_service::work* work);
 
 // Configuration
 
@@ -70,16 +104,11 @@ public:
     _bootLoader = loader;
   }
 
-  void setApplicationURL(char const* url);
-
-  void setApplicationArgs(int argc, char const* const* argv);
-
 // Run and preemption
 
 public:
-  void run();
-private:
-  void onPreemptionTimerExpire(const boost::system::error_code& error);
+  inline
+  int runIO();
 
 // Time
 
@@ -104,89 +133,58 @@ private:
 // UUID generation
 
 public:
-  UUID genUUID();
-private:
-  inline
-  static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
+  UUID genUUID(VM vm) {
+    return BoostVM::forVM(vm).genUUID();
+  }
 
 // BigInt
 
 public:
-  inline
-  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value);
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, nativeint value) {
+    return BoostBigInt::make_shared_ptr(value);
+  }
 
-  inline
-  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, double value);
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, double value) {
+    return BoostBigInt::make_shared_ptr(value);
+  }
 
-  inline
-  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value);
+  std::shared_ptr<BigIntImplem> newBigIntImplem(VM vm, const std::string& value) {
+    return BoostBigInt::make_shared_ptr(value);
+  }
 
-// Management of nodes used by asynchronous operations for feedback
-
-public:
-  inline
-  ProtectedNode allocAsyncIONode(StableNode* node);
-
-  inline
-  void releaseAsyncIONode(const ProtectedNode& node);
-
-  inline
-  ProtectedNode createAsyncIOFeedbackNode(UnstableNode& readOnly);
-
-  template <class LT, class... Args>
-  inline
-  void bindAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
-                                         LT&& label, Args&&... args);
-
-  template <class LT, class... Args>
-  inline
-  void raiseAndReleaseAsyncIOFeedbackNode(const ProtectedNode& ref,
-                                          LT&& label, Args&&... args);
-
-// Notification from asynchronous work
+// VM Port
 
 public:
   inline
-  void postVMEvent(std::function<void()> callback);
+  void sendOnVMPort(VM from, VMIdentifier to, RichNode value);
 
-// Reference to the virtual machine
+// GC
+
+public:
+  inline
+  void withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC);
+
+  void gCollect(GC gc) {
+    BoostVM::forVM(gc->vm).gCollect(gc);
+  }
+
+// VMs
 private:
-  VirtualMachine virtualMachine;
-public:
-  const VM vm;
+  std::forward_list<BoostVM> _vms;
+  std::mutex _vmsMutex;
+  std::atomic_int _nextVMIdentifier;
+  std::atomic_int _exitCode;
+  std::mutex _gcMutex;
 
 // Bootstrap
 private:
   BootLoader _bootLoader;
-
-// Number of asynchronous IO nodes - used for termination detection
-private:
-  size_t _asyncIONodeCount;
-
-// Random number generation
 public:
-  typedef boost::random::mt19937 random_generator_t;
-  random_generator_t random_generator;
-private:
-  boost::uuids::random_generator uuidGenerator;
+  VMStarter vmStarter;
 
 // ASIO service
 public:
   boost::asio::io_service io_service;
-
-// Synchronization condition variable telling there is work to do in the VM
-private:
-  boost::condition_variable _conditionWorkToDoInVM;
-  boost::mutex _conditionWorkToDoInVMMutex;
-
-// Preemption and alarms
-private:
-  boost::asio::deadline_timer preemptionTimer;
-  boost::asio::deadline_timer alarmTimer;
-
-// IO-driven events that must work with the VM store
-private:
-  std::queue<std::function<void()> > _vmEventsCallbacks;
 };
 
 ///////////////

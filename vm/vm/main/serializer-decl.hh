@@ -49,9 +49,9 @@ public:
 private:
   friend class Serializer;
 
-  MemoryManager& secondMM;
-  MemManagedList<RichNode> todoFrom;
-  MemManagedList<RichNode> todoTo;
+  VM vm;
+  VMAllocatedList<RichNode> todoFrom;
+  VMAllocatedList<RichNode> todoTo;
 };
 
 ////////////////

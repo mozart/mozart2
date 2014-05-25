@@ -30,21 +30,13 @@ namespace mozart {
 // PropertyRegistry //
 //////////////////////
 
-void PropertyRegistry::initialize(VM vm) {
-  initConfig(vm);
-  registerPredefined(vm);
-}
-
-void PropertyRegistry::initConfig(VM vm) {
+PropertyRegistry::PropertyRegistry(VirtualMachineOptions options) {
   // Print
 
   config.printDepth = 10;
   config.printWidth = 20;
 
   // Errors
-
-  config.defaultExceptionHandler = new (vm) StableNode(vm, buildNil(vm));
-  config.errorPrefix = new (vm) StableNode(vm, buildNil(vm));
 
   config.errorsDebug = true;
   config.errorsDepth = 10;
@@ -53,15 +45,14 @@ void PropertyRegistry::initConfig(VM vm) {
 
   // Garbage collection, aka memory management
 
-  config.minimalHeapSize = 1 * MegaBytes;
-  config.maximalHeapSize = vm->getMemoryManager().getMaxMemory(); // TODO
+  config.minimalHeapSize = options.minimalHeapSize;
+  config.maximalHeapSize = options.maximalHeapSize;
+  config.heapSize = config.minimalHeapSize;
   config.desiredFreeMemPercentageAfterGC = 75; // percent
-  config.gcThresholdTolerance = 20; // percent
+  config.gcThresholdTolerance = 10; // percent
+  computeInitialGCThreshold();
+  computeMaxGCThreshold();
   config.autoGC = true;
-
-  config.gcThreshold = std::max<nativeint>(
-    ((nativeint) config.maximalHeapSize) * 95 / 100,
-    ((nativeint) config.maximalHeapSize) - 10 * MegaBytes); // TODO
 
   // Memory usage statistics
 
@@ -70,6 +61,10 @@ void PropertyRegistry::initConfig(VM vm) {
 }
 
 void PropertyRegistry::registerPredefined(VM vm) {
+  // Initialize value properties only now since they need the heap
+  config.defaultExceptionHandler = new (vm) StableNode(vm, buildNil(vm));
+  config.errorPrefix = new (vm) StableNode(vm, buildNil(vm));
+
   // Threads
 
   registerReadOnlyProp<nativeint>(vm, "threads.runnable",
@@ -118,11 +113,30 @@ void PropertyRegistry::registerPredefined(VM vm) {
       return vm->getMemoryManager().getAllocated();
     });
 
-  registerReadOnlyProp(vm, "gc.threshold", config.gcThreshold);
   registerReadOnlyProp(vm, "gc.active", stats.activeMemory);
+  registerReadOnlyProp(vm, "gc.threshold", config.gcThreshold);
+  registerReadOnlyProp(vm, "gc.heapsize", config.heapSize);
 
-  registerReadWriteProp(vm, "gc.min", config.minimalHeapSize);
-  registerReadWriteProp(vm, "gc.max", config.maximalHeapSize);
+  registerReadWriteProp<nativeint>(vm, "gc.min",
+    [this] (VM vm) {
+      return config.minimalHeapSize;
+    },
+    [this] (VM vm, nativeint value) {
+      if (value > 0 && value < config.maximalHeapSize)
+        config.minimalHeapSize = value;
+    }
+  );
+  registerReadWriteProp<nativeint>(vm, "gc.max",
+    [this] (VM vm) {
+      return config.maximalHeapSize;
+    },
+    [this] (VM vm, nativeint value) {
+      if (value > config.minimalHeapSize) {
+        config.maximalHeapSize = value;
+        computeMaxGCThreshold();
+      }
+    }
+  );
   registerReadWriteProp(vm, "gc.free", config.desiredFreeMemPercentageAfterGC);
   registerReadWriteProp(vm, "gc.tolerance", config.gcThresholdTolerance);
   registerReadWriteProp(vm, "gc.on", config.autoGC);

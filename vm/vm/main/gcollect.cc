@@ -32,9 +32,9 @@ namespace mozart {
 // GarbageCollector //
 //////////////////////
 
-void GarbageCollector::doGC() {
+void GarbageCollector::doGC(MemoryManager& secondMM) {
   if (OzDebugGC) {
-    std::cerr << "Before GC: " << vm->getMemoryManager().getAllocated();
+    std::cerr << "Before GC:" << std::setw(10) << vm->getMemoryManager().getAllocated();
     std::cerr << " bytes used." << std::endl;
   }
 
@@ -45,7 +45,7 @@ void GarbageCollector::doGC() {
   vm->beforeGR(this);
 
   // Root of garbage collection
-  vm->startGC(this);
+  vm->startGC(this, secondMM);
 
   // GC loop
   runCopyLoop<GarbageCollector>();
@@ -54,7 +54,7 @@ void GarbageCollector::doGC() {
   vm->afterGR(this);
 
   if (OzDebugGC) {
-    std::cerr << "After GC: " << vm->getMemoryManager().getAllocated();
+    std::cerr << "After GC: " << std::setw(10) << vm->getMemoryManager().getAllocated();
     std::cerr << " bytes used." << std::endl;
   }
 }

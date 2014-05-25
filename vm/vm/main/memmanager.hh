@@ -25,8 +25,11 @@
 #ifndef MOZART_MEMMANAGER_H
 #define MOZART_MEMMANAGER_H
 
+#include "core-forward-decl.hh"
+
 #include <cstdlib>
 #include <algorithm>
+#include <forward_list>
 
 namespace mozart {
 
@@ -34,45 +37,21 @@ const size_t MegaBytes = 1024*1024;
 
 class MemoryManager {
 public:
-  MemoryManager(size_t maxMemory) :
-    _nextBlock(nullptr), _baseBlock(nullptr), _maxMemory(maxMemory) {}
+  MemoryManager() : vm(nullptr),
+    _nextBlock(nullptr), _baseBlock(nullptr), _blockSize(0),
+    _allocated(0), _allocatedInFreeList(0), _allocatedInExtra(0) {}
 
   ~MemoryManager() {
-    if (_baseBlock != nullptr)
-      ::free(_baseBlock);
+    ::free(_baseBlock);
   }
 
-  void swapWith(MemoryManager& other) {
-    std::swap(_nextBlock, other._nextBlock);
-    std::swap(_baseBlock, other._baseBlock);
-    std::swap(_maxMemory, other._maxMemory);
-    std::swap(_allocated, other._allocated);
-
-    for (size_t i = 0; i < MaxBuckets; i++)
-      std::swap(freeListBuckets[i], other.freeListBuckets[i]);
-  }
-
-  void init() {
-    if (_baseBlock == nullptr) {
-      _baseBlock = static_cast<char*>(::malloc(_maxMemory));
-      if (_baseBlock == nullptr)
-        throw std::bad_alloc();
-    }
-
-    _nextBlock = _baseBlock;
-    _allocated = 0;
-
-    for (size_t i = 0; i < MaxBuckets; i++)
-      freeListBuckets[i] = nullptr;
-
-    stats.allocatedInFreeList = 0;
-  }
+  void init(VM vm);
 
 public:
   // Memory requests and releases
 
   void* getMemory(size_t size) {
-    if (_allocated + size > _maxMemory) {
+    if (_allocated + size > _blockSize) {
       return getMoreMemory(size);
     } else {
       void* result = static_cast<void*>(_nextBlock);
@@ -96,7 +75,7 @@ public:
         return list;
       } else {
         size_t chunkSize = bucket * AllocGranularity;
-        stats.allocatedInFreeList += chunkSize;
+        _allocatedInFreeList += chunkSize;
         return getMemory(chunkSize);
       }
     } else {
@@ -122,6 +101,8 @@ public:
     }
   }
 
+  void releaseExtraAllocs();
+
 private:
   size_t bucketFor(size_t size) {
     return (size + (AllocGranularity-1)) / AllocGranularity;
@@ -132,24 +113,38 @@ private:
 public:
   // Query statistics and properties
 
-  size_t getMaxMemory() {
-    return _maxMemory;
+  size_t getBlockSize() {
+    return _blockSize;
   }
 
   size_t getAllocated() {
-    return _allocated;
+    return _allocated + _allocatedInExtra;
   }
 
   size_t getAllocatedInFreeList() {
-    return stats.allocatedInFreeList;
+    return _allocatedInFreeList;
   }
 
   size_t getAllocatedOutsideFreeList() {
     return getAllocated() - getAllocatedInFreeList();
   }
 
+public:
+  void swap(MemoryManager& other) {
+    std::swap(vm, other.vm);
+    std::swap(_nextBlock, other._nextBlock);
+    std::swap(_baseBlock, other._baseBlock);
+    std::swap(_blockSize, other._blockSize);
+    std::swap(_allocated, other._allocated);
+    std::swap(freeListBuckets, other.freeListBuckets);
+    std::swap(_allocatedInFreeList, other._allocatedInFreeList);
+    std::swap(_extraAllocs, other._extraAllocs);
+    std::swap(_allocatedInExtra, other._allocatedInExtra);
+  }
+
 private:
   // Fields
+  VM vm;
 
   static const size_t AllocGranularity = 2 * sizeof(char*);
   static const size_t MaxBuckets = 64 + 1;
@@ -157,14 +152,14 @@ private:
   char* _nextBlock;
   char* _baseBlock;
 
-  size_t _maxMemory;
-  size_t _allocated;
+  size_t _blockSize;
+  size_t _allocated; // in _baseBlock
 
   void* freeListBuckets[MaxBuckets];
+  size_t _allocatedInFreeList;
 
-  struct {
-    size_t allocatedInFreeList;
-  } stats;
+  std::forward_list<void*> _extraAllocs;
+  size_t _allocatedInExtra; // So it can be reset to 0 after releaseExtraAllocs()
 };
 
 }

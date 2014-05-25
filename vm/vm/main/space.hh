@@ -592,7 +592,7 @@ void Space::createPropagateThreadOnceAndSuspendItOnVar(
 
   if (variable.isTransient()) {
     if (propagateThread == nullptr)
-      propagateThread = new internal::DummyThread(vm, this, true);
+      propagateThread = new (vm) internal::DummyThread(vm, this, true);
     propagateThread->suspendOnVar(vm, variable);
   }
 }

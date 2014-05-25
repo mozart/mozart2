@@ -38,8 +38,8 @@ namespace mozart { namespace boostenv {
 //////////////////////////
 
 template <typename T, typename P>
-BaseSocketConnection<T, P>::BaseSocketConnection(BoostBasedVM& environment):
-  _environment(environment), _socket(environment.io_service) {
+BaseSocketConnection<T, P>::BaseSocketConnection(BoostVM& boostVM):
+  boostVM(boostVM), _socket(boostVM.env.io_service) {
 }
 
 template <typename T, typename P>
@@ -75,12 +75,12 @@ void BaseSocketConnection<T, P>::startAsyncWrite(
   pointer self = this->shared_from_this();
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
-    self->_environment.postVMEvent([=] () {
+    self->boostVM.postVMEvent([=] () {
       if (!error) {
-        self->_environment.bindAndReleaseAsyncIOFeedbackNode(
+        self->boostVM.bindAndReleaseAsyncIOFeedbackNode(
           statusNode, bytes_transferred);
       } else {
-        self->_environment.raiseAndReleaseAsyncIOFeedbackNode(
+        self->boostVM.raiseAndReleaseAsyncIOFeedbackNode(
           statusNode, "socketOrPipe", "write", error.value());
       }
     });
@@ -95,23 +95,23 @@ void BaseSocketConnection<T, P>::readHandler(
   const ProtectedNode& tailNode, const ProtectedNode& statusNode) {
 
   pointer self = this->shared_from_this();
-  _environment.postVMEvent([=] () {
+  boostVM.postVMEvent([=] () {
     if (!error) {
-      VM vm = _environment.vm;
+      VM vm = boostVM.vm;
 
       UnstableNode head(vm, *tailNode);
       for (size_t i = bytes_transferred; i > 0; i--)
         head = buildCons(vm, (nativeint) (unsigned char) _readData[i-1],
                          std::move(head));
 
-      self->_environment.bindAndReleaseAsyncIOFeedbackNode(
+      self->boostVM.bindAndReleaseAsyncIOFeedbackNode(
         statusNode, "succeeded", bytes_transferred, std::move(head));
     } else {
-      self->_environment.raiseAndReleaseAsyncIOFeedbackNode(
+      self->boostVM.raiseAndReleaseAsyncIOFeedbackNode(
         statusNode, "socketOrPipe", "read", error.value());
     }
 
-    _environment.releaseAsyncIONode(tailNode);
+    boostVM.releaseAsyncIONode(tailNode);
   });
 }
 

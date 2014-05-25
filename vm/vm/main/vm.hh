@@ -43,9 +43,9 @@ void BuiltinModule::initModule(VM vm, T&& module) {
   _module = vm->protect(std::forward<T>(module));
 }
 
-////////////////////
-// VirtualMachine //
-////////////////////
+///////////////////////////////
+// VirtualMachineEnvironment //
+///////////////////////////////
 
 std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, nativeint value) {
   raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
@@ -59,18 +59,27 @@ std::shared_ptr<BigIntImplem> VirtualMachineEnvironment::newBigIntImplem(VM vm, 
   raiseError(vm, "Overflow! BigInt unsupported in the default VM environment without implementation");
 }
 
+void VirtualMachineEnvironment::sendOnVMPort(VM from, VMIdentifier to, RichNode value) {
+  raiseError(from, "{Send VMPort} not implemented in this environment");
+}
+
+////////////////////
+// VirtualMachine //
+////////////////////
+
 void registerCoreModules(VM vm);
 
 VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
-                               size_t maxMemory):
+                               VirtualMachineOptions options):
   rootGlobalNode(nullptr), environment(environment),
-  memoryManager(maxMemory), secondMemoryManager(maxMemory), gc(this), sc(this),
+  _propertyRegistry(options),
+  gc(this, environment.getSecondMemoryManagerRef()), sc(this),
   _preemptRequestedNot(ATOMIC_FLAG_INIT),
   _exitRunRequestedNot(ATOMIC_FLAG_INIT),
   _gcRequestedNot(ATOMIC_FLAG_INIT),
   _referenceTime(0) {
 
-  memoryManager.init();
+  memoryManager.init(this);
 
   _topLevelSpace = new (this) Space(this);
   _currentSpace = _topLevelSpace;
@@ -90,7 +99,7 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
   initialize();
 
   registerCoreModules(this);
-  _propertyRegistry.initialize(this);
+  _propertyRegistry.registerPredefined(this);
 }
 
 VirtualMachine::~VirtualMachine() {
@@ -143,7 +152,7 @@ UnstableNode VirtualMachine::findBuiltin(T&& moduleName, U&& builtinName) {
 }
 
 UUID VirtualMachine::genUUID() {
-  return environment.genUUID();
+  return environment.genUUID(this);
 }
 
 void VirtualMachine::setAlarm(std::int64_t delay, StableNode* wakeable) {
@@ -174,11 +183,14 @@ void VirtualMachine::initialize() {
 void VirtualMachine::doGC() {
   // Update stats (1)
   getPropertyRegistry().stats.totalUsedMemory +=
-    getMemoryManager().getAllocatedOutsideFreeList();
+    memoryManager.getAllocatedOutsideFreeList();
 
-  auto cleanupList = acquireCleanupList();
-  gc.doGC();
-  doCleanup(cleanupList);
+  environment.withSecondMemoryManager([this] (MemoryManager& secondMemoryManager) {
+    auto cleanupList = acquireCleanupList();
+    gc.doGC(secondMemoryManager);
+    doCleanup(cleanupList);
+    secondMemoryManager.releaseExtraAllocs();
+  });
 
   // Handle the GC watcher
   UnstableNode watcher;
@@ -194,7 +206,18 @@ void VirtualMachine::doGC() {
   }
 
   // Update stats (2)
-  getPropertyRegistry().stats.activeMemory = getMemoryManager().getAllocated();
+  size_t activeMemory = memoryManager.getAllocated();
+  getPropertyRegistry().stats.activeMemory = activeMemory;
+  getPropertyRegistry().computeGCThreshold(activeMemory);
+
+  if (activeMemory > getPropertyRegistry().config.maxGCThreshold) {
+    std::cerr << "FATAL: The active memory (" << activeMemory << ") ";
+    std::cerr << "after a GC is over the maximal heap size threshold: ";
+    std::cerr << getPropertyRegistry().config.maxGCThreshold << std::endl;
+    throw std::bad_alloc();
+  }
+
+  adjustHeapSize();
 }
 
 void VirtualMachine::beforeGR(GR gr) {
@@ -221,12 +244,42 @@ void VirtualMachine::afterGR(GR gr) {
   }
 }
 
-void VirtualMachine::startGC(GC gc) {
+void VirtualMachine::adjustHeapSize() {
+  auto& config = getPropertyRegistry().config;
+
+  size_t tolerance = config.gcThresholdTolerance;
+  size_t wishedHeapSize = config.gcThreshold * (100 + tolerance) / 100;
+  size_t newHeapSize = config.heapSize;
+
+  if (wishedHeapSize > newHeapSize) {
+    if (newHeapSize == config.maximalHeapSize)
+      return;
+
+    while (wishedHeapSize > newHeapSize)
+      newHeapSize *= 2;
+
+    newHeapSize = std::min(newHeapSize, config.maximalHeapSize);
+    config.heapSize = newHeapSize;
+    requestGC(); // To use the new heap size
+  } else if (wishedHeapSize < newHeapSize / 2) {
+    if (newHeapSize == config.minimalHeapSize)
+      return;
+
+    while (wishedHeapSize < newHeapSize / 2)
+      newHeapSize /= 2;
+
+    newHeapSize = std::max(newHeapSize, config.minimalHeapSize);
+    config.heapSize = newHeapSize;
+    requestGC(); // To use the new heap size
+  }
+}
+
+void VirtualMachine::startGC(GC gc, MemoryManager& secondMemoryManager) {
   VMAllocatedList<AlarmRecord> alarms = std::move(_alarms);
 
   // Swap spaces
-  getMemoryManager().swapWith(getSecondMemoryManager());
-  getMemoryManager().init();
+  memoryManager.swap(secondMemoryManager);
+  memoryManager.init(this);
 
   // Forget lists of things
   atomTable = AtomTable();

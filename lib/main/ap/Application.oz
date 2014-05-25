@@ -89,7 +89,7 @@
 
 functor
 import
-   BootSystem(exit: Exit) at 'x-oz://boot/System'
+   BootSystem(exit) at 'x-oz://boot/System'
    OS(getEnv)
    Open(file)
    Property(get condGet)
@@ -677,6 +677,10 @@ prepare
    end
 
 define
+
+   proc {Exit ExitCode}
+      {BootSystem.exit ExitCode 'kill'}
+   end
 
    %%
    %% Access to Servlet parameters following CGI spec

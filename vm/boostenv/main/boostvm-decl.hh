@@ -47,7 +47,7 @@ class BoostEnvironment;
 
 class BoostVM : VirtualMachine {
 public:
-  BoostVM(BoostEnvironment& environment,
+  BoostVM(BoostEnvironment& environment, VMIdentifier parent,
           VMIdentifier identifier,
           VirtualMachineOptions options,
           std::unique_ptr<std::string>&& app, bool isURL);

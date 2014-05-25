@@ -97,7 +97,6 @@ define
 		   S={VM.getStream}
 		in
 		   {VM.list} = [1 Other]
-		   {VM.monitor Other}
 		   S.1 = terminated(Other reason:normal)
 
 		   {VM.monitor Other} % already dead
@@ -119,6 +118,32 @@ define
 		end
 		keys:[mvm new stream monitor])
 
+	monitorChain(proc {$}
+			Master={VM.current}
+			functor MonitorF
+			import VM
+			define
+			   S={VM.getStream}
+			   ToMonitor=S.1
+			   {VM.monitor ToMonitor}
+			   {Send {VM.getPort ToMonitor} ack}
+			   {Send {VM.getPort Master} monitor(S.2.1)}
+			   {VM.closeStream}
+			end
+			S={VM.getStream}
+			Monitor={VM.new MonitorF}
+			Watched={VM.new functor import VM define
+					   {Send {VM.getPort Monitor} {VM.current}}
+					   {VM.getStream}.1 = ack
+					   {VM.closeStream}
+					end}
+		     in
+			S.1 = terminated(Watched reason:normal)
+			S.2.1 = monitor(terminated(Watched reason:normal))
+			S.2.2.1 = terminated(Monitor reason:normal)
+		     end
+		     keys:[mvm new stream monitor])
+
 	kill(proc {$}
 		functor Sleeping
 		define
@@ -129,7 +154,6 @@ define
 		Sleeper={VM.new Sleeping}
 	     in
 		{VM.list} = [1 Sleeper]
-		{VM.monitor Sleeper}
 		
 		{VM.kill Sleeper}
 		S.1 = terminated(Sleeper reason:kill)
@@ -157,8 +181,6 @@ define
 		    S={VM.getStream}
 		    AutoKill={VM.new Suicide}
 		 in
-		    {VM.monitor AutoKill}
-
 		    S.1 = terminated(AutoKill reason:kill)
 		 end
 		 keys:[mvm new stream monitor kill])
@@ -172,7 +194,6 @@ define
 			     P
 			     S={VM.getStream}
 			  in
-			     {VM.monitor DeadVM}
 			     S.1 = terminated(DeadVM reason:normal)
 
 			     % It is ok to get the port of a dead VM
@@ -194,7 +215,6 @@ define
 			      S={VM.getStream}
 			      Other={VM.new F}
 			   in
-			      {VM.monitor Other}
 			      S.1 = terminated(Other reason:kill)
 			   end
 			   keys:[mvm new monitor kill])
@@ -226,9 +246,21 @@ define
 	      end
 	      S={VM.getStream}
 	      VMs={VM.current}|{Map {List.number 2 NVMs 1} fun {$ _} {VM.new F} end}
+	      Msgs
 	   in
 	      thread {Module.apply [F] _} end
-	      {Sort {List.take S NVMs} Value.'<'} = {Sort VMs Value.'<'}
+	      thread
+		 MsgsPort={NewPort Msgs}
+	      in
+		 % NVMs messages + (NVMs-1) termination records
+		 for Msg in {List.take S NVMs+NVMs-1} do
+		    case Msg
+		    of terminated(...) then skip
+		    else {Send MsgsPort Msg}
+		    end
+		 end
+	      end
+	      {Sort {List.take Msgs NVMs} Value.'<'} = {Sort VMs Value.'<'}
 	   end
 	   keys:[mvm new stream gc])
 
@@ -243,12 +275,17 @@ define
 				 {Send {VM.getPort Master} {Property.get 'gc.max'}}
 			      end
 			      S={VM.getStream}
+			      Same Changed
 			   in
-			      {VM.new F _} % inherit
+			      Same={VM.new F} % inherit
 			      S.1 = Max
+			      S.2.1 = terminated(Same reason:normal)
+
 			      {Property.put 'gc.max' NewMax}
-			      {VM.new F _}
-			      S.2.1 = NewMax
+			      Changed={VM.new F}
+			      S.2.2.1 = NewMax
+			      S.2.2.2.1 = terminated(Changed reason:normal)
+
 			      {Property.put 'gc.max' Max} % restore
 			   end
 			   keys:[mvm gc])
@@ -268,7 +305,6 @@ define
 		       Other={VM.new F}
 		       S={VM.getStream}
 		    in
-		       {VM.monitor Other}
 		       {Send {VM.getPort Other} unit}
 		       S.1 = terminated(Other reason:outOfMemory)
 		    end
@@ -285,7 +321,6 @@ define
 		     Other={VM.new Fail}
 		     S={VM.getStream}
 		  in
-		     {VM.monitor Other}
 		     {Send {VM.getPort Other} unit}
 		     S.1 = terminated(Other reason:exception)
 		  end

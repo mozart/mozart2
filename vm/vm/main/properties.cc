@@ -122,7 +122,7 @@ void PropertyRegistry::registerPredefined(VM vm) {
       return config.minimalHeapSize;
     },
     [this] (VM vm, nativeint value) {
-      if (value > 0 && value < config.maximalHeapSize)
+      if (value > 0 && (size_t) value < config.maximalHeapSize)
         config.minimalHeapSize = value;
     }
   );
@@ -131,7 +131,7 @@ void PropertyRegistry::registerPredefined(VM vm) {
       return config.maximalHeapSize;
     },
     [this] (VM vm, nativeint value) {
-      if (value > config.minimalHeapSize) {
+      if (value > 0 && (size_t) value > config.minimalHeapSize) {
         config.maximalHeapSize = value;
         computeMaxGCThreshold();
       }

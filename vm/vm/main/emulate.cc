@@ -1472,12 +1472,24 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
     return build(vm, exception);
 
   RichNode atDebug = RichNode(*srcRecord.getElement(debugFeatureIndex));
-  UnstableNode infoAtom = build(vm, "info");
 
+  UnstableNode atStack = build(vm, unit);
   UnstableNode info = build(vm, unit);
-  if (!(atDebug.is<Unit>() || (atDebug.is<Record>() &&
-        atDebug.as<Record>().lookupFeature(vm, infoAtom, info))))
+
+  if (atDebug.is<Unit>()) {
+    // Nothing to do, info is unit
+  } else if (atDebug.is<Record>()) {
+    UnstableNode stackAtom = build(vm, "stack");
+    auto record = atDebug.as<Record>();
+    if (record.lookupFeature(vm, stackAtom, atStack) && RichNode(atStack).is<Unit>()) {
+      UnstableNode infoAtom = build(vm, "info");
+      record.lookupFeature(vm, infoAtom, info);
+    } else {
+      return build(vm, exception);
+    }
+  } else {
     return build(vm, exception);
+  }
 
   size_t width = srcRecord.getWidth();
   UnstableNode result = Record::build(vm, width, arity);

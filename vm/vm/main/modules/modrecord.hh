@@ -221,6 +221,7 @@ public:
         width = srcRecord.getWidth();
         StableNode& arity = *srcRecord.getArity();
         result = Record::build(vm, width, arity);
+        featureIndex = width; // avoid "may be used uninitialized" warning
         RichNode(arity).as<mozart::Arity>().lookupFeature(vm, feature, featureIndex);
 
         srcElements = srcRecord.getElementsArray();

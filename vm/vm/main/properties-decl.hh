@@ -145,19 +145,19 @@ public:
 public:
   void computeGCThreshold(size_t activeMemory) {
     config.gcThreshold = std::min(config.maxGCThreshold,
-      activeMemory * 100 / (100 - config.desiredFreeMemPercentageAfterGC));
+      activeMemory / (100 - config.desiredFreeMemPercentageAfterGC) * 100);
   }
 
 private:
   void computeInitialGCThreshold() {
     // We want the heap to be gcThresholdTolerance % above the threshold
     size_t tolerance = config.gcThresholdTolerance;
-    config.gcThreshold = config.heapSize * 100 / (100 + tolerance);
+    config.gcThreshold = config.heapSize / (100 + tolerance) * 100;
   }
 
   void computeMaxGCThreshold() {
     size_t tolerance = config.gcThresholdTolerance;
-    config.maxGCThreshold = config.maximalHeapSize * 100 / (100 + tolerance);
+    config.maxGCThreshold = config.maximalHeapSize / (100 + tolerance) * 100;
     config.gcThreshold = std::min(config.maxGCThreshold, config.gcThreshold);
   }
 

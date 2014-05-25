@@ -296,11 +296,14 @@ define
 			  Property
 			  VM
 		       define
+			  MB=1024*1024
 			  {VM.getStream}.1 = unit
-			  {Property.put 'gc.min' 1}
-			  {Property.put 'gc.max' 2}
-			  {Wait {MakeTuple big 1000}} % should be out of memory
+			  {Property.put 'gc.min' 1*MB}
+			  {Property.put 'gc.max' 2*MB}
+			  T={MakeTuple huge 3*(MB div 16)} % should be out of memory
+			  fail % unreachable
 			  {VM.closeStream}
+			  {Wait {Width T}} % keeps ref to T
 		       end
 		       Other={VM.new F}
 		       S={VM.getStream}

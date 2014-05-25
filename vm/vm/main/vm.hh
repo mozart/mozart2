@@ -248,7 +248,7 @@ void VirtualMachine::adjustHeapSize() {
   auto& config = getPropertyRegistry().config;
 
   size_t tolerance = config.gcThresholdTolerance;
-  size_t wishedHeapSize = config.gcThreshold * (100 + tolerance) / 100;
+  size_t wishedHeapSize = config.gcThreshold / 100 * (100 + tolerance);
   size_t newHeapSize = config.heapSize;
 
   if (wishedHeapSize > newHeapSize) {

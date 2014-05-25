@@ -1,4 +1,4 @@
-%%% Copyright © 2013, Université catholique de Louvain
+%%% Copyright © 2013-2014, Université catholique de Louvain
 %%% All rights reserved.
 %%%
 %%% Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ define
       'fun' 'functor' 'if' 'import' 'in' 'local'
       'lock' 'meth' 'mod' 'not' 'of' 'or' 'orelse'
       'prepare' 'proc' 'prop' 'raise' 'require'
-      'self' 'skip' 'then' 'thread' 'try'
+      'self' 'skip' 'suchthat' 'then' 'thread' 'try'
    ]
 
    OzKeywordTokens0 = {Record.make kw OzKeywords}
@@ -347,7 +347,7 @@ define
 
       [] tkEof then
          Result = reader(tkEof CtxIn.pos#CtxOut.pos true Result)
-         
+
       [] tkParseError(_) then
          Result = reader(Token CtxIn.pos#CtxOut.pos true Result)
 

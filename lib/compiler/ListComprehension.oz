@@ -479,6 +479,79 @@ define
    in
       fApply(Name Tmp2 unit)
    end
+   %%=========================================
+   %% last level: generates the following code
+   %%
+   %% local Next in
+   %%    if {{ This_Level_Condition }} then
+   %%       local {{ Next_1 ... Next_N }} in
+   %%          Next = {{ '#'(field1:Next1 ... fieldN:NextN) }}
+   %%          if {{ Is_Body }} then {{ Body }} end
+   %%          {{ Forall I in Fields_Name }}
+   %%             Result.I = if {{ Condition.I }} then Expression.I|Next_I
+   %%                        else Next_I end
+   %%          {{ end Forall }}
+   %%       end
+   %%    else
+   %%       Next = Result
+   %%    end
+   %%    {LevelIndex %% current level
+   %%     {{ Next_Iteration_For_The_Ranges_Of_This_Level }}
+   %%     {{ Previous_Levels_Arguments }}
+   %%     {{ Previous_List_Ranges }}
+   %%     Next}
+   %% end
+   fun {CreateLastLevelNextCall Fields Expressions Conditions ResultVar BODY
+        Condition RangesDeclCallNext PreviousIds NameVar OldExtraArgsForLists}
+      NextLastVar = {MakeVar 'Next'}
+      NextsRecord NextVars
+      {CreateNextsForLastLevel Fields ?NextsRecord ?NextVars}
+      NextAssignTrue  = fEq(NextLastVar fRecord(HASH NextsRecord) unit)
+      NextAssignFalse = fEq(NextLastVar ResultVar                 unit)
+      NextCall = {MakeNextCallItself RangesDeclCallNext PreviousIds NameVar
+                  OldExtraArgsForLists NextLastVar}
+      Assigns = {Map4 Fields Expressions Conditions NextVars
+                 fun{$ F E C N}
+                    TrueStat = fEq(fOpApply('.' [ResultVar F] unit)
+                                   fRecord(fAtom('|' unit) [E N])
+                                   unit)
+                 in
+                    if C == unit then %% no condition
+                       TrueStat
+                    else
+                       fBoolCase(C
+                                 TrueStat
+                                 fEq(fOpApply('.' [ResultVar F] unit) N unit)
+                                 unit)
+                    end
+                 end}
+      TrueStat = fLocal({List2fAnds NextVars}
+                        if BODY == unit then
+                           {List2fAnds {List.append Assigns [NextAssignTrue]}}
+                        else
+                           {List2fAnds {List.append BODY|Assigns [NextAssignTrue]}}
+                        end
+                        unit)
+      ThisLevelConditionStat = if Condition == unit then
+                                  %% no level condition: consider it always true
+                                  TrueStat
+                               else
+                                  fBoolCase(Condition TrueStat NextAssignFalse unit)
+                               end
+   in
+      fLocal(NextLastVar fAnd(ThisLevelConditionStat NextCall) unit)
+   end
+   %% returns the next level call
+   fun {CreateNotLastLevelNextCall NextLevelName Levels Index RangesDeeper
+        PreviousIds ExtraArgsForLists ResultVar Condition NextCallItself}
+      NextLevelCallNotLast = {MakeNextLevelCall RangesDeeper Levels NextLevelName
+                              PreviousIds ExtraArgsForLists ResultVar Index}
+   in
+      if Condition == unit then NextLevelCallNotLast
+      else fBoolCase(Condition NextLevelCallNotLast NextCallItself unit)
+      end
+   end
+   %% usefull constants
    NIL = fAtom(nil unit)
    HASH = fAtom('#' unit)
    INT1 = fInt(1 unit)
@@ -491,17 +564,14 @@ define
    %% Argument : the fListComprehension node
    fun {Compile fListComprehension(EXPR_LIST FOR_COMPREHENSION_LIST BODY COORDS)}
       %% used to keep track of all the (level) procedures to declare
-      DeclarationsDictionary = {Dictionary.new}
-      proc {PutDecl Name Value}
-         {Dictionary.put DeclarationsDictionary Name Value}
-      end
-      proc {PutDeclIndex Name Index Value}
-         {PutDecl {VirtualString.toAtom Name#Index} Value}
+      TopLevelDeclsBuffer = {NewCell nil}
+      proc {AddTopLevelDecl Value}
+         TopLevelDeclsBuffer := Value|@TopLevelDeclsBuffer
       end
       %% returns an AST rooted at fAnd(...)
-      %% to declare everything inside DeclarationsDictionary (levels, ...)
-      fun {DeclareAllDict}
-         {List2fAnds {Dictionary.items DeclarationsDictionary}}
+      %% to declare everything inside TopLevelDeclsBuffer (levels, ...)
+      fun {GetTopLevelDecls}
+         {List2fAnds @TopLevelDeclsBuffer}
       end
       %% generates all the levels of the list comprehension recursively
       %% starting from a 'fake' level called PreLevel
@@ -509,7 +579,7 @@ define
       fun {LevelsGenerator}
          %%====================================================================================
          %% generates the procedure AST for Level numbered Index (name is <Name/'Level'#Index>)
-         %% puts it in the dictionary DeclarationsDictionary at key 'Level'#Index
+         %% puts it in the cell TopLevelDeclsBuffer at key 'Level'#Index
          %% returns the name (fVar) of the procedure generated
          %% Level               : fForComprehensionLevel([...] ... ...)
          %% Index               : int in [0, infinity]
@@ -548,88 +618,14 @@ define
             Condition         = Level.2
             %% call to make for next if exists, EXPR|NextCallItself if not
             NextLevelCall     = if Levels == nil then
-                                   %%=========================================
-                                   %% last level: generates the following code
-                                   %%
-                                   %% local Next in
-                                   %%    if {{ This_Level_Condition }} then
-                                   %%       local {{ Next_1 ... Next_N }} in
-                                   %%          Next = {{ '#'(field1:Next1 ... fieldN:NextN) }}
-                                   %%          if {{ Is_Body }} then {{ Body }} end
-                                   %%          {{ Forall I in Fields_Name }}
-                                   %%             Result.I = if {{ Condition.I }} then Expression.I|Next_I
-                                   %%                        else Next_I end
-                                   %%          {{ end Forall }}
-                                   %%       end
-                                   %%    else
-                                   %%       Next = Result
-                                   %%    end
-                                   %%    {LevelIndex %% current level
-                                   %%     {{ Next_Iteration_For_The_Ranges_Of_This_Level }}
-                                   %%     {{ Previous_Levels_Arguments }}
-                                   %%     {{ Previous_List_Ranges }}
-                                   %%     Next}
-                                   %% end
-                                   local
-                                      NextLastVar = {MakeVar 'Next'}
-                                      NextsRecord NextVars
-                                      {CreateNextsForLastLevel Fields ?NextsRecord ?NextVars}
-                                      NextAssignTrue  = fEq(NextLastVar fRecord(HASH NextsRecord) unit)
-                                      NextAssignFalse = fEq(NextLastVar ResultVar                 unit)
-                                      NextCall = {MakeNextCallItself RangesDeclCallNext PreviousIds NameVar
-                                                  OldExtraArgsForLists NextLastVar}
-                                      Assigns = {Map4 Fields Expressions Conditions NextVars
-                                                 fun{$ F E C N}
-                                                    TrueStat = fEq(
-                                                                  fOpApply('.' [ResultVar F] unit)
-                                                                  fRecord(fAtom('|' unit) [E N])
-                                                                  unit)
-                                                 in
-                                                    if C == unit then %% no condition
-                                                       TrueStat
-                                                    else
-                                                       fBoolCase(C
-                                                                 TrueStat
-                                                                 fEq(fOpApply('.' [ResultVar F] unit) N unit)
-                                                                 unit)
-                                                    end
-                                                 end}
-                                      TrueStat = fLocal({List2fAnds NextVars}
-                                                        if BODY == unit then
-                                                           {List2fAnds {List.append Assigns [NextAssignTrue]}}
-                                                        else
-                                                           {List2fAnds {List.append BODY|Assigns [NextAssignTrue]}}
-                                                        end
-                                                        unit)
-                                      ThisLevelConditionStat = if Condition == unit then
-                                                                  %% no level condition: consider it always true
-                                                                  TrueStat
-                                                               else
-                                                                  fBoolCase(Condition TrueStat NextAssignFalse unit)
-                                                               end
-                                   in
-                                      fLocal(NextLastVar fAnd(ThisLevelConditionStat NextCall) unit)
-                                   end
-                                else
-                                   %%===============
-                                   %% not last level
-                                   local
-                                      NextLevelName = {LevelGenerator
-                                                       Levels.1
-                                                       Index+1
-                                                       Levels.2
-                                                       {List.append RangesDeeper PreviousIds}
-                                                       NextCallItself
-                                                       ExtraArgsForLists}
-                                      NextLevelCallNotLast = {MakeNextLevelCall RangesDeeper Levels NextLevelName
-                                                              PreviousIds ExtraArgsForLists ResultVar Index}
-                                   in
-                                      if Condition == unit then
-                                         NextLevelCallNotLast
-                                      else
-                                         fBoolCase(Condition NextLevelCallNotLast NextCallItself unit)
-                                      end
-                                   end
+                                   {CreateLastLevelNextCall Fields Expressions Conditions ResultVar BODY
+                                    Condition RangesDeclCallNext PreviousIds NameVar OldExtraArgsForLists}
+                                else NextLevelName in
+                                   NextLevelName = {LevelGenerator Levels.1 Index+1 Levels.2
+                                                    {List.append RangesDeeper PreviousIds}
+                                                    NextCallItself ExtraArgsForLists}
+                                   {CreateNotLastLevelNextCall NextLevelName Levels Index RangesDeeper
+                                    PreviousIds ExtraArgsForLists ResultVar Condition NextCallItself}
                                 end
             Procedure =
             fProc(
@@ -639,54 +635,52 @@ define
                {List.append RangesDecl {List.append PreviousIds {List.append OldExtraArgsForLists [ResultVar]}}}
                %% body
                local
-                  BodyStat = local
-                                TrueStat = {LocalsIn RangeListDecl NextLevelCall}
-                             in
-                                case RangesCondition
-                                of fAtom(true _) then TrueStat
-                                else fBoolCase(
-                                        %% condition of ranges
-                                        RangesCondition
-                                        %% true
-                                        TrueStat
-                                        %% false
-                                        if Index == 1 then
-                                           %% first level so assign Result to nil
-                                           {List2fAnds {Map Fields
-                                                        fun{$ F}
-                                                           fEq(fOpApply('.' [ResultVar F] unit)
-                                                               NIL
-                                                               unit)
-                                                        end}}
-                                        else
-                                           %% call previous level
-                                           {SwitchResultInPreviousLevelCall CallToPreviousLevel ResultVar}
-                                        end
-                                        %% position
-                                        unit
-                                        )
-                                end
-                             end
-                  LazyAndBodyStat = if Lazy then
-                                       %% LAZY --------------------
-                                       fAnd(
-                                          if Outputs == 1 then
-                                             %%=====================
-                                             %% lazy with one output
-                                             fApply(fVar('WaitNeeded' unit)
-                                                    [fOpApply('.' [ResultVar Fields.1] unit)]
-                                                    unit)
-                                          else
-                                             %%==========================
-                                             %% lazy with several outputs
-                                             fOpApplyStatement('Record.waitNeededFirst' [ResultVar] unit)
-                                          end
-                                          BodyStat
-                                          ) % end of fAnd (because of lazy...)
+                  BodyStat =
+                  local
+                     TrueStat = {LocalsIn RangeListDecl NextLevelCall}
+                  in
+                     case RangesCondition
+                     of fAtom(true _) then TrueStat
+                     else fBoolCase(%% condition of ranges
+                                    RangesCondition
+                                    %% true
+                                    TrueStat
+                                    %% false
+                                    if Index == 1 then
+                                       %% first level so assign Result to nil
+                                       {List2fAnds {Map Fields
+                                        fun{$ F}
+                                           fEq(fOpApply('.' [ResultVar F] unit)
+                                               NIL
+                                               unit)
+                                        end}}
                                     else
-                                       %% not lazy, just body, no waiting
-                                       BodyStat
+                                       %% call previous level
+                                       {SwitchResultInPreviousLevelCall CallToPreviousLevel ResultVar}
                                     end
+                                    %% position
+                                    unit)
+                     end
+                  end
+                  LazyAndBodyStat =
+                  if Lazy then
+                     %% LAZY --------------------
+                     fAnd(if Outputs == 1 then
+                             %%=====================
+                             %% lazy with one output
+                             fApply(fVar('WaitNeeded' unit)
+                                    [fOpApply('.' [ResultVar Fields.1] unit)]
+                                    unit)
+                          else
+                             %%==========================
+                             %% lazy with several outputs
+                             fOpApplyStatement('Record.waitNeededFirst' [ResultVar] unit)
+                          end
+                          BodyStat) % end of fAnd (because of lazy...)
+                  else
+                     %% not lazy, just body, no waiting
+                     BodyStat
+                  end
                in
                   LazyAndBodyStat
                end
@@ -695,16 +689,15 @@ define
                %% position
                COORDS)
          in
-            {PutDeclIndex 'Level' Index Procedure}
+            {AddTopLevelDecl Procedure}
             NameVar
          end %% end of LevelGenerator
          NameVar = {MakeVar 'PreLevel'}
          ResultVar = {MakeVar 'Result'}
          Level1Var  = {LevelGenerator FOR_COMPREHENSION_LIST.1 1 FOR_COMPREHENSION_LIST.2 nil unit nil}
       in
-         %% put PreLevel in dict at key 'PreLevel'
-         {PutDecl 'PreLevel' fProc(
-                                %% name
+         %% put PreLevel in TopLevelDeclsBuffer
+         {AddTopLevelDecl fProc(%% name
                                 NameVar
                                 %% arguments
                                 [ResultVar]
@@ -760,7 +753,7 @@ define
       fStepPoint(
          fLocal(
             %% all the declarations (levels and bounds)
-            {DeclareAllDict}
+            {GetTopLevelDecls}
             %% return the resulting list(s)
             fApply(PreLevelVar nil COORDS)
             %% LC position

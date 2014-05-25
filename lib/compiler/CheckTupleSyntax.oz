@@ -118,6 +118,10 @@ local
       [] fColonEquals(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fFOR(Ds B C) then {ForAll Ds ForDecl} {Phrase B} {Coord C}
       [] fWhile(E B C) then {Phrase E} {Phrase B} {Coord C}
+      [] fListComprehension(E Fs Bd C) then {ForAll E Phrase} {ForAll Fs Phrase} {Phrase Bd} {Coord C}
+      [] fForComprehensionLevel(RG CD C) then {ForDecl RG} {Phrase CD} {Coord C}
+      [] forExpression(E C) then {Phrase E} {Phrase C}
+      [] forRecord(F A R) then {Phrase F} {Phrase A} {Phrase R}
       else {FDExpression X}
       end
    end

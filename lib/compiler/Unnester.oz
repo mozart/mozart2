@@ -1,23 +1,26 @@
+%%% Copyright © 2011-2014, Université catholique de Louvain
+%%% All rights reserved.
 %%%
-%%% Author:
-%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+%%% Redistribution and use in source and binary forms, with or without
+%%% modification, are permitted provided that the following conditions are met:
 %%%
-%%% Copyright:
-%%%   Leif Kornstaedt, 1997
+%%% * Redistributions of source code must retain the above copyright notice,
+%%% this list of conditions and the following disclaimer.
+%%% * Redistributions in binary form must reproduce the above copyright notice,
+%%% this list of conditions and the following disclaimer in the documentation
+%%% and/or other materials provided with the distribution.
 %%%
-%%% Last change:
-%%%   $Date$ by $Author$
-%%%   $Revision$
-%%%
-%%% This file is part of Mozart, an implementation of Oz 3:
-%%%    http://www.mozart-oz.org
-%%%
-%%% See the file "LICENSE" or
-%%%    http://www.mozart-oz.org/LICENSE.html
-%%% for information on usage and redistribution
-%%% of this file, and for a DISCLAIMER OF ALL
-%%% WARRANTIES.
-%%%
+%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%% POSSIBILITY OF SUCH DAMAGE.
 
 %%
 %% This file defines the mixin class `Unnester' which transforms
@@ -57,6 +60,7 @@ import
    RunTime(procs makeVar)
    Macro(macroExpand:MacroExpand)
    ForLoop(compile)
+   ListComprehension(compile)
    WhileLoop(compile)
 export
    MakeExpressionQuery
@@ -1632,6 +1636,8 @@ define
             Unnester, UnnestStatement(FS $)
          [] fMacro(_ _) then
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
+         [] fListComprehension(_ _ _ _) then
+            Unnester, UnnestExpression({ListComprehension.compile FE} ToGV $)
          [] fFOR(_ _ _) then
             Unnester, UnnestExpression({ForLoop.compile FE} ToGV $)
          [] fDotAssign(Left Right C) then FApply in

@@ -25,6 +25,8 @@
 #ifndef MOZART_MODTIME_H
 #define MOZART_MODTIME_H
 
+#include <chrono>
+
 #include "../mozartcore.hh"
 
 #ifndef MOZART_GENERATOR
@@ -63,6 +65,18 @@ public:
 
     static void call(VM vm, Out result) {
       result = build(vm, vm->getReferenceTime());
+    }
+  };
+
+  class GetMonotonicTime: public Builtin<GetMonotonicTime> {
+  public:
+    GetMonotonicTime(): Builtin("getMonotonicTime") {}
+
+    static void call(VM vm, Out result) {
+      using namespace std::chrono;
+      auto now = steady_clock::now();
+      nanoseconds dur = duration_cast<nanoseconds>(now.time_since_epoch());
+      result = build(vm, dur.count());
     }
   };
 };

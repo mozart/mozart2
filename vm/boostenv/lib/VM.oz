@@ -53,7 +53,10 @@ define
          {Boot_VM.new App}
       end
    end
-   GetPort = Boot_VM.getPort
+   fun {GetPort VMIdent}
+      {Wait Pickle} % we need it for Send on VM ports
+      {Boot_VM.getPort VMIdent}
+   end
    IdentForPort = Boot_VM.identForPort
    GetStream = Boot_VM.getStream
    CloseStream = Boot_VM.closeStream
@@ -61,6 +64,4 @@ define
    Kill = Boot_VM.kill
    Monitor = Boot_VM.monitor
 
-   % Let's load Pickle since we need it for VM Ports
-   {Wait Pickle}
 end

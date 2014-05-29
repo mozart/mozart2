@@ -65,6 +65,23 @@ public:
       }
     }
   };
+
+  class Unpickle: public Builtin<Unpickle> {
+  public:
+    Unpickle(): Builtin("unpickle") {}
+
+    static void call(VM vm, In vbs, Out result) {
+      // VBS to vector<unsigned char>
+      size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
+      std::vector<unsigned char> buffer;
+      ozVBSGet(vm, vbs, bufSize, buffer);
+
+      // unpickle
+      std::string str(buffer.begin(), buffer.end());
+      std::istringstream input(str);
+      result = bootUnpickle(vm, input);
+    }
+  };
 };
 
 }

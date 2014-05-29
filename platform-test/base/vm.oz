@@ -34,6 +34,7 @@ define
 		   {Send P hello}
 		   S.1 = hello
 
+		   {Value.type P} = 'port'
 		   {Value.toVirtualString P 1 100} = '<Port>'
 
 		   try

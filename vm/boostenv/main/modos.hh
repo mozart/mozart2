@@ -132,7 +132,10 @@ public:
       {
         std::vector<char> varVector;
         ozVSGetNullTerminated(vm, var, bufSize, varVector);
-        value = std::getenv(varVector.data());
+
+        BoostEnvironment::forVM(vm).withProtectedEnvironmentVariables([&] {
+          value = std::getenv(varVector.data());
+        });
       }
 
       if (value == nullptr)
@@ -158,12 +161,14 @@ public:
         ozVSGetNullTerminated(vm, var, varBufSize, varVector);
         ozVSGetNullTerminated(vm, value, valueBufSize, valueVector);
 
+        BoostEnvironment::forVM(vm).withProtectedEnvironmentVariables([&] {
 #ifdef MOZART_WINDOWS
-        succeeded = SetEnvironmentVariable(varVector.data(),
+          succeeded = SetEnvironmentVariable(varVector.data(),
                                            valueVector.data()) != FALSE;
 #else
-        succeeded = setenv(varVector.data(), valueVector.data(), true) == 0;
+          succeeded = setenv(varVector.data(), valueVector.data(), true) == 0;
 #endif
+        });
       }
 
       if (!succeeded)

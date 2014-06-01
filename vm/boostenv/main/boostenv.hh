@@ -208,6 +208,11 @@ void BoostEnvironment::withSecondMemoryManager(const std::function<void(MemoryMa
   doGC(_secondMemoryManager);
 }
 
+void BoostEnvironment::withProtectedEnvironmentVariables(const std::function<void()>& operation) {
+  std::lock_guard<std::mutex> lock(_environmentVariablesMutex);
+  operation();
+}
+
 ///////////////
 // Utilities //
 ///////////////

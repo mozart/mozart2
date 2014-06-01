@@ -175,6 +175,12 @@ public:
     BoostVM::forVM(gc->vm).gCollect(gc);
   }
 
+// Unsafe process-wide operations
+
+public:
+  inline
+  void withProtectedEnvironmentVariables(const std::function<void()>& operation);
+
 // VMs
 private:
   std::forward_list<BoostVM> _vms;
@@ -188,6 +194,10 @@ private:
   BootLoader _bootLoader;
 public:
   VMStarter vmStarter;
+
+// Unsafe process-wide operations
+private:
+  std::mutex _environmentVariablesMutex;
 
 // ASIO service
 public:

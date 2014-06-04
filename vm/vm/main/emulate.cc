@@ -124,21 +124,34 @@ bool ThreadStack::findExceptionHandler(VM vm, StableNode*& abstraction,
 namespace {
   inline
   UnstableNode buildStackTraceItem(VM vm, StableNode* abstraction,
-                                   ProgramCounter PC) {
-    atom_t printName;
-    UnstableNode debugData;
-    Callable(*abstraction).getDebugInfo(vm, printName, debugData);
+                                   ProgramCounter PC,
+                                   StaticArray<StableNode>* kregs,
+                                   const DebugEntry& debugEntry) {
+    UnstableNode file;
+    UnstableNode line;
+    UnstableNode column;
+    UnstableNode kind;
 
-    UnstableNode kind = build(vm, "call");
     UnstableNode data = build(vm, *abstraction);
-
-    Dottable dotDebugData(debugData);
-    UnstableNode file = dotDebugData.condSelect(vm, "file",
-                                                vm->coreatoms.empty);
-    UnstableNode line = dotDebugData.condSelect(vm, "line", unit);
-    UnstableNode column = dotDebugData.condSelect(vm, "column", -1);
-
     UnstableNode PCNode = build(vm, reinterpret_cast<std::intptr_t>(PC));
+
+    if (debugEntry.valid && kregs) {
+      file.copy(vm, (*kregs)[debugEntry.fileIndex]);
+      line = build(vm, debugEntry.lineNumber);
+      column = build(vm, debugEntry.columnNumber);
+      kind.copy(vm, (*kregs)[debugEntry.kindIndex]);
+    } else {
+      atom_t printName;
+      UnstableNode debugData;
+      Callable(*abstraction).getDebugInfo(vm, printName, debugData);
+
+      kind = build(vm, "call");
+
+      Dottable dotDebugData(debugData);
+      file = dotDebugData.condSelect(vm, "file", vm->coreatoms.empty);
+      line = dotDebugData.condSelect(vm, "line", unit);
+      column = dotDebugData.condSelect(vm, "column", -1);
+    }
 
     return buildRecord(
       vm, buildArity(vm, "entry",
@@ -155,11 +168,14 @@ namespace {
 }
 
 UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
-                                          ProgramCounter PC) {
+                                          ProgramCounter PC,
+                                          StaticArray<StableNode>* kregs,
+                                          const DebugEntry& debugEntry) {
   OzListBuilder result(vm);
 
   if (abstraction != nullptr)
-    result.push_back(vm, buildStackTraceItem(vm, abstraction, PC));
+    result.push_back(vm, buildStackTraceItem(vm, abstraction, PC,
+                                             kregs, debugEntry));
 
   for (auto iter = begin(); iter != end(); ++iter) {
     StackEntry& entry = *iter;
@@ -168,7 +184,8 @@ UnstableNode ThreadStack::buildStackTrace(VM vm, StableNode* abstraction,
       abstraction = entry.abstraction;
       PC = entry.PC;
 
-      result.push_back(vm, buildStackTraceItem(vm, abstraction, PC));
+      result.push_back(vm, buildStackTraceItem(vm, abstraction, PC,
+                                               &entry.kregs, entry.debugEntry));
     }
   }
 
@@ -202,6 +219,7 @@ void Thread::constructor(VM vm, RichNode abstraction,
   size_t Xcount = 0;
   StaticArray<StableNode> Gs;
   StaticArray<StableNode> Ks;
+  DebugEntry debugEntry;
 
   doGetCallInfo(vm, abstraction, arity, start, Xcount, Gs, Ks);
 
@@ -215,7 +233,7 @@ void Thread::constructor(VM vm, RichNode abstraction,
   for (size_t i = 0; i < argc; i++)
     xregs[i].copy(vm, args[i]);
 
-  pushFrame(vm, abstraction.getStableRef(vm), start, 0, nullptr, Gs, Ks);
+  pushFrame(vm, abstraction.getStableRef(vm), start, 0, nullptr, Gs, Ks, debugEntry);
 
   injectedException = nullptr;
   _terminationVar.init(vm, OptVar::build(vm, getSpace()));
@@ -264,8 +282,9 @@ void Thread::run() {
   StaticArray<UnstableNode> yregs;
   StaticArray<StableNode> gregs;
   StaticArray<StableNode> kregs;
+  DebugEntry debugEntry;
 
-  popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+  popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs, debugEntry);
 
   getIntermediateState().rewind(vm);
 
@@ -310,6 +329,28 @@ void Thread::run() {
 
         case OpSkip:
           advancePC(0); break;
+
+        // DEBUG
+
+        case OpDebugEntry:
+        case OpDebugExit: {
+          debugEntry.valid = true;
+          debugEntry.fileIndex = IntPC(1);
+          debugEntry.lineNumber = IntPC(2);
+          debugEntry.columnNumber = IntPC(3);
+          debugEntry.kindIndex = IntPC(4);
+          advancePC(4);
+          break;
+        }
+
+        case OpLocalVarname:
+          advancePC(1); break;
+
+        case OpGlobalVarname:
+          advancePC(1); break;
+
+        case OpClearY:
+          advancePC(1); break;
 
         // MOVES
 
@@ -414,14 +455,14 @@ void Thread::run() {
           int distance = IntPC(1);
           advancePC(1);
 
-          stack.pushExceptionHandler(vm, PC);
+          stack.pushExceptionHandler(vm, PC, debugEntry);
 
           PC += distance;
           break;
         }
 
         case OpPopExceptionHandler: {
-          stack.popExceptionHandler(vm);
+          stack.popExceptionHandler(vm, debugEntry);
           advancePC(0);
           break;
         }
@@ -482,112 +523,112 @@ void Thread::run() {
         case OpCallX: {
           call(XPC(1), IntPC(2), false,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpCallY: {
           call(YPC(1), IntPC(2), false,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpCallG: {
           call(GPC(1), IntPC(2), false,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpCallK: {
           call(KPC(1), IntPC(2), false,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailCallX: {
           call(XPC(1), IntPC(2), true,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailCallY: {
           call(YPC(1), IntPC(2), true,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailCallG: {
           call(GPC(1), IntPC(2), true,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailCallK: {
           call(KPC(1), IntPC(2), true,
                vm, abstraction, PC, yregCount,
-               xregs, yregs, gregs, kregs, preempted);
+               xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpSendMsgX: {
           sendMsg(XPC(1), KPC(2), IntPC(3), false,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpSendMsgY: {
           sendMsg(YPC(1), KPC(2), IntPC(3), false,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpSendMsgG: {
           sendMsg(GPC(1), KPC(2), IntPC(3), false,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpSendMsgK: {
           sendMsg(KPC(1), KPC(2), IntPC(3), false,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailSendMsgX: {
           sendMsg(XPC(1), KPC(2), IntPC(3), true,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailSendMsgY: {
           sendMsg(YPC(1), KPC(2), IntPC(3), true,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailSendMsgG: {
           sendMsg(GPC(1), KPC(2), IntPC(3), true,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
         case OpTailSendMsgK: {
           sendMsg(KPC(1), KPC(2), IntPC(3), true,
                   vm, abstraction, PC, yregCount,
-                  xregs, yregs, gregs, kregs, preempted);
+                  xregs, yregs, gregs, kregs, debugEntry, preempted);
           break;
         }
 
@@ -600,7 +641,7 @@ void Thread::run() {
             break;
           }
 
-          popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+          popFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs, debugEntry);
 
           // Do NOT advancePC() here!
           break;
@@ -1129,25 +1170,29 @@ void Thread::run() {
     switch (kind) {
       case ExceptionKind::ekFail: {
         applyFail(vm, *node,
-                  abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+                  abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                  debugEntry);
         break;
       }
 
       case ExceptionKind::ekWaitBefore: {
         applyWaitBefore(vm, *node, false,
-                        abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+                        abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                        debugEntry);
         break;
       }
 
       case ExceptionKind::ekWaitQuietBefore: {
         applyWaitBefore(vm, *node, true,
-                        abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+                        abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                        debugEntry);
         break;
       }
 
       case ExceptionKind::ekRaise: {
         applyRaise(vm, *node,
-                   abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+                   abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                   debugEntry);
         break;
       }
     }
@@ -1163,22 +1208,25 @@ void Thread::run() {
     return;
 
   // Store the current state in the stack frame, for next invocation of run()
-  pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+  pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs, debugEntry);
 }
 
 void Thread::pushFrame(VM vm, StableNode* abstraction,
                        ProgramCounter PC, size_t yregCount,
                        StaticArray<UnstableNode> yregs,
                        StaticArray<StableNode> gregs,
-                       StaticArray<StableNode> kregs) {
-  stack.push_front_new(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+                       StaticArray<StableNode> kregs,
+                       const DebugEntry& debugEntry) {
+  stack.push_front_new(vm, abstraction, PC, yregCount, yregs, gregs, kregs,
+                       debugEntry);
 }
 
 void Thread::popFrame(VM vm, StableNode*& abstraction,
                       ProgramCounter& PC, size_t& yregCount,
                       StaticArray<UnstableNode>& yregs,
                       StaticArray<StableNode>& gregs,
-                      StaticArray<StableNode>& kregs) {
+                      StaticArray<StableNode>& kregs,
+                      DebugEntry& debugEntry) {
   StackEntry& entry = stack.front();
 
   assert(!entry.isExceptionHandler());
@@ -1189,6 +1237,7 @@ void Thread::popFrame(VM vm, StableNode*& abstraction,
   yregs = entry.yregs;
   gregs = entry.gregs;
   kregs = entry.kregs;
+  debugEntry = entry.debugEntry;
 
   stack.remove_front(vm);
 }
@@ -1200,6 +1249,7 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
                   StaticArray<UnstableNode>& yregs,
                   StaticArray<StableNode>& gregs,
                   StaticArray<StableNode>& kregs,
+                  const DebugEntry& debugEntry,
                   bool& preempted,
                   std::ptrdiff_t opcodeArgCount) {
   size_t formalArity = 0;
@@ -1231,7 +1281,7 @@ void Thread::call(RichNode target, size_t actualArity, bool isTailCall,
   StableNode* stableTarget = target.getStableRef(vm);
 
   if (!isTailCall) {
-    pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs);
+    pushFrame(vm, abstraction, PC, yregCount, yregs, gregs, kregs, debugEntry);
   } else {
     assert(stack.empty() || !stack.front().isExceptionHandler());
 
@@ -1262,6 +1312,7 @@ void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
                      StaticArray<UnstableNode>& yregs,
                      StaticArray<StableNode>& gregs,
                      StaticArray<StableNode>& kregs,
+                     const DebugEntry& debugEntry,
                      bool& preempted) {
   // "Just make it work" implementation that always delegates to call()
 
@@ -1304,7 +1355,7 @@ void Thread::sendMsg(RichNode target, RichNode labelOrArity, size_t width,
   (*xregs)[0] = std::move(message);
   call(target, 1, isTailCall,
        vm, abstraction, PC, yregCount,
-       xregs, yregs, gregs, kregs, preempted, 3);
+       xregs, yregs, gregs, kregs, debugEntry, preempted, 3);
 }
 
 void Thread::doGetCallInfo(VM vm, RichNode& target, size_t& arity,
@@ -1368,7 +1419,8 @@ void Thread::applyFail(VM vm, RichNode info,
                        XRegArray* xregs,
                        StaticArray<UnstableNode>& yregs,
                        StaticArray<StableNode>& gregs,
-                       StaticArray<StableNode>& kregs) {
+                       StaticArray<StableNode>& kregs,
+                       const DebugEntry& debugEntry) {
   if (!vm->isOnTopLevel()) {
     vm->getCurrentSpace()->fail(vm);
   } else {
@@ -1378,7 +1430,8 @@ void Thread::applyFail(VM vm, RichNode info,
       buildArity(vm, vm->coreatoms.failure, vm->coreatoms.debug), debug);
 
     applyRaise(vm, error,
-               abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+               abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+               debugEntry);
   }
 }
 
@@ -1388,21 +1441,24 @@ void Thread::applyWaitBefore(VM vm, RichNode waitee, bool isQuiet,
                              XRegArray* xregs,
                              StaticArray<UnstableNode>& yregs,
                              StaticArray<StableNode>& gregs,
-                             StaticArray<StableNode>& kregs) {
+                             StaticArray<StableNode>& kregs,
+                             const DebugEntry& debugEntry) {
   if (getRaiseOnBlock() && (waitee.is<OptVar>() || waitee.is<Variable>())) {
     UnstableNode error = buildRecord(
       vm, buildArity(vm, vm->coreatoms.error, 1, vm->coreatoms.debug),
       buildTuple(vm, vm->coreatoms.kernel, "block", waitee), unit);
 
     applyRaise(vm, error,
-               abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+               abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+               debugEntry);
     return;
   }
 
   if (!isQuiet) {
     if (waitee.is<FailedValue>()) {
       applyRaise(vm, *waitee.as<FailedValue>().getUnderlying(),
-                 abstraction, PC, yregCount, xregs, yregs, gregs, kregs);
+                 abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
+                 debugEntry);
       return;
     } else {
       DataflowVariable(waitee).markNeeded(vm);
@@ -1418,12 +1474,13 @@ void Thread::applyRaise(VM vm, RichNode exception,
                         XRegArray* xregs,
                         StaticArray<UnstableNode>& yregs,
                         StaticArray<StableNode>& gregs,
-                        StaticArray<StableNode>& kregs) {
+                        StaticArray<StableNode>& kregs,
+                        const DebugEntry& debugEntry) {
   // Discard any intermediate state
   getIntermediateState().reset(vm);
 
   UnstableNode preprocessedException = preprocessException(
-    vm, exception, abstraction, PC);
+    vm, exception, abstraction, PC, kregs, debugEntry);
 
   bool handlerFound = stack.findExceptionHandler(
     vm, abstraction, PC, yregCount, yregs, gregs, kregs);
@@ -1442,13 +1499,14 @@ void Thread::applyRaise(VM vm, RichNode exception,
       bool dummyPreempted = false;
       call(handler, 1, true,
            vm, abstraction, PC, yregCount, xregs, yregs, gregs, kregs,
-           dummyPreempted, -1);
+           debugEntry, dummyPreempted, -1);
     } else {
       // Uncaught exception
       std::cout << "Uncaught exception" << std::endl;
       std::cout << repr(vm, (*xregs)[0], 20, 20) << std::endl;
 
-      UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
+      UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC,
+                                                      &kregs, debugEntry);
       std::cout << repr(vm, stackTrace, 30, 20) << std::endl;
 
       terminate();
@@ -1458,7 +1516,9 @@ void Thread::applyRaise(VM vm, RichNode exception,
 
 UnstableNode Thread::preprocessException(VM vm, RichNode exception,
                                          StableNode* abstraction,
-                                         ProgramCounter PC) {
+                                         ProgramCounter PC,
+                                         StaticArray<StableNode>& kregs,
+                                         const DebugEntry& debugEntry) {
   if (!exception.is<Record>())
     return build(vm, exception);
 
@@ -1497,7 +1557,8 @@ UnstableNode Thread::preprocessException(VM vm, RichNode exception,
   auto destRecord = RichNode(result).as<Record>();
   for (size_t i = 0; i < width; i++) {
     if (i == debugFeatureIndex) {
-      UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC);
+      UnstableNode stackTrace = stack.buildStackTrace(vm, abstraction, PC,
+                                                      &kregs, debugEntry);
       UnstableNode debugField = buildRecord(
         vm, buildArity(vm, "d", "info", "stack"),
         info, std::move(stackTrace));
@@ -1543,7 +1604,8 @@ void Thread::terminate() {
 
 void Thread::dump() {
   std::cerr << "Thread " << this << ", runnable:" << isRunnable() << std::endl;
-  UnstableNode stackTrace = stack.buildStackTrace(vm, nullptr, nullptr);
+  DebugEntry debugEntry;
+  UnstableNode stackTrace = stack.buildStackTrace(vm, nullptr, nullptr, nullptr, debugEntry);
   std::cerr << repr(vm, stackTrace) << std::endl;
 }
 

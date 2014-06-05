@@ -33,6 +33,14 @@
 
 namespace mozart {
 
+struct DebugEntry {
+  size_t fileIndex; // index to kregs for the filename atom.
+  size_t lineNumber;
+  size_t columnNumber;
+  size_t kindIndex; // index to kregs for the kind atom.
+  bool valid = false;
+};
+
 /**
  * Entry of a thread stack
  */
@@ -40,14 +48,14 @@ struct StackEntry {
   /** Create a regular stack entry */
   StackEntry(StableNode* abstraction, ProgramCounter PC, size_t yregCount,
     StaticArray<UnstableNode> yregs, StaticArray<StableNode> gregs,
-    StaticArray<StableNode> kregs):
+    StaticArray<StableNode> kregs, const DebugEntry& debugEntry):
     abstraction(abstraction), PC(PC), yregCount(yregCount),
-    yregs(yregs), gregs(gregs), kregs(kregs) {}
+    yregs(yregs), gregs(gregs), kregs(kregs), debugEntry(debugEntry) {}
 
   /** Create a catch stack entry */
-  StackEntry(ProgramCounter PC):
+  StackEntry(ProgramCounter PC, const DebugEntry& debugEntry):
     abstraction(nullptr), PC(PC), yregCount(0),
-    yregs(nullptr), gregs(nullptr), kregs(nullptr) {}
+    yregs(nullptr), gregs(nullptr), kregs(nullptr), debugEntry(debugEntry) {}
 
   inline
   StackEntry(GR gr, StackEntry& from);
@@ -76,6 +84,9 @@ struct StackEntry {
 
   StaticArray<StableNode> gregs; // Irrelevant during GR
   StaticArray<StableNode> kregs; // Irrelevant during GR
+
+  // Debugging information
+  DebugEntry debugEntry;
 };
 
 /**
@@ -83,12 +94,13 @@ struct StackEntry {
  */
 class ThreadStack: public VMAllocatedList<StackEntry> {
 public:
-  void pushExceptionHandler(VM vm, ProgramCounter PC) {
-    push_front_new(vm, PC);
+  void pushExceptionHandler(VM vm, ProgramCounter PC, const DebugEntry& entry) {
+    push_front_new(vm, PC, entry);
   }
 
-  void popExceptionHandler(VM vm) {
+  void popExceptionHandler(VM vm, DebugEntry& entry) {
     assert(front().isExceptionHandler());
+    entry = front().debugEntry;
     remove_front(vm);
   }
 
@@ -101,7 +113,9 @@ public:
 
   inline
   UnstableNode buildStackTrace(VM vm, StableNode* abstraction,
-                               ProgramCounter PC);
+                               ProgramCounter PC,
+                               StaticArray<StableNode>* kregs,
+                               const DebugEntry& debugEntry);
 };
 
 class XRegArray {
@@ -240,14 +254,16 @@ private:
                  ProgramCounter PC, size_t yregCount,
                  StaticArray<UnstableNode> yregs,
                  StaticArray<StableNode> gregs,
-                 StaticArray<StableNode> kregs);
+                 StaticArray<StableNode> kregs,
+                 const DebugEntry& debugEntry);
 
   inline
   void popFrame(VM vm, StableNode*& abstraction,
                 ProgramCounter& PC, size_t& yregCount,
                 StaticArray<UnstableNode>& yregs,
                 StaticArray<StableNode>& gregs,
-                StaticArray<StableNode>& kregs);
+                StaticArray<StableNode>& kregs,
+                DebugEntry& debugEntry);
 
   void call(RichNode target, size_t actualArity, bool isTailCall,
             VM vm, StableNode*& abstraction,
@@ -256,6 +272,7 @@ private:
             StaticArray<UnstableNode>& yregs,
             StaticArray<StableNode>& gregs,
             StaticArray<StableNode>& kregs,
+            const DebugEntry& debugEntry,
             bool& preempted,
             std::ptrdiff_t opcodeArgCount = 2);
 
@@ -267,6 +284,7 @@ private:
                StaticArray<UnstableNode>& yregs,
                StaticArray<StableNode>& gregs,
                StaticArray<StableNode>& kregs,
+               const DebugEntry& debugEntry,
                bool& preempted);
 
   inline
@@ -293,7 +311,8 @@ private:
                  XRegArray* xregs,
                  StaticArray<UnstableNode>& yregs,
                  StaticArray<StableNode>& gregs,
-                 StaticArray<StableNode>& kregs);
+                 StaticArray<StableNode>& kregs,
+                 const DebugEntry& debugEntry);
 
   void applyWaitBefore(VM vm, RichNode waitee, bool isQuiet,
                        StableNode*& abstraction,
@@ -301,7 +320,8 @@ private:
                        XRegArray* xregs,
                        StaticArray<UnstableNode>& yregs,
                        StaticArray<StableNode>& gregs,
-                       StaticArray<StableNode>& kregs);
+                       StaticArray<StableNode>& kregs,
+                       const DebugEntry& debugEntry);
 
   void applyRaise(VM vm, RichNode exception,
                   StableNode*& abstraction,
@@ -309,11 +329,14 @@ private:
                   XRegArray* xregs,
                   StaticArray<UnstableNode>& yregs,
                   StaticArray<StableNode>& gregs,
-                  StaticArray<StableNode>& kregs);
+                  StaticArray<StableNode>& kregs,
+                  const DebugEntry& debugEntry);
 
   UnstableNode preprocessException(VM vm, RichNode exception,
                                    StableNode* abstraction,
-                                   ProgramCounter PC);
+                                   ProgramCounter PC,
+                                   StaticArray<StableNode>& kregs,
+                                   const DebugEntry& debugEntry);
 
   XRegArray xregs;
   ThreadStack stack;

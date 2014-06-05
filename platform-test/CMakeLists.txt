@@ -28,6 +28,16 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bench")
 foreach(FUNCTOR ${BENCH_FUNCTORS})
   set(BENCH_FUNCTORS_OZ ${BENCH_FUNCTORS_OZ} "/bench/${FUNCTOR}")
 endforeach()
+
+# debug folder
+set(DEBUG_FUNCTORS
+    "stacktrace_line_num.oz"
+)
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/debug")
+foreach(FUNCTOR ${DEBUG_FUNCTORS})
+  set(DEBUG_FUNCTORS_OZ ${DEBUG_FUNCTORS_OZ} "/debug/${FUNCTOR}")
+endforeach()
+
 # dp folder
 set(DP_FUNCTORS
     #"basicfault.oz"
@@ -151,6 +161,21 @@ foreach(FUNCTOR ${TEST_FUNCTORS_WITH_LIB})
         COMMENT "(compiling platform-test) ${FUNCTOR_OZF}"
         VERBATIM)
 endforeach()
+foreach(FUNCTOR ${DEBUG_FUNCTORS_OZ})
+    set(FUNCTOR_OZ "${CMAKE_CURRENT_SOURCE_DIR}${FUNCTOR}")
+    set(FUNCTOR_OZF "${CMAKE_CURRENT_BINARY_DIR}${FUNCTOR}f")
+    set(TEST_FUNCTORS_OZF ${TEST_FUNCTORS_OZF} "${FUNCTOR_OZF}")
+    add_custom_command(
+        OUTPUT "${FUNCTOR_OZF}"
+        COMMAND ozemulator
+            --home "${MOZART_BUILD_DIR}"
+            x-oz://system/Compile.ozf
+            -g -c "${FUNCTOR_OZ}"
+            -o "${FUNCTOR_OZF}"
+        DEPENDS library "${FUNCTOR_OZ}"
+        COMMENT "(compiling platform-test) ${FUNCTOR_OZF}"
+        VERBATIM)
+endforeach()
 set(RUNNER "/simple_runner.oz")
 set(RUNNER_OZ "${CMAKE_CURRENT_SOURCE_DIR}${RUNNER}")
 set(RUNNER_OZF "${CMAKE_CURRENT_BINARY_DIR}${RUNNER}f")
@@ -174,7 +199,7 @@ if(BUILD_TESTING)
     add_test("vmtest" "${CMAKE_CURRENT_BINARY_DIR}/../vm/vm/test/vmtest")
     # running tests in platform-test
     set(OZEMULATOR "${CMAKE_CURRENT_BINARY_DIR}/../boosthost/emulator/ozemulator")
-    foreach(FUNCTOR ${TEST_FUNCTORS})
+    foreach(FUNCTOR ${TEST_FUNCTORS} ${DEBUG_FUNCTORS_OZ})
         set(FUNCTOR_OZF "${CMAKE_CURRENT_BINARY_DIR}${FUNCTOR}f")
         set(TEST_FUNCTORS_OZF ${TEST_FUNCTORS_OZF} "${FUNCTOR_OZF}")
         add_test(${FUNCTOR} ${OZEMULATOR} --home "${MOZART_BUILD_DIR}" "${RUNNER_OZF}" "${FUNCTOR_OZF}")

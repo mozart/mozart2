@@ -151,6 +151,12 @@ define
       arrayFillNewVars: 6
 
       inlineEqualsInteger: 0x80
+
+      debugEntry: 0xa0
+      debugExit: 0xa1
+      localVarname: 0xa2
+      globalVarname: 0xa3
+      clearY: 0xa4
    )
 
    fun {GetInstrSize Instr}
@@ -281,6 +287,11 @@ define
       [] arrayFillNewVar(S=y(_)) then arrayFillNewVarY(S)
 
       [] custom(...) then Instr
+      [] debugEntry(Filename Line Column Kind) then debugEntry(k(Filename) Line Column k(Kind))
+      [] debugExit(Filename Line Column Kind) then debugExit(k(Filename) Line Column k(Kind))
+      [] localVarname(Name) then localVarname(k(Name))
+      [] globalVarname(Name) then globalVarname(k(Name))
+      [] clear(R=y(_)) then clearY(R)
 
       else
          if {Not {HasFeature OpCodeTable {Label Instr}}} then

@@ -82,8 +82,10 @@ public:
       case 18: return readUniqueNameValue();
       case 19: return readNameValue();
       case 20: return readNamedNameValue();
+      case 21: return readUnicodeStringValue();
       default: {
         assert(false && "invalid value kind");
+        std::cerr << "Invalid kind met while unpickling: " << (int)(kind) << std::endl;
         std::abort();
       }
     }
@@ -278,6 +280,10 @@ private:
       [this] () {
       }
     );
+  }
+
+  UnstableNode readUnicodeStringValue() {
+    return String::build(vm, newLString(vm, readString()));
   }
 
   template <typename F, typename G>

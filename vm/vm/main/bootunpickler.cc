@@ -278,6 +278,7 @@ private:
         return result;
       },
       [this] () {
+        readString();
       }
     );
   }

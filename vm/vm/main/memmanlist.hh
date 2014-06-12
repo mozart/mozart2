@@ -220,6 +220,8 @@ public:
     first = last = nullptr;
   }
 
+  // Follows STL's erase() semantics: the given iterator is invalidated
+  // and the returned iterator points to the next element.
   removable_iterator remove(MM mm, removable_iterator iterator) {
     ListNode* node = iterator.node;
     internalRemove(iterator);
@@ -233,7 +235,7 @@ public:
   }
 
   void remove_after(MM mm, iterator iter) {
-    remove(removable_iterator(iter.node->next, iter.node));
+    remove(mm, removable_iterator(iter.node->next, iter.node));
   }
 
   void remove_after(MM mm, iterator first, iterator last) {

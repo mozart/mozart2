@@ -50,12 +50,6 @@ public:
   void pickle(RichNode value);
 
 private:
-  UnstableNode buildStatelessArity();
-
-  bool isFuture(RichNode node) {
-    return node.is<ReadOnly>() || node.is<ReadOnlyVariable>();
-  }
-
   void writeValues(VMAllocatedList<PickleNode>& nodes);
   void writeArities(VMAllocatedList<PickleNode>& nodes);
   void writeOthers(VMAllocatedList<PickleNode>& nodes);
@@ -84,6 +78,13 @@ private:
     writeSize(size);
     output.seekp(end);
   }
+
+private:
+  bool isFuture(RichNode node) {
+    return node.is<ReadOnly>() || node.is<ReadOnlyVariable>();
+  }
+
+  UnstableNode buildStatelessArity();
 
 private:
   VM vm;

@@ -30,14 +30,14 @@ namespace mozart {
 // Pickler //
 /////////////
 
-void Pickler::pickle() {
+void Pickler::pickle(RichNode value) {
   // TODO: deduplication of arities & builtins
   UnstableNode statelessArity = buildStatelessArity();
   auto statelessTypes = RichNode(statelessArity).as<Arity>();
 
   SerializationCallback cb(vm);
   UnstableNode topLevelIndex = OptVar::build(vm);
-  cb.copy(topLevelIndex, topLevelValue);
+  cb.copy(topLevelIndex, value);
 
   bool futures = false;
   nativeint count = 0;

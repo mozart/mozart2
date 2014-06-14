@@ -44,10 +44,10 @@ private:
   };
 
 public:
-  Pickler(VM vm, RichNode value, std::ostream& output):
-    vm(vm), topLevelValue(value), output(output) {}
+  Pickler(VM vm, std::ostream& output):
+    vm(vm), output(output) {}
 
-  void pickle();
+  void pickle(RichNode value);
 
 private:
   UnstableNode buildStatelessArity();
@@ -87,7 +87,6 @@ private:
 
 private:
   VM vm;
-  RichNode topLevelValue;
   std::ostream& output;
   StaticArray<nativeint> redirections;
 };
@@ -98,8 +97,7 @@ private:
 
 inline
 void pickle(VM vm, RichNode value, std::ostream& output) {
-  Pickler pickler(vm, value, output);
-  pickler.pickle();
+  Pickler(vm, output).pickle(value);
 }
 
 }

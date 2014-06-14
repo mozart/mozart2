@@ -28,7 +28,6 @@
 #include <mozart.hh>
 
 #include <atomic>
-#include <mutex>
 
 #include <boost/thread.hpp>
 
@@ -172,7 +171,7 @@ private:
 // Monitors
 private:
   std::vector<VMIdentifier> _monitors;
-  std::mutex _monitorsMutex;
+  boost::mutex _monitorsMutex;
 
 // Termination
 private:

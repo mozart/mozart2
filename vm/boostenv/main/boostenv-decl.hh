@@ -31,7 +31,6 @@
 #include <cstdio>
 #include <cerrno>
 #include <forward_list>
-#include <mutex>
 
 #include <boost/thread.hpp>
 
@@ -184,10 +183,10 @@ public:
 // VMs
 private:
   std::forward_list<BoostVM> _vms;
-  std::mutex _vmsMutex;
+  boost::mutex _vmsMutex;
   std::atomic_int _nextVMIdentifier;
   std::atomic_int _exitCode;
-  std::mutex _gcMutex;
+  boost::mutex _gcMutex;
 
 // Bootstrap
 private:
@@ -197,7 +196,7 @@ public:
 
 // Unsafe process-wide operations
 private:
-  std::mutex _environmentVariablesMutex;
+  boost::mutex _environmentVariablesMutex;
 
 // ASIO service
 public:

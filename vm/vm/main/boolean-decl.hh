@@ -41,7 +41,7 @@ public:
   constexpr static UUID uuid = "{ce34f46e-4751-4f2d-b6fd-0522198a4810}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("name"); // compatibility with Mozart 1.4.0
+    return vm->coreatoms.name; // compatibility with Mozart 1.4.0
   }
 
   explicit Boolean(bool value) : _value(value) {}

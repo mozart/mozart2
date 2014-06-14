@@ -48,6 +48,7 @@ public:
 
 private:
   friend class Serializer;
+  friend class Pickler;
 
   VM vm;
   VMAllocatedList<RichNode> todoFrom;

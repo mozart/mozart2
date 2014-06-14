@@ -113,7 +113,7 @@ UnstableNode CodeArea::serialize(VM vm, SE se) {
     }
   }
 
-  UnstableNode result = buildTuple(vm, "codearea",
+  UnstableNode result = buildTuple(vm, vm->coreatoms.codearea,
                                    std::move(block), _arity, _Xcount,
                                    std::move(Ks), _printName, OptVar::build(vm));
 

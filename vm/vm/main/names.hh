@@ -118,7 +118,7 @@ atom_t NamedName::getPrintName(VM vm) {
 }
 
 UnstableNode NamedName::serialize(VM vm, SE se) {
-  return buildTuple(vm, "namedname", _printName);
+  return buildTuple(vm, vm->coreatoms.namedname, _printName);
 }
 
 GlobalNode* NamedName::globalize(RichNode self, VM vm) {
@@ -153,7 +153,7 @@ atom_t UniqueName::getPrintName(VM vm) {
 }
 
 UnstableNode UniqueName::serialize(VM vm, SE se) {
-  return buildTuple(vm, "uniquename", atom_t(value()));
+  return buildTuple(vm, vm->coreatoms.uniquename, atom_t(value()));
 }
 
 void UniqueName::printReprToStream(VM vm, std::ostream& out,

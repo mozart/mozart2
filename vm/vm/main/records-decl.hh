@@ -95,7 +95,7 @@ class Tuple: public DataType<Tuple>, public BaseRecord<Tuple>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("tuple");
+    return vm->coreatoms.tuple;
   }
 
   template <typename L>
@@ -184,7 +184,7 @@ class Cons: public DataType<Cons>, public IntegerDottableHelper<Cons>,
   WithStructuralBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("tuple");
+    return vm->coreatoms.tuple;
   }
 
   template <typename Head, typename Tail,
@@ -293,7 +293,7 @@ class Arity: public DataType<Arity>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("arity");
+    return vm->coreatoms.arity;
   }
 
   template <typename L>
@@ -366,7 +366,7 @@ class Record: public DataType<Record>, public BaseRecord<Record>,
   StoredWithArrayOf<StableNode>, WithStructuralBehavior {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("record");
+    return vm->coreatoms.record;
   }
 
   template <typename A>
@@ -450,7 +450,7 @@ private:
 class Chunk: public DataType<Chunk>, StoredAs<StableNode*> {
 public:
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("chunk");
+    return vm->coreatoms.chunk;
   }
 
   explicit Chunk(StableNode* underlying): _underlying(underlying) {}

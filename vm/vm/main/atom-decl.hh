@@ -44,7 +44,7 @@ public:
   static constexpr UUID uuid = "{55ed333b-1eaf-4c8a-a151-626d3f96efe8}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("atom");
+    return vm->coreatoms.atom;
   }
 
   explicit Atom(atom_t value) : _value(value) {}

@@ -66,6 +66,20 @@ public:
     }
   };
 
+  class Pickle: public Builtin<Pickle> {
+  public:
+    Pickle(): Builtin("pickle") {}
+
+    static void call(VM vm, In value, Out result) {
+      std::ostringstream buf;
+      pickle(vm, value, buf);
+      std::string str = buf.str();
+      auto bytes = newLString(vm,
+        reinterpret_cast<const unsigned char*>(str.data()), str.size());
+      result = ByteString::build(vm, bytes);
+    }
+  };
+
   class Unpickle: public Builtin<Unpickle> {
   public:
     Unpickle(): Builtin("unpickle") {}

@@ -36,6 +36,7 @@
 #include "exchelpers-decl.hh"
 #include "matchdsl.hh"
 #include "ozcalls-decl.hh"
+#include "pickler.hh"
 #include "utils-decl.hh"
 
 #endif // MOZART_MOZARTCORE_H

@@ -39,7 +39,7 @@ public:
   static constexpr UUID uuid = "{00000000-0000-9e00-0000-000000000002}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("int");
+    return vm->coreatoms.int_;
   }
 
   template <class T>

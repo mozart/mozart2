@@ -1,4 +1,4 @@
-// Copyright © 2011, Université catholique de Louvain
+// Copyright © 2014, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,44 +22,70 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_BOOLEAN_H
-#define MOZART_BOOLEAN_H
+#ifndef MOZART_PICKLER_H
+#define MOZART_PICKLER_H
 
 #include "mozartcore.hh"
 
-#ifndef MOZART_GENERATOR
+#include <ostream>
 
 namespace mozart {
 
 /////////////
-// Boolean //
+// Pickler //
 /////////////
 
-#include "Boolean-implem.hh"
+class Pickler {
+public:
+  Pickler(VM vm, RichNode value, std::ostream& output):
+    vm(vm), topLevelValue(value), output(output) {}
 
-void Boolean::create(bool& self, VM vm, GR gr, Boolean from) {
-  self = from.value();
+  void pickle();
+
+private:
+  UnstableNode buildStatelessArity();
+
+  bool isFuture(RichNode node) {
+    return node.is<ReadOnly>() || node.is<ReadOnlyVariable>();
+  }
+
+  void writeValue(nativeint index, RichNode node, RichNode refs);
+  void writeByte(unsigned char byte);
+  void writeSize(nativeint size);
+  void writeSize(RichNode ref);
+  void writeRef(RichNode ref);
+  void writeNRefs(RichNode refs, size_t n);
+  void writeRefs(RichNode refs);
+  void writeRefsLastFirst(RichNode refsTuple);
+  void writeAtom(RichNode atom);
+  void writeUUIDOf(RichNode node);
+
+  template <class T>
+  void writeAsStr(T value) {
+    nativeint size = 0; // not yet known
+    auto pos = output.tellp();
+    writeSize(size);
+    auto bef = output.tellp();
+    output << value;
+    auto end = output.tellp();
+    size = (end - bef);
+    output.seekp(pos);
+    writeSize(size);
+    output.seekp(end);
+  }
+
+private:
+  VM vm;
+  RichNode topLevelValue;
+  std::ostream& output;
+};
+
+/////////////////
+// Entry point //
+/////////////////
+
+void pickle(VM vm, RichNode value, std::ostream& output);
+
 }
 
-bool Boolean::equals(VM vm, RichNode right) {
-  return value() == right.as<Boolean>().value();
-}
-
-int Boolean::compareFeatures(VM vm, RichNode right) {
-  if (value() == right.as<Boolean>().value())
-    return 0;
-  else if (value())
-    return 1;
-  else
-    return -1;
-}
-
-UnstableNode Boolean::serialize(VM vm, SE se) {
-  return buildTuple(vm, vm->coreatoms.bool_, value());
-}
-
-}
-
-#endif // MOZART_GENERATOR
-
-#endif // MOZART_BOOLEAN_H
+#endif // MOZART_PICKLER_H

@@ -293,12 +293,12 @@ UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, const std::str
 }
 
 void BoostVM::addMonitor(VMIdentifier monitor) {
-  boost::lock_guard<std::mutex> lock(_monitorsMutex);
+  boost::lock_guard<boost::mutex> lock(_monitorsMutex);
   _monitors.push_back(monitor);
 }
 
 void BoostVM::notifyMonitors() {
-  std::lock_guard<std::mutex> lock(_monitorsMutex);
+  boost::lock_guard<boost::mutex> lock(_monitorsMutex);
   VMIdentifier deadVM = this->identifier;
   std::string reason = this->_terminationReason;
   for (VMIdentifier identifier : _monitors) {

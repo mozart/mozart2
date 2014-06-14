@@ -126,7 +126,7 @@ BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
 VMIdentifier BoostEnvironment::addVM(VMIdentifier parent,
                                      std::unique_ptr<std::string>&& app, bool isURL,
                                      VirtualMachineOptions options) {
-  std::lock_guard<std::mutex> lock(_vmsMutex);
+  boost::lock_guard<boost::mutex> lock(_vmsMutex);
   _vms.emplace_front(*this, parent, _nextVMIdentifier++, options, std::move(app), isURL);
   return _vms.front().identifier;
 }
@@ -146,7 +146,7 @@ VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier
    Returns whether it found the VM represented by identifier. */
 bool BoostEnvironment::findVM(VMIdentifier identifier,
                               std::function<void(BoostVM& boostVM)> onSuccess) {
-  std::lock_guard<std::mutex> lock(_vmsMutex);
+  boost::lock_guard<boost::mutex> lock(_vmsMutex);
   for (BoostVM& vm : _vms) {
     if (vm.identifier == identifier) {
       onSuccess(vm);
@@ -157,7 +157,7 @@ bool BoostEnvironment::findVM(VMIdentifier identifier,
 }
 
 UnstableNode BoostEnvironment::listVMs(VM vm) {
-  std::lock_guard<std::mutex> lock(_vmsMutex);
+  boost::lock_guard<boost::mutex> lock(_vmsMutex);
   UnstableNode list = buildList(vm);
   for (BoostVM& boostVM : _vms)
     list = buildCons(vm, build(vm, boostVM.identifier), list);
@@ -174,7 +174,7 @@ void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
 void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
                                           nativeint exitCode,
                                           boost::asio::io_service::work* work) {
-  std::lock_guard<std::mutex> lock(_vmsMutex);
+  boost::lock_guard<boost::mutex> lock(_vmsMutex);
 
   // Warning: the BoostVM is calling its own destructor with remove_if().
   // We also need VirtualMachine destructor to do its cleanup before dying.
@@ -204,12 +204,12 @@ int BoostEnvironment::runIO() {
 void BoostEnvironment::withSecondMemoryManager(const std::function<void(MemoryManager&)>& doGC) {
   // Disallow concurrent GCs, so only one has access to the second MemoryManager
   // at a time and we have a much lower maximal memory footprint.
-  std::lock_guard<std::mutex> lock(_gcMutex);
+  boost::lock_guard<boost::mutex> lock(_gcMutex);
   doGC(_secondMemoryManager);
 }
 
 void BoostEnvironment::withProtectedEnvironmentVariables(const std::function<void()>& operation) {
-  std::lock_guard<std::mutex> lock(_environmentVariablesMutex);
+  boost::lock_guard<boost::mutex> lock(_environmentVariablesMutex);
   operation();
 }
 

@@ -27,9 +27,6 @@ functor
 require
    Boot_VM at 'x-oz://boot/VM'
 
-import
-   Pickle % used for VM ports
-
 export
    Ncores
    Current
@@ -46,17 +43,8 @@ define
 
    Ncores = Boot_VM.ncores
    Current = Boot_VM.current
-   fun {New App}
-      if {Functor.is App} then
-         {Boot_VM.new {Pickle.pack App}}
-      else
-         {Boot_VM.new App}
-      end
-   end
-   fun {GetPort VMIdent}
-      {Wait Pickle} % we need it for Send on VM ports
-      {Boot_VM.getPort VMIdent}
-   end
+   New = Boot_VM.new
+   GetPort = Boot_VM.getPort
    IdentForPort = Boot_VM.identForPort
    GetStream = Boot_VM.getStream
    CloseStream = Boot_VM.closeStream

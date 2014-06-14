@@ -73,18 +73,18 @@ public:
     static void call(VM vm, In app, Out result) {
       using namespace mozart::patternmatching;
 
-      VMIdentifier parent = BoostVM::forVM(vm).identifier;
       atom_t appURL;
-      std::unique_ptr<std::string> appStr(new std::string());
       bool isURL = matches(vm, app, capture(appURL));
 
+      VMIdentifier parent = BoostVM::forVM(vm).identifier;
+      std::unique_ptr<std::string> appStr; // use heap to transfer between VMs
+
       if (isURL) {
-        appStr->assign(appURL.contents());
+        appStr.reset(new std::string(appURL.contents()));
       } else { // app is a pickled functor
-        size_t bufSize = ozVBSLengthForBuffer(vm, app);
-        std::vector<unsigned char> buffer;
-        ozVBSGet(vm, app, bufSize, buffer);
-        appStr->assign(buffer.begin(), buffer.end());
+        std::ostringstream out;
+        pickle(vm, app, out);
+        appStr.reset(new std::string(out.str()));
       }
 
       // inherit memory settings

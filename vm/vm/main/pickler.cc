@@ -26,20 +26,12 @@
 
 namespace mozart {
 
-namespace {
-  struct PickleNode {
-    nativeint index;
-    RichNode node;
-    StableNode* refs;
-  };
-} // namespace <anonymous>
-
 /////////////
 // Pickler //
 /////////////
 
 void Pickler::pickle() {
-  // TODO: deduplication of features & arities & builtins
+  // TODO: deduplication of arities & builtins
   UnstableNode statelessArity = buildStatelessArity();
   auto statelessTypes = RichNode(statelessArity).as<Arity>();
 
@@ -50,7 +42,7 @@ void Pickler::pickle() {
   bool futures = false;
   nativeint count = 0;
   VMAllocatedList<NodeBackup> nodeBackups;
-  VMAllocatedList<struct PickleNode> nodes;
+  VMAllocatedList<PickleNode> nodes;
   UnstableNode resources = buildNil(vm);
 
   // Replace serialized nodes by Serialized(index)
@@ -117,14 +109,40 @@ void Pickler::pickle() {
         buildSharp(vm, "Filename", "UNKNOWN FILENAME")));
   }
 
+  // header
   writeSize(count);
   writeSize(topLevelIndex);
 
+  redirections = vm->newStaticArray<nativeint>(count+1);
+  for (nativeint i = 1; i <= count; i++)
+    redirections[(size_t) i] = i;
+
+  writeValues(nodes);
+  writeArities(nodes);
+  writeOthers(nodes);
+
+  vm->deleteStaticArray(redirections, count+1);
+
+  nativeint eof = 0;
+  writeSize(eof);
+}
+
+void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
+  NodeDictionary existingFeatures;
   auto iter = nodes.removable_begin();
   auto end = nodes.removable_end();
+
   while (iter != end) {
-    if (iter->node.type().getStructuralBehavior() == sbValue ||
-        Literal(iter->node).isLiteral(vm)) {
+    if (iter->node.isFeature()) {
+      UnstableNode* redir = nullptr;
+      if (existingFeatures.lookupOrCreate(vm, iter->node, redir)) {
+        redirections[(size_t) iter->index] = RichNode(*redir).as<SmallInt>().value();
+      } else {
+        writeValue(iter->index, iter->node, *iter->refs);
+        redir->copy(vm, build(vm, iter->index));
+      }
+      iter = nodes.remove(vm, iter);
+    } else if (iter->node.type().getStructuralBehavior() == sbValue) {
       writeValue(iter->index, iter->node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else {
@@ -132,8 +150,12 @@ void Pickler::pickle() {
     }
   }
 
-  iter = nodes.removable_begin();
-  end = nodes.removable_end();
+  existingFeatures.removeAll(vm);
+}
+
+void Pickler::writeArities(VMAllocatedList<PickleNode>& nodes) {
+  auto iter = nodes.removable_begin();
+  auto end = nodes.removable_end();
   while (iter != end) {
     if (iter->node.is<Arity>()) {
       writeValue(iter->index, iter->node, *iter->refs);
@@ -142,15 +164,14 @@ void Pickler::pickle() {
       ++iter;
     }
   }
+}
 
+void Pickler::writeOthers(VMAllocatedList<PickleNode>& nodes) {
   while (!nodes.empty()) {
     auto& pickleNode = nodes.front();
     writeValue(pickleNode.index, pickleNode.node, *pickleNode.refs);
     nodes.remove_front(vm);
   }
-
-  nativeint eof = 0;
-  writeSize(eof);
 }
 
 void Pickler::writeValue(nativeint index, RichNode node, RichNode refsTuple) {
@@ -285,7 +306,7 @@ void Pickler::writeSize(RichNode size) {
 }
 
 void Pickler::writeRef(RichNode ref) {
-  writeSize(ref.as<SmallInt>().value());
+  writeSize(redirections[(size_t) ref.as<SmallInt>().value()]);
 }
 
 void Pickler::writeNRefs(RichNode refs, size_t n) {

@@ -36,6 +36,13 @@ namespace mozart {
 /////////////
 
 class Pickler {
+private:
+  struct PickleNode {
+    nativeint index;
+    RichNode node;
+    StableNode* refs;
+  };
+
 public:
   Pickler(VM vm, RichNode value, std::ostream& output):
     vm(vm), topLevelValue(value), output(output) {}
@@ -48,6 +55,10 @@ private:
   bool isFuture(RichNode node) {
     return node.is<ReadOnly>() || node.is<ReadOnlyVariable>();
   }
+
+  void writeValues(VMAllocatedList<PickleNode>& nodes);
+  void writeArities(VMAllocatedList<PickleNode>& nodes);
+  void writeOthers(VMAllocatedList<PickleNode>& nodes);
 
   void writeValue(nativeint index, RichNode node, RichNode refs);
   void writeByte(unsigned char byte);
@@ -78,6 +89,7 @@ private:
   VM vm;
   RichNode topLevelValue;
   std::ostream& output;
+  StaticArray<nativeint> redirections;
 };
 
 /////////////////

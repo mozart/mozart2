@@ -344,13 +344,4 @@ UnstableNode Pickler::buildStatelessArity() {
   );
 }
 
-/////////////////
-// Entry point //
-/////////////////
-
-void pickle(VM vm, RichNode value, std::ostream& output) {
-  Pickler pickler(vm, value, output);
-  pickler.pickle();
-}
-
 } // namespace mozart

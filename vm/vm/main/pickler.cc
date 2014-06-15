@@ -31,7 +31,7 @@ namespace mozart {
 /////////////
 
 void Pickler::pickle(RichNode value) {
-  // TODO: deduplication of arities & builtins
+  // TODO: deduplication of builtins
   UnstableNode statelessArity = buildStatelessArity();
   auto statelessTypes = RichNode(statelessArity).as<Arity>();
 
@@ -154,16 +154,44 @@ void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
 }
 
 void Pickler::writeArities(VMAllocatedList<PickleNode>& nodes) {
+  using namespace patternmatching;
+
+  NodeDictionary existingsArities;
   auto iter = nodes.removable_begin();
   auto end = nodes.removable_end();
+
   while (iter != end) {
     if (iter->node.is<Arity>()) {
-      writeValue(iter->index, iter->node, *iter->refs);
+      auto refs = RichNode(*iter->refs).as<Tuple>();
+      RichNode ref = *refs.getElement(refs.getWidth()-1);
+      UnstableNode labelRef = build(vm, redirections[(size_t) ref.as<SmallInt>().value()]);
+
+      UnstableNode* redir = nullptr;
+      if (existingsArities.lookupOrCreate(vm, labelRef, redir)) {
+        RichNode head, tail, list = *redir;
+        while (matchesCons(vm, list, capture(head), capture(tail))) {
+          RichNode index;
+          if (matchesSharp(vm, head, capture(index), iter->node)) {
+            redirections[(size_t) iter->index] = index.as<SmallInt>().value();
+            break;
+          }
+          list = tail;
+        }
+        if (matches(vm, list, vm->coreatoms.nil)) { // not found
+          writeValue(iter->index, iter->node, *iter->refs);
+          redir->copy(vm, buildCons(vm, buildSharp(vm, iter->index, iter->node), std::move(*redir)));
+        }
+      } else {
+        writeValue(iter->index, iter->node, *iter->refs);
+        redir->copy(vm, buildList(vm, buildSharp(vm, iter->index, iter->node)));
+      }
       iter = nodes.remove(vm, iter);
     } else {
       ++iter;
     }
   }
+
+  existingsArities.removeAll(vm);
 }
 
 void Pickler::writeOthers(VMAllocatedList<PickleNode>& nodes) {

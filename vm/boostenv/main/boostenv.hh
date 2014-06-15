@@ -174,13 +174,15 @@ void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
 void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
                                           nativeint exitCode,
                                           boost::asio::io_service::work* work) {
-  boost::lock_guard<boost::mutex> lock(_vmsMutex);
+  {
+    boost::lock_guard<boost::mutex> lock(_vmsMutex);
 
-  // Warning: the BoostVM is calling its own destructor with remove_if().
-  // We also need VirtualMachine destructor to do its cleanup before dying.
-  _vms.remove_if([=] (const BoostVM& vm) {
-    return vm.identifier == identifier;
-  });
+    // Warning: the BoostVM is calling its own destructor with remove_if().
+    // We also need VirtualMachine destructor to do its cleanup before dying.
+    _vms.remove_if([=] (const BoostVM& vm) {
+      return vm.identifier == identifier;
+    });
+  }
 
   if (identifier == InitialVMIdentifier) // only the exitCode of the initial VM is considered
     _exitCode = exitCode;

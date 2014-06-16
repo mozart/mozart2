@@ -61,7 +61,7 @@ private:
   bool findArity(NodeDictionary& existingsArities,
                  nativeint index, RichNode node, RichNode refsTuple);
 
-  void writeValue(nativeint index, RichNode node, RichNode refs);
+  void writeNode(nativeint index, RichNode node, RichNode refs);
   void writeByte(unsigned char byte);
   void writeSize(nativeint size);
   void writeSize(RichNode ref);

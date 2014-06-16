@@ -139,14 +139,14 @@ void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
     RichNode node = iter->node;
     if (node.isFeature()) {
       if (!findFeature(existingFeatures, iter->index, node))
-        writeValue(iter->index, node, *iter->refs);
+        writeNode(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else if (node.is<BuiltinProcedure>()) {
       if (!findBuiltin(existingBuiltins, iter->index, *iter->refs))
-        writeValue(iter->index, node, *iter->refs);
+        writeNode(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else if (node.type().getStructuralBehavior() == sbValue) {
-      writeValue(iter->index, node, *iter->refs);
+      writeNode(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else {
       ++iter;
@@ -165,7 +165,7 @@ void Pickler::writeArities(VMAllocatedList<PickleNode>& nodes) {
     RichNode node = iter->node;
     if (node.is<Arity>()) {
       if (!findArity(existingsArities, iter->index, node, *iter->refs))
-        writeValue(iter->index, node, *iter->refs);
+        writeNode(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else {
       ++iter;
@@ -178,7 +178,7 @@ void Pickler::writeArities(VMAllocatedList<PickleNode>& nodes) {
 void Pickler::writeOthers(VMAllocatedList<PickleNode>& nodes) {
   while (!nodes.empty()) {
     auto& pickleNode = nodes.front();
-    writeValue(pickleNode.index, pickleNode.node, *pickleNode.refs);
+    writeNode(pickleNode.index, pickleNode.node, *pickleNode.refs);
     nodes.remove_front(vm);
   }
 }
@@ -247,7 +247,7 @@ bool Pickler::findArity(NodeDictionary& existingsArities,
   }
 }
 
-void Pickler::writeValue(nativeint index, RichNode node, RichNode refsTuple) {
+void Pickler::writeNode(nativeint index, RichNode node, RichNode refsTuple) {
   UnstableNode label = RecordLike(refsTuple).label(vm);
   atom_t type = RichNode(label).as<Atom>().value();
   auto& atoms = vm->coreatoms;

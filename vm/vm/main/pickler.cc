@@ -114,8 +114,11 @@ void Pickler::pickle(RichNode value) {
   writeSize(topLevelIndex);
 
   redirections = vm->newStaticArray<nativeint>(count+1);
-  for (nativeint i = 1; i <= count; i++)
-    redirections[(size_t) i] = i;
+  for (nativeint i = 1; i <= count; i++) {
+    // For some very weird reasons, g++ 4.7.3 produces segfaulting code
+    // for this with a (size_t) cast with optimizations enabled.
+    redirections[(int) i] = i;
+  }
 
   writeValues(nodes);
   writeArities(nodes);

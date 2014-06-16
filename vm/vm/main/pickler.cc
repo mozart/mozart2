@@ -136,39 +136,17 @@ void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
   auto end = nodes.removable_end();
 
   while (iter != end) {
-    if (iter->node.isFeature()) {
-      UnstableNode* redir = nullptr;
-      if (existingFeatures.lookupOrCreate(vm, iter->node, redir)) {
-        redirections[(size_t) iter->index] = RichNode(*redir).as<SmallInt>().value();
-      } else {
-        writeValue(iter->index, iter->node, *iter->refs);
-        redir->copy(vm, build(vm, iter->index));
-      }
+    RichNode node = iter->node;
+    if (node.isFeature()) {
+      if (!findFeature(existingFeatures, iter->index, node))
+        writeValue(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
-    } else if (iter->node.is<BuiltinProcedure>()) {
-      auto refs = RichNode(*iter->refs).as<Tuple>();
-      RichNode moduleName = *refs.getElement(0);
-      RichNode builtinName = *refs.getElement(1);
-
-      UnstableNode* moduleDict = nullptr;
-      if (existingBuiltins.lookupOrCreate(vm, moduleName, moduleDict)) {
-        NodeDictionary& module = RichNode(*moduleDict).as<Dictionary>().getDict();
-        UnstableNode* redir;
-        if (module.lookupOrCreate(vm, builtinName, redir)) {
-          redirections[(size_t) iter->index] = RichNode(*redir).as<SmallInt>().value();
-        } else {
-          writeValue(iter->index, iter->node, *iter->refs);
-          redir->copy(vm, build(vm, iter->index));
-        }
-      } else {
-        writeValue(iter->index, iter->node, *iter->refs);
-        UnstableNode index = build(vm, iter->index);
-        moduleDict->copy(vm, Dictionary::build(vm));
-        RichNode(*moduleDict).as<Dictionary>().dictPut(vm, builtinName, index);
-      }
+    } else if (node.is<BuiltinProcedure>()) {
+      if (!findBuiltin(existingBuiltins, iter->index, *iter->refs))
+        writeValue(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
-    } else if (iter->node.type().getStructuralBehavior() == sbValue) {
-      writeValue(iter->index, iter->node, *iter->refs);
+    } else if (node.type().getStructuralBehavior() == sbValue) {
+      writeValue(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else {
       ++iter;
@@ -179,37 +157,15 @@ void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
 }
 
 void Pickler::writeArities(VMAllocatedList<PickleNode>& nodes) {
-  using namespace patternmatching;
-
   NodeDictionary existingsArities;
   auto iter = nodes.removable_begin();
   auto end = nodes.removable_end();
 
   while (iter != end) {
-    if (iter->node.is<Arity>()) {
-      auto refs = RichNode(*iter->refs).as<Tuple>();
-      RichNode ref = *refs.getElement(refs.getWidth()-1);
-      UnstableNode labelRef = build(vm, redirections[(size_t) ref.as<SmallInt>().value()]);
-
-      UnstableNode* redir = nullptr;
-      if (existingsArities.lookupOrCreate(vm, labelRef, redir)) {
-        RichNode head, tail, list = *redir;
-        while (matchesCons(vm, list, capture(head), capture(tail))) {
-          RichNode index;
-          if (matchesSharp(vm, head, capture(index), iter->node)) {
-            redirections[(size_t) iter->index] = index.as<SmallInt>().value();
-            break;
-          }
-          list = tail;
-        }
-        if (matches(vm, list, vm->coreatoms.nil)) { // not found
-          writeValue(iter->index, iter->node, *iter->refs);
-          redir->copy(vm, buildCons(vm, buildSharp(vm, iter->index, iter->node), std::move(*redir)));
-        }
-      } else {
-        writeValue(iter->index, iter->node, *iter->refs);
-        redir->copy(vm, buildList(vm, buildSharp(vm, iter->index, iter->node)));
-      }
+    RichNode node = iter->node;
+    if (node.is<Arity>()) {
+      if (!findArity(existingsArities, iter->index, node, *iter->refs))
+        writeValue(iter->index, node, *iter->refs);
       iter = nodes.remove(vm, iter);
     } else {
       ++iter;
@@ -224,6 +180,70 @@ void Pickler::writeOthers(VMAllocatedList<PickleNode>& nodes) {
     auto& pickleNode = nodes.front();
     writeValue(pickleNode.index, pickleNode.node, *pickleNode.refs);
     nodes.remove_front(vm);
+  }
+}
+
+bool Pickler::findFeature(NodeDictionary& existingFeatures,
+                          nativeint index, RichNode node) {
+  UnstableNode* redir = nullptr;
+  if (existingFeatures.lookupOrCreate(vm, node, redir)) {
+    redirections[(size_t) index] = RichNode(*redir).as<SmallInt>().value();
+    return true;
+  } else {
+    redir->copy(vm, build(vm, index));
+    return false;
+  }
+}
+
+bool Pickler::findBuiltin(NodeDictionary& existingBuiltins,
+                          nativeint index, RichNode refsTuple) {
+  auto refs = refsTuple.as<Tuple>();
+  RichNode moduleName = *refs.getElement(0);
+  RichNode builtinName = *refs.getElement(1);
+
+  UnstableNode* moduleDict = nullptr;
+  if (existingBuiltins.lookupOrCreate(vm, moduleName, moduleDict)) {
+    NodeDictionary& module = RichNode(*moduleDict).as<Dictionary>().getDict();
+    UnstableNode* redir;
+    if (module.lookupOrCreate(vm, builtinName, redir)) {
+      redirections[(size_t) index] = RichNode(*redir).as<SmallInt>().value();
+      return true;
+    } else {
+      redir->copy(vm, build(vm, index));
+      return false;
+    }
+  } else {
+    moduleDict->copy(vm, Dictionary::build(vm));
+    UnstableNode idx = build(vm, index);
+    RichNode(*moduleDict).as<Dictionary>().dictPut(vm, builtinName, idx);
+    return false;
+  }
+}
+
+bool Pickler::findArity(NodeDictionary& existingsArities,
+                        nativeint index, RichNode node, RichNode refsTuple) {
+  using namespace patternmatching;
+
+  auto refs = refsTuple.as<Tuple>();
+  RichNode ref = *refs.getElement(refs.getWidth()-1);
+  UnstableNode labelRef = build(vm, redirections[(size_t) ref.as<SmallInt>().value()]);
+
+  UnstableNode* redir = nullptr;
+  if (existingsArities.lookupOrCreate(vm, labelRef, redir)) {
+    RichNode head, tail, list = *redir;
+    while (matchesCons(vm, list, capture(head), capture(tail))) {
+      RichNode writtenIndex;
+      if (matchesSharp(vm, head, capture(writtenIndex), node)) {
+        redirections[(size_t) index] = writtenIndex.as<SmallInt>().value();
+        return true;
+      }
+      list = tail;
+    }
+    redir->copy(vm, buildCons(vm, buildSharp(vm, index, node), std::move(*redir)));
+    return false;
+  } else {
+    redir->copy(vm, buildList(vm, buildSharp(vm, index, node)));
+    return false;
   }
 }
 

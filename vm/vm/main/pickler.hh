@@ -54,6 +54,13 @@ private:
   void writeArities(VMAllocatedList<PickleNode>& nodes);
   void writeOthers(VMAllocatedList<PickleNode>& nodes);
 
+  bool findFeature(NodeDictionary& existingFeatures,
+                   nativeint index, RichNode node);
+  bool findBuiltin(NodeDictionary& existingBuiltins,
+                   nativeint index, RichNode refsTuple);
+  bool findArity(NodeDictionary& existingsArities,
+                 nativeint index, RichNode node, RichNode refsTuple);
+
   void writeValue(nativeint index, RichNode node, RichNode refs);
   void writeByte(unsigned char byte);
   void writeSize(nativeint size);

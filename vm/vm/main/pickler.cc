@@ -31,7 +31,6 @@ namespace mozart {
 /////////////
 
 void Pickler::pickle(RichNode value) {
-  // TODO: deduplication of builtins
   UnstableNode statelessArity = buildStatelessArity();
   auto statelessTypes = RichNode(statelessArity).as<Arity>();
 
@@ -132,6 +131,7 @@ void Pickler::pickle(RichNode value) {
 
 void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
   NodeDictionary existingFeatures;
+  NodeDictionary existingBuiltins;
   auto iter = nodes.removable_begin();
   auto end = nodes.removable_end();
 
@@ -143,6 +143,28 @@ void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {
       } else {
         writeValue(iter->index, iter->node, *iter->refs);
         redir->copy(vm, build(vm, iter->index));
+      }
+      iter = nodes.remove(vm, iter);
+    } else if (iter->node.is<BuiltinProcedure>()) {
+      auto refs = RichNode(*iter->refs).as<Tuple>();
+      RichNode moduleName = *refs.getElement(0);
+      RichNode builtinName = *refs.getElement(1);
+
+      UnstableNode* moduleDict = nullptr;
+      if (existingBuiltins.lookupOrCreate(vm, moduleName, moduleDict)) {
+        NodeDictionary& module = RichNode(*moduleDict).as<Dictionary>().getDict();
+        UnstableNode* redir;
+        if (module.lookupOrCreate(vm, builtinName, redir)) {
+          redirections[(size_t) iter->index] = RichNode(*redir).as<SmallInt>().value();
+        } else {
+          writeValue(iter->index, iter->node, *iter->refs);
+          redir->copy(vm, build(vm, iter->index));
+        }
+      } else {
+        writeValue(iter->index, iter->node, *iter->refs);
+        UnstableNode index = build(vm, iter->index);
+        moduleDict->copy(vm, Dictionary::build(vm));
+        RichNode(*moduleDict).as<Dictionary>().dictPut(vm, builtinName, index);
       }
       iter = nodes.remove(vm, iter);
     } else if (iter->node.type().getStructuralBehavior() == sbValue) {

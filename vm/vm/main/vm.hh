@@ -97,6 +97,7 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
   _gcRequestedNot.test_and_set();
 
   initialize();
+  _pickleTypesRecord = new (this) StableNode(this, Pickler::buildTypesRecord(this));
 
   registerCoreModules(this);
   _propertyRegistry.registerPredefined(this);
@@ -310,6 +311,9 @@ void VirtualMachine::startGC(GC gc, MemoryManager& secondMemoryManager) {
     _alarms.push_back_new(this, iter->expiration, iter->wakeable);
     gc->copyStableRef(_alarms.back().wakeable, _alarms.back().wakeable);
   }
+
+  // Pickle types record
+  gc->copyStableRef(_pickleTypesRecord, _pickleTypesRecord);
 
   // Environmental roots
   environment.gCollect(gc);

@@ -30,9 +30,43 @@ namespace mozart {
 // Pickler //
 /////////////
 
+UnstableNode Pickler::buildTypesRecord(VM vm) {
+  // Maps the atom returned by serialize() to the pickle type id
+  auto& atoms = vm->coreatoms;
+  return buildRecord(vm,
+    buildArity(vm, "pickleTypesRecord",
+      atoms.abstraction,
+      atoms.arity,
+      atoms.atom,
+      atoms.bool_,
+      atoms.builtin,
+      atoms.chunk,
+      atoms.codearea,
+      atoms.cons,
+      atoms.float_,
+      atoms.int_,
+      atoms.name,
+      atoms.namedname,
+      atoms.patmatcapture,
+      atoms.patmatconjunction,
+      atoms.patmatopenrecord,
+      atoms.patmatwildcard,
+      atoms.record,
+      atoms.tuple,
+      atoms.unicodeString,
+      atoms.uniquename,
+      atoms.unit
+    ),
+    16, 8, 5, 3, 10,
+    17, 11, 6, 2, 1,
+    19, 20, 13, 14, 15,
+    12, 9, 7, 21, 18,
+    4);
+}
+
 void Pickler::pickle(RichNode value) {
-  UnstableNode statelessArity = buildStatelessArity();
-  auto statelessTypes = RichNode(statelessArity).as<Arity>();
+  auto typesRecord = RichNode(*vm->getPickleTypesRecord()).as<Record>();
+  auto statelessTypes = RichNode(*typesRecord.getArity()).as<Arity>();
 
   SerializationCallback cb(vm);
   UnstableNode topLevelIndex = OptVar::build(vm);
@@ -248,118 +282,113 @@ bool Pickler::findArity(NodeDictionary& existingsArities,
 }
 
 void Pickler::writeNode(nativeint index, RichNode node, RichNode refsTuple) {
-  UnstableNode label = RecordLike(refsTuple).label(vm);
-  atom_t type = RichNode(label).as<Atom>().value();
-  auto& atoms = vm->coreatoms;
+  UnstableNode type = RecordLike(refsTuple).label(vm), value;
+  RichNode(*vm->getPickleTypesRecord()).as<Record>().lookupFeature(vm, type, value);
+  nativeint id = RichNode(value).as<SmallInt>().value();
 
   writeSize(index);
+  writeByte(id);
 
-  if (type == atoms.int_) {
-    writeByte(1);
-    writeAsStr(repr(vm, node));
-  }
-  else if (type == atoms.float_) {
-    writeByte(2);
-    writeAsStr(repr(vm, node));
-  }
-  else if (type == atoms.bool_) {
-    writeByte(3);
-    writeByte(node.as<Boolean>().value());
-  }
-  else if (type == atoms.unit) {
-    writeByte(4);
-  }
-  else if (type == atoms.atom) {
-    writeByte(5);
-    writeAtom(node);
-  }
-  else if (type == atoms.cons) {
-    auto refs = refsTuple.as<Tuple>();
-    writeByte(6);
-    writeRef(*refs.getElement(0));
-    writeRef(*refs.getElement(1));
-  }
-  else if (type == atoms.tuple) {
-    writeByte(7);
-    writeRefsLastFirst(refsTuple);
-  }
-  else if (type == atoms.arity) {
-    writeByte(8);
-    writeRefsLastFirst(refsTuple);
-  }
-  else if (type == atoms.record) {
-    writeByte(9);
-    writeRefsLastFirst(refsTuple);
-  }
-  else if (type == atoms.builtin) {
-    writeByte(10);
-    auto refs = refsTuple.as<Tuple>();
-    writeAtom(*refs.getElement(0));
-    writeAtom(*refs.getElement(1));
-  }
-  else if (type == atoms.codearea) {
-    writeByte(11);
-    writeUUIDOf(node);
-    auto refs = refsTuple.as<Tuple>();
-    RichNode code(*refs.getElement(0));
+  switch (id) {
+    case 1: // int
+    case 2: // float
+      writeAsStr(repr(vm, node));
+      break;
 
-    size_t codeSize = RecordLike(code).width(vm);
-    writeSize(codeSize);
-    for (size_t i = 0; i < codeSize; i++) {
-      RichNode element(*code.as<Tuple>().getElement(i));
-      ByteCode b = (ByteCode) element.as<SmallInt>().value();
-      writeByte(b >> 8 & 0xff);
-      writeByte(b & 0xff);
+    case 3: // bool
+      writeByte(node.as<Boolean>().value());
+      break;
+
+    case 4: // unit
+      break;
+
+    case 5: // atom
+      writeAtom(node);
+      break;
+
+    case 6: { // cons
+      auto refs = refsTuple.as<Tuple>();
+      writeRef(*refs.getElement(0));
+      writeRef(*refs.getElement(1));
+      break;
     }
-    writeSize(*refs.getElement(1));
-    writeSize(*refs.getElement(2));
-    writeAtom(*refs.getElement(4));
-    writeRef(*refs.getElement(5));
-    writeRefs(*refs.getElement(3));
-  }
-  else if (type == atoms.patmatwildcard) {
-    writeByte(12);
-  }
-  else if (type == atoms.patmatcapture) {
-    writeByte(13);
-    writeSize(*refsTuple.as<Tuple>().getElement(0));
-  }
-  else if (type == atoms.patmatconjunction) {
-    writeByte(14);
-    writeRefs(refsTuple);
-  }
-  else if (type == atoms.patmatopenrecord) {
-    writeByte(15);
-    writeRefsLastFirst(refsTuple);
-  }
-  else if (type == atoms.abstraction) {
-    writeByte(16);
-    writeUUIDOf(node);
-    writeRefsLastFirst(refsTuple);
-  }
-  else if (type == atoms.chunk) {
-    writeByte(17);
-    writeRef(*refsTuple.as<Tuple>().getElement(0));
-  }
-  else if (type == atoms.uniquename) {
-    writeByte(18);
-    writeAtom(*refsTuple.as<Tuple>().getElement(0));
-  }
-  else if (type == atoms.name) {
-    writeByte(19);
-    writeUUIDOf(node);
-  }
-  else if (type == atoms.namedname) {
-    writeByte(20);
-    writeUUIDOf(node);
-    writeAtom(*refsTuple.as<Tuple>().getElement(0));
-  }
-  else if (type == atoms.unicodeString) {
-    writeByte(21);
-    writeAsStr(node.as<String>().value());
-  }
-  else {
-    raiseError(vm, "Unknown type to pickle", type.contents());
+
+    case 7: // tuple
+    case 8: // arity
+    case 9: // record
+      writeRefsLastFirst(refsTuple);
+      break;
+
+    case 10: { // builtin
+      auto refs = refsTuple.as<Tuple>();
+      writeAtom(*refs.getElement(0));
+      writeAtom(*refs.getElement(1));
+      break;
+    }
+
+    case 11: { // codearea
+      writeUUIDOf(node);
+      auto refs = refsTuple.as<Tuple>();
+      RichNode code = *refs.getElement(0);
+      size_t codeSize = RecordLike(code).width(vm);
+      writeSize(codeSize);
+      for (size_t i = 0; i < codeSize; i++) {
+        RichNode element = *code.as<Tuple>().getElement(i);
+        ByteCode b = (ByteCode) element.as<SmallInt>().value();
+        writeByte(b >> 8 & 0xff);
+        writeByte(b & 0xff);
+      }
+      writeSize(*refs.getElement(1)); // arity
+      writeSize(*refs.getElement(2)); // Xcount
+      writeAtom(*refs.getElement(4)); // printName
+      writeRef(*refs.getElement(5));  // debugData
+      writeRefs(*refs.getElement(3)); // Ks
+      break;
+    }
+
+    case 12: // patmatwildcard
+      break;
+
+    case 13: // patmatcapture
+      writeSize(*refsTuple.as<Tuple>().getElement(0));
+      break;
+
+    case 14: // patmatconjunction
+      writeRefs(refsTuple);
+      break;
+
+    case 15: // patmatopenrecord
+      writeRefsLastFirst(refsTuple);
+      break;
+
+    case 16: // abstraction
+      writeUUIDOf(node);
+      writeRefsLastFirst(refsTuple);
+      break;
+
+    case 17: // chunk
+      writeRef(*refsTuple.as<Tuple>().getElement(0));
+      break;
+
+    case 18: // uniquename
+      writeAtom(*refsTuple.as<Tuple>().getElement(0));
+      break;
+
+    case 19: // name
+      writeUUIDOf(node);
+      break;
+
+    case 20: // namedname
+      writeUUIDOf(node);
+      writeAtom(*refsTuple.as<Tuple>().getElement(0));
+      break;
+
+    case 21: // unicodeString
+      writeAsStr(node.as<String>().value());
+      break;
+
+    default:
+      raiseError(vm, "Unknown type to pickle", type);
   }
 }
 
@@ -409,33 +438,6 @@ void Pickler::writeUUIDOf(RichNode node) {
   char buffer[UUID::byte_count];
   uuid.toBytes(reinterpret_cast<unsigned char*>(buffer));
   output.write(buffer, UUID::byte_count);
-}
-
-UnstableNode Pickler::buildStatelessArity() {
-  auto& atoms = vm->coreatoms;
-  return buildArity(vm, "statelessTypes",
-    atoms.abstraction,
-    atoms.arity,
-    atoms.atom,
-    atoms.bool_,
-    atoms.builtin,
-    atoms.chunk,
-    atoms.codearea,
-    atoms.cons,
-    atoms.float_,
-    atoms.int_,
-    atoms.name,
-    atoms.namedname,
-    atoms.patmatcapture,
-    atoms.patmatconjunction,
-    atoms.patmatopenrecord,
-    atoms.patmatwildcard,
-    atoms.record,
-    atoms.tuple,
-    atoms.unicodeString,
-    atoms.uniquename,
-    atoms.unit
-  );
 }
 
 } // namespace mozart

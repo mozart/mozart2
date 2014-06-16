@@ -44,6 +44,9 @@ private:
   };
 
 public:
+  static UnstableNode buildTypesRecord(VM vm);
+
+public:
   Pickler(VM vm, std::ostream& output):
     vm(vm), output(output) {}
 
@@ -90,8 +93,6 @@ private:
   bool isFuture(RichNode node) {
     return node.is<ReadOnly>() || node.is<ReadOnlyVariable>();
   }
-
-  UnstableNode buildStatelessArity();
 
 private:
   VM vm;

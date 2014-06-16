@@ -215,8 +215,8 @@ public:
   }
 
   ~BaseBuiltin() {
-    delete _params;
-    delete _codeBlock;
+    delete[] _params;
+    delete[] _codeBlock;
   }
 
   const std::string& getModuleName() {

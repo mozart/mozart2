@@ -39,9 +39,6 @@ namespace mozart {
 template <class T>
 class StaticArray {
 private:
-  // Apparently, std::nullptr_t is not defined in every standard library yet
-  typedef decltype(nullptr) nullptr_t;
-private:
   T* _array;
 
 #ifdef MOZART_STATICARRAY_WITH_SIZE
@@ -64,7 +61,7 @@ public:
   }
 
   /** Convert from nullptr */
-  StaticArray(nullptr_t nullp) : _array(nullptr) {
+  StaticArray(std::nullptr_t nullp) : _array(nullptr) {
 #ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = 0;
 #endif
@@ -96,7 +93,7 @@ public:
 
   /** Assign from nullptr */
   inline
-  void operator=(nullptr_t nullp) {
+  void operator=(std::nullptr_t nullp) {
     _array = nullptr;
 #ifdef MOZART_STATICARRAY_WITH_SIZE
     _size = 0;

@@ -264,7 +264,7 @@ void BoostVM::receiveOnVMStream(std::string* buffer) {
   }
 
   std::istringstream input(*buffer);
-  UnstableNode unpickled = bootUnpickle(vm, input);
+  UnstableNode unpickled = unpickle(vm, input);
   delete buffer;
 
   sendToReadOnlyStream(vm, _stream, unpickled);

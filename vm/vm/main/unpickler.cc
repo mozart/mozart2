@@ -28,13 +28,13 @@ namespace mozart {
 
 namespace {
 
-///////////////////
-// BootUnpickler //
-///////////////////
+///////////////
+// Unpickler //
+///////////////
 
-class BootUnpickler {
+class Unpickler {
 public:
-  BootUnpickler(VM vm, std::istream& input): vm(vm), input(input) {
+  Unpickler(VM vm, std::istream& input): vm(vm), input(input) {
   }
 
   /** Top-level unpickle function */
@@ -386,8 +386,8 @@ private:
 // Entry point //
 /////////////////
 
-UnstableNode bootUnpickle(VM vm, std::istream& input) {
-  BootUnpickler unpickler(vm, input);
+UnstableNode unpickle(VM vm, std::istream& input) {
+  Unpickler unpickler(vm, input);
   return unpickler.unpickle();
 }
 

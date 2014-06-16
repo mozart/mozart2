@@ -27,7 +27,6 @@
 
 #include "mozartcore-decl.hh"
 
-#include "bootunpickler.hh"
 #include "builtins-decl.hh"
 #include "corebuilders.hh"
 #include "coredatatypes-decl.hh"
@@ -37,6 +36,7 @@
 #include "matchdsl.hh"
 #include "ozcalls-decl.hh"
 #include "pickler.hh"
+#include "unpickler.hh"
 #include "utils-decl.hh"
 
 #endif // MOZART_MOZARTCORE_H

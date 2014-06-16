@@ -318,7 +318,7 @@ int main(int argc, char** argv) {
         properties.registerValueProp(vm, "application.url", fakeURL);
 
         std::istringstream input(*app);
-        UnstableNode functor = bootUnpickle(vm, input);
+        UnstableNode functor = unpickle(vm, input);
         properties.registerValueProp(vm, "application.functor", functor);
       }
       app.reset(); // Release the memory hold by the potentially big app string

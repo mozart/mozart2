@@ -93,7 +93,7 @@ public:
       // unpickle
       std::string str(buffer.begin(), buffer.end());
       std::istringstream input(str);
-      result = bootUnpickle(vm, input);
+      result = unpickle(vm, input);
     }
   };
 };

@@ -164,7 +164,8 @@ void BoostVM::run() {
 }
 
 void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
-  if (error != boost::asio::error::operation_aborted) {
+  if (error != boost::asio::error::operation_aborted &&
+      !_terminationRequested) {
     // Preemption
     vm->setReferenceTime(env.getReferenceTime());
     vm->requestPreempt();

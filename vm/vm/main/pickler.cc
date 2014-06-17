@@ -292,7 +292,7 @@ void Pickler::writeNode(nativeint index, RichNode node, RichNode refsTuple) {
   switch (id) {
     case 1: // int
     case 2: // float
-      writeAsStr(repr(vm, node));
+      writeAsVS(node);
       break;
 
     case 3: // bool
@@ -383,9 +383,11 @@ void Pickler::writeNode(nativeint index, RichNode node, RichNode refsTuple) {
       writeAtom(*refsTuple.as<Tuple>().getElement(0));
       break;
 
-    case 21: // unicodeString
-      writeAsStr(node.as<String>().value());
+    case 21: { // unicodeString
+      auto str = node.as<String>().value();
+      writeStr(str.string, str.length);
       break;
+    }
 
     default:
       raiseError(vm, "Unknown type to pickle", type);
@@ -396,7 +398,7 @@ void Pickler::writeByte(unsigned char byte) {
   output.put(byte);
 }
 
-void Pickler::writeSize(nativeint size) {
+void Pickler::writeSize(size_t size) {
   output.put(size >> 24 & 0xff);
   output.put(size >> 16 & 0xff);
   output.put(size >> 8 & 0xff);
@@ -405,6 +407,23 @@ void Pickler::writeSize(nativeint size) {
 
 void Pickler::writeSize(RichNode size) {
   writeSize(size.as<SmallInt>().value());
+}
+
+void Pickler::writeStr(const char* str, size_t len) {
+  writeSize(len);
+  output.write(str, len);
+}
+
+void Pickler::writeAtom(RichNode atom) {
+  auto str = atom.as<Atom>().value();
+  writeStr(str.contents(), str.length());
+}
+
+void Pickler::writeAsVS(RichNode node) {
+  size_t size = ozVSLengthForBuffer(vm, node);
+  std::string buffer;
+  ozVSGet(vm, node, size, buffer);
+  writeStr(buffer.data(), buffer.length());
 }
 
 void Pickler::writeRef(RichNode ref) {
@@ -427,10 +446,6 @@ void Pickler::writeRefsLastFirst(RichNode refsTuple) {
   size_t width = refs.getWidth();
   writeRef(*refs.getElement(width-1));
   writeNRefs(refsTuple, width-1);
-}
-
-void Pickler::writeAtom(RichNode atom) {
-  writeAsStr(atom.as<Atom>().value().contents());
 }
 
 void Pickler::writeUUIDOf(RichNode node) {

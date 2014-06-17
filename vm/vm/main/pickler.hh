@@ -66,28 +66,16 @@ private:
 
   void writeNode(nativeint index, RichNode node, RichNode refs);
   void writeByte(unsigned char byte);
-  void writeSize(nativeint size);
+  void writeSize(size_t size);
   void writeSize(RichNode ref);
+  void writeStr(const char* str, size_t len);
+  void writeAtom(RichNode atom);
+  void writeAsVS(RichNode node);
   void writeRef(RichNode ref);
   void writeNRefs(RichNode refs, size_t n);
   void writeRefs(RichNode refs);
   void writeRefsLastFirst(RichNode refsTuple);
-  void writeAtom(RichNode atom);
   void writeUUIDOf(RichNode node);
-
-  template <class T>
-  void writeAsStr(T value) {
-    nativeint size = 0; // not yet known
-    auto pos = output.tellp();
-    writeSize(size);
-    auto bef = output.tellp();
-    output << value;
-    auto end = output.tellp();
-    size = (end - bef);
-    output.seekp(pos);
-    writeSize(size);
-    output.seekp(end);
-  }
 
 private:
   bool isFuture(RichNode node) {

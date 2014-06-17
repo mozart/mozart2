@@ -462,7 +462,7 @@ UnstableNode Dictionary::dictGet(RichNode self, VM vm, RichNode feature) {
   if (dict.lookup(vm, feature, value)) {
     return { vm, *value };
   } else {
-    raise(vm, "dictKeyNotFound", self, feature);
+    raiseKernelError(vm, "dict", self, feature);
   }
 }
 
@@ -503,7 +503,7 @@ UnstableNode Dictionary::dictExchange(RichNode self, VM vm, RichNode feature,
     value->copy(vm, newValue);
     return oldValue;
   } else {
-    raise(vm, "dictKeyNotFound", self, feature);
+    raiseKernelError(vm, "dict", self, feature);
   }
 }
 

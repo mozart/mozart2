@@ -421,9 +421,9 @@ void Pickler::writeAtom(RichNode atom) {
 
 void Pickler::writeAsVS(RichNode node) {
   size_t size = ozVSLengthForBuffer(vm, node);
-  std::string buffer;
+  std::vector<char> buffer;
   ozVSGet(vm, node, size, buffer);
-  writeStr(buffer.data(), buffer.length());
+  writeStr(buffer.data(), buffer.size());
 }
 
 void Pickler::writeRef(RichNode ref) {

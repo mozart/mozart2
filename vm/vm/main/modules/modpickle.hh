@@ -1,4 +1,4 @@
-// Copyright © 2012, Université catholique de Louvain
+// Copyright © 2014, Université catholique de Louvain
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MOZART_MODSERIALIZER_H
-#define MOZART_MODSERIALIZER_H
+#ifndef MOZART_MODPICKLE_H
+#define MOZART_MODPICKLE_H
 
 #include "../mozartcore.hh"
 
@@ -33,36 +33,42 @@ namespace mozart {
 
 namespace builtins {
 
-///////////////////////
-// Serializer module //
-///////////////////////
+///////////////////
+// Pickle module //
+///////////////////
 
-class ModSerializer: public Module {
+class ModPickle: public Module {
 public:
-  ModSerializer(): Module("Serializer") {}
+  ModPickle(): Module("Pickle") {}
 
-  class New: public Builtin<New> {
+  class Pack: public Builtin<Pack> {
   public:
-    New(): Builtin("new") {}
+    Pack(): Builtin("pack") {}
 
-    static void call(VM vm, Out result) {
-      result = Serializer::build(vm);
+    static void call(VM vm, In value, Out result) {
+      std::ostringstream buf;
+      pickle(vm, value, buf);
+      std::string str = buf.str();
+      auto bytes = newLString(vm,
+        reinterpret_cast<const unsigned char*>(str.data()), str.size());
+      result = ByteString::build(vm, bytes);
     }
   };
 
-  class Serialize: public Builtin<Serialize> {
+  class Unpack: public Builtin<Unpack> {
   public:
-    Serialize(): Builtin("serialize") {}
+    Unpack(): Builtin("unpack") {}
 
-    static void call(VM vm, In serializer, In todo, Out result) {
-      if (serializer.is<Serializer>()) {
-        auto s=serializer.as<Serializer>();
-        result = s.doSerialize(vm, todo);
-      } else if (serializer.isTransient()) {
-        waitFor(vm, serializer);
-      } else {
-        raiseError(vm, "serializer", serializer);
-      }
+    static void call(VM vm, In vbs, Out result) {
+      // VBS to vector<unsigned char>
+      size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
+      std::vector<unsigned char> buffer;
+      ozVBSGet(vm, vbs, bufSize, buffer);
+
+      // unpickle
+      std::string str(buffer.begin(), buffer.end());
+      std::istringstream input(str);
+      result = unpickle(vm, input);
     }
   };
 };
@@ -73,4 +79,4 @@ public:
 
 #endif // MOZART_GENERATOR
 
-#endif // MOZART_MODSERIALIZER_H
+#endif // MOZART_MODPICKLE_H

@@ -23,7 +23,7 @@
 
 functor
 import
-   BootSerializer(pickle:Pack unpickle:Unpack) at 'x-oz://boot/Serializer'
+   BootPickle(pack:Pack unpack:Unpack) at 'x-oz://boot/Pickle'
    %Pickle(pack:Pack unpack:Unpack)
    BootName(newUnique:NewUniqueName newNamed:NewNamedName) at 'x-oz://boot/Name'
 export

@@ -34,11 +34,19 @@
 namespace mozart {
 
 struct DebugEntry {
-  size_t fileIndex; // index to kregs for the filename atom.
+  StableNode* file;
   size_t lineNumber;
   size_t columnNumber;
-  size_t kindIndex; // index to kregs for the kind atom.
-  bool valid = false;
+  StableNode* kind;
+  bool valid;
+
+  DebugEntry();
+  DebugEntry(DebugEntry&&);
+  DebugEntry(const DebugEntry&) = delete;
+  DebugEntry& operator=(DebugEntry&&);
+  DebugEntry& operator=(const DebugEntry&) = delete;
+
+  DebugEntry(GR gr, const DebugEntry& other);
 };
 
 /**
@@ -48,14 +56,14 @@ struct StackEntry {
   /** Create a regular stack entry */
   StackEntry(StableNode* abstraction, ProgramCounter PC, size_t yregCount,
     StaticArray<UnstableNode> yregs, StaticArray<StableNode> gregs,
-    StaticArray<StableNode> kregs, const DebugEntry& debugEntry):
+    StaticArray<StableNode> kregs, DebugEntry&& debugEntry):
     abstraction(abstraction), PC(PC), yregCount(yregCount),
-    yregs(yregs), gregs(gregs), kregs(kregs), debugEntry(debugEntry) {}
+    yregs(yregs), gregs(gregs), kregs(kregs), debugEntry(std::move(debugEntry)) {}
 
   /** Create a catch stack entry */
-  StackEntry(ProgramCounter PC, const DebugEntry& debugEntry):
+  StackEntry(ProgramCounter PC, DebugEntry&& debugEntry):
     abstraction(nullptr), PC(PC), yregCount(0),
-    yregs(nullptr), gregs(nullptr), kregs(nullptr), debugEntry(debugEntry) {}
+    yregs(nullptr), gregs(nullptr), kregs(nullptr), debugEntry(std::move(debugEntry)) {}
 
   inline
   StackEntry(GR gr, StackEntry& from);
@@ -94,13 +102,13 @@ struct StackEntry {
  */
 class ThreadStack: public VMAllocatedList<StackEntry> {
 public:
-  void pushExceptionHandler(VM vm, ProgramCounter PC, const DebugEntry& entry) {
-    push_front_new(vm, PC, entry);
+  void pushExceptionHandler(VM vm, ProgramCounter PC, DebugEntry&& entry) {
+    push_front_new(vm, PC, std::move(entry));
   }
 
   void popExceptionHandler(VM vm, DebugEntry& entry) {
     assert(front().isExceptionHandler());
-    entry = front().debugEntry;
+    entry = std::move(front().debugEntry);
     remove_front(vm);
   }
 
@@ -114,7 +122,6 @@ public:
   inline
   UnstableNode buildStackTrace(VM vm, StableNode* abstraction,
                                ProgramCounter PC,
-                               StaticArray<StableNode>* kregs,
                                const DebugEntry& debugEntry);
 };
 
@@ -255,7 +262,7 @@ private:
                  StaticArray<UnstableNode> yregs,
                  StaticArray<StableNode> gregs,
                  StaticArray<StableNode> kregs,
-                 const DebugEntry& debugEntry);
+                 DebugEntry&& debugEntry);
 
   inline
   void popFrame(VM vm, StableNode*& abstraction,
@@ -272,7 +279,7 @@ private:
             StaticArray<UnstableNode>& yregs,
             StaticArray<StableNode>& gregs,
             StaticArray<StableNode>& kregs,
-            const DebugEntry& debugEntry,
+            DebugEntry&& debugEntry,
             bool& preempted,
             std::ptrdiff_t opcodeArgCount = 2);
 
@@ -284,7 +291,7 @@ private:
                StaticArray<UnstableNode>& yregs,
                StaticArray<StableNode>& gregs,
                StaticArray<StableNode>& kregs,
-               const DebugEntry& debugEntry,
+               DebugEntry&& debugEntry,
                bool& preempted);
 
   inline
@@ -312,7 +319,7 @@ private:
                  StaticArray<UnstableNode>& yregs,
                  StaticArray<StableNode>& gregs,
                  StaticArray<StableNode>& kregs,
-                 const DebugEntry& debugEntry);
+                 DebugEntry&& debugEntry);
 
   void applyWaitBefore(VM vm, RichNode waitee, bool isQuiet,
                        StableNode*& abstraction,
@@ -321,7 +328,7 @@ private:
                        StaticArray<UnstableNode>& yregs,
                        StaticArray<StableNode>& gregs,
                        StaticArray<StableNode>& kregs,
-                       const DebugEntry& debugEntry);
+                       DebugEntry&& debugEntry);
 
   void applyRaise(VM vm, RichNode exception,
                   StableNode*& abstraction,
@@ -330,7 +337,7 @@ private:
                   StaticArray<UnstableNode>& yregs,
                   StaticArray<StableNode>& gregs,
                   StaticArray<StableNode>& kregs,
-                  const DebugEntry& debugEntry);
+                  DebugEntry&& debugEntry);
 
   UnstableNode preprocessException(VM vm, RichNode exception,
                                    StableNode* abstraction,

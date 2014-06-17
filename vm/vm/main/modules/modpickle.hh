@@ -27,6 +27,8 @@
 
 #include "../mozartcore.hh"
 
+#include <fstream>
+
 #ifndef MOZART_GENERATOR
 
 namespace mozart {
@@ -69,6 +71,34 @@ public:
       std::string str(buffer.begin(), buffer.end());
       std::istringstream input(str);
       result = unpickle(vm, input);
+    }
+  };
+
+  class Save: public Builtin<Save> {
+  public:
+    Save(): Builtin("save") {}
+
+    static void call(VM vm, In value, In fileNameVS) {
+      size_t fileNameSize = ozVSLengthForBuffer(vm, fileNameVS);
+      std::string fileName;
+      ozVSGet(vm, fileNameVS, fileNameSize, fileName);
+
+      std::ofstream file(fileName, std::ios_base::binary);
+      pickle(vm, value, file);
+    }
+  };
+
+  class Load: public Builtin<Load> {
+  public:
+    Load(): Builtin("load") {}
+
+    static void call(VM vm, In fileNameVS, Out result) {
+      size_t fileNameSize = ozVSLengthForBuffer(vm, fileNameVS);
+      std::string fileName;
+      ozVSGet(vm, fileNameVS, fileNameSize, fileName);
+
+      std::ifstream file(fileName, std::ios_base::binary);
+      result = unpickle(vm, file);
     }
   };
 };

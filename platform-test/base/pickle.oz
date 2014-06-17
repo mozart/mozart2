@@ -67,7 +67,6 @@ define
     proc {$ X} X=2 end
     fun {$ Y} Y*3 end
     f(a:'an atom with blanks' NN:42 2:Append true:fun {$ X Y} X+Y end)
-    %functor define {Delay 30*1000} raise unreachable end end % does not compare ==
 
     % read-only vars
     !!{fun lazy {$ X} X*2 end 3}
@@ -75,15 +74,19 @@ define
     % deduplication of same arities
     [rec(a:1 b:2) {Adjoin rec(a:3) rec(b:4)} rec(a:nope)]
 
-    % Chunks are not comparing = yet
-    %BaseObject
-    %{NewChunk Goods}
-
     % Not serializable yet
     %{ByteString.make "bla"}
 
     % cycle
     c(cycle:Goods)
+   ]
+
+   % Chunks do not compare equal
+   NotEql=
+   [
+    functor define {Delay 30*1000} raise unreachable end end
+    BaseObject
+    {NewChunk Goods}
    ]
 
    Return=
@@ -98,6 +101,12 @@ define
                        {Unpack {Pack Goods}} = Goods
                     end
                     keys:[pickle])
+           packNotEql(proc {$}
+                         for E in NotEql do
+                            {TryPack E} = nil
+                         end
+                         ({Unpack {Pack NotEql}}==NotEql) = false
+                      end keys:[pickle])
            packBad(proc {$}
                       {All Nogoods fun {$ X} {TryPack X}==[X] end} = true
                    end keys:[pickle])

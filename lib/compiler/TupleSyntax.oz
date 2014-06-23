@@ -92,6 +92,7 @@ fun {CoordinatesOf P}
    [] fColonEquals(_ _ C) then C
    [] fFOR(_ _ C) then C
    [] fWhile(_ _ C) then C
+   [] fRecordComprehension(_ _ _ _ _ C) then C
    [] fListComprehension(_ _ _ C) then C
    [] fForComprehensionLevel(_ _ C) then C
    [] forExpression(E _) then {CoordinatesOf E}

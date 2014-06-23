@@ -262,6 +262,10 @@ define
                   [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE]#fun{$ [P1 _ S1 FC BD _ P2]}
                                                                                                       fListComprehension(S1 FC BD {MkPos P1 P2})
                                                                                                    end
+                  [pB '(' plus(forExpression) 'suchthat' lvl0 ':' lvl0 'in' lvl0
+                      opt(seq2('if' lvl0) unit) opt(seq2('do' phrase) unit) ')' pE]#fun{$ [P1 _ Es _ F _ V _ R IF DO _ P2]}
+                                                                                       fRecordComprehension(Es fColon(F V) R IF DO {MkPos P1 P2})
+                                                                                    end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
                   [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end

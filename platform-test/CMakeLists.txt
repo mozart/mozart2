@@ -6,12 +6,12 @@ set(BASE_FUNCTORS
     "exception.oz" "type.oz"
     #"guards.oz" "byneed.oz" "future.oz"
     #"misc.oz" "instruction.oz" "compiler.oz" "except.oz"
-    "dictionary.oz" "ofs.oz" "listComprehension.oz"
+    "dictionary.oz" "ofs.oz"
+    "listComprehension.oz" "recordComprehension.oz"
     #"pickles.oz" "unix.oz"
     #"weakdictionary.oz" "weakdictionaryGC.oz"
     #"finalize.oz" "gc.oz"
-    "state.oz" "thread.oz"
-    "vm.oz"
+    "state.oz" "thread.oz" "vm.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/base")
 foreach(FUNCTOR ${BASE_FUNCTORS})

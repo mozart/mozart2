@@ -80,7 +80,7 @@ void BuiltinProcedure::getDebugInfo(
 }
 
 UnstableNode BuiltinProcedure::serialize(VM vm, SE se) {
-  return buildTuple(vm, "builtin",
+  return buildTuple(vm, vm->coreatoms.builtin,
                     _builtin->getModuleNameAtom(vm), _builtin->getNameAtom(vm));
 }
 
@@ -170,7 +170,7 @@ void Abstraction::printReprToStream(VM vm, std::ostream& out,
 }
 
 UnstableNode Abstraction::serialize(VM vm, SE se) {
-  UnstableNode r = makeTuple(vm, "abstraction", _Gc+1);
+  UnstableNode r = makeTuple(vm, vm->coreatoms.abstraction, _Gc+1);
   auto elements=RichNode(r).as<Tuple>().getElementsArray();
   for (size_t i=0; i< _Gc; ++i) {
     se->copy(elements[i], getElements(i));

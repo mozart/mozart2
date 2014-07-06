@@ -44,7 +44,7 @@ public:
   static constexpr UUID uuid = "{163123b5-feaa-4e1d-8917-f74d81e11236}";
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("unicodeString");
+    return vm->coreatoms.unicodeString;
   }
 
   String(VM vm, const LString<char>& string) : _string(string) {}

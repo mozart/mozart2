@@ -49,7 +49,7 @@ int Unit::compareFeatures(VM vm, RichNode right) {
 }
 
 UnstableNode Unit::serialize(VM vm, SE se) {
-  return mozart::build(vm, "unit");
+  return mozart::build(vm, vm->coreatoms.unit);
 }
 
 }

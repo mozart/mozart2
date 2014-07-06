@@ -28,13 +28,13 @@ namespace mozart {
 
 namespace {
 
-///////////////////
-// BootUnpickler //
-///////////////////
+///////////////
+// Unpickler //
+///////////////
 
-class BootUnpickler {
+class Unpickler {
 public:
-  BootUnpickler(VM vm, std::istream& input): vm(vm), input(input) {
+  Unpickler(VM vm, std::istream& input): vm(vm), input(input) {
   }
 
   /** Top-level unpickle function */
@@ -82,8 +82,10 @@ public:
       case 18: return readUniqueNameValue();
       case 19: return readNameValue();
       case 20: return readNamedNameValue();
+      case 21: return readUnicodeStringValue();
       default: {
         assert(false && "invalid value kind");
+        std::cerr << "Invalid kind met while unpickling: " << (int)(kind) << std::endl;
         std::abort();
       }
     }
@@ -276,8 +278,13 @@ private:
         return result;
       },
       [this] () {
+        readString();
       }
     );
+  }
+
+  UnstableNode readUnicodeStringValue() {
+    return String::build(vm, newLString(vm, readString()));
   }
 
   template <typename F, typename G>
@@ -379,8 +386,8 @@ private:
 // Entry point //
 /////////////////
 
-UnstableNode bootUnpickle(VM vm, std::istream& input) {
-  BootUnpickler unpickler(vm, input);
+UnstableNode unpickle(VM vm, std::istream& input) {
+  Unpickler unpickler(vm, input);
   return unpickler.unpickle();
 }
 

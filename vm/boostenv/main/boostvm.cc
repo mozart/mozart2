@@ -238,18 +238,10 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   if (portClosed)
     return;
 
-  UnstableNode picklePack;
-  if (!vm->getPropertyRegistry().get(vm, "pickle.pack", picklePack))
-    raiseError(vm, "Could not find property pickle.pack");
-
-  UnstableNode vbs;
-  ozcalls::ozCall(vm, "mozart::boostenv::BoostVM::sendOnVMPort",
-    picklePack, value, ozcalls::out(vbs));
-
-  size_t bufSize = ozVBSLengthForBuffer(vm, vbs);
-  // allocates the vector in a neutral zone: the heap
-  std::vector<unsigned char>* buffer = new std::vector<unsigned char>();
-  ozVBSGet(vm, vbs, bufSize, *buffer);
+  std::ostringstream out;
+  pickle(vm, value, out);
+  // allocates the buffer in a neutral zone: the heap
+  std::string* buffer = new std::string(out.str());
 
   bool found = env.findVM(to, [buffer] (BoostVM& targetVM) {
     targetVM.postVMEvent([buffer,&targetVM] () {
@@ -265,15 +257,14 @@ void BoostVM::receiveOnVMStream(RichNode value) {
     sendToReadOnlyStream(vm, _stream, value);
 }
 
-void BoostVM::receiveOnVMStream(std::vector<unsigned char>* buffer) {
+void BoostVM::receiveOnVMStream(std::string* buffer) {
   if (portClosed()) {
     delete buffer;
     return;
   }
 
-  std::string str(buffer->begin(), buffer->end());
-  std::istringstream input(str);
-  UnstableNode unpickled = bootUnpickle(vm, input);
+  std::istringstream input(*buffer);
+  UnstableNode unpickled = unpickle(vm, input);
   delete buffer;
 
   sendToReadOnlyStream(vm, _stream, unpickled);

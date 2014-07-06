@@ -43,6 +43,29 @@ struct CoreAtoms {
   atom_t pipe;
   atom_t sharp;
 
+  // Serialization types
+  atom_t int_;
+  atom_t float_;
+  atom_t bool_;
+  atom_t unit;
+  atom_t atom;
+  atom_t cons;
+  atom_t tuple;
+  atom_t arity;
+  atom_t record;
+  atom_t builtin;
+  atom_t codearea;
+  atom_t patmatwildcard;
+  atom_t patmatcapture;
+  atom_t patmatconjunction;
+  atom_t patmatopenrecord;
+  atom_t abstraction;
+  atom_t chunk;
+  atom_t uniquename;
+  atom_t name;
+  atom_t namedname;
+  atom_t unicodeString;
+
   // Object Orientation
   unique_name_t ooMeth;
   unique_name_t ooFastMeth;

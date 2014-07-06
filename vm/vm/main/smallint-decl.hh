@@ -46,7 +46,7 @@ public:
   }
 
   static atom_t getTypeAtom(VM vm) {
-    return vm->getAtom("int");
+    return vm->coreatoms.int_;
   }
 
   explicit SmallInt(nativeint value) : _value(value) {}

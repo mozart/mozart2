@@ -56,6 +56,7 @@ void registerCoreModules(VM vm) {
   registerBuiltinModName(vm);
   registerBuiltinModNumber(vm);
   registerBuiltinModObject(vm);
+  registerBuiltinModPickle(vm);
   registerBuiltinModPort(vm);
   registerBuiltinModProcedure(vm);
   registerBuiltinModProperty(vm);

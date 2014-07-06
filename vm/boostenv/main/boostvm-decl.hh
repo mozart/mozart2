@@ -82,7 +82,7 @@ public:
 
   void receiveOnVMStream(RichNode value);
 
-  void receiveOnVMStream(std::vector<unsigned char>* buffer);
+  void receiveOnVMStream(std::string* buffer);
 
 // Termination
 public:

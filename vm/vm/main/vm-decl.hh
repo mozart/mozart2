@@ -279,6 +279,10 @@ public:
   inline
   void setAlarm(std::int64_t delay, StableNode* wakeable);
 
+  StableNode* getPickleTypesRecord() {
+    return _pickleTypesRecord;
+  }
+
 public:
   inline
   std::shared_ptr<BigIntImplem> newBigIntImplem(nativeint value);
@@ -415,6 +419,7 @@ private:
   SpaceCloner sc;
 
   VMAllocatedList<AlarmRecord> _alarms;
+  StableNode* _pickleTypesRecord;
   std::forward_list<std::weak_ptr<StableNode*>> _protectedNodes;
 
   // Flags set externally for preemption etc.

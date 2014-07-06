@@ -36,6 +36,28 @@ void CoreAtoms::initialize(VM vm, AtomTable& atomTable) {
   pipe = atomTable.get(vm, "|");
   sharp = atomTable.get(vm, "#");
 
+  int_ = atomTable.get(vm, "int");
+  float_ = atomTable.get(vm, "float");
+  bool_ = atomTable.get(vm, "bool");
+  unit = atomTable.get(vm, "unit");
+  atom = atomTable.get(vm, "atom");
+  cons = atomTable.get(vm, "cons");
+  tuple = atomTable.get(vm, "tuple");
+  arity = atomTable.get(vm, "arity");
+  record = atomTable.get(vm, "record");
+  builtin = atomTable.get(vm, "builtin");
+  codearea = atomTable.get(vm, "codearea");
+  patmatwildcard = atomTable.get(vm, "patmatwildcard");
+  patmatcapture = atomTable.get(vm, "patmatcapture");
+  patmatconjunction = atomTable.get(vm, "patmatconjunction");
+  patmatopenrecord = atomTable.get(vm, "patmatopenrecord");
+  abstraction = atomTable.get(vm, "abstraction");
+  chunk = atomTable.get(vm, "chunk");
+  uniquename = atomTable.get(vm, "uniquename");
+  name = atomTable.get(vm, "name");
+  namedname = atomTable.get(vm, "namedname");
+  unicodeString = atomTable.get(vm, "unicodeString");
+
   succeeded = atomTable.get(vm, "succeeded");
   entailed = atomTable.get(vm, "entailed");
   stuck = atomTable.get(vm, "stuck");

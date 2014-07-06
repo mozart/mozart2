@@ -287,6 +287,9 @@ public:
   inline
   void printReprToStream(VM vm, std::ostream& out, int depth, int width);
 
+public:
+  NodeDictionary& getDict() { return dict; } // Used by Pickler
+
 private:
   NodeDictionary dict;
 };

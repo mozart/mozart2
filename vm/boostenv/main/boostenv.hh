@@ -106,7 +106,7 @@ namespace internal {
     std::ifstream input(filename, std::ios::binary);
     if (!input.is_open())
       return false;
-    result = bootUnpickle(vm, input);
+    result = unpickle(vm, input);
     return true;
   }
 }

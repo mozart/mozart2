@@ -47,6 +47,7 @@
 #include "modules/modname.hh"
 #include "modules/modnumber.hh"
 #include "modules/modobject.hh"
+#include "modules/modpickle.hh"
 #include "modules/modport.hh"
 #include "modules/modprocedure.hh"
 #include "modules/modproperty.hh"

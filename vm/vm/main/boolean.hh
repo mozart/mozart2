@@ -55,7 +55,7 @@ int Boolean::compareFeatures(VM vm, RichNode right) {
 }
 
 UnstableNode Boolean::serialize(VM vm, SE se) {
-  return buildTuple(vm, "bool", value());
+  return buildTuple(vm, vm->coreatoms.bool_, value());
 }
 
 }

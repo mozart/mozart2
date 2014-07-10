@@ -38,12 +38,15 @@ define
       end
    end
 
+   BadThread
+
    Nogoods=
    [{NewCell 1}
     {NewPort _}
     _
     {New BaseObject noop}
-    thread {Delay 2000} 42 end
+    thread BadThread = {Thread.this} for _ in 1..200 do {Delay 10} end 42 end
+    BadThread
    ]
 
    NN={NewName}
@@ -110,6 +113,7 @@ define
                       end keys:[pickle])
            packBad(proc {$}
                       {All Nogoods fun {$ X} {TryPack X}==[X] end} = true
+                      {Thread.terminate BadThread}
                    end keys:[pickle])
           ])
 end

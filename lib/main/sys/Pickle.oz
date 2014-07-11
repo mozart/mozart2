@@ -44,6 +44,7 @@ export
 
    Pack
    PackWithCells
+   PackWithReplacements
    Unpack
 
 define
@@ -54,7 +55,9 @@ define
    %% Save and its variants
    %%
 
-   Save = BootPickle.save
+   fun {Save URL}
+      {BootPickle.save URL nil}
+   end
 
    proc {SaveCompressed Value FileName Level}
       {Save Value FileName}
@@ -89,7 +92,22 @@ define
    %% Pack and its variants
    %%
 
-   Pack = BootPickle.pack
+   %%% {Pack Object} = BS
+   %%%
+   %%% Serialize an object into a ByteString. May throw an exception if the
+   %%% object contains non-serializable components (e.g. cells, unbound variables)
+   fun {Pack Value}
+      {BootPickle.pack Value nil}
+   end
+
+   %%% {PackWithReplacements Object [From1#To1 From2#To2 ...]} = BS
+   %%%
+   %%% Serialize an object into a ByteString with some components temporarily
+   %%% replaced. If the object contains any of FromN, they will all be replaced
+   %%% by ToN before the serialization starts. Deserializing the byte string
+   %%% will only give back ToN, not FromN. The Object itself will stay the same
+   %%% after calling PackWithReplacements.
+   PackWithReplacements = BootPickle.pack
 
    fun {PackWithCells Value}
       {Pack Value}

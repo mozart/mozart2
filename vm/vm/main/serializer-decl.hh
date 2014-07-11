@@ -108,6 +108,8 @@ public:
 public:
   UnstableNode doSerialize(VM vm, RichNode todo);
 
+  static UnstableNode extractByLabels(VM vm, RichNode object, RichNode labels);
+
 private:
   UnstableNode done;
 };

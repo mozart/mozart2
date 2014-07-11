@@ -50,7 +50,7 @@ public:
   Pickler(VM vm, std::ostream& output):
     vm(vm), output(output) {}
 
-  void pickle(RichNode value);
+  void pickle(RichNode value, RichNode temporaryReplacement);
 
 private:
   void writeValues(VMAllocatedList<PickleNode>& nodes);
@@ -93,8 +93,14 @@ private:
 /////////////////
 
 inline
+void pickle(VM vm, RichNode value, RichNode temporaryReplacement, std::ostream& output) {
+  Pickler(vm, output).pickle(value, temporaryReplacement);
+}
+
+inline
 void pickle(VM vm, RichNode value, std::ostream& output) {
-  Pickler(vm, output).pickle(value);
+  auto temporaryReplacement = Atom::build(vm, vm->coreatoms.nil);
+  pickle(vm, value, temporaryReplacement, output);
 }
 
 }

@@ -92,4 +92,36 @@ UnstableNode Serializer::doSerialize(VM vm, RichNode todo) {
   return UnstableNode(vm, done);
 }
 
+UnstableNode Serializer::extractByLabels(VM vm, RichNode object, RichNode labels) {
+  SerializationCallback cb(vm);
+
+  Dottable validLabels(labels);
+  OzListBuilder resultList(vm);
+
+  VMAllocatedList<NodeBackup> nodeBackups;
+
+  auto n = OptVar::build(vm);
+  cb.copy(n, object);
+
+  while (!cb.todoFrom.empty()) {
+    auto from = cb.todoFrom.pop_front(vm);
+    if (!from.is<Serialized>()) {
+      auto serialized = from.type()->serialize(vm, &cb, from);
+      auto label = RecordLike(serialized).label(vm);
+      if (validLabels.hasFeature(vm, label)) {
+        resultList.push_back(vm, buildSharp(vm, from, serialized));
+      }
+      nodeBackups.push_front(vm, from.makeBackup());
+      from.reinit(vm, Serialized::build(vm, 0));
+    }
+  }
+
+  for (auto& nodeBackup : nodeBackups) {
+    nodeBackup.restore();
+  }
+  nodeBackups.clear(vm);
+
+  return resultList.get(vm);
+}
+
 }

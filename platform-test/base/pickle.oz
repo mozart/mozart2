@@ -23,9 +23,10 @@
 
 functor
 import
-   BootPickle(pack:Pack unpack:Unpack) at 'x-oz://boot/Pickle'
-   %Pickle(pack:Pack unpack:Unpack)
+   %BootPickle(pack:Pack unpack:Unpack) at 'x-oz://boot/Pickle'
+   Pickle(pack:Pack unpack:Unpack packWithReplacements:PackWithReplacements)
    BootName(newUnique:NewUniqueName newNamed:NewNamedName) at 'x-oz://boot/Name'
+   System
 export
    Return
 define
@@ -38,12 +39,15 @@ define
       end
    end
 
+   BadThread
+
    Nogoods=
    [{NewCell 1}
     {NewPort _}
     _
     {New BaseObject noop}
-    thread {Delay 2000} 42 end
+    thread BadThread = {Thread.this} for _ in 1..200 do {Delay 10} end 42 end
+    BadThread
    ]
 
    NN={NewName}
@@ -110,6 +114,31 @@ define
                       end keys:[pickle])
            packBad(proc {$}
                       {All Nogoods fun {$ X} {TryPack X}==[X] end} = true
+                      {Thread.terminate BadThread}
                    end keys:[pickle])
+
+           packWithReplacements(
+               proc {$}
+                   A = {NewCell 1}
+                   B = {NewCell 1}
+                   C = A
+                   S U
+                   Replacements = [A#a B#b]
+                   Obj = [fun {$} A#B#c end A B C d A]
+               in
+                   S = {PackWithReplacements Obj Replacements}
+                   U = {Unpack S}
+                   [a b a d a] = U.2
+                   %a#b#c = {U.1}
+                   %% ^ TODO cannot test this on local machine, the unpickler
+                   %%   will recognize the anonymous function as a global node
+                   %%   and reuse the existing method in this VM.
+                   [A B C d A] = Obj.2
+                   A#B#c = {Obj.1}
+                   true = {IsCell A}
+                   true = {IsCell B}
+                   true = (A \= B)
+               end
+           )
           ])
 end

@@ -47,9 +47,9 @@ public:
   public:
     Pack(): Builtin("pack") {}
 
-    static void call(VM vm, In value, Out result) {
+    static void call(VM vm, In value, In temporaryReplacement, Out result) {
       std::ostringstream buf;
-      pickle(vm, value, buf);
+      pickle(vm, value, temporaryReplacement, buf);
       std::string str = buf.str();
       auto bytes = newLString(vm,
         reinterpret_cast<const unsigned char*>(str.data()), str.size());
@@ -78,13 +78,13 @@ public:
   public:
     Save(): Builtin("save") {}
 
-    static void call(VM vm, In value, In fileNameVS) {
+    static void call(VM vm, In value, In temporaryReplacement, In fileNameVS) {
       size_t fileNameSize = ozVSLengthForBuffer(vm, fileNameVS);
       std::string fileName;
       ozVSGet(vm, fileNameVS, fileNameSize, fileName);
 
       std::ofstream file(fileName, std::ios_base::binary);
-      pickle(vm, value, file);
+      pickle(vm, value, temporaryReplacement, file);
     }
   };
 

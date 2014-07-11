@@ -64,7 +64,14 @@ UnstableNode Pickler::buildTypesRecord(VM vm) {
     4);
 }
 
-void Pickler::pickle(RichNode value) {
+static void restoreNodes(VM vm, VMAllocatedList<NodeBackup>& list) {
+  for (auto& nodeBackup : list) {
+    nodeBackup.restore();
+  }
+  list.clear(vm);
+}
+
+void Pickler::pickle(RichNode value, RichNode temporaryReplacement) {
   auto typesRecord = RichNode(*vm->getPickleTypesRecord()).as<Record>();
   auto statelessTypes = RichNode(*typesRecord.getArity()).as<Arity>();
 
@@ -77,6 +84,29 @@ void Pickler::pickle(RichNode value) {
   VMAllocatedList<NodeBackup> nodeBackups;
   VMAllocatedList<PickleNode> nodes;
   UnstableNode resources = buildNil(vm);
+
+  // Apply temporary replacements.
+  VMAllocatedList<NodeBackup> nodeReplacementBackups;
+  {
+    VMAllocatedList<std::pair<RichNode, RichNode>> replacements;
+
+    ozListForEach(vm, temporaryReplacement, [&replacements, this](RichNode pair) {
+      using namespace patternmatching;
+      RichNode from, to;
+      if (matchesSharp(vm, pair, capture(from), capture(to))) {
+        replacements.push_front_new(vm, from, to);
+      } else {
+        raiseTypeError(vm, "Tuple of the form From#To", pair);
+      }
+    }, "List of pairs");
+
+    for (auto& replacement : replacements) {
+      nodeReplacementBackups.push_front(vm, replacement.first.makeBackup());
+      replacement.first.reinit(vm, replacement.second);
+    }
+
+    replacements.clear(vm);
+  }
 
   // Replace serialized nodes by Serialized(index)
   // and add them to the nodes list
@@ -111,11 +141,9 @@ void Pickler::pickle(RichNode value) {
   }
 
   // Restore nodes
-  while (!nodeBackups.empty()) {
-    nodeBackups.front().restore();
-    nodeBackups.remove_front(vm);
-  }
+  restoreNodes(vm, nodeBackups);
 
+  // Ensure no remaining futures or resources.
   if (futures) {
     for (auto& pickleNode : nodes) {
       if (isFuture(pickleNode.node)) {
@@ -127,11 +155,13 @@ void Pickler::pickle(RichNode value) {
       if (isFuture(pickleNode.node)) {
         RichNode future = pickleNode.node;
         nodes.clear(vm);
+        restoreNodes(vm, nodeReplacementBackups);
         waitFor(vm, future);
       }
     }
   } else if (!RichNode(resources).is<Atom>()) {
     nodes.clear(vm);
+    restoreNodes(vm, nodeReplacementBackups);
 
     raiseError(vm, "dp",
       "generic",
@@ -161,6 +191,9 @@ void Pickler::pickle(RichNode value) {
 
   nativeint eof = 0;
   writeSize(eof);
+
+  nodes.clear(vm);
+  restoreNodes(vm, nodeReplacementBackups);
 }
 
 void Pickler::writeValues(VMAllocatedList<PickleNode>& nodes) {

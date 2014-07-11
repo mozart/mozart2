@@ -431,23 +431,13 @@ define
       end
 
       meth LookForXRegsInPattern(Pattern)
-         proc {Loop Qs}
-            case Qs
-            of nil then
-               skip
-            [] _#_#patmatcapture(Idx)#Qr then
-               if Idx >= @xRegCount then
-                  xRegCount := Idx+1
-               end
-               {Loop Qr}
-            [] _#_#_#Qr then
-               {Loop Qr}
-            end
-         end
-
-         Qs = {BootSerializer.serialize {BootSerializer.new} [Pattern#_]}
+         Qs = {BootSerializer.extractByLabels Pattern r(patmatcapture:_)}
       in
-         {Loop Qs}
+         {ForAll Qs proc {$ _#patmatcapture(Idx)}
+            if Idx >= @xRegCount then
+               xRegCount := Idx + 1
+            end
+         end}
       end
 
       meth output($)

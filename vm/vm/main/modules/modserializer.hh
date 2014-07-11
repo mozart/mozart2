@@ -65,6 +65,15 @@ public:
       }
     }
   };
+
+  class ExtractByLabels: public Builtin<ExtractByLabels> {
+  public:
+    ExtractByLabels(): Builtin("extractByLabels") {}
+
+    static void call(VM vm, In object, In labelsRecord, Out result) {
+      result = Serializer::extractByLabels(vm, object, labelsRecord);
+    }
+  };
 };
 
 }

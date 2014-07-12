@@ -63,9 +63,6 @@ private:
   void undoBindings(VM vm);
 
   inline
-  void doCapture(VM vm, RichNode value, RichNode capture);
-
-  inline
   void doConjunction(VM vm, RichNode value, RichNode conjunction);
 
   inline
@@ -101,6 +98,130 @@ bool fullPatternMatch(VM vm, RichNode value, RichNode pattern,
                       StaticArray<UnstableNode> captures) {
   StructuralDualWalk walk(vm, StructuralDualWalk::wkPatternMatch, captures);
   return walk.run(vm, value, pattern);
+}
+
+////////////////////////////
+// Quick pattern matching //
+////////////////////////////
+
+static void doCapture(VM vm, RichNode value, RichNode capture,
+                      StaticArray<UnstableNode> captures) {
+  nativeint index = capture.as<PatMatCapture>().index();
+  if (index >= 0)
+    captures[(size_t) index].copy(vm, value);
+}
+
+// This function identifies some common patterns and performs match before
+// needing to do full stack walking.
+PatternMatchResult quickPatternMatch(VM vm, RichNode value, RichNode pattern,
+                                     StaticArray<UnstableNode> captures) {
+  if (value.isSameNode(pattern))
+    return PatternMatchResult::succeed;
+
+  auto valueType = value.type();
+  auto patternType = pattern.type();
+
+  // Bind a bare PatMatCapture directly.
+  if (patternType == PatMatCapture::type()) {
+    doCapture(vm, value, pattern, captures);
+    return PatternMatchResult::succeed;
+  }
+
+  auto valueBehavior = valueType.getStructuralBehavior();
+  auto patternBehavior = patternType.getStructuralBehavior();
+
+  // The following are taken from `equals()`...
+  if (valueBehavior == sbVariable || patternBehavior == sbVariable)
+    return PatternMatchResult::unknown;
+
+  // Let full pattern matching work with more complex pat-mat objects.
+  if (patternType == PatMatConjunction::type())
+    return PatternMatchResult::unknown;
+  if (patternType == PatMatOpenRecord::type())
+    return PatternMatchResult::unknown;
+
+  // At this point, we can safely short-circruit anything with different shape.
+  if (valueType != patternType)
+    return PatternMatchResult::failed;
+
+  switch (valueBehavior) {
+    // These two are the same as `equals()`.
+    case sbValue:
+      if (ValueEquatable(value).equals(vm, pattern))
+        return PatternMatchResult::succeed;
+      else
+        return PatternMatchResult::failed;
+
+    case sbTokenEq:
+      return PatternMatchResult::failed;
+
+    case sbStructural: {
+      // Majority of pattern matches are tuples like r(X Y Z), or cons like H|T
+      if (valueType == Tuple::type()) {
+
+        // For tuples, first ensure labels and widths are the same.
+        auto valueTuple = value.as<Tuple>();
+        auto patternTuple = pattern.as<Tuple>();
+        auto label = valueTuple.label(vm);
+        auto width = valueTuple.width(vm);
+        if (!patternTuple.testTuple(vm, label, width))
+          return PatternMatchResult::failed;
+
+        // Then check that the patterns only contain PatMatCaptures, otherwise
+        // we fallback to fullPatternMatch().
+        auto patternsArray = patternTuple.getElementsArray();
+        for (size_t i = 0; i < width; ++ i) {
+          if (!RichNode(patternsArray[i]).is<PatMatCapture>())
+            return PatternMatchResult::unknown;
+        }
+
+        // Finally perform the capture and return.
+        auto valuesArray = valueTuple.getElementsArray();
+        for (size_t i = 0; i < width; ++ i) {
+          doCapture(vm, valuesArray[i], patternsArray[i], captures);
+        }
+        return PatternMatchResult::succeed;
+
+      } else if (valueType == Cons::type()) {
+
+        // Cons matching usually comes in these forms:
+        //  1. H|T
+        //  2. X#Y|T
+        //  3. a|T
+        // So here we ensure the tail is PatMatCapture, and the head is a value
+        // type, PatMatCapture (also a value type) or a tuple (but not cons).
+        // Then we perform capturing on the head and tail respectively.
+
+        auto patternsArray = pattern.as<Cons>().getElementsArray();
+        auto valuesArray = value.as<Cons>().getElementsArray();
+
+        if (!RichNode(patternsArray[1]).is<PatMatCapture>())
+          return PatternMatchResult::unknown;
+
+        RichNode patternHead(patternsArray[0]);
+        auto patternHeadType = patternHead.type();
+        if (patternHeadType != Tuple::type() && patternHeadType.getStructuralBehavior() != sbValue)
+          return PatternMatchResult::unknown;
+
+        // Since head is never Cons, the recursion depth will be limited to 2.
+        auto res = quickPatternMatch(vm, valuesArray[0], patternHead, captures);
+        if (res == PatternMatchResult::succeed) {
+          // Perform capture only if we are sure the heads match.
+          doCapture(vm, valuesArray[1], patternsArray[1], captures);
+        }
+        return res;
+
+      } else {
+
+        // We don't care about more complex cases.
+        return PatternMatchResult::unknown;
+
+      }
+    }
+
+    default:
+      return PatternMatchResult::unknown;
+  }
 }
 
 ////////////////////
@@ -263,7 +384,7 @@ bool StructuralDualWalk::processPair(VM vm, RichNode left, RichNode right) {
   // Handle captures
   if (kind == wkPatternMatch) {
     if (rightType == PatMatCapture::type()) {
-      doCapture(vm, left, right);
+      doCapture(vm, left, right, captures);
       return true;
     } else if (rightType == PatMatConjunction::type()) {
       doConjunction(vm, left, right);
@@ -359,13 +480,6 @@ void StructuralDualWalk::undoBindings(VM vm) {
     rebindTrail.front().restore();
     rebindTrail.remove_front(vm);
   }
-}
-
-void StructuralDualWalk::doCapture(VM vm, RichNode value, RichNode capture) {
-  nativeint index = capture.as<PatMatCapture>().index();
-
-  if (index >= 0)
-    captures[(size_t) index].copy(vm, value);
 }
 
 void StructuralDualWalk::doConjunction(VM vm, RichNode value,

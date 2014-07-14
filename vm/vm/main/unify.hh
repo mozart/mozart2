@@ -65,12 +65,21 @@ void WalkStack::clear(VM vm) {
 // Global routines //
 /////////////////////
 
+enum class PatternMatchResult {
+  failed,
+  succeed,
+  unknown,
+};
+
 void fullUnify(VM vm, RichNode left, RichNode right);
 
 bool fullEquals(VM vm, RichNode left, RichNode right);
 
 bool fullPatternMatch(VM vm, RichNode value, RichNode pattern,
                       StaticArray<UnstableNode> captures);
+
+PatternMatchResult quickPatternMatch(VM vm, RichNode value, RichNode pattern,
+                                     StaticArray<UnstableNode> captures);
 
 #ifndef MOZART_GENERATOR
 
@@ -131,7 +140,14 @@ bool equals(VM vm, RichNode left, RichNode right) {
 
 bool patternMatch(VM vm, RichNode value, RichNode pattern,
                   StaticArray<UnstableNode> captures) {
-  return fullPatternMatch(vm, value, pattern, captures);
+  switch (quickPatternMatch(vm, value, pattern, captures)) {
+    case PatternMatchResult::failed:
+      return false;
+    case PatternMatchResult::succeed:
+      return true;
+    default: // i.e. PatternMatchResult::unknown
+      return fullPatternMatch(vm, value, pattern, captures);
+  }
 }
 
 #endif // MOZART_GENERATOR

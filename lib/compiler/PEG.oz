@@ -138,6 +138,19 @@ define
                         else AddErrorMessageWithoutError
                         end
 
+      TemporaryRules = {Dictionary.new}
+
+      fun {LookupRule Name}
+         if {Dictionary.member TemporaryRules Name} then
+            {Dictionary.get TemporaryRules Name}
+         else
+            local NewRule in
+               {Dictionary.put TemporaryRules Name NewRule}
+               NewRule
+            end
+         end
+      end
+
       fun{TranslateRule G}
          case G
          of raw(P) then
@@ -249,13 +262,14 @@ define
                {P CtxMid SemMid CtxOut Sem}
             end
          [] nt(X) then
-            if UseCache then
+            Rule = {LookupRule X}
+         in
                proc{$ CtxIn CtxOut Sem} N in
                   true=CtxIn.valid
                   case {DictCondExchangeFun CtxIn.cache X unit N $}
                   of unit then
                      N=CtxOut#Sem
-                     {{CondSelect CtxIn grammar TG}.X CtxIn CtxOut Sem}
+                     {Rule CtxIn CtxOut Sem}
                   [] Ctx#S then
                      N=Ctx#S
                      CtxOut=Ctx
@@ -263,9 +277,7 @@ define
                   end
                end
             else
-               proc{$ CtxIn CtxOut Sem}
-                  {{CondSelect CtxIn grammar TG}.X CtxIn CtxOut Sem}
-               end
+               Rule
             end
          [] cache(X) then
             {TranslateRule cache(X _)}
@@ -419,7 +431,12 @@ define
          end
       end
    in
-      TG = {Record.map WG TranslateRule}
+      {Record.forAllInd WG
+       proc {$ RuleName Production}
+          {LookupRule RuleName} = {TranslateRule Production}
+       end}
+
+      TG = {Dictionary.toRecord g TemporaryRules}
    end
 
    local

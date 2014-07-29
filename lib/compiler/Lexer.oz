@@ -289,7 +289,7 @@ define
       )
    )
 
-   TokenGrammar = {PEG.translate TokenRules opts(useCache:false)}
+   TokenGrammar = {PEG.translate TokenRules opts(useCache:false handleErrors:false)}
 
    %% Functions %%
 

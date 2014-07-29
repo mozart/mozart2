@@ -410,7 +410,11 @@ define
       )
 
    TG = {Translate {Record.adjoinList Rules RulesL}
-         opts(useCache:true useLastNoSuccess:true)}
+         opts(useCache:true
+              noCache: {Record.adjoinList
+                        noCache(pat0: unit lvl0: unit pE: unit caseClause: unit
+                                feature: unit)
+                        RulesL})}
 
    local
       fun {ParseGeneric MakeInitCtxProc Opts}

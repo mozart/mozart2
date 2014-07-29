@@ -126,6 +126,7 @@ define
    proc{Translate WG Opts ?TG}
       UseCache = {CondSelect Opts useCache false}
       HandleErrors = {CondSelect Opts handleErrors true}
+      NoCache = {CondSelect Opts noCache noCache}
 
       MergeContexts = if HandleErrors then MergeContextsWithError
                       else MergeContextsWithoutError
@@ -264,6 +265,7 @@ define
          [] nt(X) then
             Rule = {LookupRule X}
          in
+            if UseCache andthen {Not {HasFeature NoCache X}} then
                proc{$ CtxIn CtxOut Sem} N in
                   true=CtxIn.valid
                   case {DictCondExchangeFun CtxIn.cache X unit N $}

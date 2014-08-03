@@ -142,13 +142,9 @@ define
       TemporaryRules = {Dictionary.new}
 
       fun {LookupRule Name}
-         if {Dictionary.member TemporaryRules Name} then
-            {Dictionary.get TemporaryRules Name}
-         else
-            local NewRule in
-               {Dictionary.put TemporaryRules Name NewRule}
-               NewRule
-            end
+         local Result in
+            {Dictionary.condExchange TemporaryRules Name _ Result Result}
+            Result
          end
       end
 

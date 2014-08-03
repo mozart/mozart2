@@ -338,7 +338,7 @@ define
                     [pB 'prop' plus(lvl0) pE]#fun{$ [P1 _ Ss P2]}fProp(Ss {MkPos P1 P2})end
                     [pB 'attr' plus(attrOrFeat) pE]#fun{$ [P1 _ As P2]}fAttr(As {MkPos P1 P2})end
                     [pB 'feat' plus(attrOrFeat) pE]#fun{$ [P1 _ As P2]}fFeat(As {MkPos P1 P2})end
-                    )1
+                    )
       attrOrFeat:[alt(escVar feature) opt([':' lvl0])]#fun{$ [K V]}
                                                           if V==nil then K
                                                           else K#(V.2).1

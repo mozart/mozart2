@@ -64,6 +64,11 @@ add_subdirectory(wish)
 add_subdirectory(stdlib)
 add_subdirectory(platform-test)
 
+# Add launcher and icons
+if(UNIX)
+  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/distrib/share/" DESTINATION share)
+endif()
+
 # General CPack configuration
 
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" MOZART_SYSTEM_NAME)
@@ -98,6 +103,13 @@ string(REGEX REPLACE "-(alpha|beta|rc)\\." "~\\1"
        CPACK_DEBIAN_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacs")
+
+# Configuration of the RPM generator
+
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
+set(CPACK_RPM_PACKAGE_REQUIRES "tcl >= 8.5, tk >= 8.5, emacs")
+set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
 
 # Finally include CPack
 include(CPack)

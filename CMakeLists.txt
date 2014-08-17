@@ -12,24 +12,31 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Some helpers when using MinGW
-
 if(MINGW)
   get_filename_component(CMAKE_MAKE_PROGRAM_PATH "${CMAKE_MAKE_PROGRAM}" PATH)
   get_filename_component(CMAKE_MAKE_PROGRAM_PATH_PARENT "${CMAKE_MAKE_PROGRAM_PATH}" PATH)
 
   set(MINGW_ROOT "${CMAKE_MAKE_PROGRAM_PATH_PARENT}"
       CACHE PATH "Path where MinGW is installed")
-  set(MINGW_COMPILER_VERSION "4.7.2"
+  set(MINGW_COMPILER_VERSION "4.9.1"
       CACHE STRING "Version of GCC in your MinGW installation")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
-  set(DEFAULT_MOZART_GENERATOR_FLAGS
-      "-I${MINGW_ROOT}/include/c++/${MINGW_COMPILER_VERSION}"
-      "-I${MINGW_ROOT}/include/c++/${MINGW_COMPILER_VERSION}/i686-pc-mingw32")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-static -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+  
+  # Check for gcc target architecture
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)
+  string(STRIP "${GCC_ARCH}" GCC_ARCH_TRIPLE)
+  message(STATUS "Target architecture : ${GCC_ARCH_TRIPLE}")
 
+  set(DEFAULT_MOZART_GENERATOR_FLAGS
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++"
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++/${GCC_ARCH_TRIPLE}"
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include")  
+  
   set(BOOST_ROOT "${MINGW_ROOT}"
       CACHE PATH "Path where Boost is installed")
+  
 else()
   set(DEFAULT_MOZART_GENERATOR_FLAGS "")
 endif()

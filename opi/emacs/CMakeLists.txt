@@ -29,7 +29,7 @@ else()
       OUTPUT ${tgt_file}
       COMMAND ${CMAKE_COMMAND} -E copy "${el_file}" "${gen_el_file}"
       COMMAND ${EMACS}
-        -eval "(setq load-path (append load-path '(\"${CMAKE_CURRENT_SOURCE_DIR}\")))"
+        -L "${CMAKE_CURRENT_SOURCE_DIR}"
         ${EMACS_OPTIONS}  "${gen_el_file}"
       DEPENDS "${el_file}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

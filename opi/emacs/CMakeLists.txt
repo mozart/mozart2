@@ -50,6 +50,6 @@ if(NOT WIN32)
 else() # WIN32
   add_executable(oz "windows/oz.cc" "windows/panic.cc" "windows/getenv.cc"
     "windows/path.cc" "windows/initenv.cc" "windows/makecmd.cc"
-    "windows/ppid.cc" "windows/process.cc" "windows/registry.cc")
+    "windows/ppid.cc" "windows/process.cc" "windows/registry.cc" "windows/oz.rc")
   install(TARGETS oz DESTINATION bin)
 endif()

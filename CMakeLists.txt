@@ -36,7 +36,12 @@ if(MINGW)
   
   set(BOOST_ROOT "${MINGW_ROOT}"
       CACHE PATH "Path where Boost is installed")
-  
+
+  # Configuration for resources files
+    set(CMAKE_RC_COMPILER_INIT windres)
+      enable_language(RC)
+        set(CMAKE_RC_COMPILE_OBJECT
+	    "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
 else()
   set(DEFAULT_MOZART_GENERATOR_FLAGS "")
 endif()

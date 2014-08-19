@@ -25,7 +25,8 @@
 functor
 
 import
-   PEG(translate:Translate)
+   PEG(translate:Translate
+       parseErrorToMessage: ParseErrorToMessage)
    Preprocessor
    Lexer
 
@@ -64,7 +65,7 @@ define
 
       %% tokens %%
       string:
-         [pB elem(fun {$ Tok} case Tok of tkString(V) then some(V) else false end end) pE] #
+         label(string [pB elem(fun {$ Tok} case Tok of tkString(V) then some(V) else false end end) pE]) #
          fun {$ [P1 L P2]}
             {FoldR L fun {$ C S}
                         fRecord(fAtom('|' P1) [fInt(C P1) S])
@@ -72,43 +73,43 @@ define
          end
 
       character:
-         [pB elem(fun {$ Tok} case Tok of tkCharacter(V) then some(V) else false end end) pE] #
+         label(character [pB elem(fun {$ Tok} case Tok of tkCharacter(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fInt(C {MkPos P1 P2})
          end
 
       atom:
-         [pB elem(fun {$ Tok} case Tok of tkAtom(V) then some(V) else false end end) pE] #
+         label(atom [pB elem(fun {$ Tok} case Tok of tkAtom(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fAtom(C {MkPos P1 P2})
          end
 
       variable:
-         [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE] #
+         label(variable [pB elem(fun {$ Tok} case Tok of tkVariable(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fVar(C {MkPos P1 P2})
          end
 
       atomL:
-         [pB elem(fun {$ Tok} case Tok of tkAtomLabel(V) then some(V) else false end end) pE] #
+         label(atom [pB elem(fun {$ Tok} case Tok of tkAtomLabel(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fAtom(C {MkPos P1 P2})
          end
 
       variableL:
-         [pB elem(fun {$ Tok} case Tok of tkVariableLabel(V) then some(V) else false end end) pE] #
+         label(variable [pB elem(fun {$ Tok} case Tok of tkVariableLabel(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fVar(C {MkPos P1 P2})
          end
 
       integer:
-         [pB elem(fun {$ Tok} case Tok of tkInteger(V) then some(V) else false end end) pE] #
+         label(integer [pB elem(fun {$ Tok} case Tok of tkInteger(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fInt(C {MkPos P1 P2})
          end
 
       float:
-         [pB elem(fun {$ Tok} case Tok of tkFloat(V) then some(V) else false end end) pE] #
+         label(float [pB elem(fun {$ Tok} case Tok of tkFloat(V) then some(V) else false end end) pE]) #
          fun {$ [P1 C P2]}
             fFloat(C {MkPos P1 P2})
          end
@@ -129,7 +130,7 @@ define
          elem(tkPreprocessorDirective('popSwitches')) # dirPopSwitches
          elem(tkPreprocessorDirective('localSwitches')) # dirLocalSwitches
       )
-      eof: elem(fun {$ Tok} case Tok of tkEof(Defs) then some(Defs) else false end end)
+      eof: label(eof elem(fun {$ Tok} case Tok of tkEof(Defs) then some(Defs) else false end end))
 
       cuDeclare: alt(
          [pB 'declare' phrase 'in' phrase pE] #
@@ -220,48 +221,49 @@ define
               atPhrase
               )
       atPhrase:alt(
-                  ['local' inPhrase 'end']#fun{$ [_ S _]}S end
+                  context('local phrase' ['local' inPhrase 'end'])#fun{$ [_ S _]}S end
                   ['(' inPhrase ')']#fun{$ [_ S _]}S end
-                  [pB 'proc' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
-                                                                                 fProc(As.1 As.2 S Fs {MkPos P1 P2})
-                                                                              end
-                  [pB 'fun' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE]#fun{$ [P1 _ Fs _ As _ S _ P2]}
-                                                                                fFun(As.1 As.2 S Fs {MkPos P1 P2})
-                                                                             end
+                  context('procedure definition' [pB 'proc' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE])#fun{$ [P1 _ Fs _ As _ S _ P2]}
+                                                                                                                 fProc(As.1 As.2 S Fs {MkPos P1 P2})
+                                                                                                              end
+                  context('function definition' [pB 'fun' star(atom) '{' plus(lvl0) '}' inPhrase 'end' pE])#fun{$ [P1 _ Fs _ As _ S _ P2]}
+                                                                                                               fFun(As.1 As.2 S Fs {MkPos P1 P2})
+                                                                                                            end
                   [pB '{' plus(lvl0) '}' pE]#fun{$ [P1 _ As _ P2]}fApply(As.1 As.2 {MkPos P1 P2}) end
-                  [pB 'if' internalIf 'end' pE]#fun{$ [P1 _ S _ P2]}{AdjoinAt S 4 {MkPos P1 P2}}end
-                  [pB 'case' internalCase 'end' pE]#fun{$ [P1 _ S _ P2]}{AdjoinAt S 4 {MkPos P1 P2}}end
-                  [pB 'lock' phrase 'then' inPhrase 'end' pE]#fun{$ [P1 _ S1 _ S2 _ P2]}fLockThen(S1 S2 {MkPos P1 P2})end
-                  [pB 'lock' inPhrase 'end' pE]#fun{$ [P1 _ S1 _ P2]}fLock(S1 {MkPos P1 P2})end
-                  [pB 'thread' inPhrase 'end' pE]#fun{$ [P1 _ S _ P2]}fThread(S {MkPos P1 P2})end
-                  [pB 'try' inPhrase
-                   opt([pB 'catch' caseClauses pE]#fun{$ [P1 _ Cs P2]}fCatch(Cs {MkPos P1 P2})end fNoCatch)
-                   opt(seq2('finally' inPhrase) fNoFinally)
-                   'end' pE]#fun{$ [P1 _ S C F _ P2]}fTry(S C F {MkPos P1 P2})end
-                  [pB 'cond' condClauses optElse 'end' pE]#fun{$ [P1 _ Cs E _ P2]}fCond(Cs E {MkPos P1 P2})end
-                  [pB 'dis' disClauses 'end' pE]#fun{$ [P1 _ Cs _ P2]}fDis(Cs {MkPos P1 P2})end
-                  [pB 'or' disClauses 'end' pE]#fun{$ [P1 _ Cs _ P2]}fOr(Cs {MkPos P1 P2})end
-                  [pB 'choice' sep(inPhrase '[]')'end' pE]#fun{$ [P1 _ Ss _ P2]}fChoice(Ss {MkPos P1 P2})end
-                  [pB 'raise' inPhrase 'end' pE]#fun{$ [P1 _ S _ P2]}fRaise(S {MkPos P1 P2})end
-                  [pB 'class' exprOrImplDollar star(classDescr) star(method) 'end' pE]#fun{$ [P1 _ S Ds Ms _ P2]}
-                                                                                                            fClass(S Ds Ms {MkPos P1 P2})
+                  context('if phrase' [pB 'if' internalIf 'end' pE])#fun{$ [P1 _ S _ P2]}{AdjoinAt S 4 {MkPos P1 P2}}end
+                  context('case phrase' [pB 'case' internalCase 'end' pE])#fun{$ [P1 _ S _ P2]}{AdjoinAt S 4 {MkPos P1 P2}}end
+                  context('lock phrase' [pB 'lock' phrase 'then' inPhrase 'end' pE])#fun{$ [P1 _ S1 _ S2 _ P2]}fLockThen(S1 S2 {MkPos P1 P2})end
+                  context('lock phrase' [pB 'lock' inPhrase 'end' pE])#fun{$ [P1 _ S1 _ P2]}fLock(S1 {MkPos P1 P2})end
+                  context('thread phrase' [pB 'thread' inPhrase 'end' pE])#fun{$ [P1 _ S _ P2]}fThread(S {MkPos P1 P2})end
+                  context('try phrase'
+                          [pB 'try' inPhrase
+                           opt([pB 'catch' caseClauses pE]#fun{$ [P1 _ Cs P2]}fCatch(Cs {MkPos P1 P2})end fNoCatch)
+                           opt(seq2('finally' inPhrase) fNoFinally)
+                           'end' pE])#fun{$ [P1 _ S C F _ P2]}fTry(S C F {MkPos P1 P2})end
+                  context('cond phrase' [pB 'cond' condClauses optElse 'end' pE])#fun{$ [P1 _ Cs E _ P2]}fCond(Cs E {MkPos P1 P2})end
+                  context('dis phrase' [pB 'dis' disClauses 'end' pE])#fun{$ [P1 _ Cs _ P2]}fDis(Cs {MkPos P1 P2})end
+                  context('or phrase' [pB 'or' disClauses 'end' pE])#fun{$ [P1 _ Cs _ P2]}fOr(Cs {MkPos P1 P2})end
+                  context('choice phrase' [pB 'choice' sep(inPhrase '[]')'end' pE])#fun{$ [P1 _ Ss _ P2]}fChoice(Ss {MkPos P1 P2})end
+                  context('raise phrase' [pB 'raise' inPhrase 'end' pE])#fun{$ [P1 _ S _ P2]}fRaise(S {MkPos P1 P2})end
+                  context('class definition' [pB 'class' exprOrImplDollar star(classDescr) star(method) 'end' pE])#fun{$ [P1 _ S Ds Ms _ P2]}
+                                                                                                                      fClass(S Ds Ms {MkPos P1 P2})
+                                                                                                                   end
+                  context('functor definition' [pB 'functor' exprOrImplDollar star(funcDescr) 'end' pE])#fun{$ [P1 _ S Ds _ P2]}
+                                                                                                            fFunctor(S Ds {MkPos P1 P2})
                                                                                                          end
-                  [pB 'functor' exprOrImplDollar star(funcDescr) 'end' pE]#fun{$ [P1 _ S Ds _ P2]}
-                                                                              fFunctor(S Ds {MkPos P1 P2})
-                                                                           end
-                  [pB 'for' star(forDecl) 'do' inPhrase 'end' pE]#fun{$ [P1 _ Ds _ S _ P2]}fFOR(Ds S {MkPos P1 P2})end
-                  ['[' plus([lvl0 pE]) pB ']']#fun{$ [_ Ss P _]}
-                                                  {FoldR Ss fun{$ [H P] T}
-                                                               fRecord(fAtom('|' P) [H T])
-                                                            end fAtom('nil' P)}
-                                               end
-                  [alt(atomL variableL) '(' star(subtree) opt(['...']) ')']#fun{$ [L _ Ts D _]}
-                                                                               LL=if D==nil then fRecord else fOpenRecord end in
-                                                                               LL(L Ts)
-                                                                            end
-                  [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE]#fun{$ [P1 _ S1 FC BD _ P2]}
-                                                                                                      fListComprehension(S1 FC BD {MkPos P1 P2})
-                                                                                                   end
+                  context('for loop' [pB 'for' star(forDecl) 'do' inPhrase 'end' pE])#fun{$ [P1 _ Ds _ S _ P2]}fFOR(Ds S {MkPos P1 P2})end
+                  context('list literal' ['[' plus([lvl0 pE]) pB ']'])#fun{$ [_ Ss P _]}
+                                                                          {FoldR Ss fun{$ [H P] T}
+                                                                                       fRecord(fAtom('|' P) [H T])
+                                                                                    end fAtom('nil' P)}
+                                                                       end
+                  context('record literal' [alt(atomL variableL) '(' star(subtree) opt(['...']) ')'])#fun{$ [L _ Ts D _]}
+                                                                                                         LL=if D==nil then fRecord else fOpenRecord end in
+                                                                                                         LL(L Ts)
+                                                                                                      end
+                  context('list comprehension' [pB '[' plus(forExpression) forComprehension opt(seq2('do' phrase) unit) ']' pE])#fun{$ [P1 _ S1 FC BD _ P2]}
+                                                                                                                                    fListComprehension(S1 FC BD {MkPos P1 P2})
+                                                                                                                                 end
                   [pB 'skip' pE]#fun{$ [P1 _ P2]}fSkip({MkPos P1 P2})end
                   [pB 'fail' pE]#fun{$ [P1 _ P2]}fFail({MkPos P1 P2})end
                   [pB 'self' pE]#fun{$ [P1 _ P2]}fSelf({MkPos P1 P2})end
@@ -342,9 +344,9 @@ define
                                                           else K#(V.2).1
                                                           end
                                                        end
-      method:[pB 'meth' methodHead inPhrase 'end' pE]#fun{$ [P1 _ H S _ P2]}
-                                                         fMeth(H S {MkPos P1 P2})
-                                                      end
+      method:context('method definition' [pB 'meth' methodHead inPhrase 'end' pE])#fun{$ [P1 _ H S _ P2]}
+                                                                                      fMeth(H S {MkPos P1 P2})
+                                                                                   end
       methodHead:alt([pB methodHead1 '=' variable pE]#fun{$ [P1 S1 _ S2 P2]}
                                                          fEq(S1 S2 {MkPos P1 P2})
                                                       end
@@ -408,7 +410,11 @@ define
       )
 
    TG = {Translate {Record.adjoinList Rules RulesL}
-         opts(useCache:true useLastNoSuccess:true)}
+         opts(useCache:true
+              noCache: {Record.adjoinList
+                        noCache(pat0: unit lvl0: unit pE: unit caseClause: unit
+                                feature: unit)
+                        RulesL})}
 
    local
       fun {ParseGeneric MakeInitCtxProc Opts}
@@ -427,11 +433,7 @@ define
             {ForAll {Arity FinalDefines} proc {$ D} DefsDict.D := true end}
             AST#nil
          else
-            LastNoSuccess = {Access CtxOut.lastNoSuccess}
-            Pos = LastNoSuccess.posbegin
-         in
-            parseError#[error(kind:'parse error' msg:'Parse error'
-                              items:[Pos])]
+            parseError#[{ParseErrorToMessage CtxOut.error}]
          end
       end
    in

@@ -83,14 +83,13 @@ define
       {PreprocessTokens Tokens BaseURL Defines}
    end
 
-   proc {MakeEOFContext Token Offset Pos PrevPos LastNoSuccess ?EOFContext}
+   proc {MakeEOFContext Token Offset Pos PrevPos ?EOFContext}
       EOFContext = ctx(valid:true
                        first:Token
                        cache:{NewDictionary}
                        offset:Offset
                        posbegin:Pos
                        posend:PrevPos
-                       lastNoSuccess:LastNoSuccess
                        rest:EOFContext)
    end
 
@@ -102,9 +101,8 @@ define
     *  Offset: Int
     *  PrevPos: Position
     *  Defines: defines(VarAtom:true ...)
-    *  LastNoSuccess: Cell
     */
-   fun {Preprocess Input BaseURL FileStack Offset PrevPos Defines LastNoSuccess}
+   fun {Preprocess Input BaseURL FileStack Offset PrevPos Defines}
       reader(First Pos _ Rest) = Input
    in
       case First
@@ -112,10 +110,10 @@ define
          case FileStack
          of nil then
             % Totally the end
-            {MakeEOFContext tkEof(Defines) Offset Pos.1 PrevPos LastNoSuccess}
+            {MakeEOFContext tkEof(Defines) Offset Pos.1 PrevPos}
          [] (NewIn#NewBaseURL)|NewStack then
             % Get out of one file
-            {Preprocess NewIn NewBaseURL NewStack Offset PrevPos Defines LastNoSuccess}
+            {Preprocess NewIn NewBaseURL NewStack Offset PrevPos Defines}
          end
       [] tkParseError(_) then
          ctx(valid:true
@@ -124,30 +122,29 @@ define
              offset:Offset
              posbegin:Pos.1
              posend:PrevPos
-             lastNoSuccess:LastNoSuccess
-             rest:{MakeEOFContext tkEof(Defines) Offset+1 Pos.2 Pos.2 LastNoSuccess})
+             rest:{MakeEOFContext tkEof(Defines) Offset+1 Pos.2 Pos.2})
       [] tkPreprocessorDirective('define' Var) then
          {Preprocess Rest BaseURL FileStack Offset PrevPos
-                     {AdjoinAt Defines Var true} LastNoSuccess}
+                     {AdjoinAt Defines Var true}}
       [] tkPreprocessorDirective('undef' Var) then
          {Preprocess Rest BaseURL FileStack Offset PrevPos
-                     {Record.subtract Defines Var} LastNoSuccess}
+                     {Record.subtract Defines Var}}
       [] tkPreprocessorDirective('ifdef' Var) then
          if {HasFeature Defines Var} then
-            {Preprocess Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess}
+            {Preprocess Rest BaseURL FileStack Offset PrevPos Defines}
          else
-            {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess 1}
+            {Skip Rest BaseURL FileStack Offset PrevPos Defines 1}
          end
       [] tkPreprocessorDirective('ifndef' Var) then
          if {HasFeature Defines Var} then
-            {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess 1}
+            {Skip Rest BaseURL FileStack Offset PrevPos Defines 1}
          else
-            {Preprocess Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess}
+            {Preprocess Rest BaseURL FileStack Offset PrevPos Defines}
          end
       [] tkPreprocessorDirective('else') then
-         {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess 1}
+         {Skip Rest BaseURL FileStack Offset PrevPos Defines 1}
       [] tkPreprocessorDirective('endif') then
-         {Preprocess Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess}
+         {Preprocess Rest BaseURL FileStack Offset PrevPos Defines}
       [] tkPreprocessorDirective('insert' RelURL) then
          NewURL NewContents NewInput NewStack
       in
@@ -166,7 +163,7 @@ define
          end
          NewInput = {TokenizeVS NewContents {URLToAtom NewURL}}
          NewStack = Rest#BaseURL | FileStack
-         {Preprocess NewInput NewURL NewStack Offset PrevPos Defines LastNoSuccess}
+         {Preprocess NewInput NewURL NewStack Offset PrevPos Defines}
       else
          Cache = {NewDictionary}
          PosBegin = Pos.1
@@ -177,12 +174,11 @@ define
              offset:Offset
              posbegin:PosBegin
              posend:PrevPos
-             lastNoSuccess:LastNoSuccess
-             rest:{Preprocess Rest BaseURL FileStack Offset+1 Pos.2 Defines LastNoSuccess})
+             rest:{Preprocess Rest BaseURL FileStack Offset+1 Pos.2 Defines})
       end
    end
 
-   fun {Skip Input BaseURL FileStack Offset PrevPos Defines LastNoSuccess SkipDepth}
+   fun {Skip Input BaseURL FileStack Offset PrevPos Defines SkipDepth}
       reader(First Pos _ Rest) = Input
    in
       case First
@@ -194,30 +190,27 @@ define
              offset:Offset
              posbegin:Pos.1
              posend:PrevPos
-             lastNoSuccess:LastNoSuccess
-             rest:{MakeEOFContext tkEof(Defines) Offset+1 Pos.2 Pos.2 LastNoSuccess})
+             rest:{MakeEOFContext tkEof(Defines) Offset+1 Pos.2 Pos.2})
 
       [] tkPreprocessorDirective('ifdef' _) then
-         {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess SkipDepth+1}
+         {Skip Rest BaseURL FileStack Offset PrevPos Defines SkipDepth+1}
       [] tkPreprocessorDirective('ifndef' _) then
-         {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess SkipDepth+1}
+         {Skip Rest BaseURL FileStack Offset PrevPos Defines SkipDepth+1}
       [] tkPreprocessorDirective('else') andthen SkipDepth == 1 then
-         {Preprocess Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess}
+         {Preprocess Rest BaseURL FileStack Offset PrevPos Defines}
       [] tkPreprocessorDirective('endif') then
          if SkipDepth == 1 then
-            {Preprocess Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess}
+            {Preprocess Rest BaseURL FileStack Offset PrevPos Defines}
          else
-            {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess SkipDepth-1}
+            {Skip Rest BaseURL FileStack Offset PrevPos Defines SkipDepth-1}
          end
       else
-         {Skip Rest BaseURL FileStack Offset PrevPos Defines LastNoSuccess SkipDepth}
+         {Skip Rest BaseURL FileStack Offset PrevPos Defines SkipDepth}
       end
    end
 
    fun {PreprocessTokens Input BaseURL Defines}
-      LastNoSuccess = {NewCell ctx(valid:false offset:0)}
-   in
-      {Preprocess Input {URLMake BaseURL} nil 1 unit Defines LastNoSuccess}
+      {Preprocess Input {URLMake BaseURL} nil 1 unit Defines}
    end
 
 end

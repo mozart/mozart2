@@ -29,31 +29,124 @@ import
    Boot_Dictionary at 'x-oz://boot/Dictionary'
 export
    Translate
+   ParseErrorToMessage
 define
-
    DictCondExchangeFun = Boot_Dictionary.condExchangeFun
 
-   proc {FailedCtxNoLastNoSuccess Ctx ?Result}
-      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?Result true}
-   end
-
-   proc {FailedCtxLastNoSuccess Ctx ?Result}
-      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?Result true}
-      LastNoSuccess = Result.lastNoSuccess
-   in
-      if {Access LastNoSuccess}.offset < Result.offset then
-         {Assign LastNoSuccess Result}
+   fun {CtxPos Ctx}
+      if {HasFeature Ctx pos} then
+         Ctx.pos
+      elseif {HasFeature Ctx posbegin} then
+         Ctx.posbegin
+      else
+         unknown
       end
    end
 
+   fun {NewError Ctx ErrorMessages}
+      if {HasFeature Ctx pos} then
+         error(ErrorMessages pos: Ctx.pos)
+      elseif {HasFeature Ctx posbegin} then
+         error(ErrorMessages pos: Ctx.posbegin)
+      else % Unknown position
+         error(ErrorMessages)
+      end
+   end
+
+   proc {FailedCtxWithError Ctx ErrorMessages ?Result}
+     CtxTmp
+     Error = {NewError Ctx ErrorMessages}
+  in
+      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?CtxTmp true}
+      Result = {AdjoinAt CtxTmp error Error}
+   end
+
+   proc {FailedCtxWithoutError Ctx ErrorMessages ?Result}
+      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?Result true}
+   end
+
+   fun {ComparePos pos(F1 L1 C1) pos(F2 L2 C2)}
+      if F1 \= F2 then unknown
+      elseif L1 > L2 then greaterThan
+      elseif L1 < L2 then lessThan
+      else
+         if C1 > C2 then greaterThan
+         elseif C1 < C2 then lessThan
+         else equal
+         end
+      end
+   end
+
+   fun {CompareError E1 E2}
+      case E1#E2
+      of error(_ pos: P1)#error(_ pos: P2) then {ComparePos P1 P2}
+      else unknown
+      end
+   end
+
+   fun {MergeErrors E1 E2}
+      case {CompareError E1 E2}
+      of unknown     then E2
+      [] lessThan    then E2
+      [] greaterThan then E1
+      [] equal       then
+         case E1#E2 of error(M1 pos: P1)#error(M2 pos: _) then
+            error({Append
+                   {Filter M1 fun {$ X} {Not {Member X M2}} end}
+                   M2} pos: P1)
+         end
+      end
+   end
+
+   fun {AddErrorMessageWithError Ctx Msg}
+      {AdjoinAt Ctx
+       error if {HasFeature Ctx error} then
+                if {Member Msg Ctx.error.1} then Ctx.error
+                else {AdjoinAt Ctx.error 1 Msg|Ctx.error.1}
+                end
+             else {NewError Ctx [Msg]}
+             end}
+   end
+
+   fun {AddErrorMessageWithoutError Ctx Msg} Ctx end
+
+   fun {MergeContextsWithError C1 C2}
+      if {HasFeature C1 error} then
+         if {HasFeature C2 error} then
+            {AdjoinAt C2 error {MergeErrors C1.error C2.error}}
+         else
+            {AdjoinAt C2 error C1.error}
+         end
+      else C2
+      end
+   end
+
+   fun {MergeContextsWithoutError C1 C2} C2 end
+
    proc{Translate WG Opts ?TG}
       UseCache = {CondSelect Opts useCache false}
-      UseLastNoSuccess = {CondSelect Opts useLastNoSuccess false}
+      HandleErrors = {CondSelect Opts handleErrors true}
+      NoCache = {CondSelect Opts noCache noCache}
 
-      FailedCtx = if UseLastNoSuccess
-                  then FailedCtxLastNoSuccess
-                  else FailedCtxNoLastNoSuccess
+      MergeContexts = if HandleErrors then MergeContextsWithError
+                      else MergeContextsWithoutError
+                      end
+      FailedCtx = if HandleErrors then FailedCtxWithError
+                  else FailedCtxWithoutError
                   end
+
+      AddErrorMessage = if HandleErrors then AddErrorMessageWithError
+                        else AddErrorMessageWithoutError
+                        end
+
+      TemporaryRules = {Dictionary.new}
+
+      fun {LookupRule Name}
+         local Result in
+            {Dictionary.condExchange TemporaryRules Name _ Result Result}
+            Result
+         end
+      end
 
       fun{TranslateRule G}
          case G
@@ -73,11 +166,12 @@ define
             XX={TranslateRule X}
             YY={TranslateRule Y}
          in
-            proc{$ CtxIn CtxOut Sem} CtxMid Sem1 Sem2 in
+            proc{$ CtxIn CtxOut Sem} CtxMid CtxEnd Sem1 Sem2 in
                {XX CtxIn CtxMid Sem1}
                if CtxMid.valid then
                   Sem=Sem1|Sem2
-                  {YY CtxMid CtxOut Sem2}
+                  {YY CtxMid CtxEnd Sem2}
+                  CtxOut = {MergeContexts CtxMid CtxEnd}
                else
                   Sem=Sem1
                   CtxOut=CtxMid
@@ -90,10 +184,11 @@ define
             XX={TranslateRule X}
             YY={TranslateRule Y}
          in
-            proc{$ CtxIn CtxOut Sem} CtxMid Sem1 in
+            proc{$ CtxIn CtxOut Sem} CtxMid CtxEnd Sem1 in
                {XX CtxIn CtxMid Sem1}
                if CtxMid.valid then
-                  {YY CtxMid CtxOut Sem}
+                  {YY CtxMid CtxEnd Sem}
+                  CtxOut = {MergeContexts CtxMid CtxEnd}
                else
                   Sem=Sem1
                   CtxOut=CtxMid
@@ -103,10 +198,11 @@ define
             XX={TranslateRule X}
             YY={TranslateRule Y}
          in
-            proc{$ CtxIn CtxOut Sem} CtxMid in
+            proc{$ CtxIn CtxOut Sem} CtxMid CtxEnd in
                {XX CtxIn CtxMid Sem}
                if CtxMid.valid then
-                  {YY CtxMid CtxOut _}
+                  {YY CtxMid CtxEnd _}
+                  CtxOut = {MergeContexts CtxMid CtxEnd}
                else
                   CtxOut=CtxMid
                end
@@ -115,13 +211,14 @@ define
             XX={TranslateRule X}
             YY={TranslateRule Y}
          in
-            proc{$ CtxIn CtxOut Sem} CtxTmp Sem1 Sem2 in
-               {XX CtxIn CtxTmp Sem1}
-               if CtxTmp.valid then
+            proc{$ CtxIn CtxOut Sem} Ctx1 Ctx2 Sem1 Sem2 in
+               {XX CtxIn Ctx1 Sem1}
+               if Ctx1.valid then
                   Sem=Sem1
-                  CtxOut=CtxTmp
+                  CtxOut=Ctx1
                else
-                  {YY CtxIn CtxOut Sem2}
+                  {YY CtxIn Ctx2 Sem2}
+                  CtxOut = {MergeContexts Ctx1 Ctx2}
                   if CtxOut.valid then
                      Sem=Sem2
                   else
@@ -138,7 +235,7 @@ define
             proc{$ CtxIn CtxOut Sem} CtxTmp in
                {XX CtxIn CtxTmp Sem}
                if CtxTmp.valid then
-                  CtxOut={FailedCtx CtxIn}
+                  CtxOut = {FailedCtx CtxIn nil}
                else
                   CtxOut=CtxIn
                end
@@ -151,7 +248,7 @@ define
                if CtxTmp.valid then
                   CtxOut=CtxIn
                else
-                  CtxOut={FailedCtx CtxIn}
+                  CtxOut={FailedCtx CtxIn nil}
                end
             end
          [] sem(X P) then
@@ -162,13 +259,15 @@ define
                {P CtxMid SemMid CtxOut Sem}
             end
          [] nt(X) then
-            if UseCache then
+            Rule = {LookupRule X}
+         in
+            if UseCache andthen {Not {HasFeature NoCache X}} then
                proc{$ CtxIn CtxOut Sem} N in
                   true=CtxIn.valid
                   case {DictCondExchangeFun CtxIn.cache X unit N $}
                   of unit then
                      N=CtxOut#Sem
-                     {{CondSelect CtxIn grammar TG}.X CtxIn CtxOut Sem}
+                     {Rule CtxIn CtxOut Sem}
                   [] Ctx#S then
                      N=Ctx#S
                      CtxOut=Ctx
@@ -176,9 +275,7 @@ define
                   end
                end
             else
-               proc{$ CtxIn CtxOut Sem}
-                  {{CondSelect CtxIn grammar TG}.X CtxIn CtxOut Sem}
-               end
+               Rule
             end
          [] cache(X) then
             {TranslateRule cache(X _)}
@@ -204,7 +301,7 @@ define
          [] wc then
             proc{$ CtxIn CtxOut Sem}
                true=CtxIn.valid
-               CtxOut=CtxIn.rest
+               CtxOut={MergeContexts CtxIn CtxIn.rest}
                Sem=CtxIn.first
             end
          [] ts(nil) then {TranslateRule empty}
@@ -215,9 +312,9 @@ define
                true = CtxIn.valid
                Sem = CtxIn.first
                if {P Sem} then
-                  CtxOut = CtxIn.rest
+                  CtxOut = {MergeContexts CtxIn CtxIn.rest}
                else
-                  CtxOut = {FailedCtx CtxIn.rest}
+                  CtxOut = {FailedCtx CtxIn.rest nil}
                end
             end
          [] is(X P) then
@@ -228,7 +325,7 @@ define
                   if {P Sem} then
                      CtxOut = CtxTmp
                   else
-                     CtxOut = {FailedCtx CtxTmp}
+                     CtxOut = {FailedCtx CtxTmp nil}
                   end
                else
                   CtxOut=CtxTmp
@@ -240,33 +337,36 @@ define
                V = CtxIn.first in
                case {P V}
                of some(Sem0) then
-                  CtxOut = CtxIn.rest
+                  CtxOut = {MergeContexts CtxIn CtxIn.rest}
                   Sem = Sem0
                [] false then
-                  CtxOut = {FailedCtx CtxIn.rest}
+                  CtxOut = {FailedCtx CtxIn.rest nil}
                   Sem = V
                end
             end
          [] elem(V) then
-            proc {$ CtxIn CtxOut Sem}
+            proc {P CtxIn CtxOut Sem}
                true = CtxIn.valid in
                Sem = CtxIn.first
                if Sem == V then
-                  CtxOut = CtxIn.rest
+                  CtxOut = {MergeContexts CtxIn CtxIn.rest}
                else
-                  CtxOut = {FailedCtx CtxIn.rest}
+                  CtxOut = {FailedCtx CtxIn.rest nil}
                end
             end
+         in
+            {TranslateRule label('\''#V#'\'' raw(P))}
          [] star(X) then
             XX={TranslateRule X}
-            proc {P CtxIn CtxOut Sem} CtxMid Sem1 Sem2 in
+            proc {P CtxIn CtxOut Sem} CtxMid CtxEnd Sem1 Sem2 in
                {XX CtxIn CtxMid Sem1}
                if CtxMid.valid then
                   Sem=Sem1|Sem2
-                  {P CtxMid CtxOut Sem2}
+                  {P CtxMid CtxEnd Sem2}
+                  CtxOut = {MergeContexts CtxMid CtxEnd}
                else
                   Sem=nil
-                  CtxOut=CtxIn
+                  CtxOut= {MergeContexts CtxMid CtxIn}
                end
             end
          in
@@ -283,6 +383,20 @@ define
             {TranslateRule alt(X empty)}
          [] opt(X Y) then
             {TranslateRule alt(X empty#fun{$ _}Y end)}
+         [] label(Label X) then
+            XX = {TranslateRule X}
+         in
+            proc {$ CtxIn CtxOut Sem} CtxMid in
+               {XX CtxIn CtxMid Sem}
+               CtxOut = {AdjoinAt CtxMid error {NewError CtxIn [expected(Label)]}}
+            end
+         [] context(Context X) then
+            XX = {TranslateRule X}
+         in
+            proc {$ CtxIn CtxOut Sem} CtxMid in
+               {XX CtxIn CtxMid Sem}
+               CtxOut = {AddErrorMessage CtxMid context(Context {CtxPos CtxIn})}
+            end
          [] X andthen {Literal.is X} andthen {HasFeature WG X} then
             {TranslateRule nt(X)}
          [] nil then {TranslateRule empty}
@@ -315,6 +429,116 @@ define
          end
       end
    in
-      TG = {Record.map WG TranslateRule}
+      {Record.forAllInd WG
+       proc {$ RuleName Production}
+          {LookupRule RuleName} = {TranslateRule Production}
+       end}
+
+      TG = {Dictionary.toRecord g TemporaryRules}
+   end
+
+   local
+      MaxShownTokens = 10
+
+      fun {GroupBy F Xs}
+         case Xs
+         of X|Xr then
+            V = {F X}
+            GroupX Rest
+         in
+            {List.takeDropWhile Xr fun {$ Y} {F Y} == V end GroupX Rest}
+            (X|GroupX)|{GroupBy F Rest}
+         [] nil then nil
+         end
+      end
+
+      fun {JoinWithOr Messages}
+         case Messages
+         of [A]   then A
+         [] [A B] then A#' or '#B
+         [] X|Xs  then X#', '#{JoinWithOr Xs}
+         [] nil   then nil
+         end
+      end
+
+      fun {ExpectedTokens Messages}
+         {Reverse
+          {Map {Filter Messages fun {$ X} {Label X} == expected end}
+           fun {$ expected(X)} X end}}
+      end
+
+      proc {FormatExpected Messages ?Message ?ExtraItem}
+         Tokens = {ExpectedTokens Messages}
+      in
+         case Tokens
+         of nil then
+            Message = 'parse error'
+            ExtraItem = nil
+         [] [Token] then
+            Message = {VirtualString.toAtom 'expected '#Token}
+            ExtraItem = nil
+         [] Token|ExtraTokens then
+            Message = {VirtualString.toAtom 'expected '#Token}
+
+            local
+               TokensToShow Hidden
+               {List.takeDrop ExtraTokens MaxShownTokens TokensToShow Hidden}
+
+               ListToShow = if Hidden == nil then
+                               TokensToShow
+                            else
+                               HiddenCount = {Length Hidden}
+                            in
+                               {Append TokensToShow
+                                if HiddenCount == 1 then
+                                   Hidden.1
+                                else
+                                   ["one of "#HiddenCount#" others"]
+                                end}
+                            end
+            in
+               ExtraItem = line('(other candidates: '#{JoinWithOr ListToShow}#')')
+            end
+         end
+      end
+
+      fun {ContextLessThan context(_ PosA) context(_ PosB)}
+         {ComparePos PosA PosB} == greaterThan
+      end
+
+      fun {SortedContexts Messages Pos}
+         {Sort {Filter Messages fun {$ M}
+                                   {Label M} == context andthen
+                                   {ComparePos Pos M.2} == greaterThan
+                                end}
+          ContextLessThan}
+      end
+
+      fun {GroupedContexts Messages Pos}
+         {Map {GroupBy fun {$ X} X.2 end {SortedContexts Messages Pos}}
+          fun {$ Contexts}
+             Pos = (Contexts.1).2
+          in
+             context({Map Contexts fun {$ C} C.1 end} pos: Pos)
+          end}
+      end
+
+      fun {FormatContexts Messages Pos}
+         {Map {GroupedContexts Messages Pos}
+          fun {$ context(Contexts pos: Pos)}
+             hint(l: Pos m: 'inside '#{JoinWithOr Contexts})
+          end}
+      end
+   in
+      fun {ParseErrorToMessage error(Messages pos: Pos)}
+         Message ExtraItem
+         Contexts = {FormatContexts Messages Pos}
+      in
+         {FormatExpected Messages Message ExtraItem}
+         error(kind:'parse error' msg: Message
+               items: if ExtraItem == nil then Pos|Contexts
+                      else ExtraItem|Pos|Contexts
+                      end)
+      end
    end
 end

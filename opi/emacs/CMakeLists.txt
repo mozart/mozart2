@@ -9,6 +9,12 @@ if(NOT EMACS)
   message(WARNING "Emacs executable not found, cannot build .el files")
 else()
   message(STATUS "Using emacs from: ${EMACS}")
+
+  if(WIN32)
+    # Path for Inno Setup
+    set(ISS_EMACS_EXEC ${EMACS} CACHE STRING "Executable path of emacs")
+  endif()
+
   set(EMACS_OPTIONS -q -batch -f batch-byte-compile)
   set(EMACS_MODE_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/oz.el"

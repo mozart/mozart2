@@ -11,6 +11,7 @@ Download and install the following tools:
 *   Python (required for building LLVM)
 *   Git for Windows
 *   CMake >= 2.8.6
+*   [Inno Setup](http://www.jrsoftware.org/isdl.php) (with preprocessor, required for building setup files)
 *   A recent 32-bit (i686) or 64-bit (x86_64) targeting [MinGW-64 distro](http://mingw-w64.sourceforge.net/download.php#mingw-builds) with gcc >= 4.7.1. 
 
 These tools won't be needed at run time. We will refer to the installation directory of MinGW (in which the first `bin` subdirectory is found) by `<mingw>`. 
@@ -118,3 +119,16 @@ For Mozart to run properly, you need to ensure :
 
 * Tcl/Tk is in your PATH or its `lib` and `bin` subfolders are merged with Mozart ones
 * An environment variable `OZEMACS` is set to `<emacs>\bin\runemacs.exe`
+
+## Making Mozart 2 packages
+
+If you want to build setup files for Mozart, just type in your terminal :
+
+    C:> mingw32-make installer
+
+The new setup file will be located in your build directory. Two more CMake options are then available :
+
+* `-DISS_INCLUDE_EMACS=ON` will include your Emacs files in the package.
+* `-DISS_INCLUDE_TCL=ON` will include your Tcl/Tk files in the package.
+
+Please note that ActiveTcl is not redistributable without an OEM license.

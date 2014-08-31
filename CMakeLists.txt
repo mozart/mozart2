@@ -111,5 +111,38 @@ set(CPACK_RPM_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
 set(CPACK_RPM_PACKAGE_REQUIRES "tcl >= 8.5, tk >= 8.5, emacs")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
 
+# Configuration of Inno Setup files
+
+if(WIN32)
+  find_program(ISS_COMPILER NAMES iscc ISCC
+               HINTS "C:/Program Files (x86)/Inno Setup 5" "C:/Program Files/Inno Setup 5")
+
+  if(NOT ISS_COMPILER)
+    message(WARNING "Inno Setup Compiler not found. You won't be able to build setup files.")
+  else()
+    message(STATUS "Using Inno Setup Compiler from: ${ISS_COMPILER}")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/distrib/windows"
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/distrib")
+
+    # Compute Tcl/Tk install path
+    get_filename_component(ISS_TCL_EXEC_PARENT "${ISS_TCL_EXEC}" DIRECTORY)
+    get_filename_component(ISS_TCL_PATH "${ISS_TCL_EXEC_PARENT}" DIRECTORY)
+
+    # Compute emacs install path
+    get_filename_component(ISS_EMACS_EXEC_PARENT "${ISS_EMACS_EXEC}" DIRECTORY)
+    get_filename_component(ISS_EMACS_PATH "${ISS_EMACS_EXEC_PARENT}" DIRECTORY)
+
+    # Parse Inno Setup config file
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/distrib/windows/MozartConfig.iss"
+                   "${CMAKE_CURRENT_BINARY_DIR}/distrib/windows/MozartConfig.iss")
+
+    # Add installer target
+    add_custom_target(installer
+                      COMMAND ${CMAKE_MAKE_PROGRAM} install
+                      COMMAND ${ISS_COMPILER} "${CMAKE_CURRENT_BINARY_DIR}/distrib/windows/MozartSetup.iss"
+                      VERBATIM)
+  endif()
+endif()
+
 # Finally include CPack
 include(CPack)

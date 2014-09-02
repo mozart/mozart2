@@ -1193,7 +1193,7 @@ public:
 
     static void call(VM vm, Out pid) {
 #ifdef MOZART_WINDOWS
-      pid = build(vm, GetCurrentProcessId());
+      pid = SmallInt::build(vm, GetCurrentProcessId());
 #else
       pid = build(vm, getpid());
 #endif

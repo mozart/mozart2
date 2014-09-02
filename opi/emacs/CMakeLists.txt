@@ -9,6 +9,12 @@ if(NOT EMACS)
   message(WARNING "Emacs executable not found, cannot build .el files")
 else()
   message(STATUS "Using emacs from: ${EMACS}")
+
+  if(WIN32)
+    # Path for Inno Setup
+    set(ISS_EMACS_EXEC ${EMACS} CACHE STRING "Executable path of emacs")
+  endif()
+
   set(EMACS_OPTIONS -q -batch -f batch-byte-compile)
   set(EMACS_MODE_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/oz.el"
@@ -29,7 +35,7 @@ else()
       OUTPUT ${tgt_file}
       COMMAND ${CMAKE_COMMAND} -E copy "${el_file}" "${gen_el_file}"
       COMMAND ${EMACS}
-        -eval "(setq load-path (append load-path '(\"${CMAKE_CURRENT_SOURCE_DIR}\")))"
+        -L "${CMAKE_CURRENT_SOURCE_DIR}"
         ${EMACS_OPTIONS}  "${gen_el_file}"
       DEPENDS "${el_file}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -50,6 +56,6 @@ if(NOT WIN32)
 else() # WIN32
   add_executable(oz "windows/oz.cc" "windows/panic.cc" "windows/getenv.cc"
     "windows/path.cc" "windows/initenv.cc" "windows/makecmd.cc"
-    "windows/ppid.cc" "windows/process.cc" "windows/registry.cc")
+    "windows/ppid.cc" "windows/process.cc" "windows/registry.cc" "windows/oz.rc")
   install(TARGETS oz DESTINATION bin)
 endif()

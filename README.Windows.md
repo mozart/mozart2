@@ -1,77 +1,134 @@
 # Windows-specific notes
 
 General information can be found in the [main Readme](README.md). Unless
-othewise specified here, instructions found in the main Readme apply.
-
-## Required software
-
-Download and install the following tools:
-
-*   TortoiseSVN and TortoiseGit
-*   The [MinGW distro](http://nuwen.net/mingw.html) of nuwen.net,
-    which includes a C++11 enabled GCC and Boost
-*   CMake >= 2.8.6
-*   Emacs
-*   [Active TCL](http://www.activestate.com/activetcl/downloads)
-    _32 bits_ (even if you are running a 64-bit Windows), preferably v8.5
-
-We will refer to the installation directories of MinGW, CMake and Emacs by
-`<mingw>`, `<cmake>` and `<emacs>`, respectively.
-
-Also, each time we mention "4.7.2", we are referring to the version of GCC
-that accompanies MinGW. Make sure to adapt this to your version.
+otherwise specified here, instructions found in the main Readme apply.
 
 ## Global configuration
+### Development tools
+Download and install the following tools:
 
-Put the following directories in your PATH:
+*   Java (required for building the boot compiler)
+*   Python (required for building LLVM)
+*   Git for Windows
+*   CMake >= 2.8.6
+*   [Inno Setup](http://www.jrsoftware.org/isdl.php) (with preprocessor, required for building setup files)
+*   A recent 32-bit (i686) or 64-bit (x86_64) targeting [MinGW-64 distro](http://mingw-w64.sourceforge.net/download.php#mingw-builds) with gcc >= 4.7.1. 
 
-*    `<mingw>\bin`
-*    `<cmake>\bin`
-*    `<emacs>\bin`
-*    `<projects>\builds\llvm-release\bin`
+These tools won't be needed at run time. We will refer to the installation directory of MinGW (in which the first `bin` subdirectory is found) by `<mingw>`. 
+All commands in this file are to be done in the MinGW terminal (shortcut available from the start menu).
 
-Patch the file `<mingw>\include\c++\4.7.2\i686-pc-mingw32\bits\c++config.h` by
-replacing
+### Mozart requirements
+Download and install :
 
-    /* Define if __float128 is supported on this host. */
-    #define _GLIBCXX_USE_FLOAT128 1
+*   Emacs for Windows
+*   32-bit or 64-bit (depending on MinGW) [Active Tcl](http://www.activestate.com/activetcl/downloads) or self-compiled Tcl/Tk >= 8.5
 
-by
+We will refer to the installation directory of Emacs and Tcl/Tk by `<emacs>` and `<tcl>`, respectively.
 
-    /* Define if __float128 is supported on this host. */
-    #ifndef __clang__
-    #define _GLIBCXX_USE_FLOAT128 1
-    #endif
+### Suggested directory layout
 
-## GTest and LLVM
+We suggest that you use the following directory layout, starting from a
+directory `<projects>` :
 
-Download them as specified in the main Readme.
+	<projects>
+	  + mozart2              // cloned from this repo
+	  + externals
+	      + boost            // source of Boost (see below)
+	      + gtest            // source of GTest (see below)
+	      + llvm             // source of LLVM (see below)
+	  + builds
+	      + gtest            // build of GTest
+	      + llvm             // build of LLVM
+	      + mozart2          // build of Mozart
+	  + redist               // export dir of Mozart (see below)
 
-Configure and build GTest:
+Throughout the following instructions, we will assume this layout.
 
-    gtest-debug>cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM=<mingw>/bin/make.exe -DCMAKE_BUILD_TYPE=Debug ../../externals/gtest
-    gtest-debug>make
+## Compilation of Boost
+1. Download [Boost **>= 1.53**](http://www.boost.org/users/download/) and extract the archive in `<projects>\externals\boost`.
+1. In your MinGW terminal, type (`<arch>` depends on building 32-bit or 64-bit target) :
 
-Configure and build LLVM with:
+		C:> cd <projects>\externals\boost\tools\build\src\engine
+		C:> build.bat mingw
+		C:> cp bin.nt<arch>\*.* ..\..\..\..\
+		C:> cd ..\..\..\..\
+		C:> bjam --toolset=gcc
 
-    llvm-release>cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM=<mingw>/bin/make.exe -DCMAKE_BUILD_TYPE=Release ../../externals/llvm
-    llvm-release>make
+1. From `<projects>\externals\boost`, copy `boost` subdirectory in your `<mingw>\<arch>-w64-mingw32\include` directory and merge `stage\lib` subdirectory with your `<mingw>\<arch>-w64-mingw32\lib` directory.
 
-## Configuration and build of Mozart2
+## Compilation of GTest
 
-The "build" version (not "installed") of Mozart2 is very tedious to run on
-Windows. We suggest that you always `make install` (we do that ourselves).
-You can use the configuration option `-DCMAKE_INSTALL_PREFIX=C:/Where/You/Want`
-of CMake to specify in which directory you want it to be installed.
+1. Download [GTest](https://code.google.com/p/googletest/downloads/list) and extract the archive in `<projects>\externals\gtest`.
+1. In your MinGW terminal, type :
 
-Configure and build Mozart with the following incantation. It might be
-necessary to open your command prompt with administrator privileges.
+		C:> cd <projects>\builds\gtest
+		C:> cmake -G"MinGW Makefiles" ..\..\externals\gtest
+		C:> mingw32-make
 
-    mozart2-release>cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM=<mingw>/bin/make.exe -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=../../externals/llvm -DLLVM_BUILD_DIR=../llvm-release ../../mozart2
-    mozart2-release>make
-    mozart2-release>make install
+## Compilation of LLVM
+1. Download [LLVM and Clang **3.3**](http://llvm.org/releases/download.html#3.3) source code.
+1. Extract the content of LLVM source archive in `<projects>\externals\llvm` and the content of Clang source archive in `<projects>\externals\llvm\tools\clang`.
+1. If you are targeting 64-bit builds, patch the files `<projects>\externals\llvm\lib\ExecutionEngine\JIT\JIT.cpp` and `<projects>\externals\llvm\lib\ExecutionEngine\MCJIT\SectionMemoryManager.cpp` by replacing :
 
-If the script does not detect correctly where MinGW is installed, you can tell
-it using the option `-DMINGW_ROOT=<mingw>`. Similarly, if the version of GCC in
-your MinGW is not 4.7.2, you can tell it with
-`-DMINGW_COMPILER_VERSION=4.7.1`, e.g.
+    	// Determine whether we can register EH tables.
+		#if (defined(__GNUC__) && !defined(__ARM_EABI__) && \
+		     !defined(__USING_SJLJ_EXCEPTIONS__))
+		#define HAVE_EHTABLE_SUPPORT 1
+		#else
+		#define HAVE_EHTABLE_SUPPORT 0
+		#endif
+
+	by :
+
+    	// Determine whether we can register EH tables.
+		#if (defined(__GNUC__) && !defined(__ARM_EABI__) && \
+		     !(defined(__USING_SJLJ_EXCEPTIONS__) || defined(_WIN64)))
+		#define HAVE_EHTABLE_SUPPORT 1
+		#else
+		#define HAVE_EHTABLE_SUPPORT 0
+		#endif
+
+1. In your MinGW terminal, type :
+
+		C:> cd <projects>\builds\llvm
+		C:> cmake -G"MinGW Makefiles" -DLLVM_TARGETS_TO_BUILD="X86" -DCMAKE_BUILD_TYPE=Release ..\..\externals\llvm
+		C:> mingw32-make
+
+## Compilation of Mozart 2
+1. In your MinGW terminal, type :
+
+		C:> set PATH=%PATH%;<projects>\builds\llvm\bin;<emacs>\bin;<tcl>\bin
+		C:> cd <projects>
+		C:> git clone --recursive https://github.com/mozart/mozart2.git
+		C:> cd <projects>\builds\mozart2
+		C:> cmake -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DLLVM_BUILD_DIR=..\llvm -DGTEST_BUILD_DIR=..\gtest -DGTEST_SRC_DIR=..\..\externals\gtest -DLLVM_SRC_DIR=..\..\externals\llvm -DBOOST_ROOT=..\..\externals\boost\  -DCMAKE_INSTALL_PREFIX=..\..\redist\ ..\..\mozart2
+		C:> mingw32-make
+
+	If the script does not detect correctly where MinGW is installed, you can tell
+	it using the option `-DMINGW_ROOT=<mingw>`. Similarly, if the version of GCC in
+	your MinGW is not 4.9.1, you can tell it with
+	`-DMINGW_COMPILER_VERSION=4.8.2`, e.g.
+
+1. To copy all the binaries in the `redist` folder, type :	
+
+		C:> mingw32-make install
+
+## Running Mozart 2
+
+For Mozart to run properly, you need to ensure :
+
+* Tcl/Tk is in your PATH or its `lib` and `bin` subfolders are merged with Mozart ones
+* An environment variable `OZEMACS` is set to `<emacs>\bin\runemacs.exe`
+
+## Making Mozart 2 packages
+
+If you want to build setup files for Mozart, just type in your terminal :
+
+    C:> mingw32-make installer
+
+The new setup file will be located in your build directory. Two more CMake options are then available :
+
+* `-DISS_INCLUDE_EMACS=ON` will include your Emacs files in the package.
+* `-DISS_INCLUDE_TCL=ON` will include your Tcl/Tk files in the package.
+
+Please note that ActiveTcl is not redistributable without an OEM license.

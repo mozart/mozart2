@@ -12,24 +12,36 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Some helpers when using MinGW
-
 if(MINGW)
   get_filename_component(CMAKE_MAKE_PROGRAM_PATH "${CMAKE_MAKE_PROGRAM}" PATH)
   get_filename_component(CMAKE_MAKE_PROGRAM_PATH_PARENT "${CMAKE_MAKE_PROGRAM_PATH}" PATH)
 
   set(MINGW_ROOT "${CMAKE_MAKE_PROGRAM_PATH_PARENT}"
       CACHE PATH "Path where MinGW is installed")
-  set(MINGW_COMPILER_VERSION "4.7.2"
+  set(MINGW_COMPILER_VERSION "4.9.1"
       CACHE STRING "Version of GCC in your MinGW installation")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
-  set(DEFAULT_MOZART_GENERATOR_FLAGS
-      "-I${MINGW_ROOT}/include/c++/${MINGW_COMPILER_VERSION}"
-      "-I${MINGW_ROOT}/include/c++/${MINGW_COMPILER_VERSION}/i686-pc-mingw32")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-static -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+  
+  # Check for gcc target architecture
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)
+  string(STRIP "${GCC_ARCH}" GCC_ARCH_TRIPLE)
+  message(STATUS "Target architecture : ${GCC_ARCH_TRIPLE}")
 
+  set(DEFAULT_MOZART_GENERATOR_FLAGS
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++"
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++/${GCC_ARCH_TRIPLE}"
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include")  
+  
   set(BOOST_ROOT "${MINGW_ROOT}"
       CACHE PATH "Path where Boost is installed")
+
+  # Configuration for resources files
+    set(CMAKE_RC_COMPILER_INIT windres)
+      enable_language(RC)
+        set(CMAKE_RC_COMPILE_OBJECT
+	    "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
 else()
   set(DEFAULT_MOZART_GENERATOR_FLAGS "")
 endif()
@@ -51,6 +63,11 @@ add_subdirectory(opi)
 add_subdirectory(wish)
 add_subdirectory(stdlib)
 add_subdirectory(platform-test)
+
+# Add launcher and icons
+if(UNIX)
+  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/distrib/share/" DESTINATION share)
+endif()
 
 # General CPack configuration
 
@@ -86,6 +103,46 @@ string(REGEX REPLACE "-(alpha|beta|rc)\\." "~\\1"
        CPACK_DEBIAN_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacs")
+
+# Configuration of the RPM generator
+
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
+set(CPACK_RPM_PACKAGE_REQUIRES "tcl >= 8.5, tk >= 8.5, emacs")
+set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
+
+# Configuration of Inno Setup files
+
+if(WIN32)
+  find_program(ISS_COMPILER NAMES iscc ISCC
+               HINTS "C:/Program Files (x86)/Inno Setup 5" "C:/Program Files/Inno Setup 5")
+
+  if(NOT ISS_COMPILER)
+    message(WARNING "Inno Setup Compiler not found. You won't be able to build setup files.")
+  else()
+    message(STATUS "Using Inno Setup Compiler from: ${ISS_COMPILER}")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/distrib/windows"
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/distrib")
+
+    # Compute Tcl/Tk install path
+    get_filename_component(ISS_TCL_EXEC_PARENT "${ISS_TCL_EXEC}" DIRECTORY)
+    get_filename_component(ISS_TCL_PATH "${ISS_TCL_EXEC_PARENT}" DIRECTORY)
+
+    # Compute emacs install path
+    get_filename_component(ISS_EMACS_EXEC_PARENT "${ISS_EMACS_EXEC}" DIRECTORY)
+    get_filename_component(ISS_EMACS_PATH "${ISS_EMACS_EXEC_PARENT}" DIRECTORY)
+
+    # Parse Inno Setup config file
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/distrib/windows/MozartConfig.iss"
+                   "${CMAKE_CURRENT_BINARY_DIR}/distrib/windows/MozartConfig.iss")
+
+    # Add installer target
+    add_custom_target(installer
+                      COMMAND ${CMAKE_MAKE_PROGRAM} install
+                      COMMAND ${ISS_COMPILER} "${CMAKE_CURRENT_BINARY_DIR}/distrib/windows/MozartSetup.iss"
+                      VERBATIM)
+  endif()
+endif()
 
 # Finally include CPack
 include(CPack)

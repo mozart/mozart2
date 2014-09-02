@@ -457,7 +457,7 @@ define
                % RS: on MS Windows we use a socket: before we used
                % pipes, but on NT this made problems when certain background
                % tasks where running: Tk could get stuck here
-               if {Property.get 'platform.name'} == 'win32-i386' then
+               if {Property.get 'platform.os'} == 'win32' then
                   Stream Port
                in
                   thread

@@ -162,7 +162,11 @@ int main(int argc, char** argv) {
   std::string ozSearchPath, ozSearchLoad, appURL;
   std::vector<std::string> appArgs;
   size_t minMemoryMega = 32;
+#if defined(_WIN32) && !defined(_WIN64)
+  size_t maxMemoryMega = 512;
+#else
   size_t maxMemoryMega = 768;
+#endif
   bool appGUI;
 
   // DEFINE OPTIONS

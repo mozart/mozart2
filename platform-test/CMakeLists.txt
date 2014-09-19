@@ -33,7 +33,7 @@ endforeach()
 
 # debug folder
 set(DEBUG_FUNCTORS
-    "stacktrace_line_num.oz"
+    "stacktrace_line_num.oz" "gc.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/debug")
 foreach(FUNCTOR ${DEBUG_FUNCTORS})

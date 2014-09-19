@@ -45,5 +45,5 @@ Dictionary = dictionary(new:              NewDictionary
                         toRecord:         fun {$ L D}
                                              {List.toRecord L {Boot_Dictionary.entries D}}
                                           end
-                        %weak:             WeakDictionary
+                        weak:             WeakDictionary
                        )

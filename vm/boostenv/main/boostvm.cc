@@ -130,7 +130,7 @@ void BoostVM::run() {
 
       // Handle asynchronous events coming from I/O, e.g.
       while (!_vmEventsCallbacks.empty()) {
-        _vmEventsCallbacks.front()();
+        _vmEventsCallbacks.front()(*this);
         _vmEventsCallbacks.pop();
 
         if (_terminationRequested)
@@ -243,10 +243,8 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   // allocates the buffer in a neutral zone: the heap
   std::string* buffer = new std::string(out.str());
 
-  bool found = env.findVM(to, [buffer] (BoostVM& targetVM) {
-    targetVM.postVMEvent([buffer,&targetVM] () {
-      targetVM.receiveOnVMStream(buffer);
-    });
+  bool found = env.postVMEvent(to, [buffer] (BoostVM& targetVM) {
+    targetVM.receiveOnVMStream(buffer);
   });
   if (!found)
     delete buffer;
@@ -271,11 +269,9 @@ void BoostVM::receiveOnVMStream(std::string* buffer) {
 }
 
 void BoostVM::requestTermination(nativeint exitCode, const std::string& reason) {
-  postVMEvent([this, exitCode, reason] {
-    _terminationStatus = exitCode;
-    _terminationReason = reason;
-    _terminationRequested = true;
-  });
+  _terminationStatus = exitCode;
+  _terminationReason = reason;
+  _terminationRequested = true;
 }
 
 UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, const std::string& reason) {
@@ -294,11 +290,9 @@ void BoostVM::notifyMonitors() {
   VMIdentifier deadVM = this->identifier;
   std::string reason = this->_terminationReason;
   for (VMIdentifier identifier : _monitors) {
-    env.findVM(identifier, [=] (BoostVM& monitor) {
-      monitor.postVMEvent([&monitor, deadVM, reason] () {
-        UnstableNode notification = monitor.buildTerminationRecord(deadVM, reason);
-        monitor.receiveOnVMStream(notification);
-      });
+    env.postVMEvent(identifier, [deadVM, reason] (BoostVM& monitor) {
+      UnstableNode notification = monitor.buildTerminationRecord(deadVM, reason);
+      monitor.receiveOnVMStream(notification);
     });
   }
 }

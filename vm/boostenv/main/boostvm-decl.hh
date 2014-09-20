@@ -121,9 +121,10 @@ public:
                                           LT&& label, Args&&... args);
 
 // Notification from asynchronous work
-public:
+private:
+  friend class BoostEnvironment;
   inline
-  void postVMEvent(std::function<void()> callback);
+  void postVMEvent(std::function<void(BoostVM&)> callback);
 
 // GC
 public:
@@ -166,7 +167,7 @@ private:
 
 // IO-driven events that must work with the VM store
 private:
-  std::queue<std::function<void()> > _vmEventsCallbacks;
+  std::queue<std::function<void(BoostVM&)> > _vmEventsCallbacks;
 
 // Monitors
 private:

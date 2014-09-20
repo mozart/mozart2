@@ -145,7 +145,7 @@ VMIdentifier BoostEnvironment::checkValidIdentifier(VM vm, RichNode vmIdentifier
    the BoostVM will not be terminated during the call.
    Returns whether it found the VM represented by identifier. */
 bool BoostEnvironment::findVM(VMIdentifier identifier,
-                              std::function<void(BoostVM& boostVM)> onSuccess) {
+                              std::function<void(BoostVM&)> onSuccess) {
   boost::lock_guard<boost::mutex> lock(_vmsMutex);
   for (BoostVM& vm : _vms) {
     if (vm.identifier == identifier) {
@@ -166,7 +166,7 @@ UnstableNode BoostEnvironment::listVMs(VM vm) {
 
 void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
                               const std::string& reason) {
-  findVM(identifier, [this, exitCode, reason] (BoostVM& targetVM) {
+  postVMEvent(identifier, [this, exitCode, reason] (BoostVM& targetVM) {
     targetVM.requestTermination(exitCode, reason);
   });
 }

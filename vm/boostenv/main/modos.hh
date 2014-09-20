@@ -483,7 +483,7 @@ public:
         endpoint = tcp::endpoint(tcp::v6(), intPort);
 
       try {
-        auto acceptor = TCPAcceptor::create(BoostVM::forVM(vm), endpoint);
+        auto acceptor = TCPAcceptor::create(vm, endpoint);
         result = build(vm, acceptor);
       } catch (const boost::system::system_error& error) {
         raiseOSError(vm, "tcpAcceptorCreate", error);
@@ -501,7 +501,7 @@ public:
       auto connectionNode =
         BoostVM::forVM(vm).createAsyncIOFeedbackNode(result);
 
-      tcpAcceptor->startAsyncAccept(connectionNode);
+      tcpAcceptor->startAsyncAccept(TCPConnection::create(vm), connectionNode);
     }
   };
 
@@ -544,7 +544,7 @@ public:
         ozVSGet(vm, host, hostBufSize, strHost);
         ozVSGet(vm, service, serviceBufSize, strService);
 
-        auto tcpConnection = TCPConnection::create(BoostVM::forVM(vm));
+        auto tcpConnection = TCPConnection::create(vm);
 
         auto statusNode =
           BoostVM::forVM(vm).createAsyncIOFeedbackNode(status);
@@ -573,10 +573,8 @@ private:
     size_t size = (size_t) intCount;
     connection->getReadData().resize(size);
 
-    auto& boostVM = BoostVM::forVM(vm);
-
-    auto tailNode = boostVM.allocAsyncIONode(tail.getStableRef(vm));
-    auto statusNode = boostVM.createAsyncIOFeedbackNode(status);
+    auto tailNode = BoostVM::forVM(vm).allocAsyncIONode(tail.getStableRef(vm));
+    auto statusNode = BoostVM::forVM(vm).createAsyncIOFeedbackNode(status);
 
     connection->startAsyncReadSome(tailNode, statusNode);
   }
@@ -1006,8 +1004,7 @@ public:
 
 #else  /* !MOZART_WINDOWS */
 
-      auto& boostVM = BoostVM::forVM(vm);
-      auto pipeConnection = PipeConnection::create(boostVM);
+      auto pipeConnection = PipeConnection::create(vm);
 
       // Build the Oz value now so that it is registered for GC
       auto ozPipe = build(vm, pipeConnection);
@@ -1017,7 +1014,7 @@ public:
 
       {
         boost::asio::local::stream_protocol::socket childSocket(
-          boostVM.env.io_service);
+          BoostEnvironment::forVM(vm).io_service);
         boost::asio::local::connect_pair(mySocket, childSocket, ec);
 
         if (!ec) {

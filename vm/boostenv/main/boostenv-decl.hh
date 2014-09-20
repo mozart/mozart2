@@ -82,7 +82,7 @@ public:
 
   inline
   bool findVM(VMIdentifier identifier,
-              std::function<void(BoostVM& boostVM)> onSuccess);
+              std::function<void(BoostVM&)> onSuccess);
 
   inline
   UnstableNode listVMs(VM vm);
@@ -98,6 +98,15 @@ public:
   inline
   void removeTerminatedVM(VMIdentifier identifier, nativeint exitCode,
                           boost::asio::io_service::work* work);
+
+  // Executes callback on behalf of the target VM if it is still alive.
+  inline
+  bool postVMEvent(VMIdentifier identifier,
+                   std::function<void(BoostVM&)> callback) {
+     return findVM(identifier, [&callback] (BoostVM& boostVM) {
+       boostVM.postVMEvent(callback);
+     });
+   }
 
 // Configuration
 

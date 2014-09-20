@@ -28,6 +28,12 @@
 #include <boost/bind.hpp>
 #include <boost/random/random_device.hpp>
 
+#ifdef MOZART_WINDOWS
+#  include <windows.h>
+#else
+#  include <csignal>
+#endif
+
 namespace mozart { namespace boostenv {
 
 /////////////
@@ -280,6 +286,24 @@ void BoostVM::addMonitor(VMIdentifier monitor) {
   _monitors.push_back(monitor);
 }
 
+void BoostVM::addChildProcess(nativeint pid) {
+  _childProcesses.push_back(pid);
+}
+
+void BoostVM::killChildProcesses() {
+  for (auto pid : _childProcesses) {
+#ifndef MOZART_WINDOWS
+    kill(pid, SIGTERM);
+#else
+    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+    if (hProcess) {
+      TerminateProcess(hProcess, 0);
+      CloseHandle(hProcess);
+    }
+#endif
+  }
+}
+
 void BoostVM::notifyMonitors() {
   VMIdentifier deadVM = this->identifier;
   std::string reason = this->_terminationReason;
@@ -300,6 +324,7 @@ void BoostVM::terminate() {
   alarmTimer.cancel();
 
   portClosed = true; // close VM port
+  killChildProcesses();
   notifyMonitors();
 
   env.removeTerminatedVM(identifier, _terminationStatus, _work);

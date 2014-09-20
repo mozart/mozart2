@@ -94,7 +94,11 @@ public:
 
   void addMonitor(VMIdentifier monitor);
 
+  void addChildProcess(nativeint pid);
+
 private:
+  void killChildProcesses();
+
   void notifyMonitors();
 
   void terminate();
@@ -179,6 +183,10 @@ private:
   bool _terminationRequested;
   nativeint _terminationStatus;
   std::string _terminationReason;
+
+// Spawned child processes to kill when terminating
+private:
+  std::vector<nativeint> _childProcesses;
 
 // Running thread management
 private:

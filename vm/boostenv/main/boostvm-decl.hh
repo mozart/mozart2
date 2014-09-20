@@ -172,7 +172,6 @@ private:
 // Monitors
 private:
   std::vector<VMIdentifier> _monitors;
-  boost::mutex _monitorsMutex;
 
 // Termination
 private:

@@ -49,13 +49,13 @@ public:
 public:
   typedef std::shared_ptr<T> pointer;
 
-  static pointer create(BoostVM& boostVM) {
-    return std::make_shared<T>(boostVM);
+  static pointer create(VM vm) {
+    return std::make_shared<T>(vm);
   }
 
 public:
   inline
-  BaseSocketConnection(BoostVM& boostVM);
+  BaseSocketConnection(VM vm);
 
 public:
   typename protocol::socket& socket() {
@@ -89,7 +89,8 @@ protected:
                    const ProtectedNode& statusNode);
 
 protected:
-  BoostVM& boostVM;
+  BoostEnvironment& env;
+  VMIdentifier vm;
   typename protocol::socket _socket;
 
   std::vector<char> _readData;

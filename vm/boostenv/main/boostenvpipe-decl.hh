@@ -41,7 +41,7 @@ class PipeConnection: public BaseSocketConnection<PipeConnection,
   boost::asio::local::stream_protocol> {
 public:
   inline
-  PipeConnection(BoostVM& boostVM);
+  PipeConnection(VM vm);
 };
 
 #endif // BOOST_ASIO_HAS_LOCAL_SOCKETS

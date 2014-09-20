@@ -42,7 +42,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   VirtualMachine(environment, options), vm(this),
   env(environment), identifier(identifier),
   uuidGenerator(random_generator),
-  _portClosed(false),
+  portClosed(false),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
@@ -130,7 +130,7 @@ void BoostVM::run() {
 
       // Handle asynchronous events coming from I/O, e.g.
       while (!_vmEventsCallbacks.empty()) {
-        _vmEventsCallbacks.front()();
+        _vmEventsCallbacks.front()(*this);
         _vmEventsCallbacks.pop();
 
         if (_terminationRequested)
@@ -200,10 +200,6 @@ bool BoostVM::streamAsked() {
   return _headOfStream == nullptr;
 }
 
-bool BoostVM::portClosed() {
-  return _portClosed;
-}
-
 UnstableNode BoostVM::getStream() {
   UnstableNode stream;
   if (!streamAsked()) {
@@ -219,12 +215,12 @@ UnstableNode BoostVM::getStream() {
 }
 
 void BoostVM::closeStream() {
-  if (!portClosed()) {
+  if (!portClosed) {
     if (streamAsked())
       _asyncIONodeCount--; // We are no more interested in the stream
     UnstableNode nil = buildNil(vm);
     BindableReadOnly(*_stream).bindReadOnly(vm, nil);
-    _portClosed = true;
+    portClosed = true;
   }
 }
 
@@ -233,7 +229,7 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   // we do not need to pickle value
   bool portClosed = true;
   env.findVM(to, [&portClosed] (BoostVM& targetVM) {
-    portClosed = targetVM.portClosed();
+    portClosed = targetVM.portClosed;
   });
   if (portClosed)
     return;
@@ -243,22 +239,20 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   // allocates the buffer in a neutral zone: the heap
   std::string* buffer = new std::string(out.str());
 
-  bool found = env.findVM(to, [buffer] (BoostVM& targetVM) {
-    targetVM.postVMEvent([buffer,&targetVM] () {
-      targetVM.receiveOnVMStream(buffer);
-    });
+  bool found = env.postVMEvent(to, [buffer] (BoostVM& targetVM) {
+    targetVM.receiveOnVMStream(buffer);
   });
   if (!found)
     delete buffer;
 }
 
 void BoostVM::receiveOnVMStream(RichNode value) {
-  if (!portClosed())
+  if (!portClosed)
     sendToReadOnlyStream(vm, _stream, value);
 }
 
 void BoostVM::receiveOnVMStream(std::string* buffer) {
-  if (portClosed()) {
+  if (portClosed) {
     delete buffer;
     return;
   }
@@ -271,11 +265,9 @@ void BoostVM::receiveOnVMStream(std::string* buffer) {
 }
 
 void BoostVM::requestTermination(nativeint exitCode, const std::string& reason) {
-  postVMEvent([this, exitCode, reason] {
-    _terminationStatus = exitCode;
-    _terminationReason = reason;
-    _terminationRequested = true;
-  });
+  _terminationStatus = exitCode;
+  _terminationReason = reason;
+  _terminationRequested = true;
 }
 
 UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, const std::string& reason) {
@@ -285,20 +277,16 @@ UnstableNode BoostVM::buildTerminationRecord(VMIdentifier deadVM, const std::str
 }
 
 void BoostVM::addMonitor(VMIdentifier monitor) {
-  boost::lock_guard<boost::mutex> lock(_monitorsMutex);
   _monitors.push_back(monitor);
 }
 
 void BoostVM::notifyMonitors() {
-  boost::lock_guard<boost::mutex> lock(_monitorsMutex);
   VMIdentifier deadVM = this->identifier;
   std::string reason = this->_terminationReason;
   for (VMIdentifier identifier : _monitors) {
-    env.findVM(identifier, [=] (BoostVM& monitor) {
-      monitor.postVMEvent([&monitor, deadVM, reason] () {
-        UnstableNode notification = monitor.buildTerminationRecord(deadVM, reason);
-        monitor.receiveOnVMStream(notification);
-      });
+    env.postVMEvent(identifier, [deadVM, reason] (BoostVM& monitor) {
+      UnstableNode notification = monitor.buildTerminationRecord(deadVM, reason);
+      monitor.receiveOnVMStream(notification);
     });
   }
 }
@@ -311,7 +299,7 @@ void BoostVM::terminate() {
   preemptionTimer.cancel();
   alarmTimer.cancel();
 
-  _portClosed = true; // close VM port
+  portClosed = true; // close VM port
   notifyMonitors();
 
   env.removeTerminatedVM(identifier, _terminationStatus, _work);

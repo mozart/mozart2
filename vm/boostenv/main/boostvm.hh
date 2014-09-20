@@ -74,7 +74,7 @@ void BoostVM::raiseAndReleaseAsyncIOFeedbackNode(
     ref, FailedValue::build(vm, RichNode(exception).getStableRef(vm)));
 }
 
-void BoostVM::postVMEvent(std::function<void()> callback) {
+void BoostVM::postVMEvent(std::function<void(BoostVM&)> callback) {
   {
     boost::unique_lock<boost::mutex> lock(_conditionWorkToDoInVMMutex);
     _vmEventsCallbacks.push(callback);

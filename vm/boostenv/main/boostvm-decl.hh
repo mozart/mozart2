@@ -44,6 +44,8 @@ class BoostEnvironment;
 // BoostVM //
 /////////////
 
+// All member functions are called by the thread running the VM.
+
 class BoostVM : VirtualMachine {
 public:
   BoostVM(BoostEnvironment& environment, VMIdentifier parent,
@@ -69,11 +71,9 @@ private:
   static std::uint64_t bytes2uint64(const std::uint8_t* bytes);
 
 // VM Port
-public:
+private:
   bool streamAsked();
-
-  bool portClosed();
-
+public:
   UnstableNode getStream();
 
   void closeStream();
@@ -121,9 +121,10 @@ public:
                                           LT&& label, Args&&... args);
 
 // Notification from asynchronous work
-public:
+private:
+  friend class BoostEnvironment;
   inline
-  void postVMEvent(std::function<void()> callback);
+  void postVMEvent(std::function<void(BoostVM&)> callback);
 
 // GC
 public:
@@ -145,10 +146,11 @@ private:
   boost::uuids::random_generator uuidGenerator;
 
 // VM stream
+public:
+  std::atomic_bool portClosed;
 private:
   StableNode* _headOfStream;
   StableNode* _stream;
-  std::atomic_bool _portClosed;
 
 // Number of asynchronous IO nodes - used for termination detection
 private:
@@ -166,12 +168,11 @@ private:
 
 // IO-driven events that must work with the VM store
 private:
-  std::queue<std::function<void()> > _vmEventsCallbacks;
+  std::queue<std::function<void(BoostVM&)> > _vmEventsCallbacks;
 
 // Monitors
 private:
   std::vector<VMIdentifier> _monitors;
-  boost::mutex _monitorsMutex;
 
 // Termination
 private:

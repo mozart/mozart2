@@ -177,7 +177,7 @@ public:
       if (identifier == monitor)
         raiseError(vm, buildTuple(vm, "vm", "cannotMonitorItself"));
 
-      bool found = env.findVM(identifier, [monitor] (BoostVM& monitoredVM) {
+      bool found = env.postVMEvent(identifier, [monitor] (BoostVM& monitoredVM) {
         monitoredVM.addMonitor(monitor);
       });
       if (!found) {

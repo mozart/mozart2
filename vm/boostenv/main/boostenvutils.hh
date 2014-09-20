@@ -38,8 +38,10 @@ namespace mozart { namespace boostenv {
 //////////////////////////
 
 template <typename T, typename P>
-BaseSocketConnection<T, P>::BaseSocketConnection(BoostVM& boostVM):
-  boostVM(boostVM), _socket(boostVM.env.io_service) {
+BaseSocketConnection<T, P>::BaseSocketConnection(VM vm):
+  env(BoostEnvironment::forVM(vm)),
+  vm(BoostVM::forVM(vm).identifier),
+  _socket(env.io_service) {
 }
 
 template <typename T, typename P>
@@ -75,12 +77,12 @@ void BaseSocketConnection<T, P>::startAsyncWrite(
   pointer self = this->shared_from_this();
   auto handler = [=] (const boost::system::error_code& error,
                       size_t bytes_transferred) {
-    self->boostVM.postVMEvent([=] () {
+    self->env.postVMEvent(self->vm, [=] (BoostVM& boostVM) {
       if (!error) {
-        self->boostVM.bindAndReleaseAsyncIOFeedbackNode(
+        boostVM.bindAndReleaseAsyncIOFeedbackNode(
           statusNode, bytes_transferred);
       } else {
-        self->boostVM.raiseAndReleaseAsyncIOFeedbackNode(
+        boostVM.raiseAndReleaseAsyncIOFeedbackNode(
           statusNode, "socketOrPipe", "write", error.value());
       }
     });
@@ -95,7 +97,7 @@ void BaseSocketConnection<T, P>::readHandler(
   const ProtectedNode& tailNode, const ProtectedNode& statusNode) {
 
   pointer self = this->shared_from_this();
-  boostVM.postVMEvent([=] () {
+  env.postVMEvent(vm, [=] (BoostVM& boostVM) {
     if (!error) {
       VM vm = boostVM.vm;
 
@@ -104,10 +106,10 @@ void BaseSocketConnection<T, P>::readHandler(
         head = buildCons(vm, (nativeint) (unsigned char) _readData[i-1],
                          std::move(head));
 
-      self->boostVM.bindAndReleaseAsyncIOFeedbackNode(
+      boostVM.bindAndReleaseAsyncIOFeedbackNode(
         statusNode, "succeeded", bytes_transferred, std::move(head));
     } else {
-      self->boostVM.raiseAndReleaseAsyncIOFeedbackNode(
+      boostVM.raiseAndReleaseAsyncIOFeedbackNode(
         statusNode, "socketOrPipe", "read", error.value());
     }
 

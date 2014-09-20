@@ -17,7 +17,7 @@ If you want to work on Mozart 2, follow instructions in the next section instead
 
 ```shell
 brew tap eregon/mozart2
-brew install mozart2
+brew install --HEAD mozart2
 ```
 
 If something goes wrong, it might be intersting to check the contents of the logs

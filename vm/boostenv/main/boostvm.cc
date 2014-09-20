@@ -42,7 +42,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   VirtualMachine(environment, options), vm(this),
   env(environment), identifier(identifier),
   uuidGenerator(random_generator),
-  _portClosed(false),
+  portClosed(false),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),
   alarmTimer(environment.io_service),
@@ -200,10 +200,6 @@ bool BoostVM::streamAsked() {
   return _headOfStream == nullptr;
 }
 
-bool BoostVM::portClosed() {
-  return _portClosed;
-}
-
 UnstableNode BoostVM::getStream() {
   UnstableNode stream;
   if (!streamAsked()) {
@@ -219,12 +215,12 @@ UnstableNode BoostVM::getStream() {
 }
 
 void BoostVM::closeStream() {
-  if (!portClosed()) {
+  if (!portClosed) {
     if (streamAsked())
       _asyncIONodeCount--; // We are no more interested in the stream
     UnstableNode nil = buildNil(vm);
     BindableReadOnly(*_stream).bindReadOnly(vm, nil);
-    _portClosed = true;
+    portClosed = true;
   }
 }
 
@@ -233,7 +229,7 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
   // we do not need to pickle value
   bool portClosed = true;
   env.findVM(to, [&portClosed] (BoostVM& targetVM) {
-    portClosed = targetVM.portClosed();
+    portClosed = targetVM.portClosed;
   });
   if (portClosed)
     return;
@@ -251,12 +247,12 @@ void BoostVM::sendOnVMPort(VMIdentifier to, RichNode value) {
 }
 
 void BoostVM::receiveOnVMStream(RichNode value) {
-  if (!portClosed())
+  if (!portClosed)
     sendToReadOnlyStream(vm, _stream, value);
 }
 
 void BoostVM::receiveOnVMStream(std::string* buffer) {
-  if (portClosed()) {
+  if (portClosed) {
     delete buffer;
     return;
   }
@@ -303,7 +299,7 @@ void BoostVM::terminate() {
   preemptionTimer.cancel();
   alarmTimer.cancel();
 
-  _portClosed = true; // close VM port
+  portClosed = true; // close VM port
   notifyMonitors();
 
   env.removeTerminatedVM(identifier, _terminationStatus, _work);

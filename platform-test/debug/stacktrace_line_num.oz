@@ -24,9 +24,21 @@ functor
 export
     Return
 define
-    EnsureFailureLineNumber = 29
+    FunctionFailureLineNumber = 31
+    ClassFailureLineNumber = 39
+
     proc {EnsureFailure}
         2 + 2 = 5
+    end
+
+    class ClassFailure
+        prop locking
+
+        meth something
+            lock
+                2 + 2 = 5
+            end
+        end
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,8 +57,15 @@ define
             keys: [Key stacktraceLineNum]
         )
     end
+
     Return = stacktraceLineNum([
-        {CreateTestCase EnsureFailure EnsureFailureLineNumber simpleFunctionCall}
+        {CreateTestCase EnsureFailure
+                        FunctionFailureLineNumber
+                        simpleFunctionCall}
+
+        {CreateTestCase (proc {$} _ = {New ClassFailure something} end)
+                        ClassFailureLineNumber
+                        simpleMethodCall}
     ])
 end
 

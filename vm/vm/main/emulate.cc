@@ -75,7 +75,9 @@ DebugEntry::DebugEntry(GR gr, const DebugEntry& from):
 // StackEntry //
 ////////////////
 
-StackEntry::StackEntry(GR gr, StackEntry& from) {
+StackEntry::StackEntry(GR gr, StackEntry& from):
+  debugEntry(gr, from.debugEntry)
+{
   if (from.abstraction == nullptr)
     abstraction = nullptr;
   else
@@ -91,8 +93,6 @@ StackEntry::StackEntry(GR gr, StackEntry& from) {
     for (size_t i = 0; i < yregCount; i++)
       gr->copyUnstableNode(yregs[i], from.yregs[i]);
   }
-
-  debugEntry = DebugEntry(gr, from.debugEntry);
 
   // gregs and kregs are irrelevant
 }
@@ -373,10 +373,10 @@ void Thread::run() {
         case OpDebugEntry:
         case OpDebugExit: {
           debugEntry.valid = true;
-          debugEntry.file = new (vm) StableNode(vm, KPC(1));
+          debugEntry.file = & KPC(1);
           debugEntry.lineNumber = IntPC(2);
           debugEntry.columnNumber = IntPC(3);
-          debugEntry.kind = new (vm) StableNode(vm, KPC(4));
+          debugEntry.kind = & KPC(4);
           advancePC(4);
           break;
         }

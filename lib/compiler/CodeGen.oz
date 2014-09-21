@@ -861,8 +861,7 @@ define
             StateReg = none
          end
          case @toCopy of unit then
-            FormalRegs AllRegs AllRegs2 BodyVInter BodyVInstr GRegs Code VInter
-            Cont1 Cont2
+            FormalRegs AllRegs AllRegs2 BodyVInter GRegs Code Cont1 Cont2
          in
             {CS startDefinition()}
             FormalRegs = {Map @formalArgs
@@ -876,21 +875,16 @@ define
                       elseof Vs then {GetRegs Vs}
                       end
             case StateReg of none then
-               BodyVInstr = BodyVInter
-               VHd0 = VInter
                AllRegs2 = AllRegs
             else
-               BodyVInstr = vSetSelf(_ StateReg BodyVInter)
-               VHd0 = vGetSelf(_ StateReg VInter)
                AllRegs2 = StateReg|AllRegs
             end
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs2 ?GRegs ?Code
+            {CS endDefinition(BodyVInter FormalRegs AllRegs2 ?GRegs ?Code
                               ?OuterNLiveRegs)}
-            VInter = vDefinition(_ {V reg($)} PredId @procedureRef
-                                 GRegs Code VTl0)
+            VHd0 = vDefinition(_ {V reg($)} PredId @procedureRef
+                               GRegs Code VTl0)
          else
-            VInter FormalRegs AllRegs
-            InnerBodyVInter InnerBodyVInstr InnerGRegs InnerCode
+            FormalRegs AllRegs InnerBodyVInter InnerGRegs InnerCode
             InnerDefinitionReg InnerPredId InnerNLiveRegs
             OuterBodyVInstr OuterBodyVInter2 OuterGRegs OuterCode
          in
@@ -905,14 +899,7 @@ define
             AllRegs = case @allVariables of nil then nil
                       elseof Vs then {GetRegs Vs}
                       end
-            case StateReg of none then
-               InnerBodyVInstr = InnerBodyVInter
-               VHd0 = VInter
-            else
-               InnerBodyVInstr = vSetSelf(_ StateReg InnerBodyVInter)
-               VHd0 = vGetSelf(_ StateReg VInter)
-            end
-            {CS endDefinition(InnerBodyVInstr nil AllRegs
+            {CS endDefinition(InnerBodyVInter nil AllRegs
                               ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
             {CS newReg(?InnerDefinitionReg)}
             InnerPredId = {Adjoin PredId
@@ -964,8 +951,8 @@ define
             OuterBodyVInter2 = vCall(_ InnerDefinitionReg nil unit nil)
             {CS endDefinition(OuterBodyVInstr FormalRegs AllRegs
                               ?OuterGRegs ?OuterCode ?OuterNLiveRegs)}
-            VInter = vDefinition(_ {V reg($)} PredId @procedureRef
-                                 OuterGRegs OuterCode VTl0)
+            VHd0 = vDefinition(_ {V reg($)} PredId @procedureRef
+                               OuterGRegs OuterCode VTl0)
          end
          {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
          statements <- unit   % hand them to the garbage collector

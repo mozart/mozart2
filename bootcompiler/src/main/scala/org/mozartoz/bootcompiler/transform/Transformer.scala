@@ -62,7 +62,7 @@ abstract class Transformer extends (Program => Unit) {
   }
 
   /** Transforms a Statement */
-  def transformStat(statement: Statement): Statement = statement match {
+  def transformStat(statement: Statement): Statement = (statement: @unchecked) match {
     case CompoundStatement(stats) =>
       treeCopy.CompoundStatement(statement, stats map transformStat)
 
@@ -130,7 +130,7 @@ abstract class Transformer extends (Program => Unit) {
   }
 
   /** Transforms an expression */
-  def transformExpr(expression: Expression): Expression = expression match {
+  def transformExpr(expression: Expression): Expression = (expression: @unchecked) match {
     case StatAndExpression(statement, expr) =>
       treeCopy.StatAndExpression(expression, transformStat(statement),
           transformExpr(expr))

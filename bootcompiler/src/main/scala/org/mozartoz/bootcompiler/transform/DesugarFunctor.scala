@@ -104,7 +104,7 @@ object DesugarFunctor extends Transformer with TreeDSL {
 
     val importedDecls = extractAllImportedDecls(imports)
 
-    val (definedDecls, defineStat) = define match {
+    val (definedDecls, defineStat) = (define: @unchecked) match {
       case Some(LocalStatement(decls, stat)) => (decls, stat)
       case None => (Nil, SkipStatement())
     }

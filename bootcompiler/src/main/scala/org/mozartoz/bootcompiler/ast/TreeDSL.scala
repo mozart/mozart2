@@ -1,6 +1,8 @@
 package org.mozartoz.bootcompiler
 package ast
 
+import scala.reflect.ClassTag
+
 import oz._
 import symtab._
 import transform._
@@ -236,25 +238,27 @@ trait TreeDSL {
     LOCAL (temp) IN expression(temp)
   }
 
-  def statementWithValIn[A >: Variable <: Expression](value: Expression)(
-      statement: A => Statement)(implicit m: Manifest[A]) = {
-    if (m.erasure.isInstance(value)) {
-      statement(value.asInstanceOf[A])
-    } else {
-      statementWithTemp { temp =>
-        (temp === value) ~ statement(temp)
-      }
+  def statementWithValIn[A >: Variable <: Expression : ClassTag](value: Expression)(
+      statement: A => Statement) = {
+    value match {
+      case value: A =>
+        statement(value)
+      case _ =>
+        statementWithTemp { temp =>
+          (temp === value) ~ statement(temp)
+        }
     }
   }
 
-  def expressionWithValIn[A >: Variable <: Expression](value: Expression)(
-      expression: A => Expression)(implicit m: Manifest[A]) = {
-    if (m.erasure.isInstance(value)) {
-      expression(value.asInstanceOf[A])
-    } else {
-      expressionWithTemp { temp =>
-        (temp === value) ~> expression(temp)
-      }
+  def expressionWithValIn[A >: Variable <: Expression : ClassTag](value: Expression)(
+      expression: A => Expression) = {
+    value match {
+      case value: A =>
+        expression(value)
+      case _ =>
+        expressionWithTemp { temp =>
+          (temp === value) ~> expression(temp)
+        }
     }
   }
 }

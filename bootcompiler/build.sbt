@@ -2,11 +2,13 @@ name := "bootcompiler"
 
 version := "2.0-SNAPSHOT"
 
-scalaVersion := "2.9.1"
+scalaVersion := "2.11.2"
 
 scalacOptions ++= Seq("-deprecation", "-optimize")
 
-libraryDependencies += "com.github.scopt" %% "scopt" % "2.1.0"
+libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2"
+
+libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
 
 seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
 

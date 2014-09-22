@@ -40,28 +40,27 @@ object Main {
   /** Executes the Mozart2 bootstrap compiler */
   def main(args: Array[String]) {
     // Define command-line options
-    val optParser = new scopt.immutable.OptionParser[Config]("scopt", "2.x") {
-      def options = Seq(
-        flag("baseenv", "switch to base environment mode") {
-          c => c.copy(mode = Config.Mode.BaseEnv)
-        },
-        opt("o", "output", "output file") {
-          (v, c) => c.copy(outputStream =
-            () => new BufferedOutputStream(new FileOutputStream(v)))
-        },
-        opt("m", "module", "module definition file or directory") {
-          (v, c) => c.copy(moduleDefs = v :: c.moduleDefs)
-        },
-        opt("b", "base", "path to the base declarations file") {
-          (v, c) => c.copy(baseDeclsFileName = v)
-        },
-        opt("D", "define", "add a symbol to the conditional defines") {
-          (v, c) => c.copy(defines = c.defines + v)
-        },
-        arg("<file>", "input file") {
-          (v, c) => c.copy(fileName = v)
-        }
-      )
+    val optParser = new scopt.OptionParser[Config]("bootcompiler") {
+      head("bootcompiler", "2.0.x")
+      opt[Unit]("baseenv") action {
+        (_, c) => c.copy(mode = Config.Mode.BaseEnv)
+      } text("switch to base environment mode")
+      opt[String]('o', "output") action {
+        (v, c) => c.copy(outputStream =
+          () => new BufferedOutputStream(new FileOutputStream(v)))
+      } text("output file")
+      opt[String]('m', "module") action {
+        (v, c) => c.copy(moduleDefs = v :: c.moduleDefs)
+      } text("module definition file or directory")
+      opt[String]('b', "base") action {
+        (v, c) => c.copy(baseDeclsFileName = v)
+      } text("path to the base declarations file")
+      opt[String]('D', "define") action {
+        (v, c) => c.copy(defines = c.defines + v)
+      } text("add a symbol to the conditional defines")
+      arg[String]("<file>") action {
+        (v, c) => c.copy(fileName = v)
+      } text("input file")
     }
 
     // Parse the options

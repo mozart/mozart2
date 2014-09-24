@@ -75,10 +75,6 @@ void Pickler::pickle(RichNode value, RichNode temporaryReplacement) {
   auto typesRecord = RichNode(*vm->getPickleTypesRecord()).as<Record>();
   auto statelessTypes = RichNode(*typesRecord.getArity()).as<Arity>();
 
-  SerializationCallback cb(vm);
-  UnstableNode topLevelIndex = OptVar::build(vm);
-  cb.copy(topLevelIndex, value);
-
   bool futures = false;
   nativeint count = 0;
   VMAllocatedList<NodeBackup> nodeBackups;
@@ -104,9 +100,14 @@ void Pickler::pickle(RichNode value, RichNode temporaryReplacement) {
       nodeReplacementBackups.push_front(vm, replacement.first.makeBackup());
       replacement.first.reinit(vm, replacement.second);
     }
+    value.update();
 
     replacements.clear(vm);
   }
+
+  SerializationCallback cb(vm);
+  UnstableNode topLevelIndex = OptVar::build(vm);
+  cb.copy(topLevelIndex, value);
 
   // Replace serialized nodes by Serialized(index)
   // and add them to the nodes list

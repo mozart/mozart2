@@ -26,7 +26,6 @@ import
    %BootPickle(pack:Pack unpack:Unpack) at 'x-oz://boot/Pickle'
    Pickle(pack:Pack unpack:Unpack packWithReplacements:PackWithReplacements)
    BootName(newUnique:NewUniqueName newNamed:NewNamedName) at 'x-oz://boot/Name'
-   System
 export
    Return
 define
@@ -138,6 +137,17 @@ define
                    true = {IsCell A}
                    true = {IsCell B}
                    true = (A \= B)
+               end
+           )
+
+           packWithReplacementsTopLevel(
+               proc {$}
+                   A = {NewCell 1}
+                   VBS = {PackWithReplacements A [A#(a(b))]}
+                   U = {Unpack VBS}
+               in
+                   true = {IsCell A}
+                   U = a(b)
                end
            )
           ])

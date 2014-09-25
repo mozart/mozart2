@@ -520,7 +520,7 @@ void ImplementationDef::makeOutput(llvm::raw_fd_ostream& to) {
        << method->formals << ") {\n";
 
     to << "  ";
-    if (!method->function->getResultType().getTypePtr()->isVoidType())
+    if (!method->function->getReturnType().getTypePtr()->isVoidType())
       to << "return ";
 
     to << access << method->name;

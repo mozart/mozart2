@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
   // Parse source file
   ASTUnit *unit = ASTUnit::LoadFromASTFile(astFile,
                                            Diags, FileSystemOpts,
-                                           false, 0, 0, true);
+                                           false, llvm::None, 0, true);
 
   // Setup printing policy
   // We want the bool type to be printed as "bool"

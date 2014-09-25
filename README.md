@@ -77,10 +77,10 @@ First download all the sources. Both projects use Subversion.
 projects$ cd externals
 externals$ svn co http://googletest.googlecode.com/svn/trunk gtest
 [...]
-externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_34/final llvm
+externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_350/final llvm
 [...]
 externals$ cd llvm/tools/
-tools$ svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_34/final clang
+tools$ svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_350/final clang
 [...]
 tools$ cd ../../..
 projects$

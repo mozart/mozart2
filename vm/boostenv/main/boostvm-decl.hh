@@ -134,8 +134,8 @@ public:
   }
 
 public:
-  const VM vm;
   BoostEnvironment& env;
+  const VM vm;
   const VMIdentifier identifier;
 
 // Random number and UUID generation

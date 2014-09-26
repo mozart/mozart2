@@ -39,7 +39,7 @@ class TCPConnection: public BaseSocketConnection<TCPConnection,
   boost::asio::ip::tcp> {
 public:
   inline
-  TCPConnection(VM vm);
+  TCPConnection(BoostEnvironment& env, VMIdentifier vm);
 
 public:
   inline
@@ -61,9 +61,9 @@ private:
 public:
   typedef std::shared_ptr<TCPAcceptor> pointer;
 
-  static pointer create(VM vm, const tcp::endpoint& endpoint) {
+  static pointer create(BoostEnvironment& env, VMIdentifier vm, const tcp::endpoint& endpoint) {
     // Cannot use make_shared as constructor is private
-    return pointer(new TCPAcceptor(vm, endpoint));
+    return pointer(new TCPAcceptor(env, vm, endpoint));
   }
 
 public:
@@ -72,8 +72,7 @@ public:
   }
 
   inline
-  void startAsyncAccept(TCPConnection::pointer connection,
-                        const ProtectedNode& connectionNode);
+  void startAsyncAccept(const ProtectedNode& connectionNode);
 
   inline
   boost::system::error_code cancel();
@@ -83,7 +82,7 @@ public:
 
 private:
   inline
-  TCPAcceptor(VM vm, const tcp::endpoint& endpoint);
+  TCPAcceptor(BoostEnvironment& env, VMIdentifier vm, const tcp::endpoint& endpoint);
 
 private:
   BoostEnvironment& env;

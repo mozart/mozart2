@@ -39,8 +39,8 @@ namespace mozart { namespace boostenv {
 // PipeConnection //
 ////////////////////
 
-PipeConnection::PipeConnection(VM vm):
-  BaseSocketConnection(vm) {
+PipeConnection::PipeConnection(BoostEnvironment& env, VMIdentifier vm):
+  BaseSocketConnection(env, vm) {
 }
 
 #endif // BOOST_ASIO_HAS_LOCAL_SOCKETS

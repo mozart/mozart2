@@ -109,17 +109,6 @@ public:
      });
    }
 
-// Configuration
-
-public:
-  const BootLoader& getBootLoader() {
-    return _bootLoader;
-  }
-
-  void setBootLoader(const BootLoader& loader) {
-    _bootLoader = loader;
-  }
-
 // Run and preemption
 
 public:
@@ -199,10 +188,9 @@ private:
   boost::mutex _gcMutex;
 
 // Bootstrap
-private:
-  BootLoader _bootLoader;
 public:
-  VMStarter vmStarter;
+  const BootLoader bootLoader;
+  const VMStarter vmStarter;
 
 // Unsafe process-wide operations
 private:

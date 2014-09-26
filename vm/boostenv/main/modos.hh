@@ -85,7 +85,7 @@ public:
         std::string urlString;
         ozVSGet(vm, url, urlBufSize, urlString);
 
-        auto& bootLoader = BoostEnvironment::forVM(vm).getBootLoader();
+        auto& bootLoader = BoostEnvironment::forVM(vm).bootLoader;
         ok = bootLoader && bootLoader(vm, urlString, result);
       }
 

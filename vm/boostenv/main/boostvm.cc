@@ -48,10 +48,9 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   alarmTimer(environment.io_service),
   _terminationRequested(false),
   _terminationStatus(0),
-  _terminationReason("normal") {
-
+  _terminationReason("normal"),
   // Make sure the IO thread will wait for us
-  _work = new boost::asio::io_service::work(environment.io_service);
+  _work(new boost::asio::io_service::work(environment.io_service)) {
 
   if (identifier != parent)
     addMonitor(parent);

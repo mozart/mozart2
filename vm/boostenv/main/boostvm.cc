@@ -163,6 +163,7 @@ void BoostVM::run() {
   }
 }
 
+// Called by the *IO thread*
 void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
   if (error != boost::asio::error::operation_aborted &&
       !_terminationRequested) {

@@ -64,6 +64,7 @@ public:
   BoostEnvironment(const VMStarter& vmStarter);
 
 // VM Management
+// All public functions may be called by any thread!
 
 public:
   inline

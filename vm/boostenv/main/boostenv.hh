@@ -113,10 +113,8 @@ namespace internal {
 
 BoostEnvironment::BoostEnvironment(const VMStarter& vmStarter) :
   _nextVMIdentifier(InitialVMIdentifier), _exitCode(0),
+  bootLoader(&internal::defaultBootLoader),
   vmStarter(vmStarter) {
-  // Set up a default boot loader
-  setBootLoader(&internal::defaultBootLoader);
-
   // Ignore SIGPIPE ourselves since Boost does not always do it
 #ifdef SIGPIPE
   std::signal(SIGPIPE, SIG_IGN);

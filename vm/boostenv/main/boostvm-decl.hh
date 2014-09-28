@@ -134,9 +134,9 @@ public:
   }
 
 public:
-  VM vm;
   BoostEnvironment& env;
-  VMIdentifier identifier;
+  const VM vm;
+  const VMIdentifier identifier;
 
 // Random number and UUID generation
 public:
@@ -182,7 +182,7 @@ private:
 
 // Running thread management
 private:
-  boost::asio::io_service::work* _work;
+  boost::asio::io_service::work* const _work;
 };
 
 } }

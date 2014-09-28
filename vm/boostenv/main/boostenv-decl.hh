@@ -64,6 +64,7 @@ public:
   BoostEnvironment(const VMStarter& vmStarter);
 
 // VM Management
+// All public functions may be called by any thread!
 
 public:
   inline
@@ -107,17 +108,6 @@ public:
        boostVM.postVMEvent(callback);
      });
    }
-
-// Configuration
-
-public:
-  const BootLoader& getBootLoader() {
-    return _bootLoader;
-  }
-
-  void setBootLoader(const BootLoader& loader) {
-    _bootLoader = loader;
-  }
 
 // Run and preemption
 
@@ -198,10 +188,9 @@ private:
   boost::mutex _gcMutex;
 
 // Bootstrap
-private:
-  BootLoader _bootLoader;
 public:
-  VMStarter vmStarter;
+  const BootLoader bootLoader;
+  const VMStarter vmStarter;
 
 // Unsafe process-wide operations
 private:

@@ -49,13 +49,13 @@ public:
 public:
   typedef std::shared_ptr<T> pointer;
 
-  static pointer create(VM vm) {
-    return std::make_shared<T>(vm);
+  static pointer create(BoostEnvironment& env, VMIdentifier vm) {
+    return std::make_shared<T>(env, vm);
   }
 
 public:
   inline
-  BaseSocketConnection(VM vm);
+  BaseSocketConnection(BoostEnvironment& env, VMIdentifier vm);
 
 public:
   typename protocol::socket& socket() {

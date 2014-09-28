@@ -59,6 +59,15 @@ using namespace ::mozart::builtins;
 class ModOS: public Module {
 private:
   static const size_t MaxBufferSize = 1024*1024;
+
+  static BoostEnvironment& env(VM vm) {
+    return BoostEnvironment::forVM(vm);
+  }
+
+  static VMIdentifier ident(VM vm) {
+    return BoostVM::forVM(vm).identifier;
+  }
+
 public:
   ModOS(): Module("OS") {}
 
@@ -76,7 +85,7 @@ public:
         std::string urlString;
         ozVSGet(vm, url, urlBufSize, urlString);
 
-        auto& bootLoader = BoostEnvironment::forVM(vm).getBootLoader();
+        auto& bootLoader = BoostEnvironment::forVM(vm).bootLoader;
         ok = bootLoader && bootLoader(vm, urlString, result);
       }
 
@@ -483,7 +492,7 @@ public:
         endpoint = tcp::endpoint(tcp::v6(), intPort);
 
       try {
-        auto acceptor = TCPAcceptor::create(vm, endpoint);
+        auto acceptor = TCPAcceptor::create(env(vm), ident(vm), endpoint);
         result = build(vm, acceptor);
       } catch (const boost::system::system_error& error) {
         raiseOSError(vm, "tcpAcceptorCreate", error);
@@ -501,7 +510,7 @@ public:
       auto connectionNode =
         BoostVM::forVM(vm).createAsyncIOFeedbackNode(result);
 
-      tcpAcceptor->startAsyncAccept(TCPConnection::create(vm), connectionNode);
+      tcpAcceptor->startAsyncAccept(connectionNode);
     }
   };
 
@@ -544,7 +553,7 @@ public:
         ozVSGet(vm, host, hostBufSize, strHost);
         ozVSGet(vm, service, serviceBufSize, strService);
 
-        auto tcpConnection = TCPConnection::create(vm);
+        auto tcpConnection = TCPConnection::create(env(vm), ident(vm));
 
         auto statusNode =
           BoostVM::forVM(vm).createAsyncIOFeedbackNode(status);
@@ -1004,7 +1013,7 @@ public:
 
 #else  /* !MOZART_WINDOWS */
 
-      auto pipeConnection = PipeConnection::create(vm);
+      auto pipeConnection = PipeConnection::create(env(vm), ident(vm));
 
       // Build the Oz value now so that it is registered for GC
       auto ozPipe = build(vm, pipeConnection);

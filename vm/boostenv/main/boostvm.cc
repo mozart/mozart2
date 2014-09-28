@@ -39,8 +39,8 @@ BoostVM::BoostVM(BoostEnvironment& environment,
                  VMIdentifier identifier,
                  VirtualMachineOptions options,
                  std::unique_ptr<std::string>&& app, bool isURL) :
-  VirtualMachine(environment, options), vm(this),
-  env(environment), identifier(identifier),
+  VirtualMachine(environment, options), env(environment),
+  vm(this), identifier(identifier),
   uuidGenerator(random_generator),
   portClosed(false),
   _asyncIONodeCount(0),
@@ -48,10 +48,9 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   alarmTimer(environment.io_service),
   _terminationRequested(false),
   _terminationStatus(0),
-  _terminationReason("normal") {
-
+  _terminationReason("normal"),
   // Make sure the IO thread will wait for us
-  _work = new boost::asio::io_service::work(environment.io_service);
+  _work(new boost::asio::io_service::work(environment.io_service)) {
 
   if (identifier != parent)
     addMonitor(parent);
@@ -163,6 +162,7 @@ void BoostVM::run() {
   }
 }
 
+// Called by the *IO thread*
 void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
   if (error != boost::asio::error::operation_aborted &&
       !_terminationRequested) {

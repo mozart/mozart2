@@ -349,9 +349,8 @@ int main(int argc, char** argv) {
       baseEnv = vm->protect(OptVar::build(vm));
 
       UnstableNode baseValue;
-      auto& bootLoader = boostEnv.getBootLoader();
 
-      if (!bootLoader(vm, baseFunctorPath.string(), baseValue)) {
+      if (!boostEnv.bootLoader(vm, baseFunctorPath.string(), baseValue)) {
         std::cerr << "panic: could not load Base functor at "
                   << baseFunctorPath << std::endl;
         return false;
@@ -376,9 +375,8 @@ int main(int argc, char** argv) {
       initFunctor = vm->protect(OptVar::build(vm));
 
       UnstableNode initValue;
-      auto& bootLoader = boostEnv.getBootLoader();
 
-      if (!bootLoader(vm, initFunctorPath.string(), initValue)) {
+      if (!boostEnv.bootLoader(vm, initFunctorPath.string(), initValue)) {
         std::cerr << "panic: could not load Init functor at "
                   << initFunctorPath << std::endl;
         return false;

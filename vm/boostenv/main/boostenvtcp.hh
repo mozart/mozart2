@@ -37,8 +37,8 @@ namespace mozart { namespace boostenv {
 // TCPConnection //
 ///////////////////
 
-TCPConnection::TCPConnection(VM vm):
-  BaseSocketConnection(vm), _resolver(env.io_service) {
+TCPConnection::TCPConnection(BoostEnvironment& env, VMIdentifier vm):
+  BaseSocketConnection(env, vm), _resolver(env.io_service) {
 }
 
 void TCPConnection::startAsyncConnect(std::string host, std::string service,
@@ -80,15 +80,14 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
 // TCPAcceptor //
 /////////////////
 
-TCPAcceptor::TCPAcceptor(VM vm,
+TCPAcceptor::TCPAcceptor(BoostEnvironment& env, VMIdentifier vm,
                          const tcp::endpoint& endpoint):
-  env(BoostEnvironment::forVM(vm)),
-  vm(BoostVM::forVM(vm).identifier),
-  _acceptor(env.io_service, endpoint) {
+  env(env), vm(vm), _acceptor(env.io_service, endpoint) {
 }
 
-void TCPAcceptor::startAsyncAccept(TCPConnection::pointer connection,
-                                   const ProtectedNode& connectionNode) {
+void TCPAcceptor::startAsyncAccept(const ProtectedNode& connectionNode) {
+  TCPConnection::pointer connection = TCPConnection::create(env, vm);
+
   auto handler = [=] (const boost::system::error_code& error) {
     if (!error) {
       env.postVMEvent(vm, [=] (BoostVM& boostVM) {
@@ -101,7 +100,7 @@ void TCPAcceptor::startAsyncAccept(TCPConnection::pointer connection,
       });
     } else {
       // Try again
-      startAsyncAccept(connection, connectionNode);
+      startAsyncAccept(connectionNode);
     }
   };
 

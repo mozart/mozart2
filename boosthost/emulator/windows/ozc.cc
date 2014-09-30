@@ -68,7 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   PROCESS_INFORMATION pinf;
   if (!CreateProcessA(const_cast<char*>(ozenginePath.c_str()),
                       const_cast<char*>(cmdline.c_str()),
-                      nullptr, nullptr, false, 0,
+                      nullptr, nullptr, true, 0,
                       nullptr, nullptr, &si, &pinf)) {
     std::cerr << "panic: cannot start ozengine" << std::endl;
     return 254;

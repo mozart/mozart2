@@ -23,7 +23,7 @@ system.
 # Build instructions
 
 This main Readme is shamefully biased towards Linux. Side-along Readmes are
-available [for Mac OS](README.MacOS.md) and [for Windows](README.Windows.md).
+available for [Mac OS](README.MacOS.md), [Windows](README.Windows.md), and [OpenBSD](README.OpenBSD.md).
 
 ## Requirements
 

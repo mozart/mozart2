@@ -59,7 +59,7 @@ endif()
 # Here it starts to differ wildly on Windows
 if(NOT WIN32)
   target_link_libraries(ozemulator pthread)
-  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin|OpenBSD")
     target_link_libraries(ozemulator rt)
   endif()
 

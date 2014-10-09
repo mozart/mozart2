@@ -11,14 +11,16 @@ if(MINGW)
 endif()
 
 # GTest libraries
-
-add_library(custom_gtest STATIC IMPORTED)
-set_property(TARGET custom_gtest PROPERTY
-             IMPORTED_LOCATION "${GTEST_BUILD_DIR}/libgtest.a")
-
-add_library(custom_gtest_main STATIC IMPORTED)
-set_property(TARGET custom_gtest_main PROPERTY
-             IMPORTED_LOCATION "${GTEST_BUILD_DIR}/libgtest_main.a")
+# Allow to use shared libraries, but prefer static ones when possible
+# to avoid missing libraries at execution time.
+find_library(GTEST_LIBRARY NAME gtest.a gtest.lib gtest PATHS "${GTEST_BUILD_DIR}")
+find_library(GTEST_MAIN_LIBRARY NAME gtest_main.a gtest_main.lib gtest_main PATHS "${GTEST_BUILD_DIR}")
+if("${GTEST_LIBRARY}" MATCHES "GTEST_LIBRARY-NOTFOUND")
+    message(FATAL_ERROR "Could not find gtest library in ${GTEST_BUILD_DIR}")
+endif()
+if("${GTEST_MAIN_LIBRARY}" MATCHES "GTEST_MAIN_LIBRARY-NOTFOUND")
+    message(FATAL_ERROR "Could not find gtest_main library in ${GTEST_BUILD_DIR}")
+endif()
 
 include_directories("${GTEST_SRC_DIR}" "${GTEST_SRC_DIR}/include")
 
@@ -27,7 +29,7 @@ include_directories("${GTEST_SRC_DIR}" "${GTEST_SRC_DIR}/include")
 add_executable(vmtest testutils.cc sanitytest.cc smallinttest.cc floattest.cc
   atomtest.cc gctest.cc coderstest.cc utftest.cc stringtest.cc
   virtualstringtest.cc bytestringtest.cc)
-target_link_libraries(vmtest mozartvm custom_gtest custom_gtest_main)
+target_link_libraries(vmtest mozartvm "${GTEST_LIBRARY}" "${GTEST_MAIN_LIBRARY}")
 
 if(NOT MINGW)
   target_link_libraries(vmtest pthread)

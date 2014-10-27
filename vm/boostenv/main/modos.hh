@@ -457,6 +457,19 @@ public:
     }
   };
 
+  class System: public Builtin<System> {
+  public:
+    System(): Builtin("system") {}
+
+    static void call(VM vm, In cmd, Out status) {
+      size_t cmdBufSize = ozVSLengthForBuffer(vm, cmd);
+      std::string cmdStr;
+
+      ozVSGet(vm, cmd, cmdBufSize, cmdStr);
+      status = build(vm, system(cmdStr.c_str()));
+    }
+  };
+
   // Socket I/O
 
 private:

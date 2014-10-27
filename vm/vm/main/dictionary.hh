@@ -179,7 +179,7 @@ void NodeDictionary::fixInsert(VM vm, Node* node) {
 
     Node* uncle = grandParent->getTheOtherChild(parent);
 
-    if (uncle->safeIsRed()) {
+    if (isRed(uncle)) {
       // Case 3
       parent->color = clBlack;
       uncle->color = clBlack;
@@ -265,7 +265,7 @@ void NodeDictionary::fixRemove(VM vm, Node* node, Node* parent) {
     Node* siblingLeft = sibling->left;
     Node* siblingRight = sibling->right;
 
-    if (siblingLeft->safeIsBlack() && siblingRight->safeIsBlack()) {
+    if (isBlack(siblingLeft) && isBlack(siblingRight)) {
       if (parent->color == clBlack) {
         // Case 3
         sibling->color = clRed;
@@ -277,12 +277,12 @@ void NodeDictionary::fixRemove(VM vm, Node* node, Node* parent) {
       }
     } else {
       // Case 5
-      if ((node == parent->left) && siblingRight->safeIsBlack()) {
-        assert(siblingLeft->safeIsRed());
+      if ((node == parent->left) && isBlack(siblingRight)) {
+        assert(isRed(siblingLeft));
         rotateRight(sibling, siblingLeft);
         std::swap(sibling, siblingLeft);
-      } else if ((node == parent->right) && siblingLeft->safeIsBlack()) {
-        assert(siblingRight->safeIsRed());
+      } else if ((node == parent->right) && isBlack(siblingLeft)) {
+        assert(isRed(siblingRight));
         rotateLeft(sibling, siblingRight);
         std::swap(sibling, siblingRight);
       }

@@ -42,14 +42,6 @@ private:
   enum Color { clBlack, clRed };
 
   struct Node {
-    bool safeIsBlack() {
-      return (this == nullptr) || (color == clBlack);
-    }
-
-    bool safeIsRed() {
-      return (this != nullptr) && (color == clRed);
-    }
-
     Node* getOneChild() {
       if (left == nullptr) {
         return right;
@@ -182,6 +174,14 @@ private:
 
   inline
   void rotateRight(Node* parent, Node* child);
+
+  bool isBlack(Node* n) {
+    return (n == nullptr) || (n->color == clBlack);
+  }
+
+  bool isRed(Node* n) {
+    return (n != nullptr) && (n->color == clRed);
+  }
 
 private:
   Node* root;

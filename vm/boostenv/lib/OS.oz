@@ -75,6 +75,7 @@ export
 
    GetHostByName
    UName
+   System
 
    % Process management
    SpawnProcess
@@ -196,6 +197,7 @@ define
 
    GetHostByName = Boot_OS.getHostByName
    UName = Boot_OS.uName
+   System = Boot_OS.system
 
    %% Process management
 

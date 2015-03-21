@@ -1,5 +1,7 @@
 # Mozart-Oz v2
 
+[![Join the chat at https://gitter.im/mozart/mozart2](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mozart/mozart2?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The Mozart Programming System is an open source implementation of Oz 3.
 This repository contains the upcoming version 2 of the system.
 

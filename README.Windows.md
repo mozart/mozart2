@@ -66,7 +66,7 @@ Throughout the following instructions, we will assume this layout.
 		C:> mingw32-make
 
 ## Compilation of LLVM
-1. Download [LLVM and Clang **3.3**](http://llvm.org/releases/download.html#3.3) source code.
+1. Download [LLVM and Clang **3.5.0**](http://llvm.org/releases/download.html#3.5.0) source code.
 1. Extract the content of LLVM source archive in `<projects>\externals\llvm` and the content of Clang source archive in `<projects>\externals\llvm\tools\clang`.
 1. If you are targeting 64-bit builds, patch the files `<projects>\externals\llvm\lib\ExecutionEngine\JIT\JIT.cpp` and `<projects>\externals\llvm\lib\ExecutionEngine\MCJIT\SectionMemoryManager.cpp` by replacing :
 

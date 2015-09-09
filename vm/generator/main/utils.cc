@@ -213,7 +213,7 @@ void parseFunction(const clang::FunctionDecl* function,
                    bool hasSelfParam) {
 
   name = function->getNameAsString();
-  resultType = typeToString(function->getResultType());
+  resultType = typeToString(function->getReturnType());
 
   auto param_begin = function->param_begin() + (hasSelfParam ? 1 : 0);
   auto param_end = function->param_end();

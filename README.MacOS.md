@@ -40,11 +40,11 @@ Depending on the OS X version the location of C++11 headers changes:
 Replace `<CXX11_HEADERS>` below by this path.
 
 ```
-    $ curl -O http://llvm.org/releases/3.2/llvm-3.2.src.tar.gz
-    $ tar xvfz llvm-3.2.src.tar.gz && mv llvm-3.2.src llvm
+    $ curl -O http://llvm.org/releases/3.5.0/llvm-3.5.0.src.tar.xz
+    $ tar xvfz llvm-3.5.0.src.tar.xz && mv llvm-3.5.0.src llvm
     $ cd llvm/tools
-    $ curl -O http://llvm.org/releases/3.2/clang-3.2.src.tar.gz
-    $ tar xvfz clang-3.2.src.tar.gz && mv clang-3.2.src clang
+    $ curl -O http://llvm.org/releases/3.5.0/cfe-3.5.0.src.tar.xz
+    $ tar xvfz cfe-3.5.0.src.tar.xz && mv cfe-3.5.0.src clang
     $ cd ../../ && mkdir build-llvm && cd build-llvm
     $ cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_CXX_FLAGS="-stdlib=libc++ -I<CXX11_HEADERS>" \

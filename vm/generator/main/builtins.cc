@@ -224,7 +224,7 @@ void handleBuiltinModule(const std::string& outputDir, const ClassDecl* CD,
 
   {
     std::string err;
-    llvm::raw_fd_ostream to((outputDir+name+"-builtin.json").c_str(), err);
+    llvm::raw_fd_ostream to((outputDir+name+"-builtin.json").c_str(), err, llvm::sys::fs::F_None);
     assert(err == "");
     definition.makeOutput(to);
   }

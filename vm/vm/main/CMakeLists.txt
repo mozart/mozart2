@@ -1,10 +1,10 @@
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 separate_arguments(SPLIT_CXX_FLAGS UNIX_COMMAND "${CMAKE_CXX_FLAGS}")
 set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" "${SPLIT_CXX_FLAGS}")
 
 # properties-config.cc
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/properties-config.cc.in"
   "${CMAKE_CURRENT_BINARY_DIR}/properties-config.cc"
@@ -12,35 +12,38 @@ configure_file(
 
 # Generated sources
 
+set(GENERATED_SOURCES_CACHED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cached/)
+set(GENERATED_SOURCES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/)
+
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
+  OUTPUT ${GENERATED_SOURCES_BINARY_DIR}/mozart.gen
 
   # First pass: generate data types and interfaces
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
-    -o ${CMAKE_CURRENT_BINARY_DIR}/mozart.ast
+    -o ${GENERATED_SOURCES_BINARY_DIR}/mozart.ast
     -DMOZART_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
     ${CMAKE_CURRENT_SOURCE_DIR}/mozart.hh
   COMMAND generator intfimpl
-    ${CMAKE_CURRENT_BINARY_DIR}/mozart.ast
-    ${CMAKE_CURRENT_BINARY_DIR}/
+    ${GENERATED_SOURCES_BINARY_DIR}/mozart.ast
+    ${GENERATED_SOURCES_BINARY_DIR}/
 
   # Second pass: generate builtin information
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
-    -o ${CMAKE_CURRENT_BINARY_DIR}/coremodules.astbi
-    -I ${CMAKE_CURRENT_BINARY_DIR}
+    -o ${GENERATED_SOURCES_BINARY_DIR}/coremodules.astbi
+    -I ${GENERATED_SOURCES_BINARY_DIR}
     -DMOZART_BUILTIN_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
     ${CMAKE_CURRENT_SOURCE_DIR}/coremodules.hh
   COMMAND generator builtins
-    ${CMAKE_CURRENT_BINARY_DIR}/coremodules.astbi
-    ${CMAKE_CURRENT_BINARY_DIR}/
+    ${GENERATED_SOURCES_BINARY_DIR}/coremodules.astbi
+    ${GENERATED_SOURCES_BINARY_DIR}/
     mozartbuiltins
 
   # Tag
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/mozart.gen
+  COMMAND ${CMAKE_COMMAND} -E touch ${GENERATED_SOURCES_BINARY_DIR}/mozart.gen
 
   DEPENDS generator
   IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/coremodules.hh"
@@ -48,12 +51,23 @@ add_custom_command(
   COMMENT "Generate sources for mozart"
   VERBATIM)
 
+
+# Use the cached files if they exist.
+
+if(EXISTS ${GENERATED_SOURCES_CACHED_DIR}/mozart.gen)
+    set(GENERATED_SOURCES_DIR ${GENERATED_SOURCES_CACHED_DIR})
+else()
+    set(GENERATED_SOURCES_DIR ${GENERATED_SOURCES_BINARY_DIR})
+    file(MAKE_DIRECTORY ${GENERATED_SOURCES_BINARY_DIR})
+endif()
+set_property(GLOBAL PROPERTY GENERATED_SOURCES_DIR "${GENERATED_SOURCES_DIR}")
+
 add_custom_target(gensources
-  DEPENDS mozart.gen
+  DEPENDS ${GENERATED_SOURCES_DIR}/mozart.gen
   VERBATIM)
 
 # Build the library
-
+include_directories(${GENERATED_SOURCES_DIR})
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
   unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc properties.cc
   coremodules.cc unpickler.cc serializer.cc pickler.cc)

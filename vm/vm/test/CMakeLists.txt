@@ -1,8 +1,9 @@
 # Mozart VM library
 
+get_property(GENERATED_SOURCES_DIR GLOBAL PROPERTY GENERATED_SOURCES_DIR)
 include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}/../main"
-  "${CMAKE_CURRENT_BINARY_DIR}/../main")
+  "${GENERATED_SOURCES_DIR}")
 
 if(MINGW)
   # GTest seems to use some non-standard things :-s

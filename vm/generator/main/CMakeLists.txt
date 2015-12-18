@@ -21,6 +21,6 @@ include_directories(
   "${CLANG_SRC_DIR}/include"
   "${CLANG_BUILD_DIR}/include")
 link_directories("${LLVM_BUILD_DIR}/lib")
-add_executable(generator generator.cc interfaces.cc implementations.cc
-  builtins.cc utils.cc)
+add_executable(generator EXCLUDE_FROM_ALL
+  generator.cc interfaces.cc implementations.cc builtins.cc utils.cc)
 target_link_libraries(generator "${CLANG_LIBRARY}")

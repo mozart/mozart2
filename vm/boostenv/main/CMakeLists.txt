@@ -33,49 +33,49 @@ endif()
 
 # Mozart VM library
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main"
-    "${CMAKE_CURRENT_BINARY_DIR}/../../vm/main")
+get_property(GENERATED_SOURCES_DIR GLOBAL PROPERTY GENERATED_SOURCES_DIR)
+include_directories("${MOZART_SOURCE_DIR}/vm/vm/main" "${GENERATED_SOURCES_DIR}")
+link_directories("${MOZART_BINARY_DIR}/vm/vm/main")
 
-link_directories("${CMAKE_CURRENT_BINARY_DIR}/../../vm/main")
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+set(GENERATED_BOOSTSOURCES_CACHED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cached/)
+set(GENERATED_BOOSTSOURCES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
 # Generate sources
 
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
+  OUTPUT ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.gen
 
   # First pass: generate data types and interfaces
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
-    -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
+    -o ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.ast
     -I ${Boost_INCLUDE_DIRS}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
     -DMOZART_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
     ${CMAKE_CURRENT_SOURCE_DIR}/boostenv.hh
   COMMAND generator intfimpl
-    ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
-    ${CMAKE_CURRENT_BINARY_DIR}/
+    ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.ast
+    ${GENERATED_BOOSTSOURCES_BINARY_DIR}/
 
   # Second pass: generate builtin information
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
-    -o ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.astbi
+    -o ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenvmodules.astbi
     -I ${Boost_INCLUDE_DIRS}
-    -I ${CMAKE_CURRENT_BINARY_DIR}
+    -I ${GENERATED_BOOSTSOURCES_BINARY_DIR}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
-    -I ${CMAKE_CURRENT_BINARY_DIR}/../../vm/main
+    -I ${GENERATED_BOOSTSOURCES_BINARY_DIR}/../../vm/main
     -DMOZART_BUILTIN_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
     ${CMAKE_CURRENT_SOURCE_DIR}/boostenvmodules.hh
   COMMAND generator builtins
-    ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.astbi
-    ${CMAKE_CURRENT_BINARY_DIR}/
+    ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenvmodules.astbi
+    ${GENERATED_BOOSTSOURCES_BINARY_DIR}/
     boostenvbuiltins
 
   # Tag
-  COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/boostenv.gen
+  COMMAND ${CMAKE_COMMAND} -E touch ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.gen
 
   DEPENDS generator gensources
   IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/boostenvmodules.hh"
@@ -83,11 +83,23 @@ add_custom_command(
   COMMENT "Generate sources for boostenv"
   VERBATIM)
 
+
+# Use the cached files if they exist.
+
+if(EXISTS ${GENERATED_BOOSTSOURCES_CACHED_DIR}/boostenv.gen)
+    set(GENERATED_BOOSTSOURCES_DIR ${GENERATED_BOOSTSOURCES_CACHED_DIR})
+else()
+    set(GENERATED_BOOSTSOURCES_DIR ${GENERATED_BOOSTSOURCES_BINARY_DIR})
+    file(MAKE_DIRECTORY ${GENERATED_BOOSTSOURCES_BINARY_DIR})
+endif()
+set_property(GLOBAL PROPERTY GENERATED_BOOSTSOURCES_DIR "${GENERATED_BOOSTSOURCES_DIR}")
+
 add_custom_target(genboostsources
-  DEPENDS boostenv.gen
+  DEPENDS ${GENERATED_BOOSTSOURCES_DIR}/boostenv.gen
   VERBATIM)
 
 # Boost environment library
+include_directories(${GENERATED_BOOSTSOURCES_DIR})
 
 add_library(mozartvmboost boostvm.cc boostenvmodules.cc)
 add_dependencies(mozartvmboost genboostsources)

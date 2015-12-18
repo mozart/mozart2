@@ -40,12 +40,13 @@ endif()
 
 # Mozart VM library
 
-include_directories("${MOZART_DIR}/vm/vm/main" "${MOZART_BUILD_DIR}/vm/vm/main")
+get_property(GENERATED_SOURCES_DIR GLOBAL PROPERTY GENERATED_SOURCES_DIR)
+include_directories("${MOZART_DIR}/vm/vm/main" "${GENERATED_SOURCES_DIR}")
 
 # Mozart VM Boost environment library
 
-include_directories("${MOZART_DIR}/vm/boostenv/main"
-    "${MOZART_BUILD_DIR}/vm/boostenv/main")
+get_property(GENERATED_BOOSTSOURCES_DIR GLOBAL PROPERTY GENERATED_BOOSTSOURCES_DIR)
+include_directories("${MOZART_DIR}/vm/boostenv/main" "${GENERATED_BOOSTSOURCES_DIR}")
 
 
 # Compile the executable

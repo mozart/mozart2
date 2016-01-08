@@ -72,12 +72,11 @@ build prior to building Mozart 2.
 this section, and let the automatic build process fetch them and build them for
 you. Use this "feature" at your own risk, because none of us tests this
 anymore, and we may decide to remove support for it at some point.
-
-First download all the sources. Both projects use Subversion.
+First download all the sources. GTest uses Git, whereas LLVM uses Subversion.
 
 ```
 projects$ cd externals
-externals$ svn co http://googletest.googlecode.com/svn/trunk gtest
+externals$ git clone https://github.com/google/googletest.git gtest
 [...]
 externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_34/final llvm
 [...]

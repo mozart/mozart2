@@ -103,7 +103,7 @@ string(REGEX REPLACE "-(alpha|beta|rc)\\." "~\\1"
        CPACK_DEBIAN_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacs")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacsen-common")
 
 # Configuration of the RPM generator
 

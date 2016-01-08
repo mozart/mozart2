@@ -191,7 +191,7 @@ lists the options you need.
   </tbody>
 </table>
 
-To effectively build Mozart, use `make`.
+To actually build Mozart, use `make`.
 
 The same recommandation about using `-jN` holds. Building Mozart 2 is _very_
 long (especially when done from scratch). But beware, each task can be very

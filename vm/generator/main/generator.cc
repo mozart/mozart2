@@ -77,8 +77,7 @@ void processDeclContext(const std::string outputDir, const DeclContext* ds,
 }
 
 int main(int argc, char* argv[]) {
-  llvm::IntrusiveRefCntPtr<DiagnosticsEngine> Diags;
-  FileSystemOptions FileSystemOpts;
+  CompilerInstance CI;
 
   std::string modeStr = argv[1];
   std::string astFile = argv[2];
@@ -105,9 +104,13 @@ int main(int argc, char* argv[]) {
   }
 
   // Parse source file
-  ASTUnit *unit = ASTUnit::LoadFromASTFile(astFile,
-                                           Diags, FileSystemOpts,
-                                           false, 0, 0, true);
+  CI.createDiagnostics();
+  IntrusiveRefCntPtr<DiagnosticsEngine> Diags(&CI.getDiagnostics());
+  std::unique_ptr<ASTUnit> unit =
+      ASTUnit::LoadFromASTFile(astFile,
+                               CI.getPCHContainerReader(),
+                               Diags,
+                               CI.getFileSystemOpts());
 
   // Setup printing policy
   // We want the bool type to be printed as "bool"

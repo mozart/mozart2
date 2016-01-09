@@ -29,6 +29,7 @@
 
 #include <clang/Frontend/ASTUnit.h>
 #include <clang/AST/DeclTemplate.h>
+#include <clang/Frontend/CompilerInstance.h>
 
 typedef clang::ClassTemplateSpecializationDecl SpecDecl;
 typedef clang::CXXRecordDecl ClassDecl;
@@ -36,17 +37,18 @@ typedef clang::CXXRecordDecl ClassDecl;
 typedef llvm::raw_fd_ostream ostream;
 
 inline
-void checkErrString(const std::string& err) {
-  if (!err.empty()) {
-    llvm::errs() << err << "\n";
+void checkErrString(const std::error_code& err) {
+  if (err) {
+    llvm::errs() << err.message() << "\n";
     exit(1);
   }
 }
 
 inline
 std::unique_ptr<ostream> openFileOutputStream(const std::string& fileName) {
-  std::string err;
-  auto result = std::unique_ptr<ostream>(new ostream(fileName.c_str(), err));
+  std::error_code err;
+  auto result = std::unique_ptr<ostream>(new ostream(fileName.c_str(), err,
+                                                     llvm::sys::fs::F_None));
   checkErrString(err);
 
   return result;
@@ -55,8 +57,8 @@ std::unique_ptr<ostream> openFileOutputStream(const std::string& fileName) {
 inline
 void withFileOutputStream(const std::string& fileName,
                           std::function<void (ostream&)> body) {
-  std::string err;
-  ostream stream(fileName.c_str(), err);
+  std::error_code err;
+  ostream stream(fileName.c_str(), err, llvm::sys::fs::F_None);
   checkErrString(err);
 
   body(stream);

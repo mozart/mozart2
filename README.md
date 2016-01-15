@@ -15,7 +15,7 @@ Binary packages for Linux, Mac OS and Windows are built from time to time and
 made available on
 [SourceForge](http://sourceforge.net/projects/mozart-oz/files/).
 
-Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs. 
+Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs.
 
 The binary distribution requires that you have installed Tcl/Tk 8.5 on your
 system.
@@ -178,6 +178,11 @@ lists the options you need.
       <td>LLVM_SRC_DIR and LLVM_BUILD_DIR</td>
       <td>Paths to the source and build directories of LLVM</td>
       <td>If not present, LLVM will be downloaded and built automatically</td>
+    </tr>
+    <tr>
+      <td>CLANG_SRC_DIR</td>
+      <td>Paths to the source directory of CLANG</td>
+      <td>Use this if cmake cannot find the CLANG sources</td>
     </tr>
     <tr>
       <td>EMACS</td>

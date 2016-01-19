@@ -280,6 +280,24 @@ public:
     }
   };
 
+  class ChDir: public Builtin<ChDir> {
+  public:
+    ChDir(): Builtin("chDir") {}
+
+    static void call(VM vm, In dir) {
+      size_t dirBufSize = ozVSLengthForBuffer(vm, dir);
+      std::string dirStr;
+
+      ozVSGet(vm, dir, dirBufSize, dirStr);
+
+      boost::system::error_code ec;
+      boost::filesystem::current_path(dirStr, ec);
+      if (ec) {
+        raiseOSError(vm, "chdir", ec);
+      }
+    }
+  };
+
   class Tmpnam: public Builtin<Tmpnam> {
   public:
     Tmpnam(): Builtin("tmpnam") {}

@@ -46,11 +46,13 @@ export
    GetEnv
    PutEnv
 
-   % File I/0
+   % Directories
    GetDir
    GetCWD
+   ChDir
    Tmpnam
 
+   % File I/0
    Fopen
    Fread
    Fwrite
@@ -136,6 +138,7 @@ define
    end
 
    GetCWD = Boot_OS.getCWD
+   ChDir = Boot_OS.chDir
    Tmpnam = Boot_OS.tmpnam
 
    fun {Fopen FileName Mode}

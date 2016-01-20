@@ -66,6 +66,15 @@ add_custom_target(gensources
   DEPENDS ${GENERATED_SOURCES_DIR}/mozart.gen
   VERBATIM)
 
+
+# Include the generated files in the source archive.
+
+set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
+    "${GENERATED_SOURCES_DIR}" "/vm/vm/main/cached/")
+
+add_dependencies(dist gensources)
+
+
 # Build the library
 include_directories(${GENERATED_SOURCES_DIR})
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc

@@ -53,6 +53,19 @@ if(WIN32)
   set(DEFAULT_MOZART_GENERATOR_FLAGS "-DMOZART_WINDOWS=1" ${DEFAULT_MOZART_GENERATOR_FLAGS})
 endif()
 
+# CMake does not allow to add dependencies to "builtin" targets like package_source.
+# We therefore wrap package_source in our own dist target.
+
+add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+configure_file(cmake_local/MozartConfigVersion.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake_local/MozartConfigVersion.cmake @ONLY)
+define_property(GLOBAL PROPERTY SRCS_INSTALLED_DIRS
+    BRIEF_DOCS "List of source files"
+    FULL_DOCS "List of source/dest pairs of path to be included in the source archive")
+set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}" "/"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_local/" "/cmake_local/")
+
 # The subdirectories which contain the real thing
 
 add_subdirectory(vm)
@@ -110,6 +123,19 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacsen-common")
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
 set(CPACK_RPM_PACKAGE_REQUIRES "tcl >= 8.5, tk >= 8.5, emacs")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
+
+# Configuration of the Source generator
+
+set(CPACK_SOURCE_GENERATOR "ZIP")
+get_property(CPACK_SOURCE_INSTALLED_DIRECTORIES GLOBAL PROPERTY SRCS_INSTALLED_DIRS)
+set(CPACK_SOURCE_IGNORE_FILES
+    "/\\\\.git"
+    "\\\\.astbi$"
+    "\\\\.ast$"
+    "/bootcompiler/project/project/"
+    "/bootcompiler/project/target/"
+    "/bootcompiler/target/"
+)
 
 # Configuration of Inno Setup files
 

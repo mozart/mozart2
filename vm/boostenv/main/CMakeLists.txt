@@ -98,6 +98,14 @@ add_custom_target(genboostsources
   DEPENDS ${GENERATED_BOOSTSOURCES_DIR}/boostenv.gen
   VERBATIM)
 
+
+# Include the generated files in the source archive.
+
+set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
+    "${GENERATED_BOOSTSOURCES_DIR}" "/vm/boostenv/main/cached/")
+
+add_dependencies(dist genboostsources)
+
 # Boost environment library
 include_directories(${GENERATED_BOOSTSOURCES_DIR})
 

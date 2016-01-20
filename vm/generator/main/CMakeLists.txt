@@ -11,9 +11,6 @@ find_library(CLANG_LIBRARY
   NAMES clang libclang
   PATHS "${LLVM_BUILD_DIR}/lib"
   NO_DEFAULT_PATH)
-if("${CLANG_LIBRARY}" MATCHES "CLANG_LIBRARY-NOTFOUND")
-  message(FATAL_ERROR "Could not find clang library in ${LLVM_BUILD_DIR}")
-endif()
 
 include_directories(
   "${LLVM_SRC_DIR}/include"
@@ -21,6 +18,16 @@ include_directories(
   "${CLANG_SRC_DIR}/include"
   "${CLANG_BUILD_DIR}/include")
 link_directories("${LLVM_BUILD_DIR}/lib")
-add_executable(generator EXCLUDE_FROM_ALL
-  generator.cc interfaces.cc implementations.cc builtins.cc utils.cc)
-target_link_libraries(generator "${CLANG_LIBRARY}")
+
+if(NOT CLANG_LIBRARY)
+  if(NOT MOZART_CACHED_BUILD)
+      message(FATAL_ERROR "Could not find clang library in ${LLVM_BUILD_DIR}")
+      set("CLANG_LIBRARY" "/not_found/")
+  endif()
+  # With MOZART_CACHED_BUILD, we should not require LLVM/Clang at all
+  # TODO: Fail verbosely if target "generator" is ever required.
+else()
+  add_executable(generator EXCLUDE_FROM_ALL
+    generator.cc interfaces.cc implementations.cc builtins.cc utils.cc)
+  target_link_libraries(generator "${CLANG_LIBRARY}")
+endif()

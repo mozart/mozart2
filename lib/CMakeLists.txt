@@ -103,7 +103,7 @@ add_custom_command(
 set(STAGE_0_OUTPUTS "${STAGE_0_BASE_OZF}")
 
 foreach(FUNCTOR "${RUNTIME_FUNCTOR}" "${INIT_FUNCTOR}" ${SYS_FUNCTORS} ${COMPILER_FUNCTORS})
-  if("${FUNCTOR}" MATCHES "${INIT_FUNCTOR}")
+  if("${FUNCTOR}" STREQUAL "${INIT_FUNCTOR}")
     set(FUNCTOR_OZF "${STAGE_0_CACHE}/Init.ozf")
   else()
     get_filename_component(FUNCTOR_BASENAME ${FUNCTOR} NAME_WE)

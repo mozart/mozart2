@@ -885,8 +885,8 @@ public:
                 raiseLastOSError(vm, "open");
             }
 
-            dup(dn); // stdout
-            dup(dn); // stderr
+            dup2(dn, 1); // stdout
+            dup2(dn, 2); // stderr
           }
 #endif
 
@@ -1090,9 +1090,9 @@ public:
                   close(i);
                 }
               }
-              dup(socketHandle);
-              dup(socketHandle);
-              dup(socketHandle);
+              dup2(socketHandle, 0); // stdin
+              dup2(socketHandle, 1); // stdout
+              dup2(socketHandle, 2); // stderr
 
               auto c_executable = executable.string;
               auto c_argv = new char*[argc+1];

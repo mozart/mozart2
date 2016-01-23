@@ -15,7 +15,7 @@ Binary packages for Linux, Mac OS and Windows are built from time to time and
 made available on
 [SourceForge](http://sourceforge.net/projects/mozart-oz/files/).
 
-Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs. 
+Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs.
 
 The binary distribution requires that you have installed Tcl/Tk 8.5 on your
 system.
@@ -39,6 +39,11 @@ In order to build Mozart 2, you need the following tools on your computer:
 *   Boost >= 1.53.0 (with development files)
 *   Tcl/Tk 8.5 or 8.6 (with development files)
 *   emacs
+
+For building CLANG/LLVM:
+*   LibXML2-dev (tested with version 2.9.3)
+*   OCaml-findlib
+*   libCTypes-OCaml-dev (>= 0.4 - available in Debian Unstable as of Jan. 2016)
 
 On Linux, use your favorite package manager to grab these tools. Refer to the
 specialized Readmes for recommendations on Mac OS and Windows.

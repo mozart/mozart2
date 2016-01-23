@@ -40,6 +40,11 @@ In order to build Mozart 2, you need the following tools on your computer:
 *   Tcl/Tk 8.5 or 8.6 (with development files)
 *   emacs
 
+For building CLANG/LLVM:
+*   LibXML2-dev (tested with version 2.9.3)
+*   OCaml-findlib
+*   libCTypes-OCaml-dev (>= 0.4 - available in Debian Unstable as of Jan. 2016)
+
 On Linux, use your favorite package manager to grab these tools. Refer to the
 specialized Readmes for recommendations on Mac OS and Windows.
 
@@ -72,12 +77,11 @@ build prior to building Mozart 2.
 this section, and let the automatic build process fetch them and build them for
 you. Use this "feature" at your own risk, because none of us tests this
 anymore, and we may decide to remove support for it at some point.
-
-First download all the sources. Both projects use Subversion.
+First download all the sources. GTest uses Git, whereas LLVM uses Subversion.
 
 ```
 projects$ cd externals
-externals$ svn co http://googletest.googlecode.com/svn/trunk gtest
+externals$ git clone https://github.com/google/googletest.git gtest
 [...]
 externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_34/final llvm
 [...]
@@ -197,7 +201,7 @@ lists the options you need.
   </tbody>
 </table>
 
-To effectively build Mozart, use `make`.
+To actually build Mozart, use `make`.
 
 The same recommandation about using `-jN` holds. Building Mozart 2 is _very_
 long (especially when done from scratch). But beware, each task can be very

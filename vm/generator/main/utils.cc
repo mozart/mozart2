@@ -51,8 +51,14 @@ std::string getTypeParamAsString(const SpecDecl* specDecl, bool basicName) {
     return typeToString(templateArgs[0].getAsType());
 }
 
-std::string getTypeParamAsString(CXXRecordDecl* arg, bool basicName) {
-  return getTypeParamAsString(dyn_cast<SpecDecl>(arg), basicName);
+std::string getTypeParamAsString(const TemplateSpecializationType *unaryTemplate, bool basicName) {
+  assert(unaryTemplate->getNumArgs() == 1);
+  assert(unaryTemplate->getArg(0).getKind() == TemplateArgument::Type);
+
+  if (basicName)
+    return basicTypeToString(unaryTemplate->getArg(0).getAsType());
+  else
+    return typeToString(unaryTemplate->getArg(0).getAsType());
 }
 
 bool isTheClass(const ClassDecl* decl,

@@ -49,6 +49,7 @@ add_custom_command(
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenv.ast
+    -I ${Boost_INCLUDE_DIRS}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
     -DMOZART_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
@@ -61,6 +62,7 @@ add_custom_command(
   COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
     -o ${CMAKE_CURRENT_BINARY_DIR}/boostenvmodules.astbi
+    -I ${Boost_INCLUDE_DIRS}
     -I ${CMAKE_CURRENT_BINARY_DIR}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
     -I ${CMAKE_CURRENT_BINARY_DIR}/../../vm/main

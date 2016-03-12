@@ -155,7 +155,6 @@ define
 
    Fclose = Boot_OS.fclose
    Fseek = Boot_OS.fseek
-   Fclose = Boot_OS.fclose
 
    % Standard streams
 

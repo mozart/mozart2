@@ -10,7 +10,20 @@ Download and install the following tools:
 *  [Homebrew](http://mxcl.github.com/homebrew/).
 *   Any emacs distribution, for instance [Aquamacs](http://aquamacs.org/).
 
-### Homebrew tap
+### Homebrew cask
+
+In case you don't have plans to work on Mozart 2, you can simply install it as
+a compiled binary via [Homebrew cask] (if you have Homebrew installed you're
+already set up):
+
+```shell
+brew tap dskecse/tap
+brew cask install mozart2
+```
+
+[Homebrew cask]: https://caskroom.github.io/
+
+### Homebrew formula
 
 You can easily build Mozart 2 with Homebrew if you just want to install directly from the git repository.
 If you want to work on Mozart 2, follow instructions in the next section instead.

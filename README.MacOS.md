@@ -12,9 +12,9 @@ Download and install the following tools:
 
 ### Homebrew cask
 
-In case you don't have plans to work on Mozart 2, you can simply install it as
-a compiled binary via [Homebrew cask] (if you have Homebrew installed you're
-already set up):
+In case you don't have plans to work on Mozart 2
+and you have Homebrew already installed,
+you can simply install it as a compiled binary via [Homebrew cask]:
 
 ```shell
 brew tap dskecse/tap

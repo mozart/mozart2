@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // A MemWord (memory word) is a type which is defined as having the size of a
-// char* and behaving as the union of a number of other types. If they are
+// void* and behaving as the union of a number of other types. If they are
 // small enough, they are actually stored in the MemWord. If not, they are
 // stored as a pointer to external memory.
 
@@ -33,7 +33,7 @@
 // The MWUAccessor provides the getters/setters for the MWUnion.
 
 // The MWTest is an helper class to deal with types which are bigger than a
-// char*
+// void*
 
 
 #ifndef MOZART_MEMWORD_H
@@ -67,8 +67,8 @@ struct MWUAccessor {
   }
 };
 
-// The bottom case of the MWUnion contains just a char* as it can be cast to
-// any other pointer without fear of aliasing problems.
+// The bottom case of the MWUnion contains just a void* as it can be cast to
+// and from any other pointer.
 template <>
 union MWUnion<> {
   template <typename Q>
@@ -86,7 +86,7 @@ union MWUnion<> {
     return MWUAccessor<MWUnion, Q, Q>::requiresExternalMemory();
   }
 
-  char* it;
+  void* it;
 };
 
 // The easy case of accessing what we have in the first member of the union.
@@ -129,7 +129,7 @@ struct MWUAccessor<MWUnion<>, T, T>{
   }
 
   static void alloc(VM vm, MWUnion<>* u) {
-    u->it = reinterpret_cast<char*>(new (vm) T);
+    u->it = new (vm) T;
   }
 
   static constexpr bool requiresExternalMemory() {
@@ -141,8 +141,8 @@ struct MWUAccessor<MWUnion<>, T, T>{
 // big, we reduce it.
 template <typename T, typename... Args>
 union MWUnion<T, Args...> {
-  typedef typename std::conditional<sizeof(T) <= sizeof(char*),
-                                    T, char*>::type Tred;
+  typedef typename std::conditional<sizeof(T) <= sizeof(void*),
+                                    T, void*>::type Tred;
 
   typedef MWUnion<Args...> Next;
 
@@ -180,12 +180,13 @@ typedef internal::MWUnion<nativeint, bool, double, unit_t, atom_t,
 
 // Sanity tests
 
-static_assert(sizeof(MemWord) == sizeof(char*),
+static_assert(sizeof(MemWord) == sizeof(void*),
   "MemWord has not the size of a word");
 
 static_assert(!MemWord::requiresExternalMemory<nativeint>(), "MemWord bug");
 static_assert(!MemWord::requiresExternalMemory<unit_t>(), "MemWord bug");
 static_assert(!MemWord::requiresExternalMemory<char*>(), "MemWord bug");
+static_assert(!MemWord::requiresExternalMemory<void*>(), "MemWord bug");
 static_assert(!MemWord::requiresExternalMemory<StableNode*>(), "MemWord bug");
 
 static_assert(MemWord::requiresExternalMemory<float>(), "MemWord bug");

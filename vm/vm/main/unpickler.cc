@@ -28,6 +28,31 @@ namespace mozart {
 
 namespace {
 
+namespace internal {
+  // Helpers to convert strings to nativeint
+  template<size_t Size>
+  struct StrTo {};
+
+  template<>
+  struct StrTo<4> {
+    static int32_t strto(const char* start, char** end, int base) {
+      return std::strtol(start, end, base);
+    }
+  };
+
+  template<>
+  struct StrTo<8> {
+    static int64_t strto(const char* start, char** end, int base) {
+      return std::strtoll(start, end, base);
+    }
+  };
+
+  template<typename T>
+  static T strto(const char* start, char** end, int base) {
+    return StrTo<sizeof(T)>::strto(start, end, base);
+  }
+}
+
 ///////////////
 // Unpickler //
 ///////////////
@@ -96,9 +121,8 @@ private:
     std::string str = readString();
     char* end = nullptr;
     errno = 0; // reset errno since we need to know if strtoll() overflowed
-    long long intResult = std::strtoll(str.c_str(), &end, 10);
+    nativeint value = internal::strto<nativeint>(str.c_str(), &end, 10);
     assert(*end == '\0' && "bad integer string");
-    nativeint value = (nativeint) intResult;
     if ((value == SmallInt::min() || value == SmallInt::max()) &&
         errno == ERANGE) { // Overflow
       return BigInt::build(vm, str);

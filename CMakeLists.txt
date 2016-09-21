@@ -11,6 +11,13 @@ include(MozartProperties)
 set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
+set(DEFAULT_MOZART_GENERATOR_FLAGS
+      "--std=c++0x"
+      "-Wno-invalid-noreturn"
+      "-Wno-return-type"
+      "-Wno-braced-scalar-init" # Silence warning for macro ATOMIC_FLAG_INIT in atomic_base.h
+   )
+
 # Some helpers when using MinGW
 if(MINGW)
   get_filename_component(CMAKE_MAKE_PROGRAM_PATH "${CMAKE_MAKE_PROGRAM}" PATH)
@@ -32,7 +39,9 @@ if(MINGW)
   set(DEFAULT_MOZART_GENERATOR_FLAGS
         "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++"
         "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++/${GCC_ARCH_TRIPLE}"
-        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include")  
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include"
+        ${DEFAULT_MOZART_GENERATOR_FLAGS}
+     )
   
   set(BOOST_ROOT "${MINGW_ROOT}"
       CACHE PATH "Path where Boost is installed")
@@ -42,8 +51,6 @@ if(MINGW)
       enable_language(RC)
         set(CMAKE_RC_COMPILE_OBJECT
 	    "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
-else()
-  set(DEFAULT_MOZART_GENERATOR_FLAGS "")
 endif()
 
 # Some configuration

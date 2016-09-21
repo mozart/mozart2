@@ -1,4 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
+
+# This needs to be before "project(..)".
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release")
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+
 project(MOZART CXX)
 
 ENABLE_TESTING()

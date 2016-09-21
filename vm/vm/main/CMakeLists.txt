@@ -15,11 +15,13 @@ configure_file(
 set(GENERATED_SOURCES_CACHED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cached/)
 set(GENERATED_SOURCES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
+find_program(clang_bin clang++)
+
 add_custom_command(
   OUTPUT ${GENERATED_SOURCES_BINARY_DIR}/mozart.gen
 
   # First pass: generate data types and interfaces
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
+  COMMAND ${clang_bin} -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
     -o ${GENERATED_SOURCES_BINARY_DIR}/mozart.ast
     -DMOZART_GENERATOR
@@ -30,7 +32,7 @@ add_custom_command(
     ${GENERATED_SOURCES_BINARY_DIR}/
 
   # Second pass: generate builtin information
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ -std=c++0x
+  COMMAND ${clang_bin} -std=c++0x
     -Wno-invalid-noreturn -Wno-return-type
     -o ${GENERATED_SOURCES_BINARY_DIR}/coremodules.astbi
     -I ${GENERATED_SOURCES_BINARY_DIR}

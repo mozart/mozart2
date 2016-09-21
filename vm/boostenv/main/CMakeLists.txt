@@ -41,12 +41,13 @@ set(GENERATED_BOOSTSOURCES_CACHED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cached/)
 set(GENERATED_BOOSTSOURCES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
 # Generate sources
+find_program(clang_bin clang++)
 
 add_custom_command(
   OUTPUT ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.gen
 
   # First pass: generate data types and interfaces
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
+  COMMAND ${clang_bin} "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
     -o ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.ast
     -I ${Boost_INCLUDE_DIRS}
@@ -59,7 +60,7 @@ add_custom_command(
     ${GENERATED_BOOSTSOURCES_BINARY_DIR}/
 
   # Second pass: generate builtin information
-  COMMAND ${LLVM_BUILD_DIR}/bin/clang++ "${CXX_STD_OPT}"
+  COMMAND ${clang_bin} "${CXX_STD_OPT}"
     -Wno-invalid-noreturn -Wno-return-type
     -o ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenvmodules.astbi
     -I ${Boost_INCLUDE_DIRS}

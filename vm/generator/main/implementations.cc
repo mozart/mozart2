@@ -236,16 +236,17 @@ void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
   // For every marker, i.e. base class
   for (auto iter = CD->bases_begin(), e = CD->bases_end(); iter != e; ++iter) {
     CXXRecordDecl* marker = iter->getType()->getAsCXXRecordDecl();
+    auto unaryTemplate = iter->getType()->getAs<TemplateSpecializationType>();
     std::string markerLabel = marker->getNameAsString();
 
     if (markerLabel == "Transient") {
       definition.transient = true;
     } else if (markerLabel == "StoredAs") {
       definition.storageKind = skCustom;
-      definition.storage = getTypeParamAsString(marker, false);
+      definition.storage = getTypeParamAsString(unaryTemplate, false);
     } else if (markerLabel == "StoredWithArrayOf") {
       definition.storageKind = skWithArray;
-      definition.storageElement = getTypeParamAsString(marker, false);
+      definition.storageElement = getTypeParamAsString(unaryTemplate, false);
       definition.storage = "ImplWithArray<" + name + ", " +
         definition.storageElement + ">";
     } else if (markerLabel == "WithValueBehavior") {
@@ -259,7 +260,7 @@ void handleImplementation(const std::string& outputDir, const ClassDecl* CD) {
     } else if (markerLabel == "WithHome") {
       definition.withHome = true;
     } else if (markerLabel == "BasedOn") {
-      definition.base = getTypeParamAsString(marker);
+      definition.base = getTypeParamAsString(unaryTemplate);
     } else if (markerLabel == "NoAutoGCollect") {
       definition.autoGCollect = false;
     } else if (markerLabel == "NoAutoSClone") {

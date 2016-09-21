@@ -1,4 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
+
+# This needs to be before "project(..)".
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release")
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+
 project(MOZART CXX)
 
 ENABLE_TESTING()
@@ -10,6 +18,13 @@ include(MozartProperties)
 # Set variables that the submodules will need to find me
 set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+
+set(DEFAULT_MOZART_GENERATOR_FLAGS
+      "--std=c++0x"
+      "-Wno-invalid-noreturn"
+      "-Wno-return-type"
+      "-Wno-braced-scalar-init" # Silence warning for macro ATOMIC_FLAG_INIT in atomic_base.h
+   )
 
 # Some helpers when using MinGW
 if(MINGW)
@@ -32,7 +47,9 @@ if(MINGW)
   set(DEFAULT_MOZART_GENERATOR_FLAGS
         "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++"
         "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include/c++/${GCC_ARCH_TRIPLE}"
-        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include")  
+        "-I${MINGW_ROOT}/${GCC_ARCH_TRIPLE}/include"
+        ${DEFAULT_MOZART_GENERATOR_FLAGS}
+     )
   
   set(BOOST_ROOT "${MINGW_ROOT}"
       CACHE PATH "Path where Boost is installed")
@@ -42,8 +59,6 @@ if(MINGW)
       enable_language(RC)
         set(CMAKE_RC_COMPILE_OBJECT
 	    "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
-else()
-  set(DEFAULT_MOZART_GENERATOR_FLAGS "")
 endif()
 
 # Some configuration
@@ -52,6 +67,22 @@ if(WIN32)
   add_definitions(-DMOZART_WINDOWS=1)
   set(DEFAULT_MOZART_GENERATOR_FLAGS "-DMOZART_WINDOWS=1" ${DEFAULT_MOZART_GENERATOR_FLAGS})
 endif()
+
+# CMake does not allow to add dependencies to "builtin" targets like package_source.
+# We therefore wrap package_source in our own dist target.
+
+if("${MOZART_BUILD_DIR}/" MATCHES "${MOZART_DIR}/.*")
+  message(WARNING "You are compiling inside the source tree. Generating source tarballs will not work correctly.")
+endif()
+add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+configure_file(cmake_local/MozartConfigVersion.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake_local/MozartConfigVersion.cmake @ONLY)
+define_property(GLOBAL PROPERTY SRCS_INSTALLED_DIRS
+    BRIEF_DOCS "List of source files"
+    FULL_DOCS "List of source/dest pairs of path to be included in the source archive")
+set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}" "/"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_local/" "/cmake_local/")
 
 # The subdirectories which contain the real thing
 
@@ -110,6 +141,19 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacsen-common")
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
 set(CPACK_RPM_PACKAGE_REQUIRES "tcl >= 8.5, tk >= 8.5, emacs")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
+
+# Configuration of the Source generator
+
+set(CPACK_SOURCE_GENERATOR "ZIP")
+get_property(CPACK_SOURCE_INSTALLED_DIRECTORIES GLOBAL PROPERTY SRCS_INSTALLED_DIRS)
+set(CPACK_SOURCE_IGNORE_FILES
+    "/\\\\.git"
+    "\\\\.astbi$"
+    "\\\\.ast$"
+    "/bootcompiler/project/project/"
+    "/bootcompiler/project/target/"
+    "/bootcompiler/target/"
+)
 
 # Configuration of Inno Setup files
 

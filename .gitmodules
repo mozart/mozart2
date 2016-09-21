@@ -1,3 +1,6 @@
 [submodule "stdlib"]
 	path = stdlib
 	url = git://github.com/mozart/mozart2-stdlib.git
+[submodule "gtest"]
+	path = vm/vm/test/gtest
+	url = http://github.com/google/googletest

@@ -78,7 +78,7 @@ bool existsBaseClassSuchThat(
 
 std::string getTypeParamAsString(const SpecDecl* specDecl,
                                  bool basicName = true);
-std::string getTypeParamAsString(clang::CXXRecordDecl* arg,
+std::string getTypeParamAsString(const clang::TemplateSpecializationType* unaryTemplate,
                                  bool basicName = true);
 
 void printTemplateParameters(llvm::raw_fd_ostream& Out,

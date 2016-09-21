@@ -71,6 +71,9 @@ endif()
 # CMake does not allow to add dependencies to "builtin" targets like package_source.
 # We therefore wrap package_source in our own dist target.
 
+if("${MOZART_BUILD_DIR}/" MATCHES "${MOZART_DIR}/.*")
+  message(WARNING "You are compiling inside the source tree. Generating source tarballs will not work correctly.")
+endif()
 add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
 configure_file(cmake_local/MozartConfigVersion.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake_local/MozartConfigVersion.cmake @ONLY)

@@ -7,7 +7,7 @@ include_directories(
 
 option(BUILD_GMOCK "" OFF)
 option(BUILD_GTEST "" ON)
-add_subdirectory(gtest)
+add_subdirectory(gtest EXCLUDE_FROM_ALL)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(vmtest testutils.cc sanitytest.cc smallinttest.cc floattest.cc

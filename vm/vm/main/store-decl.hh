@@ -232,6 +232,8 @@ public:
     reinit(vm, std::forward<T>(value));
   }
 
+  inline UnstableNode becomeExchange(VM vm, RichNode value);
+
   inline
   std::string toDebugString();
 private:

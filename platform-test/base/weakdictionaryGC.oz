@@ -12,13 +12,16 @@ define
       end
    end
 
+   % TODO: WeakDictionary no longer supports the A.B := C syntax
+
    % Checks for bugs 593 & 596
    proc{Appear}
       S WD={NewWeakDictionary S}
       StopGC
    in
       thread {RunGC StopGC} end
-      WD.gc:={NewName}
+      %WD.gc:={NewName}
+      {WeakDictionary.put WD gc {NewName}}
       case S of (gc#_)|_ then skip end
       StopGC=unit
    end
@@ -31,7 +34,8 @@ define
    in
       thread {RunGC StopGC} end
       D.Key:=proc{$} skip end
-      WD.Key:={NewName}
+      %WD.Key:={NewName}
+      {WeakDictionary.put WD Key {NewName}}
       case S of (_#_)|_ then skip end
       StopGC=unit
    end

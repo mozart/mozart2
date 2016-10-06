@@ -76,7 +76,9 @@ define
       end
       %% remove some more
       {ForAll [1 8 12 14] Drop}
-      {System.gcDo} {Delay 100}
+      {System.gcDo} {System.gcDo} {Delay 100}
+      % FIXME In the old version a single gcDo is enough.
+
       {Dictionary.toRecord foo State} = {Dictionary.toRecord foo Check}
       %% remove the remaining ones
       {ForAll [4 9 11 13 15] Drop}

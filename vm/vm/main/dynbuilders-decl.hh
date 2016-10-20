@@ -83,10 +83,6 @@ struct UnstableField {
 
 template <class T>
 inline
-void sortFeatures(VM vm, size_t width, T features[]);
-
-template <class T>
-inline
 UnstableNode buildArityDynamic(VM vm, RichNode label, size_t width,
                                T elements[]);
 

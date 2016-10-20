@@ -143,6 +143,16 @@ namespace internal {
     return const_cast<UnstableNode&>(element.feature);
   }
 
+  inline
+  UnstableNode valueOf(VM vm, const UnstableNode& element) {
+    return UnstableNode();
+  }
+
+  inline
+  UnstableNode& valueOf(VM vm, const UnstableField& element) {
+    return const_cast<UnstableNode&>(element.value);
+  }
+
   template <class T>
   inline
   bool isTupleFeatureArray(VM vm, size_t width, T elements[]) {
@@ -155,17 +165,37 @@ namespace internal {
 
     return true;
   }
-}
 
-template <class T>
-void sortFeatures(VM vm, size_t width, T features[]) {
-  using internal::featureOf;
+  template <class T>
+  inline
+  void sortFeatures(VM vm, size_t width, T features[]) {
+    std::sort(features, features+width,
+      [vm] (const T& lhs, const T& rhs) -> bool {
+        return compareFeatures(vm, featureOf(lhs), featureOf(rhs)) < 0;
+      }
+    );
+  }
 
-  std::sort(features, features+width,
-    [vm] (const T& lhs, const T& rhs) -> bool {
-      return compareFeatures(vm, featureOf(lhs), featureOf(rhs)) < 0;
-    }
-  );
+  template <class T>
+  inline
+  bool findDuplicateFeature(VM vm, size_t width, T features[]) {
+    return features+width != std::adjacent_find(features, features+width,
+      [vm] (const T& lhs, const T& rhs) -> bool {
+        return !compareFeatures(vm, featureOf(lhs), featureOf(rhs));
+      }
+    );
+  }
+
+  template <class T>
+  inline
+  UnstableNode featuresList(VM vm, size_t width, T features[]) {
+    return buildListDynamic(vm, width, features,
+      [vm] (const T& e) -> UnstableNode {
+        return buildSharp(vm, featureOf(e), valueOf(vm, e));
+      }
+    );
+  }
+
 }
 
 template <class T>
@@ -181,7 +211,12 @@ UnstableNode buildArityDynamic(VM vm, RichNode label, size_t width,
     requireFeature(vm, featureOf(elements[i]));
 
   // Sort the features
-  sortFeatures(vm, width, elements);
+  internal::sortFeatures(vm, width, elements);
+
+  // Forbid duplicated features
+  if (internal::findDuplicateFeature(vm, width, elements))
+    raiseKernelError(vm, "recordConstruction", label,
+        internal::featuresList(vm, width, elements));
 
   // Check if the corresponding record should be a Tuple instead
   if (internal::isTupleFeatureArray(vm, width, elements))

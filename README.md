@@ -20,14 +20,12 @@ Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs.
 The binary distribution requires that you have installed Tcl/Tk 8.5 on your
 system.
 
-
-
-# Build instructions
+# Build Instructions
 
 This main Readme is shamefully biased towards Linux. Side-along Readmes are
 available for [Mac OS](README.MacOS.md), [Windows](README.Windows.md), and [OpenBSD](README.OpenBSD.md).
 
-## Requirements
+## Prerequisites
 
 In order to build Mozart 2, you need the following tools on your computer:
 
@@ -48,105 +46,95 @@ For building CLANG/LLVM:
 On Linux, use your favorite package manager to grab these tools. Refer to the
 specialized Readmes for recommendations on Mac OS and Windows.
 
-## Suggested directory layout
+## Pre-generated source tree
 
-We suggest that you use the following directory layout, starting from a
-directory `<projects>` where you store your projects:
+The release source snapshots contain pre-generated C++ code that allows you
+to build without requiring LLVM or Clang. This is the easiest way to build
+a version of Mozart 2 from source. The latest pre-generated source snapshot
+is [mozart2-2.0.0-beta.0-Source.zip](https://github.com/layus/mozart2/releases/download/v2.0.0-beta.0/mozart2-2.0.0-beta.0-Source.zip).
 
-```
-<projects>
-  + mozart2              // cloned from this repo
-  + externals
-      + gtest            // source of GTest (see below)
-      + llvm             // source of LLVM (see below)
-  + builds               // root for your builds
-      + gtest-debug      // debug build of GTest
-      + llvm-release     // release build of LLVM
-      + mozart2-debug    // debug build of Mozart
-      + mozart2-release  // release build of Mozart
-```
+To build from the snapshot:
 
-Throughout the following instructions, we will assume this layout.
+    $ wget https://github.com/layus/mozart2/releases/download/v2.0.0-beta.0/mozart2-2.0.0-beta.0-Source.zip
+    $ unzip mozart2-2.0.0-beta.0-Source.zip
+    $ cd mozart2-2.0.0-beta.0-Source/
+    $ cmake .
+    $ make
+    $ make install
 
-## Obtaining GTest and LLVM
+To change the directory where Mozart 2 is installed add `-DCMAKE_INSTALL_PREFIX:PATH=/path/to/install` to the `cmake` command:
 
-Mozart2 uses GTest and LLVM as subprojects, which you have to download and
-build prior to building Mozart 2.
+    $ cmake -DCMAKE_INSTALL_PREFIX:PATH=/tmp/oz2 . && make && make install
 
-**Not recommended.** If you do not want to mess with these, you can choose to skip
-this section, and let the automatic build process fetch them and build them for
-you. Use this "feature" at your own risk, because none of us tests this
-anymore, and we may decide to remove support for it at some point.
-First download all the sources. GTest uses Git, whereas LLVM uses Subversion.
+If you want to work on developing Mozart 2 itself you'll probably want to regenerate the C++ headers interfacing to Oz objects at some point. In that case you should use the build instructions below.
 
-```
-projects$ cd externals
-externals$ git clone https://github.com/google/googletest.git gtest
-[...]
-externals$ svn co http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_34/final llvm
-[...]
-externals$ cd llvm/tools/
-tools$ svn co http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_34/final clang
-[...]
-tools$ cd ../../..
-projects$
-```
+# Git Build instructions
 
-Next, build the projects. Except on Windows (where parallel make does not
-work, it seems), we suggest you use the `-jN` option of `make`, specifying
-how many tasks make can run in parallel. Building LLVM is quite long, and this
-can significantly speed up the process.
+You will need LLVM and Clang installed to build Mozart 2 from the git repository. Some Linux distros don't seem to ship the required LLVM/Clang cmake support files so the steps below go through building a local version of LLVM and Clang for the Mozart 2 build system to use. The steps below assume you are in an empty directory to build LLVM, Clang and Mozart 2:
 
-```
-projects$ cd builds
-builds$ mkdir gtest-debug
-builds$ cd gtest-debug
-gtest-debug$ cmake -DCMAKE_BUILD_TYPE=Debug ../../externals/gtest
-[...]
-gtest-debug$ make # (optionally with -jN for a given N)
-[...]
-gtest-debug$ cd ..
-builds$ mkdir llvm-release
-builds$ cd llvm-release
-llvm-release$ cmake -DCMAKE_BUILD_TYPE=Release ../../externals/llvm
-[...]
-llvm-release$ make # (optionally with -jN for a given N)
-[...]
-llvm-release$
-```
+    $ mkdir oz2
+    $ cd oz2
 
+## Building LLVM and Clang
+
+To build LLVM following the following steps:
+
+    $ git clone --branch release_39 https://github.com/llvm-mirror/llvm
+    $ cd llvm/tools
+    $ git clone --branch release_39 https://github.com/llvm-mirror/clang
+    $ cd ..
+    $ mkdir build
+    $ cd build
+    $ cmake -DCMAKE_BUILD_TYPE=Release  \
+            -DCMAKE_INSTALL_PREFIX:PATH=`pwd`/../../llvm-install \
+            ..
+    $ make
+    $ make install
+    $ cd ../..
+    $ export PATH=`pwd`/llvm-install/bin:$PATH
+
+You may wish to add `-j n` to the `make` command line with `n` set to the
+number of CPUs to perform some of the build steps in parallel to reduce
+the build time.
+
+This will install to an `llvm-install` directory off the root directory created previously and add it to the front of the `PATH` so i t can be found in the Mozart 2 build.
+    
 ## Clone the Mozart repository
 
 As the Mozart repository contains submodules, you should clone recursively:
 
-```
-projects$ git clone --recursive git://github.com/mozart/mozart2.git
-```
+    $ git clone --recursive https://github.com/mozart/mozart2
 
-You can also fetch the submodules separately using:
+    You can also fetch the submodules separately using:
 
-```
-mozart2$ git submodule update --init
-```
+    $ git clone https://github.com/mozart/mozart2
+    $ cd mozart2
+    $ git submodule update --init
+    $ cd ..
 
 ## Build Mozart
 
-The build process of Mozart is ruled by cmake. You must first configure your
-build environment:
+Mozart 2 is built with cmake. The following steps will perform the build:
 
-```
-builds$ mkdir mozart2-release
-builds$ cd mozart2-release
-mozart2-release$ cmake -DCMAKE_BUILD_TYPE=Release [OtherOptions...] ../../mozart2
-```
+    $ mkdir build
+    $ cd build
+    $ CXXFLAGS=-I`pwd`/llvm-install/include cmake -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX:PATH=/path/to/install \
+            ../mozart2
+    $ make
+    $ make install
+
+You may wish to add `-j n` to the `make` command line with `n` set to the
+number of CPUs to perform some of the build steps in parallel to reduce
+the build time.
+
+Change `/path/to/install` to the location where Mozart 2 should be installed.
+
 On distros like Arch Linux and Nixos, Boost static libraries have been removed.
 Please add `-DMOZART_BOOST_USE_STATIC_LIBS=OFF` to your cmake command.
 
-Here is a NixOS expression to install the Mozart2 binary:
-`nix-env -i mozart-binary`
-
-The options must be given with the form `-DOPTION=Value`. The table below
-lists the options you need.
+Other cmake options can be given with the form `-DOPTION=Value`. The table below
+lists the options you can add.
 
 <table>
   <thead>
@@ -201,18 +189,5 @@ lists the options you need.
   </tbody>
 </table>
 
-To actually build Mozart, use `make`.
-
-The same recommandation about using `-jN` holds. Building Mozart 2 is _very_
-long (especially when done from scratch). But beware, each task can be very
-demanding in terms of RAM. If you run out of RAM, decrease N.
-
-```
-mozart2-release$ make # (optionally with -jN for a given N)
-```
-
-Of course you can install with
-
-```
-mozart2-release$ make install
-```
+There is a NixOS expression to install the Mozart2 binary:
+`nix-env -i mozart-binary`

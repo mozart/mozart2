@@ -118,7 +118,7 @@ Mozart 2 is built with cmake. The following steps will perform the build:
 
     $ mkdir build
     $ cd build
-    $ CXXFLAGS=-I`pwd`/llvm-install/include cmake -DCMAKE_BUILD_TYPE=Release \
+    $ CXXFLAGS=-I`pwd`/../llvm-install/include cmake -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX:PATH=/path/to/install \
             ../mozart2
     $ make

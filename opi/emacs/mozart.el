@@ -1,33 +1,27 @@
-;;;
-;;; Authors:
-;;;   Leif Kornstaedt <kornstae@ps.uni-sb.de>
-;;;   Michael Mehl <mehl@ps.uni-sb.de>
-;;;   Ralf Scheidhauer <scheihr@ps.uni-sb.de>
-;;;
-;;; Contributor:
-;;;   Benjamin Lorenz <lorenz@ps.uni-sb.de>
-;;;   Denys Duchier <duchier@ps.uni-sb.de>
-;;;
-;;; Copyright:
-;;;   Leif Kornstaedt, Michael Mehl, and Ralf Scheidhauer, 1993-1998
-;;;   Denys Duchier, 1998
-;;;
-;;; Last change:
-;;;   $Date$ by $Author$
-;;;   $Revision$
-;;;
-;;; This file is part of Mozart, an implementation of Oz 3:
-;;;   http://www.mozart-oz.org
-;;;
-;;; See the file "LICENSE" or
-;;;   http://www.mozart-oz.org/LICENSE.html
-;;; for information on usage and redistribution
-;;; of this file, and for a DISCLAIMER OF ALL
-;;; WARRANTIES.
-;;;
+;;; mozart.el --- Functions for running a Mozart sub-process.
 
-;; Functions for running a Mozart sub-process
+;; Copyright (c) 1993-1998  Leif Kornstaedt
+;; Copyright (c) 1993-1998  Michael Mehl
+;; Copyright (c) 1993-1998  Ralf Scheidhauer
+;; Copyright (c) 1998  Denys Duchier
+
+;; This file is part of Mozart, an implementation of Oz 3:
+;;   http://www.mozart-oz.org
+
+;; Authors:
+;;   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+;;   Michael Mehl <mehl@ps.uni-sb.de>
+;;   Ralf Scheidhauer <scheihr@ps.uni-sb.de>
+;; Contributors:
+;;   Benjamin Lorenz <lorenz@ps.uni-sb.de>
+;;   Denys Duchier <duchier@ps.uni-sb.de>
+;; License: BSD-2-clause
+
+;;; Commentary:
 ;;
+;; Functions for running a Mozart sub-process.
+
+;;; Code:
 
 (require 'oz)
 (require 'comint)
@@ -1931,3 +1925,4 @@ Commands:
 ;;; byte-compile-dynamic-docstrings: nil ***
 ;;; byte-compile-compatibility: t ***
 ;;; End: ***
+;;; mozart.el ends here

@@ -1,35 +1,28 @@
-;;;
-;;; Authors:
-;;;   Denys Duchier <duchier@ps.uni-sb.de>
-;;;
-;;; Contributors:
-;;;
-;;; Copyright:
-;;;   Denys Duchier, 2000
-;;;
-;;; Last change:
-;;;   $Date$ by $Author$
-;;;   $Revision$
-;;;
-;;; This file is part of Mozart, an implementation of Oz 3:
-;;;   http://www.mozart-oz.org
-;;;
-;;; See the file "LICENSE" or
-;;;   http://www.mozart-oz.org/LICENSE.html
-;;; for information on usage and redistribution
-;;; of this file, and for a DISCLAIMER OF ALL
-;;; WARRANTIES.
-;;;
+;;; oz-server.el --- Uniform framework to allow interacting with Oz process.
 
-;;; ==================================================================
-;;; This file implements a more principled and uniform framework to
-;;; allow emacs and the Oz process to interact.  The idea is to create
-;;; a socket connection on which the two processes can exchange
-;;; messages.  By design, the set of message types which can be
-;;; exchanged is indefinitely extensible.
-;;; ==================================================================
+;; Copyright (c) 2000  Denys Duchier
 
-(provide 'oz-server)
+;; This file is part of Mozart, an implementation of Oz 3:
+;;   http://www.mozart-oz.org
+
+;; Authors:
+;;   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+;;   Michael Mehl <mehl@ps.uni-sb.de>
+;;   Ralf Scheidhauer <scheihr@ps.uni-sb.de>
+;; Contributors:
+;;   Benjamin Lorenz <lorenz@ps.uni-sb.de>
+;;   Denys Duchier <duchier@ps.uni-sb.de>
+;; License: BSD-2-clause
+
+;;; Commentary:
+;;
+;; This file implements a more principled and uniform framework to
+;; allow emacs and the Oz process to interact.  The idea is to create
+;; a socket connection on which the two processes can exchange
+;; messages.  By design, the set of message types which can be
+;; exchanged is indefinitely extensible.
+
+;;; Code:
 
 (defconst oz-server-name "*Oz Server*"
   "name of the server process")
@@ -375,3 +368,6 @@ back a replyError."
             vals)))
     (setq oz-server-synchronous-polling nil
           oz-server-synchronous-reply   nil)))
+
+(provide 'oz-server)
+;;; oz-server.el ends here

@@ -1,3 +1,16 @@
+;;; oz-extra.el --- Outline mode support
+
+;; This file is part of Mozart, an implementation of Oz 3:
+;;   http://www.mozart-oz.org
+
+;; License: BSD-2-clause
+
+;;; Commentary:
+;;
+;; Outline mode support.
+
+;;; Code:
+
 (require 'outline)
 
 (defvar oz-outline-mode nil)
@@ -44,3 +57,4 @@
 ;;; byte-compile-dynamic-docstrings: nil ***
 ;;; byte-compile-compatibility: t ***
 ;;; End: ***
+;;; oz-extra.el ends here

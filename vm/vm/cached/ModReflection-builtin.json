@@ -1,0 +1,102 @@
+{
+  "fullCppName": "mozart::builtins::ModReflection",
+  "name": "Reflection",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModReflection::NewReflectiveEntity",
+      "fullCppGetter": "mozart::builtins::biref::ModReflection::NewReflectiveEntity::get",
+      "name": "newReflectiveEntity",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "stream",
+          "kind": "Out"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModReflection::NewReflectiveVariable",
+      "fullCppGetter": "mozart::builtins::biref::ModReflection::NewReflectiveVariable::get",
+      "name": "newReflectiveVariable",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "stream",
+          "kind": "Out"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModReflection::IsReflectiveVariable",
+      "fullCppGetter": "mozart::builtins::biref::ModReflection::IsReflectiveVariable::get",
+      "name": "isReflectiveVariable",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "variable",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModReflection::BindReflectiveVariable",
+      "fullCppGetter": "mozart::builtins::biref::ModReflection::BindReflectiveVariable::get",
+      "name": "bindReflectiveVariable",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "variable",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModReflection::GetStructuralBehavior",
+      "fullCppGetter": "mozart::builtins::biref::ModReflection::GetStructuralBehavior::get",
+      "name": "getStructuralBehavior",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "entity",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModReflection::Become",
+      "fullCppGetter": "mozart::builtins::biref::ModReflection::Become::get",
+      "name": "become",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "entity",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    }
+  ]
+}

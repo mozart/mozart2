@@ -1,0 +1,38 @@
+{
+  "fullCppName": "mozart::builtins::ModChunk",
+  "name": "Chunk",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModChunk::New",
+      "fullCppGetter": "mozart::builtins::biref::ModChunk::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "underlying",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModChunk::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModChunk::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

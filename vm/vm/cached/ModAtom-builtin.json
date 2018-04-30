@@ -1,0 +1,22 @@
+{
+  "fullCppName": "mozart::builtins::ModAtom",
+  "name": "Atom",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModAtom::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModAtom::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

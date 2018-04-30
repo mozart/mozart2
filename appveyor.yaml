@@ -1,0 +1,36 @@
+version: 2.0.0-beta.1-{branch}+{build}
+image: Visual Studio 2015
+environment:
+  MINGW_ARCH: x86_64
+  MINGW_ROOT: C:\msys64\mingw64
+  BOOST_ROOT: C:\msys64\mingw64
+  BOOST_LIBRARYDIR: C:\msys64\mingw64\lib
+  BOOST_INCLUDEDIR: C:\msys64\mingw64\include\boost
+  CMAKE_GENERATOR: MSYS Makefiles
+  # CPACK_GENERATOR: NSYS
+  CMAKE_BUILD_TYPE: Release
+  QTDIR: C:\Qt\5.9\mingw53_32
+
+install:
+- git submodule update --init
+- ps: $env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")
+- set PATH="C:\msys64\mingw64\bin;C:\msys64\usr\bin\;%PATH%"
+
+build_script:
+- cmd: >-
+    set SOURCES="https://github.com/layus/mozart2/releases/download/v2.0.0-beta.1/mozart2-2.0.0-beta.1-Source.zip"
+    appveyor DownloadFile %SOURCES% -FileName mozart2.zip
+    7z x mozart2.zip -oC:\projects
+    cd %BOOST_ROOT%
+    call bootstrap.bat mingw
+    .\b2 toolset=gcc variant=release --with-thread --with-system --with-random --with-filesystem --with-program_options
+    mkdir C:\projects\mozart2-build
+    cd C:\projects\mozart2-build
+    cmake -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -G"%CMAKE_GENERATOR%" -DCPACK_GENERATOR=NSYS -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_INCLUDEDIR="%BOOST_INCLUDEDIR%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" C:\projects\mozart2
+    cmake --build . --target install
+    cpack
+
+artifacts:
+- path: build/*.exe
+  name: binary installer
+

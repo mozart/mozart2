@@ -1,0 +1,135 @@
+{
+  "fullCppName": "mozart::boostenv::builtins::ModVM",
+  "name": "VM",
+  "builtins": [
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::Ncores",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::Ncores::get",
+      "name": "ncores",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::Current",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::Current::get",
+      "name": "current",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::New",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "app",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::GetPort",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::GetPort::get",
+      "name": "getPort",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "vmIdentifier",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::IdentForPort",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::IdentForPort::get",
+      "name": "identForPort",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "vmPort",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::GetStream",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::GetStream::get",
+      "name": "getStream",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::CloseStream",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::CloseStream::get",
+      "name": "closeStream",
+      "inlineable": false,
+      "params": [
+
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::List",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::List::get",
+      "name": "list",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::Kill",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::Kill::get",
+      "name": "kill",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "vmIdentifier",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModVM::Monitor",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModVM::Monitor::get",
+      "name": "monitor",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "vmIdentifier",
+          "kind": "In"
+        }
+      ]
+    }
+  ]
+}

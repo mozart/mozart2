@@ -1,0 +1,54 @@
+{
+  "fullCppName": "mozart::builtins::ModCoders",
+  "name": "Coders",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModCoders::Encode",
+      "fullCppGetter": "mozart::builtins::biref::ModCoders::Encode::get",
+      "name": "encode",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "string",
+          "kind": "In"
+        },
+        {
+          "name": "encodingNode",
+          "kind": "In"
+        },
+        {
+          "name": "variantNode",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCoders::Decode",
+      "fullCppGetter": "mozart::builtins::biref::ModCoders::Decode::get",
+      "name": "decode",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "encodingNode",
+          "kind": "In"
+        },
+        {
+          "name": "variantNode",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

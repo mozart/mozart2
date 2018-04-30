@@ -1,0 +1,74 @@
+{
+  "fullCppName": "mozart::builtins::ModVirtualByteString",
+  "name": "VirtualByteString",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModVirtualByteString::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualByteString::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualByteString::ToCompactByteString",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualByteString::ToCompactByteString::get",
+      "name": "toCompactByteString",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualByteString::ToByteList",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualByteString::ToByteList::get",
+      "name": "toByteList",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "tail",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualByteString::Length",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualByteString::Length::get",
+      "name": "length",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

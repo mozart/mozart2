@@ -51,13 +51,13 @@ specialized Readmes for recommendations on Mac OS and Windows.
 The release source snapshots contain pre-generated C++ code that allows you
 to build without requiring LLVM or Clang. This is the easiest way to build
 a version of Mozart 2 from source. The latest pre-generated source snapshot
-is [mozart2-2.0.0-beta.0-Source.zip](https://github.com/layus/mozart2/releases/download/v2.0.0-beta.0/mozart2-2.0.0-beta.0-Source.zip).
+is [mozart2-2.0.0-beta.1-Source.zip](https://github.com/mozart/mozart2/releases/download/v2.0.0-beta.1/mozart2-2.0.0-beta.1-Source.zip).
 
 To build from the snapshot:
 
-    $ wget https://github.com/layus/mozart2/releases/download/v2.0.0-beta.0/mozart2-2.0.0-beta.0-Source.zip
-    $ unzip mozart2-2.0.0-beta.0-Source.zip
-    $ cd mozart2-2.0.0-beta.0-Source/
+    $ wget https://github.com/layus/mozart2/releases/download/v2.0.0-beta.1/mozart2-2.0.0-beta.1-Source.zip
+    $ unzip mozart2-2.0.0-beta.1-Source.zip
+    $ cd mozart2-2.0.0-beta.1-Source/
     $ cmake .
     $ make
     $ make install

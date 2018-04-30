@@ -1,0 +1,270 @@
+{
+  "fullCppName": "mozart::builtins::ModCompilerSupport",
+  "name": "CompilerSupport",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::FeatureLess",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::FeatureLess::get",
+      "name": "featureLess",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "lhs",
+          "kind": "In"
+        },
+        {
+          "name": "rhs",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::NewCodeArea",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::NewCodeArea::get",
+      "name": "newCodeArea",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "byteCodeList",
+          "kind": "In"
+        },
+        {
+          "name": "arity",
+          "kind": "In"
+        },
+        {
+          "name": "XCount",
+          "kind": "In"
+        },
+        {
+          "name": "KsList",
+          "kind": "In"
+        },
+        {
+          "name": "printName",
+          "kind": "In"
+        },
+        {
+          "name": "debugData",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::NewAbstraction",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::NewAbstraction::get",
+      "name": "newAbstraction",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "body",
+          "kind": "In"
+        },
+        {
+          "name": "GsList",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::SetUUID",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::SetUUID::get",
+      "name": "setUUID",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "uuid",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::IsArity",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::IsArity::get",
+      "name": "isArity",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::MakeArityDynamic",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::MakeArityDynamic::get",
+      "name": "makeArityDynamic",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "label",
+          "kind": "In"
+        },
+        {
+          "name": "features",
+          "kind": "In"
+        },
+        {
+          "name": "force",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::MakeRecordFromArity",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::MakeRecordFromArity::get",
+      "name": "makeRecordFromArity",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "arity",
+          "kind": "In"
+        },
+        {
+          "name": "fields",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::NewPatMatWildcard",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::NewPatMatWildcard::get",
+      "name": "newPatMatWildcard",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::NewPatMatCapture",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::NewPatMatCapture::get",
+      "name": "newPatMatCapture",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "index",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::NewPatMatConjunction",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::NewPatMatConjunction::get",
+      "name": "newPatMatConjunction",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "parts",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::NewPatMatOpenRecord",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::NewPatMatOpenRecord::get",
+      "name": "newPatMatOpenRecord",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "arity",
+          "kind": "In"
+        },
+        {
+          "name": "fields",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::IsBuiltin",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::IsBuiltin::get",
+      "name": "isBuiltin",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::GetBuiltinInfo",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::GetBuiltinInfo::get",
+      "name": "getBuiltinInfo",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompilerSupport::IsUniqueName",
+      "fullCppGetter": "mozart::builtins::biref::ModCompilerSupport::IsUniqueName::get",
+      "name": "isUniqueName",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

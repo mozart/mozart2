@@ -1,0 +1,4 @@
+
+set(MOZART_PROP_OZ_VERSION "2.0.0-beta.1")
+set(MOZART_PROP_OZ_DATE "Tue, 24 Oct 2017 12:07:14 +0200")
+

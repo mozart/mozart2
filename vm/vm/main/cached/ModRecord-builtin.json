@@ -1,0 +1,218 @@
+{
+  "fullCppName": "mozart::builtins::ModRecord",
+  "name": "Record",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModRecord::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::Label",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::Label::get",
+      "name": "label",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::Width",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::Width::get",
+      "name": "width",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::Arity",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::Arity::get",
+      "name": "arity",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::Clone",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::Clone::get",
+      "name": "clone",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::WaitOr",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::WaitOr::get",
+      "name": "waitOr",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::MakeDynamic",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::MakeDynamic::get",
+      "name": "makeDynamic",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "label",
+          "kind": "In"
+        },
+        {
+          "name": "contents",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::Test",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::Test::get",
+      "name": "test",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "patLabel",
+          "kind": "In"
+        },
+        {
+          "name": "patFeatures",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::TestLabel",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::TestLabel::get",
+      "name": "testLabel",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "patLabel",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::TestFeature",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::TestFeature::get",
+      "name": "testFeature",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "patFeature",
+          "kind": "In"
+        },
+        {
+          "name": "found",
+          "kind": "Out"
+        },
+        {
+          "name": "fieldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModRecord::AdjoinAtIfHasFeature",
+      "fullCppGetter": "mozart::builtins::biref::ModRecord::AdjoinAtIfHasFeature::get",
+      "name": "adjoinAtIfHasFeature",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "fieldValue",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        },
+        {
+          "name": "success",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

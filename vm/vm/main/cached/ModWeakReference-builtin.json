@@ -1,0 +1,54 @@
+{
+  "fullCppName": "mozart::builtins::ModWeakReference",
+  "name": "WeakReference",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModWeakReference::New",
+      "fullCppGetter": "mozart::builtins::biref::ModWeakReference::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "underlying",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModWeakReference::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModWeakReference::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModWeakReference::Get",
+      "fullCppGetter": "mozart::builtins::biref::ModWeakReference::Get::get",
+      "name": "get",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "weakRef",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "fullCppName": "mozart::builtins::ModObject",
+  "name": "Object",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModObject::New",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "clazz",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::GetClass",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::GetClass::get",
+      "name": "getClass",
+      "inlineable": true,
+      "inlineOpCode": 144,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::AttrGet",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::AttrGet::get",
+      "name": "attrGet",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "attribute",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::AttrPut",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::AttrPut::get",
+      "name": "attrPut",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "attribute",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::AttrExchangeFun",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::AttrExchangeFun::get",
+      "name": "attrExchangeFun",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "attribute",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::CellOrAttrGet",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::CellOrAttrGet::get",
+      "name": "cellOrAttrGet",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "cellOrAttr",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::CellOrAttrPut",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::CellOrAttrPut::get",
+      "name": "cellOrAttrPut",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "cellOrAttr",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModObject::CellOrAttrExchangeFun",
+      "fullCppGetter": "mozart::builtins::biref::ModObject::CellOrAttrExchangeFun::get",
+      "name": "cellOrAttrExchangeFun",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "cellOrAttr",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

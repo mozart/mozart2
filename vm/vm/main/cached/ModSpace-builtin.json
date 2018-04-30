@@ -1,0 +1,146 @@
+{
+  "fullCppName": "mozart::builtins::ModSpace",
+  "name": "Space",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModSpace::New",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "target",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Ask",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Ask::get",
+      "name": "ask",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "space",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::AskVerbose",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::AskVerbose::get",
+      "name": "askVerbose",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "space",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Merge",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Merge::get",
+      "name": "merge",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "space",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Clone",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Clone::get",
+      "name": "clone",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "space",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Commit",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Commit::get",
+      "name": "commit",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "space",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Kill",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Kill::get",
+      "name": "kill",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "space",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSpace::Choose",
+      "fullCppGetter": "mozart::builtins::biref::ModSpace::Choose::get",
+      "name": "choose",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "alts",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

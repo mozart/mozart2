@@ -1,0 +1,90 @@
+{
+  "fullCppName": "mozart::builtins::ModGNode",
+  "name": "GNode",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModGNode::Globalize",
+      "fullCppGetter": "mozart::builtins::biref::ModGNode::Globalize::get",
+      "name": "globalize",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "lhs",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModGNode::Load",
+      "fullCppGetter": "mozart::builtins::biref::ModGNode::Load::get",
+      "name": "load",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "uuid",
+          "kind": "In"
+        },
+        {
+          "name": "gnode",
+          "kind": "Out"
+        },
+        {
+          "name": "existed",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModGNode::GetValue",
+      "fullCppGetter": "mozart::builtins::biref::ModGNode::GetValue::get",
+      "name": "getValue",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "gnode",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModGNode::GetProto",
+      "fullCppGetter": "mozart::builtins::biref::ModGNode::GetProto::get",
+      "name": "getProto",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "gnode",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModGNode::GetUUID",
+      "fullCppGetter": "mozart::builtins::biref::ModGNode::GetUUID::get",
+      "name": "getUUID",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "gnode",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

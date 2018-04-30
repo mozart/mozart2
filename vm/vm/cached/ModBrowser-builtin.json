@@ -1,0 +1,142 @@
+{
+  "fullCppName": "mozart::builtins::ModBrowser",
+  "name": "Browser",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::IsRecordCVar",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::IsRecordCVar::get",
+      "name": "isRecordCVar",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::ChunkWidth",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::ChunkWidth::get",
+      "name": "chunkWidth",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::ChunkArity",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::ChunkArity::get",
+      "name": "chunkArity",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::ShortName",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::ShortName::get",
+      "name": "shortName",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "longName",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::GetsBoundB",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::GetsBoundB::get",
+      "name": "getsBoundB",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "variable",
+          "kind": "In"
+        },
+        {
+          "name": "watcher",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::VarSpace",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::VarSpace::get",
+      "name": "varSpace",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "variable",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::ProcLoc",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::ProcLoc::get",
+      "name": "procLoc",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "procedure",
+          "kind": "In"
+        },
+        {
+          "name": "file",
+          "kind": "Out"
+        },
+        {
+          "name": "line",
+          "kind": "Out"
+        },
+        {
+          "name": "column",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBrowser::Addr",
+      "fullCppGetter": "mozart::builtins::biref::ModBrowser::Addr::get",
+      "name": "addr",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "entity",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

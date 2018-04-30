@@ -1,0 +1,406 @@
+{
+  "fullCppName": "mozart::builtins::ModFloat",
+  "name": "Float",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Divide",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Divide::get",
+      "name": "/",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Pow",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Pow::get",
+      "name": "pow",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::ToInt",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::ToInt::get",
+      "name": "toInt",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Acos",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Acos::get",
+      "name": "acos",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Acosh",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Acosh::get",
+      "name": "acosh",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Asin",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Asin::get",
+      "name": "asin",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Asinh",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Asinh::get",
+      "name": "asinh",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Atan",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Atan::get",
+      "name": "atan",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Atanh",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Atanh::get",
+      "name": "atanh",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Atan2",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Atan2::get",
+      "name": "atan2",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Ceil",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Ceil::get",
+      "name": "ceil",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Cos",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Cos::get",
+      "name": "cos",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Cosh",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Cosh::get",
+      "name": "cosh",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Exp",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Exp::get",
+      "name": "exp",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Floor",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Floor::get",
+      "name": "floor",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Log",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Log::get",
+      "name": "log",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::FMod",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::FMod::get",
+      "name": "fMod",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Round",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Round::get",
+      "name": "round",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Sin",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Sin::get",
+      "name": "sin",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Sinh",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Sinh::get",
+      "name": "sinh",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Sqrt",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Sqrt::get",
+      "name": "sqrt",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Tan",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Tan::get",
+      "name": "tan",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModFloat::Tanh",
+      "fullCppGetter": "mozart::builtins::biref::ModFloat::Tanh::get",
+      "name": "tanh",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

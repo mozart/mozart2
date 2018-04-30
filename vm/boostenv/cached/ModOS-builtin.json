@@ -1,0 +1,614 @@
+{
+  "fullCppName": "mozart::boostenv::builtins::ModOS",
+  "name": "OS",
+  "builtins": [
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::BootURLLoad",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::BootURLLoad::get",
+      "name": "bootURLLoad",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "url",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Rand",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Rand::get",
+      "name": "rand",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Srand",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Srand::get",
+      "name": "srand",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "seed",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::RandLimits",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::RandLimits::get",
+      "name": "randLimits",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "min",
+          "kind": "Out"
+        },
+        {
+          "name": "max",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::GetEnv",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::GetEnv::get",
+      "name": "getEnv",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "var",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::PutEnv",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::PutEnv::get",
+      "name": "putEnv",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "var",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::GetDir",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::GetDir::get",
+      "name": "getDir",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "directory",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::GetCWD",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::GetCWD::get",
+      "name": "getCWD",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::ChDir",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::ChDir::get",
+      "name": "chDir",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dir",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Tmpnam",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Tmpnam::get",
+      "name": "tmpnam",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Fopen",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Fopen::get",
+      "name": "fopen",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "fileName",
+          "kind": "In"
+        },
+        {
+          "name": "mode",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Fread",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Fread::get",
+      "name": "fread",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "fileNode",
+          "kind": "In"
+        },
+        {
+          "name": "count",
+          "kind": "In"
+        },
+        {
+          "name": "end",
+          "kind": "In"
+        },
+        {
+          "name": "actualCount",
+          "kind": "Out"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Fwrite",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Fwrite::get",
+      "name": "fwrite",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "fileNode",
+          "kind": "In"
+        },
+        {
+          "name": "data",
+          "kind": "In"
+        },
+        {
+          "name": "writtenCount",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Fseek",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Fseek::get",
+      "name": "fseek",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "fileNode",
+          "kind": "In"
+        },
+        {
+          "name": "offset",
+          "kind": "In"
+        },
+        {
+          "name": "whence",
+          "kind": "In"
+        },
+        {
+          "name": "where",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Fclose",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Fclose::get",
+      "name": "fclose",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "fileNode",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Stdin",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Stdin::get",
+      "name": "stdin",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Stdout",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Stdout::get",
+      "name": "stdout",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Stderr",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Stderr::get",
+      "name": "stderr",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::System",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::System::get",
+      "name": "system",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "cmd",
+          "kind": "In"
+        },
+        {
+          "name": "status",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPAcceptorCreate",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPAcceptorCreate::get",
+      "name": "tcpAcceptorCreate",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "ipVersion",
+          "kind": "In"
+        },
+        {
+          "name": "port",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPAccept",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPAccept::get",
+      "name": "tcpAccept",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "acceptor",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPCancelAccept",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPCancelAccept::get",
+      "name": "tcpCancelAccept",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "acceptor",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPAcceptorClose",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPAcceptorClose::get",
+      "name": "tcpAcceptorClose",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "acceptor",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPConnect",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPConnect::get",
+      "name": "tcpConnect",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "host",
+          "kind": "In"
+        },
+        {
+          "name": "service",
+          "kind": "In"
+        },
+        {
+          "name": "status",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPConnectionRead",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPConnectionRead::get",
+      "name": "tcpConnectionRead",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        },
+        {
+          "name": "count",
+          "kind": "In"
+        },
+        {
+          "name": "tail",
+          "kind": "In"
+        },
+        {
+          "name": "status",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPConnectionWrite",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPConnectionWrite::get",
+      "name": "tcpConnectionWrite",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        },
+        {
+          "name": "data",
+          "kind": "In"
+        },
+        {
+          "name": "status",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPConnectionShutdown",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPConnectionShutdown::get",
+      "name": "tcpConnectionShutdown",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        },
+        {
+          "name": "what",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::TCPConnectionClose",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::TCPConnectionClose::get",
+      "name": "tcpConnectionClose",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Exec",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Exec::get",
+      "name": "exec",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "inExecutable",
+          "kind": "In"
+        },
+        {
+          "name": "inArgv",
+          "kind": "In"
+        },
+        {
+          "name": "inDoKill",
+          "kind": "In"
+        },
+        {
+          "name": "outPid",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::Pipe",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::Pipe::get",
+      "name": "pipe",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "inExecutable",
+          "kind": "In"
+        },
+        {
+          "name": "inArgv",
+          "kind": "In"
+        },
+        {
+          "name": "outPid",
+          "kind": "Out"
+        },
+        {
+          "name": "outStatus",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::PipeConnectionRead",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::PipeConnectionRead::get",
+      "name": "pipeConnectionRead",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        },
+        {
+          "name": "count",
+          "kind": "In"
+        },
+        {
+          "name": "tail",
+          "kind": "In"
+        },
+        {
+          "name": "status",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::PipeConnectionWrite",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::PipeConnectionWrite::get",
+      "name": "pipeConnectionWrite",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        },
+        {
+          "name": "data",
+          "kind": "In"
+        },
+        {
+          "name": "status",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::PipeConnectionShutdown",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::PipeConnectionShutdown::get",
+      "name": "pipeConnectionShutdown",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        },
+        {
+          "name": "what",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::PipeConnectionClose",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::PipeConnectionClose::get",
+      "name": "pipeConnectionClose",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "connection",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::GetPID",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::GetPID::get",
+      "name": "getPID",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "pid",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::GetHostByName",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::GetHostByName::get",
+      "name": "getHostByName",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "name",
+          "kind": "In"
+        },
+        {
+          "name": "res",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::boostenv::builtins::ModOS::UName",
+      "fullCppGetter": "mozart::boostenv::builtins::biref::ModOS::UName::get",
+      "name": "uName",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "res",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

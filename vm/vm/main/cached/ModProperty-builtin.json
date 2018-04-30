@@ -1,0 +1,78 @@
+{
+  "fullCppName": "mozart::builtins::ModProperty",
+  "name": "Property",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModProperty::RegisterValue",
+      "fullCppGetter": "mozart::builtins::biref::ModProperty::RegisterValue::get",
+      "name": "registerValue",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "property",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModProperty::RegisterConstant",
+      "fullCppGetter": "mozart::builtins::biref::ModProperty::RegisterConstant::get",
+      "name": "registerConstant",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "property",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModProperty::Get",
+      "fullCppGetter": "mozart::builtins::biref::ModProperty::Get::get",
+      "name": "get",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "property",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        },
+        {
+          "name": "found",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModProperty::Put",
+      "fullCppGetter": "mozart::builtins::biref::ModProperty::Put::get",
+      "name": "put",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "property",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "found",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

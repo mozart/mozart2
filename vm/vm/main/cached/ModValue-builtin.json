@@ -1,0 +1,586 @@
+{
+  "fullCppName": "mozart::builtins::ModValue",
+  "name": "Value",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModValue::Dot",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::Dot::get",
+      "name": ".",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::DotAssign",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::DotAssign::get",
+      "name": "dotAssign",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::DotExchange",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::DotExchange::get",
+      "name": "dotExchange",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CatAccess",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CatAccess::get",
+      "name": "catAccess",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "reference",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CatAssign",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CatAssign::get",
+      "name": "catAssign",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "reference",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CatExchange",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CatExchange::get",
+      "name": "catExchange",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "reference",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CatAccessOO",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CatAccessOO::get",
+      "name": "catAccessOO",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "self",
+          "kind": "In"
+        },
+        {
+          "name": "reference",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CatAssignOO",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CatAssignOO::get",
+      "name": "catAssignOO",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "self",
+          "kind": "In"
+        },
+        {
+          "name": "reference",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CatExchangeOO",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CatExchangeOO::get",
+      "name": "catExchangeOO",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "self",
+          "kind": "In"
+        },
+        {
+          "name": "reference",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::EqEq",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::EqEq::get",
+      "name": "==",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::NotEqEq",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::NotEqEq::get",
+      "name": "\\=",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::Wait",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::Wait::get",
+      "name": "wait",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::WaitQuiet",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::WaitQuiet::get",
+      "name": "waitQuiet",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::WaitNeeded",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::WaitNeeded::get",
+      "name": "waitNeeded",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::MakeNeeded",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::MakeNeeded::get",
+      "name": "makeNeeded",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::IsFree",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::IsFree::get",
+      "name": "isFree",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::IsKinded",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::IsKinded::get",
+      "name": "isKinded",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::IsFuture",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::IsFuture::get",
+      "name": "isFuture",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::IsFailed",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::IsFailed::get",
+      "name": "isFailed",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::IsDet",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::IsDet::get",
+      "name": "isDet",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::Status",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::Status::get",
+      "name": "status",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::TypeOf",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::TypeOf::get",
+      "name": "type",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::IsNeeded",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::IsNeeded::get",
+      "name": "isNeeded",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::LowerEqual",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::LowerEqual::get",
+      "name": "=<",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::LowerThan",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::LowerThan::get",
+      "name": "<",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::GreaterEqual",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::GreaterEqual::get",
+      "name": ">=",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::GreaterThan",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::GreaterThan::get",
+      "name": ">",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::HasFeature",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::HasFeature::get",
+      "name": "hasFeature",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::CondSelect",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::CondSelect::get",
+      "name": "condSelect",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "record",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "def",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::MakeFailed",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::MakeFailed::get",
+      "name": "failedValue",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "exception",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::MakeReadOnly",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::MakeReadOnly::get",
+      "name": "readOnly",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "variable",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::NewReadOnly",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::NewReadOnly::get",
+      "name": "newReadOnly",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModValue::BindReadOnly",
+      "fullCppGetter": "mozart::builtins::biref::ModValue::BindReadOnly::get",
+      "name": "bindReadOnly",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "readOnly",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    }
+  ]
+}

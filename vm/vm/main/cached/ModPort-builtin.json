@@ -1,0 +1,74 @@
+{
+  "fullCppName": "mozart::builtins::ModPort",
+  "name": "Port",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModPort::New",
+      "fullCppGetter": "mozart::builtins::biref::ModPort::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "stream",
+          "kind": "Out"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModPort::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModPort::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModPort::Send",
+      "fullCppGetter": "mozart::builtins::biref::ModPort::Send::get",
+      "name": "send",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "port",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModPort::SendReceive",
+      "fullCppGetter": "mozart::builtins::biref::ModPort::SendReceive::get",
+      "name": "sendRecv",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "port",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "reply",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

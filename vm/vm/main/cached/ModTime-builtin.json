@@ -1,0 +1,46 @@
+{
+  "fullCppName": "mozart::builtins::ModTime",
+  "name": "Time",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModTime::Alarm",
+      "fullCppGetter": "mozart::builtins::biref::ModTime::Alarm::get",
+      "name": "alarm",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "delay",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModTime::GetReferenceTime",
+      "fullCppGetter": "mozart::builtins::biref::ModTime::GetReferenceTime::get",
+      "name": "getReferenceTime",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModTime::GetMonotonicTime",
+      "fullCppGetter": "mozart::builtins::biref::ModTime::GetMonotonicTime::get",
+      "name": "getMonotonicTime",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

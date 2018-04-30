@@ -1,0 +1,110 @@
+{
+  "fullCppName": "mozart::builtins::ModThread",
+  "name": "Thread",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModThread::Create",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::Create::get",
+      "name": "create",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "target",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::This",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::This::get",
+      "name": "this",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::GetPriority",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::GetPriority::get",
+      "name": "getPriority",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::SetPriority",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::SetPriority::get",
+      "name": "setPriority",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "priority",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::InjectException",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::InjectException::get",
+      "name": "injectException",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "exception",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::State",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::State::get",
+      "name": "state",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

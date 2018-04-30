@@ -1,0 +1,90 @@
+{
+  "fullCppName": "mozart::builtins::ModCell",
+  "name": "Cell",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModCell::New",
+      "fullCppGetter": "mozart::builtins::biref::ModCell::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "initial",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCell::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModCell::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCell::ExchangeFun",
+      "fullCppGetter": "mozart::builtins::biref::ModCell::ExchangeFun::get",
+      "name": "exchangeFun",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "cell",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCell::Access",
+      "fullCppGetter": "mozart::builtins::biref::ModCell::Access::get",
+      "name": "access",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "cell",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCell::Assign",
+      "fullCppGetter": "mozart::builtins::biref::ModCell::Assign::get",
+      "name": "assign",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "cell",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    }
+  ]
+}

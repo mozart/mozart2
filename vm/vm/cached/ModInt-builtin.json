@@ -1,0 +1,96 @@
+{
+  "fullCppName": "mozart::builtins::ModInt",
+  "name": "Int",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModInt::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModInt::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModInt::Div",
+      "fullCppGetter": "mozart::builtins::biref::ModInt::Div::get",
+      "name": "div",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModInt::Mod",
+      "fullCppGetter": "mozart::builtins::biref::ModInt::Mod::get",
+      "name": "mod",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModInt::Plus1",
+      "fullCppGetter": "mozart::builtins::biref::ModInt::Plus1::get",
+      "name": "+1",
+      "inlineable": true,
+      "inlineOpCode": 131,
+      "params": [
+        {
+          "name": "operand",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModInt::Minus1",
+      "fullCppGetter": "mozart::builtins::biref::ModInt::Minus1::get",
+      "name": "-1",
+      "inlineable": true,
+      "inlineOpCode": 132,
+      "params": [
+        {
+          "name": "operand",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

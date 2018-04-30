@@ -1,0 +1,142 @@
+{
+  "fullCppName": "mozart::builtins::ModArray",
+  "name": "Array",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModArray::New",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "low",
+          "kind": "In"
+        },
+        {
+          "name": "high",
+          "kind": "In"
+        },
+        {
+          "name": "initValue",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModArray::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModArray::Low",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::Low::get",
+      "name": "low",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "array",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModArray::High",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::High::get",
+      "name": "high",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "array",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModArray::Get",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::Get::get",
+      "name": "get",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "array",
+          "kind": "In"
+        },
+        {
+          "name": "index",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModArray::Put",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::Put::get",
+      "name": "put",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "array",
+          "kind": "In"
+        },
+        {
+          "name": "index",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModArray::ExchangeFun",
+      "fullCppGetter": "mozart::builtins::biref::ModArray::ExchangeFun::get",
+      "name": "exchangeFun",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "array",
+          "kind": "In"
+        },
+        {
+          "name": "index",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

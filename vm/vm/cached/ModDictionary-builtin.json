@@ -1,0 +1,278 @@
+{
+  "fullCppName": "mozart::builtins::ModDictionary",
+  "name": "Dictionary",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::New",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::IsEmpty",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::IsEmpty::get",
+      "name": "isEmpty",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Member",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Member::get",
+      "name": "member",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Get",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Get::get",
+      "name": "get",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::CondGet",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::CondGet::get",
+      "name": "condGet",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "defaultValue",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Put",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Put::get",
+      "name": "put",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::ExchangeFun",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::ExchangeFun::get",
+      "name": "exchangeFun",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::CondExchangeFun",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::CondExchangeFun::get",
+      "name": "condExchangeFun",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        },
+        {
+          "name": "defaultValue",
+          "kind": "In"
+        },
+        {
+          "name": "newValue",
+          "kind": "In"
+        },
+        {
+          "name": "oldValue",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Remove",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Remove::get",
+      "name": "remove",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "feature",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::RemoveAll",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::RemoveAll::get",
+      "name": "removeAll",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Keys",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Keys::get",
+      "name": "keys",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Entries",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Entries::get",
+      "name": "entries",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Items",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Items::get",
+      "name": "items",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDictionary::Clone",
+      "fullCppGetter": "mozart::builtins::biref::ModDictionary::Clone::get",
+      "name": "clone",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "dict",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

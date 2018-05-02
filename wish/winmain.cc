@@ -208,9 +208,9 @@ void readHandler(ClientData clientData, int mask)
   int code = Tcl_GlobalEval(interp, buffer);
   if (code != TCL_OK) {
     char buf[1000];
-    DebugCode(fprintf(dbgin,"### Error(%d):  %s\n", code,interp->result);
+    DebugCode(fprintf(dbgin,"### Error(%d):  %s\n", code, Tcl_GetStringResult(interp));
               fflush(dbgin));
-    sprintf(buf,"w --- %s---  %s\n---\n.\n", buffer,interp->result);
+    sprintf(buf,"w --- %s---  %s\n---\n.\n", buffer, Tcl_GetStringResult(interp));
     sendToEngine(buf);
   }
 
@@ -251,7 +251,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCm
      */
     if (Tcl_Init(interp) == TCL_ERROR ||
         Tk_Init(interp) == TCL_ERROR) {
-      WishPanic("Tcl_Init failed: %s\n", interp->result);
+      WishPanic("Tcl_Init failed: %s\n", Tcl_GetStringResult(interp));
     }
 
     Tcl_ResetResult(interp);
@@ -282,7 +282,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCm
     code = Tcl_GlobalEval(interp, "wm withdraw . ");
     if (code != TCL_OK) {
       char buf[1000];
-      sprintf(buf,"w %s\n.\n", interp->result);
+      sprintf(buf,"w %s\n.\n", Tcl_GetStringResult(interp));
       sendToEngine(buf);
     }
 

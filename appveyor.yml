@@ -6,7 +6,7 @@ environment:
 install:
     - 'git submodule update --init'
     - ps: '$env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")'
-    - ps: '$env:path = "C:\tcltk;C:\msys64\mingw64\bin;C:\msys64\usr\bin\;" + $env:path'
+    - ps: '$env:path = "C:\msys64\mingw64\bin;C:\msys64\usr\bin\;" + $env:path'
 
 build_script:
     #- set SOURCES="https://github.com/layus/mozart2/releases/download/v2.0.0-beta.1/mozart2-2.0.0-beta.1-Source.zip"
@@ -44,7 +44,7 @@ build_script:
     # build mozart2
     - mkdir C:\projects\mozart2-build
     - cd C:\projects\mozart2-build
-    - cmake -DCMAKE_BUILD_TYPE=Release -G"MSYS Makefiles" -DCMAKE_PREFIX_PATH="C:/tcltk/" -DBOOST_ROOT="%BOOST_ROOT%" -DISS_INCLUDE_TCL=ON -DISS_INCLUDE_EMACS=ON C:\projects\mozart2
+    - cmake -DCMAKE_BUILD_TYPE=Release -G"MSYS Makefiles" -DTCLTK_ROOT=C:/tcltk -DBOOST_ROOT="%BOOST_ROOT%" -DISS_INCLUDE_TCL=ON -DISS_INCLUDE_EMACS=ON C:\projects\mozart2
     - cmake --build . --target installer -- VERBOSE=1
 
 artifacts:

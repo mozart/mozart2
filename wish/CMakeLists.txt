@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8.6)
 project(MOZARTWISH)
 
-if(TCLTK_ROOT)
+if(NOT TCLTK_ROOT)
+  find_package(TCL REQUIRED)
+else()
   set(TCL_FOUND TRUE)
   set(TK_FOUND TRUE)
   set(TCLTK_FOUND TRUE)
@@ -14,7 +16,6 @@ if(TCLTK_ROOT)
   set(TK_WISH "${TCLTK_ROOT}/bin/wish86.exe")
 endif()
 
-find_package(TCL REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTERP_RESULT=1")
 
 if(WIN32)

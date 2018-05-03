@@ -14,7 +14,7 @@ build_script:
     #- 7z x mozart2.zip -oC:\projects
     
     # uninstall tcl/tk
-    - pacman -Rs --noconfirm mingw-w64-x86_64-tcl mingw-w64-x86_64-tk
+    - pacman -Rs --noconfirm mingw-w64-x86_64-python3 mingw-w64-x86_64-tcl mingw-w64-x86_64-tk
     
     # build tcl
     - cd C:\projects

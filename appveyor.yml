@@ -1,0 +1,53 @@
+version: 2.0.0-beta.1-{branch}+{build}
+image: Visual Studio 2015
+environment:
+    BOOST_ROOT: C:\Libraries\boost_1_65_1
+
+install:
+    - 'git submodule update --init'
+    - ps: '$env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")'
+    - ps: '$env:path = "C:\tcltk;C:\msys64\mingw64\bin;C:\msys64\usr\bin\;" + $env:path'
+
+build_script:
+    #- set SOURCES="https://github.com/layus/mozart2/releases/download/v2.0.0-beta.1/mozart2-2.0.0-beta.1-Source.zip"
+    #- appveyor DownloadFile "%SOURCES%" -FileName mozart2.zip
+    #- 7z x mozart2.zip -oC:\projects
+    
+    # build tcl
+    - cd C:\projects
+    - wget -O tcl-release.tar.gz https://github.com/tcltk/tcl/archive/release.tar.gz
+    - tar xf tcl-release.tar.gz
+    - cd tcl-release/win/
+    - bash configure --enable-threads --enable-64bit --prefix=C:/tcltk/
+    - make
+    - make install
+
+    # build tk
+    - cd C:\projects
+    - wget -O tk-release.tar.gz https://github.com/tcltk/tk/archive/release.tar.gz
+    - tar xf tk-release.tar.gz
+    - cd tk-release/win/
+    - bash configure --enable-64bit --prefix=C:/tcltk/ --with-tcl=../../tcl-release/win/
+    - make
+    - make install
+
+    # build boost
+    - cd %BOOST_ROOT%
+    - call bootstrap.bat gcc
+    - cat bootstrap.log
+    - .\b2 toolset=gcc variant=release --with-thread --with-system --with-random --with-filesystem --with-program_options
+
+    # install emacs
+    # We cannot use $(pacman -S *-emacs because ISS packs C:/.../emacs.exe/../* which would include all of msys)
+    - choco install emacs64
+
+    # build mozart2
+    - mkdir C:\projects\mozart2-build
+    - cd C:\projects\mozart2-build
+    - cmake -DCMAKE_BUILD_TYPE=Release -G"MSYS Makefiles" -DCMAKE_PREFIX_PATH="C:/tcltk/" -DBOOST_ROOT="%BOOST_ROOT%" -DISS_INCLUDE_TCL=ON -DISS_INCLUDE_EMACS=ON C:\projects\mozart2
+    - cmake --build . --target installer -- VERBOSE=1
+
+artifacts:
+    - path: C:\projects\mozart2-build\mozart2-2.0.0-beta.1-x86_64-windows.exe
+      name: binary installer
+

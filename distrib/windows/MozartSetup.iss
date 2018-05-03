@@ -96,7 +96,8 @@ end;
 #if !(TclIncluded == "ON")
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
-  TmpFileName, ExecStdout: string;
+  TmpFileName: string;
+  ExecStdout: AnsiString;
   ResultCode: integer;
   Version : string;
 begin

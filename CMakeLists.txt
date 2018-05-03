@@ -10,6 +10,7 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 project(MOZART CXX)
 
 ENABLE_TESTING()
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 # Custom CMake modules
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_local ${CMAKE_MODULE_PATH})
@@ -37,7 +38,7 @@ if(MINGW)
       CACHE STRING "Version of GCC in your MinGW installation")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-static -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-static -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
   
   # Check for gcc target architecture
   execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)
@@ -93,7 +94,7 @@ add_subdirectory(lib)
 add_subdirectory(opi)
 add_subdirectory(wish)
 add_subdirectory(stdlib)
-add_subdirectory(platform-test)
+add_subdirectory(platform-test EXCLUDE_FROM_ALL)
 
 # Add launcher and icons
 if(UNIX)

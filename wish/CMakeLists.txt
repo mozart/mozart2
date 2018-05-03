@@ -4,8 +4,6 @@ project(MOZARTWISH)
 find_package(TCL REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTERP_RESULT=1")
 
-include_directories("${TCL_INCLUDE_PATH}" "${TK_INCLUDE_PATH}")
-
 if(WIN32)
   # Path and version for Inno Setup
   set(ISS_TCL_VERSION ${TCLSH_VERSION_STRING} CACHE STRING "Tcl version string")
@@ -15,6 +13,8 @@ if(WIN32)
 else()
   set(MAIN_SRC unixmain.cc)
 endif()
+
+include_directories("${TCL_INCLUDE_PATH}" "${TK_INCLUDE_PATH}")
 
 add_executable(ozwish ${MAIN_SRC})
 target_link_libraries(ozwish "${TCL_LIBRARY}" "${TK_LIBRARY}")

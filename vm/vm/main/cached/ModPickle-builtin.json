@@ -1,0 +1,78 @@
+{
+  "fullCppName": "mozart::builtins::ModPickle",
+  "name": "Pickle",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModPickle::Pack",
+      "fullCppGetter": "mozart::builtins::biref::ModPickle::Pack::get",
+      "name": "pack",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "temporaryReplacement",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModPickle::Unpack",
+      "fullCppGetter": "mozart::builtins::biref::ModPickle::Unpack::get",
+      "name": "unpack",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "vbs",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModPickle::Save",
+      "fullCppGetter": "mozart::builtins::biref::ModPickle::Save::get",
+      "name": "save",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "temporaryReplacement",
+          "kind": "In"
+        },
+        {
+          "name": "fileNameVS",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModPickle::Load",
+      "fullCppGetter": "mozart::builtins::biref::ModPickle::Load::get",
+      "name": "load",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "fileNameVS",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

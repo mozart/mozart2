@@ -1,0 +1,143 @@
+{
+  "fullCppName": "mozart::builtins::ModSystem",
+  "name": "System",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModSystem::PrintRepr",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::PrintRepr::get",
+      "name": "printRepr",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "toStdErr",
+          "kind": "In"
+        },
+        {
+          "name": "newLine",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::GetRepr",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::GetRepr::get",
+      "name": "getRepr",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "depth",
+          "kind": "In"
+        },
+        {
+          "name": "width",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::PrintName",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::PrintName::get",
+      "name": "printName",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::PrintVS",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::PrintVS::get",
+      "name": "printVS",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "toStdErr",
+          "kind": "In"
+        },
+        {
+          "name": "newLine",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::GCDo",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::GCDo::get",
+      "name": "gcDo",
+      "inlineable": false,
+      "params": [
+
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::Eq",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::Eq::get",
+      "name": "eq",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "lhs",
+          "kind": "In"
+        },
+        {
+          "name": "rhs",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::OnTopLevel",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::OnTopLevel::get",
+      "name": "onToplevel",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSystem::Exit",
+      "fullCppGetter": "mozart::builtins::biref::ModSystem::Exit::get",
+      "name": "exit",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "exitCode",
+          "kind": "In"
+        },
+        {
+          "name": "reason",
+          "kind": "In"
+        }
+      ]
+    }
+  ]
+}

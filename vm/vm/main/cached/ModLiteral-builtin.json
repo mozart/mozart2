@@ -1,0 +1,22 @@
+{
+  "fullCppName": "mozart::builtins::ModLiteral",
+  "name": "Literal",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModLiteral::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModLiteral::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

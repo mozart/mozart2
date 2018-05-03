@@ -1,0 +1,54 @@
+{
+  "fullCppName": "mozart::builtins::ModProcedure",
+  "name": "Procedure",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModProcedure::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModProcedure::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModProcedure::Arity",
+      "fullCppGetter": "mozart::builtins::biref::ModProcedure::Arity::get",
+      "name": "arity",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "procedure",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModProcedure::Apply",
+      "fullCppGetter": "mozart::builtins::biref::ModProcedure::Apply::get",
+      "name": "apply",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "procedure",
+          "kind": "In"
+        },
+        {
+          "name": "args",
+          "kind": "In"
+        }
+      ]
+    }
+  ]
+}

@@ -48,6 +48,6 @@ build_script:
     - cmake --build . --target installer -- VERBOSE=1
 
 artifacts:
-    - path: C:\projects\mozart2-build\mozart2-2.0.0-beta.1-x86_64-windows.exe
+    - path: ..\mozart2-build\mozart2-2.0.0-beta.1-x86_64-windows.exe
       name: binary installer
 

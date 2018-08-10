@@ -1,35 +1,43 @@
-language: cpp
-compiler:
-  - gcc
-before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq libboost1.55-all-dev tk8.5-dev emacs23-nox
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+language: generic
+dist: trusty
+sudo: false
+matrix:
+  include:
+    # Versions before 3.8 are not included nor whitelisted
+
+    # Broken (uses ubuntu's version, not llvm one. {LLVM,Clang}Config.cmake are beyond redemption
+    #- env: [ "V=3.8", "PREFIX=/usr/lib/llvm-3.8" ]
+    #  addons:
+    #    apt:
+    #      sources: [ "ubuntu-toolchain-r-test", "llvm-toolchain-trusty-3.8" ]
+    #      packages: [ "libboost-all-dev", "tcl-dev", "tk-dev", "emacs", "clang-3.8", "libclang-3.8-dev", "llvm-3.8-dev" ]
+
+    # Broken: Unknown relocation 0x2a (llvm-3.9 known to be bugged on travis)
+    #- env: [ "V=3.9", "PREFIX=/usr/lib/llvm-3.9/lib/cmake" ]
+    #  addons:
+    #    apt:
+    #      sources: [ "ubuntu-toolchain-r-test", "llvm-toolchain-trusty-3.9" ]
+    #      packages: [ "libboost-all-dev", "tcl-dev", "tk-dev", "emacs", "clang-3.9", "libclang-3.9-dev", "llvm-3.9-dev" ]
+
+    # Works, with heavy fixing (see below)
+    - env: [ "V=4.0", "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
+      addons:
+        apt:
+          sources: [ "ubuntu-toolchain-r-test", "llvm-toolchain-trusty-4.0" ]
+          packages: [ "libboost-all-dev", "tcl-dev", "tk-dev", "emacs", "clang-4.0", "libclang-4.0-dev", "llvm-4.0-dev", "clang-format-4.0", "clang-tidy-4.0" ]
+
 before_script:
-  - mkdir externals
-  - cd externals
-  - svn co --quiet http://googletest.googlecode.com/svn/trunk gtest
-  - svn co --quiet http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_33/final llvm
-  - cd llvm/tools/
-  - svn co --quiet http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_33/final clang
-  - cd ../../..
-  - mkdir builds
-  - cd builds
-  - mkdir gtest-debug
-  - cd gtest-debug
-  - cmake -DCMAKE_BUILD_TYPE=Debug ../../externals/gtest
-  - make -j3
-  - cd ..
-  - mkdir llvm-release
-  - cd llvm-release
-  - cmake -DCMAKE_BUILD_TYPE=Release ../../externals/llvm
-  - make -j3
-  - cd ../..
+  - apt list --installed
+  - env
+  # Fix clang cmake dirs
+  - if [ $V == 3.9 ]; then  sudo -E ln -sn /usr/share/llvm-3.9/cmake /usr/lib/llvm-3.9/lib/cmake/clang;     fi
+
+  - if [ $V == 4.0 ]; then  sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang;     fi
+  - if [ $V == 4.0 ]; then  sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0; fi
+  - if [ $V == 4.0 ]; then  sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true;         fi
+
 script:
-  - cd builds
-  - mkdir mozart2-release
-  - cd mozart2-release
-  - cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_SRC_DIR=../../externals/gtest -DGTEST_BUILD_DIR=../gtest-debug -DLLVM_SRC_DIR=../../externals/llvm -DLLVM_BUILD_DIR=../llvm-release ../..
-  - make -j3
+  - export SOURCES=$(pwd) && mkdir ../build && cd ../build
+  - cmake -DCMAKE_BUILD_TYPE=Release -DMOZART_BOOST_USE_STATIC_LIBS=False -DCMAKE_PROGRAM_PATH=$BIN -DCMAKE_PREFIX_PATH=$PREFIX $SOURCES
+  - make dist VERBOSE=1
+  - make VERBOSE=1

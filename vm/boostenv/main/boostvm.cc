@@ -47,7 +47,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
                  std::unique_ptr<std::string>&& app, bool isURL) :
   VirtualMachine(environment, options), env(environment),
   vm(this), identifier(identifier),
-  uuidGenerator(random_generator),
+  uuidGenerator(),
   portClosed(false),
   _asyncIONodeCount(0),
   preemptionTimer(environment.io_service),

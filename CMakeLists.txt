@@ -93,7 +93,7 @@ add_subdirectory(lib)
 add_subdirectory(opi)
 add_subdirectory(wish)
 add_subdirectory(stdlib)
-add_subdirectory(platform-test)
+add_subdirectory(platform-test EXCLUDE_FROM_ALL)
 
 # Add launcher and icons
 if(UNIX)

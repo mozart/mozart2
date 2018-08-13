@@ -10,8 +10,9 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 project(MOZART CXX)
 
 ENABLE_TESTING()
-# Custom CMake modules
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
+# Custom CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_local ${CMAKE_MODULE_PATH})
 include(MozartProperties)
 

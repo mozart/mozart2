@@ -41,3 +41,8 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=Release -DMOZART_BOOST_USE_STATIC_LIBS=False -DCMAKE_PROGRAM_PATH=$BIN -DCMAKE_PREFIX_PATH=$PREFIX $SOURCES
   - make dist VERBOSE=1
   - make VERBOSE=1
+deploy:
+  provider: releases
+  file: build/mozart2-*-Source.zip
+  api_key:
+    secure: MhR6fTj04IEpp3GCdV2ZmGuF87ndaYtGqcaI09KgLWhYE1lE5lMBsFdDjp1tuE+r9Jd1vtF4nMR2z+F+DIXSlCzWpu6cBeEV1xCbMhgN7LLRqC97X4wnXJNoAg0Td1kosuZPpJ6wBF428Jsu0oyhVwwAm7jF2Ag5VvD7phtfmkbRDv3g3ZDI6fsU7b0zv0t9PnspQnkM3FtBuX9ZSYjYGth7Doc+evJ0XRKDQskxHzs46/sFn8ZzxX0A9qO9iVxPIx6uey6ADuPjAecbTu6ySKiEw3YbTqEMvFMIbLQl8EhujUPXjxmyFj3tc6yOQiyedqNPVrE20i4HRvp/sSel6ujrQ4G21vTlrFZUuxQ7iBaaJjfZD3TU+8D/Wi5PSowd0E9QSbLe4Rkryej8Hsb1JB6gUIh/mI2v9ikwuB0E3m5D7Jc9UDVur1xhLzoYvDm2X5DqY2ijycYQ9a3xzpG3yyzaveofWCSQPvOOa59f+e0gH3fZ7/h5/J3yjKVUG4iheP8fyTiqjW/oRA2/9RgHXYv7Fq601kMD4Fu6kTo7uUkELr0yv/7JzQQVLQU0/U/rfE2D5jSoaJqBOcwgLnI5R0kELo7mKQr5AEzMam42YufZmEhYh9qkIFeYDg4bN7+3GXZD0lDLle8iZXxmCuvDzAzfisS1xSJ5wqtyso3g+pc=

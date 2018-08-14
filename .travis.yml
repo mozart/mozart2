@@ -41,3 +41,8 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=Release -DMOZART_BOOST_USE_STATIC_LIBS=False -DCMAKE_PROGRAM_PATH=$BIN -DCMAKE_PREFIX_PATH=$PREFIX $SOURCES
   - make dist VERBOSE=1
   - make VERBOSE=1
+deploy:
+  provider: releases
+  file: build/mozart2-*-Source.zip
+  api_key:
+    secure: GxwttdinweSfTeSkWu3aSp//AGT/ew4iyEUaLxh8nDeVRpAHEPBtMhgF25zoP6JLfhlEAOW7+5Gmomk1a/k+VQQWbFbod3jSSUIH/4gafEN7MVgy3Ma1NEWqViSC7IH/DDIhMzHAttznDOA2nWzoV1nyDpUydM8wvs3VK2N2wEI=

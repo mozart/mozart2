@@ -380,7 +380,7 @@ nativeint ozVSLengthForBufferNoRaise(VM vm, RichNode vs) {
   } else if (matchesCons(vm, vs, wildcard(), wildcard())) {
     nativeint result = 0;
     bool ok = ozListForEachNoRaise(vm, vs,
-      [vm, &result] (char32_t c) {
+      [&result] (char32_t c) {
         result += (sizeof(char32_t) / sizeof(char));
       }
     );
@@ -433,7 +433,7 @@ bool ozVSGetNoRaise(VM vm, RichNode vs, std::vector<char>& output) {
     return true;
   } else if (matchesCons(vm, vs, wildcard(), wildcard())) {
     return ozListForEachNoRaise(vm, vs,
-      [vm, &output] (char32_t c) {
+      [&output] (char32_t c) {
         char buffer[4];
         nativeint length = toUTF(c, buffer);
         std::copy_n(buffer, length, std::back_inserter(output));
@@ -521,7 +521,7 @@ bool ozVBSGetNoRaise(VM vm, RichNode vbs, std::vector<C>& output) {
     return true;
   } else if (matchesCons(vm, vbs, wildcard(), wildcard())) {
     return ozListForEachNoRaise(vm, vbs,
-      [vm, &output] (unsigned char b) {
+      [&output] (unsigned char b) {
         output.push_back(b);
       }
     );

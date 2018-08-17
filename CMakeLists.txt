@@ -72,17 +72,19 @@ endif()
 # We therefore wrap package_source in our own dist target.
 
 if("${MOZART_BUILD_DIR}/" MATCHES "${MOZART_DIR}/.*")
-  message(WARNING "You are compiling inside the source tree. Generating source tarballs will not work correctly.")
+    message(STATUS "Building inside the source tree: 'dist' target disabled")
+else()
+    message(STATUS "Building outside the source tree: 'dist' target enabled")
+    add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+    configure_file(cmake_local/MozartConfigVersion.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/cmake_local/MozartConfigVersion.cmake @ONLY)
+    define_property(GLOBAL PROPERTY SRCS_INSTALLED_DIRS
+        BRIEF_DOCS "List of source files"
+        FULL_DOCS "List of source/dest pairs of path to be included in the source archive")
+    set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
+        "${CMAKE_CURRENT_SOURCE_DIR}" "/"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_local/" "/cmake_local/")
 endif()
-add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
-configure_file(cmake_local/MozartConfigVersion.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake_local/MozartConfigVersion.cmake @ONLY)
-define_property(GLOBAL PROPERTY SRCS_INSTALLED_DIRS
-    BRIEF_DOCS "List of source files"
-    FULL_DOCS "List of source/dest pairs of path to be included in the source archive")
-set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
-    "${CMAKE_CURRENT_SOURCE_DIR}" "/"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_local/" "/cmake_local/")
 
 # The subdirectories which contain the real thing
 

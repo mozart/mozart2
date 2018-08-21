@@ -50,7 +50,7 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   uuidGenerator(),
   portClosed(false),
   _asyncIONodeCount(0),
-  preemptionTimer(nullptr),
+  preemptionTimer(new boost::asio::deadline_timer(environment.io_service)),
   alarmTimer(environment.io_service),
   _terminationRequested(false),
   _terminationStatus(0),
@@ -102,10 +102,6 @@ void BoostVM::run() {
   constexpr auto recNeverInvokeAgain = VirtualMachine::recNeverInvokeAgain;
   constexpr auto recInvokeAgainNow   = VirtualMachine::recInvokeAgainNow;
   constexpr auto recInvokeAgainLater = VirtualMachine::recInvokeAgainLater;
-
-  env.io_service.post([&] {
-      preemptionTimer = new boost::asio::deadline_timer(env.io_service);
-  });
 
   // The main loop that handles all interactions with the VM
   while (true) {

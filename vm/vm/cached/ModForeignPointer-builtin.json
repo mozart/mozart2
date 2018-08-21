@@ -1,0 +1,38 @@
+{
+  "fullCppName": "mozart::builtins::ModForeignPointer",
+  "name": "ForeignPointer",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModForeignPointer::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModForeignPointer::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModForeignPointer::ToInt",
+      "fullCppGetter": "mozart::builtins::biref::ModForeignPointer::ToInt::get",
+      "name": "toInt",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

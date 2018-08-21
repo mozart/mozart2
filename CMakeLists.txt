@@ -38,8 +38,9 @@ if(MINGW)
       CACHE STRING "Version of GCC in your MinGW installation")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-static -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
-  
+  # Linking mingw libs statically
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive, -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+
   # Check for gcc target architecture
   execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)
   string(STRIP "${GCC_ARCH}" GCC_ARCH_TRIPLE)

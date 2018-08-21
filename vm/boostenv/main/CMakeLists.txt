@@ -37,7 +37,7 @@ get_property(GENERATED_SOURCES_DIR GLOBAL PROPERTY GENERATED_SOURCES_DIR)
 include_directories("${MOZART_SOURCE_DIR}/vm/vm/main" "${GENERATED_SOURCES_DIR}")
 link_directories("${MOZART_BINARY_DIR}/vm/vm/main")
 
-set(GENERATED_BOOSTSOURCES_CACHED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cached/)
+set(GENERATED_BOOSTSOURCES_CACHED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../cached/)
 set(GENERATED_BOOSTSOURCES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
 # Generate sources
@@ -112,3 +112,8 @@ include_directories(${GENERATED_BOOSTSOURCES_DIR})
 
 add_library(mozartvmboost boostvm.cc boostenvmodules.cc)
 add_dependencies(mozartvmboost genboostsources)
+
+# We add bcrypt lib(dynamically) for Windows
+if(WIN32)
+    target_link_libraries(mozartvmboost bcrypt)
+endif()

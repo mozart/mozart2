@@ -1,0 +1,39 @@
+{
+  "fullCppName": "mozart::builtins::ModException",
+  "name": "Exception",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModException::Raise",
+      "fullCppGetter": "mozart::builtins::biref::ModException::Raise::get",
+      "name": "raise",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModException::RaiseError",
+      "fullCppGetter": "mozart::builtins::biref::ModException::RaiseError::get",
+      "name": "raiseError",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModException::Fail",
+      "fullCppGetter": "mozart::builtins::biref::ModException::Fail::get",
+      "name": "fail",
+      "inlineable": false,
+      "params": [
+
+      ]
+    }
+  ]
+}

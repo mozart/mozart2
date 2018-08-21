@@ -1,0 +1,42 @@
+{
+  "fullCppName": "mozart::builtins::ModTuple",
+  "name": "Tuple",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModTuple::Make",
+      "fullCppGetter": "mozart::builtins::biref::ModTuple::Make::get",
+      "name": "make",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "label",
+          "kind": "In"
+        },
+        {
+          "name": "width",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModTuple::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModTuple::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

@@ -72,7 +72,9 @@ add_custom_target(gensources
 set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
     "${GENERATED_SOURCES_DIR}" "/vm/vm/main/cached/")
 
-add_dependencies(dist gensources)
+if (DIST_TARGET_ENABLED)
+    add_dependencies(dist gensources)
+endif()
 
 
 # Build the library

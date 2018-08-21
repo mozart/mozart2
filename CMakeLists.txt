@@ -73,9 +73,11 @@ endif()
 
 if("${MOZART_BUILD_DIR}/" MATCHES "${MOZART_DIR}/.*")
     message(STATUS "Building inside the source tree: 'dist' target disabled")
+    set(DIST_TARGET_ENABLED FALSE)
 else()
     message(STATUS "Building outside the source tree: 'dist' target enabled")
     add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+    set(DIST_TARGET_ENABLED TRUE)
     configure_file(cmake_local/MozartConfigVersion.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/cmake_local/MozartConfigVersion.cmake @ONLY)
     define_property(GLOBAL PROPERTY SRCS_INSTALLED_DIRS

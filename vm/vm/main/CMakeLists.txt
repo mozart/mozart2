@@ -42,6 +42,10 @@ add_custom_command(
     ${GENERATED_SOURCES_BINARY_DIR}/
     mozartbuiltins
 
+  COMMAND ${CMAKE_COMMAND} -E remove
+    ${GENERATED_SOURCES_BINARY_DIR}/mozart.ast
+    ${GENERATED_SOURCES_BINARY_DIR}/coremodules.astbi
+
   # Tag
   COMMAND ${CMAKE_COMMAND} -E touch ${GENERATED_SOURCES_BINARY_DIR}/mozart.gen
 

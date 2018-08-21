@@ -167,7 +167,7 @@ private:
 
 // Preemption and alarms
 private:
-  boost::asio::deadline_timer preemptionTimer;
+  boost::asio::deadline_timer* preemptionTimer;
   boost::asio::deadline_timer alarmTimer;
 
 // IO-driven events that must work with the VM store

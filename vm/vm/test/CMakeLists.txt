@@ -15,6 +15,7 @@ add_executable(vmtest testutils.cc sanitytest.cc smallinttest.cc floattest.cc
   virtualstringtest.cc bytestringtest.cc)
 target_link_libraries(vmtest mozartvm gtest gtest_main)
 add_test(vmtest vmtest)
+add_dependencies(check vmtest)
 
 if(NOT MINGW)
   target_link_libraries(vmtest pthread)

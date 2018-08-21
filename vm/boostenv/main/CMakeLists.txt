@@ -103,7 +103,9 @@ add_custom_target(genboostsources
 set_property(GLOBAL APPEND PROPERTY SRCS_INSTALLED_DIRS
     "${GENERATED_BOOSTSOURCES_DIR}" "/vm/boostenv/main/cached/")
 
-add_dependencies(dist genboostsources)
+if(DIST_TARGET_ENABLED)
+    add_dependencies(dist genboostsources)
+endif()
 
 # Boost environment library
 include_directories(${GENERATED_BOOSTSOURCES_DIR})

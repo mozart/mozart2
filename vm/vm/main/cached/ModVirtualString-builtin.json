@@ -1,0 +1,106 @@
+{
+  "fullCppName": "mozart::builtins::ModVirtualString",
+  "name": "VirtualString",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModVirtualString::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualString::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualString::ToCompactString",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualString::ToCompactString::get",
+      "name": "toCompactString",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualString::ToCharList",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualString::ToCharList::get",
+      "name": "toCharList",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "tail",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualString::ToAtom",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualString::ToAtom::get",
+      "name": "toAtom",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualString::Length",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualString::Length::get",
+      "name": "length",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModVirtualString::ToFloat",
+      "fullCppGetter": "mozart::builtins::biref::ModVirtualString::ToFloat::get",
+      "name": "toFloat",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

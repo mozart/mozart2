@@ -1,0 +1,63 @@
+{
+  "fullCppName": "mozart::builtins::ModDebug",
+  "name": "Debug",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModDebug::GetRaiseOnBlock",
+      "fullCppGetter": "mozart::builtins::biref::ModDebug::GetRaiseOnBlock::get",
+      "name": "getRaiseOnBlock",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDebug::SetRaiseOnBlock",
+      "fullCppGetter": "mozart::builtins::biref::ModDebug::SetRaiseOnBlock::get",
+      "name": "setRaiseOnBlock",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "value",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDebug::SetId",
+      "fullCppGetter": "mozart::builtins::biref::ModDebug::SetId::get",
+      "name": "setId",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "id",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModDebug::Breakpoint",
+      "fullCppGetter": "mozart::builtins::biref::ModDebug::Breakpoint::get",
+      "name": "breakpoint",
+      "inlineable": false,
+      "params": [
+
+      ]
+    }
+  ]
+}

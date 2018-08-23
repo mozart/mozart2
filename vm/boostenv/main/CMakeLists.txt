@@ -73,6 +73,10 @@ add_custom_command(
     ${GENERATED_BOOSTSOURCES_BINARY_DIR}/
     boostenvbuiltins
 
+  COMMAND ${CMAKE_COMMAND} -E remove
+    ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.ast
+    ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenvmodules.astbi
+
   # Tag
   COMMAND ${CMAKE_COMMAND} -E touch ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.gen
 

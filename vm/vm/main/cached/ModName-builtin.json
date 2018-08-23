@@ -1,0 +1,102 @@
+{
+  "fullCppName": "mozart::builtins::ModName",
+  "name": "Name",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModName::New",
+      "fullCppGetter": "mozart::builtins::biref::ModName::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModName::NewWithUUID",
+      "fullCppGetter": "mozart::builtins::biref::ModName::NewWithUUID::get",
+      "name": "newWithUUID",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "uuid",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModName::NewUnique",
+      "fullCppGetter": "mozart::builtins::biref::ModName::NewUnique::get",
+      "name": "newUnique",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "atom",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModName::NewNamed",
+      "fullCppGetter": "mozart::builtins::biref::ModName::NewNamed::get",
+      "name": "newNamed",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "printName",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModName::NewNamedWithUUID",
+      "fullCppGetter": "mozart::builtins::biref::ModName::NewNamedWithUUID::get",
+      "name": "newNamedWithUUID",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "printName",
+          "kind": "In"
+        },
+        {
+          "name": "uuid",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModName::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModName::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

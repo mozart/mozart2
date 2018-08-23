@@ -1,0 +1,38 @@
+{
+  "fullCppName": "mozart::builtins::ModBoot",
+  "name": "Boot",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModBoot::GetInternal",
+      "fullCppGetter": "mozart::builtins::biref::ModBoot::GetInternal::get",
+      "name": "getInternal",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "name",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModBoot::GetNative",
+      "fullCppGetter": "mozart::builtins::biref::ModBoot::GetNative::get",
+      "name": "getNative",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "name",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

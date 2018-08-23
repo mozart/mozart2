@@ -1,0 +1,58 @@
+{
+  "fullCppName": "mozart::builtins::ModSerializer",
+  "name": "Serializer",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModSerializer::New",
+      "fullCppGetter": "mozart::builtins::biref::ModSerializer::New::get",
+      "name": "new",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSerializer::Serialize",
+      "fullCppGetter": "mozart::builtins::biref::ModSerializer::Serialize::get",
+      "name": "serialize",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "serializer",
+          "kind": "In"
+        },
+        {
+          "name": "todo",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModSerializer::ExtractByLabels",
+      "fullCppGetter": "mozart::builtins::biref::ModSerializer::ExtractByLabels::get",
+      "name": "extractByLabels",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "object",
+          "kind": "In"
+        },
+        {
+          "name": "labelsRecord",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

@@ -42,6 +42,10 @@ add_custom_command(
     ${GENERATED_SOURCES_BINARY_DIR}/
     mozartbuiltins
 
+  COMMAND ${CMAKE_COMMAND} -E remove
+    ${GENERATED_SOURCES_BINARY_DIR}/mozart.ast
+    ${GENERATED_SOURCES_BINARY_DIR}/coremodules.astbi
+
   # Tag
   COMMAND ${CMAKE_COMMAND} -E touch ${GENERATED_SOURCES_BINARY_DIR}/mozart.gen
 
@@ -82,4 +86,6 @@ include_directories(${GENERATED_SOURCES_DIR})
 add_library(mozartvm emulate.cc memmanager.cc gcollect.cc
   unify.cc sclone.cc vm.cc coredatatypes.cc coders.cc properties.cc
   coremodules.cc unpickler.cc serializer.cc pickler.cc)
-add_dependencies(mozartvm gensources)
+if(NOT MOZART_CACHED_BUILD)
+    add_dependencies(mozartvm gensources)
+endif()

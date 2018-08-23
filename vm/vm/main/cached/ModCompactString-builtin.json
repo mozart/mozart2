@@ -1,0 +1,170 @@
+{
+  "fullCppName": "mozart::builtins::ModCompactString",
+  "name": "CompactString",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::IsCompactString",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::IsCompactString::get",
+      "name": "isCompactString",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::IsCompactByteString",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::IsCompactByteString::get",
+      "name": "isCompactByteString",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::CharAt",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::CharAt::get",
+      "name": "charAt",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "index",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::Append",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::Append::get",
+      "name": "append",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::Slice",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::Slice::get",
+      "name": "slice",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "from",
+          "kind": "In"
+        },
+        {
+          "name": "to",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::Search",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::Search::get",
+      "name": "search",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "from",
+          "kind": "In"
+        },
+        {
+          "name": "needle",
+          "kind": "In"
+        },
+        {
+          "name": "begin",
+          "kind": "Out"
+        },
+        {
+          "name": "end",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::HasPrefix",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::HasPrefix::get",
+      "name": "hasPrefix",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "string",
+          "kind": "In"
+        },
+        {
+          "name": "prefix",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModCompactString::HasSuffix",
+      "fullCppGetter": "mozart::builtins::biref::ModCompactString::HasSuffix::get",
+      "name": "hasSuffix",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "string",
+          "kind": "In"
+        },
+        {
+          "name": "suffix",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

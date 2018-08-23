@@ -17,11 +17,11 @@ target_architecture(MOZART_PROP_PLATFORM_ARCH)
 # For source tarballs, oz.version and os.date
 # are exported id MozartConfigVersion.cmake
 include(MozartConfigVersion
-  RESULT_VARIABLE MOZART_CACHED_BUILD OPTIONAL)
+	RESULT_VARIABLE MOZART_SOURCE_TARBALL_BUILD OPTIONAL)
 
 # oz.version
 
-if(NOT MOZART_CACHED_BUILD)
+if(NOT MOZART_SOURCE_TARBALL_BUILD)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} describe --dirty
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -45,7 +45,7 @@ endif()
 
 # oz.date
 
-if(NOT MOZART_CACHED_BUILD)
+if(NOT MOZART_SOURCE_TARBALL_BUILD)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} log "--format=%aD" -1
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"

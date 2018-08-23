@@ -1,0 +1,116 @@
+{
+  "fullCppName": "mozart::builtins::ModNumber",
+  "name": "Number",
+  "builtins": [
+    {
+      "fullCppName": "mozart::builtins::ModNumber::Is",
+      "fullCppGetter": "mozart::builtins::biref::ModNumber::Is::get",
+      "name": "is",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "value",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModNumber::Opposite",
+      "fullCppGetter": "mozart::builtins::biref::ModNumber::Opposite::get",
+      "name": "~",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "operand",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModNumber::Add",
+      "fullCppGetter": "mozart::builtins::biref::ModNumber::Add::get",
+      "name": "+",
+      "inlineable": true,
+      "inlineOpCode": 129,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModNumber::Subtract",
+      "fullCppGetter": "mozart::builtins::biref::ModNumber::Subtract::get",
+      "name": "-",
+      "inlineable": true,
+      "inlineOpCode": 130,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModNumber::Multiply",
+      "fullCppGetter": "mozart::builtins::biref::ModNumber::Multiply::get",
+      "name": "*",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "left",
+          "kind": "In"
+        },
+        {
+          "name": "right",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModNumber::Abs",
+      "fullCppGetter": "mozart::builtins::biref::ModNumber::Abs::get",
+      "name": "abs",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "operand",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    }
+  ]
+}

@@ -158,7 +158,7 @@ UnstableNode BoostEnvironment::listVMs(VM vm) {
   boost::lock_guard<boost::mutex> lock(_vmsMutex);
   UnstableNode list = buildList(vm);
   for (BoostVM& boostVM : _vms)
-    list = buildCons(vm, build(vm, boostVM.identifier), list);
+    list = buildCons(vm, build(vm, boostVM.identifier), std::move(list));
   return list;
 }
 

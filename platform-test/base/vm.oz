@@ -6,6 +6,7 @@ import
 export
    Return
 define
+   % FIXME: These tests are buggy. See issue #313
    Return =
    mvm([ncores(proc {$}
 		  {VM.ncores} > 0 = true

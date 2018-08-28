@@ -12,7 +12,7 @@ set(BASE_FUNCTORS
     #"weakdictionary.oz" "weakdictionaryGC.oz"
     #"finalize.oz" "gc.oz"
     "state.oz" "thread.oz"
-    "vm.oz"
+    #"vm.oz" #FIXME vm tests are buggy, see #313.
     "reflection.oz" "serializer.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/base")

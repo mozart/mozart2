@@ -465,8 +465,31 @@ bool StructuralDualWalk::processPair(VM vm, RichNode left, RichNode right) {
 }
 
 void StructuralDualWalk::rebind(VM vm, RichNode left, RichNode right) {
-  rebindTrail.push_back(vm, left.makeBackup());
-  left.reinit(vm, right);
+  // When given a Stable and an Unstable node, reinit will always alias the
+  // unstable node to the stable one, even if it is called on the stable one.
+  // In particular, it means that it can modify its argument, and not this.
+  // In that case, we need to backup the variable that will be modified.
+  // See #312 and #315 for details.
+  //
+  // In particular, StableNode.reinit(vm, UnstableNode) must never be called as
+  // it updates both `left` and `right` and breaks our backup system.
+  // To avoid that, we always call reinit on the less stable node we have.
+  if (right.isStable()) {
+      // `right` is stable, backup `left` because it will be aliased.
+      rebindTrail.push_back(vm, left.makeBackup());
+      // If both are stable, `left` must be modified (because that's the one we
+      // have a backup for).  That is why we call `left`'s reinit.
+      left.reinit(vm, right);
+  } else {
+      // `right` is unstable, backup it as it will be aliased.
+      rebindTrail.push_back(vm, right.makeBackup());
+      // If both are unstable, they are both aliased to a stable node
+      // initialised with reinit's second arg (`left` in this case).
+      // By calling `right`'s reinit, we ensure that `left` is still valid
+      // after a rollback. This leaves around an unnecessary indirection from
+      // `left` to the new stable node, but it is the price to pay for eagerness.
+      right.reinit(vm, left);
+  }
 }
 
 void StructuralDualWalk::cleanupOnFailure(VM vm) {

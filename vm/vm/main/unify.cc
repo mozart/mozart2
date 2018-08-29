@@ -465,8 +465,16 @@ bool StructuralDualWalk::processPair(VM vm, RichNode left, RichNode right) {
 }
 
 void StructuralDualWalk::rebind(VM vm, RichNode left, RichNode right) {
-  rebindTrail.push_back(vm, left.makeBackup());
-  left.reinit(vm, right);
+  // XXX: The test is to work around `a.reinit(vm, b)` where `b` is sometimes
+  // modified. It is better to reinit Unstable nodes than Stable ones anyway.
+  // See #312 for details.
+  if (right.isStable()) {
+      rebindTrail.push_back(vm, left.makeBackup());
+      left.reinit(vm, right);
+  } else {
+      rebindTrail.push_back(vm, right.makeBackup());
+      right.reinit(vm, left);
+  }
 }
 
 void StructuralDualWalk::cleanupOnFailure(VM vm) {

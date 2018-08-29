@@ -13,6 +13,7 @@ set(BASE_FUNCTORS
     #"finalize.oz" "gc.oz"
     "state.oz" "thread.oz"
     #"vm.oz" #FIXME vm tests are buggy, see #313.
+    "unify.oz"
     "reflection.oz" "serializer.oz"
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/base")

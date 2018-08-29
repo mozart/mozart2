@@ -97,6 +97,7 @@ void UnstableNode::copy(VM vm, StableNode& from) {
     make<Reference>(vm, &from);
 }
 
+// WARNING This code is highly sensitive for StructuralDualWalk::rebind in unify.cc
 void UnstableNode::copy(VM vm, UnstableNode& from) {
   if (from.isCopyable()) {
     set(from);
@@ -207,6 +208,7 @@ void RichNode::ensureStable(VM vm) {
   }
 }
 
+// WARNING This code is highly sensitive for StructuralDualWalk::rebind in unify.cc
 void RichNode::reinit(VM vm, StableNode& from) {
   if (node() == &from) {
     // do nothing
@@ -217,6 +219,7 @@ void RichNode::reinit(VM vm, StableNode& from) {
   }
 }
 
+// WARNING This code is highly sensitive for StructuralDualWalk::rebind in unify.cc
 void RichNode::reinit(VM vm, UnstableNode& from) {
   if (node() == &from) {
     // do nothing
@@ -231,6 +234,7 @@ void RichNode::reinit(VM vm, UnstableNode&& from) {
   node()->set(from);
 }
 
+// WARNING This code is highly sensitive for StructuralDualWalk::rebind in unify.cc
 void RichNode::reinit(VM vm, RichNode from) {
   if (from.isStable())
     reinit(vm, from.asStable());

@@ -70,7 +70,7 @@ public:
   // Miscellaneous
 
   void printReprToStream(VM vm, std::ostream& out, int depth, int width) {
-    out << "<Cell: " << repr(vm, _value, depth, width) << ">";
+    out << "<Cell>";
   }
 
 private:

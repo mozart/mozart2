@@ -39,7 +39,7 @@ jobs:
         - cmake -DCMAKE_BUILD_TYPE=Release -DMOZART_BOOST_USE_STATIC_LIBS=False -DCMAKE_PROGRAM_PATH=$BIN -DCMAKE_PREFIX_PATH=$PREFIX $SOURCES
         - make dist VERBOSE=1
         - make VERBOSE=1
-        - make check || true
+        - make check
       deploy:
         provider: releases
         skip_cleanup: true

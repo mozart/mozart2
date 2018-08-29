@@ -45,7 +45,7 @@ build_script:
     - mkdir C:\projects\mozart2\build
     - cd C:\projects\mozart2\build
     - cmake -DCMAKE_BUILD_TYPE=Release -G"MSYS Makefiles" -DCMAKE_PREFIX_PATH=C:/tcltk -DBOOST_ROOT="%BOOST_ROOT%" -DISS_INCLUDE_TCL=ON -DISS_INCLUDE_EMACS=ON C:\projects\mozart2
-    - make check || true
+    - make check
     - cmake --build . --target installer -- VERBOSE=1
 
 artifacts:

@@ -10,6 +10,8 @@ the easiest way to rebuild the pre-generated sources.
 
 ## Travis CI
 
+[![Travis CI build status](https://travis-ci.org/mozart/mozart2.svg?branch=master)](https://travis-ci.org/mozart/mozart2)
+
 The build process is written in [.travis.yml](.travis.yml). Specifically, we use the
 [trusty](https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system) environnement. Currently, we implement a build on
 Linux. We create two jobs. The first one, builds the pre-generated sources
@@ -18,6 +20,8 @@ in the repository. If this job succeed, a second one is started to build
 Mozart2.
 
 ## Appveyor
+
+[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/mozart/mozart2?branch=master&svg=true)](https://ci.appveyor.com/project/layus/mozart2)
 
 The build process is written in [appveyor.yml](appveyor.yml). It uses mainly MingW to build.
 The build uploads a Windows installer as an artifact.

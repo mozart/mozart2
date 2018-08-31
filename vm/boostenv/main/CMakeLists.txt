@@ -47,7 +47,7 @@ add_custom_command(
   OUTPUT ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.gen
 
   # First pass: generate data types and interfaces
-  COMMAND ${clang_bin}
+  COMMAND ${clang_bin} -emit-ast
     -o ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenv.ast
     -I ${Boost_INCLUDE_DIRS}
     -I ${CMAKE_CURRENT_SOURCE_DIR}/../../vm/main
@@ -59,7 +59,7 @@ add_custom_command(
     ${GENERATED_BOOSTSOURCES_BINARY_DIR}/
 
   # Second pass: generate builtin information
-  COMMAND ${clang_bin}
+  COMMAND ${clang_bin} -emit-ast
     -o ${GENERATED_BOOSTSOURCES_BINARY_DIR}/boostenvmodules.astbi
     -I ${Boost_INCLUDE_DIRS}
     -I ${GENERATED_BOOSTSOURCES_BINARY_DIR}

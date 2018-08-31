@@ -21,7 +21,7 @@ add_custom_command(
   OUTPUT ${GENERATED_SOURCES_BINARY_DIR}/mozart.gen
 
   # First pass: generate data types and interfaces
-  COMMAND ${clang_bin}
+  COMMAND ${clang_bin} -emit-ast
     -o ${GENERATED_SOURCES_BINARY_DIR}/mozart.ast
     -DMOZART_GENERATOR
     ${MOZART_GENERATOR_FLAGS}
@@ -31,7 +31,7 @@ add_custom_command(
     ${GENERATED_SOURCES_BINARY_DIR}/
 
   # Second pass: generate builtin information
-  COMMAND ${clang_bin}
+  COMMAND ${clang_bin} -emit-ast
     -o ${GENERATED_SOURCES_BINARY_DIR}/coremodules.astbi
     -I ${GENERATED_SOURCES_BINARY_DIR}
     -DMOZART_BUILTIN_GENERATOR

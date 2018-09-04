@@ -287,7 +287,7 @@ private:
         gnode->protocol.init(vm, "immval");
         return result;
       },
-      [this] () {
+      [] () {
       }
     );
   }

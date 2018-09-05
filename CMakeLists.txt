@@ -140,12 +140,12 @@ string(REGEX REPLACE "-(alpha|beta|rc)\\." "~\\1"
        CPACK_DEBIAN_PACKAGE_VERSION "${MOZART_PROP_OZ_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "tcl8.5, tk8.5, emacsen-common")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "tk8.6, emacsen-common")
 
 # Configuration of the RPM generator
 
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
-set(CPACK_RPM_PACKAGE_REQUIRES "tcl >= 8.5, tk >= 8.5, emacs")
+set(CPACK_RPM_PACKAGE_REQUIRES "tk >= 8.6, emacs")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
 
 # Configuration of the Source generator

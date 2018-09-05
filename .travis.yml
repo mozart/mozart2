@@ -2,19 +2,20 @@ language: generic
 dist: trusty
 sudo: false
 env:
-  - [ "V=4.0", "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
+  - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
 addons:
   apt:
     sources: [ "ubuntu-toolchain-r-test", "llvm-toolchain-trusty-4.0" ]
     packages: [ "libboost-all-dev", "tcl-dev", "tk-dev", "emacs", "clang-4.0", "libclang-4.0-dev", "llvm-4.0-dev", "clang-format-4.0", "clang-tidy-4.0" ]
+
+before_script:
+  # Fix clang cmake dirs
+  - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
+  - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
+  - sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true
 jobs:
   include:
     - stage: compiling and checking sources
-      before_script:
-        # Fix clang cmake dirs
-        - if [ $V == 4.0 ]; then  sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang;     fi
-        - if [ $V == 4.0 ]; then  sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0; fi
-        - if [ $V == 4.0 ]; then  sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true;         fi
       script:
         - mkdir -p ../cache/vm ../cache/boostenv
         - mv vm/boostenv/main/cached ../cache/boostenv
@@ -29,11 +30,6 @@ jobs:
         - diff -Npur cache/vm/cached build/vm/vm/main/generated
 
     - stage: compiling with pre-generated sources
-      before_script:
-        # Fix clang cmake dirs
-        - if [ $V == 4.0 ]; then  sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang;     fi
-        - if [ $V == 4.0 ]; then  sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0; fi
-        - if [ $V == 4.0 ]; then  sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true;         fi
       script:
         - export SOURCES=$(pwd) && mkdir ../build && cd ../build
         - cmake -DCMAKE_BUILD_TYPE=Release -DMOZART_BOOST_USE_STATIC_LIBS=False -DCMAKE_PROGRAM_PATH=$BIN -DCMAKE_PREFIX_PATH=$PREFIX $SOURCES

@@ -11,14 +11,9 @@ contributing.
 
 # Downloads
 
-Binary packages for Linux, Mac OS and Windows are built from time to time and
-made available on
-[SourceForge](http://sourceforge.net/projects/mozart-oz/files/).
+Binary packages for recent releases are available on [GitHub](https://github.com/mozart/mozart2/releases).
 
-Mac support is provided for 10.8.x and recent versions (2.x) of Aquamacs.
-
-The binary distribution requires that you have installed Tcl/Tk 8.5 on your
-system.
+[SourceForge](http://sourceforge.net/projects/mozart-oz/files/) contains all the binary packages ever published, including previous releases and releases of Mozart 1.
 
 # Build Instructions
 

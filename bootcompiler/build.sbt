@@ -2,7 +2,7 @@ name := "bootcompiler"
 
 version := "2.0-SNAPSHOT"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.11.2"
 
 scalacOptions ++= Seq("-deprecation", "-optimize")
 

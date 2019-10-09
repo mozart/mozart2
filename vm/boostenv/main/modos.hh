@@ -1052,7 +1052,7 @@ public:
 
       {
         boost::asio::local::stream_protocol::socket childSocket(
-          BoostEnvironment::forVM(vm).io_service);
+          BoostEnvironment::forVM(vm).io_context);
         boost::asio::local::connect_pair(mySocket, childSocket, ec);
 
         if (!ec) {
@@ -1250,7 +1250,7 @@ public:
         ozVSGet(vm, name, nameBufLength, nameString);
 
         auto& environment = BoostEnvironment::forVM(vm);
-        tcp::resolver resolver (environment.io_service);
+        tcp::resolver resolver (environment.io_context);
         tcp::resolver::query query (nameString, "0");
         auto it = resolver.resolve(query, ec);
         if (!ec) {

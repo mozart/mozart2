@@ -41,7 +41,7 @@ typedef boost::multiprecision::mpz_int mp_int;
 typedef boost::multiprecision::cpp_int mp_int;
 #endif
 
-class BoostBigInt : public BigIntImplem {
+class BoostBigInt final : public BigIntImplem {
 public:
   BoostBigInt(nativeint value) : _value(value) {};
   BoostBigInt(double value) : _value(value) {};

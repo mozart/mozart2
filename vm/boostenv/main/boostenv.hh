@@ -171,7 +171,7 @@ void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
 
 void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
                                           nativeint exitCode,
-                                          boost::asio::io_service::work* work) {
+                                          boost::asio::io_context::work* work) {
   {
     boost::lock_guard<boost::mutex> lock(_vmsMutex);
 
@@ -196,7 +196,7 @@ void BoostEnvironment::sendOnVMPort(VM from, VMIdentifier to, RichNode value) {
 
 int BoostEnvironment::runIO() {
   // This will end when all VMs are done.
-  io_service.run();
+  io_context.run();
 
   return _exitCode;
 }

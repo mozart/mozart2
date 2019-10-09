@@ -2,14 +2,13 @@ language: generic
 dist: bionic
 sudo: false
 env:
-  - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin/" ]
+  - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
 addons:
   apt:
     sources:
       - sourceline: "deb http://apt.llvm.org/xenial llvm-toolchain-xenial-4.0 main"
         key_url: "http://llvm.org/apt/llvm-snapshot.gpg.key"
     packages:
-      - "libboost-dev"
       - "libboost-program-options-dev"
       - "libboost-random-dev"
       - "libboost-system-dev"

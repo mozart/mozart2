@@ -31,7 +31,7 @@ before_script:
   # Fix clang cmake dirs
   - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
   - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
-  - sudo -E ln -s  /usr/bin/clang*-4.0       /usr/lib/llvm-4.0/bin || true
+  - sudo -E ln -s  /usr/bin/*clang*          /usr/lib/llvm-4.0/bin || true
   - sudo -E rm -rf /usr/local/clang-* /usr/local/llvm-*
 jobs:
   include:

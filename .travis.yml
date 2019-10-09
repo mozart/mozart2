@@ -1,8 +1,8 @@
 language: generic
 dist: bionic
 sudo: false
-#env:
-   #- [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
+env:
+  - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin/" ]
 addons:
   apt:
     packages:

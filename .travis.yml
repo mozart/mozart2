@@ -28,12 +28,13 @@ before_script:
   # Fix clang cmake dirs
   - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
   - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
-  #- sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true
+  - sudo -E ln -s  /usr/bin/clang*-4.0       /usr/lib/llvm-4.0/bin || true
   - sudo -E rm -rf /usr/local/clang-* /usr/local/llvm-*
 jobs:
   include:
     - stage: compiling and checking sources
       script:
+        - set -e
         - mkdir -p ../cache/vm ../cache/boostenv
         - mv vm/boostenv/main/cached ../cache/boostenv
         - mv vm/vm/main/cached ../cache/vm
@@ -48,6 +49,7 @@ jobs:
 
     - stage: compiling with pre-generated sources
       script:
+        - set -e
         - export SOURCES=$(pwd) && mkdir ../build && cd ../build
         - cmake -DCMAKE_BUILD_TYPE=Release -DMOZART_BOOST_USE_STATIC_LIBS=False -DCMAKE_PROGRAM_PATH=$BIN -DCMAKE_PREFIX_PATH=$PREFIX $SOURCES
         - make dist VERBOSE=1

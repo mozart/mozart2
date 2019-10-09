@@ -29,6 +29,7 @@ before_script:
   #- sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
   #- sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
   #- sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true
+  sudo -E rm -rf /usr/local/clang-* /usr/local/llvm-*
 jobs:
   include:
     - stage: compiling and checking sources

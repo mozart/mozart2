@@ -190,7 +190,7 @@ private:
 
 // Running thread management
 private:
-  boost::asio::io_context::work* const _work;
+  boost::asio::io_service::work* const _work;
 };
 
 } }

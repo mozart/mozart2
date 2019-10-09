@@ -98,7 +98,7 @@ public:
 
   inline
   void removeTerminatedVM(VMIdentifier identifier, nativeint exitCode,
-                          boost::asio::io_context::work* work);
+                          boost::asio::io_service::work* work);
 
   // Executes callback on behalf of the target VM if it is still alive.
   inline
@@ -198,7 +198,7 @@ private:
 
 // ASIO service
 public:
-  boost::asio::io_context io_context;
+  boost::asio::io_service io_service;
 };
 
 ///////////////

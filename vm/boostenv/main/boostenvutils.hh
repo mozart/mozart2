@@ -39,7 +39,7 @@ namespace mozart { namespace boostenv {
 
 template <typename T, typename P>
 BaseSocketConnection<T, P>::BaseSocketConnection(BoostEnvironment& env, VMIdentifier vm):
-  env(env), vm(vm), _socket(env.io_context) {
+  env(env), vm(vm), _socket(env.io_service) {
 }
 
 template <typename T, typename P>

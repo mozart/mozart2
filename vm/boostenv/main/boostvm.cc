@@ -50,13 +50,13 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   uuidGenerator(),
   portClosed(false),
   _asyncIONodeCount(0),
-  preemptionTimer(new boost::asio::deadline_timer(environment.io_context)),
-  alarmTimer(environment.io_context),
+  preemptionTimer(new boost::asio::deadline_timer(environment.io_service)),
+  alarmTimer(environment.io_service),
   _terminationRequested(false),
   _terminationStatus(0),
   _terminationReason("normal"),
   // Make sure the IO thread will wait for us
-  _work(new boost::asio::io_context::work(environment.io_context)) {
+  _work(new boost::asio::io_service::work(environment.io_service)) {
 
   if (identifier != parent)
     addMonitor(parent);
@@ -109,7 +109,7 @@ void BoostVM::run() {
     vm->setReferenceTime(env.getReferenceTime());
 
     // Setup the preemption timer
-    boost::asio::post(env.io_context, [&](){
+    boost::asio::post(env.io_service, [&](){
         preemptionTimer->expires_from_now(boost::posix_time::millisec(1));
         preemptionTimer->async_wait(boost::bind(
               &BoostVM::onPreemptionTimerExpire,
@@ -121,7 +121,7 @@ void BoostVM::run() {
     auto nextInvoke = nextInvokePair.first;
 
     // Stop the preemption timer
-    boost::asio::post(env.io_context, [&](){
+    boost::asio::post(env.io_service, [&](){
         preemptionTimer->expires_at(boost::posix_time::min_date_time);
     });
 
@@ -179,7 +179,7 @@ void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
   } else if (_terminationRequested) {
     // Termination was requested
   } else if (preemptionTimer->expires_at() == boost::posix_time::min_date_time) {
-    // Timer was cancelled, but we missed it (race condition in io_context)
+    // Timer was cancelled, but we missed it (race condition in io_service)
   } else {
     // Preemption
     vm->setReferenceTime(env.getReferenceTime());
@@ -332,8 +332,8 @@ void BoostVM::terminate() {
   auto& preemptionTimerCopy = preemptionTimer;
   // We need a copy of preemptionTimer because we cannot capture 'this'.
   // It may be deleted before the execution of the callback.
-  // For the same reason, we access the io_context via the timer.
-  boost::asio::post(env.io_context, [preemptionTimerCopy]{
+  // For the same reason, we access the io_service via the timer.
+  boost::asio::post(env.io_service, [preemptionTimerCopy]{
       preemptionTimerCopy->expires_at(boost::posix_time::min_date_time);
       // We cannot delete the timer now because the onPreemptionTimerExpire handler
       // may already be in the queue. So add a delete lambda to the queue.

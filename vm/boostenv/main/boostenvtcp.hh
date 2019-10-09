@@ -38,7 +38,7 @@ namespace mozart { namespace boostenv {
 ///////////////////
 
 TCPConnection::TCPConnection(BoostEnvironment& env, VMIdentifier vm):
-  BaseSocketConnection(env, vm), _resolver(env.io_context) {
+  BaseSocketConnection(env, vm), _resolver(env.io_service) {
 }
 
 void TCPConnection::startAsyncConnect(std::string host, std::string service,
@@ -82,7 +82,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
 
 TCPAcceptor::TCPAcceptor(BoostEnvironment& env, VMIdentifier vm,
                          const tcp::endpoint& endpoint):
-  env(env), vm(vm), _acceptor(env.io_context, endpoint) {
+  env(env), vm(vm), _acceptor(env.io_service, endpoint) {
 }
 
 void TCPAcceptor::startAsyncAccept(const ProtectedNode& connectionNode) {

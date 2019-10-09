@@ -1,5 +1,5 @@
 language: generic
-dist: trusty
+dist: xenial
 sudo: false
 env:
   - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]

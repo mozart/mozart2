@@ -21,14 +21,15 @@ addons:
       - "tcl-dev"
       - "tk-dev"
       - "emacs"
-      - "clang-4.0"
-      - "libclang-4.0-dev"
-      - "llvm-4.0-dev"
-      - "clang-format-4.0"
-      - "clang-tidy-4.0"
+      #- "clang-4.0"
+      #- "libclang-4.0-dev"
+      #- "llvm-4.0-dev"
+      #- "clang-format-4.0"
+      #- "clang-tidy-4.0"
 
 before_script:
   # Fix clang cmake dirs
+  - sudo apt install -t llvm-toolchain-xenial-4.0 clang-4.0 libclang-4.0-dev llvm-4.0-dev clang-format-4.0 clang-tidy-4.0
   - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
   - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
   - sudo -E ln -s  /usr/bin/*clang*          /usr/lib/llvm-4.0/bin || true

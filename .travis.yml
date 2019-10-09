@@ -6,6 +6,7 @@ env:
 addons:
   apt:
     sources:
+      - "boost-latest"
       - sourceline: "deb http://apt.llvm.org/xenial llvm-toolchain-xenial-4.0 main"
         key_url: "http://llvm.org/apt/llvm-snapshot.gpg.key"
     packages:

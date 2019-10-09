@@ -6,7 +6,7 @@ env:
 addons:
   apt:
     sources:
-      - sourceline: "deb http://apt.llvm.org/xenial/dists/llvm-toolchain-xenial-4.0/ main"
+      - sourceline: "deb http://apt.llvm.org/xenial llvm-toolchain-xenial-4.0 main"
         key_url: "http://llvm.org/apt/llvm-snapshot.gpg.key"
     packages:
       - "libboost-dev"

@@ -1,18 +1,34 @@
 language: generic
 dist: bionic
 sudo: false
-env:
-  - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
+#env:
+   #- [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin" ]
 addons:
   apt:
-    sources: [ "ubuntu-toolchain-r-test", "llvm-toolchain-xenial-4.0" ]
-    packages: [ "libboost-all-dev", "tcl-dev", "tk-dev", "emacs", "clang-4.0", "libclang-4.0-dev", "llvm-4.0-dev", "clang-format-4.0", "clang-tidy-4.0" ]
+    packages:
+      - "libboost-dev"
+      - "libboost-program-options-dev"
+      - "libboost-random-dev"
+      - "libboost-system-dev"
+      - "libboost-thread-dev"
+      - "libboost-filesystem-dev"
+      - "libboost-chrono-dev"
+      - "libboost-date-time-dev"
+      - "libboost-atomic-dev"
+      - "tcl-dev"
+      - "tk-dev"
+      - "emacs"
+      - "clang-4.0"
+      - "libclang-4.0-dev"
+      - "llvm-4.0-dev"
+      - "clang-format-4.0"
+      - "clang-tidy-4.0"
 
 before_script:
   # Fix clang cmake dirs
-  - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
-  - sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
-  - sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true
+  #- sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang
+  #- sudo -E ln -sn /usr/share/llvm-4.0/cmake /usr/lib/llvm-4.0/lib/cmake/clang-4.0
+  #- sudo -E ln -s  /usr/bin/*                /usr/lib/llvm-4.0/bin || true
 jobs:
   include:
     - stage: compiling and checking sources

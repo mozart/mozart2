@@ -5,6 +5,9 @@ env:
   - [ "PREFIX=/usr/lib/llvm-4.0/lib/cmake", "BIN=/usr/lib/llvm-4.0/bin/" ]
 addons:
   apt:
+    sources:
+      - sourceline: "deb http://apt.llvm.org/xenial/dists/llvm-toolchain-xenial-4.0/ main"
+        key_url: "http://llvm.org/apt/llvm-snapshot.gpg.key"
     packages:
       - "libboost-dev"
       - "libboost-program-options-dev"

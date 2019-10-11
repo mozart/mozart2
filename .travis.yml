@@ -8,7 +8,7 @@ addons:
     sources:
       - sourceline: "deb http://apt.llvm.org/xenial llvm-toolchain-xenial-4.0 main"
         key_url: "http://llvm.org/apt/llvm-snapshot.gpg.key"
-      - sourceline: "deb http://us.archive.ubuntu.com/ubuntu/ cosmic main"
+      #- sourceline: "deb http://us.archive.ubuntu.com/ubuntu/ cosmic main"
     packages:
       - "libboost-program-options1.67-dev"
       - "libboost-random1.67-dev"

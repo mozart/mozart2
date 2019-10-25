@@ -1,0 +1,11 @@
+FROM ubuntu
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get -qq update && \
+    apt-get install -y libboost-all-dev emacs tk8.6-dev cmake make openjdk-8-jre 'g++' git dpkg-dev
+
+RUN mkdir -p /usr/src/mozart2/build
+WORKDIR /usr/src/mozart2/build
+
+COPY . /usr/src/mozart2
+

@@ -1,0 +1,10 @@
+FROM fedora
+
+RUN yum -y update && \
+    yum -y install boost-devel tk-devel cmake gcc emacs-nox make gcc-c++ git jre-headless boost-static rpm-build
+
+RUN mkdir -p /usr/src/mozart2/build
+WORKDIR /usr/src/mozart2/build
+
+COPY . /usr/src/mozart2
+

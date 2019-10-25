@@ -36,3 +36,13 @@ jobs:
         - make dist VERBOSE=1
         - make VERBOSE=1
         - make check
+
+    - sudo: true
+      env:
+        matrix:
+          - BUILD_FLAVOR=fedora
+          - BUILD_FLAVOR=ubuntu
+      before_script: ""
+      addons:
+      script: bash ci/$BUILD_FLAVOR.sh
+

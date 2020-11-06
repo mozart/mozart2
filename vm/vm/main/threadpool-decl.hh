@@ -106,6 +106,12 @@ public:
     schedule(thread);
   }
 
+  bool isScheduled(Runnable* thread) {
+    return queues[tpMiddle].isScheduled(thread) ||
+      queues[tpHi].isScheduled(thread) ||
+      queues[tpLow].isScheduled(thread);
+  }
+
   void gCollect(GC gc) {
     queues[tpLow].gCollect(gc);
     queues[tpMiddle].gCollect(gc);
@@ -127,12 +133,6 @@ private:
 
   inline
   Runnable* popNext(ThreadPriority priority);
-
-  bool isScheduled(Runnable* thread) {
-    return queues[tpMiddle].isScheduled(thread) ||
-      queues[tpHi].isScheduled(thread) ||
-      queues[tpLow].isScheduled(thread);
-  }
 
   ThreadQueue queues[tpCount];
   int remainings[tpCount];

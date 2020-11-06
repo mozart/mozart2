@@ -60,4 +60,16 @@ public:
 
   inline
   void injectException(mozart::VM vm, mozart::RichNode exception);
+
+  inline
+  void suspend(mozart::VM vm);
+
+  inline
+  void resume(mozart::VM vm);
+
+  inline
+  void preempt(mozart::VM vm);
+
+  inline
+  bool isSuspended(mozart::VM vm);
 };

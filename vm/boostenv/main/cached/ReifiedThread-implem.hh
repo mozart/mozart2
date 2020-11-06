@@ -58,3 +58,23 @@ inline
 void  TypedRichNode<ReifiedThread>::injectException(mozart::VM vm, mozart::RichNode exception) {
   _self.access<ReifiedThread>().injectException(vm, exception);
 }
+
+inline
+void  TypedRichNode<ReifiedThread>::suspend(mozart::VM vm) {
+  _self.access<ReifiedThread>().suspend(vm);
+}
+
+inline
+void  TypedRichNode<ReifiedThread>::resume(mozart::VM vm) {
+  _self.access<ReifiedThread>().resume(vm);
+}
+
+inline
+void  TypedRichNode<ReifiedThread>::preempt(mozart::VM vm) {
+  _self.access<ReifiedThread>().preempt(vm);
+}
+
+inline
+bool  TypedRichNode<ReifiedThread>::isSuspended(mozart::VM vm) {
+  return _self.access<ReifiedThread>().isSuspended(vm);
+}

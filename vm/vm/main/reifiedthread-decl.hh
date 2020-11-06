@@ -87,6 +87,18 @@ public:
   inline
   void injectException(VM vm, RichNode exception);
 
+  inline
+  void suspend(VM vm);
+
+  inline
+  void resume(VM vm);
+
+  inline
+  void preempt(VM vm);
+
+  inline
+  bool isSuspended(VM vm);
+
 private:
   Runnable* _runnable;
 };

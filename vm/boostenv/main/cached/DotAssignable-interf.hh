@@ -4,7 +4,7 @@ public:
   DotAssignable(UnstableNode& self) : _self(self) {}
   DotAssignable(StableNode& self) : _self(self) {}
 
-  void dotAssign(VM vm, class mozart::RichNode feature, class mozart::RichNode newValue) {
+  void dotAssign(mozart::VM vm, mozart::RichNode feature, mozart::RichNode newValue) {
     if (_self.is<Array>()) {
       return _self.as<Array>().dotAssign(vm, feature, newValue);
     } else if (_self.is<Dictionary>()) {
@@ -21,7 +21,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dotExchange(VM vm, class mozart::RichNode feature, class mozart::RichNode newValue) {
+  mozart::UnstableNode dotExchange(mozart::VM vm, mozart::RichNode feature, mozart::RichNode newValue) {
     if (_self.is<Array>()) {
       return _self.as<Array>().dotExchange(vm, feature, newValue);
     } else if (_self.is<Dictionary>()) {
@@ -31,7 +31,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DotAssignable::dotExchange", "dotExchange", feature, newValue, ::mozart::ozcalls::out(_result)))
           return _result;
       }

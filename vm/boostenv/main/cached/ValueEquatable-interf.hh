@@ -4,7 +4,7 @@ public:
   ValueEquatable(UnstableNode& self) : _self(self) {}
   ValueEquatable(StableNode& self) : _self(self) {}
 
-  bool equals(VM vm, class mozart::RichNode right) {
+  bool equals(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().equals(vm, right);
     } else if (_self.is<BigInt>()) {

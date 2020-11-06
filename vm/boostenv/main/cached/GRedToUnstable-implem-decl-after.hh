@@ -22,5 +22,5 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::UnstableNode * dest();
+  mozart::UnstableNode * dest();
 };

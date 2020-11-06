@@ -34,5 +34,5 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  nativeint n();
+  mozart::nativeint n();
 };

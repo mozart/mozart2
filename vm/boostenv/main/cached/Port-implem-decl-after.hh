@@ -42,17 +42,17 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::Space * home();
+  mozart::Space * home();
 
   inline
-  bool isPort(VM vm);
+  bool isPort(mozart::VM vm);
 
   inline
-  void send(VM vm, class mozart::RichNode value);
+  void send(mozart::VM vm, mozart::RichNode value);
 
   inline
-  class mozart::UnstableNode sendReceive(VM vm, class mozart::RichNode value);
+  mozart::UnstableNode sendReceive(mozart::VM vm, mozart::RichNode value);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

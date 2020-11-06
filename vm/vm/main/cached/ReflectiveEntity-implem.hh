@@ -27,11 +27,11 @@ void TypeInfoOf<ReflectiveEntity>::sClone(SC sc, RichNode from, UnstableNode& to
 
 template <typename Label, typename ... Args> 
 inline
-bool  TypedRichNode<ReflectiveEntity>::reflectiveCall(VM vm, const char * identity, Label && label, Args &&... args) {
+bool  TypedRichNode<ReflectiveEntity>::reflectiveCall(mozart::VM vm, const char * identity, Label && label, Args &&... args) {
   return _self.access<ReflectiveEntity>().reflectiveCall<Label, Args... >(vm, identity, std::forward<Label>(label), std::forward<Args>(args)...);
 }
 
 inline
-void  TypedRichNode<ReflectiveEntity>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<ReflectiveEntity>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<ReflectiveEntity>().printReprToStream(vm, out, depth, width);
 }

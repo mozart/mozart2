@@ -51,32 +51,32 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::StableNode> getElementsArray();
+  StaticArray<mozart::StableNode> getElementsArray();
 
   inline
-  class mozart::StableNode& getElements(size_t i);
+  mozart::StableNode& getElements(size_t i);
 
   inline
   size_t getArraySizeImpl();
 
   inline
-  bool isCodeAreaProvider(VM vm);
+  bool isCodeAreaProvider(mozart::VM vm);
 
   inline
-  void getCodeAreaInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Ks);
+  void getCodeAreaInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Ks);
 
   inline
-  void getCodeAreaDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData);
+  void getCodeAreaDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 
   inline
-  class mozart::GlobalNode * globalize(VM vm);
+  mozart::GlobalNode * globalize(mozart::VM vm);
 
   inline
-  void setUUID(VM vm, const struct mozart::UUID & uuid);
+  void setUUID(mozart::VM vm, const mozart::UUID & uuid);
 };

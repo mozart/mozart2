@@ -4,7 +4,7 @@ public:
   NameLike(UnstableNode& self) : _self(self) {}
   NameLike(StableNode& self) : _self(self) {}
 
-  bool isName(VM vm) {
+  bool isName(mozart::VM vm) {
     if (_self.is<OptName>()) {
       return _self.as<OptName>().isName(vm);
     } else if (_self.is<GlobalName>()) {

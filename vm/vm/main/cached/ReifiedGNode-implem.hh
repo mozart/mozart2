@@ -20,11 +20,11 @@ void TypeInfoOf<ReifiedGNode>::sClone(SC sc, RichNode from, UnstableNode& to) co
 }
 
 inline
-class mozart::GlobalNode *  TypedRichNode<ReifiedGNode>::value() {
+mozart::GlobalNode *  TypedRichNode<ReifiedGNode>::value() {
   return _self.access<ReifiedGNode>().value();
 }
 
 inline
-bool  TypedRichNode<ReifiedGNode>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<ReifiedGNode>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<ReifiedGNode>().equals(vm, right);
 }

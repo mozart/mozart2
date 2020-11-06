@@ -147,12 +147,14 @@ void processBuiltinCallMethod(BuiltinDef& definition,
 
     std::string paramType = param->getType().getAsString();
 
-    if (paramType == "In")
+    if (paramType == "mozart::builtins::In") {
       paramDef.kind = pkIn;
-    else if (paramType == "Out")
+    } else if (paramType == "mozart::builtins::Out") {
       paramDef.kind = pkOut;
-    else
+    } else {
+      std::cerr << "Invalid parameter type: " << paramType << " in " << method->getNameAsString() << std::endl;
       assert(false);
+    }
 
     paramDef.name = param->getNameAsString();
 

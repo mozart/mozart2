@@ -4,7 +4,7 @@ public:
   SpaceLike(UnstableNode& self) : _self(self) {}
   SpaceLike(StableNode& self) : _self(self) {}
 
-  bool isSpace(VM vm) {
+  bool isSpace(mozart::VM vm) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().isSpace(vm);
     } else if (_self.is<FailedSpace>()) {
@@ -19,7 +19,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode askSpace(VM vm) {
+  mozart::UnstableNode askSpace(mozart::VM vm) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().askSpace(vm);
     } else if (_self.is<FailedSpace>()) {
@@ -34,7 +34,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode askVerboseSpace(VM vm) {
+  mozart::UnstableNode askVerboseSpace(mozart::VM vm) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().askVerboseSpace(vm);
     } else if (_self.is<FailedSpace>()) {
@@ -49,7 +49,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode mergeSpace(VM vm) {
+  mozart::UnstableNode mergeSpace(mozart::VM vm) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().mergeSpace(vm);
     } else if (_self.is<FailedSpace>()) {
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  void commitSpace(VM vm, class mozart::RichNode value) {
+  void commitSpace(mozart::VM vm, mozart::RichNode value) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().commitSpace(vm, value);
     } else if (_self.is<FailedSpace>()) {
@@ -79,7 +79,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode cloneSpace(VM vm) {
+  mozart::UnstableNode cloneSpace(mozart::VM vm) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().cloneSpace(vm);
     } else if (_self.is<FailedSpace>()) {
@@ -94,7 +94,7 @@ public:
     }
   }
 
-  void killSpace(VM vm) {
+  void killSpace(mozart::VM vm) {
     if (_self.is<ReifiedSpace>()) {
       return _self.as<ReifiedSpace>().killSpace(vm);
     } else if (_self.is<FailedSpace>()) {

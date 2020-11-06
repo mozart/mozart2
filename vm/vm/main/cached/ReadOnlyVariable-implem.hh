@@ -26,36 +26,36 @@ void TypeInfoOf<ReadOnlyVariable>::sClone(SC sc, RichNode from, UnstableNode& to
 }
 
 inline
-class mozart::Space *  TypedRichNode<ReadOnlyVariable>::home() {
+mozart::Space *  TypedRichNode<ReadOnlyVariable>::home() {
   return _self.access<ReadOnlyVariable>().home();
 }
 
 inline
-void  TypedRichNode<ReadOnlyVariable>::addToSuspendList(VM vm, class mozart::RichNode variable) {
+void  TypedRichNode<ReadOnlyVariable>::addToSuspendList(mozart::VM vm, mozart::RichNode variable) {
   _self.access<ReadOnlyVariable>().addToSuspendList(vm, variable);
 }
 
 inline
-bool  TypedRichNode<ReadOnlyVariable>::isNeeded(VM vm) {
+bool  TypedRichNode<ReadOnlyVariable>::isNeeded(mozart::VM vm) {
   return _self.access<ReadOnlyVariable>().isNeeded(vm);
 }
 
 inline
-void  TypedRichNode<ReadOnlyVariable>::markNeeded(VM vm) {
+void  TypedRichNode<ReadOnlyVariable>::markNeeded(mozart::VM vm) {
   _self.access<ReadOnlyVariable>().markNeeded(vm);
 }
 
 inline
-void  TypedRichNode<ReadOnlyVariable>::bind(VM vm, class mozart::RichNode src) {
+void  TypedRichNode<ReadOnlyVariable>::bind(mozart::VM vm, mozart::RichNode src) {
   _self.access<ReadOnlyVariable>().bind(_self, vm, src);
 }
 
 inline
-void  TypedRichNode<ReadOnlyVariable>::bindReadOnly(VM vm, class mozart::RichNode src) {
+void  TypedRichNode<ReadOnlyVariable>::bindReadOnly(mozart::VM vm, mozart::RichNode src) {
   _self.access<ReadOnlyVariable>().bindReadOnly(_self, vm, src);
 }
 
 inline
-void  TypedRichNode<ReadOnlyVariable>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<ReadOnlyVariable>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<ReadOnlyVariable>().printReprToStream(vm, out, depth, width);
 }

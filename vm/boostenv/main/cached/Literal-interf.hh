@@ -4,7 +4,7 @@ public:
   Literal(UnstableNode& self) : _self(self) {}
   Literal(StableNode& self) : _self(self) {}
 
-  bool isLiteral(VM vm) {
+  bool isLiteral(mozart::VM vm) {
     if (_self.is<Atom>()) {
       return _self.as<Atom>().isLiteral(vm);
     } else if (_self.is<OptName>()) {

@@ -20,6 +20,6 @@ void TypeInfoOf<Serializer>::sClone(SC sc, RichNode from, UnstableNode& to) cons
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Serializer>::doSerialize(VM vm, class mozart::RichNode todo) {
+mozart::UnstableNode  TypedRichNode<Serializer>::doSerialize(mozart::VM vm, mozart::RichNode todo) {
   return _self.access<Serializer>().doSerialize(vm, todo);
 }

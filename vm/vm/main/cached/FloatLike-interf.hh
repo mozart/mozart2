@@ -4,7 +4,7 @@ public:
   FloatLike(UnstableNode& self) : _self(self) {}
   FloatLike(StableNode& self) : _self(self) {}
 
-  class mozart::UnstableNode divide(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode divide(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<Float>()) {
       return _self.as<Float>().divide(vm, right);
     } else if (_self.isTransient()) {
@@ -12,7 +12,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::divide", "divide", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -20,7 +20,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode pow(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode pow(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<Float>()) {
       return _self.as<Float>().pow(vm, right);
     } else if (_self.isTransient()) {
@@ -28,7 +28,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::pow", "pow", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -36,7 +36,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode fmod(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode fmod(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<Float>()) {
       return _self.as<Float>().fmod(vm, right);
     } else if (_self.isTransient()) {
@@ -44,7 +44,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::fmod", "fmod", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -52,7 +52,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode acos(VM vm) {
+  mozart::UnstableNode acos(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().acos(vm);
     } else if (_self.isTransient()) {
@@ -60,7 +60,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::acos", "acos", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -68,7 +68,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode acosh(VM vm) {
+  mozart::UnstableNode acosh(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().acosh(vm);
     } else if (_self.isTransient()) {
@@ -76,7 +76,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::acosh", "acosh", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -84,7 +84,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode asin(VM vm) {
+  mozart::UnstableNode asin(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().asin(vm);
     } else if (_self.isTransient()) {
@@ -92,7 +92,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::asin", "asin", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -100,7 +100,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode asinh(VM vm) {
+  mozart::UnstableNode asinh(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().asinh(vm);
     } else if (_self.isTransient()) {
@@ -108,7 +108,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::asinh", "asinh", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -116,7 +116,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode atan(VM vm) {
+  mozart::UnstableNode atan(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().atan(vm);
     } else if (_self.isTransient()) {
@@ -124,7 +124,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::atan", "atan", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -132,7 +132,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode atanh(VM vm) {
+  mozart::UnstableNode atanh(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().atanh(vm);
     } else if (_self.isTransient()) {
@@ -140,7 +140,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::atanh", "atanh", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -148,7 +148,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode atan2(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode atan2(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<Float>()) {
       return _self.as<Float>().atan2(vm, right);
     } else if (_self.isTransient()) {
@@ -156,7 +156,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::atan2", "atan2", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -164,7 +164,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode ceil(VM vm) {
+  mozart::UnstableNode ceil(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().ceil(vm);
     } else if (_self.isTransient()) {
@@ -172,7 +172,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::ceil", "ceil", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -180,7 +180,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode cos(VM vm) {
+  mozart::UnstableNode cos(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().cos(vm);
     } else if (_self.isTransient()) {
@@ -188,7 +188,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::cos", "cos", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -196,7 +196,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode cosh(VM vm) {
+  mozart::UnstableNode cosh(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().cosh(vm);
     } else if (_self.isTransient()) {
@@ -204,7 +204,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::cosh", "cosh", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -212,7 +212,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode exp(VM vm) {
+  mozart::UnstableNode exp(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().exp(vm);
     } else if (_self.isTransient()) {
@@ -220,7 +220,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::exp", "exp", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -228,7 +228,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode floor(VM vm) {
+  mozart::UnstableNode floor(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().floor(vm);
     } else if (_self.isTransient()) {
@@ -236,7 +236,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::floor", "floor", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -244,7 +244,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode log(VM vm) {
+  mozart::UnstableNode log(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().log(vm);
     } else if (_self.isTransient()) {
@@ -252,7 +252,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::log", "log", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -260,7 +260,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode round(VM vm) {
+  mozart::UnstableNode round(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().round(vm);
     } else if (_self.isTransient()) {
@@ -268,7 +268,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::round", "round", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -276,7 +276,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode sin(VM vm) {
+  mozart::UnstableNode sin(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().sin(vm);
     } else if (_self.isTransient()) {
@@ -284,7 +284,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::sin", "sin", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -292,7 +292,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode sinh(VM vm) {
+  mozart::UnstableNode sinh(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().sinh(vm);
     } else if (_self.isTransient()) {
@@ -300,7 +300,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::sinh", "sinh", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -308,7 +308,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode sqrt(VM vm) {
+  mozart::UnstableNode sqrt(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().sqrt(vm);
     } else if (_self.isTransient()) {
@@ -316,7 +316,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::sqrt", "sqrt", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -324,7 +324,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode tan(VM vm) {
+  mozart::UnstableNode tan(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().tan(vm);
     } else if (_self.isTransient()) {
@@ -332,7 +332,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::tan", "tan", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -340,7 +340,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode tanh(VM vm) {
+  mozart::UnstableNode tanh(mozart::VM vm) {
     if (_self.is<Float>()) {
       return _self.as<Float>().tanh(vm);
     } else if (_self.isTransient()) {
@@ -348,7 +348,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::FloatLike::tanh", "tanh", ::mozart::ozcalls::out(_result)))
           return _result;
       }

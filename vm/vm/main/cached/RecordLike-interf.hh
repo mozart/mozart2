@@ -4,7 +4,7 @@ public:
   RecordLike(UnstableNode& self) : _self(self) {}
   RecordLike(StableNode& self) : _self(self) {}
 
-  bool isRecord(VM vm) {
+  bool isRecord(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().isRecord(vm);
     } else if (_self.is<Record>()) {
@@ -29,7 +29,7 @@ public:
     }
   }
 
-  bool isTuple(VM vm) {
+  bool isTuple(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().isTuple(vm);
     } else if (_self.is<Record>()) {
@@ -54,7 +54,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode label(VM vm) {
+  mozart::UnstableNode label(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().label(vm);
     } else if (_self.is<Record>()) {
@@ -79,7 +79,7 @@ public:
     }
   }
 
-  size_t width(VM vm) {
+  size_t width(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().width(vm);
     } else if (_self.is<Record>()) {
@@ -104,7 +104,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode arityList(VM vm) {
+  mozart::UnstableNode arityList(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().arityList(vm);
     } else if (_self.is<Record>()) {
@@ -129,7 +129,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode clone(VM vm) {
+  mozart::UnstableNode clone(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().clone(vm);
     } else if (_self.is<Record>()) {
@@ -154,7 +154,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode waitOr(VM vm) {
+  mozart::UnstableNode waitOr(mozart::VM vm) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().waitOr(vm);
     } else if (_self.is<Record>()) {
@@ -179,7 +179,7 @@ public:
     }
   }
 
-  bool testRecord(VM vm, class mozart::RichNode arity) {
+  bool testRecord(mozart::VM vm, mozart::RichNode arity) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().testRecord(vm, arity);
     } else if (_self.is<Record>()) {
@@ -204,7 +204,7 @@ public:
     }
   }
 
-  bool testTuple(VM vm, class mozart::RichNode label, size_t width) {
+  bool testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().testTuple(vm, label, width);
     } else if (_self.is<Record>()) {
@@ -229,7 +229,7 @@ public:
     }
   }
 
-  bool testLabel(VM vm, class mozart::RichNode label) {
+  bool testLabel(mozart::VM vm, mozart::RichNode label) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().testLabel(vm, label);
     } else if (_self.is<Record>()) {

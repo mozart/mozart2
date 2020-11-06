@@ -20,6 +20,6 @@ void TypeInfoOf<Serialized>::sClone(SC sc, RichNode from, UnstableNode& to) cons
 }
 
 inline
-nativeint  TypedRichNode<Serialized>::n() {
+mozart::nativeint  TypedRichNode<Serialized>::n() {
   return _self.access<Serialized>().n();
 }

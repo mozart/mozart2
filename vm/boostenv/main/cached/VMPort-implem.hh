@@ -26,31 +26,31 @@ void TypeInfoOf<VMPort>::sClone(SC sc, RichNode from, UnstableNode& to) const {
 }
 
 inline
-VMIdentifier  TypedRichNode<VMPort>::value() {
+mozart::VMIdentifier  TypedRichNode<VMPort>::value() {
   return _self.access<VMPort>().value();
 }
 
 inline
-bool  TypedRichNode<VMPort>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<VMPort>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<VMPort>().equals(vm, right);
 }
 
 inline
-bool  TypedRichNode<VMPort>::isPort(VM vm) {
+bool  TypedRichNode<VMPort>::isPort(mozart::VM vm) {
   return _self.access<VMPort>().isPort(vm);
 }
 
 inline
-void  TypedRichNode<VMPort>::send(VM vm, class mozart::RichNode value) {
+void  TypedRichNode<VMPort>::send(mozart::VM vm, mozart::RichNode value) {
   _self.access<VMPort>().send(vm, value);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<VMPort>::sendReceive(VM vm, class mozart::RichNode value) {
+mozart::UnstableNode  TypedRichNode<VMPort>::sendReceive(mozart::VM vm, mozart::RichNode value) {
   return _self.access<VMPort>().sendReceive(vm, value);
 }
 
 inline
-void  TypedRichNode<VMPort>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<VMPort>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<VMPort>().printReprToStream(vm, out, depth, width);
 }

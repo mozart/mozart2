@@ -4,7 +4,7 @@ public:
   CellLike(UnstableNode& self) : _self(self) {}
   CellLike(StableNode& self) : _self(self) {}
 
-  bool isCell(VM vm) {
+  bool isCell(mozart::VM vm) {
     if (_self.is<Cell>()) {
       return _self.as<Cell>().isCell(vm);
     } else if (_self.isTransient()) {
@@ -20,7 +20,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode exchange(VM vm, class mozart::RichNode newValue) {
+  mozart::UnstableNode exchange(mozart::VM vm, mozart::RichNode newValue) {
     if (_self.is<Cell>()) {
       return _self.as<Cell>().exchange(vm, newValue);
     } else if (_self.isTransient()) {
@@ -28,7 +28,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::CellLike::exchange", "exchange", newValue, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -36,7 +36,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode access(VM vm) {
+  mozart::UnstableNode access(mozart::VM vm) {
     if (_self.is<Cell>()) {
       return _self.as<Cell>().access(vm);
     } else if (_self.isTransient()) {
@@ -44,7 +44,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::CellLike::access", "access", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -52,7 +52,7 @@ public:
     }
   }
 
-  void assign(VM vm, class mozart::RichNode newValue) {
+  void assign(mozart::VM vm, mozart::RichNode newValue) {
     if (_self.is<Cell>()) {
       return _self.as<Cell>().assign(vm, newValue);
     } else if (_self.isTransient()) {

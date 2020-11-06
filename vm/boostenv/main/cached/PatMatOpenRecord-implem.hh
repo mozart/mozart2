@@ -34,11 +34,11 @@ size_t TypedRichNode<PatMatOpenRecord>::getArraySize() {
   return _self.access<PatMatOpenRecord>().getArraySize();
 }
 
-StaticArray<class mozart::StableNode> TypedRichNode<PatMatOpenRecord>::getElementsArray() {
+StaticArray<mozart::StableNode> TypedRichNode<PatMatOpenRecord>::getElementsArray() {
   return _self.access<PatMatOpenRecord>().getElementsArray();
 }
 
-class mozart::StableNode& TypedRichNode<PatMatOpenRecord>::getElements(size_t i) {
+mozart::StableNode& TypedRichNode<PatMatOpenRecord>::getElements(size_t i) {
   return _self.access<PatMatOpenRecord>().getElements(i);
 }
 
@@ -48,21 +48,21 @@ size_t  TypedRichNode<PatMatOpenRecord>::getArraySizeImpl() {
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<PatMatOpenRecord>::getElement(size_t index) {
+mozart::StableNode *  TypedRichNode<PatMatOpenRecord>::getElement(size_t index) {
   return _self.access<PatMatOpenRecord>().getElement(index);
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<PatMatOpenRecord>::getArity() {
+mozart::StableNode *  TypedRichNode<PatMatOpenRecord>::getArity() {
   return _self.access<PatMatOpenRecord>().getArity();
 }
 
 inline
-void  TypedRichNode<PatMatOpenRecord>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<PatMatOpenRecord>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<PatMatOpenRecord>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<PatMatOpenRecord>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<PatMatOpenRecord>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<PatMatOpenRecord>().serialize(vm, se);
 }

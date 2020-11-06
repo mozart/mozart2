@@ -36,72 +36,72 @@ std::shared_ptr<BigIntImplem>  TypedRichNode<BigInt>::value() {
 }
 
 inline
-bool  TypedRichNode<BigInt>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<BigInt>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().equals(vm, right);
 }
 
 inline
-int  TypedRichNode<BigInt>::compareFeatures(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<BigInt>::compareFeatures(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().compareFeatures(vm, right);
 }
 
 inline
-int  TypedRichNode<BigInt>::compare(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<BigInt>::compare(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().compare(vm, right);
 }
 
 inline
-bool  TypedRichNode<BigInt>::isNumber(VM vm) {
+bool  TypedRichNode<BigInt>::isNumber(mozart::VM vm) {
   return _self.access<BigInt>().isNumber(vm);
 }
 
 inline
-bool  TypedRichNode<BigInt>::isInt(VM vm) {
+bool  TypedRichNode<BigInt>::isInt(mozart::VM vm) {
   return _self.access<BigInt>().isInt(vm);
 }
 
 inline
-bool  TypedRichNode<BigInt>::isFloat(VM vm) {
+bool  TypedRichNode<BigInt>::isFloat(mozart::VM vm) {
   return _self.access<BigInt>().isFloat(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::opposite(VM vm) {
+mozart::UnstableNode  TypedRichNode<BigInt>::opposite(mozart::VM vm) {
   return _self.access<BigInt>().opposite(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::add(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<BigInt>::add(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().add(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::add(VM vm, nativeint b) {
+mozart::UnstableNode  TypedRichNode<BigInt>::add(mozart::VM vm, mozart::nativeint b) {
   return _self.access<BigInt>().add(vm, b);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::subtract(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<BigInt>::subtract(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().subtract(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::multiply(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<BigInt>::multiply(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().multiply(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::div(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<BigInt>::div(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().div(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::mod(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<BigInt>::mod(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BigInt>().mod(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BigInt>::abs(VM vm) {
+mozart::UnstableNode  TypedRichNode<BigInt>::abs(mozart::VM vm) {
   return _self.access<BigInt>().abs(_self, vm);
 }
 
@@ -116,6 +116,6 @@ std::string  TypedRichNode<BigInt>::str() {
 }
 
 inline
-void  TypedRichNode<BigInt>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<BigInt>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<BigInt>().printReprToStream(vm, out, depth, width);
 }

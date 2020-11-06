@@ -38,29 +38,29 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::Space * home();
+  mozart::Space * home();
 
   inline
-  class mozart::Space * getSpace();
+  mozart::Space * getSpace();
 
   inline
-  bool isSpace(VM vm);
+  bool isSpace(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode askSpace(VM vm);
+  mozart::UnstableNode askSpace(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode askVerboseSpace(VM vm);
+  mozart::UnstableNode askVerboseSpace(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode mergeSpace(VM vm);
+  mozart::UnstableNode mergeSpace(mozart::VM vm);
 
   inline
-  void commitSpace(VM vm, class mozart::RichNode value);
+  void commitSpace(mozart::VM vm, mozart::RichNode value);
 
   inline
-  class mozart::UnstableNode cloneSpace(VM vm);
+  mozart::UnstableNode cloneSpace(mozart::VM vm);
 
   inline
-  void killSpace(VM vm);
+  void killSpace(mozart::VM vm);
 };

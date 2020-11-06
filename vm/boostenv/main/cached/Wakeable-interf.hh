@@ -4,7 +4,7 @@ public:
   Wakeable(UnstableNode& self) : _self(self) {}
   Wakeable(StableNode& self) : _self(self) {}
 
-  void wakeUp(VM vm) {
+  void wakeUp(mozart::VM vm) {
     if (_self.is<ReifiedThread>()) {
       return _self.as<ReifiedThread>().wakeUp(vm);
     } else if (_self.is<Variable>()) {
@@ -16,7 +16,7 @@ public:
     }
   }
 
-  bool shouldWakeUpUnderSpace(VM vm, class mozart::Space * space) {
+  bool shouldWakeUpUnderSpace(mozart::VM vm, mozart::Space * space) {
     if (_self.is<ReifiedThread>()) {
       return _self.as<ReifiedThread>().shouldWakeUpUnderSpace(vm, space);
     } else if (_self.is<Variable>()) {

@@ -41,67 +41,67 @@ size_t  TypedRichNode<BuiltinProcedure>::getArity() {
 }
 
 inline
-bool  TypedRichNode<BuiltinProcedure>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<BuiltinProcedure>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<BuiltinProcedure>().equals(vm, right);
 }
 
 inline
-atom_t  TypedRichNode<BuiltinProcedure>::getPrintName(VM vm) {
+mozart::atom_t  TypedRichNode<BuiltinProcedure>::getPrintName(mozart::VM vm) {
   return _self.access<BuiltinProcedure>().getPrintName(vm);
 }
 
 inline
-bool  TypedRichNode<BuiltinProcedure>::isBuiltin(VM vm) {
+bool  TypedRichNode<BuiltinProcedure>::isBuiltin(mozart::VM vm) {
   return _self.access<BuiltinProcedure>().isBuiltin(vm);
 }
 
 inline
-void  TypedRichNode<BuiltinProcedure>::callBuiltin(VM vm, size_t argc, class mozart::UnstableNode ** args) {
+void  TypedRichNode<BuiltinProcedure>::callBuiltin(mozart::VM vm, size_t argc, mozart::UnstableNode ** args) {
   _self.access<BuiltinProcedure>().callBuiltin(vm, argc, args);
 }
 
 template <class ... Args> 
 inline
-void  TypedRichNode<BuiltinProcedure>::callBuiltin(VM vm, Args &&... args) {
+void  TypedRichNode<BuiltinProcedure>::callBuiltin(mozart::VM vm, Args &&... args) {
   _self.access<BuiltinProcedure>().callBuiltin<Args... >(vm, std::forward<Args>(args)...);
 }
 
 inline
-builtins::BaseBuiltin *  TypedRichNode<BuiltinProcedure>::getBuiltin(VM vm) {
+builtins::BaseBuiltin *  TypedRichNode<BuiltinProcedure>::getBuiltin(mozart::VM vm) {
   return _self.access<BuiltinProcedure>().getBuiltin(vm);
 }
 
 inline
-bool  TypedRichNode<BuiltinProcedure>::isCallable(VM vm) {
+bool  TypedRichNode<BuiltinProcedure>::isCallable(mozart::VM vm) {
   return _self.access<BuiltinProcedure>().isCallable(vm);
 }
 
 inline
-bool  TypedRichNode<BuiltinProcedure>::isProcedure(VM vm) {
+bool  TypedRichNode<BuiltinProcedure>::isProcedure(mozart::VM vm) {
   return _self.access<BuiltinProcedure>().isProcedure(vm);
 }
 
 inline
-size_t  TypedRichNode<BuiltinProcedure>::procedureArity(VM vm) {
+size_t  TypedRichNode<BuiltinProcedure>::procedureArity(mozart::VM vm) {
   return _self.access<BuiltinProcedure>().procedureArity(vm);
 }
 
 inline
-void  TypedRichNode<BuiltinProcedure>::getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks) {
+void  TypedRichNode<BuiltinProcedure>::getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks) {
   _self.access<BuiltinProcedure>().getCallInfo(_self, vm, arity, start, Xcount, Gs, Ks);
 }
 
 inline
-void  TypedRichNode<BuiltinProcedure>::getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData) {
+void  TypedRichNode<BuiltinProcedure>::getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData) {
   _self.access<BuiltinProcedure>().getDebugInfo(_self, vm, printName, debugData);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<BuiltinProcedure>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<BuiltinProcedure>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<BuiltinProcedure>().serialize(vm, se);
 }
 
 inline
-void  TypedRichNode<BuiltinProcedure>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<BuiltinProcedure>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<BuiltinProcedure>().printReprToStream(vm, out, depth, width);
 }

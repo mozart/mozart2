@@ -51,44 +51,44 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::StableNode> getElementsArray();
+  StaticArray<mozart::StableNode> getElementsArray();
 
   inline
-  class mozart::StableNode& getElements(size_t i);
+  mozart::StableNode& getElements(size_t i);
 
   inline
-  class mozart::Space * home();
+  mozart::Space * home();
 
   inline
   size_t getArraySizeImpl();
 
   inline
-  atom_t getPrintName(VM vm);
+  mozart::atom_t getPrintName(mozart::VM vm);
 
   inline
-  bool isCallable(VM vm);
+  bool isCallable(mozart::VM vm);
 
   inline
-  bool isProcedure(VM vm);
+  bool isProcedure(mozart::VM vm);
 
   inline
-  size_t procedureArity(VM vm);
+  size_t procedureArity(mozart::VM vm);
 
   inline
-  void getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks);
+  void getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks);
 
   inline
-  void getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData);
+  void getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 
   inline
-  class mozart::GlobalNode * globalize(VM vm);
+  mozart::GlobalNode * globalize(mozart::VM vm);
 
   inline
-  void setUUID(VM vm, const struct mozart::UUID & uuid);
+  void setUUID(mozart::VM vm, const mozart::UUID & uuid);
 };

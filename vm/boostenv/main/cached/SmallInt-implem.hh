@@ -31,101 +31,101 @@ int TypeInfoOf<SmallInt>::compareFeatures(VM vm, RichNode lhs, RichNode rhs) con
 
 
 inline
-nativeint  TypedRichNode<SmallInt>::value() {
+mozart::nativeint  TypedRichNode<SmallInt>::value() {
   return _self.access<SmallInt>().value();
 }
 
 inline
-bool  TypedRichNode<SmallInt>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<SmallInt>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().equals(vm, right);
 }
 
 inline
-int  TypedRichNode<SmallInt>::compareFeatures(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<SmallInt>::compareFeatures(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().compareFeatures(vm, right);
 }
 
 inline
-int  TypedRichNode<SmallInt>::compare(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<SmallInt>::compare(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().compare(_self, vm, right);
 }
 
 inline
-bool  TypedRichNode<SmallInt>::isNumber(VM vm) {
+bool  TypedRichNode<SmallInt>::isNumber(mozart::VM vm) {
   return _self.access<SmallInt>().isNumber(vm);
 }
 
 inline
-bool  TypedRichNode<SmallInt>::isInt(VM vm) {
+bool  TypedRichNode<SmallInt>::isInt(mozart::VM vm) {
   return _self.access<SmallInt>().isInt(vm);
 }
 
 inline
-bool  TypedRichNode<SmallInt>::isFloat(VM vm) {
+bool  TypedRichNode<SmallInt>::isFloat(mozart::VM vm) {
   return _self.access<SmallInt>().isFloat(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::opposite(VM vm) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::opposite(mozart::VM vm) {
   return _self.access<SmallInt>().opposite(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::add(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::add(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().add(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::add(VM vm, nativeint b) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::add(mozart::VM vm, mozart::nativeint b) {
   return _self.access<SmallInt>().add(vm, b);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::subtract(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::subtract(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().subtract(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::subtractValue(VM vm, nativeint b) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::subtractValue(mozart::VM vm, mozart::nativeint b) {
   return _self.access<SmallInt>().subtractValue(vm, b);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::multiply(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::multiply(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().multiply(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::multiplyValue(VM vm, nativeint b) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::multiplyValue(mozart::VM vm, mozart::nativeint b) {
   return _self.access<SmallInt>().multiplyValue(vm, b);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::div(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::div(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().div(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::divValue(VM vm, nativeint b) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::divValue(mozart::VM vm, mozart::nativeint b) {
   return _self.access<SmallInt>().divValue(vm, b);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::mod(VM vm, class mozart::RichNode right) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::mod(mozart::VM vm, mozart::RichNode right) {
   return _self.access<SmallInt>().mod(vm, right);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::modValue(VM vm, nativeint b) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::modValue(mozart::VM vm, mozart::nativeint b) {
   return _self.access<SmallInt>().modValue(vm, b);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<SmallInt>::abs(VM vm) {
+mozart::UnstableNode  TypedRichNode<SmallInt>::abs(mozart::VM vm) {
   return _self.access<SmallInt>().abs(vm);
 }
 
 inline
-void  TypedRichNode<SmallInt>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<SmallInt>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<SmallInt>().printReprToStream(vm, out, depth, width);
 }

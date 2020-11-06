@@ -28,46 +28,46 @@ void TypeInfoOf<ReifiedSpace>::sClone(SC sc, RichNode from, UnstableNode& to) co
 }
 
 inline
-class mozart::Space *  TypedRichNode<ReifiedSpace>::home() {
+mozart::Space *  TypedRichNode<ReifiedSpace>::home() {
   return _self.access<ReifiedSpace>().home();
 }
 
 inline
-class mozart::Space *  TypedRichNode<ReifiedSpace>::getSpace() {
+mozart::Space *  TypedRichNode<ReifiedSpace>::getSpace() {
   return _self.access<ReifiedSpace>().getSpace();
 }
 
 inline
-bool  TypedRichNode<ReifiedSpace>::isSpace(VM vm) {
+bool  TypedRichNode<ReifiedSpace>::isSpace(mozart::VM vm) {
   return _self.access<ReifiedSpace>().isSpace(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<ReifiedSpace>::askSpace(VM vm) {
+mozart::UnstableNode  TypedRichNode<ReifiedSpace>::askSpace(mozart::VM vm) {
   return _self.access<ReifiedSpace>().askSpace(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<ReifiedSpace>::askVerboseSpace(VM vm) {
+mozart::UnstableNode  TypedRichNode<ReifiedSpace>::askVerboseSpace(mozart::VM vm) {
   return _self.access<ReifiedSpace>().askVerboseSpace(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<ReifiedSpace>::mergeSpace(VM vm) {
+mozart::UnstableNode  TypedRichNode<ReifiedSpace>::mergeSpace(mozart::VM vm) {
   return _self.access<ReifiedSpace>().mergeSpace(_self, vm);
 }
 
 inline
-void  TypedRichNode<ReifiedSpace>::commitSpace(VM vm, class mozart::RichNode value) {
+void  TypedRichNode<ReifiedSpace>::commitSpace(mozart::VM vm, mozart::RichNode value) {
   _self.access<ReifiedSpace>().commitSpace(_self, vm, value);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<ReifiedSpace>::cloneSpace(VM vm) {
+mozart::UnstableNode  TypedRichNode<ReifiedSpace>::cloneSpace(mozart::VM vm) {
   return _self.access<ReifiedSpace>().cloneSpace(_self, vm);
 }
 
 inline
-void  TypedRichNode<ReifiedSpace>::killSpace(VM vm) {
+void  TypedRichNode<ReifiedSpace>::killSpace(mozart::VM vm) {
   _self.access<ReifiedSpace>().killSpace(_self, vm);
 }

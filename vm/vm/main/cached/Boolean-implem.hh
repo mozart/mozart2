@@ -36,67 +36,67 @@ int TypeInfoOf<Boolean>::compareFeatures(VM vm, RichNode lhs, RichNode rhs) cons
 
 
 inline
-bool  TypedRichNode<Boolean>::isLiteral(VM vm) {
+bool  TypedRichNode<Boolean>::isLiteral(mozart::VM vm) {
   return _self.access<Boolean>().isLiteral(vm);
 }
 
 inline
-bool  TypedRichNode<Boolean>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Boolean>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Boolean>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Boolean>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Boolean>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Boolean>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Boolean>::isRecord(VM vm) {
+bool  TypedRichNode<Boolean>::isRecord(mozart::VM vm) {
   return _self.access<Boolean>().isRecord(vm);
 }
 
 inline
-bool  TypedRichNode<Boolean>::isTuple(VM vm) {
+bool  TypedRichNode<Boolean>::isTuple(mozart::VM vm) {
   return _self.access<Boolean>().isTuple(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Boolean>::label(VM vm) {
+mozart::UnstableNode  TypedRichNode<Boolean>::label(mozart::VM vm) {
   return _self.access<Boolean>().label(_self, vm);
 }
 
 inline
-size_t  TypedRichNode<Boolean>::width(VM vm) {
+size_t  TypedRichNode<Boolean>::width(mozart::VM vm) {
   return _self.access<Boolean>().width(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Boolean>::arityList(VM vm) {
+mozart::UnstableNode  TypedRichNode<Boolean>::arityList(mozart::VM vm) {
   return _self.access<Boolean>().arityList(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Boolean>::clone(VM vm) {
+mozart::UnstableNode  TypedRichNode<Boolean>::clone(mozart::VM vm) {
   return _self.access<Boolean>().clone(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Boolean>::waitOr(VM vm) {
+mozart::UnstableNode  TypedRichNode<Boolean>::waitOr(mozart::VM vm) {
   return _self.access<Boolean>().waitOr(vm);
 }
 
 inline
-bool  TypedRichNode<Boolean>::testRecord(VM vm, class mozart::RichNode arity) {
+bool  TypedRichNode<Boolean>::testRecord(mozart::VM vm, mozart::RichNode arity) {
   return _self.access<Boolean>().testRecord(vm, arity);
 }
 
 inline
-bool  TypedRichNode<Boolean>::testTuple(VM vm, class mozart::RichNode label, size_t width) {
+bool  TypedRichNode<Boolean>::testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
   return _self.access<Boolean>().testTuple(_self, vm, label, width);
 }
 
 inline
-bool  TypedRichNode<Boolean>::testLabel(VM vm, class mozart::RichNode label) {
+bool  TypedRichNode<Boolean>::testLabel(mozart::VM vm, mozart::RichNode label) {
   return _self.access<Boolean>().testLabel(_self, vm, label);
 }
 
@@ -106,31 +106,31 @@ bool  TypedRichNode<Boolean>::value() {
 }
 
 inline
-bool  TypedRichNode<Boolean>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<Boolean>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<Boolean>().equals(vm, right);
 }
 
 inline
-int  TypedRichNode<Boolean>::compareFeatures(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<Boolean>::compareFeatures(mozart::VM vm, mozart::RichNode right) {
   return _self.access<Boolean>().compareFeatures(vm, right);
 }
 
 inline
-atom_t  TypedRichNode<Boolean>::getPrintName(VM vm) {
+mozart::atom_t  TypedRichNode<Boolean>::getPrintName(mozart::VM vm) {
   return _self.access<Boolean>().getPrintName(vm);
 }
 
 inline
-bool  TypedRichNode<Boolean>::isName(VM vm) {
+bool  TypedRichNode<Boolean>::isName(mozart::VM vm) {
   return _self.access<Boolean>().isName(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Boolean>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<Boolean>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<Boolean>().serialize(vm, se);
 }
 
 inline
-void  TypedRichNode<Boolean>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Boolean>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Boolean>().printReprToStream(vm, out, depth, width);
 }

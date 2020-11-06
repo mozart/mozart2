@@ -5,7 +5,7 @@ class TypeInfoOf<ReifiedThread>: public TypeInfo {
     return UUID();
   }
 public:
-  TypeInfoOf() : TypeInfo("ReifiedThread", uuid(), (! ::mozart::MemWord::requiresExternalMemory<class mozart::Runnable *>()), false, false, sbValue, 0) {}
+  TypeInfoOf() : TypeInfo("ReifiedThread", uuid(), (! ::mozart::MemWord::requiresExternalMemory<mozart::Runnable *>()), false, false, sbValue, 0) {}
 
   static const TypeInfoOf<ReifiedThread>* const instance() {
     return &RawType<ReifiedThread>::rawType;
@@ -38,26 +38,26 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::Runnable * value();
+  mozart::Runnable * value();
 
   inline
-  void wakeUp(VM vm);
+  void wakeUp(mozart::VM vm);
 
   inline
-  bool shouldWakeUpUnderSpace(VM vm, class mozart::Space * space);
+  bool shouldWakeUpUnderSpace(mozart::VM vm, mozart::Space * space);
 
   inline
-  bool isThread(VM vm);
+  bool isThread(mozart::VM vm);
 
   inline
-  enum mozart::ThreadPriority getThreadPriority(VM vm);
+  mozart::ThreadPriority getThreadPriority(mozart::VM vm);
 
   inline
-  void setThreadPriority(VM vm, enum mozart::ThreadPriority priority);
+  void setThreadPriority(mozart::VM vm, mozart::ThreadPriority priority);
 
   inline
-  void injectException(VM vm, class mozart::RichNode exception);
+  void injectException(mozart::VM vm, mozart::RichNode exception);
 };

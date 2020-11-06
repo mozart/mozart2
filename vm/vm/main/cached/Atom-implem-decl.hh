@@ -3,5 +3,5 @@ class Atom;
 template <>
 class Storage<Atom> {
 public:
-  typedef atom_t Type;
+  typedef mozart::atom_t Type;
 };

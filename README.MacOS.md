@@ -7,7 +7,7 @@ In order to build the system on MacOS you need at least the 10.8 version of the 
 Download and install the following tools:
 
 *  [Mac OS development tools](http://developer.apple.com)
-*  [Homebrew](http://mxcl.github.com/homebrew/).
+*  [Homebrew](https://brew.sh/).
 *   Any emacs distribution, for instance [Aquamacs](http://aquamacs.org/).
 
 ### Homebrew cask

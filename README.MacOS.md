@@ -18,7 +18,7 @@ you can simply install it as a compiled binary via [Homebrew cask]:
 
 ```shell
 brew tap dskecse/tap
-brew cask install mozart2
+brew install --cask mozart2
 ```
 
 [Homebrew cask]: https://caskroom.github.io/

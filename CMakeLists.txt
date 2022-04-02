@@ -141,7 +141,7 @@ string(REGEX REPLACE "-(alpha|beta|rc)\\." "~\\1"
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "emacsen-common")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "emacs")
 
 # Configuration of the RPM generator
 

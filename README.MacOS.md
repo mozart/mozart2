@@ -7,21 +7,19 @@ In order to build the system on MacOS you need at least the 10.8 version of the 
 Download and install the following tools:
 
 *  [Mac OS development tools](http://developer.apple.com)
-*  [Homebrew](http://mxcl.github.com/homebrew/).
+*  [Homebrew](https://brew.sh/).
 *   Any emacs distribution, for instance [Aquamacs](http://aquamacs.org/).
 
 ### Homebrew cask
 
 In case you don't have plans to work on Mozart 2
 and you have Homebrew already installed,
-you can simply install it as a compiled binary via [Homebrew cask]:
+you can simply install it as a compiled binary via Homebrew's cask option:
 
 ```shell
 brew tap dskecse/tap
 brew install --cask mozart2
 ```
-
-[Homebrew cask]: https://caskroom.github.io/
 
 ### Homebrew formula
 

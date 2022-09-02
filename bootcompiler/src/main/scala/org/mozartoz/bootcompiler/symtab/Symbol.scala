@@ -31,7 +31,7 @@ sealed class Symbol(_name: String, formal: Boolean = false,
   def owner = _owner
 
   /** Sets the owning abstraction */
-  def setOwner(owner: Abstraction) {
+  def setOwner(owner: Abstraction): Unit = {
     _owner = owner
   }
 

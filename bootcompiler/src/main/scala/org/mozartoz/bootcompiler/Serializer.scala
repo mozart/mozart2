@@ -12,7 +12,7 @@ class Serializer(program: Program, output: BufferedOutputStream) {
 
   // Top-level
 
-  def serialize() {
+  def serialize(): Unit = {
     val topLevelCodeArea = OzCodeArea(program.topLevelAbstraction.codeArea)
     val topLevelValue = OzAbstraction(topLevelCodeArea, Nil)
     giveIndex(topLevelValue)
@@ -28,14 +28,14 @@ class Serializer(program: Program, output: BufferedOutputStream) {
 
   // Give indices to nodes
 
-  private def giveIndex(value: OzValue) {
+  private def giveIndex(value: OzValue): Unit = {
     nodeToIndex.getOrElseUpdate(value, {
       giveIndicesInside(value)
       indexCounter.next()
     })
   }
 
-  private def giveIndicesInside(value: OzValue) {
+  private def giveIndicesInside(value: OzValue): Unit = {
     value match {
       case OzCons(head, tail) =>
         giveIndex(head)
@@ -74,7 +74,7 @@ class Serializer(program: Program, output: BufferedOutputStream) {
 
   // Writing of nodes
 
-  private def writeValue(index: Int, value: OzValue) {
+  private def writeValue(index: Int, value: OzValue): Unit = {
     writeSize(index)
 
     value match {
@@ -153,7 +153,7 @@ class Serializer(program: Program, output: BufferedOutputStream) {
     }
   }
 
-  private def writeCodeArea(codeArea: CodeArea) {
+  private def writeCodeArea(codeArea: CodeArea): Unit = {
     val codeBlock = for {
       opCode <- codeArea.opCodes.toList
       byteCodeElem <- opCode.encoding
@@ -178,38 +178,38 @@ class Serializer(program: Program, output: BufferedOutputStream) {
 
   // Low-level write procs
 
-  private def writeSize(size: Int) {
+  private def writeSize(size: Int): Unit = {
     output.write(size >> 24 & 0xff)
     output.write(size >> 16 & 0xff)
     output.write(size >> 8 & 0xff)
     output.write(size & 0xff)
   }
 
-  private def writeByte(b: Int) {
+  private def writeByte(b: Int): Unit = {
     output.write(b)
   }
 
-  private def writeString(str: String) {
+  private def writeString(str: String): Unit = {
     val bytes = str.getBytes(Serializer.charset)
     writeSize(bytes.length)
     output.write(bytes)
   }
 
-  private def writeAtom(atom: String) {
+  private def writeAtom(atom: String): Unit = {
     writeString(atom)
   }
 
-  private def writeRef(value: OzValue) {
+  private def writeRef(value: OzValue): Unit = {
     writeSize(nodeToIndex(value))
   }
 
-  private def writeRefs(values: Seq[OzValue]) {
+  private def writeRefs(values: Seq[OzValue]): Unit = {
     writeSize(values.size)
     values foreach writeRef
   }
 
-  private def writeRandomUUID() {
-    def writeLong(value: Long) {
+  private def writeRandomUUID(): Unit = {
+    def writeLong(value: Long): Unit = {
       for (i <- (0 until 64 by 8).reverse)
         output.write(((value >> i) & 0xff).asInstanceOf[Int])
     }
@@ -223,7 +223,7 @@ class Serializer(program: Program, output: BufferedOutputStream) {
 object Serializer {
   val charset = java.nio.charset.Charset.forName("UTF-8")
 
-  def serialize(program: Program, output: BufferedOutputStream) {
+  def serialize(program: Program, output: BufferedOutputStream): Unit = {
     new Serializer(program, output).serialize()
   }
 }

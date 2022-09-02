@@ -10,7 +10,7 @@ import symtab._
 object Flattener extends Transformer with TreeDSL {
   private var globalToFreeVar: Map[Symbol, Symbol] = _
 
-  override def apply() {
+  override def apply(): Unit = {
     val rawCode = program.rawCode
     program.rawCode = null
 

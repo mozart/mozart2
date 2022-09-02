@@ -24,7 +24,7 @@ class CodeArea(val abstraction: Abstraction) {
 
   override def toString() = "<CodeArea %s>" format (abstraction.fullName)
 
-  def dump(includeByteCode: Boolean = true) {
+  def dump(includeByteCode: Boolean = true): Unit = {
     println("constants:")
     for ((constant, index) <- constants.zipWithIndex)
       println("  K(%d) = %s" format (index, constant))
@@ -62,7 +62,7 @@ class CodeArea(val abstraction: Abstraction) {
     opCodes += opCode
 
   class Hole(index: Int) {
-    def fillWith(opCode: OpCode) {
+    def fillWith(opCode: OpCode): Unit = {
       opCodes(index) = opCode
     }
   }

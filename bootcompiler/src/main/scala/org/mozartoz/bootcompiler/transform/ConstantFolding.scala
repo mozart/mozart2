@@ -8,7 +8,7 @@ import symtab._
 object ConstantFolding extends Transformer with TreeDSL {
   import Utils._
 
-  override protected def apply() {
+  override protected def apply(): Unit = {
     program.rawCode = transformRoot(program.rawCode)
   }
 

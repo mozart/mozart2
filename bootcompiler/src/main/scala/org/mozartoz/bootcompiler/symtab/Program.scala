@@ -56,7 +56,7 @@ class Program(val isBaseEnvironment: Boolean = false) {
    *  @param message error message
    *  @param pos position of the error
    */
-  def reportError(message: String, pos: Position = NoPosition) {
+  def reportError(message: String, pos: Position = NoPosition): Unit = {
     errors += ((message, pos))
   }
 
@@ -64,12 +64,12 @@ class Program(val isBaseEnvironment: Boolean = false) {
    *  @param message error message
    *  @param positional positional that holds the position of the error
    */
-  def reportError(message: String, positional: Positional) {
+  def reportError(message: String, positional: Positional): Unit = {
     reportError(message, positional.pos)
   }
 
   /** Dumps the program on standard error */
-  def dump() {
+  def dump(): Unit = {
     if (isRawCode)
       println(rawCode)
     else {

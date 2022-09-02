@@ -31,7 +31,7 @@ abstract class Transformer extends (Program => Unit) {
   val treeCopy = new TreeCopier
 
   /** Applies the transformation phase to a program */
-  def apply(program: Program) {
+  def apply(program: Program): Unit = {
     this.program = program
     try {
       apply()
@@ -41,7 +41,7 @@ abstract class Transformer extends (Program => Unit) {
   }
 
   /** Applies the transformation phase to the current `program` */
-  protected def apply() {
+  protected def apply(): Unit = {
     if (program.isRawCode)
       program.rawCode = transformStat(program.rawCode)
     else {
@@ -57,7 +57,7 @@ abstract class Transformer extends (Program => Unit) {
   }
 
   /** Applies the transformation phase to the current `abstraction` */
-  protected def applyToAbstraction() {
+  protected def applyToAbstraction(): Unit = {
     abstraction.body = transformStat(abstraction.body)
   }
 

@@ -19,7 +19,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    *  end
    *  }}}
    */
-  def buildModuleProgram(prog: Program, functor: Expression) {
+  def buildModuleProgram(prog: Program, functor: Expression): Unit = {
     prog.rawCode = {
       prog.topLevelResultSymbol === functor
     }
@@ -65,7 +65,7 @@ object ProgramBuilder extends TreeDSL with TransformUtils {
    */
   def buildBaseEnvProgram(prog: Program,
       bootModulesMap: Map[String, Expression],
-      baseFunctor0: Expression) {
+      baseFunctor0: Expression): Unit = {
 
     val baseFunctor = baseFunctor0.asInstanceOf[FunctorExpression]
 

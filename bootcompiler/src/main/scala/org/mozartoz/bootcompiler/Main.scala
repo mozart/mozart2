@@ -3,10 +3,12 @@ package org.mozartoz.bootcompiler
 import java.io.{ Console => _, _ }
 
 import scala.collection.mutable.ListBuffer
-import scala.collection.immutable.PagedSeq
+import scala.util.parsing.input.PagedSeqReader
 import scala.util.parsing.combinator._
 import scala.util.parsing.input._
-import scala.util.parsing.json._
+
+import scopt.{ OParser, OParserSetup, DefaultOParserSetup }
+import spray.json._
 
 import oz._
 import parser._
@@ -38,30 +40,37 @@ case class Config(
 /** Entry point for the Mozart2 bootstrap compiler */
 object Main {
   /** Executes the Mozart2 bootstrap compiler */
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     // Define command-line options
     val optParser = new scopt.OptionParser[Config]("bootcompiler") {
       head("bootcompiler", "2.0.x")
-      opt[Unit]("baseenv") action {
-        (_, c) => c.copy(mode = Config.Mode.BaseEnv)
-      } text("switch to base environment mode")
-      opt[String]('o', "output") action {
-        (v, c) => c.copy(outputStream =
-          () => new BufferedOutputStream(new FileOutputStream(v)))
-      } text("output file")
-      opt[String]('m', "module") action {
-        (v, c) => c.copy(moduleDefs = v :: c.moduleDefs)
-      } text("module definition file or directory")
-      opt[String]('b', "base") action {
-        (v, c) => c.copy(baseDeclsFileName = v)
-      } text("path to the base declarations file")
-      opt[String]('D', "define") action {
-        (v, c) => c.copy(defines = c.defines + v)
-      } text("add a symbol to the conditional defines")
-      arg[String]("<file>") action {
-        (v, c) => c.copy(fileName = v)
-      } text("input file")
+
+      opt[Unit]("baseenv")
+        .action((_, c) => c.copy(mode = Config.Mode.BaseEnv))
+        .text("switch to base environment mode")
+
+      opt[String]('o', "output")
+        .action((v, c) =>
+          c.copy(outputStream = () => new BufferedOutputStream(new FileOutputStream(v))))
+        .text("output file")
+
+      opt[String]('m', "module")
+        .action((v, c) => c.copy(moduleDefs = v :: c.moduleDefs))
+        .text("module definition file or directory")
+
+      opt[String]('b', "base")
+        .action((v, c) => c.copy(baseDeclsFileName = v))
+        .text("path to the base declarations file")
+
+      opt[String]('D', "define")
+        .action((v, c) => c.copy(defines = c.defines + v))
+        .text("add a symbol to the conditional defines")
+
+      arg[String]("<file>")
+        .action((v, c) => c.copy(fileName = v))
+        .text("input file")
     }
+
 
     // Parse the options
     optParser.parse(args, Config()) map { config =>
@@ -80,15 +89,11 @@ object Main {
           th.printStackTrace()
           sys.exit(2)
       }
-    } getOrElse {
-      // Bad command-line arguments
-      optParser.showUsage
-      sys.exit(1)
     }
   }
 
   /** Performs the Module mode */
-  private def mainModule(config: Config) {
+  private def mainModule(config: Config): Unit = {
     import config._
 
     val (program, _) = createProgram(moduleDefs, Some(baseDeclsFileName))
@@ -103,7 +108,7 @@ object Main {
   }
 
   /** Performs the BaseEnv mode */
-  private def mainBaseEnv(config: Config) {
+  private def mainBaseEnv(config: Config): Unit = {
     import config._
 
     val (program, bootModules) = createProgram(moduleDefs, None, true)
@@ -120,8 +125,10 @@ object Main {
   }
 
   /** Creates a new Program */
-  private def createProgram(moduleDefs: List[String],
-      baseDeclsFileName: Option[String], isBaseEnvironment: Boolean = false) = {
+  private def createProgram(
+    moduleDefs: List[String],
+    baseDeclsFileName: Option[String],
+    isBaseEnvironment: Boolean = false): (Program, Map[String, Expression]) = {
     val program = new Program(isBaseEnvironment)
     val bootModules = loadModuleDefs(program, moduleDefs)
 
@@ -140,8 +147,10 @@ object Main {
    *  @param reader input reader
    *  @return The statement AST
    */
-  private def parseStatement(reader: PagedSeqReader, file: File,
-      defines: Set[String]) =
+  private def parseStatement(
+    reader: PagedSeqReader,
+    file: File,
+    defines: Set[String]): Statement =
     new ParserWrapper().parseStatement(reader, file, defines)
 
   /** Parses an Oz expression from a reader
@@ -153,7 +162,7 @@ object Main {
    *  @return The expression AST
    */
   private def parseExpression(reader: PagedSeqReader, file: File,
-      defines: Set[String]) =
+      defines: Set[String]): Expression =
     new ParserWrapper().parseExpression(reader, file, defines)
 
   /** Utility wrapper for an [[org.mozartoz.bootcompiler.parser.OzParser]]
@@ -165,11 +174,11 @@ object Main {
     private val parser = new OzParser()
 
     def parseStatement(reader: PagedSeqReader, file: File,
-        defines: Set[String]) =
+        defines: Set[String]): Statement =
       processResult(parser.parseStatement(reader, file, defines))
 
     def parseExpression(reader: PagedSeqReader, file: File,
-        defines: Set[String]) =
+        defines: Set[String]): Expression =
       processResult(parser.parseExpression(reader, file, defines))
 
     /** Processes a parse result
@@ -200,7 +209,7 @@ object Main {
    *
    *  @param fileName name of the file to be read
    */
-  private def readerForFile(fileName: String) = {
+  private def readerForFile(fileName: String): PagedSeqReader = {
     new PagedSeqReader(PagedSeq.fromReader(
         new BufferedReader(new FileReader(fileName))))
   }
@@ -211,7 +220,7 @@ object Main {
    *  @param moduleDefs list of files that define builtin modules
    */
   private def loadModuleDefs(prog: Program, moduleDefs: List[String]) = {
-    JSON.globalNumberParser = (_.toInt)
+    // JSON.globalNumberParser = (_.toInt)
 
     val result = new scala.collection.mutable.HashMap[String, Expression]
 
@@ -235,53 +244,60 @@ object Main {
   }
 
   /** Loads one builtin module definition */
-  private def loadModuleDef(prog: Program, moduleDef: File) = {
-    class CC[T] {
-      def unapply(a: Any): Option[T] = Some(a.asInstanceOf[T])
+  private def loadModuleDef(prog: Program, moduleDef: File): List[(String, Record)] = {
+    case class JsParameter(val kind: String)
+
+    case class JsBuiltin(
+      val name: String,
+      val inlineable: Boolean,
+      val inlineOpCode: Option[Int],
+      val params: List[JsParameter]
+    )
+
+    case class JsModule(
+      val name: String,
+      val builtins: List[JsBuiltin]
+    )
+
+    object ModuleJsonProtocol extends DefaultJsonProtocol {
+      implicit val parameterJsonFormat = jsonFormat1(JsParameter)
+      implicit val builtinJsonFormat = jsonFormat4(JsBuiltin)
+      implicit val moduleJsonFormat = jsonFormat2(JsModule)
     }
 
-    object M extends CC[Map[String, Any]]
-    object L extends CC[List[Any]]
-    object S extends CC[String]
-    object D extends CC[Double]
-    object B extends CC[Boolean]
+    import ModuleJsonProtocol._
 
-    val modules = JSON.parseFull(readFileToString(moduleDef)).toList
+    val jsModule: JsModule =
+      readFileToString(moduleDef)
+        .parseJson
+        .convertTo[JsModule]
+
+    val exportFields = new ListBuffer[RecordField]
 
     for {
-      M(module) <- modules
-      S(modName) = module("name")
-      L(builtins) = module("builtins")
+      jsBuiltin <- jsModule.builtins
     } yield {
-      val exportFields = new ListBuffer[RecordField]
+      val inlineAs: Option[Int] =
+        if (jsBuiltin.inlineable) jsBuiltin.inlineOpCode
+        else None
+        // if (inlineable) Some(bi("inlineOpCode").asInstanceOf[Int])
+        // else None
 
-      for {
-        M(bi) <- builtins
-        S(biName) = bi("name")
-        B(inlineable) = bi("inlineable")
-        L(params) = bi("params")
-      } {
-        val inlineAs =
-          if (inlineable) Some(bi("inlineOpCode").asInstanceOf[Int])
-          else None
-
-        val paramKinds = for {
-          M(param) <- params
-          S(paramKind) = param("kind")
-        } yield {
-          Builtin.ParamKind.withName(paramKind)
-        }
-
-        val builtin = new Builtin(
-            modName, biName, paramKinds, inlineAs)
-
-        prog.builtins.register(builtin)
-
-        exportFields += RecordField(
-            Constant(OzAtom(biName)), Constant(OzBuiltin(builtin)))
+      val paramKinds = for {
+        jsParam <- jsBuiltin.params
+      } yield {
+        Builtin.ParamKind.withName(jsParam.kind)
       }
 
-      val moduleURL = "x-oz://boot/" + modName
+      val builtin = new Builtin(
+        jsModule.name, jsBuiltin.name, paramKinds, inlineAs)
+
+      prog.builtins.register(builtin)
+
+      exportFields += RecordField(
+          Constant(OzAtom(builtin.name)), Constant(OzBuiltin(builtin)))
+
+      val moduleURL = "x-oz://boot/" + jsModule.name
       val moduleExport = Record(Constant(OzAtom("export")), exportFields.toList)
 
       moduleURL -> moduleExport
@@ -293,7 +309,7 @@ object Main {
    *  @param prog program to compile
    *  @param fileName top-level file that is being processed
    */
-  private def compile(prog: Program, fileName: String) {
+  private def compile(prog: Program, fileName: String): Unit = {
     applyTransforms(prog)
 
     if (prog.hasErrors) {
@@ -311,7 +327,7 @@ object Main {
   }
 
   /** Applies the successive transformation phases to a program */
-  private def applyTransforms(prog: Program) {
+  private def applyTransforms(prog: Program): Unit = {
     Namer(prog)
     DesugarFunctor(prog)
     DesugarClass(prog)
@@ -328,7 +344,7 @@ object Main {
    *  @param file file to read
    *  @return the contents of the file
    */
-  private def readFileToString(file: File) = {
+  private def readFileToString(file: File): String = {
     val source = io.Source.fromFile(file)
     try source.mkString
     finally source.close()
@@ -339,7 +355,7 @@ object Main {
    *  @param file file to read
    *  @return the lines in the file
    */
-  private def readFileLines(file: File) = {
+  private def readFileLines(file: File): List[String] = {
     val source = io.Source.fromFile(file)
     try source.getLines().toList
     finally source.close()

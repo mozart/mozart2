@@ -15,7 +15,7 @@ class Builtins {
   private val builtins = new HashMap[(String, String), Builtin]
 
   /** Registers a builtin */
-  def register(builtin: Builtin) {
+  def register(builtin: Builtin): Unit = {
     builtins += (builtin.moduleName, builtin.name) -> builtin
   }
 

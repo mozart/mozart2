@@ -71,10 +71,8 @@ object Main {
         .text("input file")
     }
 
-
     // Parse the options
-    optParser.parse(args, Config()) map { config =>
-      // OK, we're good to go
+    optParser.parse(args, Config()).foreach({ config =>
       try {
         config.mode match {
           case Config.Mode.Module =>
@@ -89,7 +87,7 @@ object Main {
           th.printStackTrace()
           sys.exit(2)
       }
-    }
+    })
   }
 
   /** Performs the Module mode */
@@ -220,8 +218,6 @@ object Main {
    *  @param moduleDefs list of files that define builtin modules
    */
   private def loadModuleDefs(prog: Program, moduleDefs: List[String]) = {
-    // JSON.globalNumberParser = (_.toInt)
-
     val result = new scala.collection.mutable.HashMap[String, Expression]
 
     for (moduleDef <- moduleDefs) {
@@ -260,9 +256,9 @@ object Main {
     )
 
     object ModuleJsonProtocol extends DefaultJsonProtocol {
-      implicit val parameterJsonFormat = jsonFormat1(JsParameter)
-      implicit val builtinJsonFormat = jsonFormat4(JsBuiltin)
-      implicit val moduleJsonFormat = jsonFormat2(JsModule)
+      implicit val parameterJsonFormat: RootJsonFormat[JsParameter] = jsonFormat1(JsParameter)
+      implicit val builtinJsonFormat: RootJsonFormat[JsBuiltin] = jsonFormat4(JsBuiltin)
+      implicit val moduleJsonFormat: RootJsonFormat[JsModule] = jsonFormat2(JsModule)
     }
 
     import ModuleJsonProtocol._
@@ -280,8 +276,6 @@ object Main {
       val inlineAs: Option[Int] =
         if (jsBuiltin.inlineable) jsBuiltin.inlineOpCode
         else None
-        // if (inlineable) Some(bi("inlineOpCode").asInstanceOf[Int])
-        // else None
 
       val paramKinds = for {
         jsParam <- jsBuiltin.params

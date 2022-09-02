@@ -4,3 +4,5 @@
 *.o
 *.a
 
+# For ease of use as cmake build directory
+/build

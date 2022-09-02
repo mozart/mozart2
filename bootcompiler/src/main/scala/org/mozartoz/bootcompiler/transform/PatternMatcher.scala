@@ -22,7 +22,7 @@ object PatternMatcher extends Transformer with TreeDSL {
       }
 
       transformStat {
-        LOCAL (newCaptures:_*) IN {
+        LOCAL (newCaptures.toSeq:_*) IN {
           treeCopy.MatchStatement(matchStat, value, newClauses, elseStat)
         }
       }
@@ -53,7 +53,7 @@ object PatternMatcher extends Transformer with TreeDSL {
       }
 
       transformExpr {
-        LOCAL (newCaptures:_*) IN {
+        LOCAL (newCaptures.toSeq:_*) IN {
           treeCopy.MatchExpression(matchStat, value, newClauses, elseExpr)
         }
       }

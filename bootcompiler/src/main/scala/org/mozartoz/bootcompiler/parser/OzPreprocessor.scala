@@ -3,8 +3,6 @@ package parser
 
 import java.io.{ File, FileReader, BufferedReader }
 
-import scala.collection.immutable.PagedSeq
-
 import scala.util.parsing.input._
 import scala.util.parsing.combinator.token._
 

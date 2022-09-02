@@ -399,7 +399,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
         val initNames = CompoundStatement(for {
           decl <- namedDecls
         } yield {
-          decl === (builtins.newName callExpr ())
+          decl === (builtins.newName.callExpr())
         })
 
         treeCopy.LocalExpression(clazz, namedDecls,

@@ -42,7 +42,7 @@ class Abstraction(val owner: Abstraction, val name: String, val pos: Position) {
   def arity = formals.size
 
   /** Acquires a symbol as being declared in this abstraction */
-  def acquire(symbol: Symbol) {
+  def acquire(symbol: Symbol): Unit = {
     symbol.setOwner(this)
     if (symbol.isFormal) formals += symbol
     else if (symbol.isGlobal) globals += symbol
@@ -75,7 +75,7 @@ class Abstraction(val owner: Abstraction, val name: String, val pos: Position) {
    *
    *  @param includeByteCode include the bytecode in the dump
    */
-  def dump(includeByteCode: Boolean = true) {
+  def dump(includeByteCode: Boolean = true): Unit = {
     println(fullName + ": P/" + arity.toString())
     println("  formals: " + (formals mkString " "))
     println("  locals: " + (locals mkString " "))

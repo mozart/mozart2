@@ -32,9 +32,9 @@ abstract class Node extends Product with Positional {
    *
    *  @param handler handler callback
    */
-  def walkBreak(handler: Node => Boolean) {
+  def walkBreak(handler: Node => Boolean): Unit = {
     if (handler(this)) {
-      def inner(element: Any) {
+      def inner(element: Any): Unit = {
         element match {
           case node:Node => node.walk(handler)
           case seq:Seq[_] => seq foreach inner
@@ -52,7 +52,7 @@ abstract class Node extends Product with Positional {
    *
    *  @param handler handler callback
    */
-  def walk[U](handler: Node => U) {
+  def walk[U](handler: Node => U): Unit = {
     walkBreak { node =>
       handler(node)
       true

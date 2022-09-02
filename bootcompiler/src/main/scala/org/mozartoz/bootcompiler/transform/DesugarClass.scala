@@ -300,7 +300,7 @@ object DesugarClass extends Transformer with TreeDSL {
 
     atPos(method) {
       PROC (name, List(selfParam, msgParam)) {
-        LOCAL (paramVars:_*) IN {
+        LOCAL (paramVars.toSeq:_*) IN {
           withSelf(selfParam) {
             transformStat {
               CompoundStatement(fetchParamStats.toList) ~ {

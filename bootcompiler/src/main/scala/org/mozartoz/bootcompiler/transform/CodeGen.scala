@@ -16,11 +16,11 @@ object CodeGen extends Transformer with TreeDSL {
     code.registerFor(expr)
 
   private implicit def reg2ops[A <: Register](self: A) = new {
-    def := (source: Register)(implicit ev: A <:< XOrYReg) {
+    def := (source: Register)(implicit ev: A <:< XOrYReg): Unit = {
       code += OpMove(source, self)
     }
 
-    def === (rhs: Register) {
+    def === (rhs: Register): Unit = {
       code += OpUnify(self, rhs)
     }
   }
@@ -33,7 +33,7 @@ object CodeGen extends Transformer with TreeDSL {
     def toReg = code.registerFor(self)
   }
 
-  def initArrayWith(values: List[Expression]) {
+  def initArrayWith(values: List[Expression]): Unit = {
     for (value <- values) {
       varorconst2reg(value.asInstanceOf[VarOrConst]) match {
         case v:XReg => code += SubOpArrayFillX(v)
@@ -44,7 +44,7 @@ object CodeGen extends Transformer with TreeDSL {
     }
   }
 
-  override def applyToAbstraction() {
+  override def applyToAbstraction(): Unit = {
     // Allocate local variables
     val localCount = abstraction.formals.size + abstraction.locals.size
     if (localCount != 0)
@@ -65,7 +65,7 @@ object CodeGen extends Transformer with TreeDSL {
     code += OpReturn()
   }
 
-  def generate(statement: Statement) {
+  def generate(statement: Statement): Unit = {
     statement match {
       case SkipStatement() =>
         // skip

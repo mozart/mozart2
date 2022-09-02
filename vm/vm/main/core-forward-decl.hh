@@ -31,13 +31,15 @@
 #endif
 #endif
 
-#include <utility>
-#include <cstdlib>
-#include <cstdint>
-#include <ostream>
-#include <functional>
-#include <memory>
 #include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <functional>
+#include <limits>
+#include <memory>
+#include <ostream>
+#include <stdexcept>
+#include <utility>
 
 #define MOZART_NORETURN __attribute__((noreturn))
 

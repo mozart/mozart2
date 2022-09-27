@@ -4,7 +4,7 @@ public:
   ChunkLike(UnstableNode& self) : _self(self) {}
   ChunkLike(StableNode& self) : _self(self) {}
 
-  bool isChunk(VM vm) {
+  bool isChunk(mozart::VM vm) {
     if (_self.is<Chunk>()) {
       return _self.as<Chunk>().isChunk(vm);
     } else if (_self.is<Object>()) {

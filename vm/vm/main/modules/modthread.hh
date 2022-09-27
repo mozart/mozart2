@@ -132,6 +132,50 @@ public:
         result = build(vm, "blocked");
     }
   };
+
+  class Suspend: public Builtin<Suspend> {
+  public:
+    Suspend(): Builtin("suspend") {}
+
+    static void call(VM vm, In thread) {
+      Runnable* runnable = getArgument<Runnable*>(vm, thread);
+
+      runnable->suspend();
+    }
+  };
+
+  class Resume: public Builtin<Resume> {
+  public:
+    Resume(): Builtin("resume") {}
+
+    static void call(VM vm, In thread) {
+      Runnable* runnable = getArgument<Runnable*>(vm, thread);
+
+      runnable->resume();
+    }
+  };
+
+  class IsSuspended: public Builtin<IsSuspended> {
+  public:
+    IsSuspended(): Builtin("isSuspended") {}
+
+    static void call(VM vm, In thread, Out result) {
+      Runnable* runnable = getArgument<Runnable*>(vm, thread);
+
+      // FIXME: This is O(threads scheduled).
+      // Consider adding a field to the Runnable class.
+      result = build(vm, vm->getThreadPool().isScheduled(runnable));
+    }
+  };
+
+  class Preempt: public Builtin<Preempt> {
+  public:
+    Preempt(): Builtin("preempt") {}
+
+    static void call(VM vm) {
+      vm->requestPreempt();
+    }
+  };
 };
 
 }

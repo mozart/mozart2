@@ -51,42 +51,42 @@ public:
   size_t getArity();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  atom_t getPrintName(VM vm);
+  mozart::atom_t getPrintName(mozart::VM vm);
 
   inline
-  bool isBuiltin(VM vm);
+  bool isBuiltin(mozart::VM vm);
 
   inline
-  void callBuiltin(VM vm, size_t argc, class mozart::UnstableNode ** args);
+  void callBuiltin(mozart::VM vm, size_t argc, mozart::UnstableNode ** args);
 
   template <class ... Args> 
   inline
-  void callBuiltin(VM vm, Args &&... args);
+  void callBuiltin(mozart::VM vm, Args &&... args);
 
   inline
-  builtins::BaseBuiltin * getBuiltin(VM vm);
+  builtins::BaseBuiltin * getBuiltin(mozart::VM vm);
 
   inline
-  bool isCallable(VM vm);
+  bool isCallable(mozart::VM vm);
 
   inline
-  bool isProcedure(VM vm);
+  bool isProcedure(mozart::VM vm);
 
   inline
-  size_t procedureArity(VM vm);
+  size_t procedureArity(mozart::VM vm);
 
   inline
-  void getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks);
+  void getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks);
 
   inline
-  void getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData);
+  void getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

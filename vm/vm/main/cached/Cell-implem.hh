@@ -34,31 +34,31 @@ void TypeInfoOf<Cell>::sClone(SC sc, RichNode from, UnstableNode& to) const {
 }
 
 inline
-class mozart::Space *  TypedRichNode<Cell>::home() {
+mozart::Space *  TypedRichNode<Cell>::home() {
   return _self.access<Cell>().home();
 }
 
 inline
-bool  TypedRichNode<Cell>::isCell(VM vm) {
+bool  TypedRichNode<Cell>::isCell(mozart::VM vm) {
   return _self.access<Cell>().isCell(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Cell>::exchange(VM vm, class mozart::RichNode newValue) {
+mozart::UnstableNode  TypedRichNode<Cell>::exchange(mozart::VM vm, mozart::RichNode newValue) {
   return _self.access<Cell>().exchange(vm, newValue);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Cell>::access(VM vm) {
+mozart::UnstableNode  TypedRichNode<Cell>::access(mozart::VM vm) {
   return _self.access<Cell>().access(vm);
 }
 
 inline
-void  TypedRichNode<Cell>::assign(VM vm, class mozart::RichNode newValue) {
+void  TypedRichNode<Cell>::assign(mozart::VM vm, mozart::RichNode newValue) {
   _self.access<Cell>().assign(vm, newValue);
 }
 
 inline
-void  TypedRichNode<Cell>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Cell>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Cell>().printReprToStream(vm, out, depth, width);
 }

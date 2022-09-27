@@ -4,7 +4,7 @@ public:
   DataflowVariable(UnstableNode& self) : _self(self) {}
   DataflowVariable(StableNode& self) : _self(self) {}
 
-  void addToSuspendList(VM vm, class mozart::RichNode variable) {
+  void addToSuspendList(mozart::VM vm, mozart::RichNode variable) {
     if (_self.is<OptVar>()) {
       return _self.as<OptVar>().addToSuspendList(vm, variable);
     } else if (_self.is<Variable>()) {
@@ -22,7 +22,7 @@ public:
     }
   }
 
-  bool isNeeded(VM vm) {
+  bool isNeeded(mozart::VM vm) {
     if (_self.is<OptVar>()) {
       return _self.as<OptVar>().isNeeded(vm);
     } else if (_self.is<Variable>()) {
@@ -40,7 +40,7 @@ public:
     }
   }
 
-  void markNeeded(VM vm) {
+  void markNeeded(mozart::VM vm) {
     if (_self.is<OptVar>()) {
       return _self.as<OptVar>().markNeeded(vm);
     } else if (_self.is<Variable>()) {
@@ -58,7 +58,7 @@ public:
     }
   }
 
-  void bind(VM vm, class mozart::RichNode src) {
+  void bind(mozart::VM vm, mozart::RichNode src) {
     if (_self.is<OptVar>()) {
       return _self.as<OptVar>().bind(vm, src);
     } else if (_self.is<Variable>()) {

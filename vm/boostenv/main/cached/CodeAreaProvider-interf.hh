@@ -4,7 +4,7 @@ public:
   CodeAreaProvider(UnstableNode& self) : _self(self) {}
   CodeAreaProvider(StableNode& self) : _self(self) {}
 
-  bool isCodeAreaProvider(VM vm) {
+  bool isCodeAreaProvider(mozart::VM vm) {
     if (_self.is<CodeArea>()) {
       return _self.as<CodeArea>().isCodeAreaProvider(vm);
     } else if (_self.isTransient()) {
@@ -15,7 +15,7 @@ public:
     }
   }
 
-  void getCodeAreaInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Ks) {
+  void getCodeAreaInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Ks) {
     if (_self.is<CodeArea>()) {
       return _self.as<CodeArea>().getCodeAreaInfo(vm, arity, start, Xcount, Ks);
     } else if (_self.isTransient()) {
@@ -26,7 +26,7 @@ public:
     }
   }
 
-  void getCodeAreaDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData) {
+  void getCodeAreaDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData) {
     if (_self.is<CodeArea>()) {
       return _self.as<CodeArea>().getCodeAreaDebugInfo(vm, printName, debugData);
     } else if (_self.isTransient()) {

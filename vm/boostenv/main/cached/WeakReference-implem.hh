@@ -6,9 +6,7 @@ void TypeInfoOf<WeakReference>::gCollect(GC gc, RichNode from, StableNode& to) c
 
 void TypeInfoOf<WeakReference>::gCollect(GC gc, RichNode from, UnstableNode& to) const {
   assert(from.type() == type());
-  StableNode* stable = new (gc->vm) StableNode;
-  to.make<Reference>(gc->vm, stable);
-  stable->make<WeakReference>(gc->vm, gc, from.access<WeakReference>());
+  to.make<WeakReference>(gc->vm, gc, from.access<WeakReference>());
 }
 
 void TypeInfoOf<WeakReference>::sClone(SC sc, RichNode from, StableNode& to) const {
@@ -22,6 +20,6 @@ void TypeInfoOf<WeakReference>::sClone(SC sc, RichNode from, UnstableNode& to) c
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<WeakReference>::getUnderlying() {
+mozart::StableNode *  TypedRichNode<WeakReference>::getUnderlying() {
   return _self.access<WeakReference>().getUnderlying();
 }

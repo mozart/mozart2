@@ -39,11 +39,11 @@ size_t TypedRichNode<CodeArea>::getArraySize() {
   return _self.access<CodeArea>().getArraySize();
 }
 
-StaticArray<class mozart::StableNode> TypedRichNode<CodeArea>::getElementsArray() {
+StaticArray<mozart::StableNode> TypedRichNode<CodeArea>::getElementsArray() {
   return _self.access<CodeArea>().getElementsArray();
 }
 
-class mozart::StableNode& TypedRichNode<CodeArea>::getElements(size_t i) {
+mozart::StableNode& TypedRichNode<CodeArea>::getElements(size_t i) {
   return _self.access<CodeArea>().getElements(i);
 }
 
@@ -53,36 +53,36 @@ size_t  TypedRichNode<CodeArea>::getArraySizeImpl() {
 }
 
 inline
-bool  TypedRichNode<CodeArea>::isCodeAreaProvider(VM vm) {
+bool  TypedRichNode<CodeArea>::isCodeAreaProvider(mozart::VM vm) {
   return _self.access<CodeArea>().isCodeAreaProvider(vm);
 }
 
 inline
-void  TypedRichNode<CodeArea>::getCodeAreaInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Ks) {
+void  TypedRichNode<CodeArea>::getCodeAreaInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Ks) {
   _self.access<CodeArea>().getCodeAreaInfo(vm, arity, start, Xcount, Ks);
 }
 
 inline
-void  TypedRichNode<CodeArea>::getCodeAreaDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData) {
+void  TypedRichNode<CodeArea>::getCodeAreaDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData) {
   _self.access<CodeArea>().getCodeAreaDebugInfo(vm, printName, debugData);
 }
 
 inline
-void  TypedRichNode<CodeArea>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<CodeArea>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<CodeArea>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<CodeArea>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<CodeArea>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<CodeArea>().serialize(vm, se);
 }
 
 inline
-class mozart::GlobalNode *  TypedRichNode<CodeArea>::globalize(VM vm) {
+mozart::GlobalNode *  TypedRichNode<CodeArea>::globalize(mozart::VM vm) {
   return _self.access<CodeArea>().globalize(_self, vm);
 }
 
 inline
-void  TypedRichNode<CodeArea>::setUUID(VM vm, const struct mozart::UUID & uuid) {
+void  TypedRichNode<CodeArea>::setUUID(mozart::VM vm, const mozart::UUID & uuid) {
   _self.access<CodeArea>().setUUID(_self, vm, uuid);
 }

@@ -44,96 +44,96 @@ int TypeInfoOf<GlobalName>::compareFeatures(VM vm, RichNode lhs, RichNode rhs) c
 
 
 inline
-class mozart::Space *  TypedRichNode<GlobalName>::home() {
+mozart::Space *  TypedRichNode<GlobalName>::home() {
   return _self.access<GlobalName>().home();
 }
 
 inline
-bool  TypedRichNode<GlobalName>::isLiteral(VM vm) {
+bool  TypedRichNode<GlobalName>::isLiteral(mozart::VM vm) {
   return _self.access<GlobalName>().isLiteral(vm);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<GlobalName>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<GlobalName>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<GlobalName>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<GlobalName>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::isRecord(VM vm) {
+bool  TypedRichNode<GlobalName>::isRecord(mozart::VM vm) {
   return _self.access<GlobalName>().isRecord(vm);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::isTuple(VM vm) {
+bool  TypedRichNode<GlobalName>::isTuple(mozart::VM vm) {
   return _self.access<GlobalName>().isTuple(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<GlobalName>::label(VM vm) {
+mozart::UnstableNode  TypedRichNode<GlobalName>::label(mozart::VM vm) {
   return _self.access<GlobalName>().label(_self, vm);
 }
 
 inline
-size_t  TypedRichNode<GlobalName>::width(VM vm) {
+size_t  TypedRichNode<GlobalName>::width(mozart::VM vm) {
   return _self.access<GlobalName>().width(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<GlobalName>::arityList(VM vm) {
+mozart::UnstableNode  TypedRichNode<GlobalName>::arityList(mozart::VM vm) {
   return _self.access<GlobalName>().arityList(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<GlobalName>::clone(VM vm) {
+mozart::UnstableNode  TypedRichNode<GlobalName>::clone(mozart::VM vm) {
   return _self.access<GlobalName>().clone(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<GlobalName>::waitOr(VM vm) {
+mozart::UnstableNode  TypedRichNode<GlobalName>::waitOr(mozart::VM vm) {
   return _self.access<GlobalName>().waitOr(vm);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::testRecord(VM vm, class mozart::RichNode arity) {
+bool  TypedRichNode<GlobalName>::testRecord(mozart::VM vm, mozart::RichNode arity) {
   return _self.access<GlobalName>().testRecord(vm, arity);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::testTuple(VM vm, class mozart::RichNode label, size_t width) {
+bool  TypedRichNode<GlobalName>::testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
   return _self.access<GlobalName>().testTuple(_self, vm, label, width);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::testLabel(VM vm, class mozart::RichNode label) {
+bool  TypedRichNode<GlobalName>::testLabel(mozart::VM vm, mozart::RichNode label) {
   return _self.access<GlobalName>().testLabel(_self, vm, label);
 }
 
 inline
-const struct mozart::UUID &  TypedRichNode<GlobalName>::getUUID() {
+const mozart::UUID &  TypedRichNode<GlobalName>::getUUID() {
   return _self.access<GlobalName>().getUUID();
 }
 
 inline
-int  TypedRichNode<GlobalName>::compareFeatures(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<GlobalName>::compareFeatures(mozart::VM vm, mozart::RichNode right) {
   return _self.access<GlobalName>().compareFeatures(vm, right);
 }
 
 inline
-bool  TypedRichNode<GlobalName>::isName(VM vm) {
+bool  TypedRichNode<GlobalName>::isName(mozart::VM vm) {
   return _self.access<GlobalName>().isName(vm);
 }
 
 inline
-class mozart::GlobalNode *  TypedRichNode<GlobalName>::globalize(VM vm) {
+mozart::GlobalNode *  TypedRichNode<GlobalName>::globalize(mozart::VM vm) {
   return _self.access<GlobalName>().globalize(_self, vm);
 }
 
 inline
-void  TypedRichNode<GlobalName>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<GlobalName>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<GlobalName>().printReprToStream(vm, out, depth, width);
 }

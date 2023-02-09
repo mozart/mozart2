@@ -5,7 +5,7 @@ class TypeInfoOf<Reference>: public TypeInfo {
     return UUID();
   }
 public:
-  TypeInfoOf() : TypeInfo("Reference", uuid(), (! ::mozart::MemWord::requiresExternalMemory<class mozart::StableNode *>()), false, false, sbValue, 0) {}
+  TypeInfoOf() : TypeInfo("Reference", uuid(), (! ::mozart::MemWord::requiresExternalMemory<mozart::StableNode *>()), false, false, sbValue, 0) {}
 
   static const TypeInfoOf<Reference>* const instance() {
     return &RawType<Reference>::rawType;
@@ -34,5 +34,5 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::StableNode * dest();
+  mozart::StableNode * dest();
 };

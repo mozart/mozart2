@@ -48,10 +48,10 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::StableNode> getElementsArray();
+  StaticArray<mozart::StableNode> getElementsArray();
 
   inline
-  class mozart::StableNode& getElements(size_t i);
+  mozart::StableNode& getElements(size_t i);
 
   inline
   size_t getArraySizeImpl();
@@ -60,53 +60,53 @@ public:
   size_t getWidth();
 
   inline
-  class mozart::StableNode * getElement(size_t index);
+  mozart::StableNode * getElement(size_t index);
 
   inline
-  bool isRecord(VM vm);
+  bool isRecord(mozart::VM vm);
 
   inline
-  size_t width(VM vm);
+  size_t width(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode arityList(VM vm);
+  mozart::UnstableNode arityList(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode waitOr(VM vm);
+  mozart::UnstableNode waitOr(mozart::VM vm);
 
   inline
-  class mozart::StableNode * getArity();
+  mozart::StableNode * getArity();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right, class mozart::WalkStack & stack);
+  bool equals(mozart::VM vm, mozart::RichNode right, mozart::WalkStack & stack);
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool isTuple(VM vm);
+  bool isTuple(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode label(VM vm);
+  mozart::UnstableNode label(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode clone(VM vm);
+  mozart::UnstableNode clone(mozart::VM vm);
 
   inline
-  bool testRecord(VM vm, class mozart::RichNode arity);
+  bool testRecord(mozart::VM vm, mozart::RichNode arity);
 
   inline
-  bool testTuple(VM vm, class mozart::RichNode label, size_t width);
+  bool testTuple(mozart::VM vm, mozart::RichNode label, size_t width);
 
   inline
-  bool testLabel(VM vm, class mozart::RichNode label);
+  bool testLabel(mozart::VM vm, mozart::RichNode label);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 };

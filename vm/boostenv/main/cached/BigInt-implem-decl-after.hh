@@ -48,46 +48,46 @@ public:
   std::shared_ptr<BigIntImplem> value();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  int compareFeatures(VM vm, class mozart::RichNode right);
+  int compareFeatures(mozart::VM vm, mozart::RichNode right);
 
   inline
-  int compare(VM vm, class mozart::RichNode right);
+  int compare(mozart::VM vm, mozart::RichNode right);
 
   inline
-  bool isNumber(VM vm);
+  bool isNumber(mozart::VM vm);
 
   inline
-  bool isInt(VM vm);
+  bool isInt(mozart::VM vm);
 
   inline
-  bool isFloat(VM vm);
+  bool isFloat(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode opposite(VM vm);
+  mozart::UnstableNode opposite(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode add(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode add(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode add(VM vm, nativeint b);
+  mozart::UnstableNode add(mozart::VM vm, mozart::nativeint b);
 
   inline
-  class mozart::UnstableNode subtract(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode subtract(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode multiply(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode multiply(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode div(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode div(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode mod(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode mod(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode abs(VM vm);
+  mozart::UnstableNode abs(mozart::VM vm);
 
   inline
   double doubleValue();
@@ -96,5 +96,5 @@ public:
   std::string str();
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

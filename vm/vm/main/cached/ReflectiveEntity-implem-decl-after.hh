@@ -43,8 +43,8 @@ public:
 
   template <typename Label, typename ... Args> 
   inline
-  bool reflectiveCall(VM vm, const char * identity, Label && label, Args &&... args);
+  bool reflectiveCall(mozart::VM vm, const char * identity, Label && label, Args &&... args);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

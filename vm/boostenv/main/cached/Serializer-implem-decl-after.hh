@@ -38,5 +38,5 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::UnstableNode doSerialize(VM vm, class mozart::RichNode todo);
+  mozart::UnstableNode doSerialize(mozart::VM vm, mozart::RichNode todo);
 };

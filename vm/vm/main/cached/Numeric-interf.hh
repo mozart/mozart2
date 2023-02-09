@@ -4,7 +4,7 @@ public:
   Numeric(UnstableNode& self) : _self(self) {}
   Numeric(StableNode& self) : _self(self) {}
 
-  bool isNumber(VM vm) {
+  bool isNumber(mozart::VM vm) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().isNumber(vm);
     } else if (_self.is<BigInt>()) {
@@ -24,7 +24,7 @@ public:
     }
   }
 
-  bool isInt(VM vm) {
+  bool isInt(mozart::VM vm) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().isInt(vm);
     } else if (_self.is<BigInt>()) {
@@ -44,7 +44,7 @@ public:
     }
   }
 
-  bool isFloat(VM vm) {
+  bool isFloat(mozart::VM vm) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().isFloat(vm);
     } else if (_self.is<BigInt>()) {
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode opposite(VM vm) {
+  mozart::UnstableNode opposite(mozart::VM vm) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().opposite(vm);
     } else if (_self.is<BigInt>()) {
@@ -76,7 +76,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::opposite", "opposite", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -84,7 +84,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode add(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode add(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().add(vm, right);
     } else if (_self.is<BigInt>()) {
@@ -96,7 +96,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::add", "add", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -104,7 +104,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode add(VM vm, nativeint right) {
+  mozart::UnstableNode add(mozart::VM vm, mozart::nativeint right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().add(vm, right);
     } else if (_self.is<BigInt>()) {
@@ -116,7 +116,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::add", "add", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -124,7 +124,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode subtract(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode subtract(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().subtract(vm, right);
     } else if (_self.is<BigInt>()) {
@@ -136,7 +136,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::subtract", "subtract", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -144,7 +144,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode multiply(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode multiply(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().multiply(vm, right);
     } else if (_self.is<BigInt>()) {
@@ -156,7 +156,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::multiply", "multiply", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -164,7 +164,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode div(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode div(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().div(vm, right);
     } else if (_self.is<BigInt>()) {
@@ -176,7 +176,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::div", "div", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -184,7 +184,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode mod(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode mod(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().mod(vm, right);
     } else if (_self.is<BigInt>()) {
@@ -196,7 +196,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::mod", "mod", right, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -204,7 +204,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode abs(VM vm) {
+  mozart::UnstableNode abs(mozart::VM vm) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().abs(vm);
     } else if (_self.is<BigInt>()) {
@@ -216,7 +216,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::Numeric::abs", "abs", ::mozart::ozcalls::out(_result)))
           return _result;
       }

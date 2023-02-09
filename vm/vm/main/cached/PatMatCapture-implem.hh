@@ -31,21 +31,21 @@ void TypeInfoOf<PatMatCapture>::sClone(SC sc, RichNode from, UnstableNode& to) c
 }
 
 inline
-nativeint  TypedRichNode<PatMatCapture>::index() {
+mozart::nativeint  TypedRichNode<PatMatCapture>::index() {
   return _self.access<PatMatCapture>().index();
 }
 
 inline
-bool  TypedRichNode<PatMatCapture>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<PatMatCapture>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<PatMatCapture>().equals(vm, right);
 }
 
 inline
-void  TypedRichNode<PatMatCapture>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<PatMatCapture>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<PatMatCapture>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<PatMatCapture>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<PatMatCapture>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<PatMatCapture>().serialize(vm, se);
 }

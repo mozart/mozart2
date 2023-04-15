@@ -74,10 +74,11 @@ VirtualMachine::VirtualMachine(VirtualMachineEnvironment& environment,
   rootGlobalNode(nullptr), environment(environment),
   _propertyRegistry(options),
   gc(this, environment.getSecondMemoryManagerRef()), sc(this),
-  _preemptRequestedNot(ATOMIC_FLAG_INIT),
-  _exitRunRequestedNot(ATOMIC_FLAG_INIT),
-  _gcRequestedNot(ATOMIC_FLAG_INIT),
   _referenceTime(0) {
+
+  _preemptRequestedNot.clear();
+  _exitRunRequestedNot.clear();
+  _gcRequestedNot.clear();
 
   memoryManager.init(this);
 

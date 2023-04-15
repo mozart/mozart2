@@ -76,7 +76,7 @@ public:
       using namespace std::chrono;
       auto now = steady_clock::now();
       nanoseconds dur = duration_cast<nanoseconds>(now.time_since_epoch());
-      result = build(vm, dur.count());
+      result = build(vm, static_cast<size_t>(dur.count()));
     }
   };
 };

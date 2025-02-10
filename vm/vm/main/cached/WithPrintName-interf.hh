@@ -4,7 +4,7 @@ public:
   WithPrintName(UnstableNode& self) : _self(self) {}
   WithPrintName(StableNode& self) : _self(self) {}
 
-  atom_t getPrintName(VM vm) {
+  mozart::atom_t getPrintName(mozart::VM vm) {
     if (_self.is<Abstraction>()) {
       return _self.as<Abstraction>().getPrintName(vm);
     } else if (_self.is<BuiltinProcedure>()) {
@@ -21,7 +21,7 @@ public:
       return _self.as<Unit>().getPrintName(vm);
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        atom_t _result;
+        mozart::atom_t _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::WithPrintName::getPrintName", "getPrintName", ::mozart::ozcalls::out(_result)))
           return _result;
       }

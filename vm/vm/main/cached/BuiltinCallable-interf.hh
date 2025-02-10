@@ -4,7 +4,7 @@ public:
   BuiltinCallable(UnstableNode& self) : _self(self) {}
   BuiltinCallable(StableNode& self) : _self(self) {}
 
-  bool isBuiltin(VM vm) {
+  bool isBuiltin(mozart::VM vm) {
     if (_self.is<BuiltinProcedure>()) {
       return _self.as<BuiltinProcedure>().isBuiltin(vm);
     } else if (_self.isTransient()) {
@@ -15,7 +15,7 @@ public:
     }
   }
 
-  void callBuiltin(VM vm, size_t argc, class mozart::UnstableNode ** args) {
+  void callBuiltin(mozart::VM vm, size_t argc, mozart::UnstableNode ** args) {
     if (_self.is<BuiltinProcedure>()) {
       return _self.as<BuiltinProcedure>().callBuiltin(vm, argc, args);
     } else if (_self.isTransient()) {
@@ -27,7 +27,7 @@ public:
   }
 
   template <class ... Args> 
-  void callBuiltin(VM vm, Args &&... args) {
+  void callBuiltin(mozart::VM vm, Args &&... args) {
     if (_self.is<BuiltinProcedure>()) {
       return _self.as<BuiltinProcedure>().callBuiltin(vm, std::forward<Args>(args)...);
     } else if (_self.isTransient()) {
@@ -38,7 +38,7 @@ public:
     }
   }
 
-  builtins::BaseBuiltin * getBuiltin(VM vm) {
+  builtins::BaseBuiltin * getBuiltin(mozart::VM vm) {
     if (_self.is<BuiltinProcedure>()) {
       return _self.as<BuiltinProcedure>().getBuiltin(vm);
     } else if (_self.isTransient()) {

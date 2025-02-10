@@ -109,6 +109,7 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<ASTUnit> unit =
       ASTUnit::LoadFromASTFile(astFile,
                                CI.getPCHContainerReader(),
+                               clang::ASTUnit::WhatToLoad::LoadASTOnly,
                                Diags,
                                CI.getFileSystemOpts());
 

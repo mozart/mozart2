@@ -4,7 +4,7 @@ public:
   ArrayLike(UnstableNode& self) : _self(self) {}
   ArrayLike(StableNode& self) : _self(self) {}
 
-  bool isArray(VM vm) {
+  bool isArray(mozart::VM vm) {
     if (_self.is<Array>()) {
       return _self.as<Array>().isArray(vm);
     } else if (_self.isTransient()) {
@@ -20,7 +20,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode arrayLow(VM vm) {
+  mozart::UnstableNode arrayLow(mozart::VM vm) {
     if (_self.is<Array>()) {
       return _self.as<Array>().arrayLow(vm);
     } else if (_self.isTransient()) {
@@ -28,7 +28,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::ArrayLike::arrayLow", "arrayLow", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -36,7 +36,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode arrayHigh(VM vm) {
+  mozart::UnstableNode arrayHigh(mozart::VM vm) {
     if (_self.is<Array>()) {
       return _self.as<Array>().arrayHigh(vm);
     } else if (_self.isTransient()) {
@@ -44,7 +44,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::ArrayLike::arrayHigh", "arrayHigh", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -52,7 +52,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode arrayGet(VM vm, class mozart::RichNode index) {
+  mozart::UnstableNode arrayGet(mozart::VM vm, mozart::RichNode index) {
     if (_self.is<Array>()) {
       return _self.as<Array>().arrayGet(vm, index);
     } else if (_self.isTransient()) {
@@ -60,7 +60,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::ArrayLike::arrayGet", "arrayGet", index, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -68,7 +68,7 @@ public:
     }
   }
 
-  void arrayPut(VM vm, class mozart::RichNode index, class mozart::RichNode value) {
+  void arrayPut(mozart::VM vm, mozart::RichNode index, mozart::RichNode value) {
     if (_self.is<Array>()) {
       return _self.as<Array>().arrayPut(vm, index, value);
     } else if (_self.isTransient()) {
@@ -83,7 +83,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode arrayExchange(VM vm, class mozart::RichNode index, class mozart::RichNode newValue) {
+  mozart::UnstableNode arrayExchange(mozart::VM vm, mozart::RichNode index, mozart::RichNode newValue) {
     if (_self.is<Array>()) {
       return _self.as<Array>().arrayExchange(vm, index, newValue);
     } else if (_self.isTransient()) {
@@ -91,7 +91,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::ArrayLike::arrayExchange", "arrayExchange", index, newValue, ::mozart::ozcalls::out(_result)))
           return _result;
       }

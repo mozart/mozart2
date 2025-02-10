@@ -5,7 +5,7 @@ class TypeInfoOf<ReifiedGNode>: public TypeInfo {
     return UUID();
   }
 public:
-  TypeInfoOf() : TypeInfo("ReifiedGNode", uuid(), (! ::mozart::MemWord::requiresExternalMemory<class mozart::GlobalNode *>()), false, false, sbValue, 0) {}
+  TypeInfoOf() : TypeInfo("ReifiedGNode", uuid(), (! ::mozart::MemWord::requiresExternalMemory<mozart::GlobalNode *>()), false, false, sbValue, 0) {}
 
   static const TypeInfoOf<ReifiedGNode>* const instance() {
     return &RawType<ReifiedGNode>::rawType;
@@ -38,8 +38,8 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::GlobalNode * value();
+  mozart::GlobalNode * value();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 };

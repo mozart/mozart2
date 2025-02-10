@@ -34,11 +34,11 @@ size_t TypedRichNode<Arity>::getArraySize() {
   return _self.access<Arity>().getArraySize();
 }
 
-StaticArray<class mozart::StableNode> TypedRichNode<Arity>::getElementsArray() {
+StaticArray<mozart::StableNode> TypedRichNode<Arity>::getElementsArray() {
   return _self.access<Arity>().getElementsArray();
 }
 
-class mozart::StableNode& TypedRichNode<Arity>::getElements(size_t i) {
+mozart::StableNode& TypedRichNode<Arity>::getElements(size_t i) {
   return _self.access<Arity>().getElements(i);
 }
 
@@ -48,7 +48,7 @@ size_t  TypedRichNode<Arity>::getArraySizeImpl() {
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<Arity>::getLabel() {
+mozart::StableNode *  TypedRichNode<Arity>::getLabel() {
   return _self.access<Arity>().getLabel();
 }
 
@@ -58,26 +58,26 @@ size_t  TypedRichNode<Arity>::getWidth() {
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<Arity>::getElement(size_t index) {
+mozart::StableNode *  TypedRichNode<Arity>::getElement(size_t index) {
   return _self.access<Arity>().getElement(index);
 }
 
 inline
-bool  TypedRichNode<Arity>::equals(VM vm, class mozart::RichNode right, class mozart::WalkStack & stack) {
+bool  TypedRichNode<Arity>::equals(mozart::VM vm, mozart::RichNode right, mozart::WalkStack & stack) {
   return _self.access<Arity>().equals(vm, right, stack);
 }
 
 inline
-bool  TypedRichNode<Arity>::lookupFeature(VM vm, class mozart::RichNode feature, size_t & offset) {
+bool  TypedRichNode<Arity>::lookupFeature(mozart::VM vm, mozart::RichNode feature, size_t & offset) {
   return _self.access<Arity>().lookupFeature(vm, feature, offset);
 }
 
 inline
-void  TypedRichNode<Arity>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Arity>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Arity>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Arity>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<Arity>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<Arity>().serialize(vm, se);
 }

@@ -4,7 +4,7 @@ public:
   AtomLike(UnstableNode& self) : _self(self) {}
   AtomLike(StableNode& self) : _self(self) {}
 
-  bool isAtom(VM vm) {
+  bool isAtom(mozart::VM vm) {
     if (_self.is<Atom>()) {
       return _self.as<Atom>().isAtom(vm);
     } else if (_self.isTransient()) {

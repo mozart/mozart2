@@ -48,59 +48,59 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::Space * home();
+  mozart::Space * home();
 
   inline
-  bool isLiteral(VM vm);
+  bool isLiteral(mozart::VM vm);
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool isRecord(VM vm);
+  bool isRecord(mozart::VM vm);
 
   inline
-  bool isTuple(VM vm);
+  bool isTuple(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode label(VM vm);
+  mozart::UnstableNode label(mozart::VM vm);
 
   inline
-  size_t width(VM vm);
+  size_t width(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode arityList(VM vm);
+  mozart::UnstableNode arityList(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode clone(VM vm);
+  mozart::UnstableNode clone(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode waitOr(VM vm);
+  mozart::UnstableNode waitOr(mozart::VM vm);
 
   inline
-  bool testRecord(VM vm, class mozart::RichNode arity);
+  bool testRecord(mozart::VM vm, mozart::RichNode arity);
 
   inline
-  bool testTuple(VM vm, class mozart::RichNode label, size_t width);
+  bool testTuple(mozart::VM vm, mozart::RichNode label, size_t width);
 
   inline
-  bool testLabel(VM vm, class mozart::RichNode label);
+  bool testLabel(mozart::VM vm, mozart::RichNode label);
 
   inline
-  const struct mozart::UUID & getUUID();
+  const mozart::UUID & getUUID();
 
   inline
-  int compareFeatures(VM vm, class mozart::RichNode right);
+  int compareFeatures(mozart::VM vm, mozart::RichNode right);
 
   inline
-  bool isName(VM vm);
+  bool isName(mozart::VM vm);
 
   inline
-  class mozart::GlobalNode * globalize(VM vm);
+  mozart::GlobalNode * globalize(mozart::VM vm);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

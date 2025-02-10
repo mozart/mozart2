@@ -5,7 +5,7 @@ class TypeInfoOf<Atom>: public TypeInfo {
     return Atom::uuid;
   }
 public:
-  TypeInfoOf() : TypeInfo("Atom", uuid(), (! ::mozart::MemWord::requiresExternalMemory<atom_t>()), false, true, sbValue, 0) {}
+  TypeInfoOf() : TypeInfo("Atom", uuid(), (! ::mozart::MemWord::requiresExternalMemory<mozart::atom_t>()), false, true, sbValue, 0) {}
 
   static const TypeInfoOf<Atom>* const instance() {
     return &RawType<Atom>::rawType;
@@ -45,62 +45,62 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  bool isLiteral(VM vm);
+  bool isLiteral(mozart::VM vm);
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool isRecord(VM vm);
+  bool isRecord(mozart::VM vm);
 
   inline
-  bool isTuple(VM vm);
+  bool isTuple(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode label(VM vm);
+  mozart::UnstableNode label(mozart::VM vm);
 
   inline
-  size_t width(VM vm);
+  size_t width(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode arityList(VM vm);
+  mozart::UnstableNode arityList(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode clone(VM vm);
+  mozart::UnstableNode clone(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode waitOr(VM vm);
+  mozart::UnstableNode waitOr(mozart::VM vm);
 
   inline
-  bool testRecord(VM vm, class mozart::RichNode arity);
+  bool testRecord(mozart::VM vm, mozart::RichNode arity);
 
   inline
-  bool testTuple(VM vm, class mozart::RichNode label, size_t width);
+  bool testTuple(mozart::VM vm, mozart::RichNode label, size_t width);
 
   inline
-  bool testLabel(VM vm, class mozart::RichNode label);
+  bool testLabel(mozart::VM vm, mozart::RichNode label);
 
   inline
-  atom_t value();
+  mozart::atom_t value();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  int compareFeatures(VM vm, class mozart::RichNode right);
+  int compareFeatures(mozart::VM vm, mozart::RichNode right);
 
   inline
-  atom_t getPrintName(VM vm);
+  mozart::atom_t getPrintName(mozart::VM vm);
 
   inline
-  bool isAtom(VM vm);
+  bool isAtom(mozart::VM vm);
 
   inline
-  int compare(VM vm, class mozart::RichNode right);
+  int compare(mozart::VM vm, mozart::RichNode right);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

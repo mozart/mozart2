@@ -45,131 +45,131 @@ public:
   double value();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  int compare(VM vm, class mozart::RichNode right);
+  int compare(mozart::VM vm, mozart::RichNode right);
 
   inline
-  bool isNumber(VM vm);
+  bool isNumber(mozart::VM vm);
 
   inline
-  bool isInt(VM vm);
+  bool isInt(mozart::VM vm);
 
   inline
-  bool isFloat(VM vm);
+  bool isFloat(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode opposite(VM vm);
+  mozart::UnstableNode opposite(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode add(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode add(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode add(VM vm, nativeint right);
+  mozart::UnstableNode add(mozart::VM vm, mozart::nativeint right);
 
   inline
-  class mozart::UnstableNode addValue(VM vm, double b);
+  mozart::UnstableNode addValue(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode subtract(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode subtract(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode subtractValue(VM vm, double b);
+  mozart::UnstableNode subtractValue(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode multiply(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode multiply(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode multiplyValue(VM vm, double b);
+  mozart::UnstableNode multiplyValue(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode divide(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode divide(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode divideValue(VM vm, double b);
+  mozart::UnstableNode divideValue(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode fmod(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode fmod(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode fmodValue(VM vm, double b);
+  mozart::UnstableNode fmodValue(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode div(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode div(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode mod(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode mod(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode pow(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode pow(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode powValue(VM vm, double b);
+  mozart::UnstableNode powValue(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode abs(VM vm);
+  mozart::UnstableNode abs(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode acos(VM vm);
+  mozart::UnstableNode acos(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode acosh(VM vm);
+  mozart::UnstableNode acosh(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode asin(VM vm);
+  mozart::UnstableNode asin(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode asinh(VM vm);
+  mozart::UnstableNode asinh(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode atan(VM vm);
+  mozart::UnstableNode atan(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode atanh(VM vm);
+  mozart::UnstableNode atanh(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode atan2(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode atan2(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode atan2Value(VM vm, double b);
+  mozart::UnstableNode atan2Value(mozart::VM vm, double b);
 
   inline
-  class mozart::UnstableNode ceil(VM vm);
+  mozart::UnstableNode ceil(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode cos(VM vm);
+  mozart::UnstableNode cos(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode cosh(VM vm);
+  mozart::UnstableNode cosh(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode exp(VM vm);
+  mozart::UnstableNode exp(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode floor(VM vm);
+  mozart::UnstableNode floor(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode log(VM vm);
+  mozart::UnstableNode log(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode round(VM vm);
+  mozart::UnstableNode round(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode sin(VM vm);
+  mozart::UnstableNode sin(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode sinh(VM vm);
+  mozart::UnstableNode sinh(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode sqrt(VM vm);
+  mozart::UnstableNode sqrt(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode tan(VM vm);
+  mozart::UnstableNode tan(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode tanh(VM vm);
+  mozart::UnstableNode tanh(mozart::VM vm);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

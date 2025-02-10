@@ -5,7 +5,7 @@ class TypeInfoOf<VMPort>: public TypeInfo {
     return UUID();
   }
 public:
-  TypeInfoOf() : TypeInfo("VMPort", uuid(), (! ::mozart::MemWord::requiresExternalMemory<VMIdentifier>()), false, false, sbValue, 0) {}
+  TypeInfoOf() : TypeInfo("VMPort", uuid(), (! ::mozart::MemWord::requiresExternalMemory<mozart::VMIdentifier>()), false, false, sbValue, 0) {}
 
   static const TypeInfoOf<VMPort>* const instance() {
     return &RawType<VMPort>::rawType;
@@ -42,20 +42,20 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  VMIdentifier value();
+  mozart::VMIdentifier value();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  bool isPort(VM vm);
+  bool isPort(mozart::VM vm);
 
   inline
-  void send(VM vm, class mozart::RichNode value);
+  void send(mozart::VM vm, mozart::RichNode value);
 
   inline
-  class mozart::UnstableNode sendReceive(VM vm, class mozart::RichNode value);
+  mozart::UnstableNode sendReceive(mozart::VM vm, mozart::RichNode value);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

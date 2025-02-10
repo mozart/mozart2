@@ -4,7 +4,7 @@ public:
   BindableReadOnly(UnstableNode& self) : _self(self) {}
   BindableReadOnly(StableNode& self) : _self(self) {}
 
-  void bindReadOnly(VM vm, class mozart::RichNode src) {
+  void bindReadOnly(mozart::VM vm, mozart::RichNode src) {
     if (_self.is<ReadOnlyVariable>()) {
       return _self.as<ReadOnlyVariable>().bindReadOnly(vm, src);
     } else if (_self.is<ReflectiveVariable>()) {

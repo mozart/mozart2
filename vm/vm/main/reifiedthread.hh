@@ -66,6 +66,24 @@ void ReifiedThread::injectException(VM vm, RichNode exception) {
   _runnable->injectException(exception.getStableRef(vm));
 }
 
+void ReifiedThread::suspend(VM vm) {
+  _runnable->suspend();
+}
+
+void ReifiedThread::resume(VM vm) {
+  _runnable->resume();
+}
+
+void ReifiedThread::preempt(VM vm) {
+  if (_runnable == vm->getCurrentThread()) {
+    vm->requestPreempt();
+  }
+}
+
+bool ReifiedThread::isSuspended(VM vm) {
+  return !vm->getThreadPool().isScheduled(_runnable);
+}
+
 }
 
 #endif // MOZART_GENERATOR

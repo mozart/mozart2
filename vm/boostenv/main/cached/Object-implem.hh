@@ -37,16 +37,16 @@ size_t TypedRichNode<Object>::getArraySize() {
   return _self.access<Object>().getArraySize();
 }
 
-StaticArray<class mozart::UnstableNode> TypedRichNode<Object>::getElementsArray() {
+StaticArray<mozart::UnstableNode> TypedRichNode<Object>::getElementsArray() {
   return _self.access<Object>().getElementsArray();
 }
 
-class mozart::UnstableNode& TypedRichNode<Object>::getElements(size_t i) {
+mozart::UnstableNode& TypedRichNode<Object>::getElements(size_t i) {
   return _self.access<Object>().getElements(i);
 }
 
 inline
-class mozart::Space *  TypedRichNode<Object>::home() {
+mozart::Space *  TypedRichNode<Object>::home() {
   return _self.access<Object>().home();
 }
 
@@ -56,76 +56,76 @@ size_t  TypedRichNode<Object>::getArraySizeImpl() {
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<Object>::getFeaturesRecord() {
+mozart::StableNode *  TypedRichNode<Object>::getFeaturesRecord() {
   return _self.access<Object>().getFeaturesRecord();
 }
 
 inline
-bool  TypedRichNode<Object>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Object>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Object>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Object>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Object>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Object>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Object>::isChunk(VM vm) {
+bool  TypedRichNode<Object>::isChunk(mozart::VM vm) {
   return _self.access<Object>().isChunk(vm);
 }
 
 inline
-bool  TypedRichNode<Object>::isObject(VM vm) {
+bool  TypedRichNode<Object>::isObject(mozart::VM vm) {
   return _self.access<Object>().isObject(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Object>::getClass(VM vm) {
+mozart::UnstableNode  TypedRichNode<Object>::getClass(mozart::VM vm) {
   return _self.access<Object>().getClass(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Object>::attrGet(VM vm, class mozart::RichNode attribute) {
+mozart::UnstableNode  TypedRichNode<Object>::attrGet(mozart::VM vm, mozart::RichNode attribute) {
   return _self.access<Object>().attrGet(_self, vm, attribute);
 }
 
 inline
-void  TypedRichNode<Object>::attrPut(VM vm, class mozart::RichNode attribute, class mozart::RichNode value) {
+void  TypedRichNode<Object>::attrPut(mozart::VM vm, mozart::RichNode attribute, mozart::RichNode value) {
   _self.access<Object>().attrPut(_self, vm, attribute, value);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Object>::attrExchange(VM vm, class mozart::RichNode attribute, class mozart::RichNode newValue) {
+mozart::UnstableNode  TypedRichNode<Object>::attrExchange(mozart::VM vm, mozart::RichNode attribute, mozart::RichNode newValue) {
   return _self.access<Object>().attrExchange(_self, vm, attribute, newValue);
 }
 
 inline
-bool  TypedRichNode<Object>::isCallable(VM vm) {
+bool  TypedRichNode<Object>::isCallable(mozart::VM vm) {
   return _self.access<Object>().isCallable(vm);
 }
 
 inline
-bool  TypedRichNode<Object>::isProcedure(VM vm) {
+bool  TypedRichNode<Object>::isProcedure(mozart::VM vm) {
   return _self.access<Object>().isProcedure(vm);
 }
 
 inline
-size_t  TypedRichNode<Object>::procedureArity(VM vm) {
+size_t  TypedRichNode<Object>::procedureArity(mozart::VM vm) {
   return _self.access<Object>().procedureArity(_self, vm);
 }
 
 inline
-void  TypedRichNode<Object>::getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks) {
+void  TypedRichNode<Object>::getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks) {
   _self.access<Object>().getCallInfo(_self, vm, arity, start, Xcount, Gs, Ks);
 }
 
 inline
-void  TypedRichNode<Object>::getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData) {
+void  TypedRichNode<Object>::getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData) {
   _self.access<Object>().getDebugInfo(vm, printName, debugData);
 }
 
 inline
-void  TypedRichNode<Object>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Object>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Object>().printReprToStream(vm, out, depth, width);
 }

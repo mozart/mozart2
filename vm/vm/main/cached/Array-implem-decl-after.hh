@@ -45,19 +45,19 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::UnstableNode> getElementsArray();
+  StaticArray<mozart::UnstableNode> getElementsArray();
 
   inline
-  class mozart::UnstableNode& getElements(size_t i);
+  mozart::UnstableNode& getElements(size_t i);
 
   inline
-  class mozart::Space * home();
+  mozart::Space * home();
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
   size_t getArraySizeImpl();
@@ -66,35 +66,35 @@ public:
   size_t getWidth();
 
   inline
-  nativeint getLow();
+  mozart::nativeint getLow();
 
   inline
-  nativeint getHigh();
+  mozart::nativeint getHigh();
 
   inline
-  void dotAssign(VM vm, class mozart::RichNode feature, class mozart::RichNode newValue);
+  void dotAssign(mozart::VM vm, mozart::RichNode feature, mozart::RichNode newValue);
 
   inline
-  class mozart::UnstableNode dotExchange(VM vm, class mozart::RichNode feature, class mozart::RichNode newValue);
+  mozart::UnstableNode dotExchange(mozart::VM vm, mozart::RichNode feature, mozart::RichNode newValue);
 
   inline
-  bool isArray(VM vm);
+  bool isArray(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode arrayLow(VM vm);
+  mozart::UnstableNode arrayLow(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode arrayHigh(VM vm);
+  mozart::UnstableNode arrayHigh(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode arrayGet(VM vm, class mozart::RichNode index);
+  mozart::UnstableNode arrayGet(mozart::VM vm, mozart::RichNode index);
 
   inline
-  void arrayPut(VM vm, class mozart::RichNode index, class mozart::RichNode value);
+  void arrayPut(mozart::VM vm, mozart::RichNode index, mozart::RichNode value);
 
   inline
-  class mozart::UnstableNode arrayExchange(VM vm, class mozart::RichNode index, class mozart::RichNode newValue);
+  mozart::UnstableNode arrayExchange(mozart::VM vm, mozart::RichNode index, mozart::RichNode newValue);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

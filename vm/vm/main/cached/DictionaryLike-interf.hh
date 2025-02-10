@@ -4,7 +4,7 @@ public:
   DictionaryLike(UnstableNode& self) : _self(self) {}
   DictionaryLike(StableNode& self) : _self(self) {}
 
-  bool isDictionary(VM vm) {
+  bool isDictionary(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().isDictionary(vm);
     } else if (_self.isTransient()) {
@@ -20,7 +20,7 @@ public:
     }
   }
 
-  bool dictIsEmpty(VM vm) {
+  bool dictIsEmpty(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictIsEmpty(vm);
     } else if (_self.isTransient()) {
@@ -36,7 +36,7 @@ public:
     }
   }
 
-  bool dictMember(VM vm, class mozart::RichNode feature) {
+  bool dictMember(mozart::VM vm, mozart::RichNode feature) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictMember(vm, feature);
     } else if (_self.isTransient()) {
@@ -52,7 +52,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictGet(VM vm, class mozart::RichNode feature) {
+  mozart::UnstableNode dictGet(mozart::VM vm, mozart::RichNode feature) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictGet(vm, feature);
     } else if (_self.isTransient()) {
@@ -60,7 +60,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictGet", "dictGet", feature, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -68,7 +68,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictCondGet(VM vm, class mozart::RichNode feature, class mozart::RichNode defaultValue) {
+  mozart::UnstableNode dictCondGet(mozart::VM vm, mozart::RichNode feature, mozart::RichNode defaultValue) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictCondGet(vm, feature, defaultValue);
     } else if (_self.isTransient()) {
@@ -76,7 +76,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictCondGet", "dictCondGet", feature, defaultValue, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -84,7 +84,7 @@ public:
     }
   }
 
-  void dictPut(VM vm, class mozart::RichNode feature, class mozart::RichNode newValue) {
+  void dictPut(mozart::VM vm, mozart::RichNode feature, mozart::RichNode newValue) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictPut(vm, feature, newValue);
     } else if (_self.isTransient()) {
@@ -99,7 +99,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictExchange(VM vm, class mozart::RichNode feature, class mozart::RichNode newValue) {
+  mozart::UnstableNode dictExchange(mozart::VM vm, mozart::RichNode feature, mozart::RichNode newValue) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictExchange(vm, feature, newValue);
     } else if (_self.isTransient()) {
@@ -107,7 +107,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictExchange", "dictExchange", feature, newValue, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -115,7 +115,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictCondExchange(VM vm, class mozart::RichNode feature, class mozart::RichNode defaultValue, class mozart::RichNode newValue) {
+  mozart::UnstableNode dictCondExchange(mozart::VM vm, mozart::RichNode feature, mozart::RichNode defaultValue, mozart::RichNode newValue) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictCondExchange(vm, feature, defaultValue, newValue);
     } else if (_self.isTransient()) {
@@ -123,7 +123,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictCondExchange", "dictCondExchange", feature, defaultValue, newValue, ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -131,7 +131,7 @@ public:
     }
   }
 
-  void dictRemove(VM vm, class mozart::RichNode feature) {
+  void dictRemove(mozart::VM vm, mozart::RichNode feature) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictRemove(vm, feature);
     } else if (_self.isTransient()) {
@@ -146,7 +146,7 @@ public:
     }
   }
 
-  void dictRemoveAll(VM vm) {
+  void dictRemoveAll(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictRemoveAll(vm);
     } else if (_self.isTransient()) {
@@ -161,7 +161,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictKeys(VM vm) {
+  mozart::UnstableNode dictKeys(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictKeys(vm);
     } else if (_self.isTransient()) {
@@ -169,7 +169,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictKeys", "dictKeys", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -177,7 +177,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictEntries(VM vm) {
+  mozart::UnstableNode dictEntries(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictEntries(vm);
     } else if (_self.isTransient()) {
@@ -185,7 +185,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictEntries", "dictEntries", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -193,7 +193,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictItems(VM vm) {
+  mozart::UnstableNode dictItems(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictItems(vm);
     } else if (_self.isTransient()) {
@@ -201,7 +201,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictItems", "dictItems", ::mozart::ozcalls::out(_result)))
           return _result;
       }
@@ -209,7 +209,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode dictClone(VM vm) {
+  mozart::UnstableNode dictClone(mozart::VM vm) {
     if (_self.is<Dictionary>()) {
       return _self.as<Dictionary>().dictClone(vm);
     } else if (_self.isTransient()) {
@@ -217,7 +217,7 @@ public:
       throw std::exception(); // not reachable
     } else {
       if (_self.is< ::mozart::ReflectiveEntity>()) {
-        class mozart::UnstableNode _result;
+        mozart::UnstableNode _result;
         if (_self.as< ::mozart::ReflectiveEntity>().reflectiveCall(vm, "$intf$::DictionaryLike::dictClone", "dictClone", ::mozart::ozcalls::out(_result)))
           return _result;
       }

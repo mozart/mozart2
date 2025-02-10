@@ -6,9 +6,7 @@ void TypeInfoOf<ReifiedThread>::gCollect(GC gc, RichNode from, StableNode& to) c
 
 void TypeInfoOf<ReifiedThread>::gCollect(GC gc, RichNode from, UnstableNode& to) const {
   assert(from.type() == type());
-  StableNode* stable = new (gc->vm) StableNode;
-  to.make<Reference>(gc->vm, stable);
-  stable->make<ReifiedThread>(gc->vm, gc, from.access<ReifiedThread>());
+  to.make<ReifiedThread>(gc->vm, gc, from.access<ReifiedThread>());
 }
 
 void TypeInfoOf<ReifiedThread>::sClone(SC sc, RichNode from, StableNode& to) const {
@@ -18,47 +16,65 @@ void TypeInfoOf<ReifiedThread>::sClone(SC sc, RichNode from, StableNode& to) con
 
 void TypeInfoOf<ReifiedThread>::sClone(SC sc, RichNode from, UnstableNode& to) const {
   assert(from.type() == type());
-  StableNode* stable = new (sc->vm) StableNode;
-to.make<Reference>(sc->vm, stable);
-stable->make<ReifiedThread>(sc->vm, sc, from.access<ReifiedThread>());
+  to.make<ReifiedThread>(sc->vm, sc, from.access<ReifiedThread>());
 }
 
 inline
-bool  TypedRichNode<ReifiedThread>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<ReifiedThread>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<ReifiedThread>().equals(vm, right);
 }
 
 inline
-class mozart::Runnable *  TypedRichNode<ReifiedThread>::value() {
+mozart::Runnable *  TypedRichNode<ReifiedThread>::value() {
   return _self.access<ReifiedThread>().value();
 }
 
 inline
-void  TypedRichNode<ReifiedThread>::wakeUp(VM vm) {
+void  TypedRichNode<ReifiedThread>::wakeUp(mozart::VM vm) {
   _self.access<ReifiedThread>().wakeUp(vm);
 }
 
 inline
-bool  TypedRichNode<ReifiedThread>::shouldWakeUpUnderSpace(VM vm, class mozart::Space * space) {
+bool  TypedRichNode<ReifiedThread>::shouldWakeUpUnderSpace(mozart::VM vm, mozart::Space * space) {
   return _self.access<ReifiedThread>().shouldWakeUpUnderSpace(vm, space);
 }
 
 inline
-bool  TypedRichNode<ReifiedThread>::isThread(VM vm) {
+bool  TypedRichNode<ReifiedThread>::isThread(mozart::VM vm) {
   return _self.access<ReifiedThread>().isThread(vm);
 }
 
 inline
-enum mozart::ThreadPriority  TypedRichNode<ReifiedThread>::getThreadPriority(VM vm) {
+mozart::ThreadPriority  TypedRichNode<ReifiedThread>::getThreadPriority(mozart::VM vm) {
   return _self.access<ReifiedThread>().getThreadPriority(vm);
 }
 
 inline
-void  TypedRichNode<ReifiedThread>::setThreadPriority(VM vm, enum mozart::ThreadPriority priority) {
+void  TypedRichNode<ReifiedThread>::setThreadPriority(mozart::VM vm, mozart::ThreadPriority priority) {
   _self.access<ReifiedThread>().setThreadPriority(vm, priority);
 }
 
 inline
-void  TypedRichNode<ReifiedThread>::injectException(VM vm, class mozart::RichNode exception) {
+void  TypedRichNode<ReifiedThread>::injectException(mozart::VM vm, mozart::RichNode exception) {
   _self.access<ReifiedThread>().injectException(vm, exception);
+}
+
+inline
+void  TypedRichNode<ReifiedThread>::suspend(mozart::VM vm) {
+  _self.access<ReifiedThread>().suspend(vm);
+}
+
+inline
+void  TypedRichNode<ReifiedThread>::resume(mozart::VM vm) {
+  _self.access<ReifiedThread>().resume(vm);
+}
+
+inline
+void  TypedRichNode<ReifiedThread>::preempt(mozart::VM vm) {
+  _self.access<ReifiedThread>().preempt(vm);
+}
+
+inline
+bool  TypedRichNode<ReifiedThread>::isSuspended(mozart::VM vm) {
+  return _self.access<ReifiedThread>().isSuspended(vm);
 }

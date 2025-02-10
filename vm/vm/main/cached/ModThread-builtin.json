@@ -105,6 +105,55 @@
           "kind": "Out"
         }
       ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::Suspend",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::Suspend::get",
+      "name": "suspend",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::Resume",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::Resume::get",
+      "name": "resume",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::IsSuspended",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::IsSuspended::get",
+      "name": "isSuspended",
+      "inlineable": false,
+      "params": [
+        {
+          "name": "thread",
+          "kind": "In"
+        },
+        {
+          "name": "result",
+          "kind": "Out"
+        }
+      ]
+    },
+    {
+      "fullCppName": "mozart::builtins::ModThread::Preempt",
+      "fullCppGetter": "mozart::builtins::biref::ModThread::Preempt::get",
+      "name": "preempt",
+      "inlineable": false,
+      "params": [
+
+      ]
     }
   ]
 }

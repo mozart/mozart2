@@ -3,5 +3,5 @@ class GRedToStable;
 template <>
 class Storage<GRedToStable> {
 public:
-  typedef class mozart::StableNode * Type;
+  typedef mozart::StableNode * Type;
 };

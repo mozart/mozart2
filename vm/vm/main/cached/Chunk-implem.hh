@@ -17,9 +17,7 @@ void TypeInfoOf<Chunk>::gCollect(GC gc, RichNode from, StableNode& to) const {
 
 void TypeInfoOf<Chunk>::gCollect(GC gc, RichNode from, UnstableNode& to) const {
   assert(from.type() == type());
-  StableNode* stable = new (gc->vm) StableNode;
-  to.make<Reference>(gc->vm, stable);
-  stable->make<Chunk>(gc->vm, gc, from.access<Chunk>());
+  to.make<Chunk>(gc->vm, gc, from.access<Chunk>());
 }
 
 void TypeInfoOf<Chunk>::sClone(SC sc, RichNode from, StableNode& to) const {
@@ -33,31 +31,31 @@ void TypeInfoOf<Chunk>::sClone(SC sc, RichNode from, UnstableNode& to) const {
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<Chunk>::getUnderlying() {
+mozart::StableNode *  TypedRichNode<Chunk>::getUnderlying() {
   return _self.access<Chunk>().getUnderlying();
 }
 
 inline
-bool  TypedRichNode<Chunk>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Chunk>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Chunk>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Chunk>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Chunk>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Chunk>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Chunk>::isChunk(VM vm) {
+bool  TypedRichNode<Chunk>::isChunk(mozart::VM vm) {
   return _self.access<Chunk>().isChunk(vm);
 }
 
 inline
-void  TypedRichNode<Chunk>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Chunk>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Chunk>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Chunk>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<Chunk>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<Chunk>().serialize(vm, se);
 }

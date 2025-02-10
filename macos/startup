@@ -21,7 +21,7 @@ fi
 
 if [ -z "$OPIEMACS" ];
 then
-  osascript -e "tell application \"Finder\"" -e "display dialog \"No emacs application found. Visit:\n htpp://http://aquamacs.org/ or\n http://emacsformacosx.com/ \nand install it in the Applications folder.\"" -e "end tell"
+  osascript -e "tell application \"Finder\"" -e "display dialog \"No emacs application found. Visit:\n http://aquamacs.org/ or\n http://emacsformacosx.com/ \nand install it in the Applications folder.\"" -e "end tell"
 else
   $OPIEMACS --eval '(setq load-path (cons "'$OZHOME'/share/mozart/elisp" load-path))' -l oz.elc -f run-oz $2 &
 fi

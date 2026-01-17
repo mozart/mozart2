@@ -44,10 +44,10 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::StableNode> getElementsArray();
+  StaticArray<mozart::StableNode> getElementsArray();
 
   inline
-  class mozart::StableNode& getElements(size_t i);
+  mozart::StableNode& getElements(size_t i);
 
   inline
   size_t getArraySizeImpl();
@@ -56,14 +56,14 @@ public:
   size_t getCount();
 
   inline
-  class mozart::StableNode * getElement(size_t index);
+  mozart::StableNode * getElement(size_t index);
 
   inline
-  bool equals(VM vm, class mozart::RichNode right, class mozart::WalkStack & stack);
+  bool equals(mozart::VM vm, mozart::RichNode right, mozart::WalkStack & stack);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 };

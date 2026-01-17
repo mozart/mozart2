@@ -1390,8 +1390,12 @@ public:
     instanceSetPriority.setModuleName("Thread");
     instanceInjectException.setModuleName("Thread");
     instanceState.setModuleName("Thread");
+    instanceSuspend.setModuleName("Thread");
+    instanceResume.setModuleName("Thread");
+    instanceIsSuspended.setModuleName("Thread");
+    instancePreempt.setModuleName("Thread");
 
-    UnstableField fields[7];
+    UnstableField fields[11];
     fields[0].feature = build(vm, "create");
     fields[0].value = build(vm, instanceCreate);
     fields[1].feature = build(vm, "is");
@@ -1406,8 +1410,16 @@ public:
     fields[5].value = build(vm, instanceInjectException);
     fields[6].feature = build(vm, "state");
     fields[6].value = build(vm, instanceState);
+    fields[7].feature = build(vm, "suspend");
+    fields[7].value = build(vm, instanceSuspend);
+    fields[8].feature = build(vm, "resume");
+    fields[8].value = build(vm, instanceResume);
+    fields[9].feature = build(vm, "isSuspended");
+    fields[9].value = build(vm, instanceIsSuspended);
+    fields[10].feature = build(vm, "preempt");
+    fields[10].value = build(vm, instancePreempt);
     UnstableNode label = build(vm, "export");
-    UnstableNode module = buildRecordDynamic(vm, label, 7, fields);
+    UnstableNode module = buildRecordDynamic(vm, label, 11, fields);
     initModule(vm, std::move(module));
   }
 private:
@@ -1418,6 +1430,10 @@ private:
   mozart::builtins::ModThread::SetPriority instanceSetPriority;
   mozart::builtins::ModThread::InjectException instanceInjectException;
   mozart::builtins::ModThread::State instanceState;
+  mozart::builtins::ModThread::Suspend instanceSuspend;
+  mozart::builtins::ModThread::Resume instanceResume;
+  mozart::builtins::ModThread::IsSuspended instanceIsSuspended;
+  mozart::builtins::ModThread::Preempt instancePreempt;
 };
 void registerBuiltinModThread(VM vm) {
   auto module = std::make_shared<ModThread>(vm);

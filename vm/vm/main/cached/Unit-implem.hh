@@ -36,96 +36,96 @@ int TypeInfoOf<Unit>::compareFeatures(VM vm, RichNode lhs, RichNode rhs) const {
 
 
 inline
-bool  TypedRichNode<Unit>::isLiteral(VM vm) {
+bool  TypedRichNode<Unit>::isLiteral(mozart::VM vm) {
   return _self.access<Unit>().isLiteral(vm);
 }
 
 inline
-bool  TypedRichNode<Unit>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Unit>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Unit>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Unit>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Unit>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Unit>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Unit>::isRecord(VM vm) {
+bool  TypedRichNode<Unit>::isRecord(mozart::VM vm) {
   return _self.access<Unit>().isRecord(vm);
 }
 
 inline
-bool  TypedRichNode<Unit>::isTuple(VM vm) {
+bool  TypedRichNode<Unit>::isTuple(mozart::VM vm) {
   return _self.access<Unit>().isTuple(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Unit>::label(VM vm) {
+mozart::UnstableNode  TypedRichNode<Unit>::label(mozart::VM vm) {
   return _self.access<Unit>().label(_self, vm);
 }
 
 inline
-size_t  TypedRichNode<Unit>::width(VM vm) {
+size_t  TypedRichNode<Unit>::width(mozart::VM vm) {
   return _self.access<Unit>().width(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Unit>::arityList(VM vm) {
+mozart::UnstableNode  TypedRichNode<Unit>::arityList(mozart::VM vm) {
   return _self.access<Unit>().arityList(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Unit>::clone(VM vm) {
+mozart::UnstableNode  TypedRichNode<Unit>::clone(mozart::VM vm) {
   return _self.access<Unit>().clone(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Unit>::waitOr(VM vm) {
+mozart::UnstableNode  TypedRichNode<Unit>::waitOr(mozart::VM vm) {
   return _self.access<Unit>().waitOr(vm);
 }
 
 inline
-bool  TypedRichNode<Unit>::testRecord(VM vm, class mozart::RichNode arity) {
+bool  TypedRichNode<Unit>::testRecord(mozart::VM vm, mozart::RichNode arity) {
   return _self.access<Unit>().testRecord(vm, arity);
 }
 
 inline
-bool  TypedRichNode<Unit>::testTuple(VM vm, class mozart::RichNode label, size_t width) {
+bool  TypedRichNode<Unit>::testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
   return _self.access<Unit>().testTuple(_self, vm, label, width);
 }
 
 inline
-bool  TypedRichNode<Unit>::testLabel(VM vm, class mozart::RichNode label) {
+bool  TypedRichNode<Unit>::testLabel(mozart::VM vm, mozart::RichNode label) {
   return _self.access<Unit>().testLabel(_self, vm, label);
 }
 
 inline
-bool  TypedRichNode<Unit>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<Unit>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<Unit>().equals(vm, right);
 }
 
 inline
-int  TypedRichNode<Unit>::compareFeatures(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<Unit>::compareFeatures(mozart::VM vm, mozart::RichNode right) {
   return _self.access<Unit>().compareFeatures(vm, right);
 }
 
 inline
-atom_t  TypedRichNode<Unit>::getPrintName(VM vm) {
+mozart::atom_t  TypedRichNode<Unit>::getPrintName(mozart::VM vm) {
   return _self.access<Unit>().getPrintName(vm);
 }
 
 inline
-bool  TypedRichNode<Unit>::isName(VM vm) {
+bool  TypedRichNode<Unit>::isName(mozart::VM vm) {
   return _self.access<Unit>().isName(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Unit>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<Unit>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<Unit>().serialize(vm, se);
 }
 
 inline
-void  TypedRichNode<Unit>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Unit>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Unit>().printReprToStream(vm, out, depth, width);
 }

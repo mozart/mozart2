@@ -4,7 +4,7 @@ public:
   Callable(UnstableNode& self) : _self(self) {}
   Callable(StableNode& self) : _self(self) {}
 
-  bool isCallable(VM vm) {
+  bool isCallable(mozart::VM vm) {
     if (_self.is<Abstraction>()) {
       return _self.as<Abstraction>().isCallable(vm);
     } else if (_self.is<Object>()) {
@@ -19,7 +19,7 @@ public:
     }
   }
 
-  bool isProcedure(VM vm) {
+  bool isProcedure(mozart::VM vm) {
     if (_self.is<Abstraction>()) {
       return _self.as<Abstraction>().isProcedure(vm);
     } else if (_self.is<Object>()) {
@@ -34,7 +34,7 @@ public:
     }
   }
 
-  size_t procedureArity(VM vm) {
+  size_t procedureArity(mozart::VM vm) {
     if (_self.is<Abstraction>()) {
       return _self.as<Abstraction>().procedureArity(vm);
     } else if (_self.is<Object>()) {
@@ -49,7 +49,7 @@ public:
     }
   }
 
-  void getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks) {
+  void getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks) {
     if (_self.is<Abstraction>()) {
       return _self.as<Abstraction>().getCallInfo(vm, arity, start, Xcount, Gs, Ks);
     } else if (_self.is<Object>()) {
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  void getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData) {
+  void getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData) {
     if (_self.is<Abstraction>()) {
       return _self.as<Abstraction>().getDebugInfo(vm, printName, debugData);
     } else if (_self.is<Object>()) {

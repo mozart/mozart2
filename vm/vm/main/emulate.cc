@@ -510,6 +510,11 @@ void Thread::run() {
         case OpCallBuiltin0: {
           BuiltinCallable(KPC(1)).callBuiltin(vm);
           advancePC(1);
+
+          // Test for preemption, because Thread.preempt is a nullary builtin.
+          if (vm->testPreemption())
+            preempted = true;
+
           break;
         }
 

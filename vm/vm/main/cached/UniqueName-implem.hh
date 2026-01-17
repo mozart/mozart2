@@ -36,101 +36,101 @@ int TypeInfoOf<UniqueName>::compareFeatures(VM vm, RichNode lhs, RichNode rhs) c
 
 
 inline
-bool  TypedRichNode<UniqueName>::isLiteral(VM vm) {
+bool  TypedRichNode<UniqueName>::isLiteral(mozart::VM vm) {
   return _self.access<UniqueName>().isLiteral(vm);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<UniqueName>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<UniqueName>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<UniqueName>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<UniqueName>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::isRecord(VM vm) {
+bool  TypedRichNode<UniqueName>::isRecord(mozart::VM vm) {
   return _self.access<UniqueName>().isRecord(vm);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::isTuple(VM vm) {
+bool  TypedRichNode<UniqueName>::isTuple(mozart::VM vm) {
   return _self.access<UniqueName>().isTuple(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<UniqueName>::label(VM vm) {
+mozart::UnstableNode  TypedRichNode<UniqueName>::label(mozart::VM vm) {
   return _self.access<UniqueName>().label(_self, vm);
 }
 
 inline
-size_t  TypedRichNode<UniqueName>::width(VM vm) {
+size_t  TypedRichNode<UniqueName>::width(mozart::VM vm) {
   return _self.access<UniqueName>().width(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<UniqueName>::arityList(VM vm) {
+mozart::UnstableNode  TypedRichNode<UniqueName>::arityList(mozart::VM vm) {
   return _self.access<UniqueName>().arityList(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<UniqueName>::clone(VM vm) {
+mozart::UnstableNode  TypedRichNode<UniqueName>::clone(mozart::VM vm) {
   return _self.access<UniqueName>().clone(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<UniqueName>::waitOr(VM vm) {
+mozart::UnstableNode  TypedRichNode<UniqueName>::waitOr(mozart::VM vm) {
   return _self.access<UniqueName>().waitOr(vm);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::testRecord(VM vm, class mozart::RichNode arity) {
+bool  TypedRichNode<UniqueName>::testRecord(mozart::VM vm, mozart::RichNode arity) {
   return _self.access<UniqueName>().testRecord(vm, arity);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::testTuple(VM vm, class mozart::RichNode label, size_t width) {
+bool  TypedRichNode<UniqueName>::testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
   return _self.access<UniqueName>().testTuple(_self, vm, label, width);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::testLabel(VM vm, class mozart::RichNode label) {
+bool  TypedRichNode<UniqueName>::testLabel(mozart::VM vm, mozart::RichNode label) {
   return _self.access<UniqueName>().testLabel(_self, vm, label);
 }
 
 inline
-unique_name_t  TypedRichNode<UniqueName>::value() {
+mozart::unique_name_t  TypedRichNode<UniqueName>::value() {
   return _self.access<UniqueName>().value();
 }
 
 inline
-bool  TypedRichNode<UniqueName>::equals(VM vm, class mozart::RichNode right) {
+bool  TypedRichNode<UniqueName>::equals(mozart::VM vm, mozart::RichNode right) {
   return _self.access<UniqueName>().equals(vm, right);
 }
 
 inline
-int  TypedRichNode<UniqueName>::compareFeatures(VM vm, class mozart::RichNode right) {
+int  TypedRichNode<UniqueName>::compareFeatures(mozart::VM vm, mozart::RichNode right) {
   return _self.access<UniqueName>().compareFeatures(vm, right);
 }
 
 inline
-atom_t  TypedRichNode<UniqueName>::getPrintName(VM vm) {
+mozart::atom_t  TypedRichNode<UniqueName>::getPrintName(mozart::VM vm) {
   return _self.access<UniqueName>().getPrintName(vm);
 }
 
 inline
-bool  TypedRichNode<UniqueName>::isName(VM vm) {
+bool  TypedRichNode<UniqueName>::isName(mozart::VM vm) {
   return _self.access<UniqueName>().isName(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<UniqueName>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<UniqueName>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<UniqueName>().serialize(vm, se);
 }
 
 inline
-void  TypedRichNode<UniqueName>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<UniqueName>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<UniqueName>().printReprToStream(vm, out, depth, width);
 }

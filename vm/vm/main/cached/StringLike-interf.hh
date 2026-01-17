@@ -4,7 +4,7 @@ public:
   StringLike(UnstableNode& self) : _self(self) {}
   StringLike(StableNode& self) : _self(self) {}
 
-  bool isString(VM vm) {
+  bool isString(mozart::VM vm) {
     if (_self.is<String>()) {
       return _self.as<String>().isString(vm);
     } else if (_self.is<ByteString>()) {
@@ -17,7 +17,7 @@ public:
     }
   }
 
-  bool isByteString(VM vm) {
+  bool isByteString(mozart::VM vm) {
     if (_self.is<String>()) {
       return _self.as<String>().isByteString(vm);
     } else if (_self.is<ByteString>()) {
@@ -30,7 +30,7 @@ public:
     }
   }
 
-  LString<char> * stringGet(VM vm) {
+  LString<char> * stringGet(mozart::VM vm) {
     if (_self.is<String>()) {
       return _self.as<String>().stringGet(vm);
     } else if (_self.is<ByteString>()) {
@@ -43,7 +43,7 @@ public:
     }
   }
 
-  LString<unsigned char> * byteStringGet(VM vm) {
+  LString<unsigned char> * byteStringGet(mozart::VM vm) {
     if (_self.is<String>()) {
       return _self.as<String>().byteStringGet(vm);
     } else if (_self.is<ByteString>()) {
@@ -56,7 +56,7 @@ public:
     }
   }
 
-  nativeint stringCharAt(VM vm, class mozart::RichNode offset) {
+  mozart::nativeint stringCharAt(mozart::VM vm, mozart::RichNode offset) {
     if (_self.is<String>()) {
       return _self.as<String>().stringCharAt(vm, offset);
     } else if (_self.is<ByteString>()) {
@@ -69,7 +69,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode stringAppend(VM vm, class mozart::RichNode right) {
+  mozart::UnstableNode stringAppend(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<String>()) {
       return _self.as<String>().stringAppend(vm, right);
     } else if (_self.is<ByteString>()) {
@@ -82,7 +82,7 @@ public:
     }
   }
 
-  class mozart::UnstableNode stringSlice(VM vm, class mozart::RichNode from, class mozart::RichNode to) {
+  mozart::UnstableNode stringSlice(mozart::VM vm, mozart::RichNode from, mozart::RichNode to) {
     if (_self.is<String>()) {
       return _self.as<String>().stringSlice(vm, from, to);
     } else if (_self.is<ByteString>()) {
@@ -95,7 +95,7 @@ public:
     }
   }
 
-  void stringSearch(VM vm, class mozart::RichNode from, class mozart::RichNode needle, class mozart::UnstableNode & begin, class mozart::UnstableNode & end) {
+  void stringSearch(mozart::VM vm, mozart::RichNode from, mozart::RichNode needle, mozart::UnstableNode & begin, mozart::UnstableNode & end) {
     if (_self.is<String>()) {
       return _self.as<String>().stringSearch(vm, from, needle, begin, end);
     } else if (_self.is<ByteString>()) {
@@ -108,7 +108,7 @@ public:
     }
   }
 
-  bool stringHasPrefix(VM vm, class mozart::RichNode prefix) {
+  bool stringHasPrefix(mozart::VM vm, mozart::RichNode prefix) {
     if (_self.is<String>()) {
       return _self.as<String>().stringHasPrefix(vm, prefix);
     } else if (_self.is<ByteString>()) {
@@ -121,7 +121,7 @@ public:
     }
   }
 
-  bool stringHasSuffix(VM vm, class mozart::RichNode suffix) {
+  bool stringHasSuffix(mozart::VM vm, mozart::RichNode suffix) {
     if (_self.is<String>()) {
       return _self.as<String>().stringHasSuffix(vm, suffix);
     } else if (_self.is<ByteString>()) {

@@ -44,23 +44,23 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::StableNode> getElementsArray();
+  StaticArray<mozart::StableNode> getElementsArray();
 
   inline
-  class mozart::StableNode& getElements(size_t i);
+  mozart::StableNode& getElements(size_t i);
 
   inline
   size_t getArraySizeImpl();
 
   inline
-  class mozart::StableNode * getElement(size_t index);
+  mozart::StableNode * getElement(size_t index);
 
   inline
-  class mozart::StableNode * getArity();
+  mozart::StableNode * getArity();
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 };

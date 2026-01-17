@@ -4,7 +4,7 @@ public:
   PotentialFeature(UnstableNode& self) : _self(self) {}
   PotentialFeature(StableNode& self) : _self(self) {}
 
-  void makeFeature(VM vm) {
+  void makeFeature(mozart::VM vm) {
     if (_self.is<OptName>()) {
       return _self.as<OptName>().makeFeature(vm);
     } else if (_self.isTransient()) {

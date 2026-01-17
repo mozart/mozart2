@@ -39,91 +39,91 @@ void TypeInfoOf<OptName>::sClone(SC sc, RichNode from, UnstableNode& to) const {
 }
 
 inline
-class mozart::Space *  TypedRichNode<OptName>::home() {
+mozart::Space *  TypedRichNode<OptName>::home() {
   return _self.access<OptName>().home();
 }
 
 inline
-bool  TypedRichNode<OptName>::isLiteral(VM vm) {
+bool  TypedRichNode<OptName>::isLiteral(mozart::VM vm) {
   return _self.access<OptName>().isLiteral(vm);
 }
 
 inline
-bool  TypedRichNode<OptName>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<OptName>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<OptName>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<OptName>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<OptName>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<OptName>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<OptName>::isRecord(VM vm) {
+bool  TypedRichNode<OptName>::isRecord(mozart::VM vm) {
   return _self.access<OptName>().isRecord(vm);
 }
 
 inline
-bool  TypedRichNode<OptName>::isTuple(VM vm) {
+bool  TypedRichNode<OptName>::isTuple(mozart::VM vm) {
   return _self.access<OptName>().isTuple(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<OptName>::label(VM vm) {
+mozart::UnstableNode  TypedRichNode<OptName>::label(mozart::VM vm) {
   return _self.access<OptName>().label(_self, vm);
 }
 
 inline
-size_t  TypedRichNode<OptName>::width(VM vm) {
+size_t  TypedRichNode<OptName>::width(mozart::VM vm) {
   return _self.access<OptName>().width(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<OptName>::arityList(VM vm) {
+mozart::UnstableNode  TypedRichNode<OptName>::arityList(mozart::VM vm) {
   return _self.access<OptName>().arityList(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<OptName>::clone(VM vm) {
+mozart::UnstableNode  TypedRichNode<OptName>::clone(mozart::VM vm) {
   return _self.access<OptName>().clone(_self, vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<OptName>::waitOr(VM vm) {
+mozart::UnstableNode  TypedRichNode<OptName>::waitOr(mozart::VM vm) {
   return _self.access<OptName>().waitOr(vm);
 }
 
 inline
-bool  TypedRichNode<OptName>::testRecord(VM vm, class mozart::RichNode arity) {
+bool  TypedRichNode<OptName>::testRecord(mozart::VM vm, mozart::RichNode arity) {
   return _self.access<OptName>().testRecord(vm, arity);
 }
 
 inline
-bool  TypedRichNode<OptName>::testTuple(VM vm, class mozart::RichNode label, size_t width) {
+bool  TypedRichNode<OptName>::testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
   return _self.access<OptName>().testTuple(_self, vm, label, width);
 }
 
 inline
-bool  TypedRichNode<OptName>::testLabel(VM vm, class mozart::RichNode label) {
+bool  TypedRichNode<OptName>::testLabel(mozart::VM vm, mozart::RichNode label) {
   return _self.access<OptName>().testLabel(_self, vm, label);
 }
 
 inline
-void  TypedRichNode<OptName>::makeFeature(VM vm) {
+void  TypedRichNode<OptName>::makeFeature(mozart::VM vm) {
   _self.access<OptName>().makeFeature(_self, vm);
 }
 
 inline
-bool  TypedRichNode<OptName>::isName(VM vm) {
+bool  TypedRichNode<OptName>::isName(mozart::VM vm) {
   return _self.access<OptName>().isName(vm);
 }
 
 inline
-class mozart::GlobalNode *  TypedRichNode<OptName>::globalize(VM vm) {
+mozart::GlobalNode *  TypedRichNode<OptName>::globalize(mozart::VM vm) {
   return _self.access<OptName>().globalize(_self, vm);
 }
 
 inline
-void  TypedRichNode<OptName>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<OptName>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<OptName>().printReprToStream(vm, out, depth, width);
 }

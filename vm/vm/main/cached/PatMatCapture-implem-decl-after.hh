@@ -5,7 +5,7 @@ class TypeInfoOf<PatMatCapture>: public TypeInfo {
     return UUID();
   }
 public:
-  TypeInfoOf() : TypeInfo("PatMatCapture", uuid(), (! ::mozart::MemWord::requiresExternalMemory<nativeint>()), false, false, sbValue, 0) {}
+  TypeInfoOf() : TypeInfo("PatMatCapture", uuid(), (! ::mozart::MemWord::requiresExternalMemory<mozart::nativeint>()), false, false, sbValue, 0) {}
 
   static const TypeInfoOf<PatMatCapture>* const instance() {
     return &RawType<PatMatCapture>::rawType;
@@ -41,14 +41,14 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  nativeint index();
+  mozart::nativeint index();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 };

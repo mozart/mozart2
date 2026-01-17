@@ -4,7 +4,7 @@ public:
   BaseDottable(UnstableNode& self) : _self(self) {}
   BaseDottable(StableNode& self) : _self(self) {}
 
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().lookupFeature(vm, feature, value);
     } else if (_self.is<Record>()) {
@@ -42,7 +42,7 @@ public:
     }
   }
 
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().lookupFeature(vm, feature, value);
     } else if (_self.is<Record>()) {

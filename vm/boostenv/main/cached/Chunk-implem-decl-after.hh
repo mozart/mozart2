@@ -45,20 +45,20 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::StableNode * getUnderlying();
+  mozart::StableNode * getUnderlying();
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool isChunk(VM vm);
+  bool isChunk(mozart::VM vm);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 
   inline
-  class mozart::UnstableNode serialize(VM vm, SE se);
+  mozart::UnstableNode serialize(mozart::VM vm, mozart::SE se);
 };

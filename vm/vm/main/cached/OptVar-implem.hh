@@ -34,36 +34,36 @@ void TypeInfoOf<OptVar>::sClone(SC sc, RichNode from, UnstableNode& to) const {
 }
 
 inline
-class mozart::Space *  TypedRichNode<OptVar>::home() {
+mozart::Space *  TypedRichNode<OptVar>::home() {
   return _self.access<OptVar>().home();
 }
 
 inline
-void  TypedRichNode<OptVar>::addToSuspendList(VM vm, class mozart::RichNode variable) {
+void  TypedRichNode<OptVar>::addToSuspendList(mozart::VM vm, mozart::RichNode variable) {
   _self.access<OptVar>().addToSuspendList(_self, vm, variable);
 }
 
 inline
-bool  TypedRichNode<OptVar>::isNeeded(VM vm) {
+bool  TypedRichNode<OptVar>::isNeeded(mozart::VM vm) {
   return _self.access<OptVar>().isNeeded(vm);
 }
 
 inline
-void  TypedRichNode<OptVar>::markNeeded(VM vm) {
+void  TypedRichNode<OptVar>::markNeeded(mozart::VM vm) {
   _self.access<OptVar>().markNeeded(_self, vm);
 }
 
 inline
-void  TypedRichNode<OptVar>::bind(VM vm, class mozart::UnstableNode && src) {
+void  TypedRichNode<OptVar>::bind(mozart::VM vm, mozart::UnstableNode && src) {
   _self.access<OptVar>().bind(_self, vm, src);
 }
 
 inline
-void  TypedRichNode<OptVar>::bind(VM vm, class mozart::RichNode src) {
+void  TypedRichNode<OptVar>::bind(mozart::VM vm, mozart::RichNode src) {
   _self.access<OptVar>().bind(_self, vm, src);
 }
 
 inline
-void  TypedRichNode<OptVar>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<OptVar>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<OptVar>().printReprToStream(vm, out, depth, width);
 }

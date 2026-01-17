@@ -4,7 +4,7 @@ public:
   StructuralEquatable(UnstableNode& self) : _self(self) {}
   StructuralEquatable(StableNode& self) : _self(self) {}
 
-  bool equals(VM vm, class mozart::RichNode right, class mozart::WalkStack & stack) {
+  bool equals(mozart::VM vm, mozart::RichNode right, mozart::WalkStack & stack) {
     if (_self.is<Tuple>()) {
       return _self.as<Tuple>().equals(vm, right, stack);
     } else if (_self.is<Cons>()) {

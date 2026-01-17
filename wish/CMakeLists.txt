@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.6)
 project(MOZARTWISH)
 
+find_package(X11 REQUIRED)
+include_directories(${X11_INCLUDE_DIR})
+
 find_package(TCL REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTERP_RESULT=1")
 

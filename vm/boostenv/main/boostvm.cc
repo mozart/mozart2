@@ -25,7 +25,6 @@
 #include "boostenv.hh"
 
 #include <exception>
-#include <boost/bind.hpp>
 #include <boost/random/random_device.hpp>
 
 #ifdef MOZART_WINDOWS

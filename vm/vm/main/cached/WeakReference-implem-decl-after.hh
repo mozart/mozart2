@@ -34,5 +34,5 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  class mozart::StableNode * getUnderlying();
+  mozart::StableNode * getUnderlying();
 };

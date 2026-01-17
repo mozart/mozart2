@@ -34,11 +34,11 @@ size_t TypedRichNode<Tuple>::getArraySize() {
   return _self.access<Tuple>().getArraySize();
 }
 
-StaticArray<class mozart::StableNode> TypedRichNode<Tuple>::getElementsArray() {
+StaticArray<mozart::StableNode> TypedRichNode<Tuple>::getElementsArray() {
   return _self.access<Tuple>().getElementsArray();
 }
 
-class mozart::StableNode& TypedRichNode<Tuple>::getElements(size_t i) {
+mozart::StableNode& TypedRichNode<Tuple>::getElements(size_t i) {
   return _self.access<Tuple>().getElements(i);
 }
 
@@ -53,91 +53,91 @@ size_t  TypedRichNode<Tuple>::getWidth() {
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<Tuple>::getElement(size_t index) {
+mozart::StableNode *  TypedRichNode<Tuple>::getElement(size_t index) {
   return _self.access<Tuple>().getElement(index);
 }
 
 inline
-bool  TypedRichNode<Tuple>::isRecord(VM vm) {
+bool  TypedRichNode<Tuple>::isRecord(mozart::VM vm) {
   return _self.access<Tuple>().isRecord(vm);
 }
 
 inline
-size_t  TypedRichNode<Tuple>::width(VM vm) {
+size_t  TypedRichNode<Tuple>::width(mozart::VM vm) {
   return _self.access<Tuple>().width(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Tuple>::arityList(VM vm) {
+mozart::UnstableNode  TypedRichNode<Tuple>::arityList(mozart::VM vm) {
   return _self.access<Tuple>().arityList(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Tuple>::waitOr(VM vm) {
+mozart::UnstableNode  TypedRichNode<Tuple>::waitOr(mozart::VM vm) {
   return _self.access<Tuple>().waitOr(vm);
 }
 
 inline
-bool  TypedRichNode<Tuple>::lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Tuple>::lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Tuple>().lookupFeature(vm, feature, value);
 }
 
 inline
-bool  TypedRichNode<Tuple>::lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value) {
+bool  TypedRichNode<Tuple>::lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value) {
   return _self.access<Tuple>().lookupFeature(vm, feature, value);
 }
 
 inline
-class mozart::StableNode *  TypedRichNode<Tuple>::getLabel() {
+mozart::StableNode *  TypedRichNode<Tuple>::getLabel() {
   return _self.access<Tuple>().getLabel();
 }
 
 inline
-bool  TypedRichNode<Tuple>::equals(VM vm, class mozart::RichNode right, class mozart::WalkStack & stack) {
+bool  TypedRichNode<Tuple>::equals(mozart::VM vm, mozart::RichNode right, mozart::WalkStack & stack) {
   return _self.access<Tuple>().equals(vm, right, stack);
 }
 
 inline
-bool  TypedRichNode<Tuple>::isTuple(VM vm) {
+bool  TypedRichNode<Tuple>::isTuple(mozart::VM vm) {
   return _self.access<Tuple>().isTuple(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Tuple>::label(VM vm) {
+mozart::UnstableNode  TypedRichNode<Tuple>::label(mozart::VM vm) {
   return _self.access<Tuple>().label(vm);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Tuple>::clone(VM vm) {
+mozart::UnstableNode  TypedRichNode<Tuple>::clone(mozart::VM vm) {
   return _self.access<Tuple>().clone(vm);
 }
 
 inline
-bool  TypedRichNode<Tuple>::testRecord(VM vm, class mozart::RichNode arity) {
+bool  TypedRichNode<Tuple>::testRecord(mozart::VM vm, mozart::RichNode arity) {
   return _self.access<Tuple>().testRecord(vm, arity);
 }
 
 inline
-bool  TypedRichNode<Tuple>::testTuple(VM vm, class mozart::RichNode label, size_t width) {
+bool  TypedRichNode<Tuple>::testTuple(mozart::VM vm, mozart::RichNode label, size_t width) {
   return _self.access<Tuple>().testTuple(vm, label, width);
 }
 
 inline
-bool  TypedRichNode<Tuple>::testLabel(VM vm, class mozart::RichNode label) {
+bool  TypedRichNode<Tuple>::testLabel(mozart::VM vm, mozart::RichNode label) {
   return _self.access<Tuple>().testLabel(vm, label);
 }
 
 inline
-void  TypedRichNode<Tuple>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Tuple>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Tuple>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-bool  TypedRichNode<Tuple>::hasSharpRepr(VM vm, int depth) {
+bool  TypedRichNode<Tuple>::hasSharpRepr(mozart::VM vm, int depth) {
   return _self.access<Tuple>().hasSharpRepr(vm, depth);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Tuple>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<Tuple>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<Tuple>().serialize(vm, se);
 }

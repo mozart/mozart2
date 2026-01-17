@@ -4,7 +4,7 @@ public:
   Comparable(UnstableNode& self) : _self(self) {}
   Comparable(StableNode& self) : _self(self) {}
 
-  int compare(VM vm, class mozart::RichNode right) {
+  int compare(mozart::VM vm, mozart::RichNode right) {
     if (_self.is<SmallInt>()) {
       return _self.as<SmallInt>().compare(vm, right);
     } else if (_self.is<BigInt>()) {

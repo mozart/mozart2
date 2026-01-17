@@ -3,5 +3,5 @@ class Array;
 template <>
 class Storage<Array> {
 public:
-  typedef ImplWithArray<Array, class mozart::UnstableNode> Type;
+  typedef ImplWithArray<Array, mozart::UnstableNode> Type;
 };

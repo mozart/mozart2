@@ -34,26 +34,26 @@ void TypeInfoOf<Port>::sClone(SC sc, RichNode from, UnstableNode& to) const {
 }
 
 inline
-class mozart::Space *  TypedRichNode<Port>::home() {
+mozart::Space *  TypedRichNode<Port>::home() {
   return _self.access<Port>().home();
 }
 
 inline
-bool  TypedRichNode<Port>::isPort(VM vm) {
+bool  TypedRichNode<Port>::isPort(mozart::VM vm) {
   return _self.access<Port>().isPort(vm);
 }
 
 inline
-void  TypedRichNode<Port>::send(VM vm, class mozart::RichNode value) {
+void  TypedRichNode<Port>::send(mozart::VM vm, mozart::RichNode value) {
   _self.access<Port>().send(vm, value);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Port>::sendReceive(VM vm, class mozart::RichNode value) {
+mozart::UnstableNode  TypedRichNode<Port>::sendReceive(mozart::VM vm, mozart::RichNode value) {
   return _self.access<Port>().sendReceive(vm, value);
 }
 
 inline
-void  TypedRichNode<Port>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Port>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Port>().printReprToStream(vm, out, depth, width);
 }

@@ -47,16 +47,16 @@ size_t TypedRichNode<Abstraction>::getArraySize() {
   return _self.access<Abstraction>().getArraySize();
 }
 
-StaticArray<class mozart::StableNode> TypedRichNode<Abstraction>::getElementsArray() {
+StaticArray<mozart::StableNode> TypedRichNode<Abstraction>::getElementsArray() {
   return _self.access<Abstraction>().getElementsArray();
 }
 
-class mozart::StableNode& TypedRichNode<Abstraction>::getElements(size_t i) {
+mozart::StableNode& TypedRichNode<Abstraction>::getElements(size_t i) {
   return _self.access<Abstraction>().getElements(i);
 }
 
 inline
-class mozart::Space *  TypedRichNode<Abstraction>::home() {
+mozart::Space *  TypedRichNode<Abstraction>::home() {
   return _self.access<Abstraction>().home();
 }
 
@@ -66,51 +66,51 @@ size_t  TypedRichNode<Abstraction>::getArraySizeImpl() {
 }
 
 inline
-atom_t  TypedRichNode<Abstraction>::getPrintName(VM vm) {
+mozart::atom_t  TypedRichNode<Abstraction>::getPrintName(mozart::VM vm) {
   return _self.access<Abstraction>().getPrintName(vm);
 }
 
 inline
-bool  TypedRichNode<Abstraction>::isCallable(VM vm) {
+bool  TypedRichNode<Abstraction>::isCallable(mozart::VM vm) {
   return _self.access<Abstraction>().isCallable(vm);
 }
 
 inline
-bool  TypedRichNode<Abstraction>::isProcedure(VM vm) {
+bool  TypedRichNode<Abstraction>::isProcedure(mozart::VM vm) {
   return _self.access<Abstraction>().isProcedure(vm);
 }
 
 inline
-size_t  TypedRichNode<Abstraction>::procedureArity(VM vm) {
+size_t  TypedRichNode<Abstraction>::procedureArity(mozart::VM vm) {
   return _self.access<Abstraction>().procedureArity(vm);
 }
 
 inline
-void  TypedRichNode<Abstraction>::getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks) {
+void  TypedRichNode<Abstraction>::getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks) {
   _self.access<Abstraction>().getCallInfo(vm, arity, start, Xcount, Gs, Ks);
 }
 
 inline
-void  TypedRichNode<Abstraction>::getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData) {
+void  TypedRichNode<Abstraction>::getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData) {
   _self.access<Abstraction>().getDebugInfo(vm, printName, debugData);
 }
 
 inline
-void  TypedRichNode<Abstraction>::printReprToStream(VM vm, std::ostream & out, int depth, int width) {
+void  TypedRichNode<Abstraction>::printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width) {
   _self.access<Abstraction>().printReprToStream(vm, out, depth, width);
 }
 
 inline
-class mozart::UnstableNode  TypedRichNode<Abstraction>::serialize(VM vm, SE se) {
+mozart::UnstableNode  TypedRichNode<Abstraction>::serialize(mozart::VM vm, mozart::SE se) {
   return _self.access<Abstraction>().serialize(vm, se);
 }
 
 inline
-class mozart::GlobalNode *  TypedRichNode<Abstraction>::globalize(VM vm) {
+mozart::GlobalNode *  TypedRichNode<Abstraction>::globalize(mozart::VM vm) {
   return _self.access<Abstraction>().globalize(_self, vm);
 }
 
 inline
-void  TypedRichNode<Abstraction>::setUUID(VM vm, const struct mozart::UUID & uuid) {
+void  TypedRichNode<Abstraction>::setUUID(mozart::VM vm, const mozart::UUID & uuid) {
   _self.access<Abstraction>().setUUID(_self, vm, uuid);
 }

@@ -42,50 +42,50 @@ public:
   explicit TypedRichNode(RichNode self) : BaseTypedRichNode(self) {}
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
   const LString<unsigned char> & value();
 
   inline
-  bool equals(VM vm, class mozart::RichNode right);
+  bool equals(mozart::VM vm, mozart::RichNode right);
 
   inline
-  int compare(VM vm, class mozart::RichNode right);
+  int compare(mozart::VM vm, mozart::RichNode right);
 
   inline
-  bool isString(VM vm);
+  bool isString(mozart::VM vm);
 
   inline
-  bool isByteString(VM vm);
+  bool isByteString(mozart::VM vm);
 
   inline
-  LString<char> * stringGet(VM vm);
+  LString<char> * stringGet(mozart::VM vm);
 
   inline
-  LString<unsigned char> * byteStringGet(VM vm);
+  LString<unsigned char> * byteStringGet(mozart::VM vm);
 
   inline
-  nativeint stringCharAt(VM vm, class mozart::RichNode offset);
+  mozart::nativeint stringCharAt(mozart::VM vm, mozart::RichNode offset);
 
   inline
-  class mozart::UnstableNode stringAppend(VM vm, class mozart::RichNode right);
+  mozart::UnstableNode stringAppend(mozart::VM vm, mozart::RichNode right);
 
   inline
-  class mozart::UnstableNode stringSlice(VM vm, class mozart::RichNode from, class mozart::RichNode to);
+  mozart::UnstableNode stringSlice(mozart::VM vm, mozart::RichNode from, mozart::RichNode to);
 
   inline
-  void stringSearch(VM vm, class mozart::RichNode from, class mozart::RichNode needle, class mozart::UnstableNode & begin, class mozart::UnstableNode & end);
+  void stringSearch(mozart::VM vm, mozart::RichNode from, mozart::RichNode needle, mozart::UnstableNode & begin, mozart::UnstableNode & end);
 
   inline
-  bool stringHasPrefix(VM vm, class mozart::RichNode prefix);
+  bool stringHasPrefix(mozart::VM vm, mozart::RichNode prefix);
 
   inline
-  bool stringHasSuffix(VM vm, class mozart::RichNode suffix);
+  bool stringHasSuffix(mozart::VM vm, mozart::RichNode suffix);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

@@ -45,59 +45,59 @@ public:
   size_t getArraySize();
 
   inline
-  StaticArray<class mozart::UnstableNode> getElementsArray();
+  StaticArray<mozart::UnstableNode> getElementsArray();
 
   inline
-  class mozart::UnstableNode& getElements(size_t i);
+  mozart::UnstableNode& getElements(size_t i);
 
   inline
-  class mozart::Space * home();
+  mozart::Space * home();
 
   inline
   size_t getArraySizeImpl();
 
   inline
-  class mozart::StableNode * getFeaturesRecord();
+  mozart::StableNode * getFeaturesRecord();
 
   inline
-  bool lookupFeature(VM vm, class mozart::RichNode feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::RichNode feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool lookupFeature(VM vm, nativeint feature, nullable<class mozart::UnstableNode &> value);
+  bool lookupFeature(mozart::VM vm, mozart::nativeint feature, nullable<mozart::UnstableNode &> value);
 
   inline
-  bool isChunk(VM vm);
+  bool isChunk(mozart::VM vm);
 
   inline
-  bool isObject(VM vm);
+  bool isObject(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode getClass(VM vm);
+  mozart::UnstableNode getClass(mozart::VM vm);
 
   inline
-  class mozart::UnstableNode attrGet(VM vm, class mozart::RichNode attribute);
+  mozart::UnstableNode attrGet(mozart::VM vm, mozart::RichNode attribute);
 
   inline
-  void attrPut(VM vm, class mozart::RichNode attribute, class mozart::RichNode value);
+  void attrPut(mozart::VM vm, mozart::RichNode attribute, mozart::RichNode value);
 
   inline
-  class mozart::UnstableNode attrExchange(VM vm, class mozart::RichNode attribute, class mozart::RichNode newValue);
+  mozart::UnstableNode attrExchange(mozart::VM vm, mozart::RichNode attribute, mozart::RichNode newValue);
 
   inline
-  bool isCallable(VM vm);
+  bool isCallable(mozart::VM vm);
 
   inline
-  bool isProcedure(VM vm);
+  bool isProcedure(mozart::VM vm);
 
   inline
-  size_t procedureArity(VM vm);
+  size_t procedureArity(mozart::VM vm);
 
   inline
-  void getCallInfo(VM vm, size_t & arity, ProgramCounter & start, size_t & Xcount, StaticArray<class mozart::StableNode> & Gs, StaticArray<class mozart::StableNode> & Ks);
+  void getCallInfo(mozart::VM vm, size_t & arity, mozart::ProgramCounter & start, size_t & Xcount, StaticArray<mozart::StableNode> & Gs, StaticArray<mozart::StableNode> & Ks);
 
   inline
-  void getDebugInfo(VM vm, atom_t & printName, class mozart::UnstableNode & debugData);
+  void getDebugInfo(mozart::VM vm, mozart::atom_t & printName, mozart::UnstableNode & debugData);
 
   inline
-  void printReprToStream(VM vm, std::ostream & out, int depth, int width);
+  void printReprToStream(mozart::VM vm, std::ostream & out, int depth, int width);
 };

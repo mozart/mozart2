@@ -370,11 +370,11 @@ in
             lock self.ReadLock then
                lock self.WriteLock then D=@WriteDesc in
                   if {IsInt D} then
-                     {OS.lSeek D O case W
-                                   of 'set'     then 'SEEK_SET'
-                                   [] 'current' then 'SEEK_CUR'
-                                   [] 'end'     then 'SEEK_END'
-                                   end _}
+                     {OS.lSeek D case W
+                                 of 'set'     then 'SEEK_SET'
+                                 [] 'current' then 'SEEK_CUR'
+                                 [] 'end'     then 'SEEK_END'
+                                 end O _}
                   else {RaiseClosed self seek(whence:W offset:O)}
                   end
                end

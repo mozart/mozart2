@@ -36,8 +36,8 @@ jobs:
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" 
         "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-stack_size,0x20000000" 
-        "-DCMAKE_CXX_FLAGS=-O3 -DNDEBUG" 
-        "-DCMAKE_C_FLAGS=-O3 -DNDEBUG" 
+        "-DCMAKE_CXX_FLAGS=-O3 -mcpu=apple-m1 -DNDEBUG" 
+        "-DCMAKE_C_FLAGS=-O3 -mcpu=apple-m1 -DNDEBUG" 
         -DTCL_LIBRARY="/opt/homebrew/opt/tcl-tk@8/lib/libtcl8.6.dylib" 
         -DTK_LIBRARY="/opt/homebrew/opt/tcl-tk@8/lib/libtk8.6.dylib" 
         -DTCL_INCLUDE_PATH="/opt/homebrew/opt/tcl-tk@8/include" 

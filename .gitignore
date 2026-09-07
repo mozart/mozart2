@@ -3,6 +3,11 @@
 *.swo
 *.o
 *.a
+*.ozf
 
 # For ease of use as cmake build directory
 /build
+.DS_Store
+
+todo
+test.oz

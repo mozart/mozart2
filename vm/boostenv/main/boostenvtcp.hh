@@ -46,10 +46,10 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
   pointer self = shared_from_this();
 
   auto resolveHandler = [=] (const boost::system::error_code& error,
-                             protocol::resolver::iterator endpoints) {
+                             protocol::resolver::results_type endpoints) {
     if (!error) {
       auto connectHandler = [=] (const boost::system::error_code& error,
-                                 protocol::resolver::iterator selected_endpoint) {
+                           const protocol::endpoint& selected_endpoint) {
         if (!error) {
           env.postVMEvent(vm, [=] (BoostVM& boostVM) {
             boostVM.bindAndReleaseAsyncIOFeedbackNode(
@@ -72,8 +72,7 @@ void TCPConnection::startAsyncConnect(std::string host, std::string service,
     }
   };
 
-  protocol::resolver::query query(host, service);
-  _resolver.async_resolve(query, resolveHandler);
+  _resolver.async_resolve(host, service, resolveHandler);
 }
 
 /////////////////

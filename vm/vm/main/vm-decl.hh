@@ -88,9 +88,12 @@ public:
 
   VirtualMachineEnvironment(const VirtualMachineEnvironment&) = delete;
 
+  virtual ~VirtualMachineEnvironment() = default;   // <-- AJOUTE CETTE LIGNE
+
   bool useDynamicPreemption() {
     return _useDynamicPreemption;
   }
+  // ... reste inchangé
 
   virtual bool testDynamicPreemption() {
     return false;

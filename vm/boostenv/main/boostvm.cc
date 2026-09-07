@@ -49,13 +49,13 @@ BoostVM::BoostVM(BoostEnvironment& environment,
   uuidGenerator(),
   portClosed(false),
   _asyncIONodeCount(0),
-  preemptionTimer(new boost::asio::deadline_timer(environment.io_context)),
+  preemptionTimer(new boost::asio::steady_timer(environment.io_context)),
   alarmTimer(environment.io_context),
   _terminationRequested(false),
   _terminationStatus(0),
   _terminationReason("normal"),
   // Make sure the IO thread will wait for us
-  _work(new boost::asio::io_context::work(environment.io_context)) {
+  _work(new boost::asio::executor_work_guard<boost::asio::io_context::executor_type>(environment.io_context.get_executor())) {
 
   if (identifier != parent)
     addMonitor(parent);
@@ -107,12 +107,15 @@ void BoostVM::run() {
     // Make sure the VM knows the reference time before starting
     vm->setReferenceTime(env.getReferenceTime());
 
+    // Extraction sécurisée du pointeur pour les appels asynchrones
+    auto pTimer = preemptionTimer;
+
     // Setup the preemption timer
-    boost::asio::post(env.io_context, [&](){
-        preemptionTimer->expires_from_now(boost::posix_time::millisec(1));
-        preemptionTimer->async_wait(boost::bind(
-              &BoostVM::onPreemptionTimerExpire,
-              this, boost::asio::placeholders::error));
+    boost::asio::post(env.io_context.get_executor(), [this, pTimer]() {
+        pTimer->expires_after(std::chrono::milliseconds(1));
+        pTimer->async_wait([this](const boost::system::error_code& error) {
+            this->onPreemptionTimerExpire(error);
+        });
     });
 
     // Run the VM
@@ -120,8 +123,8 @@ void BoostVM::run() {
     auto nextInvoke = nextInvokePair.first;
 
     // Stop the preemption timer
-    boost::asio::post(env.io_context, [&](){
-        preemptionTimer->expires_at(boost::posix_time::min_date_time);
+    boost::asio::post(env.io_context.get_executor(), [pTimer]() {
+        pTimer->expires_at(boost::asio::steady_timer::time_point::max());
     });
 
     {
@@ -152,8 +155,7 @@ void BoostVM::run() {
       if (nextInvoke != recInvokeAgainNow) {
         // Setup the alarm time, if asked by the VM
         if (nextInvoke == recInvokeAgainLater) {
-          alarmTimer.expires_at(
-            BoostEnvironment::referenceTimeToPTime(nextInvokePair.second));
+          preemptionTimer->expires_after(std::chrono::milliseconds(nextInvokePair.second - BoostEnvironment::getReferenceTime()));
           alarmTimer.async_wait([this] (const boost::system::error_code& err) {
             if (!err) {
               boost::lock_guard<boost::mutex> lock(_conditionWorkToDoInVMMutex);
@@ -177,7 +179,7 @@ void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
     // Timer was cancelled
   } else if (_terminationRequested) {
     // Termination was requested
-  } else if (preemptionTimer->expires_at() == boost::posix_time::min_date_time) {
+  } else if (preemptionTimer->expiry() == boost::asio::steady_timer::time_point::max()) {
     // Timer was cancelled, but we missed it (race condition in io_context)
   } else {
     // Preemption
@@ -186,10 +188,10 @@ void BoostVM::onPreemptionTimerExpire(const boost::system::error_code& error) {
 
     // Reschedule
     preemptionTimer->expires_at(
-        preemptionTimer->expires_at() + boost::posix_time::millisec(1));
-    preemptionTimer->async_wait(boost::bind(
-          &BoostVM::onPreemptionTimerExpire,
-          this, boost::asio::placeholders::error));
+        preemptionTimer->expiry() + std::chrono::milliseconds(1));
+    preemptionTimer->async_wait([this](const boost::system::error_code& error) {
+        this->onPreemptionTimerExpire(error);
+    });
   }
 }
 
@@ -333,7 +335,7 @@ void BoostVM::terminate() {
   // It may be deleted before the execution of the callback.
   // For the same reason, we access the io_context via the timer.
   boost::asio::post(env.io_context, [preemptionTimerCopy]{
-      preemptionTimerCopy->expires_at(boost::posix_time::min_date_time);
+      preemptionTimerCopy->expires_at(boost::asio::steady_timer::time_point::max());
       // We cannot delete the timer now because the onPreemptionTimerExpire handler
       // may already be in the queue. So add a delete lambda to the queue.
       // The lambda will execute after any leftover handlers on the timer and

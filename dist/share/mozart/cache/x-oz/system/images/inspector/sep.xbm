@@ -1,0 +1,16 @@
+/*
+ * This file is part of Mozart, an implementation of Oz 3:
+ *   http://www.mozart-oz.org
+ *
+ * See the file "LICENSE" or
+ *   http://www.mozart-oz.org/LICENSE.html
+ * for information on usage and redistribution
+ * of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ *
+ */
+
+#define sep.xbm_width 16
+#define sep.xbm_height 1
+static unsigned char sep.xbm_bits[] = {
+  0x11, 0x11};

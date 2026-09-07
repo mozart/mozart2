@@ -39,7 +39,15 @@ namespace mut {
 
 template <class C>
 BaseLString<C>::BaseLString(const C* str)
-    : string(str), length(std::char_traits<C>::length(str)) {}
+    : string(str), length(0) {
+      if (str != nullptr) {
+          size_t len = 0;
+          while (str[len] != 0) {
+              len++;
+          }
+          length = len;
+      }
+  }
 
 template <class C>
 BaseLString<C>::BaseLString(BaseLString&& other)

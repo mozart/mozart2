@@ -59,6 +59,7 @@ namespace internal {
 
 class Unpickler {
 public:
+  int dernier_noeud_valide = 0;
   Unpickler(VM vm, std::istream& input): vm(vm), input(input) {
   }
 
@@ -85,7 +86,21 @@ public:
 
   /** Read a value */
   UnstableNode readValue() {
-    auto kind = readByte();
+    char kind = readByte();
+
+    // Si la VM se désynchronise et lit de la mémoire aléatoire
+    if (kind < 1 || kind > 21) {
+      std::cerr << "\n\n========================================\n";
+      std::cerr << "[SONDE ARM64] DESYNCHRONISATION FATALE !\n";
+      std::cerr << "Octet corrompu lu : " << (int)kind << "\n";
+      std::cerr << "Offset exact dans le fichier : " << (int)input.tellg() - 1 << " octets\n";
+      std::cerr << "Dernier type de noeud lu avec succes : " << dernier_noeud_valide << "\n";
+      std::cerr << "========================================\n\n";
+      std::abort();
+    }
+
+    dernier_noeud_valide = kind; // On mémorise le dernier succès
+
     switch (kind) {
       case 1: return readIntValue();
       case 2: return readFloatValue();
@@ -334,10 +349,10 @@ private:
   }
 
   /** Read a byte */
-  unsigned char readByte() {
+  char readByte() {
     char bytes[1];
     read(bytes, 1);
-    return (unsigned char) bytes[0];
+    return bytes[0];
   }
 
   /** Read a string */
@@ -384,9 +399,15 @@ private:
 
   /** Read a byte array */
   void read(char* buffer, size_t length) {
+    if (!input.good()) {
+      std::cerr << "\n[CRITIQUE] Le fichier .ozf est introuvable ou inaccessible !" << std::endl;
+      std::abort();
+    }
     input.read(buffer, length);
-    assert(!input.bad() && "failure while reading");
-    assert(!input.eof() && "reached eof too early");
+    if (input.gcount() != length) {
+      std::cerr << "\n[CRITIQUE] Fichier vide ou tronqué ! Lecture de mémoire poubelle évitée." << std::endl;
+      std::abort();
+    }
   }
 
   /** Ignore the `count` following bytes of the input */

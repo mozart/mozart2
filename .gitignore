@@ -3,13 +3,11 @@
 *.swo
 *.o
 *.a
+*.ozf
 
 # For ease of use as cmake build directory
 /build
 .DS_Store
 
-command.txt
-logs.txt
-build_and_log.sh
 todo
 test.oz

@@ -61,8 +61,16 @@ define
       Result = {AdjoinAt CtxTmp error Error}
    end
 
-   proc {FailedCtxWithoutError Ctx ErrorMessages ?Result}
-      {Boot_Record.adjoinAtIfHasFeature Ctx valid false ?Result true}
+   %% Without error reporting, nothing but 'valid' is ever read from a failed
+   %% context (rules only run on valid ones), so all failures can share one
+   %% constant record instead of copying the input context.
+   %% The local variable is needed: the compiler only hoists a ground record
+   %% to a constant when it binds a fresh variable. Returned directly, it is
+   %% unified with the result and allocated on every call.
+   fun {FailedCtxWithoutError _ _}
+      Failed = failed(valid:false)
+   in
+      Failed
    end
 
    fun {ComparePos pos(F1 L1 C1) pos(F2 L2 C2)}
@@ -386,9 +394,15 @@ define
          [] label(Label X) then
             XX = {TranslateRule X}
          in
-            proc {$ CtxIn CtxOut Sem} CtxMid in
-               {XX CtxIn CtxMid Sem}
-               CtxOut = {AdjoinAt CtxMid error {NewError CtxIn [expected(Label)]}}
+            if HandleErrors then
+               proc {$ CtxIn CtxOut Sem} CtxMid in
+                  {XX CtxIn CtxMid Sem}
+                  CtxOut = {AdjoinAt CtxMid error
+                            {NewError CtxIn [expected(Label)]}}
+               end
+            else
+               %% Labels only name what was expected, for error messages.
+               XX
             end
          [] context(Context X) then
             XX = {TranslateRule X}

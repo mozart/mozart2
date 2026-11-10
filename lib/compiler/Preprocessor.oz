@@ -32,7 +32,7 @@ import
 export
    ReadSourceFile
    PreprocessTokens
-   ReadAndPreprocessSourceFile
+   SourceFilePreprocessor
    ReadAndPreprocessVS
 
 define
@@ -58,17 +58,20 @@ define
       end
    end
 
-   /** Read, tokenize, and preprocess recursively an Oz source file
+   /** Read an Oz source file once, to tokenize and preprocess it on demand
+    *  The source may be a pipe, which cannot be read a second time.
     *  @param TheURL    URL of the source file
-    *  @param Defines   A dictionary of the variable defines
-    *  @return A reader of preprocessed tokens
+    *  @return A function from the defines to a reader of preprocessed tokens
     */
-   fun {ReadAndPreprocessSourceFile TheURL0 Defines}
+   fun {SourceFilePreprocessor TheURL0}
       TheURL = {URLMake TheURL0}
       Contents = {ReadSourceFile TheURL}
-      Tokens = {TokenizeVS Contents {URLToAtom TheURL}}
    in
-      {PreprocessTokens Tokens TheURL Defines}
+      fun {$ Defines}
+         Tokens = {TokenizeVS Contents {URLToAtom TheURL}}
+      in
+         {PreprocessTokens Tokens TheURL Defines}
+      end
    end
 
    /** Read, tokenize, and preprocess recursively an Oz source virtual string

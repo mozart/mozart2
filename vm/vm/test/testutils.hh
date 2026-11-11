@@ -145,6 +145,13 @@ namespace mut {
 
   extern template void PrintTo(const BaseLString<unsigned char>& input,
                                std::ostream* out);
+
+  // googletest's own PrintTo matches LString exactly, and would print it with
+  // operator<<, which does not support byte strings.
+  template <class C>
+  void PrintTo(const LString<C>& input, std::ostream* out) {
+    PrintTo(static_cast<const BaseLString<C>&>(input), out);
+  }
 }
 
 template <class T>

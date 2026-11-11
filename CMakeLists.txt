@@ -1,14 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
-# The stdlib and googletest submodules still declare ancient minimum versions,
-# which CMake >= 4 rejects outright, and older ones warn about.
+# The stdlib submodule still declares an ancient minimum version, which
+# CMake >= 4 rejects outright, and older ones warn about.
 if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
   set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
 endif()
-# googletest looks for Python with FindPythonInterp, removed in CMake 3.27,
-# but only to run its own tests.  Skip that lookup.
-set(CMAKE_POLICY_DEFAULT_CMP0148 NEW)
-set(CMAKE_DISABLE_FIND_PACKAGE_PythonInterp TRUE)
 
 # This needs to be before "project(..)".
 if(NOT DEFINED CMAKE_BUILD_TYPE)

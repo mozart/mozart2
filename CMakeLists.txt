@@ -19,6 +19,11 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 project(MOZART CXX)
 
+# Recent Boost releases require C++14.  GNU extensions are kept on (the
+# default), as MinGW needs them.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 ENABLE_TESTING()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 

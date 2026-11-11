@@ -4,7 +4,8 @@ version := "2.0-SNAPSHOT"
 
 scalaVersion := "2.13.8"
 
-scalacOptions ++= Seq("-language:postfixOps", "-deprecation", "-feature",
+scalacOptions ++= Seq("-language:postfixOps", "-language:implicitConversions",
+  "-deprecation", "-feature",
   "-opt:l:inline", "-opt-inline-from:**") // what -optimize used to mean
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1"

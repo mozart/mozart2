@@ -5,7 +5,7 @@ import java.io.PrintStream
 
 /** Provides implicit conversions for writing code */
 object Output {
-  implicit def string2modformat(self: String) = new {
+  implicit class ModFormat(self: String) {
     def % (args: Any*) =
       self format (args:_*)
   }

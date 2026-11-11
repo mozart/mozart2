@@ -12,10 +12,14 @@ trait TreeDSL {
   /** User-provided tree copier */
   val treeCopy: TreeCopier
 
+  /* The DSL wrappers below are named classes rather than anonymous ones, so
+   * that calling their methods does not require reflection.
+   */
+
   /** Operations on Statements */
-  implicit def statement2ops(self: Statement) = new {
+  class StatementOps(self: Statement) {
     /** `self ~ right` sequentially composes `self` and `right` */
-    def ~ (right: Statement) = self match {
+    def ~ (right: Statement): Statement = self match {
       case CompoundStatement(selfStats) =>
         treeCopy.CompoundStatement(self, selfStats :+ right)
 
@@ -27,7 +31,7 @@ trait TreeDSL {
     }
 
     /** `self ~> right` sequentially composes `self` and `right` */
-    def ~> (right: Expression) = self match {
+    def ~> (right: Expression): Expression = self match {
       case SkipStatement() =>
         right
 
@@ -36,8 +40,11 @@ trait TreeDSL {
     }
   }
 
+  implicit def statement2ops(self: Statement): StatementOps =
+    new StatementOps(self)
+
   /** Operations on Expressions */
-  implicit def expression2ops(self: Expression) = new {
+  class ExpressionOps(self: Expression) {
     /** `self === rhs` binds `self` to `rhs` */
     def === (rhs: Expression) =
       treeCopy.BindStatement(self, self, rhs)
@@ -59,20 +66,23 @@ trait TreeDSL {
       treeCopy.BinaryOp(self, self, ".", rhs)
   }
 
+  implicit def expression2ops(self: Expression): ExpressionOps =
+    new ExpressionOps(self)
+
   /** Wrap an Oz value inside a Constant */
-  implicit def value2constant(value: OzValue) =
+  implicit def value2constant(value: OzValue): Constant =
     Constant(value)
 
   /** Convert a Symbol into a Variable */
-  implicit def symbol2variable(symbol: Symbol) =
+  implicit def symbol2variable(symbol: Symbol): Variable =
     Variable(symbol)
 
   /** Operations on Builtins */
-  implicit def builtin2ops(builtin: Builtin) =
+  implicit def builtin2ops(builtin: Builtin): ExpressionOps =
     expression2ops(OzBuiltin(builtin))
 
   /** Apply operations on Expressions directly on Symbols */
-  implicit def symbol2ops(symbol: Symbol) =
+  implicit def symbol2ops(symbol: Symbol): ExpressionOps =
     expression2ops(symbol)
 
   /** Pattern matching for BindStatements
@@ -101,18 +111,24 @@ trait TreeDSL {
    *  }
    *  }}}
    */
-  def IF(cond: Expression) = new {
+  def IF(cond: Expression) = new IfBuilder(cond)
+
+  class IfBuilder(cond: Expression) {
     // Statement
-    def THEN(trueStat: Statement) = new {
-      def ELSE(falseStat: Statement) =
-        treeCopy.IfStatement(cond, cond, trueStat, falseStat)
-    }
+    def THEN(trueStat: Statement) = new IfStatementBuilder(cond, trueStat)
 
     // Expression
-    def THEN(trueExpr: Expression) = new {
-      def ELSE(falseExpr: Expression) =
-        treeCopy.IfExpression(cond, cond, trueExpr, falseExpr)
-    }
+    def THEN(trueExpr: Expression) = new IfExpressionBuilder(cond, trueExpr)
+  }
+
+  class IfStatementBuilder(cond: Expression, trueStat: Statement) {
+    def ELSE(falseStat: Statement) =
+      treeCopy.IfStatement(cond, cond, trueStat, falseStat)
+  }
+
+  class IfExpressionBuilder(cond: Expression, trueExpr: Expression) {
+    def ELSE(falseExpr: Expression) =
+      treeCopy.IfExpression(cond, cond, trueExpr, falseExpr)
   }
 
   /** Construct ProcExpressions
@@ -164,7 +180,9 @@ trait TreeDSL {
    *  }
    *  }}}
    */
-  def RAWLOCAL(decls: RawDeclaration*) = new {
+  def RAWLOCAL(decls: RawDeclaration*) = new RawLocalBuilder(decls)
+
+  class RawLocalBuilder(decls: Seq[RawDeclaration]) {
     def IN(body: Statement) =
       treeCopy.RawLocalStatement(body, decls.toList, body)
 
@@ -181,7 +199,9 @@ trait TreeDSL {
    *  }
    *  }}}
    */
-  def LOCAL(decls: Variable*) = new {
+  def LOCAL(decls: Variable*) = new LocalBuilder(decls)
+
+  class LocalBuilder(decls: Seq[Variable]) {
     def IN(body: Statement) =
       treeCopy.LocalStatement(body, decls.toList, body)
 

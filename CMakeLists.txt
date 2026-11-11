@@ -68,7 +68,7 @@ if(MINGW)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
   # Linking mingw libs statically
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive, -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 -lmswsock -lbcrypt ${CMAKE_CXX_STANDARD_LIBRARIES}")
 
   # Check for gcc target architecture
   execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)

@@ -83,6 +83,8 @@ class VirtualMachineEnvironment {
 public:
   VirtualMachineEnvironment(): _useDynamicPreemption(false) {}
 
+  virtual ~VirtualMachineEnvironment() {}
+
   VirtualMachineEnvironment(bool useDynamicPreemption):
     _useDynamicPreemption(useDynamicPreemption) {}
 

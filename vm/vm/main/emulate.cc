@@ -548,11 +548,12 @@ void Thread::run() {
         case OpCallBuiltinN: {
           size_t argc = IntPC(2);
 
-          UnstableNode* args[argc];
+          // Builtins with more than 5 parameters are rare; a vector is fine.
+          std::vector<UnstableNode*> args(argc);
           for (size_t i = 0; i < argc; i++)
             args[i] = &XPC(3 + i);
 
-          BuiltinCallable(KPC(1)).callBuiltin(vm, argc, args);
+          BuiltinCallable(KPC(1)).callBuiltin(vm, argc, args.data());
 
           advancePC(2 + argc);
           break;

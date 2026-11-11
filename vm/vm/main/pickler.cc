@@ -316,7 +316,8 @@ bool Pickler::findArity(NodeDictionary& existingsArities,
 }
 
 void Pickler::writeNode(nativeint index, RichNode node, RichNode refsTuple) {
-  UnstableNode type = RecordLike(refsTuple).label(vm), value;
+  UnstableNode type = RecordLike(refsTuple).label(vm);
+  UnstableNode value = build(vm, unit); // fails as<SmallInt> if not found
   RichNode(*vm->getPickleTypesRecord()).as<Record>().lookupFeature(vm, type, value);
   nativeint id = RichNode(value).as<SmallInt>().value();
 

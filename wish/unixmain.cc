@@ -197,7 +197,7 @@ main(int argc, char **argv)
     args = Tcl_Merge(argc-1, argv+1);
     Tcl_SetVar(interp, "argv", args, TCL_GLOBAL_ONLY);
     ckfree(args);
-    sprintf(buf, "%d", argc-1);
+    snprintf(buf, sizeof(buf), "%d", argc-1);
     Tcl_SetVar(interp, "argc", buf, TCL_GLOBAL_ONLY);
     Tcl_SetVar(interp, "argv0", (fileName != NULL) ? fileName : argv[0],
             TCL_GLOBAL_ONLY);

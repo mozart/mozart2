@@ -144,11 +144,6 @@ namespace internal {
   }
 
   inline
-  UnstableNode valueOf(VM vm, const UnstableNode& element) {
-    return UnstableNode();
-  }
-
-  inline
   UnstableNode& valueOf(VM vm, const UnstableField& element) {
     return const_cast<UnstableNode&>(element.value);
   }
@@ -186,11 +181,20 @@ namespace internal {
     );
   }
 
-  template <class T>
+  // For error messages: the features, or the feature#value pairs.
   inline
-  UnstableNode featuresList(VM vm, size_t width, T features[]) {
+  UnstableNode featuresList(VM vm, size_t width, UnstableNode features[]) {
     return buildListDynamic(vm, width, features,
-      [vm] (const T& e) -> UnstableNode {
+      [vm] (const UnstableNode& e) -> UnstableNode {
+        return UnstableNode(vm, featureOf(e));
+      }
+    );
+  }
+
+  inline
+  UnstableNode featuresList(VM vm, size_t width, UnstableField features[]) {
+    return buildListDynamic(vm, width, features,
+      [vm] (const UnstableField& e) -> UnstableNode {
         return buildSharp(vm, featureOf(e), valueOf(vm, e));
       }
     );

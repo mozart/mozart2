@@ -35,7 +35,7 @@
 #include <boost/thread.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 
 #include "boostvm-decl.hh"
 #include "boostenvbigint-decl.hh"
@@ -117,22 +117,18 @@ public:
 
 // Time
 
+  // The reference time is in milliseconds since the Unix epoch, which is
+  // also the epoch of std::chrono::system_clock.
+
   static std::int64_t getReferenceTime() {
-    return ptimeToReferenceTime(
-      boost::posix_time::microsec_clock::universal_time());
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count();
   }
 
-  static boost::posix_time::ptime referenceTimeToPTime(std::int64_t time) {
-    return epoch() + boost::posix_time::millisec(time);
-  }
-
-  static std::int64_t ptimeToReferenceTime(boost::posix_time::ptime time) {
-    return (time - epoch()).total_milliseconds();
-  }
-
-  static boost::posix_time::ptime epoch() {
-    using namespace boost::gregorian;
-    return boost::posix_time::ptime(date(1970, Jan, 1));
+  static std::chrono::system_clock::time_point referenceTimeToTimePoint(
+      std::int64_t time) {
+    return std::chrono::system_clock::time_point(
+      std::chrono::milliseconds(time));
   }
 
 // UUID generation

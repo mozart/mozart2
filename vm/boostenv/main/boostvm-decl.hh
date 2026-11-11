@@ -35,10 +35,16 @@
 #include <boost/uuid/random_generator.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/system_timer.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
 namespace mozart { namespace boostenv {
+
+// Expiry time of the preemption timer while it is stopped.
+inline
+boost::asio::system_timer::time_point stoppedTimerTime() {
+  return boost::asio::system_timer::time_point::min();
+}
 
 // Keeps the io_context running while a VM is alive.
 typedef boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
@@ -173,8 +179,8 @@ private:
 
 // Preemption and alarms
 private:
-  boost::asio::deadline_timer* preemptionTimer;
-  boost::asio::deadline_timer alarmTimer;
+  boost::asio::system_timer* preemptionTimer;
+  boost::asio::system_timer alarmTimer;
 
 // IO-driven events that must work with the VM store
 private:

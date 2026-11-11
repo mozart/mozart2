@@ -1,0 +1,296 @@
+name: CI
+
+# Compiled Oz code (.ozf) is platform independent.  It is built once, on
+# Linux x86_64, together with the platform tests.  The other platforms only
+# build the native parts (VM, ozwish, Windows launchers), drop the .ozf files
+# into their build tree, run the tests and package the result.
+#
+# Pushing a tag v* also creates a draft GitHub release with all packages.
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CMAKE_COMMON: >-
+    -G Ninja
+    -DCMAKE_BUILD_TYPE=Release
+
+jobs:
+  # Full build: bootcompiler, VM, all .ozf, tests, Linux packages.
+  linux:
+    name: Linux x86_64 (full build)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0  # for `git describe`, which sets the version
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build libboost-all-dev libgmp-dev tcl8.6-dev tk8.6-dev \
+            emacs-nox dpkg-dev
+
+      - name: Cache sbt
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.sbt
+            ~/.ivy2/cache
+            ~/.cache/coursier
+          key: sbt-${{ hashFiles('bootcompiler/build.sbt', 'bootcompiler/project/*') }}
+
+      - name: Configure
+        run: cmake -S . -B build $CMAKE_COMMON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Build tests
+        run: cmake --build build --target platform-test vmtest
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -j "$(nproc)"
+
+      - name: Package
+        run: cd build && cpack -G "DEB;TGZ"
+
+      - name: Collect the platform-independent build products
+        run: |
+          cd build
+          find . -path ./CMakeFiles -prune -o -type f \( \
+              -name '*.ozf' -o -name '*.elc' \
+              -o -path './lib/*.xbm' -o -path './lib/*.jpg' -o -path './lib/*.gif' \
+            \) -print | sort > ../ozf-files.txt
+          tar -cf ../mozart2-ozf.tar -T ../ozf-files.txt
+          wc -l ../ozf-files.txt
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mozart2-ozf
+          path: mozart2-ozf.tar
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-linux-x86_64
+          path: |
+            build/mozart2-*.deb
+            build/mozart2-*.tar.gz
+
+  # Native-only builds on Linux arm64 and macOS, reusing the .ozf files.
+  unix-vm:
+    name: ${{ matrix.name }}
+    needs: linux
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux arm64
+            os: ubuntu-24.04-arm
+            cpack: DEB;TGZ
+          - name: macOS arm64
+            os: macos-15
+            cpack: TGZ
+          - name: macOS x86_64
+            os: macos-15-intel
+            cpack: TGZ
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v6  # only needed to configure the project
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build libboost-all-dev libgmp-dev tcl8.6-dev tk8.6-dev dpkg-dev
+          echo "PLATFORM_CMAKE=" >> "$GITHUB_ENV"
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Mozart still uses the Tcl 8 API (USE_INTERP_RESULT).
+          brew install ninja boost gmp tcl-tk@8
+          # Point FindTCL at Homebrew's Tcl/Tk 8, not the SDK's old framework.
+          tk="$(brew --prefix tcl-tk@8)"
+          flags=(
+            "-DCMAKE_PREFIX_PATH=$tk;$(brew --prefix)"
+            "-DTCL_INCLUDE_PATH=$tk/include/tcl-tk"
+            "-DTK_INCLUDE_PATH=$tk/include/tcl-tk"
+            "-DTCL_LIBRARY=$tk/lib/libtcl8.6.dylib"
+            "-DTK_LIBRARY=$tk/lib/libtk8.6.dylib"
+            "-DTCL_TCLSH=$tk/bin/tclsh8.6"
+          )
+          echo "PLATFORM_CMAKE=${flags[*]}" >> "$GITHUB_ENV"
+
+      - name: Configure
+        # The .elc files come from the Linux build: any EMACS lets CMake
+        # generate their install rules.  Installing must not rebuild the .ozf.
+        run: >-
+          cmake -S . -B build $CMAKE_COMMON $PLATFORM_CMAKE
+          -DEMACS="$(command -v true)"
+          -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON
+
+      - name: Build the VM
+        run: cmake --build build --target ozemulator ozwish vmtest
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: mozart2-ozf
+
+      - name: Import the .ozf files
+        run: tar -xf mozart2-ozf.tar -C build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -j 4
+
+      - name: Package
+        run: cd build && cpack -G "${{ matrix.cpack }}"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-${{ matrix.os }}
+          path: |
+            build/mozart2-*.deb
+            build/mozart2-*.tar.gz
+
+  # Native-only build on Windows, with MSYS2/MinGW-w64 (the code base targets
+  # GCC/MinGW; MSVC is not supported).
+  windows:
+    name: Windows x86_64
+    needs: linux
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      TCL_VERSION: 8.6.16
+      TCLTK_PREFIX: C:/tcltk
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v6  # only needed to configure the project
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          path-type: inherit  # keep Java visible
+          update: true
+          install: make tar
+          pacboy: gcc:p cmake:p ninja:p boost:p gmp:p
+
+      # Tcl/Tk is built into its own prefix so that the installer can bundle
+      # it without dragging the whole MSYS2 tree along.
+      - name: Cache Tcl/Tk
+        id: tcltk-cache
+        uses: actions/cache@v6
+        with:
+          path: C:/tcltk
+          key: tcltk-${{ env.TCL_VERSION }}-ucrt64-v2
+
+      - name: Build Tcl/Tk
+        if: steps.tcltk-cache.outputs.cache-hit != 'true'
+        run: |
+          tag="core-${TCL_VERSION//./-}"
+          mkdir -p /tmp/tcltk && cd /tmp/tcltk
+          for p in tcl tk; do
+            curl -fsSL "https://github.com/tcltk/$p/archive/refs/tags/$tag.tar.gz" | tar xz
+            mv "$p-$tag" "$p"
+          done
+          # Third-party code: do not report its warnings.
+          export CFLAGS="-O2 -w"
+          (cd tcl/win && ./configure --enable-64bit --prefix=/c/tcltk && make -j4 && make install)
+          (cd tk/win && ./configure --enable-64bit --prefix=/c/tcltk --with-tcl=/tmp/tcltk/tcl/win \
+             && make -j4 && make install)
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue) -and
+              -not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build $CMAKE_COMMON
+          -DCMAKE_PREFIX_PATH=$TCLTK_PREFIX
+          -DCMAKE_INSTALL_PREFIX=C:/mozart2
+          -DEMACS="$(cygpath -m "$(command -v true)")"
+          -DISS_INCLUDE_TCL=ON -DISS_INCLUDE_EMACS=OFF
+          -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON
+
+      - name: Build the VM and launchers
+        run: cmake --build build --target ozemulator ozc oz ozwish vmtest
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: mozart2-ozf
+
+      - name: Import the .ozf files
+        run: tar -xf mozart2-ozf.tar -C build
+
+      - name: Test
+        run: PATH="/c/tcltk/bin:$PATH" ctest --test-dir build --output-on-failure -j 4
+
+      - name: Package
+        run: |
+          cmake --install build
+          iscc="$(command -v iscc || echo '/c/Program Files (x86)/Inno Setup 6/ISCC.exe')"
+          "$iscc" build/distrib/windows/MozartSetup.iss
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-windows-x86_64
+          path: build/mozart2-*.exe
+
+  release:
+    name: Draft release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, unix-vm, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: package-*
+          merge-multiple: true
+          path: dist
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME" dist/*
+          --repo "$GITHUB_REPOSITORY" --draft --generate-notes
+          --title "Mozart $GITHUB_REF_NAME"

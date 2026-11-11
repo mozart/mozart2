@@ -15,7 +15,8 @@ object CodeGen extends Transformer with TreeDSL {
   private implicit def varorconst2reg(expr: VarOrConst) =
     code.registerFor(expr)
 
-  private implicit class RegOps[A <: Register](self: A) {
+  private implicit class RegOps[A <: Register](private val self: A)
+      extends AnyVal {
     def := (source: Register)(implicit ev: A <:< XOrYReg): Unit = {
       code += OpMove(source, self)
     }
@@ -25,11 +26,13 @@ object CodeGen extends Transformer with TreeDSL {
     }
   }
 
-  private implicit class SymbolRegOps(self: Symbol) {
+  private implicit class SymbolRegOps(private val self: Symbol)
+      extends AnyVal {
     def toReg = symbol2reg(self)
   }
 
-  private implicit class ValueRegOps(self: OzValue) {
+  private implicit class ValueRegOps(private val self: OzValue)
+      extends AnyVal {
     def toReg = code.registerFor(self)
   }
 

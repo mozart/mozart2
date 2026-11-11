@@ -12,12 +12,8 @@ trait TreeDSL {
   /** User-provided tree copier */
   val treeCopy: TreeCopier
 
-  /* The DSL wrappers below are named classes rather than anonymous ones, so
-   * that calling their methods does not require reflection.
-   */
-
   /** Operations on Statements */
-  class StatementOps(self: Statement) {
+  implicit class StatementOps(self: Statement) {
     /** `self ~ right` sequentially composes `self` and `right` */
     def ~ (right: Statement): Statement = self match {
       case CompoundStatement(selfStats) =>
@@ -40,11 +36,8 @@ trait TreeDSL {
     }
   }
 
-  implicit def statement2ops(self: Statement): StatementOps =
-    new StatementOps(self)
-
   /** Operations on Expressions */
-  class ExpressionOps(self: Expression) {
+  implicit class ExpressionOps(self: Expression) {
     /** `self === rhs` binds `self` to `rhs` */
     def === (rhs: Expression) =
       treeCopy.BindStatement(self, self, rhs)
@@ -66,9 +59,6 @@ trait TreeDSL {
       treeCopy.BinaryOp(self, self, ".", rhs)
   }
 
-  implicit def expression2ops(self: Expression): ExpressionOps =
-    new ExpressionOps(self)
-
   /** Wrap an Oz value inside a Constant */
   implicit def value2constant(value: OzValue): Constant =
     Constant(value)
@@ -79,11 +69,11 @@ trait TreeDSL {
 
   /** Operations on Builtins */
   implicit def builtin2ops(builtin: Builtin): ExpressionOps =
-    expression2ops(OzBuiltin(builtin))
+    ExpressionOps(OzBuiltin(builtin))
 
   /** Apply operations on Expressions directly on Symbols */
   implicit def symbol2ops(symbol: Symbol): ExpressionOps =
-    expression2ops(symbol)
+    ExpressionOps(symbol)
 
   /** Pattern matching for BindStatements
    *

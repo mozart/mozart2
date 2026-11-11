@@ -4,13 +4,10 @@
 
 using namespace mozart;
 
-namespace std {
-  template <class T, class U, class V, class W>
-  static bool operator==(const pair<T, U>& a, const pair<V, W>& b) noexcept {
-    return a.first == b.first && a.second == b.second;
-  }
+// The expected result of fromUTF(), with the exact type it returns.
+static std::pair<char32_t, nativeint> decoded(char32_t c, nativeint length) {
+  return std::make_pair(c, length);
 }
-// ^ This needs to be defined in std namespace in order to make ADL work.
 
 class UTFTest : public MozartTest {};
 
@@ -107,16 +104,16 @@ TEST_F(UTFTest, ToUTF_16) {
 }
 
 TEST_F(UTFTest, FromUTF_8) {
-  EXPECT_EQ(std::make_pair(U'a', 1), fromUTF("abc"));
-  EXPECT_EQ(std::make_pair(U'b', 1), fromUTF("bc"));
-  EXPECT_EQ(std::make_pair(U'\u00a9', 2), fromUTF("\xc2\xa9"));
-  EXPECT_EQ(std::make_pair(U'\u2260', 3), fromUTF("\xe2\x89\xa0"));
-  EXPECT_EQ(std::make_pair(U'\ufffe', 3), fromUTF("\xef\xbf\xbe"));
-  EXPECT_EQ(std::make_pair(U'\uffff', 3), fromUTF("\xef\xbf\xbf"));
-  EXPECT_EQ(std::make_pair(U'\U00010000', 4), fromUTF("\xf0\x90\x80\x80"));
-  EXPECT_EQ(std::make_pair(U'\U0010ffff', 4), fromUTF("\xf4\x8f\xbf\xbf"));
-  EXPECT_EQ(std::make_pair(U'\ud7ff', 3), fromUTF("\xed\x9f\xbf"));
-  EXPECT_EQ(std::make_pair(U'\0', 1), fromUTF("\0", 1));
+  EXPECT_EQ(decoded(U'a', 1), fromUTF("abc"));
+  EXPECT_EQ(decoded(U'b', 1), fromUTF("bc"));
+  EXPECT_EQ(decoded(U'\u00a9', 2), fromUTF("\xc2\xa9"));
+  EXPECT_EQ(decoded(U'\u2260', 3), fromUTF("\xe2\x89\xa0"));
+  EXPECT_EQ(decoded(U'\ufffe', 3), fromUTF("\xef\xbf\xbe"));
+  EXPECT_EQ(decoded(U'\uffff', 3), fromUTF("\xef\xbf\xbf"));
+  EXPECT_EQ(decoded(U'\U00010000', 4), fromUTF("\xf0\x90\x80\x80"));
+  EXPECT_EQ(decoded(U'\U0010ffff', 4), fromUTF("\xf4\x8f\xbf\xbf"));
+  EXPECT_EQ(decoded(U'\ud7ff', 3), fromUTF("\xed\x9f\xbf"));
+  EXPECT_EQ(decoded(U'\0', 1), fromUTF("\0", 1));
 
   // invalid continuation byte
   EXPECT_EQ(UnicodeErrorReason::invalidUTF8, fromUTF("\xe2\x89\0").second);
@@ -147,23 +144,23 @@ TEST_F(UTFTest, FromUTF_8) {
 }
 
 TEST_F(UTFTest, FromUTF_16) {
-  EXPECT_EQ(std::make_pair(U'a', 1), fromUTF(u"abc"));
-  EXPECT_EQ(std::make_pair(U'b', 1), fromUTF(u"bc"));
-  EXPECT_EQ(std::make_pair(U'\u00a9', 1), fromUTF(u"\u00a9"));
-  EXPECT_EQ(std::make_pair(U'\u2260', 1), fromUTF(u"\u2260"));
-  EXPECT_EQ(std::make_pair(U'\ufffe', 1), fromUTF(u"\ufffe"));
-  EXPECT_EQ(std::make_pair(U'\0', 1), fromUTF(u"\0", 1));
+  EXPECT_EQ(decoded(U'a', 1), fromUTF(u"abc"));
+  EXPECT_EQ(decoded(U'b', 1), fromUTF(u"bc"));
+  EXPECT_EQ(decoded(U'\u00a9', 1), fromUTF(u"\u00a9"));
+  EXPECT_EQ(decoded(U'\u2260', 1), fromUTF(u"\u2260"));
+  EXPECT_EQ(decoded(U'\ufffe', 1), fromUTF(u"\ufffe"));
+  EXPECT_EQ(decoded(U'\0', 1), fromUTF(u"\0", 1));
 
   // Note: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=41698
   char16_t buf[2] = {0xffff, 0};
-  EXPECT_EQ(std::make_pair(U'\uffff', 1), fromUTF(buf));
+  EXPECT_EQ(decoded(U'\uffff', 1), fromUTF(buf));
 
   // Can't use u"\ud800\udc00" to write a surrogate pair
   buf[0] = 0xd800; buf[1] = 0xdc00;
-  EXPECT_EQ(std::make_pair(U'\U00010000', 2), fromUTF(buf));
+  EXPECT_EQ(decoded(U'\U00010000', 2), fromUTF(buf));
 
   buf[0] = 0xdbff; buf[1] = 0xdfff;
-  EXPECT_EQ(std::make_pair(U'\U0010ffff', 2), fromUTF(buf));
+  EXPECT_EQ(decoded(U'\U0010ffff', 2), fromUTF(buf));
 
   buf[0] = 0xd800; buf[1] = 0xd800;
   EXPECT_EQ(UnicodeErrorReason::invalidUTF16, fromUTF(buf).second);  // invalid trail surrogate

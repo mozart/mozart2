@@ -11,7 +11,7 @@ AppPublisher=Universite catholique de Louvain
 AppPublisherURL=http://mozart.github.io/
 AppSupportURL=http://mozart.github.io/
 AppUpdatesURL=http://mozart.github.io/
-DefaultDirName={pf}\Mozart
+DefaultDirName={autopf}\Mozart
 DefaultGroupName=Mozart
 AllowNoIcons=yes
 LicenseFile={#LicenseFile}
@@ -23,8 +23,8 @@ WizardImageFile=mozartside.bmp
 WizardSmallImageFile=mozartsmall.bmp
 ChangesEnvironment=yes
 #if TargetArch == "x86_64"
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 #endif
 
 [Languages]
@@ -72,7 +72,7 @@ begin
   case CurStep of
     ssPostInstall:
       begin
-        if IsAdminLoggedOn then                                  
+        if IsAdmin then
           ModifyPath('{app}\bin', pmAddToEnd, psAllUsers)
         else
           ModifyPath('{app}\bin', pmAddToEnd, psCurrentUser);
@@ -85,7 +85,7 @@ begin
   case CurUninstallStep of
     usPostUninstall:
       begin
-        if IsAdminLoggedOn then
+        if IsAdmin then
           ModifyPath('{app}\bin', pmRemove, psAllUsers)
         else
           ModifyPath('{app}\bin', pmRemove, psCurrentUser);

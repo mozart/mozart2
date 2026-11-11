@@ -167,7 +167,8 @@ set(CPACK_SOURCE_IGNORE_FILES
 
 if(WIN32)
   find_program(ISS_COMPILER NAMES iscc ISCC
-               HINTS "C:/Program Files (x86)/Inno Setup 5" "C:/Program Files/Inno Setup 5")
+               HINTS "C:/Program Files (x86)/Inno Setup 6" "C:/Program Files/Inno Setup 6"
+                     "C:/Program Files (x86)/Inno Setup 5" "C:/Program Files/Inno Setup 5")
 
   if(NOT ISS_COMPILER)
     message(WARNING "Inno Setup Compiler not found. You won't be able to build setup files.")

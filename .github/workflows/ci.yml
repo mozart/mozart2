@@ -92,21 +92,29 @@ jobs:
               -name '*.ozf' -o -name '*.elc' \
               -o -path './lib/*.xbm' -o -path './lib/*.jpg' -o -path './lib/*.gif' \
             \) -print | sort > ../ozf-files.txt
-          tar -cf ../mozart2-ozf.tar -T ../ozf-files.txt
+          tar -cf ../ozf-build-products.tar -T ../ozf-files.txt
           wc -l ../ozf-files.txt
 
+      # Uploaded as is (archive: false): the artifact is the file itself.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: mozart2-ozf
-          path: mozart2-ozf.tar
+          path: ozf-build-products.tar
+          archive: false
           retention-days: 7
+
+      - name: Find the packages
+        id: packages
+        run: bash .github/list-packages.sh build >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: package-linux-x86_64
-          path: |
-            build/mozart2-*.deb
-            build/mozart2-*.tar.gz
+          path: ${{ steps.packages.outputs.deb }}
+          archive: false
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          path: ${{ steps.packages.outputs.tgz }}
+          archive: false
 
   # Native-only builds on Linux arm64 and macOS, reusing the .ozf files.
   unix-vm:
@@ -150,7 +158,9 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           # Mozart still uses the Tcl 8 API (USE_INTERP_RESULT).
-          brew install ninja boost gmp tcl-tk@8
+          for f in ninja boost gmp tcl-tk@8; do
+            brew list --versions "$f" > /dev/null || brew install "$f"
+          done
           # Point FindTCL at Homebrew's Tcl/Tk 8, not the SDK's old framework.
           tk="$(brew --prefix tcl-tk@8)"
           flags=(
@@ -176,10 +186,10 @@ jobs:
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: mozart2-ozf
+          name: ozf-build-products.tar
 
       - name: Import the .ozf files
-        run: tar -xf mozart2-ozf.tar -C build
+        run: tar -xf ozf-build-products.tar -C build
 
       - name: Test
         run: ctest --test-dir build --output-on-failure -j 4
@@ -187,12 +197,20 @@ jobs:
       - name: Package
         run: cd build && cpack -G "${{ matrix.cpack }}"
 
+      - name: Find the packages
+        id: packages
+        run: bash .github/list-packages.sh build >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.packages.outputs.deb != ''
+        with:
+          path: ${{ steps.packages.outputs.deb }}
+          archive: false
+
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: package-${{ matrix.os }}
-          path: |
-            build/mozart2-*.deb
-            build/mozart2-*.tar.gz
+          path: ${{ steps.packages.outputs.tgz }}
+          archive: false
 
   # Native-only build on Windows, with MSYS2/MinGW-w64 (the code base targets
   # GCC/MinGW; MSVC is not supported).
@@ -225,7 +243,7 @@ jobs:
           msystem: UCRT64
           path-type: inherit  # keep Java visible
           update: true
-          install: make tar
+          install: make
           pacboy: gcc:p cmake:p ninja:p boost:p gmp:p
 
       # Tcl/Tk is built into its own prefix so that the installer can bundle
@@ -269,10 +287,10 @@ jobs:
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: mozart2-ozf
+          name: ozf-build-products.tar
 
       - name: Import the .ozf files
-        run: tar -xf mozart2-ozf.tar -C build
+        run: tar -xf ozf-build-products.tar -C build
 
       - name: Test
         run: PATH="/c/tcltk/bin:$PATH" ctest --test-dir build --output-on-failure -j 4
@@ -284,28 +302,78 @@ jobs:
           iscc="$(command -v iscc || echo '/c/Program Files (x86)/Inno Setup 6/ISCC.exe')"
           "$iscc" build/distrib/windows/MozartSetup.iss
 
+      - name: Find the packages
+        id: packages
+        run: bash .github/list-packages.sh build >> "$GITHUB_OUTPUT"
+
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: package-windows-x86_64
-          path: build/mozart2-*.exe
+          path: ${{ steps.packages.outputs.exe }}
+          archive: false
 
+  # Gathers the packages of all platforms and checks them, on every run, so
+  # that the release below is tested without making one.
+  release-files:
+    name: Release files
+    needs: [linux, unix-vm, windows]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: mozart2-*
+          merge-multiple: true
+          path: dist
+
+      - name: Check the packages
+        working-directory: dist
+        run: |
+          ls -l
+          expected=(
+            x86_64-linux.deb x86_64-linux.tar.gz
+            aarch64-linux.deb aarch64-linux.tar.gz
+            x86_64-darwin.tar.gz aarch64-darwin.tar.gz
+            x86_64-windows.exe
+          )
+          for suffix in "${expected[@]}"; do
+            n=$(find . -maxdepth 1 -name "mozart2-*-$suffix" | wc -l)
+            [ "$n" -eq 1 ] || { echo "::error::expected one *-$suffix, found $n"; exit 1; }
+          done
+          empty=$(find . -maxdepth 1 -type f -empty)
+          [ -z "$empty" ] || { echo "::error::empty files: $empty"; exit 1; }
+          n=$(find . -maxdepth 1 -type f | wc -l)
+          [ "$n" -eq "${#expected[@]}" ] || { echo "::error::unexpected files"; exit 1; }
+          sha256sum mozart2-* > SHA256SUMS
+          cat SHA256SUMS
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          path: dist/SHA256SUMS
+          archive: false
+
+  # Draft release, for v* tags only (pushing tags requires write access).
   release:
     name: Draft release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, unix-vm, windows]
+    needs: release-files
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: package-*
+          pattern: mozart2-*
           merge-multiple: true
           path: dist
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: SHA256SUMS
+          path: dist
+
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create "$GITHUB_REF_NAME" dist/*
-          --repo "$GITHUB_REPOSITORY" --draft --generate-notes
+          --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes
           --title "Mozart $GITHUB_REF_NAME"

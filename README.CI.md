@@ -17,8 +17,11 @@ pipeline builds it only once:
    with `CMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON`, so installing and packaging do
    not rebuild the `.ozf` files.
 
-Each job uploads its packages as a `package-*` artifact. Pushing a `v*` tag
-also creates a draft GitHub release with all the packages attached.
+Each job uploads its packages as artifacts named after the files, e.g.
+`mozart2-2.0.2-aarch64-darwin.tar.gz`. On every run, the *Release files* job
+gathers them, checks that each platform produced its packages, and uploads a
+`SHA256SUMS` file. Pushing a `v*` tag then creates a draft GitHub release
+with these files, to be reviewed and published by hand.
 
 ## Windows
 

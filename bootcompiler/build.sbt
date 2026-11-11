@@ -4,14 +4,15 @@ version := "2.0-SNAPSHOT"
 
 scalaVersion := "2.13.8"
 
-scalacOptions ++= Seq("-language:postfixOps", "-deprecation", "-optimize")
+scalacOptions ++= Seq("-language:postfixOps", "-deprecation", "-feature",
+  "-opt:l:inline", "-opt-inline-from:**") // what -optimize used to mean
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1"
 libraryDependencies += "com.github.scopt" %% "scopt" % "4.1.0"
 libraryDependencies += "io.spray" %% "spray-json" % "1.3.6"
 
 // Work around a bug that prevents generating documentation
-unmanagedClasspath in Compile +=
+Compile / unmanagedClasspath +=
     Attributed.blank(new java.io.File("doesnotexist"))
 
 // Added during migration to the java 9 module system

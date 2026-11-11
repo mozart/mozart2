@@ -17,7 +17,7 @@ sealed abstract class OpCode(val opCode: Int) extends Product {
   def size = argumentCount + 1
 
   def code = {
-    (name /: arguments) {
+    arguments.foldLeft(name) {
       (prev, arg) => prev + ", " + arg.code
     }
   }

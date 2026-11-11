@@ -1,4 +1,4 @@
-;;; oz.el --- Major mode for editing Oz programs.
+;;; oz.el --- Major mode for editing Oz programs.  -*- lexical-binding: nil -*-
 
 ;; Copyright (c) 1993-1998  Leif Kornstaedt
 ;; Copyright (c) 1993-1998  Michael Mehl
@@ -199,7 +199,7 @@ Note that this variable is only checked once when oz.el is loaded."
 (defvar oz-is-color
   (and (or (eq window-system 'x)
            (eq window-system 'w32))
-       (x-display-color-p)))
+       (display-color-p)))
 
 (make-face 'oz-space-face)
 (put 'oz-space-face 'face-documentation
@@ -464,7 +464,7 @@ point is not moved."
   "Move to the last unmatched begin and return column of point.
 If IS-FIELD-VALUE is non-nil, a between-pattern of the same nesting
 level is also considered a begin-pattern.  This is used by indentation
-to handle lines like 'attr a:'."
+to handle lines like `attr a:'."
   (let ((ret nil)
         (nesting 0))
     (while (not ret)
@@ -601,7 +601,8 @@ and the following line."
         (setq current-line (1+ current-line))
         (forward-line 1)))
     (message nil)
-    (goto-line old-line)))
+    (goto-char (point-min))
+    (forward-line (1- old-line))))
 
 (defun oz-indent-line (&optional arg)
   "Indent the current line.
@@ -852,7 +853,7 @@ With argument, do it that many times.  Argument must be positive."
     (while (> arg 0)
       (let ((pos (scan-sexps (point) -1)))
         (if (equal pos nil)
-            (progn (beginning-of-buffer) (setq arg 0))
+            (progn (goto-char (point-min)) (setq arg 0))
           (goto-char pos)
           (cond ((looking-at oz-end-pattern)
                  (oz-backward-begin))
@@ -943,11 +944,7 @@ buffer."
 ;;}}}
 ;;{{{ Keymap Definitions
 
-;; Silence the compiler warnings below
-(defvar is-alias)
-(defvar map)
-
-(defun oz-define-key (key fun)
+(defun oz-define-key (map is-alias key fun)
   ;; if IS-ALIAS is non nil, define fun/tty to be an alias for fun
   ;; and use fun/tty as the definition instead of fun.  This way
   ;; menu entries will always document the short prefix.
@@ -958,38 +955,38 @@ buffer."
     (define-key map key afun)))
 
 (defun oz-define-prefixed-keys (map prefix &optional is-alias)
-  (oz-define-key `[,@prefix ?e] 'oz-toggle-emulator)
-  (oz-define-key `[,@prefix ?c] 'oz-toggle-compiler)
-  (oz-define-key `[,@prefix ?t] 'oz-toggle-temp)
-  (oz-define-key `[,@prefix ?r] 'run-oz)
-  (oz-define-key `[,@prefix ?h] 'oz-halt)
-  (oz-define-key `[,@prefix ?n] 'oz-new-buffer)
+  (oz-define-key map is-alias `[,@prefix ?e] 'oz-toggle-emulator)
+  (oz-define-key map is-alias `[,@prefix ?c] 'oz-toggle-compiler)
+  (oz-define-key map is-alias `[,@prefix ?t] 'oz-toggle-temp)
+  (oz-define-key map is-alias `[,@prefix ?r] 'run-oz)
+  (oz-define-key map is-alias `[,@prefix ?h] 'oz-halt)
+  (oz-define-key map is-alias `[,@prefix ?n] 'oz-new-buffer)
   ;;
-  (oz-define-key `[,@prefix (control ?b)] 'oz-feed-buffer)
-  (oz-define-key `[,@prefix (control ?r)] 'oz-feed-region)
-  (oz-define-key `[,@prefix (control ?l)] 'oz-feed-line)
-  (oz-define-key `[,@prefix (control ?p)] 'oz-feed-paragraph)
+  (oz-define-key map is-alias `[,@prefix (control ?b)] 'oz-feed-buffer)
+  (oz-define-key map is-alias `[,@prefix (control ?r)] 'oz-feed-region)
+  (oz-define-key map is-alias `[,@prefix (control ?l)] 'oz-feed-line)
+  (oz-define-key map is-alias `[,@prefix (control ?p)] 'oz-feed-paragraph)
   ;;
-  (oz-define-key `[,@prefix ?s (control ?b)] 'oz-show-buffer)
-  (oz-define-key `[,@prefix ?s (control ?r)] 'oz-show-region)
-  (oz-define-key `[,@prefix ?s (control ?l)] 'oz-show-line)
-  (oz-define-key `[,@prefix ?s (control ?p)] 'oz-show-paragraph)
+  (oz-define-key map is-alias `[,@prefix ?s (control ?b)] 'oz-show-buffer)
+  (oz-define-key map is-alias `[,@prefix ?s (control ?r)] 'oz-show-region)
+  (oz-define-key map is-alias `[,@prefix ?s (control ?l)] 'oz-show-line)
+  (oz-define-key map is-alias `[,@prefix ?s (control ?p)] 'oz-show-paragraph)
   ;;
-  (oz-define-key `[,@prefix ?b (control ?b)] 'oz-browse-buffer)
-  (oz-define-key `[,@prefix ?b (control ?r)] 'oz-browse-region)
-  (oz-define-key `[,@prefix ?b (control ?l)] 'oz-browse-line)
-  (oz-define-key `[,@prefix ?b (control ?p)] 'oz-browse-paragraph)
+  (oz-define-key map is-alias `[,@prefix ?b (control ?b)] 'oz-browse-buffer)
+  (oz-define-key map is-alias `[,@prefix ?b (control ?r)] 'oz-browse-region)
+  (oz-define-key map is-alias `[,@prefix ?b (control ?l)] 'oz-browse-line)
+  (oz-define-key map is-alias `[,@prefix ?b (control ?p)] 'oz-browse-paragraph)
   ;;
-  (oz-define-key `[,@prefix ?i (control ?b)] 'oz-inspect-buffer)
-  (oz-define-key `[,@prefix ?i (control ?r)] 'oz-inspect-region)
-  (oz-define-key `[,@prefix ?i (control ?l)] 'oz-inspect-line)
-  (oz-define-key `[,@prefix ?i (control ?p)] 'oz-inspect-paragraph)
+  (oz-define-key map is-alias `[,@prefix ?i (control ?b)] 'oz-inspect-buffer)
+  (oz-define-key map is-alias `[,@prefix ?i (control ?r)] 'oz-inspect-region)
+  (oz-define-key map is-alias `[,@prefix ?i (control ?l)] 'oz-inspect-line)
+  (oz-define-key map is-alias `[,@prefix ?i (control ?p)] 'oz-inspect-paragraph)
   ;;
-  (oz-define-key `[,@prefix ,@prefix ?s] 'oz-open-panel)
-  (oz-define-key `[,@prefix ,@prefix ?n] 'oz-open-distribution-panel)
-  (oz-define-key `[,@prefix ,@prefix ?c] 'oz-open-compiler-panel)
-  (oz-define-key `[,@prefix ,@prefix ?p] 'oz-profiler)
-  (oz-define-key `[,@prefix ,@prefix ?d] 'oz-debugger))
+  (oz-define-key map is-alias `[,@prefix ,@prefix ?s] 'oz-open-panel)
+  (oz-define-key map is-alias `[,@prefix ,@prefix ?n] 'oz-open-distribution-panel)
+  (oz-define-key map is-alias `[,@prefix ,@prefix ?c] 'oz-open-compiler-panel)
+  (oz-define-key map is-alias `[,@prefix ,@prefix ?p] 'oz-profiler)
+  (oz-define-key map is-alias `[,@prefix ,@prefix ?d] 'oz-debugger))
 
 (defvar oz-mode-map
   (let ((map (make-sparse-keymap)))
@@ -1250,6 +1247,8 @@ if that value is non-nil."
 (defvar mode-popup-menu)
 (defvar current-menubar)
 
+(declare-function set-buffer-menubar "menubar") ; XEmacs
+
 (defun oz-set-lucid-menu ()
   ;; Add the Oz menu to the menu bar.
   (if oz-lucid-emacs
@@ -1258,7 +1257,8 @@ if that value is non-nil."
         (if (and (featurep 'menubar) current-menubar)
             (progn
               (set-buffer-menubar current-menubar)
-              (add-submenu nil oz-menubar))))))
+              (with-no-warnings ; obsolete in GNU Emacs, which does not get here
+                (add-submenu nil oz-menubar)))))))
 
 ;;}}}
 ;;{{{ Lisp Paragraph Filling Commands

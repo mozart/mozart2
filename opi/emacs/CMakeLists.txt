@@ -15,7 +15,7 @@ else()
     set(ISS_EMACS_EXEC ${EMACS} CACHE STRING "Executable path of emacs")
   endif()
 
-  set(EMACS_OPTIONS -q -batch -f batch-byte-compile)
+  set(EMACS_OPTIONS -Q -batch -f batch-byte-compile)
   set(EMACS_MODE_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/oz.el"
     "${CMAKE_CURRENT_SOURCE_DIR}/oz-server.el"

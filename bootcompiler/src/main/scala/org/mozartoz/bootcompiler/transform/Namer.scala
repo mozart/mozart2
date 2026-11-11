@@ -372,7 +372,7 @@ object Namer extends Transformer with TransformUtils with TreeDSL {
     for (export @ FunctorExport(feature, value: RawVariable) <- exports) yield {
       val newFeature = feature match {
         case AutoFeature() =>
-          val strFeature = value.name.head.toLower + value.name.tail
+          val strFeature = value.name.head.toLower.toString + value.name.tail
           treeCopy.Constant(feature, OzAtom(strFeature))
         case _ =>
           feature

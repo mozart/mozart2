@@ -73,7 +73,7 @@ class OzLexical extends Lexical with OzTokens with ImplicitConversions {
     quoted('\"') ^^ StringLit
 
   def quotedKeepQuotes(quoteChar: Char) =
-    quoted(quoteChar) ^^ (quoteChar + _ + quoteChar)
+    quoted(quoteChar) ^^ (s => s"$quoteChar$s$quoteChar")
 
   def quoted(quoteChar: Char) =
     quoteChar ~> stringOf(inQuoteChar(quoteChar)) <~ quoteChar

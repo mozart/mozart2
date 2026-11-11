@@ -309,10 +309,10 @@ case class FunctorExpression(name: String,
   def syntax(indent: String) = {
     val subIndent = indent + "   "
 
-    def sectionSyntax(sectionKw: String, elems: Traversable[Node]) = {
+    def sectionSyntax(sectionKw: String, elems: Iterable[Node]) = {
       if (elems.isEmpty) ""
       else {
-        (("\n\n" + indent + sectionKw) /: elems) {
+        elems.foldLeft("\n\n" + indent + sectionKw) {
           (prev, elem) => prev + "\n" + subIndent + elem.syntax(subIndent)
         }
       }
@@ -651,10 +651,10 @@ case class ClassExpression(name: String, parents: List[Expression],
     val subIndent = indent + "   "
     val subsubIndent = subIndent + "   "
 
-    def sectionSyntax(sectionKw: String, elems: Traversable[Node]) = {
+    def sectionSyntax(sectionKw: String, elems: Iterable[Node]) = {
       if (elems.isEmpty) ""
       else {
-        (("\n\n" + subIndent + sectionKw) /: elems) {
+        elems.foldLeft("\n\n" + subIndent + sectionKw) {
           (prev, elem) => prev + "\n" + subsubIndent + elem.syntax(subsubIndent)
         }
       }
@@ -665,7 +665,7 @@ case class ClassExpression(name: String, parents: List[Expression],
     val untilFeatures = untilParents + sectionSyntax("feat", features)
     val untilAttributes = untilFeatures + sectionSyntax("attr", attributes)
 
-    val untilMethods = (untilAttributes /: methods) {
+    val untilMethods = methods.foldLeft(untilAttributes) {
       (prev, method) => prev + "\n\n" + subIndent + method.syntax(subIndent)
     }
 

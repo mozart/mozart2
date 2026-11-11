@@ -193,10 +193,11 @@ object Main {
         case parser.Success(rawCode, _) =>
           rawCode
 
-        case parser.NoSuccess(msg, next) =>
+        case failure: parser.NoSuccess =>
+          val next = failure.next
           Console.err.println(
               "Parse error at %s\n".format(next.pos.toString) +
-              msg + "\n" +
+              failure.msg + "\n" +
               next.pos.longString)
           sys.exit(2)
       }
@@ -360,10 +361,10 @@ object Main {
    *  @param file  file to write
    *  @param lines the lines to write
    */
-  private def writeFileLines(file: File, lines: TraversableOnce[String]) = {
+  private def writeFileLines(file: File, lines: IterableOnce[String]) = {
     val sink = new PrintWriter(file)
     try {
-      for (line <- lines)
+      for (line <- lines.iterator)
         sink.println(line)
     } finally {
       sink.close()

@@ -6,6 +6,17 @@ name: CI
 # into their build tree, run the tests and package the result.
 #
 # Pushing a tag v* also creates a draft GitHub release with all packages.
+#
+# Security:
+# - Pull requests run with the `pull_request` event, never
+#   `pull_request_target`: code from forks gets a read-only token and no
+#   secrets.  Runs for outside contributors must also be approved in the
+#   repository settings (Actions > General).
+# - The token is read-only, except in the release job, which only runs for
+#   tags, i.e. for people with write access.
+# - Actions are pinned to full commit SHAs, and downloads are checked
+#   against known hashes, so that a compromised tag or mirror cannot inject
+#   code.
 
 on:
   push:
@@ -13,6 +24,9 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,12 +43,13 @@ jobs:
     name: Linux x86_64 (full build)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
           fetch-depth: 0  # for `git describe`, which sets the version
+          persist-credentials: false
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '17'
@@ -47,7 +62,7 @@ jobs:
             emacs-nox dpkg-dev
 
       - name: Cache sbt
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.sbt
@@ -80,13 +95,13 @@ jobs:
           tar -cf ../mozart2-ozf.tar -T ../ozf-files.txt
           wc -l ../ozf-files.txt
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mozart2-ozf
           path: mozart2-ozf.tar
           retention-days: 7
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package-linux-x86_64
           path: |
@@ -112,12 +127,13 @@ jobs:
             cpack: TGZ
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-java@v6  # only needed to configure the project
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0 -- only needed to configure the project
         with:
           distribution: temurin
           java-version: '17'
@@ -158,7 +174,7 @@ jobs:
       - name: Build the VM
         run: cmake --build build --target ozemulator ozwish vmtest
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: mozart2-ozf
 
@@ -171,7 +187,7 @@ jobs:
       - name: Package
         run: cd build && cpack -G "${{ matrix.cpack }}"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package-${{ matrix.os }}
           path: |
@@ -189,19 +205,22 @@ jobs:
         shell: msys2 {0}
     env:
       TCL_VERSION: 8.6.16
+      TCL_SHA256: 91cb8fa61771c63c262efb553059b7c7ad6757afa5857af6265e4b0bdc2a14a5
+      TK_SHA256: be9f94d3575d4b3099d84bc3c10de8994df2d7aa405208173c709cc404a7e5fe
       TCLTK_PREFIX: C:/tcltk
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-java@v6  # only needed to configure the project
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0 -- only needed to configure the project
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: msys2/setup-msys2@v2
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
         with:
           msystem: UCRT64
           path-type: inherit  # keep Java visible
@@ -213,33 +232,28 @@ jobs:
       # it without dragging the whole MSYS2 tree along.
       - name: Cache Tcl/Tk
         id: tcltk-cache
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: C:/tcltk
-          key: tcltk-${{ env.TCL_VERSION }}-ucrt64-v2
+          key: tcltk-${{ env.TCL_VERSION }}-${{ env.TCL_SHA256 }}-ucrt64
 
       - name: Build Tcl/Tk
         if: steps.tcltk-cache.outputs.cache-hit != 'true'
         run: |
-          tag="core-${TCL_VERSION//./-}"
           mkdir -p /tmp/tcltk && cd /tmp/tcltk
+          base="https://downloads.sourceforge.net/project/tcl/Tcl/$TCL_VERSION"
           for p in tcl tk; do
-            curl -fsSL "https://github.com/tcltk/$p/archive/refs/tags/$tag.tar.gz" | tar xz
-            mv "$p-$tag" "$p"
+            curl -fsSL -o "$p.tar.gz" "$base/$p$TCL_VERSION-src.tar.gz"
+          done
+          printf '%s  %s\n' "$TCL_SHA256" tcl.tar.gz "$TK_SHA256" tk.tar.gz | sha256sum -c -
+          for p in tcl tk; do
+            tar xzf "$p.tar.gz" && mv "$p$TCL_VERSION" "$p"
           done
           # Third-party code: do not report its warnings.
           export CFLAGS="-O2 -w"
           (cd tcl/win && ./configure --enable-64bit --prefix=/c/tcltk && make -j4 && make install)
           (cd tk/win && ./configure --enable-64bit --prefix=/c/tcltk --with-tcl=/tmp/tcltk/tcl/win \
              && make -j4 && make install)
-
-      - name: Install Inno Setup
-        shell: pwsh
-        run: |
-          if (-not (Get-Command iscc -ErrorAction SilentlyContinue) -and
-              -not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) {
-            choco install innosetup -y --no-progress
-          }
 
       - name: Configure
         run: >-
@@ -253,7 +267,7 @@ jobs:
       - name: Build the VM and launchers
         run: cmake --build build --target ozemulator ozc oz ozwish vmtest
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: mozart2-ozf
 
@@ -266,10 +280,11 @@ jobs:
       - name: Package
         run: |
           cmake --install build
+          # Inno Setup is preinstalled on the GitHub Windows images.
           iscc="$(command -v iscc || echo '/c/Program Files (x86)/Inno Setup 6/ISCC.exe')"
           "$iscc" build/distrib/windows/MozartSetup.iss
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package-windows-x86_64
           path: build/mozart2-*.exe
@@ -282,7 +297,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: package-*
           merge-multiple: true

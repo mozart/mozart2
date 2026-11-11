@@ -35,3 +35,27 @@ On Linux:
     cmake --build build
     cmake --build build --target platform-test vmtest
     ctest --test-dir build --output-on-failure
+
+## Security
+
+The workflow is written so that untrusted code cannot get write access:
+
+- pull requests use the `pull_request` event (never `pull_request_target`),
+  so code from forks runs with a read-only token and without secrets;
+- the token is read-only (`permissions: contents: read`), except in the
+  release job, which only runs for `v*` tags, which only people with write
+  access can push;
+- third-party actions are pinned to full commit SHAs, updated through
+  Dependabot pull requests ([.github/dependabot.yml](.github/dependabot.yml)),
+  and downloaded sources (Tcl/Tk on Windows) are checked against SHA-256
+  hashes.
+
+Some protections are repository settings, not part of the workflow
+(Settings > Actions > General):
+
+- *Approval for running fork pull request workflows from contributors*:
+  choose *Require approval for all external contributors*, so that a
+  maintainer reviews the changes, workflow included, before CI runs them;
+- *Workflow permissions*: choose *Read repository contents and packages
+  permissions*, the default for workflows that do not set `permissions`;
+- optionally, *Require actions to be pinned to a full-length commit SHA*.

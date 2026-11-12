@@ -1251,17 +1251,14 @@ public:
 
         auto& environment = BoostEnvironment::forVM(vm);
         tcp::resolver resolver (environment.io_context);
-        tcp::resolver::query query (nameString, "0");
-        auto it = resolver.resolve(query, ec);
+        auto results = resolver.resolve(nameString, "0", ec);
         if (!ec) {
           OzListBuilder addrListBuilder (vm);
 
-          decltype(it) end;
-          while (it != end) {
-            auto addr = it->endpoint().address().to_string();
+          for (const auto& entry : results) {
+            auto addr = entry.endpoint().address().to_string();
             auto addrString = String::build(vm, newLString(vm, addr));
             addrListBuilder.push_back(vm, addrString);
-            ++ it;
           }
 
           auto arity = buildArity(vm, "hostent", "addrList", "aliases", "name");

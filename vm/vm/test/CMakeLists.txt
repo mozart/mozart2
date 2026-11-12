@@ -5,9 +5,9 @@ include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}/../main"
   "${GENERATED_SOURCES_DIR}")
 
-option(BUILD_GMOCK "" OFF)
-option(BUILD_GTEST "" ON)
-mozart_add_third_party_subdirectory(gtest EXCLUDE_FROM_ALL)
+set(BUILD_GMOCK OFF)
+set(INSTALL_GTEST OFF)
+add_subdirectory(gtest EXCLUDE_FROM_ALL)
 # Third-party code: its warnings are not ours to fix.
 target_compile_options(gtest PRIVATE -w)
 target_compile_options(gtest_main PRIVATE -w)

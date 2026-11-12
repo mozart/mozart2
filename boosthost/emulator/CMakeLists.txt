@@ -3,11 +3,12 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/../..")
 
 # Configure compiler
-set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
 
 if(WIN32)
-  # Boost requires this
-  add_definitions(-D_WIN32_WINNT=0x0501)
+  # Target Windows 10, as Boost's own CMake package does on MSYS2 (through
+  # Boost.Atomic).  All the code sharing Asio types must agree on it.
+  add_definitions(-D_WIN32_WINNT=0x0A00)
 endif()
 
 # Boost library
@@ -19,8 +20,11 @@ if(${MOZART_BOOST_USE_STATIC_LIBS})
   set(Boost_USE_STATIC_LIBS ON)
 endif()
 
-find_package(Boost COMPONENTS
-  program_options random system thread filesystem chrono REQUIRED)
+# Boost.System is header-only since 1.69, and its stub library is gone in
+# recent releases, so it is not requested as a component.  Boost ships its
+# own CMake package since 1.70; CMake 3.30 removed its FindBoost module.
+find_package(Boost 1.70 CONFIG COMPONENTS
+  program_options random thread filesystem chrono REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -30,12 +34,6 @@ include(FindGMP)
 if(GMP_FOUND)
   include_directories(${GMP_INCLUDE_DIR})
   add_definitions(-DUSE_GMP)
-endif()
-
-if(MINGW)
-  # Work around a bug in MinGW
-  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x "
-         CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
 # Mozart VM library

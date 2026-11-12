@@ -1,6 +1,6 @@
 # Boost library
 
-find_package(Boost COMPONENTS random system thread filesystem chrono REQUIRED)
+find_package(Boost 1.70 CONFIG COMPONENTS random thread filesystem chrono REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -17,18 +17,10 @@ if(GMP_FOUND)
 endif()
 
 if(WIN32)
-  # Boost requires this
-  add_definitions(-D_WIN32_WINNT=0x0501)
-  set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" -D_WIN32_WINNT=0x0501)
-endif()
-
-if(MINGW)
-  # Work around a bug in MinGW
-  string(REGEX REPLACE "(^| )-std=c\\+\\+0x($| )" " -std=gnu++0x "
-         CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CXX_STD_OPT -std=gnu++0x)
-else()
-  set(CXX_STD_OPT -std=c++0x)
+  # Target Windows 10, as Boost's own CMake package does on MSYS2 (through
+  # Boost.Atomic).  All the code sharing Asio types must agree on it.
+  add_definitions(-D_WIN32_WINNT=0x0A00)
+  set(MOZART_GENERATOR_FLAGS "${MOZART_GENERATOR_FLAGS}" -D_WIN32_WINNT=0x0A00)
 endif()
 
 # Mozart VM library

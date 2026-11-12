@@ -30,14 +30,32 @@
 #include "core-forward-decl.hh"
 #include "store-decl.hh"
 
+// Mozart exceptions are implemented with setjmp/longjmp, and rely on longjmp
+// not running the destructors of the frames it skips (see utils.hh).  On
+// Windows, MinGW-w64's longjmp unwinds the stack with SEH, which runs C++
+// cleanups and crashes.  GCC's builtins never unwind.
+#if defined(_WIN32) && defined(__GNUC__)
+#  define MOZART_SETJMP(buffer) __builtin_setjmp(buffer)
+#  define MOZART_LONGJMP(buffer) __builtin_longjmp(buffer, 1)
+#else
+#  define MOZART_SETJMP(buffer) setjmp(buffer)
+#  define MOZART_LONGJMP(buffer) longjmp(buffer, 1)
+#endif
+
 namespace mozart {
+
+#if defined(_WIN32) && defined(__GNUC__)
+typedef void* JumpBuffer[5]; // as required by __builtin_setjmp
+#else
+typedef jmp_buf JumpBuffer;
+#endif
 
 enum class ExceptionKind {
   ekFail, ekWaitBefore, ekWaitQuietBefore, ekRaise
 };
 
 struct ExceptionHandler {
-  jmp_buf jumpBuffer;
+  JumpBuffer jumpBuffer;
   ExceptionHandler* nextHandler;
 };
 
@@ -71,7 +89,7 @@ public:
     ExceptionHandler* handler = _topHandler;
     assert(handler != nullptr);
     _topHandler = handler->nextHandler;
-    longjmp(handler->jumpBuffer, 1);
+    MOZART_LONGJMP(handler->jumpBuffer);
   }
 
   ExceptionKind getExceptionKind() {
@@ -119,7 +137,7 @@ void MOZART_NORETURN raise(VM vm, RichNode exception);
 #define MOZART_TRY(vm) \
   do { \
     ::mozart::ExceptionHandler __Mozart_exc_handler; \
-    if (::setjmp(__Mozart_exc_handler.jumpBuffer) == 0) { \
+    if (MOZART_SETJMP(__Mozart_exc_handler.jumpBuffer) == 0) { \
       (vm)->getGlobalExceptionMechanism().pushHandler(__Mozart_exc_handler);
 
 #define MOZART_CATCH(vm, kind, node) \

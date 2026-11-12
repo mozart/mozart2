@@ -35,8 +35,14 @@
 #include <boost/uuid/random_generator.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 namespace mozart { namespace boostenv {
+
+// Keeps the io_context running while a VM is alive.
+typedef boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
+  IOWorkGuard;
 
 class BoostEnvironment;
 
@@ -190,7 +196,7 @@ private:
 
 // Running thread management
 private:
-  boost::asio::io_context::work* const _work;
+  IOWorkGuard* const _work;
 };
 
 } }

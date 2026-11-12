@@ -1,14 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
-# The stdlib and googletest submodules still declare ancient minimum versions,
-# which CMake >= 4 rejects outright, and older ones warn about.
+# The stdlib submodule still declares an ancient minimum version, which
+# CMake >= 4 rejects outright, and older ones warn about.
 if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
   set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
 endif()
-# googletest looks for Python with FindPythonInterp, removed in CMake 3.27,
-# but only to run its own tests.  Skip that lookup.
-set(CMAKE_POLICY_DEFAULT_CMP0148 NEW)
-set(CMAKE_DISABLE_FIND_PACKAGE_PythonInterp TRUE)
 
 # This needs to be before "project(..)".
 if(NOT DEFINED CMAKE_BUILD_TYPE)
@@ -18,6 +14,11 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 
 project(MOZART CXX)
+
+# Recent Boost releases require C++14.  GNU extensions are kept on (the
+# default), as MinGW needs them.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ENABLE_TESTING()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
@@ -63,7 +64,7 @@ if(MINGW)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
   # Linking mingw libs statically
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive, -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 -lmswsock -lbcrypt ${CMAKE_CXX_STANDARD_LIBRARIES}")
 
   # Check for gcc target architecture
   execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)

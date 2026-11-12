@@ -409,22 +409,32 @@ define
               )
       )
 
-   TG = {Translate {Record.adjoinList Rules RulesL}
-         opts(useCache:true
-              noCache: {Record.adjoinList
-                        noCache(pat0: unit lvl0: unit pE: unit caseClause: unit
-                                feature: unit)
-                        RulesL})}
+   Grammar = {Record.adjoinList Rules RulesL}
+   TranslateOpts = opts(useCache:true
+                        noCache: {Record.adjoinList
+                                  noCache(pat0: unit lvl0: unit pE: unit
+                                          caseClause: unit feature: unit)
+                                  RulesL})
+
+   %% Tracking "expected ..." messages at the farthest failure position costs
+   %% more than the parse itself, and is only useful when the parse fails.
+   %% So we parse without it, and on failure parse again with it to build the
+   %% error message.
+   FastGrammar = {Translate Grammar
+                  {AdjoinAt TranslateOpts handleErrors false}}
+   ErrorReportingGrammar = {ByNeed
+                            fun {$}
+                               {Translate Grammar
+                                {AdjoinAt TranslateOpts handleErrors true}}
+                            end}
 
    local
       fun {ParseGeneric MakeInitCtxProc Opts}
          DefsDict = Opts.defines
          InitialDefines = {Dictionary.toRecord defines DefsDict}
-         CtxIn = {MakeInitCtxProc InitialDefines}
-
          CtxOut Sem
       in
-         {TG.input CtxIn ?CtxOut ?Sem}
+         {FastGrammar.input {MakeInitCtxProc InitialDefines} ?CtxOut ?Sem}
 
          if CtxOut.valid then
             [AST FinalDefines] = Sem
@@ -432,8 +442,10 @@ define
             {Dictionary.removeAll DefsDict}
             {ForAll {Arity FinalDefines} proc {$ D} DefsDict.D := true end}
             AST#nil
-         else
-            parseError#[{ParseErrorToMessage CtxOut.error}]
+         else ErrorCtxOut in
+            {ErrorReportingGrammar.input {MakeInitCtxProc InitialDefines}
+             ?ErrorCtxOut _}
+            parseError#[{ParseErrorToMessage ErrorCtxOut.error}]
          end
       end
    in
@@ -446,11 +458,7 @@ define
       end
 
       fun {ParseFile FN Opts}
-         fun {MakeInitCtxProc Defines}
-            {Preprocessor.readAndPreprocessSourceFile FN Defines}
-         end
-      in
-         {ParseGeneric MakeInitCtxProc Opts}
+         {ParseGeneric {Preprocessor.sourceFilePreprocessor FN} Opts}
       end
    end
 end

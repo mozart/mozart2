@@ -1,4 +1,14 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
+
+# The stdlib and googletest submodules still declare ancient minimum versions,
+# which CMake >= 4 rejects outright, and older ones warn about.
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+  set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
+endif()
+# googletest looks for Python with FindPythonInterp, removed in CMake 3.27,
+# but only to run its own tests.  Skip that lookup.
+set(CMAKE_POLICY_DEFAULT_CMP0148 NEW)
+set(CMAKE_DISABLE_FIND_PACKAGE_PythonInterp TRUE)
 
 # This needs to be before "project(..)".
 if(NOT DEFINED CMAKE_BUILD_TYPE)
@@ -15,6 +25,20 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 # Custom CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_local ${CMAKE_MODULE_PATH})
 include(MozartProperties)
+
+# Adds a third-party subdirectory without reporting its deprecated CMake
+# usage (CMake < 4 has no CMAKE_POLICY_VERSION_MINIMUM to cover old minimum
+# versions).  The user's CMAKE_WARN_DEPRECATED is restored afterwards.
+macro(mozart_add_third_party_subdirectory)
+  if(DEFINED CACHE{CMAKE_WARN_DEPRECATED})
+    set(_mozart_warn_deprecated "$CACHE{CMAKE_WARN_DEPRECATED}")
+  else()
+    set(_mozart_warn_deprecated ON)
+  endif()
+  set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+  add_subdirectory(${ARGN})
+  set(CMAKE_WARN_DEPRECATED "${_mozart_warn_deprecated}" CACHE BOOL "" FORCE)
+endmacro()
 
 # Set variables that the submodules will need to find me
 set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -98,7 +122,7 @@ add_subdirectory(boosthost)
 add_subdirectory(lib)
 add_subdirectory(opi)
 add_subdirectory(wish)
-add_subdirectory(stdlib)
+mozart_add_third_party_subdirectory(stdlib)
 add_subdirectory(platform-test EXCLUDE_FROM_ALL)
 
 # Add launcher and icons
@@ -133,6 +157,8 @@ set(CPACK_BUNDLE_ICON "${MACOS_RESOURCES_DIR}/mozart.icns")
 
 if(${MOZART_PROP_PLATFORM_ARCH} MATCHES "x86_64")
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+elseif(${MOZART_PROP_PLATFORM_ARCH} MATCHES "aarch64")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "arm64")
 else()
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${MOZART_PROP_PLATFORM_ARCH}")
 endif()

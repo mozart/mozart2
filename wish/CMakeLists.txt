@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.10)
 project(MOZARTWISH)
 
-find_package(X11 REQUIRED)
-include_directories(${X11_INCLUDE_DIR})
+# Tk only needs the X11 headers on X11 platforms; on Windows and macOS (Aqua)
+# it ships its own Xlib compatibility headers.
+if(NOT WIN32 AND NOT APPLE)
+  find_package(X11 REQUIRED)
+  include_directories(${X11_INCLUDE_DIR})
+endif()
 
 find_package(TCL REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTERP_RESULT=1")

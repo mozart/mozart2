@@ -1,27 +1,64 @@
 # Mozart2 Continuous Integration
 
-We use a continuous integration system for Mozart2. This means that at every
-change made in source code, we check if it did not break the build.
-More specifically, every commit sent to this repository triggers two builds. We
-use [Travis CI](https://travis-ci.org/) to build the pre-generated sources and Mozart2 on Linux. We also use
-[Appveyor](https://www.appveyor.com/) to build on Windows. If you wish to use those tools, you can fork this
-repository and active both Appveyor and Travis to your fork. The Travis CI job is probably
-the easiest way to rebuild the pre-generated sources.
+CI runs on GitHub Actions, see [.github/workflows/ci.yml](.github/workflows/ci.yml).
+It runs on every push, on pull requests, and on tags.
 
-## Travis CI
+Compiled Oz code (`.ozf` files) does not depend on the platform, so the
+pipeline builds it only once:
 
-[![Travis CI build status](https://travis-ci.org/mozart/mozart2.svg?branch=master)](https://travis-ci.org/mozart/mozart2)
+1. **Linux x86_64** does a full build: bootcompiler, VM, the whole library,
+   the platform tests, the VM unit tests (`vmtest`), and the `.deb`/`.tar.gz` packages. The `.ozf`, `.elc`
+   and image files of its build tree are published as the `mozart2-ozf`
+   artifact.
+2. **Linux arm64, macOS arm64, macOS x86_64 and Windows x86_64** only build the
+   native executables (`ozemulator`/`ozengine`, `ozwish`, the `vmtest` unit
+   tests, and on Windows `ozc` and `oz`). They unpack `mozart2-ozf` into their build tree, run the
+   platform tests with `ctest`, and package the result. They are configured
+   with `CMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON`, so installing and packaging do
+   not rebuild the `.ozf` files.
 
-The build process is written in [.travis.yml](.travis.yml). Specifically, we use the
-[trusty](https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system) environnement. Currently, we implement a build on
-Linux. We create two jobs. The first one, builds the pre-generated sources
-with LLVM and CLANG. It then compares the generated sources with those already
-in the repository. If this job succeed, a second one is started to build
-Mozart2.
+Each job uploads its packages as artifacts named after the files, e.g.
+`mozart2-2.0.2-aarch64-darwin.tar.gz`. On every run, the *Release files* job
+gathers them, checks that each platform produced its packages, and uploads a
+`SHA256SUMS` file. Pushing a `v*` tag then creates a draft GitHub release
+with these files, to be reviewed and published by hand.
 
-## Appveyor
+## Windows
 
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/mozart/mozart2?branch=master&svg=true)](https://ci.appveyor.com/project/layus/mozart2)
+Windows builds use [MSYS2](https://www.msys2.org/) with the UCRT64
+(MinGW-w64 GCC) environment. MSVC is not supported. Tcl/Tk 8.6 is built from
+source into `C:\tcltk` (and cached), so that the Inno Setup installer can
+bundle it. The installer does not include Emacs.
 
-The build process is written in [appveyor.yml](appveyor.yml). It uses mainly MingW to build.
-The build uploads a Windows installer as an artifact.
+## Reproducing a job locally
+
+On Linux:
+
+    cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+    cmake --build build
+    cmake --build build --target platform-test vmtest
+    ctest --test-dir build --output-on-failure
+
+## Security
+
+The workflow is written so that untrusted code cannot get write access:
+
+- pull requests use the `pull_request` event (never `pull_request_target`),
+  so code from forks runs with a read-only token and without secrets;
+- the token is read-only (`permissions: contents: read`), except in the
+  release job, which only runs for `v*` tags, which only people with write
+  access can push;
+- third-party actions are pinned to full commit SHAs, updated through
+  Dependabot pull requests ([.github/dependabot.yml](.github/dependabot.yml)),
+  and downloaded sources (Tcl/Tk on Windows) are checked against SHA-256
+  hashes.
+
+Some protections are repository settings, not part of the workflow
+(Settings > Actions > General):
+
+- *Approval for running fork pull request workflows from contributors*:
+  choose *Require approval for all external contributors*, so that a
+  maintainer reviews the changes, workflow included, before CI runs them;
+- *Workflow permissions*: choose *Read repository contents and packages
+  permissions*, the default for workflows that do not set `permissions`;
+- optionally, *Require actions to be pinned to a full-length commit SHA*.

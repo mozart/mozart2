@@ -1,4 +1,4 @@
-;;; mozart.el --- Functions for running a Mozart sub-process.
+;;; mozart.el --- Functions for running a Mozart sub-process.  -*- lexical-binding: nil -*-
 
 ;; Copyright (c) 1993-1998  Leif Kornstaedt
 ;; Copyright (c) 1993-1998  Michael Mehl
@@ -437,18 +437,16 @@ Used as fallback if the environment variable OZHOME is not set."
     d))
 
 ;; Silence the compiler warning below
-(defvar methods)
+(defvar oz-resolver-methods)
 
 (defun oz-push-method (m)
-  (if methods (setq methods (cons path-separator methods)))
-  (setq methods (cons m methods)))
-
-;; Silence the compiler warning below
-(defvar OZPATH)
+  (if oz-resolver-methods
+      (setq oz-resolver-methods (cons path-separator oz-resolver-methods)))
+  (setq oz-resolver-methods (cons m oz-resolver-methods)))
 
 (defun oz-dirs-to-search-path (l user global)
-  (let ((methods nil)
-        (l OZPATH) d)
+  (let ((oz-resolver-methods nil)
+        d)
     (while l
       (setq d (car l) l (cdr l))
       (cond ((eq d 'user)
@@ -458,7 +456,7 @@ Used as fallback if the environment variable OZHOME is not set."
       (if (stringp d)
           (oz-push-method
            (oz-simple-directory d))))
-    (apply (function concat) (reverse methods))))
+    (apply (function concat) (reverse oz-resolver-methods))))
 
 (defvar *OZ_PATH* nil)
 
@@ -677,7 +675,7 @@ Used as fallback if the environment variable OZHOME is not set."
               (concat *OZHOME* "/share/Init.ozf")))
     (if OZLOAD
         (let ((blocks nil)
-              (methods nil)
+              (oz-resolver-methods nil)
               (specs OZLOAD) spec)
           (while specs
             (setq spec (car specs) specs (cdr specs))
@@ -725,7 +723,7 @@ Used as fallback if the environment variable OZHOME is not set."
                                     (oz-simple-directory (cadr spec))))))))
                   (t (error "unexpected OZLOAD method: %s" spec))))
           (if blocks (oz-push-method "="))
-          (setq *OZLOAD* (apply (function concat) (reverse methods)))
+          (setq *OZLOAD* (apply (function concat) (reverse oz-resolver-methods)))
           ))
     (if OZPATH (setq *OZPATH* (oz-dirs-to-search-path
                                OZPATH nil
@@ -894,6 +892,11 @@ All strings matching this regular expression are removed.")
           "\\(,? *column \\([0-9]+\\)\\)?")
   "Regular expression matching error coordinates.")
 
+;; The compile.el API used below was removed in Emacs 22, which no longer
+;; calls `compilation-parse-errors-function'.
+(defvar compilation-error-list)
+(defvar compilation-parsing-end)
+
 (defun oz-compilation-parse-errors (&optional limit-search find-at-least)
   "Parse the current buffer as Mozart error messages.
 See variable `compilation-parse-errors-function' for the interface it uses."
@@ -926,7 +929,8 @@ See variable `compilation-parse-errors-function' for the interface it uses."
                        (save-excursion
                          (save-restriction
                            (widen)
-                           (goto-line line)
+                           (goto-char (point-min))
+                           (forward-line (1- line))
                            (if (and column (> column 0))
                                (forward-char column))
                            (cons error-marker (point-marker))))))
@@ -1364,10 +1368,10 @@ feed that many preceding paragraphs as well as the current paragraph."
   (let ((region (oz-paragraph-region arg)))
     (oz-feed-region (car region) (cdr region))))
 
-(if (memq system-type '(ms-dos windows-nt))
-    (defun oz-encode-string (s)
-      (encode-coding-string string buffer-file-coding-system))
-  (defun oz-encode-string (s) s))
+(defun oz-encode-string (s)
+  (if (memq system-type '(ms-dos windows-nt))
+      (encode-coding-string s buffer-file-coding-system)
+    s))
 
 (defun oz-send-string (string &optional system)
   "Feed STRING to the Oz Compiler, restarting Mozart if it died.
@@ -1382,7 +1386,7 @@ compiled using a default set of switches."
           (eof (concat (char-to-string 4) "\n")))
       (with-current-buffer oz-compiler-buffer
         (save-excursion
-          (setq compilation-last-buffer (current-buffer))
+          (setq next-error-last-buffer (current-buffer))
           (setq oz-compiler-output-start
                 (marker-position
                  (process-mark (get-buffer-process (current-buffer)))))
@@ -1657,6 +1661,13 @@ With ARG, stop it instead."
 (defvar oz-bar-overlay nil)
 (defvar oz-bar-overlay-here nil)
 
+;; XEmacs
+(declare-function make-extent "extents")
+(declare-function set-extent-priority "extents")
+(declare-function set-extent-endpoints "extents")
+(declare-function set-extent-face "extents")
+(declare-function delete-extent "extents")
+
 (defun oz-bar (file line column state)
   ;; Display bar at given line, load file if necessary.
   (if (string-equal state "exit")
@@ -1672,7 +1683,8 @@ With ARG, stop it instead."
           (save-excursion
             (save-restriction
               (widen)
-              (goto-line line)
+              (goto-char (point-min))
+              (forward-line (1- line))
               (setq start1 (point))
               (save-excursion
                 (forward-line 1)
@@ -1794,7 +1806,7 @@ With ARG, stop it instead."
     (if (and file (buffer-modified-p)
              (y-or-n-p (format "Save buffer %s first? " (buffer-name))))
         (save-buffer))
-    (compile-internal real-command "No more errors")))
+    (compilation-start real-command)))
 
 (defvar oz-application-history nil
   "History of commands used in oz-debug-application.")

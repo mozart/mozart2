@@ -15,7 +15,7 @@ else()
     set(ISS_EMACS_EXEC ${EMACS} CACHE STRING "Executable path of emacs")
   endif()
 
-  set(EMACS_OPTIONS -q -batch -f batch-byte-compile)
+  set(EMACS_OPTIONS -Q -batch -f batch-byte-compile)
   set(EMACS_MODE_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/oz.el"
     "${CMAKE_CURRENT_SOURCE_DIR}/oz-server.el"
@@ -49,6 +49,15 @@ else()
 
   install(FILES ${ALL_ELC_FILES} DESTINATION share/mozart/elisp)
 endif()
+
+# Also install the sources: Emacs loads them when the .elc files are missing
+# or were compiled by an incompatible Emacs, and they document the mode.
+install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/oz.el"
+  "${CMAKE_CURRENT_SOURCE_DIR}/oz-server.el"
+  "${CMAKE_CURRENT_SOURCE_DIR}/oz-extra.el"
+  "${CMAKE_CURRENT_SOURCE_DIR}/mozart.el"
+  DESTINATION share/mozart/elisp)
 
 # oz launcher
 if(NOT WIN32)

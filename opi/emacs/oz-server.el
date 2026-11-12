@@ -1,4 +1,4 @@
-;;; oz-server.el --- Uniform framework to allow interacting with Oz process.
+;;; oz-server.el --- Uniform framework to allow interacting with Oz process.  -*- lexical-binding: nil -*-
 
 ;; Copyright (c) 2000  Denys Duchier
 
@@ -353,7 +353,7 @@ callback sets it to nil")
 (defun oz-server-query-synchronously (args)
   "send the query consisting of the list of strings ARGS to the
 Oz process, wait for the reply and return the correposning list
-of strings.  Raise an 'oz-server-query exception in case we get
+of strings.  Raise an `oz-server-query' exception in case we get
 back a replyError."
   (unwind-protect
       (progn

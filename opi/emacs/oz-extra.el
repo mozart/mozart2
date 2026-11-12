@@ -1,4 +1,4 @@
-;;; oz-extra.el --- Outline mode support
+;;; oz-extra.el --- Outline mode support  -*- lexical-binding: nil -*-
 
 ;; This file is part of Mozart, an implementation of Oz 3:
 ;;   http://www.mozart-oz.org
@@ -23,7 +23,7 @@
           (> (prefix-numeric-value arg) 0)))
   (if (and oz-outline-mode
            (eq major-mode 'outline-mode))
-      (hide-other)))
+      (outline-hide-other)))
 
 (setq minor-mode-alist
       (cons '(oz-outline-mode " Click") minor-mode-alist))
@@ -42,13 +42,13 @@
   (save-excursion
     (end-of-line)
     (if (not (outline-invisible-p))
-        (hide-subtree)
-      (show-subtree))))
+        (outline-hide-subtree)
+      (outline-show-subtree))))
 
 (defun oz-outline-reveal-headings (e)
   (interactive "e")
   (mouse-set-point e)
-  (show-branches))
+  (outline-show-branches))
 
 (provide 'oz-extra)
 

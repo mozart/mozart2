@@ -211,7 +211,7 @@ struct OutputProcessing<inputIdx, outputIdx, nullable<T&>, Tail...> {
     using namespace patternmatching;
 
     if (!head.isNull()) {
-      RichNode value;
+      RichNode value = outputs[outputIdx]; // replaced by the capture
       matchesTuple(vm, outputs[outputIdx], "some", capture(value));
       head.get() = getArgument<T>(vm, value);
     }

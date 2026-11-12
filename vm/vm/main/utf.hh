@@ -104,10 +104,14 @@ nativeint toUTF(char32_t character, char32_t utf[1]) {
 }
 
 namespace internal {
+  // Always false, but only known once the template is instantiated.
+  template <size_t i>
+  struct UnsupportedWCharSize : std::false_type {};
+
   template <size_t i>
   struct ToUTFWCharT {
     static nativeint call(char32_t character, wchar_t utf[4]) {
-      static_assert(i != i, "Calling toUTF(wchar_t) with an unknown wchar_t");
+      static_assert(UnsupportedWCharSize<i>::value, "Calling toUTF(wchar_t) with an unknown wchar_t");
       return 0;
     }
   };
@@ -222,7 +226,7 @@ namespace internal {
   struct FromUTFWCharT {
     static std::pair<char32_t, nativeint> call(const wchar_t* utf,
                                                nativeint length) {
-      static_assert(i != i, "Calling fromUTF(wchar_t) with an unknown wchar_t");
+      static_assert(UnsupportedWCharSize<i>::value, "Calling fromUTF(wchar_t) with an unknown wchar_t");
       return std::make_pair(0, 0);
     }
   };

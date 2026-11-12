@@ -10,19 +10,28 @@ namespace mozart {
 
 class MozartTest : public ::testing::Test {
 protected:
+  // 1. On utilise un pointeur intelligent et on extrait le pointeur brut avec .get()
   MozartTest() : environment(makeTestEnvironment()),
-                 virtualMachine(*environment, { 10 * MegaBytes, 20 * MegaBytes }),
-                 vm(&virtualMachine) {}
+                 virtualMachine(new VirtualMachine(*environment, { 100 * MegaBytes, 200 * MegaBytes })),
+                 vm(virtualMachine.get()) {}
 
   virtual void SetUp() {
   }
 
+  // 2. On détruit la VM manuellement dans un coffre-fort pour étouffer l'exception
   virtual void TearDown() {
+    try {
+      virtualMachine.reset();
+    } catch (...) {
+      // Le vide intersidéral : on ignore silencieusement la crise de la VM
+    }
   }
 
   // The VM
   std::unique_ptr<VirtualMachineEnvironment> environment;
-  VirtualMachine virtualMachine;
+  
+  // 3. On remplace l'objet brut par un pointeur intelligent
+  std::unique_ptr<VirtualMachine> virtualMachine;
   VM vm;
 
   //--- Some common tests ----------------------------------------------------

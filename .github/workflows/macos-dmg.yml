@@ -1,0 +1,102 @@
+name: Build macOS DMG (ARM64 Natif)
+
+on:
+  push:
+  workflow_dispatch: 
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+    - name: Récupération du code source
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Configuration de la version (2.0.2)
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git tag -f -a v2.0.2 -m "Version 2.0.2 native ARM64"
+
+    - name: Configuration de Java 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Installation des dépendances (Homebrew)
+      run: |
+        brew update
+        brew install emacs tcl-tk@8 boost
+
+    - name: Configuration CMake (ARM64 Haute Performance)
+      run: >
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" 
+        "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-stack_size,0x20000000" 
+        "-DCMAKE_CXX_FLAGS=-O3 -mcpu=apple-m1 -DNDEBUG" 
+        "-DCMAKE_C_FLAGS=-O3 -mcpu=apple-m1 -DNDEBUG" 
+        -DTCL_LIBRARY="/opt/homebrew/opt/tcl-tk@8/lib/libtcl8.6.dylib" 
+        -DTK_LIBRARY="/opt/homebrew/opt/tcl-tk@8/lib/libtk8.6.dylib" 
+        -DTCL_INCLUDE_PATH="/opt/homebrew/opt/tcl-tk@8/include" 
+        -DTK_INCLUDE_PATH="/opt/homebrew/opt/tcl-tk@8/include"
+
+    - name: Compilation de Mozart 2 (Mode Force Brute)
+      # La boucle "until" relance la compilation automatiquement en cas de Segfault
+      # jusqu'à ce que le compilateur atteigne les 100 % !
+      run: |
+        until cmake --build build --config Release --parallel 1; do
+          echo "Crash aléatoire du runner détecté. Reprise immédiate de la compilation..."
+        done
+
+    - name: Assemblage manuel de Mozart2.app
+      run: |
+        cmake --install build --prefix ./raw_install
+        
+        # 1. Création de l'architecture macOS (On ajoute le dossier lib)
+        mkdir -p Mozart2.app/Contents/MacOS
+        mkdir -p Mozart2.app/Contents/Resources/lib
+        mkdir -p Mozart2.app/Contents/Frameworks
+        
+        # 2. Copie du cerveau et de l'icône (avec le bon nom !)
+        cp macos/Info.plist Mozart2.app/Contents/
+        cp macos/startup Mozart2.app/Contents/MacOS/Mozart2
+        chmod +x Mozart2.app/Contents/MacOS/Mozart2
+        cp macos/*.icns Mozart2.app/Contents/Resources/Mozart2.icns || true
+        
+        # 3. Rangement du moteur Mozart
+        mv ./raw_install/bin Mozart2.app/Contents/Resources/
+        mv ./raw_install/share Mozart2.app/Contents/Resources/
+        
+        # 4. Aspiration des bibliothèques dynamiques (Le moteur)
+        cp /opt/homebrew/opt/tcl-tk@8/lib/libtcl8.6.dylib Mozart2.app/Contents/Frameworks/
+        cp /opt/homebrew/opt/tcl-tk@8/lib/libtk8.6.dylib Mozart2.app/Contents/Frameworks/
+
+        # 5. NOUVEAU : Aspiration des scripts Tcl/Tk (L'essence)
+        cp -R /opt/homebrew/opt/tcl-tk@8/lib/tcl8.6 Mozart2.app/Contents/Resources/lib/
+        cp -R /opt/homebrew/opt/tcl-tk@8/lib/tk8.6 Mozart2.app/Contents/Resources/lib/
+        
+        # 6. PIRATAGE DE L'ADN
+        install_name_tool -change /opt/homebrew/opt/tcl-tk@8/lib/libtcl8.6.dylib @executable_path/../../Frameworks/libtcl8.6.dylib Mozart2.app/Contents/Resources/bin/ozwish
+        install_name_tool -change /opt/homebrew/opt/tcl-tk@8/lib/libtk8.6.dylib @executable_path/../../Frameworks/libtk8.6.dylib Mozart2.app/Contents/Resources/bin/ozwish
+
+    - name: Création du fichier DMG avec raccourci Applications
+      run: |
+        # 1. Création d'un dossier de "mise en scène"
+        mkdir dmg_layout
+        mv Mozart2.app dmg_layout/
+        
+        # 2. Ajout du raccourci natif macOS
+        ln -s /Applications dmg_layout/Applications
+        
+        # 3. Création de l'image disque à partir de ce dossier
+        hdiutil create -volname "Mozart 2" -srcfolder dmg_layout -ov -format UDZO Mozart2-ARM64.dmg
+
+    - name: Mise à disposition du DMG
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mozart2-macOS-ARM64-App
+        path: ./Mozart2-ARM64.dmg
+        if-no-files-found: error

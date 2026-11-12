@@ -1251,8 +1251,8 @@ public:
 
         auto& environment = BoostEnvironment::forVM(vm);
         tcp::resolver resolver (environment.io_context);
-        tcp::resolver::query query (nameString, "0");
-        auto it = resolver.resolve(query, ec);
+        auto results = resolver.resolve(nameString, "0", ec);
+        auto it = results.begin();
         if (!ec) {
           OzListBuilder addrListBuilder (vm);
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
 # This needs to be before "project(..)".
 if(NOT DEFINED CMAKE_BUILD_TYPE)
@@ -8,6 +8,12 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 
 project(MOZART CXX)
+
+if(MSVC)
+    add_compile_options(/Zc:char8_t-)
+else()
+    add_compile_options(-fno-char8_t)
+endif()
 
 ENABLE_TESTING()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
@@ -21,7 +27,7 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 set(DEFAULT_MOZART_GENERATOR_FLAGS
-      "--std=c++0x"
+      "--std=c++20"
       "-Wno-invalid-noreturn"
       "-Wno-return-type"
       "-Wno-braced-scalar-init" # Silence warning for macro ATOMIC_FLAG_INIT in atomic_base.h
@@ -39,8 +45,7 @@ if(MINGW)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format -Wno-format-extra-args")
   # Linking mingw libs statically
-  set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive, -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
-
+set(CMAKE_CXX_STANDARD_LIBRARIES "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive -static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CXX_STANDARD_LIBRARIES}")
   # Check for gcc target architecture
   execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE GCC_ARCH)
   string(STRIP "${GCC_ARCH}" GCC_ARCH_TRIPLE)

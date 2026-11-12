@@ -3,7 +3,7 @@ set(MOZART_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MOZART_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/../..")
 
 # Configure compiler
-set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++20 ${CMAKE_CXX_FLAGS}")
 
 if(WIN32)
   # Boost requires this
@@ -20,7 +20,7 @@ if(${MOZART_BOOST_USE_STATIC_LIBS})
 endif()
 
 find_package(Boost COMPONENTS
-  program_options random system thread filesystem chrono REQUIRED)
+  program_options random thread filesystem chrono REQUIRED)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})

@@ -1,0 +1,13 @@
+/*
+ *  Programming Systems Lab, DFKI Saarbruecken,
+ *  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5312
+ *  Author: Christian Schulte
+ *  Email: schulte@dfki.uni-sb.de
+ *  Last modified: $Date$ by $Author$
+ *  Version: $Revision$
+ */
+
+#define mini-dec_width 10
+#define mini-dec_height 5
+static unsigned char mini-dec_bits[] = {
+   0x00, 0x00, 0xfc, 0x03, 0xf8, 0x01, 0xf0, 0x00, 0x60, 0x00};

@@ -36,6 +36,10 @@
 
 #include <boost/asio.hpp>
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/executor_work_guard.hpp>
+
 namespace mozart { namespace boostenv {
 
 class BoostEnvironment;
@@ -167,8 +171,8 @@ private:
 
 // Preemption and alarms
 private:
-  boost::asio::deadline_timer* preemptionTimer;
-  boost::asio::deadline_timer alarmTimer;
+  boost::asio::steady_timer* preemptionTimer;
+  boost::asio::steady_timer alarmTimer;
 
 // IO-driven events that must work with the VM store
 private:
@@ -190,7 +194,7 @@ private:
 
 // Running thread management
 private:
-  boost::asio::io_context::work* const _work;
+  boost::asio::executor_work_guard<boost::asio::io_context::executor_type>* const _work;
 };
 
 } }

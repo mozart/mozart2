@@ -169,9 +169,9 @@ void BoostEnvironment::killVM(VMIdentifier identifier, nativeint exitCode,
   });
 }
 
-void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier,
-                                          nativeint exitCode,
-                                          boost::asio::io_context::work* work) {
+inline
+void BoostEnvironment::removeTerminatedVM(VMIdentifier identifier, nativeint exitCode,
+                                          boost::asio::executor_work_guard<boost::asio::io_context::executor_type>* work) {
   {
     boost::lock_guard<boost::mutex> lock(_vmsMutex);
 

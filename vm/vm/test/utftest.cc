@@ -4,13 +4,10 @@
 
 using namespace mozart;
 
-namespace std {
-  template <class T, class U, class V, class W>
-  static bool operator==(const pair<T, U>& a, const pair<V, W>& b) noexcept {
-    return a.first == b.first && a.second == b.second;
-  }
+// Helper to bypass C++20 deleted ostream<< for char32_t in GoogleTest
+std::pair<uint32_t, size_t> safePair(const std::pair<char32_t, size_t>& p) {
+    return { static_cast<uint32_t>(p.first), p.second };
 }
-// ^ This needs to be defined in std namespace in order to make ADL work.
 
 class UTFTest : public MozartTest {};
 
@@ -77,27 +74,27 @@ TEST_F(UTFTest, ToUTF_8) {
 TEST_F(UTFTest, ToUTF_16) {
   char16_t buf[2];
   EXPECT_EQ(1, toUTF(U'\0', buf));
-  EXPECT_EQ(0, buf[0]);
+  EXPECT_EQ(0, static_cast<int>(buf[0]));
 
   EXPECT_EQ(1, toUTF(U'\x7f', buf));
-  EXPECT_EQ(u'\x7f', buf[0]);
+  EXPECT_EQ(0x7f, static_cast<int>(buf[0]));
 
   EXPECT_EQ(1, toUTF(U'\ue000', buf));
-  EXPECT_EQ(u'\ue000', buf[0]);
+  EXPECT_EQ(0xe000, static_cast<int>(buf[0]));
 
   EXPECT_EQ(1, toUTF(U'\ufffe', buf));
-  EXPECT_EQ(u'\ufffe', buf[0]);
+  EXPECT_EQ(0xfffe, static_cast<int>(buf[0]));
 
   EXPECT_EQ(1, toUTF(U'\uffff', buf));
-  EXPECT_EQ(0xffff, buf[0]);
+  EXPECT_EQ(0xffff, static_cast<int>(buf[0]));
 
   EXPECT_EQ(2, toUTF(U'\U00010000', buf));
-  EXPECT_EQ(0xd800, buf[0]);
-  EXPECT_EQ(0xdc00, buf[1]);
+  EXPECT_EQ(0xd800, static_cast<int>(buf[0]));
+  EXPECT_EQ(0xdc00, static_cast<int>(buf[1]));
 
   EXPECT_EQ(2, toUTF(U'\U0010ffff', buf));
-  EXPECT_EQ(0xdbff, buf[0]);
-  EXPECT_EQ(0xdfff, buf[1]);
+  EXPECT_EQ(0xdbff, static_cast<int>(buf[0]));
+  EXPECT_EQ(0xdfff, static_cast<int>(buf[1]));
 
   EXPECT_EQ(UnicodeErrorReason::surrogate, toUTF(0xd800, buf));
   EXPECT_EQ(UnicodeErrorReason::surrogate, toUTF(0xdbff, buf));
@@ -107,16 +104,16 @@ TEST_F(UTFTest, ToUTF_16) {
 }
 
 TEST_F(UTFTest, FromUTF_8) {
-  EXPECT_EQ(std::make_pair(U'a', 1), fromUTF("abc"));
-  EXPECT_EQ(std::make_pair(U'b', 1), fromUTF("bc"));
-  EXPECT_EQ(std::make_pair(U'\u00a9', 2), fromUTF("\xc2\xa9"));
-  EXPECT_EQ(std::make_pair(U'\u2260', 3), fromUTF("\xe2\x89\xa0"));
-  EXPECT_EQ(std::make_pair(U'\ufffe', 3), fromUTF("\xef\xbf\xbe"));
-  EXPECT_EQ(std::make_pair(U'\uffff', 3), fromUTF("\xef\xbf\xbf"));
-  EXPECT_EQ(std::make_pair(U'\U00010000', 4), fromUTF("\xf0\x90\x80\x80"));
-  EXPECT_EQ(std::make_pair(U'\U0010ffff', 4), fromUTF("\xf4\x8f\xbf\xbf"));
-  EXPECT_EQ(std::make_pair(U'\ud7ff', 3), fromUTF("\xed\x9f\xbf"));
-  EXPECT_EQ(std::make_pair(U'\0', 1), fromUTF("\0", 1));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'a'), (size_t)1), safePair(fromUTF("abc")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'b'), (size_t)1), safePair(fromUTF("bc")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\u00a9'), (size_t)2), safePair(fromUTF("\xc2\xa9")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\u2260'), (size_t)3), safePair(fromUTF("\xe2\x89\xa0")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\ufffe'), (size_t)3), safePair(fromUTF("\xef\xbf\xbe")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\uffff'), (size_t)3), safePair(fromUTF("\xef\xbf\xbf")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\U00010000'), (size_t)4), safePair(fromUTF("\xf0\x90\x80\x80")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\U0010ffff'), (size_t)4), safePair(fromUTF("\xf4\x8f\xbf\xbf")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\ud7ff'), (size_t)3), safePair(fromUTF("\xed\x9f\xbf")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\0'), (size_t)1), safePair(fromUTF("\0", 1)));
 
   // invalid continuation byte
   EXPECT_EQ(UnicodeErrorReason::invalidUTF8, fromUTF("\xe2\x89\0").second);
@@ -147,23 +144,23 @@ TEST_F(UTFTest, FromUTF_8) {
 }
 
 TEST_F(UTFTest, FromUTF_16) {
-  EXPECT_EQ(std::make_pair(U'a', 1), fromUTF(u"abc"));
-  EXPECT_EQ(std::make_pair(U'b', 1), fromUTF(u"bc"));
-  EXPECT_EQ(std::make_pair(U'\u00a9', 1), fromUTF(u"\u00a9"));
-  EXPECT_EQ(std::make_pair(U'\u2260', 1), fromUTF(u"\u2260"));
-  EXPECT_EQ(std::make_pair(U'\ufffe', 1), fromUTF(u"\ufffe"));
-  EXPECT_EQ(std::make_pair(U'\0', 1), fromUTF(u"\0", 1));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'a'), (size_t)1), safePair(fromUTF(u"abc")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'b'), (size_t)1), safePair(fromUTF(u"bc")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\u00a9'), (size_t)1), safePair(fromUTF(u"\u00a9")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\u2260'), (size_t)1), safePair(fromUTF(u"\u2260")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\ufffe'), (size_t)1), safePair(fromUTF(u"\ufffe")));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\0'), (size_t)1), safePair(fromUTF(u"\0", 1)));
 
   // Note: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=41698
   char16_t buf[2] = {0xffff, 0};
-  EXPECT_EQ(std::make_pair(U'\uffff', 1), fromUTF(buf));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\uffff'), (size_t)1), safePair(fromUTF(buf)));
 
   // Can't use u"\ud800\udc00" to write a surrogate pair
   buf[0] = 0xd800; buf[1] = 0xdc00;
-  EXPECT_EQ(std::make_pair(U'\U00010000', 2), fromUTF(buf));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\U00010000'), (size_t)2), safePair(fromUTF(buf)));
 
   buf[0] = 0xdbff; buf[1] = 0xdfff;
-  EXPECT_EQ(std::make_pair(U'\U0010ffff', 2), fromUTF(buf));
+  EXPECT_EQ(std::make_pair(static_cast<uint32_t>(U'\U0010ffff'), (size_t)2), safePair(fromUTF(buf)));
 
   buf[0] = 0xd800; buf[1] = 0xd800;
   EXPECT_EQ(UnicodeErrorReason::invalidUTF16, fromUTF(buf).second);  // invalid trail surrogate
@@ -179,15 +176,15 @@ TEST_F(UTFTest, FromUTF_16) {
 
 TEST_F(UTFTest, ToUTF) {
   #define MAKE_TEST_CASE(String) \
-    EXPECT_EQ(u8##String, toUTF<char>(makeLString(u8##String))); \
-    EXPECT_EQ(u8##String, toUTF<char>(makeLString(u##String))); \
-    EXPECT_EQ(u8##String, toUTF<char>(makeLString(U##String))); \
-    EXPECT_EQ(u##String, toUTF<char16_t>(makeLString(u8##String))); \
-    EXPECT_EQ(u##String, toUTF<char16_t>(makeLString(u##String))); \
-    EXPECT_EQ(u##String, toUTF<char16_t>(makeLString(U##String))); \
-    EXPECT_EQ(U##String, toUTF<char32_t>(makeLString(u8##String))); \
-    EXPECT_EQ(U##String, toUTF<char32_t>(makeLString(u##String))); \
-    EXPECT_EQ(U##String, toUTF<char32_t>(makeLString(U##String)))
+    EXPECT_EQ(0, compareByCodePoint(makeLString(u8##String), toUTF<char>(makeLString(u8##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(u8##String), toUTF<char>(makeLString(u##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(u8##String), toUTF<char>(makeLString(U##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(u##String), toUTF<char16_t>(makeLString(u8##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(u##String), toUTF<char16_t>(makeLString(u##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(u##String), toUTF<char16_t>(makeLString(U##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(U##String), toUTF<char32_t>(makeLString(u8##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(U##String), toUTF<char32_t>(makeLString(u##String)))); \
+    EXPECT_EQ(0, compareByCodePoint(makeLString(U##String), toUTF<char32_t>(makeLString(U##String))))
 
   MAKE_TEST_CASE("abc");
   MAKE_TEST_CASE("a\u0300\u0080");

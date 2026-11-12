@@ -1,0 +1,17 @@
+/*
+ * This file is part of Mozart, an implementation of Oz 3:
+ *   http://www.mozart-oz.org
+ *
+ * See the file "LICENSE" or
+ *   http://www.mozart-oz.org/LICENSE.html
+ * for information on usage and redistribution
+ * of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ *
+ */
+
+#define depth.xbm_width 13
+#define depth.xbm_height 13
+static char depth.xbm_bits[] = {
+ 0x00,0x00,0xe0,0x01,0xe0,0x01,0xe0,0x01,0xe0,0x01,0xe0,0x01,0xe0,0x01,0xfe,
+ 0x1f,0xfc,0x0f,0xf0,0x03,0xe0,0x01,0xe0,0x01,0xc0,0x00};

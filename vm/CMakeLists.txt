@@ -15,7 +15,7 @@ set(MOZART_GENERATOR_FLAGS "${DEFAULT_MOZART_GENERATOR_FLAGS}" CACHE STRING
 
 set(MOZART_CACHED_BUILD ON CACHE STRING "Use pre-generated sources")
 
-add_compile_options(-std=c++0x)
+add_compile_options(-std=c++20)
 
 add_subdirectory(generator)
 
